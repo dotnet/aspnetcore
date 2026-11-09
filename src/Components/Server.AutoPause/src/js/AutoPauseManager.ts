@@ -14,11 +14,12 @@ export interface AutoPauseConfig {
 export interface BlazorActivityHost {
   pauseCircuit?: (signal?: AbortSignal) => Promise<boolean>;
   resumeCircuit?: () => Promise<boolean>;
-  addEventListener?: (type: 'circuitactivitychanged', handler: (ev: { busy: boolean }) => void) => void;
-  removeEventListener?: (type: 'circuitactivitychanged', handler: (ev: { busy: boolean }) => void) => void;
+  addEventListener?: (type: 'circuitactivitychanged', handler: (ev: { busy: boolean; closed?: boolean }) => void) => void;
+  removeEventListener?: (type: 'circuitactivitychanged', handler: (ev: { busy: boolean; closed?: boolean }) => void) => void;
 }
 
 const becameVisibleReason = Symbol('auto-pause:became-visible');
+const circuitClosedReason = Symbol('auto-pause:circuit-closed');
 
 export class AutoPauseManager {
   private readonly _config: AutoPauseConfig;
@@ -27,7 +28,7 @@ export class AutoPauseManager {
 
   private readonly _visibilityListener: () => void;
 
-  private readonly _activityListener: (ev: { busy: boolean }) => void;
+  private readonly _activityListener: (ev: { busy: boolean; closed?: boolean }) => void;
 
   private _busy = false;
 
@@ -48,7 +49,13 @@ export class AutoPauseManager {
     this._blazor = blazor;
 
     this._visibilityListener = () => this.onVisibilityChanged();
-    this._activityListener = (ev) => this.onActivityChanged(ev.busy);
+    this._activityListener = (ev) => {
+      if (ev.closed) {
+        this.onCircuitClosed();
+      } else {
+        this.onActivityChanged(ev.busy);
+      }
+    };
   }
 
   public start(): void {
@@ -75,6 +82,16 @@ export class AutoPauseManager {
     for (const resolve of resolvers) {
       resolve();
     }
+  }
+
+  private onCircuitClosed(): void {
+    // When the active circuit is disposed (e.g. after navigating to a static SSR page and
+    // exceeding circuitInactivityTimeoutMs), reset auto-pause state so returning to the tab
+    // does not attempt to resume a disposed circuit (#69869).
+    this.clearHiddenTimer();
+    this._activeAbortController?.abort(circuitClosedReason);
+    this._activeAbortController = undefined;
+    this._autoPaused = false;
   }
 
   private onActivityChanged(busy: boolean): void {

@@ -24,7 +24,7 @@ describe('AutoPauseManager', () => {
 
   let pauseCircuit: jest.Mock<(signal?: AbortSignal) => Promise<boolean>>;
   let resumeCircuit: jest.Mock<() => Promise<boolean>>;
-  let activityListener: ((ev: { busy: boolean }) => void) | undefined;
+  let activityListener: ((ev: { busy: boolean; closed?: boolean }) => void) | undefined;
   let host: BlazorActivityHost;
   let manager: AutoPauseManager | undefined;
 
@@ -296,6 +296,22 @@ describe('AutoPauseManager', () => {
 
       expect(pauseCircuit).not.toHaveBeenCalled();
       // Nothing was paused, so there is nothing to resume either (no modal flicker / churn).
+      expect(resumeCircuit).not.toHaveBeenCalled();
+    });
+
+    test('does not resume after circuit closed notification fires while auto-paused (#69869)', async () => {
+      create();
+      setVisibility('hidden');
+      jest.advanceTimersByTime(1000);
+      await flushPromises();
+      expect(pauseCircuit).toHaveBeenCalledTimes(1);
+
+      // Simulate unused-circuit disposal on a static SSR page firing closed: true.
+      activityListener?.({ busy: false, closed: true });
+
+      // Returning to the tab must not attempt to resume the disposed circuit.
+      setVisibility('visible');
+      await flushPromises();
       expect(resumeCircuit).not.toHaveBeenCalled();
     });
   });

@@ -12,7 +12,8 @@ import { OutOfProcessRenderBatch } from './Rendering/RenderBatch/OutOfProcessRen
 import { Pointer } from './Platform/Platform';
 import { WebAssemblyStartOptions } from './Platform/WebAssemblyStartOptions';
 import { addDispatchEventMiddleware } from './Rendering/WebRendererInteropMethods';
-import { WebAssemblyComponentDescriptor, WebAssemblyServerOptions, discoverWebAssemblyPersistedState } from './Services/ComponentDescriptorDiscovery';
+import { WebAssemblyComponentDescriptor, WebAssemblyServerOptions } from './Services/ComponentDescriptorDiscovery';
+import { documentStateStore } from './Services/DocumentStateStore';
 import { receiveDotNetDataStream } from './StreamingInterop';
 import { WebAssemblyComponentAttacher } from './Platform/WebAssemblyComponentAttacher';
 import * as DotNet from './JSInterop/Microsoft.JSInterop';
@@ -130,13 +131,15 @@ async function startCore(components: RootComponentManager<WebAssemblyComponentDe
   };
 
   Blazor._internal.navigationManager.listenForNavigationEvents(WebRendererId.WebAssembly, async (uri: string, state: string | undefined, intercepted: boolean): Promise<void> => {
-    await dispatcher.invokeDotNetStaticMethodAsync(
-      'Microsoft.AspNetCore.Components.WebAssembly',
-      'NotifyLocationChanged',
-      uri,
-      state,
-      intercepted
-    );
+    monoPlatform.invokeWhenHeapUnlocked(() => {
+      dispatcher.invokeDotNetStaticMethod(
+        'Microsoft.AspNetCore.Components.WebAssembly',
+        'NotifyLocationChanged',
+        uri,
+        state,
+        intercepted
+      );
+    });
   }, async (callId: number, uri: string, state: string | undefined, intercepted: boolean): Promise<void> => {
     const shouldContinueNavigation = await dispatcher.invokeDotNetStaticMethodAsync<boolean>(
       'Microsoft.AspNetCore.Components.WebAssembly',
@@ -160,7 +163,7 @@ async function startCore(components: RootComponentManager<WebAssemblyComponentDe
     getParameterValues: (id) => componentAttacher.getParameterValues(id) || '',
   };
 
-  Blazor._internal.getPersistedState = () => discoverWebAssemblyPersistedState(document) || '';
+  Blazor._internal.getPersistedState = () => documentStateStore.consumeWebAssemblyPersistedState(document);
 
   Blazor._internal.getInitialComponentsUpdate = () => initialUpdatePromise;
 

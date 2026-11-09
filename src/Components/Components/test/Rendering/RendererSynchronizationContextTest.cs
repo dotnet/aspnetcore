@@ -790,4 +790,38 @@ public class RendererSynchronizationContextTest
         // Assert
         Assert.Equal(expected, actual);
     }
+
+    [Fact]
+    public void InvokeAsync_DoesNotLeaveSyncContextOnCallerThread_WhenWorkIsQueuedWithSuppressedFlow()
+    {
+        var dispatcher = Dispatcher.CreateDefault();
+        var rendererEntered = new ManualResetEventSlim();
+        var workItemQueued = new ManualResetEventSlim();
+        var callerDone = new ManualResetEventSlim();
+        var leaked = false;
+
+        ThreadPool.UnsafeQueueUserWorkItem(_ =>
+        {
+            dispatcher.InvokeAsync(async () =>
+            {
+                rendererEntered.Set();
+                Assert.True(workItemQueued.Wait(Timeout));
+                await Task.CompletedTask;
+            });
+
+            leaked = dispatcher.CheckAccess();
+            callerDone.Set();
+        }, null);
+
+        Assert.True(rendererEntered.Wait(Timeout));
+
+        using (ExecutionContext.SuppressFlow())
+        {
+            _ = dispatcher.InvokeAsync(() => { });
+        }
+
+        workItemQueued.Set();
+        Assert.True(callerDone.Wait(Timeout));
+        Assert.False(leaked);
+    }
 }

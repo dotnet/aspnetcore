@@ -112,11 +112,17 @@ public static class ComponentServiceCollectionExtensions
 
         // Standard blazor hosting services implementations
         //
-        // These intentionally replace the non-interactive versions included in MVC.
-        services.AddScoped<NavigationManager, RemoteNavigationManager>();
-        services.AddScoped<IJSRuntime, RemoteJSRuntime>();
-        services.AddScoped<INavigationInterception, RemoteNavigationInterception>();
-        services.AddScoped<IScrollToLocationHash, RemoteScrollToLocationHash>();
+        // Register concrete Remote* services and select them when inside a circuit scope (HasCircuitContext == true),
+        // while preserving SSR or user-registered scoped services (such as HttpNavigationManager) outside circuit scopes (#69938).
+        services.TryAddScoped<RemoteNavigationManager>();
+        services.TryAddScoped<RemoteJSRuntime>();
+        services.TryAddScoped<RemoteNavigationInterception>();
+        services.TryAddScoped<RemoteScrollToLocationHash>();
+
+        RegisterCircuitScopedService<NavigationManager, RemoteNavigationManager>(services);
+        RegisterCircuitScopedService<IJSRuntime, RemoteJSRuntime>(services);
+        RegisterCircuitScopedService<INavigationInterception, RemoteNavigationInterception>(services);
+        RegisterCircuitScopedService<IScrollToLocationHash, RemoteScrollToLocationHash>(services);
         services.TryAddScoped<AuthenticationStateProvider, ServerAuthenticationStateProvider>();
 
         services.TryAddEnumerable(ServiceDescriptor.Singleton<IConfigureOptions<CircuitOptions>, CircuitOptionsJSInteropDetailedErrorsConfiguration>());
@@ -130,6 +136,56 @@ public static class ComponentServiceCollectionExtensions
         }
 
         return builder;
+    }
+
+    private static void RegisterCircuitScopedService<TService, [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors)] TCircuitImplementation>(IServiceCollection services)
+        where TService : class
+        where TCircuitImplementation : class, TService
+    {
+        ServiceDescriptor? existingDescriptor = null;
+        for (var i = services.Count - 1; i >= 0; i--)
+        {
+            if (services[i].ServiceType == typeof(TService))
+            {
+                existingDescriptor = services[i];
+                break;
+            }
+        }
+        if (existingDescriptor is null)
+        {
+            services.AddScoped<TService>(sp => sp.GetRequiredService<TCircuitImplementation>());
+            return;
+        }
+
+        if (existingDescriptor.ImplementationType == typeof(TCircuitImplementation))
+        {
+            return;
+        }
+
+        services.AddScoped<TService>(sp =>
+        {
+            if (sp.GetService<ICircuitAccessor>() is { HasCircuitContext: true })
+            {
+                return sp.GetRequiredService<TCircuitImplementation>();
+            }
+
+            if (existingDescriptor.ImplementationFactory is { } factory)
+            {
+                return (TService)factory(sp);
+            }
+
+            if (existingDescriptor.ImplementationInstance is TService instance)
+            {
+                return instance;
+            }
+
+            if (existingDescriptor.ImplementationType is { } implType)
+            {
+                return (TService)ActivatorUtilities.GetServiceOrCreateInstance(sp, implType);
+            }
+
+            return sp.GetRequiredService<TCircuitImplementation>();
+        });
     }
 
     private sealed class DefaultServerSideBlazorBuilder : IServerSideBlazorBuilder

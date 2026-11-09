@@ -2,7 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 import { synchronizeDomContent } from '../Rendering/DomMerging/DomSync';
-import { attachProgrammaticEnhancedNavigationHandler, handleClickForNavigationInterception, hasInteractiveRouter, isForSamePath, notifyEnhancedNavigationListeners, performScrollToElementOnTheSamePage, isSamePageWithHash } from './NavigationUtils';
+import { attachProgrammaticEnhancedNavigationHandler, confirmEnhancedNavigationLocationChanging, handleClickForNavigationInterception, hasActiveLocationChangingListeners, hasInteractiveRouter, isForSamePath, notifyEnhancedNavigationListeners, performScrollToElementOnTheSamePage, isSamePageWithHash } from './NavigationUtils';
 import { scheduleScrollReset, ScrollResetSchedule } from '../Rendering/Renderer';
 
 /*
@@ -101,11 +101,23 @@ function onDocumentClick(event: MouseEvent) {
     const originalLocation = location.href;
 
     const shouldScrollToHash = isSamePageWithHash(originalLocation, absoluteInternalHref);
-    history.pushState(null, /* ignored title */ '', absoluteInternalHref);
-
     if (shouldScrollToHash) {
+      history.pushState(null, /* ignored title */ '', absoluteInternalHref);
       performScrollToElementOnTheSamePage(absoluteInternalHref);
+    } else if (hasActiveLocationChangingListeners()) {
+      confirmEnhancedNavigationLocationChanging(absoluteInternalHref, /* interceptedLink */ true).then(shouldContinue => {
+        if (!shouldContinue) {
+          return;
+        }
+        const isSelfNavigation = isForSamePath(absoluteInternalHref, originalLocation);
+        history.pushState(null, /* ignored title */ '', absoluteInternalHref);
+        performEnhancedPageLoad(absoluteInternalHref, /* interceptedLink */ true);
+        if (!isSelfNavigation) {
+          scheduleScrollReset(ScrollResetSchedule.AfterDocumentUpdate);
+        }
+      });
     } else {
+      history.pushState(null, /* ignored title */ '', absoluteInternalHref);
       const isSelfNavigation = isForSamePath(absoluteInternalHref, originalLocation);
       performEnhancedPageLoad(absoluteInternalHref, /* interceptedLink */ true);
       if (!isSelfNavigation) {
@@ -276,6 +288,7 @@ export async function performEnhancedPageLoad(internalDestinationHref: string, i
           }
         }
         internalDestinationHref = response.url;
+        notifyEnhancedNavigationListeners(internalDestinationHref, interceptedLink);
       }
 
       // For enhanced nav redirecting to an external URL, we'll get a special Blazor-specific redirection command

@@ -1,0 +1,25 @@
+@page "/streaming-form-redirect"
+@attribute [StreamRendering]
+@inject NavigationManager Navigation
+
+<h1>Streaming Form Redirect</h1>
+<p id="saved-flag">@(Saved == 1 ? "saved" : "not-saved")</p>
+
+<form method="post" @formname="save-form" @onsubmit="OnSave" data-enhance>
+    <AntiforgeryToken />
+    <button id="submit-btn" type="submit">Save</button>
+</form>
+
+<div id="padding" style="display:none">@(new string('x', 70000))</div>
+<ItemList @rendermode="InteractiveServer" />
+
+@code {
+    [SupplyParameterFromQuery(Name = "saved")]
+    public int Saved { get; set; }
+
+    private async Task OnSave()
+    {
+        await Task.Delay(2);
+        Navigation.NavigateTo("/streaming-form-redirect?saved=1");
+    }
+}

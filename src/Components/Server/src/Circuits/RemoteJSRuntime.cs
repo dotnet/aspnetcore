@@ -32,6 +32,8 @@ internal partial class RemoteJSRuntime : JSRuntime
 
     internal bool IsPermanentlyDisconnected => _permanentlyDisconnected;
 
+    internal bool IsClientConnected => _clientProxy?.Connected == true;
+
     /// <summary>
     /// Notifies when a runtime exception occurred.
     /// </summary>
@@ -223,10 +225,18 @@ internal partial class RemoteJSRuntime : JSRuntime
         return false;
     }
 
+    internal virtual Action CapturePendingTasksForDisconnect()
+    {
+        return CapturePendingTasks(new JSDisconnectedException(
+            "JavaScript interop calls cannot complete because the circuit disconnected."));
+    }
+
     public void MarkPermanentlyDisconnected()
     {
         _permanentlyDisconnected = true;
         _clientProxy = null;
+        var failPendingTasks = CapturePendingTasksForDisconnect();
+        failPendingTasks();
     }
 
     protected override async Task<Stream> ReadJSDataAsStreamAsync(IJSStreamReference jsStreamReference, long totalLength, CancellationToken cancellationToken = default)

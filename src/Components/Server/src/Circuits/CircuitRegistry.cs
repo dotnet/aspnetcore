@@ -92,10 +92,12 @@ internal partial class CircuitRegistry
         Log.CircuitDisconnectStarted(_logger, circuitHost.CircuitId, connectionId);
 
         Task circuitHandlerTask;
+        Action failPendingTasks = null;
         lock (CircuitRegistryLock)
         {
             if (DisconnectCore(circuitHost, connectionId))
             {
+                failPendingTasks = circuitHost.JSRuntime?.CapturePendingTasksForDisconnect();
                 circuitHandlerTask = circuitHost.Renderer.Dispatcher.InvokeAsync(() => circuitHost.OnConnectionDownAsync(default));
             }
             else
@@ -108,6 +110,7 @@ internal partial class CircuitRegistry
             }
         }
 
+        failPendingTasks?.Invoke();
         return circuitHandlerTask;
     }
 
@@ -177,6 +180,7 @@ internal partial class CircuitRegistry
         bool previouslyConnected;
 
         Task circuitHandlerTask;
+        Action failPendingTasks = null;
 
         // We don't expect any of the logic inside the lock to throw, or run user code.
         lock (CircuitRegistryLock)
@@ -192,6 +196,8 @@ internal partial class CircuitRegistry
                 // Failed to find a matching circuit. Nothing to do here.
                 return null;
             }
+
+            failPendingTasks = circuitHost.JSRuntime?.CapturePendingTasksForDisconnect();
 
             // CircuitHandler events do not need to be executed inside the critical section, however we
             // a) do not want concurrent execution of handler events i.e. a  OnConnectionDownAsync occurring in tandem with a OnConnectionUpAsync for a single circuit.
@@ -211,6 +217,8 @@ internal partial class CircuitRegistry
                 await circuitHost.OnConnectionUpAsync(cancellationToken);
             });
         }
+
+        failPendingTasks?.Invoke();
 
         try
         {

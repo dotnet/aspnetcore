@@ -4,12 +4,16 @@
 import '../JSInterop/Microsoft.JSInterop';
 import { scheduleScrollReset, ScrollResetSchedule } from '../Rendering/Renderer';
 import { EventDelegator } from '../Rendering/Events/EventDelegator';
-import { attachEnhancedNavigationListener, getInteractiveRouterRendererId, handleClickForNavigationInterception, hasInteractiveRouter, hasProgrammaticEnhancedNavigationHandler, isForSamePath, isSamePageWithHash, isWithinBaseUriSpace, performProgrammaticEnhancedNavigation, performScrollToElementOnTheSamePage, scrollToElement, setHasInteractiveRouter, toAbsoluteUri } from './NavigationUtils';
+import { attachEnhancedLocationChangingHandler, attachEnhancedNavigationListener, disableInteractiveRouter, getInteractiveRouterRendererId, handleClickForNavigationInterception, hasInteractiveRouter, hasProgrammaticEnhancedNavigationHandler, isForSamePath, isSamePageWithHash, isWithinBaseUriSpace, performProgrammaticEnhancedNavigation, performScrollToElementOnTheSamePage, scrollToElement, setHasInteractiveRouter, toAbsoluteUri } from './NavigationUtils';
 import { WebRendererId } from '../Rendering/WebRendererId';
-import { isRendererAttached } from '../Rendering/WebRendererInteropMethods';
+import { isRendererAttached, registerRendererAttachedListener } from '../Rendering/WebRendererInteropMethods';
 import { IBlazor } from '../GlobalExports';
+import { documentStateStore } from './DocumentStateStore';
+import { capabilityLeaseRegistry } from './CapabilityLeaseRegistry';
 
 let hasRegisteredNavigationEventListeners = false;
+let hasRegisteredRendererAttachedListener = false;
+let hasRegisteredLeaseRevocationListener = false;
 let currentHistoryIndex = 0;
 let currentLocationChangingCallId = 0;
 
@@ -29,12 +33,22 @@ let resolveCurrentNavigation: ((shouldContinueNavigation: boolean) => void) | nu
 export const internalFunctions = {
   listenForNavigationEvents,
   enableNavigationInterception: setHasInteractiveRouter,
+  disableNavigationInterception: disableInteractiveRouter,
   setHasLocationChangingListeners,
   endLocationChanging,
   navigateTo: navigateToFromDotNet,
   refresh,
   getBaseURI: (): string => document.baseURI,
-  getLocationHref: (): string => location.href,
+  getLocationHref: (): string => {
+    const href = location.href;
+    // If WebAssembly is reading its initial location before attaching its renderer,
+    // record the snapshot so any navigation between now and renderer attachment is reconciled.
+    if (navigationCallbacks.has(WebRendererId.WebAssembly) && !isRendererAttached(WebRendererId.WebAssembly)) {
+      documentStateStore.recordRendererInitialLocation(WebRendererId.WebAssembly, href, undefined);
+    }
+    return href;
+  },
+  getHistoryEntryState: (): string | undefined => history.state?.userState,
   scrollToElement,
 };
 
@@ -50,6 +64,26 @@ function listenForNavigationEvents(
     locationChanging: locationChangingCallback,
   });
 
+  if (!isRendererAttached(rendererId)) {
+    documentStateStore.recordRendererInitialLocation(rendererId, location.href, undefined);
+  }
+
+  if (!hasRegisteredRendererAttachedListener) {
+    hasRegisteredRendererAttachedListener = true;
+    // Prepend so location reconciliation runs before WebRootComponentManager queues root component updates.
+    registerRendererAttachedListener(reconcileRendererLocationOnAttach, /* prepend */ true);
+  }
+
+  if (!hasRegisteredLeaseRevocationListener) {
+    hasRegisteredLeaseRevocationListener = true;
+    capabilityLeaseRegistry.onRendererLeasesRevoked(revokedRendererId => {
+      const cb = navigationCallbacks.get(revokedRendererId);
+      if (cb) {
+        cb.hasLocationChangingEventListeners = false;
+      }
+    });
+  }
+
   if (hasRegisteredNavigationEventListeners) {
     return;
   }
@@ -61,6 +95,34 @@ function listenForNavigationEvents(
   attachEnhancedNavigationListener((internalDestinationHref, interceptedLink) => {
     notifyLocationChanged(interceptedLink, internalDestinationHref);
   });
+
+  attachEnhancedLocationChangingHandler(async (destinationHref, interceptedLink) => {
+    for (const [rendererId, callbacks] of navigationCallbacks) {
+      if (isRendererAttached(rendererId) && callbacks.hasLocationChangingEventListeners) {
+        const shouldContinue = await notifyLocationChanging(destinationHref, history.state?.userState, interceptedLink, callbacks);
+        if (!shouldContinue) {
+          return false;
+        }
+      }
+    }
+    return true;
+  });
+}
+
+function reconcileRendererLocationOnAttach(rendererId: WebRendererId): void {
+  const callbacks = navigationCallbacks.get(rendererId);
+  if (!callbacks) {
+    return;
+  }
+
+  const pendingSync = documentStateStore.consumePendingLocationSync(
+    rendererId,
+    location.href,
+    history.state?.userState,
+  );
+  if (pendingSync) {
+    callbacks.locationChanged(pendingSync.uri, pendingSync.state, pendingSync.interceptedLink);
+  }
 }
 
 function setHasLocationChangingListeners(rendererId: WebRendererId, hasListeners: boolean) {
@@ -69,6 +131,7 @@ function setHasLocationChangingListeners(rendererId: WebRendererId, hasListeners
     throw new Error(`Renderer with ID '${rendererId}' is not listening for navigation events`);
   }
   callbacks.hasLocationChangingEventListeners = hasListeners;
+  capabilityLeaseRegistry.setLocationChangingLease(rendererId, hasListeners);
 }
 
 
@@ -261,10 +324,16 @@ async function onBrowserInitiatedPopState(state: PopStateEvent) {
 
 async function notifyLocationChanged(interceptedLink: boolean, internalDestinationHref?: string) {
   const uri = internalDestinationHref ?? location.href;
+  const state = history.state?.userState;
+
+  documentStateStore.recordUnattachedNavigation(undefined, interceptedLink);
 
   await Promise.all(Array.from(navigationCallbacks, async ([rendererId, callbacks]) => {
     if (isRendererAttached(rendererId)) {
-      await callbacks.locationChanged(uri, history.state?.userState, interceptedLink);
+      documentStateStore.recordLocationDelivered(rendererId, uri, state, interceptedLink);
+      await callbacks.locationChanged(uri, state, interceptedLink);
+    } else {
+      documentStateStore.recordUnattachedNavigation(rendererId, interceptedLink);
     }
   }));
 }

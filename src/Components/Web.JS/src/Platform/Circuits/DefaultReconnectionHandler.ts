@@ -51,6 +51,8 @@ export class DefaultReconnectionHandler implements ReconnectionHandler {
     if (this._currentReconnectionProcess) {
       this._currentReconnectionProcess.dispose();
       this._currentReconnectionProcess = null;
+    } else {
+      this._reconnectionDisplay?.hide();
     }
   }
 }

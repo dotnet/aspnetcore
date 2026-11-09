@@ -1,0 +1,13 @@
+@page "/auto-pause-test"
+@rendermode InteractiveServer
+
+<ConfigureBrowser Options="@_browserOptions" />
+
+<h1>Auto Pause Test</h1>
+<p id="autopause-status">@(RendererInfo.IsInteractive ? "interactive" : "static")</p>
+<a id="to-static-ssr" href="/static-ssr-target">Go to Static SSR</a>
+
+@code {
+    private static readonly BrowserOptions _browserOptions = new BrowserOptions()
+        .AddAutoPause(o => o.HiddenDelay = TimeSpan.FromSeconds(1.5));
+}

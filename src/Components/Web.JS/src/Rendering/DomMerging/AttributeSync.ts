@@ -71,6 +71,8 @@ function applyAttribute(element: Element, attr: Attr) {
 function removeAttribute(element: Element, attr: Attr) {
   if (attr.namespaceURI) {
     element.removeAttributeNS(attr.namespaceURI, attr.localName);
+  } else if (typeof HTMLDialogElement !== 'undefined' && element instanceof HTMLDialogElement && attr.name === 'open' && element.open) {
+    element.close();
   } else {
     element.removeAttribute(attr.name);
   }

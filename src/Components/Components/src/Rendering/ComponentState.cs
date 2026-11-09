@@ -334,6 +334,11 @@ public class ComponentState : IAsyncDisposable
     public virtual ValueTask DisposeAsync()
     {
         _componentWasDisposed = true;
+        if (_hasAnyCascadingParameterSubscriptions)
+        {
+            RemoveCascadingParameterSubscriptions();
+            _hasAnyCascadingParameterSubscriptions = false;
+        }
         DisposeBuffers();
 
         // Components shouldn't need to implement IAsyncDisposable and IDisposable simultaneously,

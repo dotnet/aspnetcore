@@ -20,6 +20,7 @@ internal partial class EndpointHtmlRenderer
 {
     private const string _streamingRenderingFramingHeaderName = "ssr-framing";
     private TextWriter? _streamingUpdatesWriter;
+    private Task _currentStreamingFlushTask = Task.CompletedTask;
     private HashSet<int>? _visitedComponentIdsInCurrentStreamingBatch;
     private string? _ssrFramingCommentMarkup;
     private bool _isHandlingErrors;
@@ -72,11 +73,12 @@ internal partial class EndpointHtmlRenderer
             EmitInitializersIfNecessary(httpContext, writer);
 
             // At this point we yield the sync context. SSR batches may then be emitted at any time.
-            await writer.FlushAsync();
+            await FlushStreamingWriterAsync(writer);
             await untilTaskCompleted;
         }
         catch (NavigationException navigationException)
         {
+            await FlushPendingStreamingOutputAsync();
             HandleNavigationAfterResponseStarted(writer, httpContext, navigationException.Location);
         }
         catch (Exception ex)
@@ -88,15 +90,37 @@ internal partial class EndpointHtmlRenderer
             // Theoretically it might be possible to let the error middleware run, capture the output,
             // then emit it in a special format so the JS code can display the error page. However
             // for now we're not going to support that and will simply emit a message.
+            await FlushPendingStreamingOutputAsync();
             HandleExceptionAfterResponseStarted(_httpContext, writer, ex);
-            await writer.FlushAsync(); // Important otherwise the client won't receive the error message, as we're about to fail the pipeline
+            await FlushStreamingWriterAsync(writer); // Important otherwise the client won't receive the error message, as we're about to fail the pipeline
             await _httpContext.Response.CompleteAsync();
             throw;
         }
     }
 
+    internal Task FlushStreamingWriterAsync(TextWriter writer)
+    {
+        var previousFlush = _currentStreamingFlushTask;
+        var nextFlush = FlushAfterPreviousAsync(previousFlush, writer);
+        _currentStreamingFlushTask = nextFlush;
+        return nextFlush;
+
+        static async Task FlushAfterPreviousAsync(Task previous, TextWriter writerToFlush)
+        {
+            await previous;
+            await writerToFlush.FlushAsync();
+        }
+    }
+
+    internal Task FlushPendingStreamingOutputAsync() => _currentStreamingFlushTask;
+
     internal void EmitInitializersIfNecessary(HttpContext httpContext, TextWriter writer)
     {
+        if (BrowserOptions.HasBrowserOptions(httpContext))
+        {
+            EmitBrowserConfigurationOnce(writer);
+        }
+
         if (_options.JavaScriptInitializers != null &&
             !IsProgressivelyEnhancedNavigation(httpContext.Request))
         {

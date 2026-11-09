@@ -8,5 +8,6 @@ export interface RootComponentManager<InitialComponentsDescriptorType> {
   onAfterRenderBatch?(browserRendererId: number): void;
   onAfterUpdateRootComponents?(batchId: number): void;
   onComponentReload?(browserRendererId: number): void;
+  hasRemainingServerComponentsInDocument?(): boolean;
   resolveRootComponent(ssrComponentId: number): ComponentDescriptor;
 }

@@ -191,14 +191,19 @@ internal sealed class RendererSynchronizationContext : SynchronizationContext
     private async Task PostAsync<TState>(Task antecedent, Action<TState> callback, TState state)
     {
         await antecedent.ConfigureAwait(ConfigureAwaitOptions.SuppressThrowing | ConfigureAwaitOptions.ForceYielding);
+        var original = Current;
         try
         {
-            SetSynchronizationContext(this); // this will be undone automatically by the thread pool, so we don't need to here
+            SetSynchronizationContext(this);
             callback(state);
         }
         catch (Exception ex)
         {
             DispatchException(ex);
+        }
+        finally
+        {
+            SetSynchronizationContext(original);
         }
     }
 

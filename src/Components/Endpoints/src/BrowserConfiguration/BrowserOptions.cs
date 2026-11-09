@@ -55,4 +55,7 @@ public sealed class BrowserOptions
 
         return (BrowserOptions)result!;
     }
+
+    internal static bool HasBrowserOptions(HttpContext context)
+        => context.Items.ContainsKey(Key) || context.GetEndpoint()?.Metadata.GetMetadata<BrowserOptions>() is not null;
 }

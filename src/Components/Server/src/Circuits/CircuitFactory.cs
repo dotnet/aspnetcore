@@ -48,6 +48,9 @@ internal sealed partial class CircuitFactory : ICircuitFactory
         ResourceAssetCollection resourceCollection)
     {
         var scope = _scopeFactory.CreateAsyncScope();
+        var circuitAccessor = (DefaultCircuitAccessor)scope.ServiceProvider.GetRequiredService<ICircuitAccessor>();
+        circuitAccessor.HasCircuitContext = true;
+
         var jsRuntime = (RemoteJSRuntime)scope.ServiceProvider.GetRequiredService<IJSRuntime>();
         jsRuntime.Initialize(client);
 
@@ -119,7 +122,7 @@ internal sealed partial class CircuitFactory : ICircuitFactory
         Log.CreatedCircuit(_logger, circuitHost);
 
         // Initialize per - circuit data that services need
-        (circuitHost.Services.GetRequiredService<ICircuitAccessor>() as DefaultCircuitAccessor).Circuit = circuitHost.Circuit;
+        circuitAccessor.Circuit = circuitHost.Circuit;
         circuitHost.SetCircuitUser(user);
 
         return circuitHost;

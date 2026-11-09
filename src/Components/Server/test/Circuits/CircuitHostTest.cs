@@ -6,6 +6,7 @@ using System.Globalization;
 using System.Reflection;
 using System.Text.Json;
 using Microsoft.AspNetCore.Components.Endpoints;
+using Microsoft.AspNetCore.Components.Infrastructure;
 using Microsoft.AspNetCore.Components.Rendering;
 using Microsoft.AspNetCore.DataProtection;
 using Microsoft.AspNetCore.SignalR;
@@ -1327,6 +1328,185 @@ public class CircuitHostTest
         Assert.Equal(2, testRenderer.GetOrCreateWebRootComponentManager().GetRootComponents().Count());
     }
 
+    [Fact]
+    public async Task UpdateRootComponents_SerializesOverlappingBatchWhenCircuitHandlerIsAsync()
+    {
+        // Reproduces #59657: Batch 2 (Remove + Add) arrives while Batch 1 is awaiting OnCircuitOpenedAsync.
+        var handlerGate = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+        var handlerEntered = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+        var slowHandler = new Mock<CircuitHandler>();
+        SetupMockInboundActivityHandler(slowHandler);
+        slowHandler
+            .Setup(h => h.OnCircuitOpenedAsync(It.IsAny<Circuit>(), It.IsAny<CancellationToken>()))
+            .Returns(async () =>
+            {
+                handlerEntered.SetResult();
+                await handlerGate.Task;
+            });
+
+        var services = new ServiceCollection();
+        services.AddSingleton(slowHandler.Object);
+        var testRenderer = GetRemoteRenderer();
+        var circuitHost = TestCircuitHost.Create(
+            serviceScope: services.BuildServiceProvider().CreateAsyncScope(),
+            remoteRenderer: testRenderer);
+
+        var batch1 = new RootComponentOperationBatch
+        {
+            BatchId = 1,
+            Operations =
+            [
+                new RootComponentOperation
+                {
+                    Type = RootComponentOperationType.Add,
+                    SsrComponentId = 1,
+                    Marker = CreateMarker(typeof(DynamicallyAddedComponent), "1"),
+                    Descriptor = new(typeof(DynamicallyAddedComponent), CreateWebRootComponentParameters()),
+                }
+            ]
+        };
+
+        var batch2 = new RootComponentOperationBatch
+        {
+            BatchId = 2,
+            Operations =
+            [
+                new RootComponentOperation
+                {
+                    Type = RootComponentOperationType.Remove,
+                    SsrComponentId = 1,
+                },
+                new RootComponentOperation
+                {
+                    Type = RootComponentOperationType.Add,
+                    SsrComponentId = 2,
+                    Marker = CreateMarker(typeof(DynamicallyAddedComponent), "2"),
+                    Descriptor = new(typeof(DynamicallyAddedComponent), CreateWebRootComponentParameters()),
+                }
+            ]
+        };
+
+        var unhandledExceptions = new List<Exception>();
+        circuitHost.UnhandledException += (_, e) => unhandledExceptions.Add((Exception)e.ExceptionObject);
+
+        var task1 = circuitHost.UpdateRootComponents(batch1, null, false, CancellationToken.None);
+        await handlerEntered.Task;
+
+        var task2 = circuitHost.UpdateRootComponents(batch2, null, false, CancellationToken.None);
+        handlerGate.SetResult();
+
+        await Task.WhenAll(task1, task2);
+
+        Assert.Empty(unhandledExceptions);
+        var remainingRoots = testRenderer.GetOrCreateWebRootComponentManager().GetRootComponents().ToList();
+        Assert.Single(remainingRoots);
+        Assert.Equal(2, remainingRoots[0].id);
+    }
+
+    [Fact]
+    public async Task UpdateRootComponents_ClearsSupersededStoreWhenBatchArrivesDuringFirstBatchQuiescence()
+    {
+        // Reproduces #70390: Batch 1 has an unclaimed state key and awaits quiescence of a slow component;
+        // Batch 2 arrives with its own persisted state while Batch 1 is still awaiting quiescence.
+        var services = new ServiceCollection();
+        services.AddLogging();
+        services.AddScoped<ComponentStatePersistenceManager>();
+        var testRenderer = GetRemoteRenderer();
+        var circuitHost = TestCircuitHost.Create(
+            serviceScope: services.BuildServiceProvider().CreateAsyncScope(),
+            remoteRenderer: testRenderer);
+
+        var slowGate = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+        SlowAsyncComponent.PendingGate = slowGate.Task;
+
+        var store1 = new TestComponentApplicationStore(
+            new Dictionary<string, byte[]> { ["unclaimed-key"] = [1, 2, 3] });
+        store1.Continue();
+
+        var store2 = new TestComponentApplicationStore(
+            new Dictionary<string, byte[]> { ["page2-key"] = [4, 5, 6] });
+        store2.Continue();
+
+        var batch1 = new RootComponentOperationBatch
+        {
+            BatchId = 1,
+            Operations =
+            [
+                new RootComponentOperation
+                {
+                    Type = RootComponentOperationType.Add,
+                    SsrComponentId = 1,
+                    Marker = CreateMarker(typeof(SlowAsyncComponent), "1"),
+                    Descriptor = new(typeof(SlowAsyncComponent), CreateWebRootComponentParameters()),
+                }
+            ]
+        };
+
+        var batch2 = new RootComponentOperationBatch
+        {
+            BatchId = 2,
+            Operations =
+            [
+                new RootComponentOperation
+                {
+                    Type = RootComponentOperationType.Remove,
+                    SsrComponentId = 1,
+                },
+                new RootComponentOperation
+                {
+                    Type = RootComponentOperationType.Add,
+                    SsrComponentId = 2,
+                    Marker = CreateMarker(typeof(DynamicallyAddedComponent), "2", new Dictionary<string, object>
+                    {
+                        [nameof(DynamicallyAddedComponent.Message)] = "Restored Page 2"
+                    }),
+                    Descriptor = new(typeof(DynamicallyAddedComponent), CreateWebRootComponentParameters(new Dictionary<string, object>
+                    {
+                        [nameof(DynamicallyAddedComponent.Message)] = "Restored Page 2"
+                    })),
+                }
+            ]
+        };
+
+        var task1 = circuitHost.UpdateRootComponents(batch1, store1, false, CancellationToken.None);
+        var task2 = circuitHost.UpdateRootComponents(batch2, store2, false, CancellationToken.None);
+
+        await task2;
+        slowGate.SetResult();
+        await task1;
+
+        var remainingRoots = testRenderer.GetOrCreateWebRootComponentManager().GetRootComponents().ToList();
+        Assert.Single(remainingRoots);
+        Assert.Equal(2, remainingRoots[0].id);
+        var renderedComponent = Assert.IsType<DynamicallyAddedComponent>(testRenderer.GetTestComponentState(1).Component);
+        Assert.Equal("Restored Page 2", renderedComponent.Message);
+    }
+
+    [Fact]
+    public void AddServerSideBlazor_PreservesNonInteractiveNavigationManagerOutsideCircuitAndResolvesRemoteInsideCircuit()
+    {
+        var services = new ServiceCollection();
+        services.AddLogging();
+        services.AddScoped<NavigationManager, TestNonInteractiveNavigationManager>();
+        services.AddServerSideBlazor();
+
+        using var provider = services.BuildServiceProvider();
+
+        using (var ssrScope = provider.CreateScope())
+        {
+            var nav = ssrScope.ServiceProvider.GetRequiredService<NavigationManager>();
+            Assert.IsType<TestNonInteractiveNavigationManager>(nav);
+        }
+
+        using (var circuitScope = provider.CreateScope())
+        {
+            var accessor = (DefaultCircuitAccessor)circuitScope.ServiceProvider.GetRequiredService<ICircuitAccessor>();
+            accessor.HasCircuitContext = true;
+            var nav = circuitScope.ServiceProvider.GetRequiredService<NavigationManager>();
+            Assert.IsType<RemoteNavigationManager>(nav);
+        }
+    }
+
     private async Task AddComponentAsync<TComponent>(CircuitHost circuitHost, int ssrComponentId, Dictionary<string, object> parameters = null, string componentKey = "")
         where TComponent : IComponent
     {
@@ -1703,5 +1883,27 @@ public class CircuitHostTest
 
         public Task PersistStateAsync(IReadOnlyDictionary<string, byte[]> state) => throw new NotImplementedException();
         internal void Continue() => _tcs.SetResult();
+    }
+
+    private class SlowAsyncComponent : IComponent
+    {
+        public static Task PendingGate { get; set; } = Task.CompletedTask;
+        private RenderHandle _renderHandle;
+
+        public void Attach(RenderHandle renderHandle)
+        {
+            _renderHandle = renderHandle;
+        }
+
+        public async Task SetParametersAsync(ParameterView parameters)
+        {
+            _renderHandle.Render(builder => builder.AddContent(0, "loading"));
+            await PendingGate;
+            _renderHandle.Render(builder => builder.AddContent(0, "done"));
+        }
+    }
+
+    private sealed class TestNonInteractiveNavigationManager : NavigationManager
+    {
     }
 }

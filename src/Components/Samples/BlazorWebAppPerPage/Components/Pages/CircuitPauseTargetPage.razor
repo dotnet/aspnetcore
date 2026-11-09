@@ -1,0 +1,11 @@
+@page "/circuit-pause-target"
+@rendermode InteractiveServer
+
+<h1>Circuit Pause Target</h1>
+<p id="circuit-target-status">@(RendererInfo.IsInteractive ? "active-circuit" : "no-active-circuit")</p>
+<button id="circuit-target-inc" @onclick="() => count++">Increment</button>
+<p id="circuit-target-count">@count</p>
+
+@code {
+    private int count;
+}

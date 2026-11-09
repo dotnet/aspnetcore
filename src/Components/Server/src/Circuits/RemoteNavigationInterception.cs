@@ -37,4 +37,24 @@ internal sealed class RemoteNavigationInterception : INavigationInterception
 
         await _jsRuntime.InvokeAsync<object>(Interop.EnableNavigationInterception, (int)WebRendererId.Server);
     }
+
+    public async Task DisableNavigationInterceptionAsync()
+    {
+        if (!HasAttachedJSRuntime)
+        {
+            return;
+        }
+
+        try
+        {
+            await _jsRuntime.InvokeVoidAsync(Interop.DisableNavigationInterception, (int)WebRendererId.Server);
+        }
+        catch (JSDisconnectedException)
+        {
+            // If the browser is gone, capabilityLeaseRegistry on the client or page unload cleans up.
+        }
+        catch (TaskCanceledException)
+        {
+        }
+    }
 }

@@ -16,11 +16,12 @@ import { Blazor } from './GlobalExports';
 import { WebStartOptions } from './Platform/WebStartOptions';
 import { attachStreamingRenderingListener } from './Rendering/StreamingRendering';
 import { resetScrollIfNeeded, ScrollResetSchedule } from './Rendering/Renderer';
-import { NavigationEnhancementCallbacks, attachProgressivelyEnhancedNavigationListener } from './Services/NavigationEnhancement';
+import { NavigationEnhancementCallbacks, attachProgressivelyEnhancedNavigationListener, detachProgressivelyEnhancedNavigationListener } from './Services/NavigationEnhancement';
 import { WebRootComponentManager } from './Services/WebRootComponentManager';
 import { hasProgrammaticEnhancedNavigationHandler, performProgrammaticEnhancedNavigation } from './Services/NavigationUtils';
 import { attachComponentDescriptorHandler, registerAllComponentDescriptors } from './Rendering/DomMerging/DomSync';
 import { discoverBrowserConfiguration } from './Services/ComponentDescriptorDiscovery';
+import { documentStateStore } from './Services/DocumentStateStore';
 import { JSEventRegistry } from './Services/JSEventRegistry';
 import { fetchAndInvokeInitializers } from './JSInitializers/JSInitializers.Web';
 import { ConsoleLogger } from './Platform/Logging/Loggers';
@@ -57,6 +58,7 @@ function boot(options?: Partial<WebStartOptions>) : Promise<void> {
 
   const navigationEnhancementCallbacks: NavigationEnhancementCallbacks = {
     enhancedNavigationStarted: () => {
+      documentStateStore.advanceEpoch();
       jsEventRegistry.dispatchEvent('enhancednavigationstart', {});
     },
     beforeDomUpdate: (source) => {
@@ -103,6 +105,7 @@ function boot(options?: Partial<WebStartOptions>) : Promise<void> {
 
 function onInitialDomContentLoaded(options: Partial<WebStartOptions>) {
   updateOptionsFromBrowserConfiguration(options);
+  documentStateStore.capturePersistedStateFromDocument(document);
 
   // Retrieve and start invoking the initializers.
   // Blazor server options get defaults that are configured before we invoke the initializers
@@ -134,9 +137,13 @@ function updateOptionsFromBrowserConfiguration(options: Partial<WebStartOptions>
       options.ssr = options.ssr || {};
       if (browserConfig.ssr.disableDomPreservation !== undefined) {
         options.ssr.disableDomPreservation = browserConfig.ssr.disableDomPreservation;
+        if (browserConfig.ssr.disableDomPreservation) {
+          detachProgressivelyEnhancedNavigationListener();
+        }
       }
       if (browserConfig.ssr.circuitInactivityTimeoutMs !== undefined) {
         options.ssr.circuitInactivityTimeoutMs = browserConfig.ssr.circuitInactivityTimeoutMs;
+        rootComponentManager?.setCircuitInactivityTimeoutMs(browserConfig.ssr.circuitInactivityTimeoutMs);
       }
     }
 

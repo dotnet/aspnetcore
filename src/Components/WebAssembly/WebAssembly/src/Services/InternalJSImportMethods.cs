@@ -39,6 +39,9 @@ internal partial class InternalJSImportMethods : IInternalJSImportMethods
     public void NavigationManager_EnableNavigationInterception(int rendererId)
         => NavigationManager_EnableNavigationInterceptionCore(rendererId);
 
+    public void NavigationManager_DisableNavigationInterception(int rendererId)
+        => NavigationManager_DisableNavigationInterceptionCore(rendererId);
+
     public void NavigationManager_ScrollToElement(string id)
         => NavigationManager_ScrollToElementCore(id);
 
@@ -86,6 +89,9 @@ internal partial class InternalJSImportMethods : IInternalJSImportMethods
 
     [JSImport(BrowserNavigationManagerInterop.EnableNavigationInterception, "blazor-internal")]
     private static partial void NavigationManager_EnableNavigationInterceptionCore(int rendererId);
+
+    [JSImport(BrowserNavigationManagerInterop.DisableNavigationInterception, "blazor-internal")]
+    private static partial void NavigationManager_DisableNavigationInterceptionCore(int rendererId);
 
     [JSImport(BrowserNavigationManagerInterop.ScrollToElement, "blazor-internal")]
     private static partial void NavigationManager_ScrollToElementCore(string id);

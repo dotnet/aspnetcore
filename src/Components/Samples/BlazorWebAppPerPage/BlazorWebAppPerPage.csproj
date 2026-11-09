@@ -18,6 +18,7 @@
     <ProjectReference Include="$(RepoRoot)src\Components\Authorization\src\Microsoft.AspNetCore.Components.Authorization.csproj" />
     <ProjectReference Include="$(RepoRoot)src\Components\Endpoints\src\Microsoft.AspNetCore.Components.Endpoints.csproj" />
     <ProjectReference Include="$(RepoRoot)src\Components\Server\src\Microsoft.AspNetCore.Components.Server.csproj" />
+    <ProjectReference Include="$(RepoRoot)src\Components\Server.AutoPause\src\Microsoft.AspNetCore.Components.Server.AutoPause.csproj" />
     <ProjectReference Include="$(RepoRoot)src\Components\Web\src\Microsoft.AspNetCore.Components.Web.csproj" />
     <ProjectReference Include="$(RepoRoot)src\Components\WebAssembly\Server\src\Microsoft.AspNetCore.Components.WebAssembly.Server.csproj" />
     <ProjectReference Include="$(RepoRoot)src\DataProtection\Abstractions\src\Microsoft.AspNetCore.DataProtection.Abstractions.csproj" />

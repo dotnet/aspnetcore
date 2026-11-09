@@ -7,10 +7,12 @@ import { LogLevel } from './Platform/Logging/Logger';
 import { CircuitManager } from './Platform/Circuits/CircuitManager';
 import { resolveOptions, CircuitStartOptions } from './Platform/Circuits/CircuitStartOptions';
 import { DefaultReconnectionHandler } from './Platform/Circuits/DefaultReconnectionHandler';
-import { discoverServerPersistedState, ServerComponentDescriptor } from './Services/ComponentDescriptorDiscovery';
+import { ServerComponentDescriptor } from './Services/ComponentDescriptorDiscovery';
+import { documentStateStore } from './Services/DocumentStateStore';
 import { JSEventRegistry } from './Services/JSEventRegistry';
 import { fetchAndInvokeInitializers } from './JSInitializers/JSInitializers.Server';
 import { RootComponentManager } from './Services/RootComponentManager';
+import { isPageLoading } from './Services/NavigationEnhancement';
 import { WebRendererId } from './Rendering/WebRendererId';
 import { addDispatchEventMiddleware } from './Rendering/WebRendererInteropMethods';
 
@@ -44,7 +46,8 @@ async function startServerCore(components: RootComponentManager<ServerComponentD
   options = resolveOptions(await circuitOptionsPromise);
   const jsInitializer = await fetchAndInvokeInitializers(options);
 
-  appState = discoverServerPersistedState(document) || '';
+  documentStateStore.capturePersistedStateFromDocument(document);
+  appState = components.initialComponents.length > 0 ? documentStateStore.consumeServerPersistedState(document) : '';
   logger = new ConsoleLogger(options.logLevel);
   circuit = new CircuitManager(components, appState, options, logger, jsEventRegistry);
 
@@ -56,8 +59,8 @@ async function startServerCore(components: RootComponentManager<ServerComponentD
   logger.log(LogLevel.Information, 'Starting up Blazor server-side application.');
 
   Blazor.reconnect = async () => {
-    if (circuit.didRenderingFail()) {
-      // We can't reconnect after a failure, so exit early.
+    if (!circuit || circuit.didRenderingFail() || circuit.isDisposedOrDisposing()) {
+      // We can't reconnect after a failure or disposal, so exit early.
       return false;
     }
 
@@ -70,7 +73,19 @@ async function startServerCore(components: RootComponentManager<ServerComponentD
   };
 
   Blazor.pauseCircuit = async (signal?: AbortSignal) => {
-    if (circuit.didRenderingFail()) {
+    if (!circuit || circuit.didRenderingFail() || circuit.isDisposedOrDisposing()) {
+      return false;
+    }
+
+    if (isPageLoading()) {
+      // Do not initiate a circuit pause while an enhanced navigation is in flight,
+      // as the incoming page may either tear down the circuit or replace its root components.
+      return false;
+    }
+
+    if (components.hasRemainingServerComponentsInDocument && !components.hasRemainingServerComponentsInDocument()) {
+      // Do not pause a circuit that is being abandoned because no interactive server components
+      // remain in the current document (e.g., after navigating to a static SSR page, #69869).
       return false;
     }
 
@@ -78,8 +93,8 @@ async function startServerCore(components: RootComponentManager<ServerComponentD
   };
 
   Blazor.resumeCircuit = async () => {
-    if (circuit.didRenderingFail()) {
-      // We can't resume after a failure, so exit early.
+    if (!circuit || circuit.didRenderingFail() || circuit.isDisposedOrDisposing()) {
+      // We can't resume after a failure or disposal, so exit early.
       return false;
     }
 
@@ -150,8 +165,10 @@ export async function startCircuit(): Promise<boolean> {
 
   if (circuit && circuit.isDisposedOrDisposing()) {
     // If the current circuit is no longer available, create a new one.
-    appState = discoverServerPersistedState(document) || '';
-    circuit = new CircuitManager(circuit.getRootComponentManager(), appState, options, logger, circuit.getEventRegistry());
+    documentStateStore.capturePersistedStateFromDocument(document);
+    const rootComponentManager = circuit.getRootComponentManager();
+    appState = rootComponentManager.initialComponents.length > 0 ? documentStateStore.consumeServerPersistedState(document) : '';
+    circuit = new CircuitManager(rootComponentManager, appState, options, logger, circuit.getEventRegistry());
   }
 
   // Start the circuit. If the circuit has already started, this will return the existing
@@ -183,10 +200,10 @@ export function isCircuitAvailable(): boolean {
 }
 
 export function updateServerRootComponents(operations: string, serverState: string): Promise<void> | undefined {
-  if (circuit && !circuit.isDisposedOrDisposing()) {
+  if (circuit && !circuit.isDisposedOrDisposing() && !circuitStarting) {
     return circuit.updateRootComponents(operations, serverState);
   } else {
-    scheduleWhenReady(operations, serverState);
+    return scheduleWhenReady(operations, serverState);
   }
 }
 async function scheduleWhenReady(operations: string, serverState: string) {

@@ -440,6 +440,28 @@ public class JSRuntimeTest
         Assert.Equal("The current JavaScript runtime does not support reading data streams.", exception.Message);
     }
 
+    [Fact]
+    public async Task CapturePendingTasks_FailsCapturedCallsAndLeavesSubsequentCallsPending()
+    {
+        var runtime = new TestJSRuntime();
+        var pendingTask1 = runtime.InvokeAsync<string>("firstCall", CancellationToken.None, null).AsTask();
+        var pendingTask2 = runtime.InvokeAsync<int>("secondCall", CancellationToken.None, null).AsTask();
+
+        var failCaptured = runtime.CapturePending(new JSDisconnectedException("Disconnected"));
+
+        // A call started after capture belongs to the new generation and must remain pending.
+        var subsequentTask = runtime.InvokeAsync<string>("thirdCall", CancellationToken.None, null).AsTask();
+
+        Assert.False(pendingTask1.IsCompleted);
+        Assert.False(pendingTask2.IsCompleted);
+
+        failCaptured();
+
+        await Assert.ThrowsAsync<JSDisconnectedException>(() => pendingTask1);
+        await Assert.ThrowsAsync<JSDisconnectedException>(() => pendingTask2);
+        Assert.False(subsequentTask.IsCompleted);
+    }
+
     private class JSError
     {
         public DotNetInvocationInfo InvocationInfo { get; set; }
@@ -506,5 +528,7 @@ public class JSRuntimeTest
             // No-op
             return Task.CompletedTask;
         }
+
+        public Action CapturePending(Exception ex) => CapturePendingTasks(ex);
     }
 }

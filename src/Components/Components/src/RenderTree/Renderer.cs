@@ -1312,6 +1312,8 @@ public abstract partial class Renderer : IDisposable, IAsyncDisposable
 
         _componentStateById.Clear(); // So we know they were all disposed
         _componentStateByComponent.Clear();
+        _eventBindings.Clear();
+        _eventHandlerIdReplacements.Clear();
         _batchBuilder.Dispose();
 
         NotifyExceptions(exceptions);

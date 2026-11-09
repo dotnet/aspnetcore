@@ -7,6 +7,7 @@ import { LogicalElement, PermutationListEntry, toLogicalElement, insertLogicalCh
 import { applyCaptureIdToElement } from './ElementReferenceCapture';
 import { attachToEventDelegator as attachNavigationManagerToEventDelegator } from '../Services/NavigationManager';
 import { applyAnyDeferredValue, tryApplySpecialProperty } from './DomSpecialPropertyUtil';
+import { preserveTitleDuringHydration } from '../PageTitle';
 const sharedTemplateElemForParsing = document.createElement('template');
 const sharedSvgElemForParsing = document.createElementNS('http://www.w3.org/2000/svg', 'g');
 const sharedMathMLElemForParsing = document.createElementNS('http://www.w3.org/1998/Math/MathML', 'mrow');
@@ -63,6 +64,8 @@ export class BrowserRenderer {
     }
 
     // On the first render for each root component, clear any existing content (e.g., prerendered)
+    const isHeadRoot = getClosestDomElement(element) === document.head;
+    const titleBeforeClear = isHeadRoot ? (document.head?.querySelector('title')?.textContent ?? null) : null;
     if (elementsToClearOnRootComponentRender.delete(element)) {
       this.detachEventHandlersFromElement(element);
       emptyLogicalElement(element);
@@ -78,6 +81,10 @@ export class BrowserRenderer {
     const activeElementBefore = ownerDocument && ownerDocument.activeElement;
 
     this.applyEdits(batch, componentId, element, 0, edits, referenceFrames);
+
+    if (isHeadRoot && titleBeforeClear && document.head && document.head.getElementsByTagName('title').length === 0) {
+      preserveTitleDuringHydration(titleBeforeClear);
+    }
 
     // Try to restore focus in case it was lost due to an element move
     if ((activeElementBefore instanceof HTMLElement) && ownerDocument && ownerDocument.activeElement !== activeElementBefore) {

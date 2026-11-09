@@ -226,7 +226,7 @@ internal partial class EndpointHtmlRenderer : StaticHtmlRenderer, IComponentPrer
             // as we yield the sync context. The only alternative would be to clone the
             // batch deeply, or serialize it synchronously (e.g., via RenderBatchWriter).
             SendBatchAsStreamingUpdate(renderBatch, writer);
-            return FlushThenComplete(writer, base.UpdateDisplayAsync(renderBatch));
+            return FlushThenComplete(FlushStreamingWriterAsync(writer), base.UpdateDisplayAsync(renderBatch));
         }
         else
         {
@@ -235,9 +235,9 @@ internal partial class EndpointHtmlRenderer : StaticHtmlRenderer, IComponentPrer
 
         // Workaround for methods with "in" parameters not being allowed to be async
         // We resolve the "result" first and then combine it with the FlushAsync task here
-        static async Task FlushThenComplete(TextWriter writerToFlush, Task completion)
+        static async Task FlushThenComplete(Task flushTask, Task completion)
         {
-            await writerToFlush.FlushAsync();
+            await flushTask;
             await completion;
         }
     }

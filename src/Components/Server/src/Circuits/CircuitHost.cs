@@ -33,9 +33,13 @@ internal partial class CircuitHost : IAsyncDisposable
     private bool _isFirstUpdate = true;
     private bool _onConnectionUpFired;
     private bool _onConnectionDownFired;
+    private bool _circuitMetricsOpened;
+    private bool _circuitMetricsConnected;
     private bool _disposed;
     private long _startTime;
     private ResumedPersistedCircuitState _persistedCircuitState;
+    private Task _lastRootComponentSetupTask = Task.CompletedTask;
+    private IClearableStore _activePersistenceStore;
 
     // This event is fired when there's an unrecoverable exception coming from the circuit, and
     // it need so be torn down. The registry listens to this even so that the circuit can
@@ -253,7 +257,11 @@ internal partial class CircuitHost : IAsyncDisposable
     private async Task OnCircuitOpenedAsync(CancellationToken cancellationToken)
     {
         Log.CircuitOpened(_logger, CircuitId);
-        _circuitMetrics?.OnCircuitOpened();
+        if (!_circuitMetricsOpened)
+        {
+            _circuitMetricsOpened = true;
+            _circuitMetrics?.OnCircuitOpened();
+        }
 
         Renderer.Dispatcher.AssertAccess();
 
@@ -285,7 +293,11 @@ internal partial class CircuitHost : IAsyncDisposable
         _onConnectionUpFired = true;
         _onConnectionDownFired = false;
         Log.ConnectionUp(_logger, CircuitId, Client.ConnectionId);
-        _circuitMetrics?.OnConnectionUp();
+        if (!_circuitMetricsConnected)
+        {
+            _circuitMetricsConnected = true;
+            _circuitMetrics?.OnConnectionUp();
+        }
 
         Renderer.Dispatcher.AssertAccess();
 
@@ -321,7 +333,11 @@ internal partial class CircuitHost : IAsyncDisposable
 
         _onConnectionDownFired = true;
         Log.ConnectionDown(_logger, CircuitId, Client.ConnectionId);
-        _circuitMetrics?.OnConnectionDown();
+        if (_circuitMetricsConnected)
+        {
+            _circuitMetricsConnected = false;
+            _circuitMetrics?.OnConnectionDown();
+        }
 
         Renderer.Dispatcher.AssertAccess();
 
@@ -351,7 +367,11 @@ internal partial class CircuitHost : IAsyncDisposable
     private async Task OnCircuitDownAsync(CancellationToken cancellationToken)
     {
         Log.CircuitClosed(_logger, CircuitId);
-        _circuitMetrics?.OnCircuitDown(_startTime, Stopwatch.GetTimestamp());
+        if (_circuitMetricsOpened)
+        {
+            _circuitMetricsOpened = false;
+            _circuitMetrics?.OnCircuitDown(_startTime, Stopwatch.GetTimestamp());
+        }
 
         List<Exception> exceptions = null;
 
@@ -771,6 +791,15 @@ internal partial class CircuitHost : IAsyncDisposable
 
         return Renderer.Dispatcher.InvokeAsync(async () =>
         {
+            var previousSetupTask = _lastRootComponentSetupTask;
+            var currentSetupTcs = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+            _lastRootComponentSetupTask = currentSetupTcs.Task;
+
+            // Ensure any preceding UpdateRootComponents batch has finished its setup,
+            // CircuitHandler initialization, and synchronous component registration before
+            // this batch mutates root components or restores updated persistent state.
+            await previousSetupTask;
+
             var shouldClearStore = false;
             var shouldWaitForQuiescence = false;
             var operations = operationBatch.Operations;
@@ -790,6 +819,15 @@ internal partial class CircuitHost : IAsyncDisposable
                 if (store != null)
                 {
                     shouldClearStore = true;
+                    // If a previous batch is still awaiting async component quiescence and left
+                    // unclaimed state keys in its store, clear that superseded store before
+                    // restoring the new batch's state.
+                    if (_activePersistenceStore != null && !ReferenceEquals(_activePersistenceStore, store))
+                    {
+                        _activePersistenceStore.Clear();
+                    }
+                    _activePersistenceStore = store;
+
                     // We only do this if we have no root components. Otherwise, the state would have been
                     // provided during the start up process
                     var persistenceManager = _scope.ServiceProvider.GetRequiredService<ComponentStatePersistenceManager>();
@@ -840,6 +878,11 @@ internal partial class CircuitHost : IAsyncDisposable
 
                 var operationsTask = PerformRootComponentOperations(operations, shouldWaitForQuiescence, postRemovalTask);
                 taskCompletionSource?.SetResult();
+                await postRemovalTask;
+
+                // Release the setup barrier once all components in this batch have been registered
+                // and their synchronous state restoration pass has completed.
+                currentSetupTcs.TrySetResult();
 
                 await operationsTask;
 
@@ -856,12 +899,17 @@ internal partial class CircuitHost : IAsyncDisposable
             }
             finally
             {
+                currentSetupTcs.TrySetResult();
                 if (shouldClearStore)
                 {
                     // At this point all components have successfully produced an initial render and we can clear the contents of the component
                     // application state store. This ensures the memory that was not used during the initial render of these components gets
                     // reclaimed since no-one else is holding on to it any longer.
                     store.Clear();
+                    if (ReferenceEquals(_activePersistenceStore, store))
+                    {
+                        _activePersistenceStore = null;
+                    }
                 }
             }
         });
@@ -876,6 +924,14 @@ internal partial class CircuitHost : IAsyncDisposable
         await taskCompletionSource.Task;
         await manager.RestoreStateAsync(store, context);
     }
+
+    private void ObserveRootComponentOperationFault(Task operationTask)
+        => operationTask.ContinueWith(
+            static (task, state) => ((CircuitHost)state!).ReportAndInvoke_UnhandledException(state!, task.Exception!.InnerException ?? task.Exception),
+            this,
+            CancellationToken.None,
+            TaskContinuationOptions.OnlyOnFaulted | TaskContinuationOptions.ExecuteSynchronously,
+            TaskScheduler.Current);
 
     private async ValueTask PerformRootComponentOperations(
         RootComponentOperation[] operations,
@@ -905,15 +961,22 @@ internal partial class CircuitHost : IAsyncDisposable
                             operation.Marker.Value.Key,
                             operation.Descriptor.Parameters);
 
-                        pendingTasks?[i] = task;
+                        if (pendingTasks != null)
+                        {
+                            pendingTasks[i] = task;
+                        }
+                        else
+                        {
+                            ObserveRootComponentOperationFault(task);
+                        }
                         break;
                     case RootComponentOperationType.Update:
-                        // We don't need to await component updates as any unhandled exception will be reported and terminate the circuit.
-                        _ = webRootComponentManager.UpdateRootComponentAsync(
+                        var updateTask = webRootComponentManager.UpdateRootComponentAsync(
                             operation.SsrComponentId,
                             operation.Descriptor.ComponentType,
                             operation.Marker.Value.Key,
                             operation.Descriptor.Parameters);
+                        ObserveRootComponentOperationFault(updateTask);
                         break;
                     case RootComponentOperationType.Remove:
                         webRootComponentManager.RemoveRootComponent(operation.SsrComponentId);

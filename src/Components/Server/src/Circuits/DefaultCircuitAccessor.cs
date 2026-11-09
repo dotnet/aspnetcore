@@ -6,4 +6,6 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits;
 internal sealed class DefaultCircuitAccessor : ICircuitAccessor
 {
     public Circuit Circuit { get; set; }
+
+    public bool HasCircuitContext { get; set; }
 }

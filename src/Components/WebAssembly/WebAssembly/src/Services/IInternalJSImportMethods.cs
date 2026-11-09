@@ -17,6 +17,8 @@ internal interface IInternalJSImportMethods
 
     void NavigationManager_EnableNavigationInterception(int rendererId);
 
+    void NavigationManager_DisableNavigationInterception(int rendererId);
+
     void NavigationManager_ScrollToElement(string id);
 
     string NavigationManager_GetLocationHref();

@@ -9,9 +9,11 @@ interface BlazorEvent {
   type: keyof BlazorEventMap;
 }
 
-// Triggered on idle<->busy transitions, e.g. while interop calls or data streams are in flight.
+// Triggered on idle<->busy transitions, e.g. while interop calls or data streams are in flight,
+// or with closed: true when the circuit is permanently disposed.
 export interface CircuitActivityChangedEvent extends BlazorEvent {
   busy: boolean;
+  closed?: boolean;
 }
 
 // Maps Blazor event names to the argument type passed to registered listeners.

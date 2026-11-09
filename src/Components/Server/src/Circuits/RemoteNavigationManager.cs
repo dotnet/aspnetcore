@@ -136,8 +136,12 @@ internal sealed partial class RemoteNavigationManager : NavigationManager, IHost
                 await _jsRuntime.InvokeVoidAsync(Interop.NavigateTo, uri, options);
                 Log.NavigationCompleted(_logger, uri);
             }
+            catch (JSDisconnectedException)
+            {
+                Log.NavigationStoppedSessionEnded(_logger, uri);
+            }
             catch (TaskCanceledException)
-            when (_jsRuntime is RemoteJSRuntime remoteRuntime && remoteRuntime.IsPermanentlyDisconnected)
+            when (_jsRuntime is RemoteJSRuntime remoteRuntime && (remoteRuntime.IsPermanentlyDisconnected || !remoteRuntime.IsClientConnected))
             {
                 Log.NavigationStoppedSessionEnded(_logger, uri);
             }

@@ -1,0 +1,17 @@
+<p id="list-status">@(RendererInfo.IsInteractive ? "interactive" : "static")</p>
+<ul>
+    @foreach (var item in Items ?? [])
+    {
+        <li>@item</li>
+    }
+</ul>
+
+@code {
+    [PersistentState]
+    public string[]? Items { get; set; }
+
+    protected override void OnInitialized()
+    {
+        Items ??= ["one", "two", "three"];
+    }
+}

@@ -1,0 +1,18 @@
+@inject NavigationManager Navigation
+
+<p id="slow-status">@status</p>
+<p id="slow-uri">@Navigation.Uri</p>
+
+@code {
+    private string status = "static";
+
+    protected override async Task OnParametersSetAsync()
+    {
+        if (RendererInfo.IsInteractive)
+        {
+            status = "loading";
+            await Task.Delay(3000);
+            status = "interactive";
+        }
+    }
+}

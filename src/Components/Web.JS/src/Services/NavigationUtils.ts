@@ -2,10 +2,11 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 import { WebRendererId } from '../Rendering/WebRendererId';
+import { capabilityLeaseRegistry } from './CapabilityLeaseRegistry';
 
-let interactiveRouterRendererId: WebRendererId | undefined = undefined;
 let programmaticEnhancedNavigationHandler: typeof performProgrammaticEnhancedNavigation | undefined;
 let enhancedNavigationListener: typeof notifyEnhancedNavigationListeners | undefined;
+let enhancedLocationChangingHandler: ((destinationHref: string, interceptedLink: boolean) => Promise<boolean>) | undefined;
 
 /**
  * Checks if a click event corresponds to an <a> tag referencing a URL within the base href, and that interception
@@ -88,6 +89,21 @@ export function notifyEnhancedNavigationListeners(internalDestinationHref: strin
   enhancedNavigationListener?.(internalDestinationHref, interceptedLink);
 }
 
+export function attachEnhancedLocationChangingHandler(handler: typeof enhancedLocationChangingHandler) {
+  enhancedLocationChangingHandler = handler;
+}
+
+export function hasActiveLocationChangingListeners(): boolean {
+  return capabilityLeaseRegistry.getLocationChangingRendererIds().length > 0;
+}
+
+export async function confirmEnhancedNavigationLocationChanging(destinationHref: string, interceptedLink: boolean): Promise<boolean> {
+  if (!enhancedLocationChangingHandler || !hasActiveLocationChangingListeners()) {
+    return true;
+  }
+  return await enhancedLocationChangingHandler(destinationHref, interceptedLink);
+}
+
 export function hasProgrammaticEnhancedNavigationHandler(): boolean {
   return programmaticEnhancedNavigationHandler !== undefined;
 }
@@ -142,17 +158,17 @@ function findAnchorTarget(event: MouseEvent): HTMLAnchorElement | SVGAElement | 
 }
 
 export function hasInteractiveRouter(): boolean {
-  return interactiveRouterRendererId !== undefined;
+  return capabilityLeaseRegistry.hasInteractiveRouter();
 }
 
 export function getInteractiveRouterRendererId() : WebRendererId | undefined {
-  return interactiveRouterRendererId;
+  return capabilityLeaseRegistry.getInteractiveRouterRendererId();
 }
 
-export function setHasInteractiveRouter(rendererId: WebRendererId) {
-  if (interactiveRouterRendererId !== undefined && interactiveRouterRendererId !== rendererId) {
-    throw new Error('Only one interactive runtime may enable navigation interception at a time.');
-  }
+export function setHasInteractiveRouter(rendererId: WebRendererId, leaseId = 'default') {
+  capabilityLeaseRegistry.acquireRouterLease(rendererId, leaseId);
+}
 
-  interactiveRouterRendererId = rendererId;
+export function disableInteractiveRouter(rendererId: WebRendererId, leaseId = '*') {
+  capabilityLeaseRegistry.releaseRouterLease(rendererId, leaseId);
 }

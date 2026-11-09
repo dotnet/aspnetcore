@@ -53,8 +53,12 @@ export function isRendererAttached(browserRendererId: number): boolean {
   return interopMethodsByRenderer.has(browserRendererId);
 }
 
-export function registerRendererAttachedListener(listener: (browserRendererId: number) => void) {
-  rendererAttachedListeners.push(listener);
+export function registerRendererAttachedListener(listener: (browserRendererId: number) => void, prepend = false) {
+  if (prepend) {
+    rendererAttachedListeners.unshift(listener);
+  } else {
+    rendererAttachedListeners.push(listener);
+  }
 }
 
 function invokeRendererAttachedListeners(browserRendererId: number) {

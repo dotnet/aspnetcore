@@ -165,13 +165,13 @@ public sealed class WebAssemblyHost : IAsyncDisposable
         using (cancellationToken.Register(() => tcs.TrySetResult()))
         {
             var loggerFactory = Services.GetRequiredService<ILoggerFactory>();
+            WebAssemblyNavigationManager.Instance.CreateLogger(loggerFactory);
+
             var jsComponentInterop = new JSComponentInterop(_rootComponents.JSComponents);
             var collectionProvider = Services.GetRequiredService<ResourceCollectionProvider>();
             var collection = await collectionProvider.GetResourceCollection();
             var useOutOfProcessRenderer = Environment.GetEnvironmentVariable("__BLAZOR_WEBASSEMBLY_OUT_OF_PROCESS_RENDERER") == "true";
             _renderer = new WebAssemblyRenderer(Services, collection, loggerFactory, jsComponentInterop, useOutOfProcessRenderer);
-
-            WebAssemblyNavigationManager.Instance.CreateLogger(loggerFactory);
 
             RootComponentOperationBatch? initialOperationBatch = null;
             if (Environment.GetEnvironmentVariable("__BLAZOR_WEBASSEMBLY_WAIT_FOR_ROOT_COMPONENTS") == "true")

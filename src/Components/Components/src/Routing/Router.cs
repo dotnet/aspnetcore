@@ -6,6 +6,7 @@
 using System.Diagnostics.CodeAnalysis;
 using System.Reflection;
 using System.Reflection.Metadata;
+using System.Runtime.CompilerServices;
 using System.Runtime.ExceptionServices;
 using Microsoft.AspNetCore.Components.HotReload;
 using Microsoft.AspNetCore.Components.Rendering;
@@ -18,8 +19,14 @@ namespace Microsoft.AspNetCore.Components.Routing;
 /// <summary>
 /// A component that supplies route data corresponding to the current navigation state.
 /// </summary>
-public partial class Router : IComponent, IHandleAfterRender, IDisposable
+public partial class Router : IComponent, IHandleAfterRender, IDisposable, IAsyncDisposable
 {
+    private sealed class InterceptionOwnership
+    {
+        public int ActiveCount;
+    }
+
+    private static readonly ConditionalWeakTable<INavigationInterception, InterceptionOwnership> _interceptionOwners = new();
     // Dictionary is intentionally used instead of ReadOnlyDictionary to reduce Blazor size
     static readonly IReadOnlyDictionary<string, object> _emptyParametersDictionary
         = new Dictionary<string, object>();
@@ -177,11 +184,39 @@ public partial class Router : IComponent, IHandleAfterRender, IDisposable
     /// <inheritdoc />
     public void Dispose()
     {
+        _ = DisposeAsync().Preserve();
+    }
+
+    /// <inheritdoc />
+    public async ValueTask DisposeAsync()
+    {
         NavigationManager.LocationChanged -= OnLocationChanged;
         NavigationManager.OnNotFound -= OnNotFound;
         if (HotReloadManager.IsSupported)
         {
             HotReloadManager.Default.OnDeltaApplied -= ClearRouteCaches;
+        }
+
+        if (_navigationInterceptionEnabled)
+        {
+            _navigationInterceptionEnabled = false;
+            var shouldDisable = false;
+            if (NavigationInterception is not null && _interceptionOwners.TryGetValue(NavigationInterception, out var ownership))
+            {
+                lock (ownership)
+                {
+                    if (--ownership.ActiveCount <= 0)
+                    {
+                        ownership.ActiveCount = 0;
+                        shouldDisable = true;
+                    }
+                }
+            }
+
+            if (shouldDisable && NavigationInterception is not null)
+            {
+                await NavigationInterception.DisableNavigationInterceptionAsync();
+            }
         }
     }
 
@@ -463,7 +498,21 @@ public partial class Router : IComponent, IHandleAfterRender, IDisposable
         if (!_navigationInterceptionEnabled)
         {
             _navigationInterceptionEnabled = true;
-            await NavigationInterception.EnableNavigationInterceptionAsync();
+            var shouldEnable = true;
+            if (NavigationInterception is not null)
+            {
+                var ownership = _interceptionOwners.GetOrCreateValue(NavigationInterception);
+                lock (ownership)
+                {
+                    ownership.ActiveCount++;
+                    shouldEnable = ownership.ActiveCount == 1;
+                }
+            }
+
+            if (shouldEnable)
+            {
+                await NavigationInterception.EnableNavigationInterceptionAsync();
+            }
         }
 
         if (_updateScrollPositionForHash)

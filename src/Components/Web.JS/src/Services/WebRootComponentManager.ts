@@ -1,7 +1,8 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-import { ComponentDescriptor, ComponentMarker, descriptorToMarker, discoverServerPersistedState, discoverWebAssemblyPersistedState, WebAssemblyServerOptions } from './ComponentDescriptorDiscovery';
+import { ComponentDescriptor, ComponentMarker, descriptorToMarker, WebAssemblyServerOptions } from './ComponentDescriptorDiscovery';
+import { documentStateStore } from './DocumentStateStore';
 import { isRendererAttached, registerRendererAttachedListener } from '../Rendering/WebRendererInteropMethods';
 import { WebRendererId } from '../Rendering/WebRendererId';
 import { DescriptorHandler } from '../Rendering/DomMerging/DomSync';
@@ -71,12 +72,16 @@ export class WebRootComponentManager implements DescriptorHandler, RootComponent
   // by WebRootComponentManager are added and removed dynamically.
   public readonly initialComponents: never[] = [];
 
-  public constructor(private readonly _circuitInactivityTimeoutMs: number, private readonly _jsEventRegistry: JSEventRegistry) {
+  public constructor(private _circuitInactivityTimeoutMs: number, private readonly _jsEventRegistry: JSEventRegistry) {
     // After a renderer attaches, we need to activate any components that were
     // previously skipped for interactivity.
     registerRendererAttachedListener(() => {
       this.rootComponentsMayRequireRefresh();
     });
+  }
+
+  public setCircuitInactivityTimeoutMs(timeoutMs: number): void {
+    this._circuitInactivityTimeoutMs = timeoutMs;
   }
 
   // Implements RootComponentManager.
@@ -92,6 +97,9 @@ export class WebRootComponentManager implements DescriptorHandler, RootComponent
   }
 
   public onEnhancedNavigationCompleted() {
+    // Capture any persisted state emitted by the completed enhanced navigation for the current epoch.
+    documentStateStore.capturePersistedStateFromDocument(document);
+
     // Root components may now be ready for activation if they had been previously
     // skipped for activation due to an enhanced navigation being underway.
     // Only look for state after the page has finished loading.
@@ -142,28 +150,37 @@ export class WebRootComponentManager implements DescriptorHandler, RootComponent
 
     const justDownload = isAuto && !areAnyWebAssemblyResourcesLikelyCached();
 
-    const loadWebAssemblyPromise = loadWebAssemblyPlatformIfNotStarted(this._webAssemblyOptions, justDownload);
-    if (justDownload) {
-      // Since WebAssembly resources aren't cached
-      // we fall back to Blazor Server immediately
+    try {
+      const loadWebAssemblyPromise = loadWebAssemblyPlatformIfNotStarted(this._webAssemblyOptions, justDownload);
+      if (justDownload) {
+        // Since WebAssembly resources aren't cached
+        // we fall back to Blazor Server immediately
+        this.onWebAssemblyFailedToLoadQuickly();
+      }
+      const bootConfig = await Promise.race([
+        waitForBootConfigLoaded(),
+        loadWebAssemblyPromise.then(() => waitForBootConfigLoaded()),
+      ]);
+
+      if (!justDownload && !areWebAssemblyResourcesLikelyCached(bootConfig)) {
+        // Since correct version of resources aren't cached
+        // we fall back to Blazor Server immediately
+        this.onWebAssemblyFailedToLoadQuickly();
+      }
+
+      await loadWebAssemblyPromise;
+
+      // Store the boot config resource hash in local storage
+      // so that we can detect during the next load that WebAssembly
+      // resources are cached.
+      cacheWebAssemblyResourceHash(bootConfig);
+
+      this.rootComponentsMayRequireRefresh();
+    } catch {
+      // If WebAssembly fails to load (e.g., WebAssembly is unsupported or asset loading fails),
+      // fall back to Blazor Server for Auto components instead of leaving them unactivated (#54233).
       this.onWebAssemblyFailedToLoadQuickly();
     }
-    const bootConfig = await waitForBootConfigLoaded();
-
-    if (!justDownload && !areWebAssemblyResourcesLikelyCached(bootConfig)) {
-      // Since correct version of resources aren't cached
-      // we fall back to Blazor Server immediately
-      this.onWebAssemblyFailedToLoadQuickly();
-    }
-
-    await loadWebAssemblyPromise;
-
-    // Store the boot config resource hash in local storage
-    // so that we can detect during the next load that WebAssembly
-    // resources are cached.
-    cacheWebAssemblyResourceHash(bootConfig);
-
-    this.rootComponentsMayRequireRefresh();
   }
 
   private onWebAssemblyFailedToLoadQuickly() {
@@ -236,20 +253,45 @@ export class WebRootComponentManager implements DescriptorHandler, RootComponent
     }, this._circuitInactivityTimeoutMs) as unknown as number;
   }
 
+  public hasRemainingServerComponentsInDocument(): boolean {
+    for (const component of this._rootComponentsBySsrComponentId.values()) {
+      if (component.hasPendingRemoveOperation || !isDescriptorInDocument(component.descriptor)) {
+        continue;
+      }
+
+      if (component.assignedRendererId === WebRendererId.Server) {
+        return true;
+      }
+
+      if (component.assignedRendererId === undefined && (component.descriptor.type === 'server' || component.descriptor.type === 'auto')) {
+        return true;
+      }
+    }
+
+    return false;
+  }
+
   private rendererHasComponents(rendererId: WebRendererId): boolean {
     const renderer = getRendererer(rendererId);
     return renderer !== undefined && renderer.getRootComponentCount() > 0;
   }
 
   private rendererHasExistingOrPendingComponents(rendererId: WebRendererId, ...descriptorTypesToConsider: ComponentMarker['type'][]): boolean {
-    if (this.rendererHasComponents(rendererId)) {
-      return true;
-    }
+    let hasActiveRootComponentsInMap = false;
+    let hasPendingRemovalsForRenderer = false;
 
     // We consider SSR'd components on the page that may get activated using the specified renderer.
-    for (const { descriptor: { type }, assignedRendererId } of this._rootComponentsBySsrComponentId.values()) {
+    for (const { descriptor, assignedRendererId, hasPendingRemoveOperation } of this._rootComponentsBySsrComponentId.values()) {
+      if (hasPendingRemoveOperation || !isDescriptorInDocument(descriptor)) {
+        if (assignedRendererId === rendererId) {
+          hasPendingRemovalsForRenderer = true;
+        }
+        continue;
+      }
+
       if (assignedRendererId === rendererId) {
         // The component has been assigned to use the specified renderer.
+        hasActiveRootComponentsInMap = true;
         return true;
       }
 
@@ -258,11 +300,21 @@ export class WebRootComponentManager implements DescriptorHandler, RootComponent
         continue;
       }
 
-      if (descriptorTypesToConsider.indexOf(type) !== -1) {
+      if (descriptorTypesToConsider.indexOf(descriptor.type) !== -1) {
         // The component has not been assigned a renderer yet, but it might get activated with the specified renderer
         // if it doesn't get removed from the page.
         return true;
       }
+    }
+
+    if (!hasActiveRootComponentsInMap && hasPendingRemovalsForRenderer) {
+      // All components assigned to this renderer have already been removed from the document
+      // and have a pending remove operation in flight.
+      return false;
+    }
+
+    if (this.rendererHasComponents(rendererId)) {
+      return true;
     }
 
     return false;
@@ -304,28 +356,25 @@ export class WebRootComponentManager implements DescriptorHandler, RootComponent
     let serverState = '';
     let webAssemblyState = '';
     if (discoverNewState) {
-      for (const rendererId of rendererIds) {
-        if (rendererId === WebRendererId.Server) {
-          // We have server components. Try to discover the persisted state for them
-          // and if there are no updates on this batch, push an empty set of operations
-          // to ensure we send the state over. Same for wasm below.
-          serverState = discoverServerPersistedState(document) || '';
-          if (serverState && serverState !== '') {
-            const ops = operationsByRendererId.get(WebRendererId.Server);
-            if (!ops) {
-              operationsByRendererId.set(WebRendererId.Server, []);
-            }
-          }
-        } else if (rendererId === WebRendererId.WebAssembly) {
-          webAssemblyState = discoverWebAssemblyPersistedState(document) || '';
-          if (webAssemblyState && webAssemblyState !== '') {
-            const ops = operationsByRendererId.get(WebRendererId.WebAssembly);
-            if (!ops) {
-              operationsByRendererId.set(WebRendererId.WebAssembly, []);
-            }
-          }
-        } else {
-          throw new Error(`Unexpected renderer ID '${rendererId}' encountered while discovering new state.`);
+      documentStateStore.capturePersistedStateFromDocument(document);
+    }
+
+    if (operationsByRendererId.has(WebRendererId.Server) || (discoverNewState && rendererIds.has(WebRendererId.Server) && isRendererAttached(WebRendererId.Server))) {
+      serverState = documentStateStore.consumeServerPersistedState(document);
+      if (serverState && serverState !== '') {
+        const ops = operationsByRendererId.get(WebRendererId.Server);
+        if (!ops) {
+          operationsByRendererId.set(WebRendererId.Server, []);
+        }
+      }
+    }
+
+    if (operationsByRendererId.has(WebRendererId.WebAssembly) || (discoverNewState && rendererIds.has(WebRendererId.WebAssembly) && isRendererAttached(WebRendererId.WebAssembly))) {
+      webAssemblyState = documentStateStore.consumeWebAssemblyPersistedState(document);
+      if (webAssemblyState && webAssemblyState !== '') {
+        const ops = operationsByRendererId.get(WebRendererId.WebAssembly);
+        if (!ops) {
+          operationsByRendererId.set(WebRendererId.WebAssembly, []);
         }
       }
     }

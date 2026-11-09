@@ -96,11 +96,20 @@ internal partial class EndpointHtmlRenderer
             var baseUri = $"{_httpContext.Request.Scheme}://{_httpContext.Request.Host}{_httpContext.Request.PathBase}/";
             _notFoundUrl = GetNotFoundUrl(baseUri, NotFoundEventArgs);
         }
-        var defaultBufferSize = 16 * 1024;
-        await using var writer = new HttpResponseStreamWriter(_httpContext.Response.Body, Encoding.UTF8, defaultBufferSize, ArrayPool<byte>.Shared, ArrayPool<char>.Shared);
-        using var bufferWriter = new BufferedTextWriter(writer);
-        HandleNotFoundAfterResponseStarted(bufferWriter, _httpContext, _notFoundUrl);
-        await bufferWriter.FlushAsync();
+        if (_streamingUpdatesWriter is { } streamingWriter)
+        {
+            await FlushPendingStreamingOutputAsync();
+            HandleNotFoundAfterResponseStarted(streamingWriter, _httpContext, _notFoundUrl);
+            await FlushStreamingWriterAsync(streamingWriter);
+        }
+        else
+        {
+            var defaultBufferSize = 16 * 1024;
+            await using var writer = new HttpResponseStreamWriter(_httpContext.Response.Body, Encoding.UTF8, defaultBufferSize, ArrayPool<byte>.Shared, ArrayPool<char>.Shared);
+            using var bufferWriter = new BufferedTextWriter(writer);
+            HandleNotFoundAfterResponseStarted(bufferWriter, _httpContext, _notFoundUrl);
+            await bufferWriter.FlushAsync();
+        }
 
         // When the application triggers a NotFound event, we continue rendering the current batch.
         // However, after completing this batch, we do not want to process any further UI updates,
@@ -128,11 +137,20 @@ internal partial class EndpointHtmlRenderer
     {
         if (_httpContext.Response.HasStarted)
         {
-            var defaultBufferSize = 16 * 1024;
-            await using var writer = new HttpResponseStreamWriter(_httpContext.Response.Body, Encoding.UTF8, defaultBufferSize, ArrayPool<byte>.Shared, ArrayPool<char>.Shared);
-            using var bufferWriter = new BufferedTextWriter(writer);
-            HandleNavigationAfterResponseStarted(bufferWriter, _httpContext, uri);
-            await bufferWriter.FlushAsync();
+            if (_streamingUpdatesWriter is { } streamingWriter)
+            {
+                await FlushPendingStreamingOutputAsync();
+                HandleNavigationAfterResponseStarted(streamingWriter, _httpContext, uri);
+                await FlushStreamingWriterAsync(streamingWriter);
+            }
+            else
+            {
+                var defaultBufferSize = 16 * 1024;
+                await using var writer = new HttpResponseStreamWriter(_httpContext.Response.Body, Encoding.UTF8, defaultBufferSize, ArrayPool<byte>.Shared, ArrayPool<char>.Shared);
+                using var bufferWriter = new BufferedTextWriter(writer);
+                HandleNavigationAfterResponseStarted(bufferWriter, _httpContext, uri);
+                await bufferWriter.FlushAsync();
+            }
         }
         else
         {

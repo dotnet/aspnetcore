@@ -1,0 +1,20 @@
+<p id="lock-island-status">@(RendererInfo.IsInteractive ? "interactive" : "static")</p>
+<p id="lock-enabled-state">@(blockNav ? "locked" : "unlocked")</p>
+<p id="lock-intercept-count">@interceptCount</p>
+<button id="toggle-lock" @onclick="() => blockNav = !blockNav">Toggle Lock</button>
+
+<NavigationLock OnBeforeInternalNavigation="OnBeforeInternalNav" ConfirmExternalNavigation="@blockNav" />
+
+@code {
+    private bool blockNav = true;
+    private int interceptCount;
+
+    private void OnBeforeInternalNav(LocationChangingContext context)
+    {
+        interceptCount++;
+        if (blockNav)
+        {
+            context.PreventNavigation();
+        }
+    }
+}

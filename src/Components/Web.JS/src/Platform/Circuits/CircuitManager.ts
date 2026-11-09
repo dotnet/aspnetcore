@@ -3,7 +3,9 @@
 
 import { internalFunctions as navigationManagerFunctions } from '../../Services/NavigationManager';
 import { toLogicalRootCommentElement, LogicalElement, toLogicalElement } from '../../Rendering/LogicalElements';
-import { ServerComponentDescriptor, descriptorToMarker, discoverServerPersistedState } from '../../Services/ComponentDescriptorDiscovery';
+import { ServerComponentDescriptor, descriptorToMarker } from '../../Services/ComponentDescriptorDiscovery';
+import { documentStateStore } from '../../Services/DocumentStateStore';
+import { capabilityLeaseRegistry } from '../../Services/CapabilityLeaseRegistry';
 import { HttpTransportType, HubConnection, HubConnectionBuilder, HubConnectionState, LogLevel } from '@microsoft/signalr';
 import { getAndRemovePendingRootComponentContainer } from '../../Rendering/JSRootComponents';
 import { RootComponentManager } from '../../Services/RootComponentManager';
@@ -64,6 +66,8 @@ export class CircuitManager implements DotNet.DotNetCallDispatcher {
 
   private _connectionUp = false;
 
+  private _circuitConnected = false;
+
   private _activePauseDeferral?: AbortController;
 
   public constructor(
@@ -98,7 +102,9 @@ export class CircuitManager implements DotNet.DotNetCallDispatcher {
   public updateRootComponents(operations: string, serverState: string): Promise<void> | undefined {
     if (this._isFirstRender) {
       this._isFirstRender = false;
-      return this._connection?.send('UpdateRootComponents', operations, this._applicationState);
+      const effectiveState = serverState || documentStateStore.consumeServerPersistedState() || this._applicationState;
+      this._applicationState = '';
+      return this._connection?.send('UpdateRootComponents', operations, effectiveState);
     } else {
       return this._connection?.send('UpdateRootComponents', operations, serverState);
     }
@@ -112,17 +118,22 @@ export class CircuitManager implements DotNet.DotNetCallDispatcher {
     }
 
     const componentsJson = JSON.stringify(this._componentManager.initialComponents.map(c => descriptorToMarker(c)));
+    const baseUri = navigationManagerFunctions.getBaseURI();
+    const uri = navigationManagerFunctions.getLocationHref();
+    documentStateStore.recordRendererInitialLocation(WebRendererId.Server, uri, undefined);
     this._circuitId = await this._connection.invoke<string>(
       'StartCircuit',
-      navigationManagerFunctions.getBaseURI(),
-      navigationManagerFunctions.getLocationHref(),
+      baseUri,
+      uri,
       componentsJson,
       this._applicationState || ''
     );
 
-    if (!this._circuitId) {
+    if (!this._circuitId || this.isDisposedOrDisposing()) {
       return false;
     }
+
+    this._circuitConnected = true;
 
     for (const handler of this._options.circuitHandlers) {
       if (handler.onCircuitOpened) {
@@ -133,7 +144,7 @@ export class CircuitManager implements DotNet.DotNetCallDispatcher {
     return true;
   }
 
-  private async startConnection(): Promise<HubConnection> {
+  private async startConnection(isReconnecting = false): Promise<HubConnection> {
     const hubProtocol = new MessagePackHubProtocol();
     (hubProtocol as unknown as { name: string }).name = 'blazorpack';
 
@@ -146,8 +157,16 @@ export class CircuitManager implements DotNet.DotNetCallDispatcher {
 
     const connection = connectionBuilder.build();
 
-    connection.on('JS.AttachComponent', (componentId, selector) => attachRootComponentToLogicalElement(WebRendererId.Server, this.resolveElement(selector), componentId, false));
+    connection.on('JS.AttachComponent', (componentId, selector) => {
+      if (this.isDisposedOrDisposing()) {
+        return;
+      }
+      attachRootComponentToLogicalElement(WebRendererId.Server, this.resolveElement(selector), componentId, false);
+    });
     connection.on('JS.BeginInvokeJS', (asyncHandle: number, ...rest: unknown[]) => {
+      if (this.isDisposedOrDisposing()) {
+        return;
+      }
       if (asyncHandle !== 0) {
         this.changeActivity(1);
       }
@@ -207,18 +226,21 @@ export class CircuitManager implements DotNet.DotNetCallDispatcher {
     });
     connection.on('JS.EndLocationChanging', Blazor._internal.navigationManager.endLocationChanging);
     connection.onclose(error => {
-      this._interopMethodsForReconnection = detachWebRendererInterop(WebRendererId.Server);
+      if (isRendererAttached(WebRendererId.Server)) {
+        this._interopMethodsForReconnection = detachWebRendererInterop(WebRendererId.Server);
+      }
 
+      this._circuitConnected = false;
       this.handleConnectionDown();
       this.abortPauseDeferrals('connection closed');
 
       const pausingWasInProgress = this._pausingState.isInprogress();
-      if (!pausingWasInProgress) {
+      if (!pausingWasInProgress && !this._pausingState.lastValue()) {
         // Mark the state as 'paused' since the connection got closed without us starting the pause process.
         this._pausingState.transitionTo(true);
       }
 
-      if (!this._disposed && !this._renderingFailed && !pausingWasInProgress) {
+      if (!this._disposed && !this.isDisposedOrDisposing() && !this._renderingFailed && !pausingWasInProgress) {
         this._options.reconnectionHandler!.onConnectionDown(this._options.reconnectionOptions, error);
       }
     });
@@ -234,10 +256,10 @@ export class CircuitManager implements DotNet.DotNetCallDispatcher {
     } catch (ex: any) {
       this.unhandledError(ex as Error);
 
-      if (ex.errorType === 'FailedToNegotiateWithServerError') {
+      if (isReconnecting || this._circuitId !== undefined || ex.errorType === 'FailedToNegotiateWithServerError') {
         // Connection with the server has been interrupted, and we're in the process of reconnecting.
         // Throw this exception so it can be handled at the reconnection layer, and don't show the
-        // error notification.
+        // error notification (#69596).
         throw ex;
       } else {
         showErrorNotification();
@@ -295,25 +317,54 @@ export class CircuitManager implements DotNet.DotNetCallDispatcher {
       throw new Error('Circuit host not initialized.');
     }
 
-    if (this._connection!.state === HubConnectionState.Connected) {
+    if (this.isDisposedOrDisposing() || this._renderingFailed) {
+      return false;
+    }
+
+    if (this._circuitConnected && this._connection?.state === HubConnectionState.Connected) {
       return true;
     }
 
-    this._connection = await this.startConnection();
+    if (this._connection?.state !== HubConnectionState.Connected) {
+      this._connection = await this.startConnection(/* isReconnecting */ true);
+    }
 
-    if (this._interopMethodsForReconnection) {
+    if (this.isDisposedOrDisposing()) {
+      await this._connection?.stop();
+      return false;
+    }
+
+    if (this._interopMethodsForReconnection && !isRendererAttached(WebRendererId.Server)) {
       attachWebRendererInterop(WebRendererId.Server, this._interopMethodsForReconnection);
       this._interopMethodsForReconnection = undefined;
     }
 
-    if (!await this._connection!.invoke<boolean>('ConnectCircuit', this._circuitId)) {
+    let connected = false;
+    try {
+      connected = await this._connection!.invoke<boolean>('ConnectCircuit', this._circuitId);
+    } catch (error) {
       if (isRendererAttached(WebRendererId.Server)) {
         this._interopMethodsForReconnection = detachWebRendererInterop(WebRendererId.Server);
       }
+      this._circuitConnected = false;
+      try {
+        await this._connection?.stop();
+      } catch {
+        // Ignore stop errors after failed ConnectCircuit (#69931).
+      }
+      throw error;
+    }
+
+    if (!connected) {
+      if (isRendererAttached(WebRendererId.Server)) {
+        this._interopMethodsForReconnection = detachWebRendererInterop(WebRendererId.Server);
+      }
+      this._circuitConnected = false;
       return false;
     }
 
-    this._options.reconnectionHandler!.onConnectionUp();
+    this._circuitConnected = true;
+    this._options.reconnectionHandler?.onConnectionUp();
 
     return true;
   }
@@ -325,8 +376,11 @@ export class CircuitManager implements DotNet.DotNetCallDispatcher {
 
   // Client-initiated pause: runs the registered pause deferrals, then pauses unless the wait was aborted.
   public async pauseCircuit(externalSignal?: AbortSignal): Promise<boolean> {
+    if (this.isDisposedOrDisposing() || this._renderingFailed) {
+      return false;
+    }
     await this.runPauseDeferrals(externalSignal);
-    if (externalSignal?.aborted) {
+    if (externalSignal?.aborted || this.isDisposedOrDisposing()) {
       return false;
     }
     if (!(await this.pause())) {
@@ -366,6 +420,10 @@ export class CircuitManager implements DotNet.DotNetCallDispatcher {
   }
 
   public async pause(remote?: boolean): Promise<boolean> {
+    if (this.isDisposedOrDisposing() || this._renderingFailed) {
+      return false;
+    }
+
     if (!this._circuitId) {
       this._logger.log(LogLevel.Error, 'Circuit host not initialized.');
       return false;
@@ -405,6 +463,7 @@ export class CircuitManager implements DotNet.DotNetCallDispatcher {
       // Indicate to the server that we want to pause the circuit.
       // The server will initiate the pause on the circuit associated with the current connection.
       const paused = await this._connection!.invoke<boolean>('PauseCircuit')!;
+      this._circuitConnected = false;
       this._pausingState.complete(paused);
     } catch (error) {
       this._logger.log(LogLevel.Error, `Failed to pause the circuit: ${error}`);
@@ -422,10 +481,18 @@ export class CircuitManager implements DotNet.DotNetCallDispatcher {
       throw new Error('Circuit host not initialized.');
     }
 
+    if (this.isDisposedOrDisposing() || this._renderingFailed) {
+      return false;
+    }
+
     if (this._disconnectingState.isInprogress()) {
       // The handler might run before the `onclose` handler gets a chance to run.
       this._logger.log(LogLevel.Trace, 'Circuit is disconnecting, cannot resume.');
       await this._disconnectingState.currentProgress();
+    }
+
+    if (this.isDisposedOrDisposing()) {
+      return false;
     }
 
     if (this._pausingState.isInprogress()) {
@@ -441,7 +508,12 @@ export class CircuitManager implements DotNet.DotNetCallDispatcher {
 
     if (this._connection!.state !== HubConnectionState.Connected) {
       this._logger.log(LogLevel.Trace, 'Reestablishing SignalR connection...');
-      this._connection = await this.startConnection();
+      this._connection = await this.startConnection(/* isReconnecting */ true);
+    }
+
+    if (this.isDisposedOrDisposing()) {
+      await this._connection?.stop();
+      return false;
     }
 
     if (this._resumingState.isInprogress()) {
@@ -466,19 +538,26 @@ export class CircuitManager implements DotNet.DotNetCallDispatcher {
       const persistedCircuitState = this._persistedCircuitState;
       this._persistedCircuitState = undefined;
 
+      const baseUri = navigationManagerFunctions.getBaseURI();
+      const uri = navigationManagerFunctions.getLocationHref();
+      documentStateStore.recordRendererInitialLocation(WebRendererId.Server, uri, undefined);
       const newCircuitId = await this._connection!.invoke<string>(
         'ResumeCircuit',
         this._circuitId,
-        navigationManagerFunctions.getBaseURI(),
-        navigationManagerFunctions.getLocationHref(),
+        baseUri,
+        uri,
         persistedCircuitState?.components ?? '[]',
         persistedCircuitState?.applicationState ?? '',
       );
-      if (!newCircuitId) {
+      if (!newCircuitId || this.isDisposedOrDisposing()) {
+        if (this.isDisposedOrDisposing()) {
+          await this._connection?.stop();
+        }
         this._resumingState.complete(false);
         return resumingPromise;
       }
 
+      this._circuitConnected = true;
       this._pausingState.transitionTo(false);
       this._resumingState.complete(true);
 
@@ -494,6 +573,12 @@ export class CircuitManager implements DotNet.DotNetCallDispatcher {
       this._componentManager.onComponentReload?.(WebRendererId.Server);
       return resumingPromise;
     } catch (error) {
+      this._circuitConnected = false;
+      try {
+        await this._connection?.stop();
+      } catch {
+        // Ignore stop errors after failed ResumeCircuit (#69931).
+      }
       this._logger.log(LogLevel.Error, `Failed to resume the circuit: ${error}`);
       this._resumingState.fail(error);
       return resumingPromise;
@@ -635,9 +720,15 @@ export class CircuitManager implements DotNet.DotNetCallDispatcher {
   }
 
   private async disposeCore(): Promise<void> {
+    this.abortPauseDeferrals('circuit disposed');
+    this._options.reconnectionHandler?.onConnectionUp();
+
     if (!this._startPromise) {
       // The circuit hasn't started, so there isn't anything to dispose.
       this._disposed = true;
+      this._circuitConnected = false;
+      capabilityLeaseRegistry.revokeAllForRenderer(WebRendererId.Server);
+      this._eventRegistry?.dispatchEvent('circuitactivitychanged', { busy: false, closed: true });
       return;
     }
 
@@ -646,22 +737,35 @@ export class CircuitManager implements DotNet.DotNetCallDispatcher {
     await this._startPromise;
 
     this._disposed = true;
+    this._circuitConnected = false;
+    this._options.reconnectionHandler?.onConnectionUp();
+
+    if (isRendererAttached(WebRendererId.Server)) {
+      detachWebRendererInterop(WebRendererId.Server);
+    }
+    this._interopMethodsForReconnection = undefined;
+    capabilityLeaseRegistry.revokeAllForRenderer(WebRendererId.Server);
+
     this._connection?.stop();
 
-    // Dispose the circuit on the server immediately. Closing the SignalR connection alone
-    // without sending the disconnect message will result in the circuit being kept
-    // alive on the server longer than it needs to be.
-    const formData = this.getDisconnectFormData();
-    fetch('_blazor/disconnect', {
-      method: 'POST',
-      body: formData,
-    });
+    if (this._circuitId) {
+      // Dispose the circuit on the server immediately. Closing the SignalR connection alone
+      // without sending the disconnect message will result in the circuit being kept
+      // alive on the server longer than it needs to be.
+      const formData = this.getDisconnectFormData();
+      fetch('_blazor/disconnect', {
+        method: 'POST',
+        body: formData,
+      });
+    }
 
     for (const handler of this._options.circuitHandlers) {
       if (handler.onCircuitClosed) {
         handler.onCircuitClosed();
       }
     }
+
+    this._eventRegistry?.dispatchEvent('circuitactivitychanged', { busy: false, closed: true });
   }
 }
 

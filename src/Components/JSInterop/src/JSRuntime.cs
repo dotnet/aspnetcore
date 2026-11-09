@@ -20,6 +20,7 @@ public abstract partial class JSRuntime : IJSRuntime, IDisposable
 
     private long _nextObjectReferenceId; // Initial value of 0 signals no object, but we increment prior to assignment. The first tracked object should have id 1
     private long _nextPendingTaskId = 1; // Start at 1 because zero signals "no response needed"
+    private readonly object _pendingTasksLock = new();
     private readonly ConcurrentDictionary<long, IPendingAsyncCall> _pendingTasks = new();
     private readonly ConcurrentDictionary<long, IDotNetObjectReference> _trackedRefsById = new();
     private readonly ConcurrentDictionary<long, CancellationTokenRegistration> _cancellationRegistrations = new();
@@ -173,7 +174,10 @@ public abstract partial class JSRuntime : IJSRuntime, IDisposable
                 ArgsJson = argsJson,
             };
 
-            BeginInvokeJS(invocationInfo);
+            lock (_pendingTasksLock)
+            {
+                BeginInvokeJS(invocationInfo);
+            }
 
             return new ValueTask<TValue>(pendingCall.Task);
         }
@@ -191,6 +195,44 @@ public abstract partial class JSRuntime : IJSRuntime, IDisposable
         {
             registration.Dispose();
         }
+    }
+
+    /// <summary>
+    /// Captures all pending asynchronous JavaScript calls so they can be failed with the specified exception.
+    /// </summary>
+    /// <param name="exception">The exception used to fail the captured pending calls.</param>
+    /// <returns>An action that fails the captured calls.</returns>
+    protected Action CapturePendingTasks(Exception exception)
+    {
+        ArgumentNullException.ThrowIfNull(exception);
+
+        List<(IPendingAsyncCall Call, CancellationTokenRegistration Registration)>? captured = null;
+        lock (_pendingTasksLock)
+        {
+            foreach (var (taskId, _) in _pendingTasks)
+            {
+                if (_pendingTasks.TryRemove(taskId, out var removedCall))
+                {
+                    _cancellationRegistrations.TryRemove(taskId, out var registration);
+                    captured ??= [];
+                    captured.Add((removedCall, registration));
+                }
+            }
+        }
+
+        if (captured is null)
+        {
+            return static () => { };
+        }
+
+        return () =>
+        {
+            foreach (var (call, registration) in captured)
+            {
+                registration.Dispose();
+                call.Fail(exception);
+            }
+        };
     }
 
     /// <summary>
