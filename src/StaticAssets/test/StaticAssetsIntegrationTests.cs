@@ -20,6 +20,164 @@ namespace Microsoft.AspNetCore.StaticAssets.Tests;
 
 public class StaticAssetsIntegrationTests
 {
+    [Theory]
+    [InlineData("Development", false, false)]
+    [InlineData("Development", false, true)]
+    [InlineData("Development", true, false)]
+    [InlineData("Development", true, true)]
+    [InlineData("Production", false, false)]
+    [InlineData("Production", false, true)]
+    [InlineData("Production", true, false)]
+    [InlineData("Production", true, true)]
+    public async Task MissingAssetReturnsNonCacheableNotFound(string environment, bool compressed, bool warm)
+        => await MissingAssetReturnsNonCacheableNotFoundCore(environment, compressed, warm, "GET", deleteCompressedFile: true);
+
+    public static TheoryData<string, bool, bool, string, bool> MissingAssetFastPathData
+    {
+        get
+        {
+            var data = new TheoryData<string, bool, bool, string, bool>();
+            foreach (var environment in new[] { "Development", "Production" })
+            {
+                foreach (var compressed in new[] { false, true })
+                {
+                    foreach (var warm in new[] { false, true })
+                    {
+                        foreach (var requestKind in new[] { "HEAD", "If-None-Match", "If-Modified-Since", "If-Match", "Range" })
+                        {
+                            data.Add(environment, compressed, warm, requestKind, true);
+                        }
+                    }
+                }
+            }
+
+            foreach (var warm in new[] { false, true })
+            {
+                foreach (var requestKind in new[] { "GET", "HEAD", "If-None-Match", "If-Modified-Since", "If-Match", "Range" })
+                {
+                    data.Add("Development", true, warm, requestKind, false);
+                }
+            }
+
+            return data;
+        }
+    }
+
+    [Theory]
+    [MemberData(nameof(MissingAssetFastPathData))]
+    public async Task MissingAssetFastPathsReturnNonCacheableNotFound(
+        string environment, bool compressed, bool warm, string requestKind, bool deleteCompressedFile)
+        => await MissingAssetReturnsNonCacheableNotFoundCore(environment, compressed, warm, requestKind, deleteCompressedFile);
+
+    private static async Task MissingAssetReturnsNonCacheableNotFoundCore(
+        string environment, bool compressed, bool warm, string requestKind, bool deleteCompressedFile)
+    {
+        var appName = $"{nameof(MissingAssetReturnsNonCacheableNotFound)}_{environment}_{compressed}_{warm}_{requestKind}_{deleteCompressedFile}";
+        var (contentRoot, webRoot) = ConfigureAppPaths(appName);
+        const string assetName = "boot.fingerprint.wasm";
+        const string content = "Boot resource";
+        CreateTestManifest(appName, webRoot,
+            [new TestResource(assetName, content, compressed, [new("Cache-Control", "public,max-age=31536000,immutable")])]);
+        string assetPath = Path.Combine(webRoot, assetName);
+        string compressedPath = assetPath + ".gz";
+        var compressedContent = compressed ? await File.ReadAllBytesAsync(compressedPath) : null;
+
+        var builder = WebApplication.CreateEmptyBuilder(new WebApplicationOptions
+        {
+            ApplicationName = appName,
+            ContentRootPath = contentRoot,
+            EnvironmentName = environment,
+            WebRootPath = webRoot
+        });
+        builder.Configuration["ReloadStaticAssetsAtRuntime"] = (environment is "Development").ToString();
+        builder.Services.AddRouting();
+        builder.WebHost.UseTestServer();
+        await using var app = builder.Build();
+        app.MapStaticAssets();
+        await app.StartAsync();
+        using var client = app.GetTestClient();
+        if (compressed)
+        {
+            client.DefaultRequestHeaders.AcceptEncoding.ParseAdd("gzip");
+        }
+
+        try
+        {
+            var initialETag = "";
+            DateTimeOffset? initialLastModified = null;
+            if (warm || requestKind != "GET")
+            {
+                using var initialRequest = new HttpRequestMessage(warm ? HttpMethod.Get : HttpMethod.Head, $"/{assetName}");
+                using var initial = await client.SendAsync(initialRequest);
+                Assert.Equal(HttpStatusCode.OK, initial.StatusCode);
+                Assert.NotNull(initial.Headers.ETag);
+                Assert.NotNull(initial.Content.Headers.LastModified);
+                initialETag = initial.Headers.ETag.ToString();
+                initialLastModified = initial.Content.Headers.LastModified;
+            }
+
+            File.Delete(assetPath);
+            if (compressed && deleteCompressedFile)
+            {
+                File.Delete(compressedPath);
+            }
+            if (compressed && !deleteCompressedFile)
+            {
+                Assert.True(File.Exists(compressedPath));
+            }
+
+            using var request = new HttpRequestMessage(requestKind == "HEAD" ? HttpMethod.Head : HttpMethod.Get, $"/{assetName}");
+            switch (requestKind)
+            {
+                case "GET":
+                case "HEAD":
+                    break;
+                case "If-None-Match":
+                    request.Headers.IfNoneMatch.ParseAdd(initialETag);
+                    break;
+                case "If-Modified-Since":
+                    request.Headers.IfModifiedSince = initialLastModified;
+                    break;
+                case "If-Match":
+                    request.Headers.IfMatch.ParseAdd("\"different\"");
+                    break;
+                case "Range":
+                    request.Headers.Range = new RangeHeaderValue(1000, null);
+                    break;
+                default:
+                    throw new InvalidOperationException($"Unknown missing-asset request kind '{requestKind}'.");
+            }
+
+            using var missing = await client.SendAsync(request);
+            Assert.Equal(HttpStatusCode.NotFound, missing.StatusCode);
+            Assert.Equal("no-store", missing.Headers.CacheControl?.ToString());
+            Assert.Null(missing.Headers.ETag);
+            Assert.Null(missing.Content.Headers.LastModified);
+            Assert.Null(missing.Content.Headers.ContentRange);
+            Assert.Empty(missing.Content.Headers.ContentEncoding);
+            Assert.Empty(await missing.Content.ReadAsByteArrayAsync());
+
+            await File.WriteAllTextAsync(assetPath, content);
+            if (compressedContent is not null)
+            {
+                await File.WriteAllBytesAsync(compressedPath, compressedContent);
+            }
+
+            using var restored = await client.GetAsync($"/{assetName}");
+            Assert.Equal(HttpStatusCode.OK, restored.StatusCode);
+            Assert.NotNull(restored.Headers.ETag);
+            Assert.False(restored.Headers.CacheControl?.NoStore ?? false);
+            if (environment is "Production" && !compressed)
+            {
+                Assert.Contains("immutable", restored.Headers.CacheControl!.ToString());
+            }
+        }
+        finally
+        {
+            Directory.Delete(webRoot, recursive: true);
+        }
+    }
+
     [Fact]
     public async Task CanServeAssetsFromManifestAsync()
     {
