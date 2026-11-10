@@ -11,7 +11,7 @@ import { CircuitStartOptions } from './CircuitStartOptions';
 import { attachRootComponentToLogicalElement } from '../../Rendering/Renderer';
 import { WebRendererId } from '../../Rendering/WebRendererId';
 import { JSEventRegistry } from '../../Services/JSEventRegistry';
-import { DotNet } from '@microsoft/dotnet-js-interop';
+import * as DotNet from '../../JSInterop/Microsoft.JSInterop';
 import { MessagePackHubProtocol } from '@microsoft/signalr-protocol-msgpack';
 import { ConsoleLogger } from '../Logging/Loggers';
 import { RenderQueue } from './RenderQueue';
@@ -234,8 +234,8 @@ export class CircuitManager implements DotNet.DotNetCallDispatcher {
     } catch (ex: any) {
       this.unhandledError(ex as Error);
 
-      if (ex.errorType === 'FailedToNegotiateWithServerError') {
-        // Connection with the server has been interrupted, and we're in the process of reconnecting.
+      if (this._circuitId || ex.errorType === 'FailedToNegotiateWithServerError') {
+        // An existing circuit can retry any connection-start failure, including when negotiation is skipped.
         // Throw this exception so it can be handled at the reconnection layer, and don't show the
         // error notification.
         throw ex;

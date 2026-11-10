@@ -6,7 +6,7 @@
     <ContentTargetFolders>content</ContentTargetFolders>
 
     <Title>ASP.NET Core $(AspNetCoreMajorMinorVersion) ($(TargetArchitecture)) Runtime </Title>
-    <Description>This site extension installs Microsoft.AspNetCore.App and Microsoft.NetCore.App shared runtimes.</Description>
+    <Description>This Azure App Service site extension installs the Microsoft.AspNetCore.App and Microsoft.NETCore.App shared runtimes and the latest native ASP.NET Core Module for IIS.</Description>
     <PackageTags>aspnetcore;AzureSiteExtension</PackageTags>
     <PackageId>AspNetCoreRuntime.$(AspNetCoreMajorMinorVersion).$(TargetArchitecture)</PackageId>
     <RuntimeIdentifier>$(TargetRuntimeIdentifier)</RuntimeIdentifier>
@@ -20,6 +20,7 @@
   <Import Project="..\..\..\src\Servers\IIS\build\assets.props" />
 
   <ItemGroup>
+    <None Include="PACKAGE.md" Pack="true" PackagePath="\" />
     <Content Include="applicationHost.xdt" />
     <Content Include="scmApplicationHost.xdt" />
     <Content Include="install.cmd" />

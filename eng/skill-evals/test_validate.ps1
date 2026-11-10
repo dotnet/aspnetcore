@@ -46,6 +46,13 @@ variants:
       skills:
         - "../../.github/skills/${eval.parent}"
 '@
+    Set-Content (Join-Path $Root 'eng/skill-evals/skills-smoke.experiment.yaml') @'
+name: skills-smoke
+evals:
+  - "*/eval.vally.yaml"
+defaults:
+  runs: 1
+'@
     & git -C $Root init -q
     & git -C $Root config user.email skill-evals@example.invalid
     & git -C $Root config user.name 'Skill eval self-test'
@@ -96,6 +103,10 @@ try {
         param($root)
         Remove-Item "$root/eng/skill-evals/skills-vs-baseline.experiment.yaml"
     } 'Missing standard experiment'
+    Invoke-Case 'missing smoke experiment' {
+        param($root)
+        Remove-Item "$root/eng/skill-evals/skills-smoke.experiment.yaml"
+    } 'Missing smoke experiment'
     Invoke-Case 'missing runtime skill' {
         param($root)
         Remove-Item -Recurse "$root/.github/skills/widget"

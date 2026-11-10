@@ -40,6 +40,9 @@ builder.Services.AddKeyedScoped<IChatClient>(
 builder.Services.AddKeyedScoped<IChatClient>(
     DojoScenarios.SharedStateEndpoint,
     (sp, _) => CreateChatClient(sp, DojoScenarios.SharedStateEndpoint));
+builder.Services.AddKeyedScoped<IChatClient>(
+    DojoScenarios.PredictiveStateUpdatesEndpoint,
+    (sp, _) => CreateChatClient(sp, DojoScenarios.PredictiveStateUpdatesEndpoint));
 
 var app = builder.Build();
 

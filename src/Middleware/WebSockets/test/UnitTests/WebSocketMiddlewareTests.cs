@@ -796,7 +796,6 @@ public class WebSocketMiddlewareTests : LoggedTest
     }
 
     [Fact]
-    [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/65080")]
     public async Task PingTimeoutCancelsReceiveAsync()
     {
         var tcs = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);

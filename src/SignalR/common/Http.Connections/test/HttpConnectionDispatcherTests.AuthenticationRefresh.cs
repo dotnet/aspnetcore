@@ -107,6 +107,36 @@ public partial class HttpConnectionDispatcherTests
     }
 
     [Fact]
+    public async Task AuthenticationRefreshConnectionTokenCanOnlyBeUsedOnEndpointThatNegotiatedIt()
+    {
+        using (StartVerifiableLog())
+        {
+            var manager = CreateConnectionManager(LoggerFactory);
+            var dispatcher = CreateDispatcher(manager, LoggerFactory);
+            var options = new HttpConnectionDispatcherOptions { EnableAuthenticationRefresh = true };
+            var endpointA = new HttpConnectionEndpointMetadata();
+            var endpointB = new HttpConnectionEndpointMetadata();
+            var connection = manager.CreateConnection(options, negotiateVersion: 1, endpointMetadata: endpointA);
+
+            var wrongEndpointContext = CreateRefreshContext(connection.ConnectionToken, endpointB);
+
+            await dispatcher.ExecuteRefreshAsync(wrongEndpointContext, options);
+
+            Assert.Equal(StatusCodes.Status404NotFound, wrongEndpointContext.Response.StatusCode);
+            AssertRefreshError(ReadJson(wrongEndpointContext.Response.Body), "connection_not_found");
+            Assert.False(manager.TryGetConnection(connection.ConnectionToken, endpointB, out _));
+            Assert.True(manager.TryGetConnection(connection.ConnectionToken, endpointA, out var originalConnection));
+            Assert.Same(connection, originalConnection);
+
+            var originalEndpointContext = CreateRefreshContext(connection.ConnectionToken, endpointA);
+
+            await dispatcher.ExecuteRefreshAsync(originalEndpointContext, options);
+
+            Assert.Equal(StatusCodes.Status200OK, originalEndpointContext.Response.StatusCode);
+        }
+    }
+
+    [Fact]
     public async Task RefreshUpdatesConnectionUserAndReturnsTokenLifetime()
     {
         using (StartVerifiableLog())
@@ -2073,6 +2103,20 @@ public partial class HttpConnectionDispatcherTests
         body.Position = 0;
         using var reader = new StreamReader(body);
         return JObject.Parse(reader.ReadToEnd());
+    }
+
+    private static DefaultHttpContext CreateRefreshContext(string connectionToken, HttpConnectionEndpointMetadata endpointMetadata)
+    {
+        var context = new DefaultHttpContext();
+        context.Request.Path = "/foo/refresh";
+        context.Request.Method = "POST";
+        context.Response.Body = new MemoryStream();
+        context.Request.Query = new QueryCollection(new Dictionary<string, StringValues>
+        {
+            ["id"] = connectionToken,
+        });
+        SetConnectionEndpointMetadata(context, endpointMetadata);
+        return context;
     }
 
     private static void AssertRefreshError(JObject json, string error)

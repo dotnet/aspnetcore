@@ -3,7 +3,7 @@ Param(
   [string] $verbosity = 'minimal',
   [bool] $warnAsError = $true,
   [bool] $nodeReuse = $true,
-  [bool][Alias('mt')]$msbuildMultiThreaded = $false,
+  [bool][Alias('mt')]$msbuildMultiThreaded = $true,
   [switch] $ci,
   [switch] $prepareMachine,
   [switch] $excludePrereleaseVS,

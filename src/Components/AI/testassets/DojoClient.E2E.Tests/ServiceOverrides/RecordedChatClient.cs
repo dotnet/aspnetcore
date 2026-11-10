@@ -17,6 +17,8 @@ namespace DojoClient.E2E.Tests.ServiceOverrides;
 // partially streamed UI before letting the response finish.
 internal sealed class RecordedChatClient : IChatClient
 {
+    private const string PredictiveStateMediaType =
+        "application/vnd.aspnetcore.ai.predictive-state+json";
     private readonly RecordedScript _script;
     private readonly TestLockProvider _locks;
 
@@ -45,6 +47,21 @@ internal sealed class RecordedChatClient : IChatClient
         for (var frameIndex = 0; frameIndex < call.Frames.Count; frameIndex++)
         {
             var frame = call.Frames[frameIndex];
+            if (frame.State is { } state)
+            {
+                yield return new ChatResponseUpdate
+                {
+                    Role = ChatRole.Assistant,
+                    MessageId = messageId,
+                    Contents =
+                    [
+                        new DataContent(
+                            JsonSerializer.SerializeToUtf8Bytes(state),
+                            PredictiveStateMediaType),
+                    ],
+                };
+            }
+
             if (frame.FunctionCall is not null)
             {
                 yield return new ChatResponseUpdate

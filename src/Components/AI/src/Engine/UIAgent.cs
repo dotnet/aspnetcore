@@ -36,6 +36,15 @@ public class UIAgent : IDisposable
 
     internal UIAgentOptions Options => _options;
 
+    internal virtual void RejectPendingPredictiveState()
+    {
+    }
+
+    internal void LogProcessingError(Exception exception)
+    {
+        UIAgentLog.ProcessingError(_logger, exception);
+    }
+
     /// <summary>
     /// Initializes a new instance of the <see cref="UIAgent"/> class.
     /// </summary>
@@ -294,6 +303,7 @@ public class UIAgent : IDisposable
         }
 
         blocks.AddRange(pipeline.Finalize());
+        RejectPendingPredictiveState();
 
         return blocks;
     }
