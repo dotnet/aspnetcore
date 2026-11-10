@@ -169,8 +169,11 @@ registerBuiltInEventType(['wheel', 'mousewheel'], {
 registerBuiltInEventType([
   'cancel',
   'close',
-  'toggle',
 ], createBlankEventArgsOptions);
+
+registerBuiltInEventType(['toggle'], {
+  createEventArgs: e => parseToggleEvent(e as ToggleEvent),
+});
 
 function parseChangeEvent(event: Event): ChangeEventArgs {
   const element = event.target as Element;
@@ -246,6 +249,13 @@ function parseProgressEvent(event: ProgressEvent<EventTarget>): ProgressEventArg
     loaded: event.loaded,
     total: event.total,
     type: event.type,
+  };
+}
+
+function parseToggleEvent(event: ToggleEvent): ToggleEventArgs {
+  return {
+    newState: event.newState,
+    oldState: event.oldState,
   };
 }
 
@@ -462,6 +472,11 @@ interface ProgressEventArgs {
   loaded: number;
   total: number;
   type: string;
+}
+
+interface ToggleEventArgs {
+  newState: string;
+  oldState: string;
 }
 
 interface TouchEventArgs {
