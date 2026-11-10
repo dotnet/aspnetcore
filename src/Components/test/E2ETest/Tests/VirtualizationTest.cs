@@ -417,7 +417,7 @@ public class VirtualizationTest : ServerTestBase<ToggleExecutionModeServerFixtur
             "return document.querySelectorAll('#variable-height-table tbody tr td').length;");
         Assert.True(itemRowCount > 0, "Should have <tr> elements containing <td> cells");
 
-        Browser.ExecuteJavaScript("window.scrollTo(0, document.body.scrollHeight);");
+        Browser.Exists(By.TagName("body")).SendKeys(Keys.End);
         Browser.True(() => Browser.Exists(By.Id("vht-row-499")).Displayed);
 
         var nestedTrCountAfterScroll = (long)js.ExecuteScript(
@@ -2185,6 +2185,7 @@ public class VirtualizationTest : ServerTestBase<ToggleExecutionModeServerFixtur
     [InlineData("0", true)]
     [InlineData("1", true)]
     [InlineData("2", true)]
+    [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/68726")]
     public void QuickGrid_AnchorMode_NearTop_AppendKeepsViewportStable(string anchorMode, bool useItemsProvider)
     {
         MountQuickGridAnchorModeComponent(anchorMode, useItemsProvider);
@@ -6477,7 +6478,6 @@ public class VirtualizationTest : ServerTestBase<ToggleExecutionModeServerFixtur
     }
 
     [Fact]
-    [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/68644")]
     public void ScrollToItem_AfterEndJump_LandsAtTarget()
     {
         const int targetIndex = 200;

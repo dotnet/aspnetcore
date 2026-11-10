@@ -15,7 +15,7 @@ overloads, and an enum.
 ## Value types
 
 - Map `DOMString` and `USVString` to `string`, and their nullable forms to `string?`.
-- Map `unsigned long` to `uint` and `long long` to `long`. Add `?` for a nullable type.
+- Map `long` to `int`, `unsigned long` to `uint`, and `long long` to `long`. Add `?` for a nullable type.
 - Resolve a typedef to the type behind it, and do not create a .NET type for the typedef itself.
   When it is a number, use that number type, even if the name suggests a time or a size. For
   example, `DOMHighResTimeStamp` is a `double`, so map `DOMHighResTimeStamp?` to `double?`.
@@ -74,6 +74,7 @@ public sealed class CookieInit
 
     public CookieSameSite SameSite { get; set; } = CookieSameSite.Strict;
 
+    [Experimental("ASP0040", UrlFormat = "https://aka.ms/aspnet/analyzer/{0}")]
     public bool Partitioned { get; set; }
 
     [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
