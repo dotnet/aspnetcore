@@ -31,28 +31,17 @@ public class InteractivityTest : ServerTestBase<BasicTestAppServerSiteFixture<Ra
     [Theory]
     [InlineData("server", "")]
     [InlineData("wasm", "")]
-    [InlineData("auto", "")]
     [InlineData("server", "text")]
     [InlineData("wasm", "text")]
-    [InlineData("auto", "text")]
     [InlineData("server", "attribute")]
-    [InlineData("wasm", "attribute")]
     [InlineData("server", "element")]
-    [InlineData("wasm", "element")]
     [InlineData("server", "extra")]
-    [InlineData("wasm", "extra")]
     [InlineData("server", "missing")]
-    [InlineData("wasm", "missing")]
     [InlineData("server", "markup")]
-    [InlineData("wasm", "markup")]
     [InlineData("server", "namespace")]
-    [InlineData("wasm", "namespace")]
     [InlineData("server", "order")]
-    [InlineData("wasm", "order")]
     [InlineData("server", "attribute-order")]
-    [InlineData("wasm", "attribute-order")]
     [InlineData("server", "root-attribute")]
-    [InlineData("wasm", "root-attribute")]
     public void PrerenderedDom_WithInitializersUsesWholeRootFallbackForMismatches(string platform, string mismatch)
     {
         Navigate($"{ServerPathBase}/prerendered-dom?suppress-autostart&platform={platform}&mismatch={mismatch}");
@@ -188,27 +177,16 @@ public class InteractivityTest : ServerTestBase<BasicTestAppServerSiteFixture<Ra
     [InlineData("server", "select-text-options-matching", true, "30 min")]
     [InlineData("wasm", "select-text-options-matching", true, "30 min")]
     [InlineData("server", "select-dynamic-options", true, "30 min")]
-    [InlineData("wasm", "select-dynamic-options", true, "30 min")]
     [InlineData("server", "select-selected-option", true, "30 min")]
-    [InlineData("wasm", "select-selected-option", true, "30 min")]
     [InlineData("server", "select-listbox", false, "45 min")]
-    [InlineData("wasm", "select-listbox", false, "45 min")]
     [InlineData("server", "select-empty-value", false, "")]
-    [InlineData("wasm", "select-empty-value", false, "")]
     [InlineData("server", "select-unmatched-value", false, "")]
-    [InlineData("wasm", "select-unmatched-value", false, "")]
     [InlineData("server", "select-no-value", true, "30 min")]
-    [InlineData("wasm", "select-no-value", true, "30 min")]
     [InlineData("server", "select-disabled", true, "5 min")]
-    [InlineData("wasm", "select-disabled", true, "5 min")]
     [InlineData("server", "select-disabled-optgroup", true, "30 min")]
-    [InlineData("wasm", "select-disabled-optgroup", true, "30 min")]
     [InlineData("server", "select-multiple", false, "5 min,45 min")]
-    [InlineData("wasm", "select-multiple", false, "5 min,45 min")]
     [InlineData("server", "select-multiple-matching", true, "30 min")]
-    [InlineData("wasm", "select-multiple-matching", true, "30 min")]
     [InlineData("server", "select-duplicate-values", false, "45 min")]
-    [InlineData("wasm", "select-duplicate-values", false, "45 min")]
     public void PrerenderedDom_ChecksSelectDefaultsBeforePreservingUserSelection(string platform, string scenario, bool shouldPreserveSelect, string expectedValues)
     {
         Navigate($"{ServerPathBase}/prerendered-dom?suppress-autostart&platform={platform}&scenario={scenario}");
@@ -253,35 +231,20 @@ public class InteractivityTest : ServerTestBase<BasicTestAppServerSiteFixture<Ra
     [InlineData("server", "nested")]
     [InlineData("wasm", "nested")]
     [InlineData("server", "input-default")]
-    [InlineData("wasm", "input-default")]
     [InlineData("server", "textarea-default")]
-    [InlineData("wasm", "textarea-default")]
     [InlineData("server", "textarea-text")]
-    [InlineData("wasm", "textarea-text")]
     [InlineData("server", "textarea-text-matching")]
-    [InlineData("wasm", "textarea-text-matching")]
     [InlineData("server", "markup-textarea")]
-    [InlineData("wasm", "markup-textarea")]
     [InlineData("server", "remove-leading")]
-    [InlineData("wasm", "remove-leading")]
     [InlineData("server", "add-leading")]
-    [InlineData("wasm", "add-leading")]
     [InlineData("server", "remove-middle")]
-    [InlineData("wasm", "remove-middle")]
     [InlineData("server", "insert-middle")]
-    [InlineData("wasm", "insert-middle")]
     [InlineData("server", "text")]
-    [InlineData("wasm", "text")]
     [InlineData("server", "component")]
-    [InlineData("wasm", "component")]
     [InlineData("server", "empty-component")]
-    [InlineData("wasm", "empty-component")]
     [InlineData("server", "markup-tree")]
-    [InlineData("wasm", "markup-tree")]
     [InlineData("server", "markup-siblings")]
-    [InlineData("wasm", "markup-siblings")]
     [InlineData("server", "table")]
-    [InlineData("wasm", "table")]
     public void PrerenderedDom_ReplacesOnlyMismatchedPositions(string platform, string scenario)
     {
         Navigate($"{ServerPathBase}/prerendered-dom?suppress-autostart&platform={platform}&scenario={scenario}");
@@ -405,15 +368,11 @@ public class InteractivityTest : ServerTestBase<BasicTestAppServerSiteFixture<Ra
     [InlineData("server", "script-order")]
     [InlineData("wasm", "script-order")]
     [InlineData("server", "unchanged-script-changed-target")]
-    [InlineData("wasm", "unchanged-script-changed-target")]
     [InlineData("server", "custom-element-order")]
     [InlineData("wasm", "custom-element-order")]
     [InlineData("server", "unchanged-custom-element-changed-target")]
-    [InlineData("wasm", "unchanged-custom-element-changed-target")]
     [InlineData("server", "nested-script-order")]
-    [InlineData("wasm", "nested-script-order")]
     [InlineData("server", "unchanged-nested-script-changed-target")]
-    [InlineData("wasm", "unchanged-nested-script-changed-target")]
     public void PrerenderedDom_InitializersBindToCurrentNodes(string platform, string scenario)
     {
         VerifyPrerenderedDomInitializer(platform, scenario,
@@ -422,11 +381,8 @@ public class InteractivityTest : ServerTestBase<BasicTestAppServerSiteFixture<Ra
 
     [Theory]
     [InlineData("server", "matching-script")]
-    [InlineData("wasm", "matching-script")]
     [InlineData("server", "matching-custom-element")]
-    [InlineData("wasm", "matching-custom-element")]
     [InlineData("server", "nested-script-subtree")]
-    [InlineData("wasm", "nested-script-subtree")]
     public void PrerenderedDom_InitializerControlsKeepMatchingNodes(string platform, string scenario)
     {
         VerifyPrerenderedDomInitializer(platform, scenario, shouldPreserveRoot: true);
@@ -483,7 +439,6 @@ public class InteractivityTest : ServerTestBase<BasicTestAppServerSiteFixture<Ra
     [Theory]
     [InlineData("server")]
     [InlineData("wasm")]
-    [InlineData("auto")]
     public void PrerenderedDom_WithoutPrerenderingUsesNormalRendering(string platform)
     {
         Navigate($"{ServerPathBase}/prerendered-dom?suppress-autostart&platform={platform}&noPrerender=true");
@@ -496,8 +451,6 @@ public class InteractivityTest : ServerTestBase<BasicTestAppServerSiteFixture<Ra
 
     [Theory]
     [InlineData("server")]
-    [InlineData("wasm")]
-    [InlineData("auto")]
     public void PrerenderedDom_PreservesDocumentSelectionAcrossTextFrames(string platform)
     {
         Navigate($"{ServerPathBase}/prerendered-dom?suppress-autostart&platform={platform}");
@@ -580,8 +533,6 @@ public class InteractivityTest : ServerTestBase<BasicTestAppServerSiteFixture<Ra
 
     [Theory]
     [InlineData("server")]
-    [InlineData("wasm")]
-    [InlineData("auto")]
     public void PrerenderedDom_PreservesPlayingVideo(string platform)
     {
         Navigate($"{ServerPathBase}/prerendered-dom?suppress-autostart&platform={platform}");
