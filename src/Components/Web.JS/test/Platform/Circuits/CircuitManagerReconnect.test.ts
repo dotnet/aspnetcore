@@ -1,7 +1,7 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-import { afterEach, describe, expect, jest, test } from '@jest/globals';
+import { afterEach, beforeEach, describe, expect, jest, test } from '@jest/globals';
 import { HubConnection, HubConnectionBuilder } from '@microsoft/signalr';
 import { CircuitManager } from '../../../src/Platform/Circuits/CircuitManager';
 import { resolveOptions } from '../../../src/Platform/Circuits/CircuitStartOptions';
@@ -10,6 +10,23 @@ import { isRendererAttached } from '../../../src/Rendering/WebRendererInteropMet
 import { WebRendererId } from '../../../src/Rendering/WebRendererId';
 
 describe('CircuitManager reconnect', () => {
+  let options: ReturnType<typeof resolveOptions>;
+  let manager: CircuitManager;
+
+  beforeEach(() => {
+    options = resolveOptions({
+      circuitHandlers: [],
+      reconnectionHandler: { onConnectionDown: jest.fn(), onConnectionUp: jest.fn() },
+    });
+    manager = new CircuitManager(
+      {} as never,
+      '',
+      options,
+      { log: () => { /* no-op */ } } as never,
+      new JSEventRegistry(),
+    );
+  });
+
   afterEach(() => {
     jest.restoreAllMocks();
   });
@@ -21,17 +38,7 @@ describe('CircuitManager reconnect', () => {
     };
     let completeStartConnection: ((value: typeof connection) => void) | undefined;
     const startConnection = jest.fn(() => new Promise<typeof connection>(resolve => completeStartConnection = resolve));
-    const onConnectionUp = jest.fn();
-    const manager = new CircuitManager(
-      {} as never,
-      '',
-      resolveOptions({
-        circuitHandlers: [],
-        reconnectionHandler: { onConnectionDown: jest.fn(), onConnectionUp },
-      }),
-      { log: () => { /* no-op */ } } as never,
-      new JSEventRegistry(),
-    );
+    const onConnectionUp = options.reconnectionHandler!.onConnectionUp;
     const internal = manager as unknown as {
       _circuitId: string;
       _connection: { state: string };
@@ -66,67 +73,34 @@ describe('CircuitManager reconnect', () => {
     expect(onConnectionUp).toHaveBeenCalledTimes(2);
   });
 
-  test('stops the connection when ConnectCircuit throws', async () => {
-    const error = new Error('ConnectCircuit failed');
-    let stopped = false;
+  test.each(['reconnect', 'resume'] as const)('stops the connection when %s invocation throws', async (operation) => {
+    const hubMethodName = operation === 'reconnect' ? 'ConnectCircuit' : 'ResumeCircuit';
+    const error = new Error(`${hubMethodName} failed`);
     const connection = {
       state: 'Connected',
-      invoke: () => Promise.reject(error),
-      stop: () => {
-        stopped = true;
+      invoke: jest.fn<(methodName: string, ...args: unknown[]) => Promise<never>>(() => Promise.reject(error)),
+      stop: jest.fn(async () => {
         connection.state = 'Disconnected';
-        return Promise.resolve();
-      },
+      }),
     };
-    const manager = Object.create(CircuitManager.prototype) as {
-      _circuitId: string;
-      _connection: { state: string };
-      startConnection: () => Promise<typeof connection>;
-      reconnect: () => Promise<boolean>;
-    };
-    manager._circuitId = 'test-circuit-id';
-    manager._connection = { state: 'Disconnected' };
-    manager.startConnection = () => Promise.resolve(connection);
-
-    await expect(manager.reconnect()).rejects.toBe(error);
-
-    expect(stopped).toBe(true);
-    expect(connection.state).toBe('Disconnected');
-  });
-
-  test('stops the connection when ResumeCircuit throws', async () => {
-    const error = new Error('ResumeCircuit failed');
-    let stopped = false;
-    const connection = {
-      state: 'Connected',
-      invoke: () => Promise.reject(error),
-      stop: () => {
-        stopped = true;
-        connection.state = 'Disconnected';
-        return Promise.resolve();
-      },
-    };
-    const manager = new CircuitManager(
-      {} as never,
-      '',
-      resolveOptions({ circuitHandlers: [] }),
-      { log: () => { /* no-op */ } } as never,
-      new JSEventRegistry(),
-    );
     const internal = manager as unknown as {
       _circuitId: string;
-      _connection: typeof connection;
+      _connection: { state: string };
       _pausingState: { transitionTo(value: boolean): void };
+      startConnection: () => Promise<typeof connection>;
     };
     internal._circuitId = 'test-circuit-id';
-    internal._connection = connection;
+    internal._connection = operation === 'reconnect' ? { state: 'Disconnected' } : connection;
     internal._pausingState.transitionTo(true);
+    internal.startConnection = () => Promise.resolve(connection);
 
-    await expect(manager.resume()).rejects.toBe(error);
+    await expect(manager[operation]()).rejects.toBe(error);
 
-    expect(stopped).toBe(true);
+    expect(connection.invoke.mock.calls[0][0]).toBe(hubMethodName);
+    expect(connection.stop).toHaveBeenCalledTimes(1);
     expect(connection.state).toBe('Disconnected');
   });
+
   test.each(['onCircuitClosed', 'onCircuitOpened'] as const)(
     'does not stop the connection when %s throws',
     async (callback) => {
@@ -136,17 +110,9 @@ describe('CircuitManager reconnect', () => {
         invoke: jest.fn(async () => 'new-circuit-id'),
         stop: jest.fn(async () => { }),
       };
-      const manager = new CircuitManager(
-        {} as never,
-        '',
-        resolveOptions({
-          circuitHandlers: [{
-            [callback]: () => { throw callbackError; },
-          }],
-        }),
-        { log: () => { } } as never,
-        new JSEventRegistry(),
-      );
+      options.circuitHandlers.push({
+        [callback]: () => { throw callbackError; },
+      });
       const internal = manager as unknown as {
         _circuitId: string;
         _connection: typeof connection;
@@ -175,17 +141,7 @@ describe('CircuitManager reconnect', () => {
     } as unknown as HubConnection;
     jest.spyOn(HubConnectionBuilder.prototype, 'build').mockReturnValue(connection);
 
-    const onConnectionDown = jest.fn();
-    const manager = new CircuitManager(
-      {} as never,
-      '',
-      resolveOptions({
-        circuitHandlers: [],
-        reconnectionHandler: { onConnectionDown, onConnectionUp: () => { } },
-      }),
-      { log: () => { } } as never,
-      new JSEventRegistry(),
-    );
+    const onConnectionDown = options.reconnectionHandler!.onConnectionDown;
 
     await (manager as unknown as { startConnection(): Promise<HubConnection> }).startConnection();
 

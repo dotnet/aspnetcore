@@ -37,18 +37,11 @@ public class ServerCircuitInvocationFailureTests : ServerTestBase<ServerCircuitI
     }
 
     [Theory]
-    [InlineData("ConnectCircuit")]
-    [InlineData("ResumeCircuit")]
-    public Task ReconnectUI_ClearsAfterAutomaticallyRetryingFailedCircuitInvocation(string hubMethodName)
-        => VerifyRecoveryAfterFailedCircuitInvocation(hubMethodName, automaticRetry: true);
-
-    [Theory]
-    [InlineData("ConnectCircuit")]
-    [InlineData("ResumeCircuit")]
-    public Task ReconnectUI_ClearsAfterManuallyRetryingFailedCircuitInvocation(string hubMethodName)
-        => VerifyRecoveryAfterFailedCircuitInvocation(hubMethodName, automaticRetry: false);
-
-    private async Task VerifyRecoveryAfterFailedCircuitInvocation(string hubMethodName, bool automaticRetry)
+    [InlineData("ConnectCircuit", true)]
+    [InlineData("ResumeCircuit", true)]
+    [InlineData("ConnectCircuit", false)]
+    [InlineData("ResumeCircuit", false)]
+    public async Task ReconnectUI_ClearsAfterRetryingFailedCircuitInvocation(string hubMethodName, bool automaticRetry)
     {
         var serverFixture = hubMethodName == "ResumeCircuit" ? _resumeServerFixture : _serverFixture;
         var query = automaticRetry ? string.Empty : "?single-reconnect-attempt=true";
