@@ -12,17 +12,73 @@ namespace Microsoft.AspNetCore.Components.Platform;
 /// </summary>
 public sealed class MessagePort : IAsyncDisposable
 {
+    private static EventType<MessagePort, MessageEvent>? _messageEvent;
+    private static EventType<MessagePort, MessageEvent>? _messageErrorEvent;
     private readonly IJSRuntime _jsRuntime;
+    private readonly FeatureContext _context;
+    private IInternalAsyncDisposal? _listeners;
     private readonly IJSObjectReference _ownerReference;
     private readonly string _propertyName;
     private Task<IJSObjectReference>? _referenceTask;
     private bool _disposed;
 
-    internal MessagePort(IJSRuntime jsRuntime, IJSObjectReference ownerReference, string propertyName)
+    internal MessagePort(FeatureContext context, IJSObjectReference ownerReference, string propertyName)
     {
-        _jsRuntime = jsRuntime;
+        _jsRuntime = context.JSRuntime;
+        _context = context;
         _ownerReference = ownerReference;
         _propertyName = propertyName;
+    }
+
+    /// <summary>
+    /// Gets the event that fires when a JSON message arrives on this port.
+    /// </summary>
+    public static EventType<MessagePort, MessageEvent> MessageEvent
+        => _messageEvent ??= EventTypes.Create<MessagePort, MessageEventPayload, MessageEvent>("message", """[{"data":{"$json":true},"origin":null}]""", static (_, payload) => payload.ToMessageEvent());
+
+    /// <summary>
+    /// Gets the event that fires when the browser cannot deserialize a message.
+    /// </summary>
+    public static EventType<MessagePort, MessageEvent> MessageErrorEvent
+        => _messageErrorEvent ??= EventTypes.Create<MessagePort, MessageEventPayload, MessageEvent>("messageerror", """[{"data":{"$json":true},"origin":null}]""", static (_, payload) => payload.ToMessageEvent());
+
+    /// <summary>
+    /// Adds an independent listener for the specified event. Listener exceptions are logged without removing the listener.
+    /// </summary>
+    /// <typeparam name="TEvent">The type of the event object.</typeparam>
+    /// <param name="type">The event to listen for.</param>
+    /// <param name="listener">The function to call with each event.</param>
+    /// <returns>An object that removes this registration when disposed.</returns>
+    /// <exception cref="ArgumentNullException"><paramref name="type"/> or <paramref name="listener"/> is <see langword="null"/>.</exception>
+    /// <exception cref="ObjectDisposedException">This port has been disposed.</exception>
+    /// <remarks>Call <see cref="StartAsync"/> to enable message dispatch. Disposing this port also removes its listeners.</remarks>
+    public ValueTask<IAsyncDisposable> AddEventListenerAsync<TEvent>(EventType<MessagePort, TEvent> type, Func<TEvent, Task> listener)
+        => AddEventListenerAsync(type, listener, CancellationToken.None);
+
+    /// <summary>
+    /// Adds an independent listener for the specified event. Listener exceptions are logged without removing the listener.
+    /// Canceling <paramref name="cancellationToken"/> removes this registration.
+    /// </summary>
+    /// <typeparam name="TEvent">The type of the event object.</typeparam>
+    /// <param name="type">The event to listen for.</param>
+    /// <param name="listener">The function to call with each event.</param>
+    /// <param name="cancellationToken">The token that removes the listener when canceled.</param>
+    /// <returns>An object that removes this registration when disposed.</returns>
+    /// <exception cref="ArgumentNullException"><paramref name="type"/> or <paramref name="listener"/> is <see langword="null"/>.</exception>
+    /// <exception cref="ObjectDisposedException">This port has been disposed.</exception>
+    /// <exception cref="OperationCanceledException"><paramref name="cancellationToken"/> was canceled before registration completed.</exception>
+    /// <remarks>Call <see cref="StartAsync"/> to enable message dispatch. Removal prevents new callbacks but does not wait for running callbacks.</remarks>
+    public async ValueTask<IAsyncDisposable> AddEventListenerAsync<TEvent>(EventType<MessagePort, TEvent> type, Func<TEvent, Task> listener, CancellationToken cancellationToken)
+    {
+        ArgumentNullException.ThrowIfNull(type);
+        ArgumentNullException.ThrowIfNull(listener);
+        cancellationToken.ThrowIfCancellationRequested();
+
+        var reference = await GetReferenceAsync();
+        ObjectDisposedException.ThrowIf(_disposed, this);
+        var listeners = (EventListenerCollection)(_listeners ??= _context.CreateEventListenerCollection());
+
+        return await type.AddListenerAsync(listeners, reference, this, listener, cancellationToken);
     }
 
     /// <summary>
@@ -109,6 +165,11 @@ public sealed class MessagePort : IAsyncDisposable
         }
 
         _disposed = true;
+        if (_listeners is { } listeners)
+        {
+            await listeners.InternalDisposeAsync();
+        }
+
         if (_referenceTask is { IsCompletedSuccessfully: true } referenceTask)
         {
             try

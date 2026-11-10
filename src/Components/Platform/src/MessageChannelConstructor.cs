@@ -10,11 +10,11 @@ namespace Microsoft.AspNetCore.Components.Platform;
 /// </summary>
 public sealed class MessageChannelConstructor
 {
-    private readonly IJSRuntime _jsRuntime;
+    private readonly FeatureContext _context;
 
-    internal MessageChannelConstructor(IJSRuntime jsRuntime)
+    internal MessageChannelConstructor(FeatureContext context)
     {
-        _jsRuntime = jsRuntime;
+        _context = context;
     }
 
     /// <summary>
@@ -23,8 +23,8 @@ public sealed class MessageChannelConstructor
     /// <returns>The created channel, which the caller must dispose.</returns>
     public async ValueTask<MessageChannel> CreateAsync()
     {
-        var reference = await _jsRuntime.InvokeConstructorAsync("MessageChannel").ConfigureAwait(false);
+        var reference = await _context.JSRuntime.InvokeConstructorAsync("MessageChannel").ConfigureAwait(false);
 
-        return new MessageChannel(_jsRuntime, reference);
+        return new MessageChannel(_context, reference);
     }
 }

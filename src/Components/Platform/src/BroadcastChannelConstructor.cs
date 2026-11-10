@@ -10,11 +10,11 @@ namespace Microsoft.AspNetCore.Components.Platform;
 /// </summary>
 public sealed class BroadcastChannelConstructor
 {
-    private readonly IJSRuntime _jsRuntime;
+    private readonly FeatureContext _context;
 
-    internal BroadcastChannelConstructor(IJSRuntime jsRuntime)
+    internal BroadcastChannelConstructor(FeatureContext context)
     {
-        _jsRuntime = jsRuntime;
+        _context = context;
     }
 
     /// <summary>
@@ -27,8 +27,8 @@ public sealed class BroadcastChannelConstructor
     {
         ArgumentNullException.ThrowIfNull(name);
 
-        var reference = await _jsRuntime.InvokeConstructorAsync("BroadcastChannel", name).ConfigureAwait(false);
+        var reference = await _context.JSRuntime.InvokeConstructorAsync("BroadcastChannel", name).ConfigureAwait(false);
 
-        return new BroadcastChannel(_jsRuntime, reference);
+        return new BroadcastChannel(_context, reference);
     }
 }

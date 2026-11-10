@@ -1,4 +1,18 @@
 #nullable enable
+Microsoft.AspNetCore.Components.Platform.BroadcastChannel.AddEventListenerAsync<TEvent>(Microsoft.AspNetCore.Components.Platform.EventType<Microsoft.AspNetCore.Components.Platform.BroadcastChannel!, TEvent>! type, System.Func<TEvent, System.Threading.Tasks.Task!>! listener) -> System.Threading.Tasks.ValueTask<System.IAsyncDisposable!>
+Microsoft.AspNetCore.Components.Platform.BroadcastChannel.AddEventListenerAsync<TEvent>(Microsoft.AspNetCore.Components.Platform.EventType<Microsoft.AspNetCore.Components.Platform.BroadcastChannel!, TEvent>! type, System.Func<TEvent, System.Threading.Tasks.Task!>! listener, System.Threading.CancellationToken cancellationToken) -> System.Threading.Tasks.ValueTask<System.IAsyncDisposable!>
+Microsoft.AspNetCore.Components.Platform.MessagePort.AddEventListenerAsync<TEvent>(Microsoft.AspNetCore.Components.Platform.EventType<Microsoft.AspNetCore.Components.Platform.MessagePort!, TEvent>! type, System.Func<TEvent, System.Threading.Tasks.Task!>! listener) -> System.Threading.Tasks.ValueTask<System.IAsyncDisposable!>
+Microsoft.AspNetCore.Components.Platform.MessagePort.AddEventListenerAsync<TEvent>(Microsoft.AspNetCore.Components.Platform.EventType<Microsoft.AspNetCore.Components.Platform.MessagePort!, TEvent>! type, System.Func<TEvent, System.Threading.Tasks.Task!>! listener, System.Threading.CancellationToken cancellationToken) -> System.Threading.Tasks.ValueTask<System.IAsyncDisposable!>
+Microsoft.AspNetCore.Components.Platform.MessageEvent
+Microsoft.AspNetCore.Components.Platform.MessageEvent.MessageEvent() -> void
+Microsoft.AspNetCore.Components.Platform.MessageEvent.Data.get -> System.Text.Json.JsonElement
+Microsoft.AspNetCore.Components.Platform.MessageEvent.Data.init -> void
+Microsoft.AspNetCore.Components.Platform.MessageEvent.Origin.get -> string!
+Microsoft.AspNetCore.Components.Platform.MessageEvent.Origin.init -> void
+static Microsoft.AspNetCore.Components.Platform.MessagePort.MessageEvent.get -> Microsoft.AspNetCore.Components.Platform.EventType<Microsoft.AspNetCore.Components.Platform.MessagePort!, Microsoft.AspNetCore.Components.Platform.MessageEvent!>!
+static Microsoft.AspNetCore.Components.Platform.MessagePort.MessageErrorEvent.get -> Microsoft.AspNetCore.Components.Platform.EventType<Microsoft.AspNetCore.Components.Platform.MessagePort!, Microsoft.AspNetCore.Components.Platform.MessageEvent!>!
+static Microsoft.AspNetCore.Components.Platform.BroadcastChannel.MessageEvent.get -> Microsoft.AspNetCore.Components.Platform.EventType<Microsoft.AspNetCore.Components.Platform.BroadcastChannel!, Microsoft.AspNetCore.Components.Platform.MessageEvent!>!
+static Microsoft.AspNetCore.Components.Platform.BroadcastChannel.MessageErrorEvent.get -> Microsoft.AspNetCore.Components.Platform.EventType<Microsoft.AspNetCore.Components.Platform.BroadcastChannel!, Microsoft.AspNetCore.Components.Platform.MessageEvent!>!
 Microsoft.AspNetCore.Components.Platform.BroadcastChannel
 Microsoft.AspNetCore.Components.Platform.BroadcastChannel.CloseAsync() -> System.Threading.Tasks.ValueTask
 Microsoft.AspNetCore.Components.Platform.BroadcastChannel.DisposeAsync() -> System.Threading.Tasks.ValueTask

@@ -18,6 +18,8 @@
 <button id="close-messaging" @onclick="CloseAsync">Close channels</button>
 <p id="messaging-result" role="status">@result</p>
 
+<MessagingReceiveDemo />
+
 @code {
     private MessageChannel? channel;
     private BroadcastChannel? broadcast;

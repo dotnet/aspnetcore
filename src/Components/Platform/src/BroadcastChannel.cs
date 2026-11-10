@@ -12,14 +12,69 @@ namespace Microsoft.AspNetCore.Components.Platform;
 /// </summary>
 public sealed class BroadcastChannel : IAsyncDisposable
 {
+    private static EventType<BroadcastChannel, MessageEvent>? _messageEvent;
+    private static EventType<BroadcastChannel, MessageEvent>? _messageErrorEvent;
     private readonly IJSRuntime _jsRuntime;
+    private readonly FeatureContext _context;
+    private IInternalAsyncDisposal? _listeners;
     private readonly IJSObjectReference _reference;
     private bool _disposed;
 
-    internal BroadcastChannel(IJSRuntime jsRuntime, IJSObjectReference reference)
+    internal BroadcastChannel(FeatureContext context, IJSObjectReference reference)
     {
-        _jsRuntime = jsRuntime;
+        _jsRuntime = context.JSRuntime;
+        _context = context;
         _reference = reference;
+    }
+
+    /// <summary>
+    /// Gets the event that fires when another eligible channel posts a JSON message.
+    /// </summary>
+    public static EventType<BroadcastChannel, MessageEvent> MessageEvent
+        => _messageEvent ??= EventTypes.Create<BroadcastChannel, MessageEventPayload, MessageEvent>("message", """[{"data":{"$json":true},"origin":null}]""", static (_, payload) => payload.ToMessageEvent());
+
+    /// <summary>
+    /// Gets the event that fires when the browser cannot deserialize a message.
+    /// </summary>
+    public static EventType<BroadcastChannel, MessageEvent> MessageErrorEvent
+        => _messageErrorEvent ??= EventTypes.Create<BroadcastChannel, MessageEventPayload, MessageEvent>("messageerror", """[{"data":{"$json":true},"origin":null}]""", static (_, payload) => payload.ToMessageEvent());
+
+    /// <summary>
+    /// Adds an independent listener for the specified event. Listener exceptions are logged without removing the listener.
+    /// </summary>
+    /// <typeparam name="TEvent">The type of the event object.</typeparam>
+    /// <param name="type">The event to listen for.</param>
+    /// <param name="listener">The function to call with each event.</param>
+    /// <returns>An object that removes this registration when disposed.</returns>
+    /// <exception cref="ArgumentNullException"><paramref name="type"/> or <paramref name="listener"/> is <see langword="null"/>.</exception>
+    /// <exception cref="ObjectDisposedException">This channel has been disposed.</exception>
+    /// <remarks>Disposing this channel also removes its listeners.</remarks>
+    public ValueTask<IAsyncDisposable> AddEventListenerAsync<TEvent>(EventType<BroadcastChannel, TEvent> type, Func<TEvent, Task> listener)
+        => AddEventListenerAsync(type, listener, CancellationToken.None);
+
+    /// <summary>
+    /// Adds an independent listener for the specified event. Listener exceptions are logged without removing the listener.
+    /// Canceling <paramref name="cancellationToken"/> removes this registration.
+    /// </summary>
+    /// <typeparam name="TEvent">The type of the event object.</typeparam>
+    /// <param name="type">The event to listen for.</param>
+    /// <param name="listener">The function to call with each event.</param>
+    /// <param name="cancellationToken">The token that removes the listener when canceled.</param>
+    /// <returns>An object that removes this registration when disposed.</returns>
+    /// <exception cref="ArgumentNullException"><paramref name="type"/> or <paramref name="listener"/> is <see langword="null"/>.</exception>
+    /// <exception cref="ObjectDisposedException">This channel has been disposed.</exception>
+    /// <exception cref="OperationCanceledException"><paramref name="cancellationToken"/> was canceled before registration completed.</exception>
+    /// <remarks>Removal prevents new callbacks but does not wait for running callbacks.</remarks>
+    public async ValueTask<IAsyncDisposable> AddEventListenerAsync<TEvent>(EventType<BroadcastChannel, TEvent> type, Func<TEvent, Task> listener, CancellationToken cancellationToken)
+    {
+        ObjectDisposedException.ThrowIf(_disposed, this);
+        ArgumentNullException.ThrowIfNull(type);
+        ArgumentNullException.ThrowIfNull(listener);
+        cancellationToken.ThrowIfCancellationRequested();
+
+        var listeners = (EventListenerCollection)(_listeners ??= _context.CreateEventListenerCollection());
+
+        return await type.AddListenerAsync(listeners, _reference, this, listener, cancellationToken);
     }
 
     /// <summary>
@@ -105,6 +160,11 @@ public sealed class BroadcastChannel : IAsyncDisposable
         }
 
         _disposed = true;
+        if (_listeners is { } listeners)
+        {
+            await listeners.InternalDisposeAsync();
+        }
+
         try
         {
             await _reference.InvokeVoidAsync("close").ConfigureAwait(false);

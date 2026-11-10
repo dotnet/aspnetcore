@@ -14,6 +14,8 @@ internal sealed class FeatureContext : IInternalAsyncDisposal
     private readonly ILoggerFactory _loggerFactory;
     // Typed as the interface, so that disposal does not keep the type in an app that never adds a listener.
     private IInternalAsyncDisposal? _callbackFactory;
+    private List<IInternalAsyncDisposal>? _listenerCollections;
+    private bool _disposed;
 
     public FeatureContext(IJSRuntime jsRuntime, ILoggerFactory loggerFactory)
     {
@@ -30,9 +32,36 @@ internal sealed class FeatureContext : IInternalAsyncDisposal
     /// Creates the collection that a projection uses to add event listeners to its JavaScript object.
     /// </summary>
     public EventListenerCollection CreateEventListenerCollection()
-        => new((JSCallbackFactory)(_callbackFactory ??= new JSCallbackFactory(JSRuntime)), _loggerFactory.CreateLogger<EventListenerCollection>());
+    {
+        ObjectDisposedException.ThrowIf(_disposed, this);
+        var listeners = new EventListenerCollection(this, (JSCallbackFactory)(_callbackFactory ??= new JSCallbackFactory(JSRuntime)), _loggerFactory.CreateLogger<EventListenerCollection>());
+        (_listenerCollections ??= []).Add(listeners);
 
-    // Window calls this last, after every listener that needs the module is removed.
-    ValueTask IInternalAsyncDisposal.InternalDisposeAsync()
-        => _callbackFactory?.InternalDisposeAsync() ?? ValueTask.CompletedTask;
+        return listeners;
+    }
+
+    internal void RemoveEventListenerCollection(IInternalAsyncDisposal listeners) => _listenerCollections?.Remove(listeners);
+
+    // Window calls this last; remaining collections belong to caller-owned targets.
+    async ValueTask IInternalAsyncDisposal.InternalDisposeAsync()
+    {
+        if (_disposed)
+        {
+            return;
+        }
+
+        _disposed = true;
+        if (_listenerCollections is { } collections)
+        {
+            foreach (var listeners in collections.ToArray())
+            {
+                await listeners.InternalDisposeAsync();
+            }
+        }
+
+        if (_callbackFactory is { } callbackFactory)
+        {
+            await callbackFactory.InternalDisposeAsync();
+        }
+    }
 }

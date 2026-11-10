@@ -14,12 +14,12 @@ public static class WindowMessagingExtensions
         /// Gets the constructor for message channels.
         /// </summary>
         public MessageChannelConstructor MessageChannel
-            => window.GetOrAddFeature(static jsRuntime => new MessageChannelConstructor(jsRuntime));
+            => window.GetOrAddFeature(static context => new MessageChannelConstructor(context));
 
         /// <summary>
         /// Gets the constructor for broadcast channels.
         /// </summary>
         public BroadcastChannelConstructor BroadcastChannel
-            => window.GetOrAddFeature(static jsRuntime => new BroadcastChannelConstructor(jsRuntime));
+            => window.GetOrAddFeature(static context => new BroadcastChannelConstructor(context));
     }
 }

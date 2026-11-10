@@ -1,0 +1,107 @@
+@using System.Text.Json
+@implements IAsyncDisposable
+@inject IBrowserPlatform Browser
+
+<h3>Receive browser messages</h3>
+<button id="listen-messaging" @onclick="ListenAsync">Listen</button>
+<button id="roundtrip-messaging" @onclick="RoundTripAsync">Port round trip</button>
+<button id="cancel-messaging" @onclick="CancelAsync">Cancel broadcast listener</button>
+<button id="dispose-messaging" @onclick="DisposeTargetsAsync">Dispose targets</button>
+<p id="receive-messaging-status">@status</p>
+<p id="receive-port" data-run="@portRun">@portResult</p>
+<p id="receive-broadcast" data-run="@broadcastRun">@broadcastResult</p>
+<p id="receive-messageerror" data-run="@errorRun">@errorResult</p>
+
+@code {
+    private MessageChannel? channel;
+    private BroadcastChannel? broadcast;
+    private CancellationTokenSource? lifetime;
+    private string status = "Not listening.";
+    private string portResult = "";
+    private string broadcastResult = "";
+    private string errorResult = "";
+    private int portRun;
+    private int broadcastRun;
+    private int errorRun;
+
+    private async Task ListenAsync()
+    {
+        await DisposeAsync();
+        lifetime = new CancellationTokenSource();
+        channel = await Browser.Window.MessageChannel.CreateAsync();
+        broadcast = await Browser.Window.BroadcastChannel.CreateAsync("components-platform-receiving");
+        await channel.Port1.AddEventListenerAsync(MessagePort.MessageEvent, message =>
+        {
+            portResult = $"Port: {message.Data.GetRawText()}";
+            portRun++;
+            StateHasChanged();
+            return Task.CompletedTask;
+        });
+        await channel.Port2.AddEventListenerAsync(MessagePort.MessageEvent, async message =>
+        {
+            await channel.Port2.PostMessageAsync(message.Data);
+        });
+        await broadcast.AddEventListenerAsync(BroadcastChannel.MessageEvent, message =>
+        {
+            broadcastResult = $"Broadcast: {message.Data.GetRawText()} | {message.Origin}";
+            broadcastRun++;
+            StateHasChanged();
+            return Task.CompletedTask;
+        }, lifetime.Token);
+        await channel.Port1.AddEventListenerAsync(MessagePort.MessageErrorEvent, OnMessageErrorAsync);
+        await broadcast.AddEventListenerAsync(BroadcastChannel.MessageErrorEvent, OnMessageErrorAsync);
+        await channel.Port1.StartAsync();
+        await channel.Port2.StartAsync();
+        status = "Listening.";
+    }
+
+    private Task OnMessageErrorAsync(MessageEvent message)
+    {
+        errorResult = $"Message error: {message.Data.GetRawText()} | {message.Origin}";
+        errorRun++;
+        StateHasChanged();
+        return Task.CompletedTask;
+    }
+
+    private async Task RoundTripAsync()
+    {
+        await channel!.Port1.PostMessageAsync("ping");
+        status = "Round trip posted.";
+    }
+
+    private Task CancelAsync()
+    {
+        lifetime!.Cancel();
+        status = "Canceled.";
+        return Task.CompletedTask;
+    }
+
+    private async Task DisposeTargetsAsync()
+    {
+        await DisposeAsync();
+        status = "Targets disposed.";
+    }
+
+    public async ValueTask DisposeAsync()
+    {
+        lifetime?.Cancel();
+        lifetime?.Dispose();
+        lifetime = null;
+        try
+        {
+            if (channel is not null)
+            {
+                await channel.DisposeAsync();
+                channel = null;
+            }
+        }
+        finally
+        {
+            if (broadcast is not null)
+            {
+                await broadcast.DisposeAsync();
+                broadcast = null;
+            }
+        }
+    }
+}

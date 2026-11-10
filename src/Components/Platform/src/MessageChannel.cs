@@ -15,11 +15,11 @@ public sealed class MessageChannel : IAsyncDisposable
     private readonly MessagePort _port2;
     private bool _disposed;
 
-    internal MessageChannel(IJSRuntime jsRuntime, IJSObjectReference reference)
+    internal MessageChannel(FeatureContext context, IJSObjectReference reference)
     {
         _reference = reference;
-        _port1 = new MessagePort(jsRuntime, reference, "port1");
-        _port2 = new MessagePort(jsRuntime, reference, "port2");
+        _port1 = new MessagePort(context, reference, "port1");
+        _port2 = new MessagePort(context, reference, "port2");
     }
 
     /// <summary>
@@ -62,7 +62,8 @@ public sealed class MessageChannel : IAsyncDisposable
         _disposed = true;
         try
         {
-            await _port1.DisposeAsync().ConfigureAwait(false);
+            // Keep the renderer context while moving between the ports' listener collections.
+            await _port1.DisposeAsync();
         }
         finally
         {

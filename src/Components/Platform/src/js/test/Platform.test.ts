@@ -59,6 +59,29 @@ describe('createCallback', () => {
 });
 
 describe('toDotNet', () => {
+  test.each([null, 'text', 42, true, [1, null], { a: [true, 'text'] }])('encodes a JSON value without interop marker interpretation: %p', value => {
+    expect(toDotNet(value, { $json: true })).toEqual({ json: JSON.stringify(value) });
+  });
+
+  test('preserves arbitrary JSON property names and shared values', () => {
+    const value = JSON.parse('{"__proto__":1,"hasOwnProperty":2,"__jsObjectId":3,"__dotNetObject":4,"$json":true}');
+    expect(toDotNet(value, { $json: true })).toEqual({ json: JSON.stringify(value) });
+    expect(toDotNet([value, value], { $json: true })).toEqual({ json: JSON.stringify([value, value]) });
+  });
+
+  test.each([
+    undefined, NaN, Infinity, -Infinity, 1n, new Date(0), new Map(), new Uint8Array([1]),
+    { nested: undefined }, { nested: [new Date(0)] }, new Array(1),
+  ])('reports non-JSON values instead of coercing them: %p', value => {
+    expect(toDotNet(value, { $json: true })).toEqual({ error: expect.stringContaining('not JSON') });
+  });
+
+  test('reports cyclic values', () => {
+    const value: { self?: unknown } = {};
+    value.self = value;
+    expect(toDotNet(value, { $json: true })).toEqual({ error: expect.stringContaining('cycle') });
+  });
+
   test('copies primitives, plain objects, and arrays', () => {
     expect(toDotNet(null, null)).toBeNull();
     expect(toDotNet('text', null)).toBe('text');
