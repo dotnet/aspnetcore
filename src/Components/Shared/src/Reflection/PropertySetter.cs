@@ -7,7 +7,7 @@ using System.Runtime.CompilerServices;
 
 namespace Microsoft.AspNetCore.Components.Reflection;
 
-internal sealed class PropertySetter
+internal sealed partial class PropertySetter
 {
     private static readonly MethodInfo CallPropertySetterOpenGenericMethod =
         typeof(PropertySetter).GetMethod(nameof(CallPropertySetter), BindingFlags.NonPublic | BindingFlags.Static)!;
@@ -35,6 +35,7 @@ internal sealed class PropertySetter
                 setMethod.CreateDelegate(typeof(Action<,>).MakeGenericType(targetType, property.PropertyType));
             var callPropertySetterClosedGenericMethod =
                 CallPropertySetterOpenGenericMethod.MakeGenericMethod(targetType, property.PropertyType);
+            GetCustomPropertySetter(targetType, property.PropertyType, ref callPropertySetterClosedGenericMethod);
             _setterDelegate = (Action<object, object>)
                 callPropertySetterClosedGenericMethod.CreateDelegate(typeof(Action<object, object>), propertySetterAsAction);
         }
@@ -49,6 +50,8 @@ internal sealed class PropertySetter
     public bool AcceptsCascadingParameters { get; init; }
 
     public void SetValue(object target, object value) => _setterDelegate(target, value);
+
+    partial void GetCustomPropertySetter(Type targetType, Type propertyType, ref MethodInfo setterMethod);
 
     private static void CallPropertySetter<TTarget, TValue>(
         Action<TTarget, TValue> setter,

@@ -199,7 +199,7 @@ internal static class ComponentProperties
             try
             {
                 // Once a parameter accepts the binding, its callback can be forwarded without binding again.
-                if (value is IEventCallback { IsBinding: true } callback)
+                if (!writer.IsEventCallbackSetter && value is IEventCallback { IsBinding: true } callback)
                 {
                     value = callback.WithoutBinding();
                 }

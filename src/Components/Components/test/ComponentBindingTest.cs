@@ -2,7 +2,10 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Runtime.CompilerServices;
+using Microsoft.AspNetCore.Components.Reflection;
 using Microsoft.AspNetCore.Components.Rendering;
+using Microsoft.AspNetCore.InternalTesting;
+using Microsoft.DotNet.RemoteExecutor;
 
 namespace Microsoft.AspNetCore.Components;
 
@@ -253,6 +256,238 @@ public class ComponentBindingTest
         GC.KeepAlive(callbacks);
     }
 
+    [Theory]
+    [InlineData(false, false)]
+    [InlineData(false, true)]
+    [InlineData(true, false)]
+    [InlineData(true, true)]
+    public void RepeatedBindingAssignment_DoesNotAllocateAfterWarmup(bool untyped, bool captureUnmatchedValues)
+    {
+        const int iterations = 100_000;
+        var receiver = new EventReceiver();
+        Action<bool> setter = _ => { };
+        var boundCallback = CompilerServices.RuntimeHelpers.CreateInferredEventCallback(receiver, setter, false);
+        var explicitCallback = EventCallback.Factory.Create(receiver, setter);
+        var target = CreateCallbackComponent(untyped, captureUnmatchedValues);
+        var boundParameters = ParameterView.FromDictionary(new Dictionary<string, object>
+        {
+            [nameof(CallbackComponent<EventCallback>.ValueChanged)] = untyped ? boundCallback.AsUntyped() : boundCallback,
+        });
+        var explicitParameters = ParameterView.FromDictionary(new Dictionary<string, object>
+        {
+            [nameof(CallbackComponent<EventCallback>.ValueChanged)] = untyped ? explicitCallback.AsUntyped() : explicitCallback,
+        });
+
+        for (var index = 0; index < 1000; index++)
+        {
+            boundParameters.SetParameterProperties(target);
+            explicitParameters.SetParameterProperties(target);
+        }
+
+        var before = GC.GetAllocatedBytesForCurrentThread();
+        for (var index = 0; index < iterations; index++)
+        {
+            explicitParameters.SetParameterProperties(target);
+        }
+        var explicitAllocated = GC.GetAllocatedBytesForCurrentThread() - before;
+
+        before = GC.GetAllocatedBytesForCurrentThread();
+        for (var index = 0; index < iterations; index++)
+        {
+            boundParameters.SetParameterProperties(target);
+        }
+        var boundAllocated = GC.GetAllocatedBytesForCurrentThread() - before;
+
+        Assert.Equal(0, explicitAllocated);
+        Assert.Equal(0, boundAllocated);
+        Assert.False(GetCallback(target).IsBinding);
+        Assert.True(boundCallback.IsBinding);
+        GC.KeepAlive(target);
+    }
+
+    [Theory]
+    [InlineData(false, false)]
+    [InlineData(false, true)]
+    [InlineData(true, false)]
+    [InlineData(true, true)]
+    public async Task DeclaredBindingAssignment_PreservesCallbackAndOriginalProvenance(bool untyped, bool captureUnmatchedValues)
+    {
+        var receiver = new EventReceiver();
+        var value = false;
+        var boundCallback = CompilerServices.RuntimeHelpers.CreateInferredEventCallback(receiver, (bool next) => value = next, value);
+        object originalCallback = untyped ? boundCallback.AsUntyped() : boundCallback;
+        var parameters = ParameterView.FromDictionary(new Dictionary<string, object>
+        {
+            [nameof(CallbackComponent<EventCallback>.ValueChanged)] = originalCallback,
+        });
+        var target = CreateCallbackComponent(untyped, captureUnmatchedValues);
+
+        parameters.SetParameterProperties(target);
+
+        var assignedCallback = GetCallback(target);
+        Assert.False(assignedCallback.IsBinding);
+        Assert.True(((IEventCallback)originalCallback).IsBinding);
+        using var forwardedBuilder = BuildParameters(typeof(CaptureComponent), assignedCallback, "component");
+        var assignedParameters = new ParameterView(ParameterViewLifetime.Unbound, forwardedBuilder.GetFrames().Array, 0);
+        var forwardedTarget = new CaptureComponent();
+        assignedParameters.SetParameterProperties(forwardedTarget);
+        Assert.Same(assignedCallback, forwardedTarget.Attributes[nameof(CallbackComponent<EventCallback>.ValueChanged)]);
+        if (untyped)
+        {
+            var callback = Assert.IsType<EventCallback>(forwardedTarget.Attributes[nameof(CallbackComponent<EventCallback>.ValueChanged)]);
+            Assert.Same(boundCallback.Receiver, callback.Receiver);
+            Assert.Same(boundCallback.Delegate, callback.Delegate);
+            await callback.InvokeAsync(true);
+        }
+        else
+        {
+            var callback = Assert.IsType<EventCallback<bool>>(forwardedTarget.Attributes[nameof(CallbackComponent<EventCallback>.ValueChanged)]);
+            Assert.Same(boundCallback.Receiver, callback.Receiver);
+            Assert.Same(boundCallback.Delegate, callback.Delegate);
+            await callback.InvokeAsync(true);
+        }
+
+        Assert.True(value);
+        Assert.Equal(1, receiver.Count);
+        using var builder = BuildParameters(typeof(CaptureComponent), originalCallback, "component");
+        var forwardedParameters = new ParameterView(ParameterViewLifetime.Unbound, builder.GetFrames().Array, 0);
+        Assert.Throws<InvalidOperationException>(() => forwardedParameters.SetParameterProperties(new CaptureComponent()));
+    }
+
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public void DeclaredCallbackAssignment_NullWritesDefault(bool untyped)
+    {
+        var target = CreateCallbackComponent(untyped, captureUnmatchedValues: false);
+        var callbackParameters = ParameterView.FromDictionary(new Dictionary<string, object>
+        {
+            [nameof(CallbackComponent<EventCallback>.ValueChanged)] = CreateBinding(new EventReceiver(), untyped ? 6 : 0),
+        });
+        callbackParameters.SetParameterProperties(target);
+        Assert.True(GetCallback(target).HasDelegate);
+        var nullParameters = ParameterView.FromDictionary(new Dictionary<string, object>
+        {
+            [nameof(CallbackComponent<EventCallback>.ValueChanged)] = null!,
+        });
+
+        nullParameters.SetParameterProperties(target);
+
+        Assert.Equal(untyped ? (object)default(EventCallback) : default(EventCallback<bool>), GetCallback(target));
+    }
+
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public void DeclaredCallbackAssignment_WrapsInvalidValueError(bool untyped)
+    {
+        var target = CreateCallbackComponent(untyped, captureUnmatchedValues: false);
+        var parameters = ParameterView.FromDictionary(new Dictionary<string, object>
+        {
+            [nameof(CallbackComponent<EventCallback>.ValueChanged)] = "not a callback",
+        });
+
+        var exception = Assert.Throws<InvalidOperationException>(() => parameters.SetParameterProperties(target));
+
+        Assert.IsType<InvalidCastException>(exception.InnerException);
+        Assert.StartsWith($"Unable to set property '{nameof(CallbackComponent<EventCallback>.ValueChanged)}' on object of type '{target.GetType().FullName}'.", exception.Message);
+        Assert.False(GetCallback(target).HasDelegate);
+    }
+
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public void BoxedCallbackAssignment_ClearsOnlyAssignedProvenance(bool untyped)
+    {
+        var originalCallback = CreateBinding(new EventReceiver(), untyped ? 6 : 0);
+        var target = new CallbackComponent<object>();
+        var parameters = ParameterView.FromDictionary(new Dictionary<string, object>
+        {
+            [nameof(target.ValueChanged)] = originalCallback,
+        });
+
+        parameters.SetParameterProperties(target);
+
+        Assert.NotSame(originalCallback, target.ValueChanged);
+        Assert.Equal(originalCallback, target.ValueChanged);
+        Assert.True(((IEventCallback)originalCallback).IsBinding);
+        Assert.False(Assert.IsAssignableFrom<IEventCallback>(target.ValueChanged).IsBinding);
+    }
+
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public void DeclaredBindingAssignment_RecreatesWriterAfterCacheClear(bool untyped)
+    {
+        var parameters = ParameterView.FromDictionary(new Dictionary<string, object>
+        {
+            [nameof(CallbackComponent<EventCallback>.ValueChanged)] = CreateBinding(new EventReceiver(), untyped ? 6 : 0),
+        });
+        var target = CreateCallbackComponent(untyped, captureUnmatchedValues: false);
+        parameters.SetParameterProperties(target);
+
+        ComponentProperties.ClearCache();
+        var newTarget = CreateCallbackComponent(untyped, captureUnmatchedValues: false);
+        parameters.SetParameterProperties(newTarget);
+
+        Assert.True(GetCallback(newTarget).HasDelegate);
+        Assert.False(GetCallback(newTarget).IsBinding);
+        Assert.Equal(GetCallback(target), GetCallback(newTarget));
+    }
+
+    [ConditionalFact]
+    [RemoteExecutionSupported]
+    public void DeclaredBindingAssignment_WorksWithoutDynamicCode()
+    {
+        var options = new RemoteInvokeOptions();
+        options.RuntimeConfigurationOptions.Add("System.Runtime.CompilerServices.RuntimeFeature.IsDynamicCodeSupported", "false");
+
+        using var remoteHandle = RemoteExecutor.Invoke(static () =>
+        {
+            Assert.False(RuntimeFeature.IsDynamicCodeSupported);
+            var tests = new ComponentBindingTest();
+            tests.DeclaredBindingAssignment_PreservesCallbackAndOriginalProvenance(untyped: false, captureUnmatchedValues: false).GetAwaiter().GetResult();
+            tests.DeclaredBindingAssignment_PreservesCallbackAndOriginalProvenance(untyped: false, captureUnmatchedValues: true).GetAwaiter().GetResult();
+            tests.DeclaredBindingAssignment_PreservesCallbackAndOriginalProvenance(untyped: true, captureUnmatchedValues: false).GetAwaiter().GetResult();
+            tests.DeclaredBindingAssignment_PreservesCallbackAndOriginalProvenance(untyped: true, captureUnmatchedValues: true).GetAwaiter().GetResult();
+            var receiver = new EventReceiver();
+            var value = new CallbackValue(1);
+            var callback = CompilerServices.RuntimeHelpers.CreateInferredEventCallback(receiver, (CallbackValue next) => value = next, value);
+            var target = new CallbackComponent<EventCallback<CallbackValue>>();
+            var parameters = ParameterView.FromDictionary(new Dictionary<string, object>
+            {
+                [nameof(target.ValueChanged)] = callback,
+            });
+
+            parameters.SetParameterProperties(target);
+            target.ValueChanged.InvokeAsync(new CallbackValue(2)).GetAwaiter().GetResult();
+
+            Assert.Equal(new CallbackValue(2), value);
+            Assert.Equal(1, receiver.Count);
+            Assert.False(target.ValueChanged.IsBinding);
+            Assert.True(callback.IsBinding);
+            Assert.Same(callback.Receiver, target.ValueChanged.Receiver);
+            Assert.Same(callback.Delegate, target.ValueChanged.Delegate);
+        }, options);
+    }
+
+    private static object CreateCallbackComponent(bool untyped, bool captureUnmatchedValues)
+        => (untyped, captureUnmatchedValues) switch
+        {
+            (false, false) => new CallbackComponent<EventCallback<bool>>(),
+            (false, true) => new CallbackWithCaptureComponent<EventCallback<bool>>(),
+            (true, false) => new CallbackComponent<EventCallback>(),
+            (true, true) => new CallbackWithCaptureComponent<EventCallback>(),
+        };
+
+    private static IEventCallback GetCallback(object target)
+        => target switch
+        {
+            CallbackComponent<EventCallback<bool>> component => component.ValueChanged,
+            CallbackComponent<EventCallback> component => component.ValueChanged,
+            _ => throw new ArgumentException("Expected a callback component.", nameof(target)),
+        };
+
     private static object CreateBinding(object receiver, int callbackKind)
     {
         Action<bool> setter = _ => { };
@@ -327,6 +562,20 @@ public class ComponentBindingTest
         [Parameter]
         public bool Value { get; set; }
     }
+
+    private class CallbackComponent<TCallback> : ComponentBase
+    {
+        [Parameter]
+        public TCallback ValueChanged { get; set; } = default!;
+    }
+
+    private sealed class CallbackWithCaptureComponent<TCallback> : CallbackComponent<TCallback>
+    {
+        [Parameter(CaptureUnmatchedValues = true)]
+        public Dictionary<string, object> Attributes { get; set; } = new();
+    }
+
+    private readonly record struct CallbackValue(int Value);
 
     private sealed class EventReceiver : IHandleEvent
     {
