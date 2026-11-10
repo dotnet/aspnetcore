@@ -20,6 +20,25 @@ beside the spec that consumes them, normally under a `fixtures` directory. Do
 not place eval specs, `evals` directories, or eval runners in runtime skill
 directories. A runtime skill may use a `fixtures` directory for non-eval assets.
 
+`review-pull-request/catch-policy.vally.yaml` is a specialized, offline policy
+exercise. It stages the current reviewer skill, cross-cutting guide, diff, old/head source,
+dependency implementations, and one selected scenario into each trial workspace.
+Five independent stimuli cover unspecified policy, existing feedback, propagation,
+best-effort reporting, and a nonthrowing producer control. The agent must derive the
+effect from source rather than receive the expected behavior in its prompt.
+Static tool-result checks require the relevant guidance and source to be read;
+binary judging checks the reasoning separately. These checks do not prove every
+line was read or replace the semantic judge. Five trials per stimulus must all pass.
+Platform-required native skill acquisition is allowed, but does not replace reading
+the staged guidance or authorize coordinator execution.
+The executor and judge models are both pinned to the reviewer skill's supported
+`gpt-5.6-sol`. Because they share a model identity, the judge is not independent-
+model corroboration. Overrides are separate model-compatibility results, not
+evidence that the default reviewer improved.
+This does not invoke live PR review or measure baseline-versus-skilled improvement.
+Run it explicitly with
+`./eng/skill-evals/run.ps1 Run -Eval eng/skill-evals/review-pull-request/catch-policy.vally.yaml --require-pass`.
+
 The experiment deliberately does not override `runs`. A standard spec owns its
 trial count through `defaults.runs`. The existing specs retain five runs and 25
 trials each. The dotnet/skills quality gate uses five trials as the minimum at

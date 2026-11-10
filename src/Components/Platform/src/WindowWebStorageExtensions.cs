@@ -8,6 +8,20 @@ namespace Microsoft.AspNetCore.Components.Platform;
 /// </summary>
 public static class WindowWebStorageExtensions
 {
+    private static readonly EventType<Window, StorageEvent> _storageEvent = EventTypes.Create<Window, StorageEventPayload, StorageEvent>(
+        "storage",
+        """[{"key":null,"oldValue":null,"newValue":null,"url":null,"storageArea":{"$known":["localStorage","sessionStorage"]}}]""",
+        static (window, payload) => payload.ToStorageEvent(window));
+
+    extension(Window)
+    {
+        /// <summary>
+        /// Gets the event that fires when another page of the same origin changes local or session storage.
+        /// It does not fire for changes that the current page makes.
+        /// </summary>
+        public static EventType<Window, StorageEvent> StorageEvent => _storageEvent;
+    }
+
     extension(Window window)
     {
         /// <summary>
