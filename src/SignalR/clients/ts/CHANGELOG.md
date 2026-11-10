@@ -1,14 +1,20 @@
 Change log contains changes for both @microsoft/signalr and @microsoft/signalr-protocol-msgpack.
 
-## 11.0.0-rc1
+Note: This library ships automatically as part of the ASP.NET Core monthly release cycle. This means new versions may not contain any changes.
+
+## v12.0.0-preview.1
+
+- Reject non-positive SignalR sequence IDs [#69399](https://github.com/dotnet/aspnetcore/pull/69399)
+
+## v11.0.0-rc1
 
 - Add SignalR TypeScript auth refresh [#67964](https://github.com/dotnet/aspnetcore/pull/67964)
 
-## 11.0.0-preview.7
+## v11.0.0-preview.7
 
 - Include LICENSE.txt in bundled packages. [#67496](https://github.com/dotnet/aspnetcore/pull/67496)
 
-## 11.0.0-preview.6
+## v11.0.0-preview.6
 
 - Removed invalid `/*#__PURE__*/` annotations from SignalR TypeScript client helper declarations. [#66778](https://github.com/dotnet/aspnetcore/pull/66778)
 
