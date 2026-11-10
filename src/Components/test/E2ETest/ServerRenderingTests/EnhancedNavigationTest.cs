@@ -174,8 +174,13 @@ public class EnhancedNavigationTest : ServerTestBase<BasicTestAppServerSiteFixtu
         ((IJavaScriptExecutor)Browser).ExecuteScript("""
             const startNewerNavigation = arguments[0];
             const newerUrl = new URL('nav/other', document.baseURI).href;
-            const exception = new Error('Enhancedload callback failed');
             window.callbackFailure = { reported: false };
+            // Chrome mutes unhandledrejection events for errors created in WebDriver scripts.
+            const script = document.createElement('script');
+            script.textContent = "window.callbackFailure.exception = new Error('Enhancedload callback failed');";
+            document.head.appendChild(script);
+            script.remove();
+            const exception = window.callbackFailure.exception;
             window.addEventListener('unhandledrejection', event => {
                 window.callbackFailure.reported = event.reason === exception;
             });
@@ -1244,7 +1249,7 @@ public class EnhancedNavigationTest : ServerTestBase<BasicTestAppServerSiteFixtu
     private (string Id, EnhancedNavigationFailureState.RequestState State) StartNetworkFailureScenario(string formmethod = "get")
     {
         var id = Guid.NewGuid().ToString("N");
-        Navigate($"{ServerPathBase}/nav/network-failure/{id}?formmethod={formmethod}");
+        Navigate($"{ServerPathBase}/nav/network-failure/{id}?formmethod={formmethod}&includeErrorUi=true&includeErrorUiControls=true");
         Browser.Exists(By.Id("blazor-started"));
 
         return (id, NetworkFailures.Get(id));
