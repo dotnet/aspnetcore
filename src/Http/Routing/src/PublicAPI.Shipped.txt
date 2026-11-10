@@ -244,6 +244,8 @@ Microsoft.AspNetCore.Routing.IRouteCollection
 Microsoft.AspNetCore.Routing.IRouteCollection.Add(Microsoft.AspNetCore.Routing.IRouter! router) -> void
 Microsoft.AspNetCore.Routing.IRouteNameMetadata
 Microsoft.AspNetCore.Routing.IRouteNameMetadata.RouteName.get -> string?
+Microsoft.AspNetCore.Routing.IShortCircuitMetadata
+Microsoft.AspNetCore.Routing.IShortCircuitMetadata.StatusCode.get -> int?
 Microsoft.AspNetCore.Routing.ISuppressLinkGenerationMetadata
 Microsoft.AspNetCore.Routing.ISuppressLinkGenerationMetadata.SuppressLinkGeneration.get -> bool
 Microsoft.AspNetCore.Routing.ISuppressMatchingMetadata
@@ -456,6 +458,10 @@ Microsoft.AspNetCore.Routing.RoutingFeature
 Microsoft.AspNetCore.Routing.RoutingFeature.RouteData.get -> Microsoft.AspNetCore.Routing.RouteData?
 Microsoft.AspNetCore.Routing.RoutingFeature.RouteData.set -> void
 Microsoft.AspNetCore.Routing.RoutingFeature.RoutingFeature() -> void
+Microsoft.AspNetCore.Routing.ShortCircuitAttribute
+Microsoft.AspNetCore.Routing.ShortCircuitAttribute.ShortCircuitAttribute() -> void
+Microsoft.AspNetCore.Routing.ShortCircuitAttribute.ShortCircuitAttribute(int statusCode) -> void
+Microsoft.AspNetCore.Routing.ShortCircuitAttribute.StatusCode.get -> int?
 Microsoft.AspNetCore.Routing.SuppressLinkGenerationMetadata
 Microsoft.AspNetCore.Routing.SuppressLinkGenerationMetadata.SuppressLinkGeneration.get -> bool
 Microsoft.AspNetCore.Routing.SuppressLinkGenerationMetadata.SuppressLinkGenerationMetadata() -> void
