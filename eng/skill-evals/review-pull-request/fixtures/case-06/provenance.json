@@ -1,0 +1,36 @@
+{
+  "repository": "dotnet/aspnetcore",
+  "pullRequest": 70312,
+  "fixtureKind": "synthetic public catch-policy example, not framework production source",
+  "revision": "4bb1a49fbbf7c217286f289cf975019491c83f16",
+  "transformations": [
+    "Remove explicit suppression-policy absence hints.",
+    "Combine scenario and head test as context."
+  ],
+  "files": [
+    {
+      "file": "mergeBase.source",
+      "sha256": "a41b5ee85d9f19c0b1002d988efe4adf5c479acba95e000f453dba7bcc715bb3"
+    },
+    {
+      "file": "head.source",
+      "sha256": "c049fc9b1c04f4c87282649fa3837f07432782c83977d8baca29f0471b26504e"
+    },
+    {
+      "file": "baseTip.source",
+      "sha256": "e1621fa56245d23a6d234585cfc2da3f54dd148ee9a7ec2c7689000373b0046c"
+    },
+    {
+      "file": "context.source",
+      "sha256": "3ad5fafd5ac86b76d82480d12cf889a520631431276567fb1bb45f069944b90b"
+    },
+    {
+      "file": "change.diff",
+      "sha256": "e1765f241bf72190a0fe40b839a62b29b3b78dc1e1f89e293bc712dcecfbce44"
+    },
+    {
+      "file": "case.source",
+      "sha256": "71d7ca9d0dae95d9bba4e689d8979e1784db68c85a5bfcb65d82403e8f9d7ddd"
+    }
+  ]
+}

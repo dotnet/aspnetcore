@@ -1,0 +1,1538 @@
+=== baseTip 4f556f73a610b386e5ec29355a300e493d30c4c5 src/Components/Endpoints/src/FormMapping/Converters/FileConverter.cs:1-86 ===
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
+
+using System.Diagnostics.CodeAnalysis;
+#if COMPONENTS
+using Microsoft.AspNetCore.Components.Forms;
+#endif
+using Microsoft.AspNetCore.Http;
+
+namespace Microsoft.AspNetCore.Components.Endpoints.FormMapping;
+
+internal sealed class FileConverter<T> : FormDataConverter<T>
+{
+    [RequiresDynamicCode(FormMappingHelpers.RequiresDynamicCodeMessage)]
+    [RequiresUnreferencedCode(FormMappingHelpers.RequiresUnreferencedCodeMessage)]
+    internal override bool TryRead(ref FormDataReader reader, Type type, FormDataMapperOptions options, out T? result, out bool found)
+    {
+        if (reader.FormFileCollection == null)
+        {
+            result = default;
+            found = false;
+            return true;
+        }
+
+#if COMPONENTS
+        if (typeof(T) == typeof(IBrowserFile))
+        {
+            var targetFile = reader.FormFileCollection.GetFile(reader.CurrentPrefix.ToString());
+            if (targetFile != null)
+            {
+                var browserFile = new BrowserFileFromFormFile(targetFile);
+                result = (T)(IBrowserFile)browserFile;
+                found = true;
+                return true;
+            }
+        }
+
+        if (typeof(T) == typeof(IReadOnlyList<IBrowserFile>))
+        {
+            var targetFiles = reader.FormFileCollection.GetFiles(reader.CurrentPrefix.ToString());
+            var buffer = ReadOnlyCollectionBufferAdapter<IBrowserFile>.CreateBuffer();
+            for (var i = 0; i < targetFiles.Count; i++)
+            {
+                buffer = ReadOnlyCollectionBufferAdapter<IBrowserFile>.Add(ref buffer, new BrowserFileFromFormFile(targetFiles[i]));
+            }
+            result = (T)(IReadOnlyList<IBrowserFile>)ReadOnlyCollectionBufferAdapter<IBrowserFile>.ToResult(buffer);
+            found = true;
+            return true;
+        }
+#endif
+
+        if (typeof(T) == typeof(IReadOnlyList<IFormFile>))
+        {
+            result = (T)reader.FormFileCollection.GetFiles(reader.CurrentPrefix.ToString());
+            found = true;
+            return true;
+        }
+
+        if (typeof(T) == typeof(IFormFileCollection))
+        {
+            result = (T)reader.FormFileCollection;
+            found = true;
+            return true;
+        }
+
+        var formFileCollection = reader.FormFileCollection;
+        if (formFileCollection.Count == 0)
+        {
+            result = default;
+            found = false;
+            return true;
+        }
+
+        var file = formFileCollection.GetFile(reader.CurrentPrefix.ToString());
+        if (file != null)
+        {
+            result = (T)file;
+            found = true;
+            return true;
+        }
+
+        result = default;
+        found = false;
+        return true;
+    }
+}
+
+=== baseTip 4f556f73a610b386e5ec29355a300e493d30c4c5 src/Components/Endpoints/src/FormMapping/Factories/ComplexType/ComplexTypeExpressionConverterFactoryOfT.cs:1-621 ===
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
+
+using System.Diagnostics.CodeAnalysis;
+using System.Linq;
+using System.Linq.Expressions;
+using System.Runtime.CompilerServices;
+using Microsoft.AspNetCore.Components.Endpoints.FormMapping.Metadata;
+
+namespace Microsoft.AspNetCore.Components.Endpoints.FormMapping;
+
+internal sealed class ComplexTypeExpressionConverterFactory<T>(FormDataMetadataFactory factory) : ComplexTypeExpressionConverterFactory
+{
+    [RequiresDynamicCode(FormMappingHelpers.RequiresDynamicCodeMessage)]
+    [RequiresUnreferencedCode(FormMappingHelpers.RequiresUnreferencedCodeMessage)]
+    internal override CompiledComplexTypeConverter<T> CreateConverter(Type type, FormDataMapperOptions options)
+    {
+        var body = CreateConverterBody(type, options);
+        return new CompiledComplexTypeConverter<T>(body);
+    }
+
+    [RequiresDynamicCode(FormMappingHelpers.RequiresDynamicCodeMessage)]
+    [RequiresUnreferencedCode(FormMappingHelpers.RequiresUnreferencedCodeMessage)]
+    private CompiledComplexTypeConverter<T>.ConverterDelegate CreateConverterBody(Type type, FormDataMapperOptions options)
+    {
+        var metadata = factory.GetOrCreateMetadataFor(type, options) ??
+            throw new InvalidOperationException($"Could not resolve metadata for type '{type.FullName}'.");
+
+        var properties = metadata.Properties;
+        var constructorParameters = metadata.ConstructorParameters;
+
+        var (readerParam, typeParam, optionsParam, resultParam, foundValueParam) = CreateFormDataConverterParameters();
+        var parameters = new List<ParameterExpression>() { readerParam, typeParam, optionsParam, resultParam, foundValueParam };
+
+        // Variables
+        var propertyFoundValue = Expression.Variable(typeof(bool), "foundValueForProperty");
+        var succeeded = Expression.Variable(typeof(bool), "succeeded");
+        var localFoundValueVar = Expression.Variable(typeof(bool), "localFoundValue");
+        var exceptionVar = Expression.Variable(typeof(Exception), "mappingException");
+        var variables = new List<ParameterExpression>() { propertyFoundValue, succeeded, localFoundValueVar, exceptionVar };
+
+        var propertyValueLocals = new List<ParameterExpression>();
+        var constructorParameterValueLocals = new List<ParameterExpression>();
+
+        var body = new List<Expression>()
+        {
+            Expression.Assign(succeeded, Expression.Constant(true)),
+        };
+
+        var end = Expression.Label("done");
+
+        if (metadata.IsRecursive)
+        {
+            body.Add(CreatePrefixCheckForRecursiveTypes(readerParam, foundValueParam, succeeded, end));
+        }
+
+        MapConstructorParameters(
+            constructorParameters,
+            readerParam,
+            optionsParam,
+            propertyFoundValue,
+            succeeded,
+            localFoundValueVar,
+            exceptionVar,
+            variables,
+            constructorParameterValueLocals,
+            body);
+
+        MapPropertyValues(
+            properties,
+            readerParam,
+            optionsParam,
+            propertyFoundValue,
+            succeeded,
+            localFoundValueVar,
+            exceptionVar,
+            variables,
+            propertyValueLocals,
+            body);
+
+        body.Add(Expression.IfThen(
+            localFoundValueVar,
+            Expression.Block(CreateInstanceAndAssignProperties(
+                metadata,
+                resultParam,
+                constructorParameters,
+                constructorParameterValueLocals,
+                properties,
+                propertyValueLocals,
+                variables,
+                succeeded,
+                readerParam))));
+
+        // foundValue && !failures;
+        body.Add(Expression.Assign(foundValueParam, localFoundValueVar));
+        body.Add(Expression.Label(end));
+        body.Add(succeeded);
+
+        variables.AddRange(constructorParameterValueLocals);
+        variables.AddRange(propertyValueLocals);
+
+        return CreateConverterFunction(parameters, variables, body);
+
+    }
+
+    [RequiresDynamicCode(FormMappingHelpers.RequiresDynamicCodeMessage)]
+    [RequiresUnreferencedCode(FormMappingHelpers.RequiresUnreferencedCodeMessage)]
+    private static IEnumerable<Expression> CreateInstanceAndAssignProperties(
+        FormDataTypeMetadata model,
+        ParameterExpression resultParam,
+        IList<FormDataParameterMetadata> constructorParameters,
+        List<ParameterExpression> constructorParameterValueLocals,
+        IList<FormDataPropertyMetadata> props,
+        List<ParameterExpression> propsLocals,
+        List<ParameterExpression> variables,
+        ParameterExpression succeeded,
+        ParameterExpression context)
+    {
+        if (model.Constructor == null && !model.Type.IsValueType)
+        {
+            throw new InvalidOperationException($"Type '{model.Type}' does not have a constructor. " +
+                $"A single public constructor is required for mapping the type.");
+        }
+
+        // If we got here it means that we found some values for the type.
+        // We need to check the required properties/constructor parameters to see if we have values for them.
+        // If we don't, we need to add a mapping error and set succeeded to false.
+        var checks = ReportMissingValues(context, constructorParameterValueLocals, constructorParameters, propsLocals, props, succeeded);
+        foreach (var missingValueCheck in checks)
+        {
+            yield return missingValueCheck;
+        }
+
+        if (model.Constructor != null)
+        {
+            // try
+            // {
+            //     result = new T(...);
+            // }
+            // catch(Exception ex)
+            // {
+            //     reader.AddMappingError(ex.Message);
+            //     succeeded = false;
+            // }
+            var exception = Expression.Variable(typeof(Exception), "constructorException");
+            variables.Add(exception);
+            yield return Expression.TryCatch(
+                Expression.Assign(
+                    resultParam,
+                    Expression.New(
+                        model.Constructor,
+                        constructorParameterValueLocals.Select(GetValueLocalVariableValueExpression))),
+                Expression.Catch(
+                    exception,
+                    Expression.Block(
+                        Expression.Call(
+                            context,
+                            nameof(FormDataReader.AddMappingError),
+                            Array.Empty<Type>(),
+                            exception,
+                            Expression.Constant(null, typeof(string))),
+                        Expression.Assign(succeeded, Expression.Constant(false, typeof(bool))),
+                        resultParam)));
+        }
+
+        // if(!succeeded && context.AttachInstanceToErrorsHandler != null && result != null)
+        // {
+        //     context.AttachInstanceToErrors((object)result);
+        // }
+
+        var failedAndHasHandler = Expression.And(Expression.Not(succeeded), HasHandler(context));
+
+        var clause = model.Type.IsValueType ? failedAndHasHandler :
+            Expression.And(
+                failedAndHasHandler,
+                Expression.NotEqual(
+                    resultParam,
+                    Expression.Constant(null, resultParam.Type)));
+
+        yield return Expression.IfThen(
+            clause,
+            Expression.Call(
+                context,
+                nameof(FormDataReader.AttachInstanceToErrors),
+                Array.Empty<Type>(),
+                Expression.Convert(resultParam, typeof(object))));
+
+        if (!model.Type.IsValueType)
+        {
+            var assignments = new List<Expression>();
+            for (var i = 0; i < props.Count; i++)
+            {
+                assignments.Add(Expression.Assign(Expression.Property(resultParam, props[i].Property), GetValueLocalVariableValueExpression(propsLocals[i])));
+            }
+
+            // if(result != null)
+            // {
+            //     result.Property1 = property1;
+            //     result.Property2 = property2;
+            //     ...
+            // }
+            yield return Expression.IfThen(
+                Expression.NotEqual(resultParam, Expression.Constant(null, resultParam.Type)),
+                Expression.Block(assignments));
+        }
+        else
+        {
+            for (var i = 0; i < props.Count; i++)
+            {
+                yield return Expression.Assign(Expression.Property(resultParam, props[i].Property), GetValueLocalVariableValueExpression(propsLocals[i]));
+            }
+        }
+
+        static BinaryExpression HasHandler(ParameterExpression context)
+        {
+            return Expression.NotEqual(
+                                    Expression.Property(context, nameof(FormDataReader.AttachInstanceToErrorsHandler)),
+                                    Expression.Constant(null, typeof(Action<string, object>)));
+        }
+    }
+
+    [RequiresDynamicCode(FormMappingHelpers.RequiresDynamicCodeMessage)]
+    [RequiresUnreferencedCode(FormMappingHelpers.RequiresUnreferencedCodeMessage)]
+    private static IEnumerable<Expression> ReportMissingValues(
+        Expression readerParam,
+        List<ParameterExpression> constructorParameters,
+        IList<FormDataParameterMetadata> constructorParameterMetadata,
+        List<ParameterExpression> properties,
+        IList<FormDataPropertyMetadata> propertyMetadata,
+        ParameterExpression succeeded)
+    {
+        for (var i = 0; i < constructorParameters.Count; i++)
+        {
+            var parameter = constructorParameters[i];
+            var metadata = constructorParameterMetadata[i];
+            if (metadata.Required)
+            {
+                // if(!property.Item1)
+                // {
+                //     reader.PushPrefix(metadata.Name);
+                //     reader.AddMappingError(
+                //         FommattableStringFactory.Create(
+                //             "Missing required value for constructor property '{0}'.",
+                //             metadata.Name));
+                //     reader.PopPrefix(metadata.Name);
+                // }
+                yield return Expression.IfThen(
+                    Expression.Not(GetValueLocalVariableFoundExpression(parameter)),
+                    Expression.Block(
+                        PushPrefix(readerParam, metadata.Name),
+                        AddMappingError(readerParam, "Missing required value for constructor parameter '{0}'.", metadata.Name),
+                        PopPrefix(readerParam, metadata.Name),
+                        Expression.Assign(succeeded, Expression.Constant(false, typeof(bool)))));
+            }
+        }
+
+        for (var i = 0; i < properties.Count; i++)
+        {
+            var property = properties[i];
+            var metadata = propertyMetadata[i];
+            if (metadata.Required)
+            {
+                // if(!property.Item1)
+                // {
+                //     reader.PushPrefix(metadata.Name);
+                //     reader.AddMappingError(
+                //         FommattableStringFactory.Create(
+                //             "Missing required value for constructor property '{0}'.",
+                //             metadata.Name));
+                //     reader.PopPrefix(metadata.Name);
+                // }
+                yield return Expression.IfThen(
+                    Expression.Not(GetValueLocalVariableFoundExpression(property)),
+                    Expression.Block(
+                        PushPrefix(readerParam, metadata.Name),
+                        AddMappingError(readerParam, "Missing required value for property '{0}'.", metadata.Name),
+                        PopPrefix(readerParam, metadata.Name),
+                        Expression.Assign(succeeded, Expression.Constant(false, typeof(bool)))));
+            }
+        }
+
+        static MethodCallExpression PushPrefix(Expression readerParam, string prefix)
+        {
+            return Expression.Call(
+                readerParam,
+                nameof(FormDataReader.PushPrefix),
+                Array.Empty<Type>(),
+                Expression.Constant(prefix));
+        }
+
+        static MethodCallExpression AddMappingError(Expression readerParam, string message, string parameter)
+        {
+            // FormattableStringFactory.Create(message)
+            var formattableString = Expression.Call(
+                typeof(FormattableStringFactory),
+                nameof(FormattableStringFactory.Create),
+                Array.Empty<Type>(),
+                Expression.Constant(message),
+                Expression.NewArrayInit(typeof(object), Expression.Constant(parameter)));
+
+            return Expression.Call(
+                readerParam,
+                nameof(FormDataReader.AddMappingError),
+                Array.Empty<Type>(),
+                formattableString,
+                Expression.Constant(null, typeof(string)));
+        }
+
+        static MethodCallExpression PopPrefix(Expression readerParam, string prefix)
+        {
+            return Expression.Call(
+                readerParam,
+                nameof(FormDataReader.PopPrefix),
+                Array.Empty<Type>(),
+                Expression.Constant(prefix));
+        }
+    }
+
+    [RequiresDynamicCode(FormMappingHelpers.RequiresDynamicCodeMessage)]
+    [RequiresUnreferencedCode(FormMappingHelpers.RequiresUnreferencedCodeMessage)]
+    private static void MapPropertyValues(
+        IList<FormDataPropertyMetadata> properties,
+        ParameterExpression readerParam,
+        ParameterExpression optionsParam,
+        ParameterExpression propertyFoundValue,
+        ParameterExpression succeeded,
+        ParameterExpression localFoundValueVar,
+        ParameterExpression exceptionVar,
+        List<ParameterExpression> variables,
+        List<ParameterExpression> propertyValueLocals,
+        List<Expression> body)
+    {
+        // Create the property blocks
+        // var propertyConverter = options.ResolveConverter(typeof(string));
+        // reader.PushPrefix("PropertyInfo");
+        // succeeded &= propertyConverter.TryRead(ref reader, typeof(string), options, out propertyVar, out foundProperty);
+        // found ||= foundProperty;
+        // reader.PopPrefix("PropertyInfo");
+        for (var i = 0; i < properties.Count; i++)
+        {
+            // Declare variable for the converter
+            var property = properties[i];
+            var propertyConverterType = typeof(FormDataConverter<>).MakeGenericType(property.Type);
+            var propertyConverterVar = Expression.Variable(propertyConverterType, $"{property.Name}Converter");
+            variables.Add(propertyConverterVar);
+
+            // Declare variable for property value.
+            var propertyVar = CreateValueLocalVariable(property);
+            propertyValueLocals.Add(propertyVar);
+
+            // Resolve and assign converter
+            // Create the block to try and map the property and update propsLocals.
+            // returnParam &= { PushPrefix(property.Name); var res = TryRead(...); PopPrefix(...); return res; }
+            // var propertyConverter = options.ResolveConverter<TProperty>());
+            var propertyConverter = Expression.Assign(
+                propertyConverterVar,
+                Expression.Call(
+                    optionsParam,
+                    nameof(FormDataMapperOptions.ResolveConverter),
+                    new[] { property.Type },
+                    Array.Empty<Expression>()));
+            body.Add(propertyConverter);
+
+            body.Add(Expression.TryCatchFinally(
+                // try
+                // {
+                //     reader.PushPrefix("PropertyInfo");
+                //     succeeded &= propertyConverter.TryRead(ref reader, typeof(string), options, out propertyVar, out foundProperty);
+                // }
+                // finally
+                // {
+                //     reader.PopPrefix("PropertyInfo");
+                // }
+                body: Expression.Block(
+                    // reader.PushPrefix("PropertyInfo");
+                    Expression.Call(
+                    readerParam,
+                    nameof(FormDataReader.PushPrefix),
+                    Array.Empty<Type>(),
+                    Expression.Constant(property.Name)),
+
+                    // succeeded &= propertyConverter.TryRead(ref reader, typeof(string), options, out propertyVar, out foundProperty);
+                    Expression.AndAssign(
+                        succeeded,
+                        Expression.Call(
+                            propertyConverterVar,
+                            nameof(FormDataConverter<T>.TryRead),
+                            Type.EmptyTypes,
+                            readerParam,
+                            Expression.Constant(property.Type),
+                            optionsParam,
+                            GetValueLocalVariableValueExpression(propertyVar),
+                            propertyFoundValue))),
+                // reader.PopPrefix("PropertyInfo");
+                @finally: Expression.Call(
+                    readerParam,
+                    nameof(FormDataReader.PopPrefix),
+                    Array.Empty<Type>(),
+                    Expression.Constant(property.Name)),
+                handlers: Expression.Catch(
+                    exceptionVar,
+                    Expression.Block(
+                        Expression.Call(
+                            readerParam,
+                            nameof(FormDataReader.AddMappingError),
+                            Array.Empty<Type>(),
+                            exceptionVar,
+                            Expression.Constant(null, typeof(string))),
+                        Expression.Assign(succeeded, Expression.Constant(false, typeof(bool)))
+                    ))));
+
+            // parameter.found = foundProperty;
+            body.Add(Expression.Assign(GetValueLocalVariableFoundExpression(propertyVar), propertyFoundValue));
+            body.Add(Expression.OrAssign(localFoundValueVar, propertyFoundValue));
+        }
+    }
+
+    [RequiresDynamicCode(FormMappingHelpers.RequiresDynamicCodeMessage)]
+    [RequiresUnreferencedCode(FormMappingHelpers.RequiresUnreferencedCodeMessage)]
+    private static void MapConstructorParameters(
+        IList<FormDataParameterMetadata> constructorParameters,
+        ParameterExpression readerParam,
+        ParameterExpression optionsParam,
+        ParameterExpression propertyFoundValue,
+        ParameterExpression succeeded,
+        ParameterExpression localFoundValueVar,
+        ParameterExpression exceptionVar,
+        List<ParameterExpression> variables,
+        List<ParameterExpression> constructorParameterValueLocals,
+        List<Expression> body)
+    {
+        // Create the constructor property blocks
+
+        // var parameterConverter = options.ResolveConverter(typeof(string));
+        // reader.PushPrefix("PropertyInfo");
+        // succeeded &= parameterConverter.TryRead(ref reader, typeof(string), options, out constructorParameterVar, out foundProperty);
+        // found ||= foundProperty;
+        // reader.PopPrefix("PropertyInfo");
+        for (var i = 0; i < constructorParameters.Count; i++)
+        {
+            // Declare variable for the converter
+            var constructorParameter = constructorParameters[i];
+            var constructorParameterConverterType = typeof(FormDataConverter<>).MakeGenericType(constructorParameter.Type);
+            var constructorParameterConverterVar = Expression.Variable(constructorParameterConverterType, $"{constructorParameter.Name}Converter");
+            variables.Add(constructorParameterConverterVar);
+
+            // Declare variable for constructorParameter value.
+            var constructorParameterVar = CreateValueLocalVariable(constructorParameter);
+            constructorParameterValueLocals.Add(constructorParameterVar);
+
+            // Resolve and assign converter
+            // Create the block to try and map the constructorParameter and update propsLocals.
+            // returnParam &= { PushPrefix(constructorParameter.Name); var res = TryRead(...); PopPrefix(...); return res; }
+            // var constructorParameterConverter = options.ResolveConverter<TProperty>());
+            var constructorParameterConverter = Expression.Assign(
+                constructorParameterConverterVar,
+                Expression.Call(
+                    optionsParam,
+                    nameof(FormDataMapperOptions.ResolveConverter),
+                    new[] { constructorParameter.Type },
+                    Array.Empty<Expression>()));
+            body.Add(constructorParameterConverter);
+
+            // try
+            // {
+            //     reader.PushPrefix("PropertyInfo");
+            //     succeeded &= constructorParameterConverter.TryRead(ref reader, typeof(string), options, out constructorParameterVar, out foundProperty);
+            //     if(!succeeded || !found)
+            //     {
+            //         reader.AddMappingError("Missing required value for constructor property {0}", constructorParameter.Name);
+            //     }
+            // }
+            // finally
+            // {
+            //     reader.PopPrefix("PropertyInfo");
+            // }
+            body.Add(Expression.TryCatchFinally(
+                body: Expression.Block(
+                    // reader.PushPrefix("PropertyInfo");
+                    Expression.Call(
+                        readerParam,
+                        nameof(FormDataReader.PushPrefix),
+                        Array.Empty<Type>(),
+                        Expression.Constant(constructorParameter.Name)),
+                    // succeeded &= constructorParameterConverter.TryRead(ref reader, typeof(string), options, out constructorParameterVar, out foundProperty);
+                    Expression.AndAssign(
+                        succeeded,
+                        Expression.Call(
+                            constructorParameterConverterVar,
+                            nameof(FormDataConverter<T>.TryRead),
+                            Type.EmptyTypes,
+                            readerParam,
+                            Expression.Constant(constructorParameter.Type),
+                            optionsParam,
+                            GetValueLocalVariableValueExpression(constructorParameterVar),
+                            propertyFoundValue))),
+                // reader.PopPrefix("PropertyInfo");
+                @finally: Expression.Call(
+                    readerParam,
+                    nameof(FormDataReader.PopPrefix),
+                    Array.Empty<Type>(),
+                    Expression.Constant(constructorParameter.Name)),
+                handlers: Expression.Catch(
+                    exceptionVar,
+                    Expression.Block(
+                        Expression.Call(
+                            readerParam,
+                            nameof(FormDataReader.AddMappingError),
+                            Array.Empty<Type>(),
+                            exceptionVar,
+                            Expression.Constant(null, typeof(string))),
+                        Expression.Assign(succeeded, Expression.Constant(false, typeof(bool)))
+                    ))));
+
+            // parameter.found = foundProperty;
+            body.Add(Expression.Assign(GetValueLocalVariableFoundExpression(constructorParameterVar), propertyFoundValue));
+            body.Add(Expression.OrAssign(localFoundValueVar, propertyFoundValue));
+        }
+    }
+
+    [RequiresDynamicCode(FormMappingHelpers.RequiresDynamicCodeMessage)]
+    [RequiresUnreferencedCode(FormMappingHelpers.RequiresUnreferencedCodeMessage)]
+    private static Expression GetValueLocalVariableFoundExpression(ParameterExpression constructorParameterVar)
+    {
+        return Expression.PropertyOrField(constructorParameterVar, nameof(ValueTuple<bool, object>.Item1));
+    }
+
+    [RequiresDynamicCode(FormMappingHelpers.RequiresDynamicCodeMessage)]
+    [RequiresUnreferencedCode(FormMappingHelpers.RequiresUnreferencedCodeMessage)]
+    private static Expression GetValueLocalVariableValueExpression(ParameterExpression constructorParameterVar) =>
+        Expression.PropertyOrField(constructorParameterVar, nameof(ValueTuple<bool, object>.Item2));
+
+    [RequiresDynamicCode(FormMappingHelpers.RequiresDynamicCodeMessage)]
+    [RequiresUnreferencedCode(FormMappingHelpers.RequiresUnreferencedCodeMessage)]
+    private static ParameterExpression CreateValueLocalVariable(IFormDataValue constructorParameter)
+    {
+        return Expression.Variable(typeof(ValueTuple<,>).MakeGenericType(typeof(bool), constructorParameter.Type), constructorParameter.Name);
+    }
+
+    // For recursive types we need to do a prefix check.
+    // if(!reader.CurrentPrefixExists())
+    // {
+    //     found = false;
+    //     return true;
+    // }
+    //
+    [RequiresDynamicCode(FormMappingHelpers.RequiresDynamicCodeMessage)]
+    [RequiresUnreferencedCode(FormMappingHelpers.RequiresUnreferencedCodeMessage)]
+    private static ConditionalExpression CreatePrefixCheckForRecursiveTypes(ParameterExpression readerParam, ParameterExpression foundValueParam, ParameterExpression succeeded, LabelTarget end)
+    {
+        return Expression.IfThen(
+            Expression.Not(Expression.Call(readerParam, nameof(FormDataReader.CurrentPrefixExists), Array.Empty<Type>())),
+                Expression.Block(
+                    Expression.Assign(foundValueParam, Expression.Constant(false)),
+                    Expression.Assign(succeeded, Expression.Constant(true)),
+                    Expression.Goto(end)));
+    }
+
+    private static CompiledComplexTypeConverter<T>.ConverterDelegate CreateConverterFunction(
+        List<ParameterExpression> parameters,
+        List<ParameterExpression> variables,
+        List<Expression> body)
+    {
+        var lambda = Expression.Lambda<CompiledComplexTypeConverter<T>.ConverterDelegate>(
+            Expression.Block(variables, body),
+            parameters);
+
+        return lambda.Compile();
+    }
+
+    private static FormDataConverterReadParameters CreateFormDataConverterParameters()
+    {
+        return new(
+            Expression.Parameter(typeof(FormDataReader).MakeByRefType(), "reader"),
+            Expression.Parameter(typeof(Type), "type"),
+            Expression.Parameter(typeof(FormDataMapperOptions), "options"),
+            Expression.Parameter(typeof(T).MakeByRefType(), "result"),
+            Expression.Parameter(typeof(bool).MakeByRefType(), "foundValue"));
+    }
+
+    private readonly struct FormDataConverterReadParameters
+    {
+        public ParameterExpression ReaderParam { get; }
+
+        public ParameterExpression TypeParam { get; }
+
+        public ParameterExpression OptionsParam { get; }
+
+        public ParameterExpression ResultParam { get; }
+
+        public ParameterExpression FoundValueParam { get; }
+
+        public FormDataConverterReadParameters(
+            ParameterExpression readerParam,
+            ParameterExpression typeParam,
+            ParameterExpression optionsParam,
+            ParameterExpression resultParam,
+            ParameterExpression foundValueParam)
+        {
+            ReaderParam = readerParam;
+            TypeParam = typeParam;
+            OptionsParam = optionsParam;
+            ResultParam = resultParam;
+            FoundValueParam = foundValueParam;
+        }
+
+        public void Deconstruct(
+            out ParameterExpression readerParam,
+            out ParameterExpression typeParam,
+            out ParameterExpression optionsParam,
+            out ParameterExpression resultParam,
+            out ParameterExpression foundValueParam)
+        {
+            readerParam = ReaderParam;
+            typeParam = TypeParam;
+            optionsParam = OptionsParam;
+            resultParam = ResultParam;
+            foundValueParam = FoundValueParam;
+        }
+    }
+}
+
+=== baseTip 4f556f73a610b386e5ec29355a300e493d30c4c5 src/Components/Endpoints/src/FormMapping/Metadata/FormDataMetadataFactory.cs:1-428 ===
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
+
+using System.Diagnostics.CodeAnalysis;
+using System.Linq;
+using System.Reflection;
+using System.Runtime.CompilerServices;
+using System.Runtime.Serialization;
+using Microsoft.Extensions.Internal;
+using Microsoft.Extensions.Logging;
+
+namespace Microsoft.AspNetCore.Components.Endpoints.FormMapping.Metadata;
+
+internal partial class FormDataMetadataFactory(List<IFormDataConverterFactory> factories, ILoggerFactory loggerFactory)
+{
+    private readonly object _lock = new object();
+    private readonly FormMetadataContext _context = new();
+    private readonly ParsableConverterFactory _parsableFactory = factories.OfType<ParsableConverterFactory>().Single();
+    private readonly DictionaryConverterFactory _dictionaryFactory = factories.OfType<DictionaryConverterFactory>().Single();
+    private readonly FileConverterFactory _fileConverterFactory = factories.OfType<FileConverterFactory>().Single();
+    private readonly CollectionConverterFactory _collectionFactory = factories.OfType<CollectionConverterFactory>().Single();
+    private readonly ILogger<FormDataMetadataFactory> _logger = loggerFactory.CreateLogger<FormDataMetadataFactory>();
+
+    [RequiresDynamicCode(FormMappingHelpers.RequiresDynamicCodeMessage)]
+    [RequiresUnreferencedCode(FormMappingHelpers.RequiresUnreferencedCodeMessage)]
+    public FormDataTypeMetadata? GetOrCreateMetadataFor(Type type, FormDataMapperOptions options)
+    {
+        var shouldClearContext = !_context.ResolutionInProgress;
+        lock (_lock)
+        {
+            try
+            {
+                // We are walking the graph in order to detect recursive types.
+                // We evaluate whether a type is:
+                // 1. Primitive
+                // 2. Dictionary
+                // 3. Collection
+                // 4. Complex
+                // Only complex types can be recursive.
+                // We only compute metadata when we are dealing with objects, other classes of
+                // types are handled directly by the appropriate converters.
+                // We keep track of the metadata for the types because it is useful when we generate
+                // the specific object converter for a type.
+                // The code generation varies depending on whether there is recursion or not within
+                // the type graph.
+                if (shouldClearContext)
+                {
+                    Log.StartResolveMetadataGraph(_logger, type);
+                    _context.BeginResolveGraph();
+                }
+
+                // Try to get the metadata for the type or create and add a new instance.
+                var result = _context.TypeMetadata.TryGetValue(type, out var value) ? value : new FormDataTypeMetadata(type);
+                if (value == null)
+                {
+                    Log.NoMetadataFound(_logger, type);
+                    _context.TypeMetadata[type] = result;
+                }
+                else
+                {
+                    Log.MetadataFound(_logger, type);
+                }
+
+                if (type.IsGenericTypeDefinition)
+                {
+                    Log.GenericTypeDefinitionNotSupported(_logger, type);
+                    _context.TypeMetadata.Remove(type);
+                    return null;
+                }
+
+                // Check for cycles and mark any type as recursive if needed.
+                DetectCyclesAndMarkMetadataTypesAsRecursive(type, result);
+
+                // We found the value on the existing metadata, we can return it.
+                if (value != null)
+                {
+                    return result;
+                }
+
+                // These blocks are evaluated in a specific order.
+                if (_parsableFactory.CanConvert(type, options) || type.IsEnum ||
+                    (Nullable.GetUnderlyingType(type) is { } underlyingType &&
+                        _parsableFactory.CanConvert(underlyingType, options)))
+                {
+                    Log.PrimitiveType(_logger, type);
+                    result.Kind = FormDataTypeKind.Primitive;
+                    return result;
+                }
+
+                if (_fileConverterFactory.CanConvert(type, options))
+                {
+                    result.Kind = FormDataTypeKind.File;
+                    return result;
+                }
+
+                if (WellKnownConverters.Converters.TryGetValue(type, out var converter))
+                {
+                    result.Kind = FormDataTypeKind.Primitive;
+                    return result;
+                }
+
+                if (_dictionaryFactory.CanConvert(type, options))
+                {
+                    Log.DictionaryType(_logger, type);
+                    result.Kind = FormDataTypeKind.Dictionary;
+                    var (keyType, valueType) = DictionaryConverterFactory.ResolveDictionaryTypes(type)!;
+                    result.KeyType = GetOrCreateMetadataFor(keyType, options);
+                    result.ValueType = GetOrCreateMetadataFor(valueType, options);
+                    return result;
+                }
+
+                if (_collectionFactory.CanConvert(type, options))
+                {
+                    Log.CollectionType(_logger, type);
+                    result.Kind = FormDataTypeKind.Collection;
+                    result.ElementType = GetOrCreateMetadataFor(CollectionConverterFactory.ResolveElementType(type)!, options);
+                    return result;
+                }
+
+                Log.ObjectType(_logger, type);
+                result.Kind = FormDataTypeKind.Object;
+                _context.Track(type);
+                var constructors = type.GetConstructors();
+
+                if (constructors.Length == 1)
+                {
+                    result.Constructor = constructors[0];
+                    if (type.IsAbstract)
+                    {
+                        Log.AbstractClassesNotSupported(_logger, type);
+                        _context.TypeMetadata.Remove(type);
+                        return null;
+                    }
+                }
+                else if (constructors.Length > 1)
+                {
+                    // We can't select the constructor when there are multiple of them.
+                    Log.MultiplePublicConstructorsFound(_logger, type);
+                    return null;
+                }
+                else if (!type.IsValueType)
+                {
+                    if (type.IsInterface)
+                    {
+                        Log.InterfacesNotSupported(_logger, type);
+                    }
+                    else if (type.IsAbstract)
+                    {
+                        Log.AbstractClassesNotSupported(_logger, type);
+                    }
+                    else
+                    {
+                        Log.NoPublicConstructorFound(_logger, type);
+                    }
+
+                    _context.TypeMetadata.Remove(type);
+                    // We can't bind to reference types without constructors.
+                    return null;
+                }
+
+                if (result.Constructor != null)
+                {
+                    if (_logger.IsEnabled(LogLevel.Debug))
+                    {
+                        var parameters = $"({string.Join(", ", result.Constructor.GetParameters().Select(p => p.ParameterType.Name))})";
+                        Log.ConstructorFound(_logger, type, parameters);
+                    }
+
+                    var values = result.Constructor.GetParameters();
+
+                    foreach (var parameter in values)
+                    {
+                        Log.ConstructorParameter(_logger, type, parameter.Name!, parameter.ParameterType);
+                        var parameterTypeInfo = GetOrCreateMetadataFor(parameter.ParameterType, options);
+                        if (parameterTypeInfo == null)
+                        {
+                            Log.ConstructorParameterTypeNotSupported(_logger, type, parameter.Name!, parameter.ParameterType);
+                            _context.TypeMetadata.Remove(type);
+                            return null;
+                        }
+
+                        result.ConstructorParameters.Add(new FormDataParameterMetadata(parameter, parameterTypeInfo));
+                    }
+                }
+
+                var candidateProperty = PropertyHelper.GetVisibleProperties(type);
+                foreach (var propertyHelper in candidateProperty)
+                {
+                    var property = propertyHelper.Property;
+                    Log.CandidateProperty(_logger, propertyHelper.Name, property.PropertyType);
+                    var matchingConstructorParameter = result
+                        .ConstructorParameters
+                        .FirstOrDefault(p => string.Equals(p.Name, property.Name, StringComparison.OrdinalIgnoreCase));
+
+                    if (matchingConstructorParameter != null)
+                    {
+                        Log.MatchingConstructorParameterFound(_logger, matchingConstructorParameter.Name, property.Name);
+                        var dataMember = property.GetCustomAttribute<DataMemberAttribute>();
+                        if (dataMember != null && dataMember.IsNameSetExplicitly && dataMember.Name != null)
+                        {
+                            Log.CustomParameterNameMetadata(_logger, dataMember.Name, property.Name);
+                            matchingConstructorParameter.Name = dataMember.Name;
+                        }
+
+                        // The propertyHelper is already present in the constructor, we don't need to add it again.
+                        continue;
+                    }
+
+                    var ignoreDataMember = property.GetCustomAttribute<IgnoreDataMemberAttribute>();
+                    if (ignoreDataMember != null)
+                    {
+                        Log.IgnoredProperty(_logger, property.Name);
+                        // The propertyHelper is marked as ignored, we don't need to add it.
+                        continue;
+                    }
+
+                    if (property.SetMethod == null || !property.SetMethod.IsPublic)
+                    {
+                        Log.NonPublicSetter(_logger, property.Name);
+                        // The property is readonly, we don't need to add it.
+                        continue;
+                    }
+
+                    var propertyTypeInfo = GetOrCreateMetadataFor(property.PropertyType, options);
+                    if (propertyTypeInfo == null)
+                    {
+                        Log.PropertyTypeNotSupported(_logger, type, property.Name, property.PropertyType);
+                        _context.TypeMetadata.Remove(type);
+                        return null;
+                    }
+                    var propertyInfo = new FormDataPropertyMetadata(property, propertyTypeInfo);
+
+                    var dataMemberAttribute = property.GetCustomAttribute<DataMemberAttribute>();
+                    if (dataMemberAttribute != null && dataMemberAttribute.IsNameSetExplicitly && dataMemberAttribute.Name != null)
+                    {
+                        Log.CustomParameterNameMetadata(_logger, dataMemberAttribute.Name, property.Name);
+                        propertyInfo.Name = dataMemberAttribute.Name;
+                        propertyInfo.Required = dataMemberAttribute.IsRequired;
+                        Log.PropertyRequired(_logger, propertyInfo.Name);
+                    }
+
+                    var requiredAttribute = property.GetCustomAttribute<RequiredMemberAttribute>();
+                    if (requiredAttribute != null)
+                    {
+                        propertyInfo.Required = true;
+                        Log.PropertyRequired(_logger, propertyInfo.Name);
+                    }
+
+                    result.Properties.Add(propertyInfo);
+                }
+
+                Log.MetadataComputed(_logger, type);
+                return result;
+            }
+            finally
+            {
+                _context.Untrack(type);
+                if (shouldClearContext)
+                {
+                    Log.EndResolveMetadataGraph(_logger, type);
+                    _context.EndResolveGraph();
+                }
+            }
+        }
+    }
+
+    internal bool HasMetadataFor(Type type) => _context.TypeMetadata.ContainsKey(type);
+
+    private void DetectCyclesAndMarkMetadataTypesAsRecursive(Type type, FormDataTypeMetadata result)
+    {
+        // Mark any type as recursive if its already present in the current resolution graph or
+        // if there is a base type for it on the resolution graph.
+        // For example, given A and B : A. With A having a propertyHelper of type B.
+        // when we inspect B, we can tell that A is recursive because you can have A -> B -> B -> B -> ...
+        // The opposite scenario is not something we need to worry about because we don't support polymorphism,
+        // meaning that we will never create an instance of B if the declared type is A.
+        // In that scenario, A and B : A. With B having a propertyHelper of type A.
+        // The recursion stops at A, because A doesn't define the propertyHelper and we will never bind B to A.
+        // If in the future we support polymorphism, it's a matter or updating the logic below to account for it.
+        for (var i = 0; i < _context.CurrentTypes.Count; i++)
+        {
+            if (_context.CurrentTypes[i] == type)
+            {
+                // We found an exact match in the current resolution graph.
+                // This means that the type is recursive.
+                result.IsRecursive = true;
+                ReportRecursiveChain(type);
+
+            }
+            else if (type.IsSubclassOf(_context.CurrentTypes[i]))
+            {
+                // We found a type that is assignable from the current type.
+                // This means that the type is recursive.
+                var existingType = _context.TypeMetadata[_context.CurrentTypes[i]];
+                ReportRecursiveChain(type);
+                existingType.IsRecursive = true;
+            }
+
+            // We don't need to check for interfaces here because we never map to an interface, so if we encounter one, we will fail,
+            // as we can't construct the converter to map the interface to a concrete instance.
+        }
+
+        void ReportRecursiveChain(Type type)
+        {
+            if (_logger.IsEnabled(LogLevel.Debug))
+            {
+                var chain = string.Join(" -> ", _context.CurrentTypes.Append(type).Select(t => t.Name));
+                Log.RecursiveTypeFound(_logger, type, chain);
+            }
+        }
+    }
+
+    private class FormMetadataContext
+    {
+        public Dictionary<Type, FormDataTypeMetadata> TypeMetadata { get; set; } = new();
+
+        public List<Type> CurrentTypes { get; set; } = new();
+
+        public bool ResolutionInProgress { get; internal set; }
+
+        internal void BeginResolveGraph()
+        {
+            if (ResolutionInProgress)
+            {
+                throw new InvalidOperationException("Cannot begin a new resolution graph while one is already in progress.");
+            }
+            ResolutionInProgress = true;
+        }
+
+        internal void EndResolveGraph()
+        {
+            if (!ResolutionInProgress)
+            {
+                throw new InvalidOperationException("Cannot end a resolution graph while one is not in progress.");
+            }
+            ResolutionInProgress = false;
+            CurrentTypes.Clear();
+        }
+
+        internal void Track(Type type)
+        {
+            CurrentTypes.Add(type);
+        }
+
+        internal void Untrack(Type type)
+        {
+            CurrentTypes.Remove(type);
+        }
+    }
+
+    private static partial class Log
+    {
+        [LoggerMessage(1, LogLevel.Debug, "Begin resolve metadata graph for type '{Type}'.", EventName = nameof(StartResolveMetadataGraph))]
+        public static partial void StartResolveMetadataGraph(ILogger logger, Type type);
+
+        [LoggerMessage(2, LogLevel.Debug, "End resolve metadata graph for type '{Type}'.", EventName = nameof(EndResolveMetadataGraph))]
+        public static partial void EndResolveMetadataGraph(ILogger logger, Type type);
+
+        [LoggerMessage(3, LogLevel.Debug, "Cached metadata found for type '{Type}'.", EventName = nameof(Metadata))]
+        public static partial void MetadataFound(ILogger<FormDataMetadataFactory> logger, Type type);
+
+        [LoggerMessage(4, LogLevel.Debug, "No cached metadata graph for type '{Type}'.", EventName = nameof(NoMetadataFound))]
+        public static partial void NoMetadataFound(ILogger<FormDataMetadataFactory> logger, Type type);
+
+        [LoggerMessage(5, LogLevel.Debug, "Recursive type '{Type}' found in the resolution graph '{Chain}'.", EventName = nameof(RecursiveTypeFound))]
+        public static partial void RecursiveTypeFound(ILogger<FormDataMetadataFactory> logger, Type type, string chain);
+
+        [LoggerMessage(6, LogLevel.Debug, "'{Type}' identified as primitive.", EventName = nameof(PrimitiveType))]
+        public static partial void PrimitiveType(ILogger<FormDataMetadataFactory> logger, Type type);
+
+        [LoggerMessage(7, LogLevel.Debug, "'{Type}' identified as dictionary.", EventName = nameof(DictionaryType))]
+        public static partial void DictionaryType(ILogger<FormDataMetadataFactory> logger, Type type);
+
+        [LoggerMessage(8, LogLevel.Debug, "'{Type}' identified as collection.", EventName = nameof(CollectionType))]
+        public static partial void CollectionType(ILogger<FormDataMetadataFactory> logger, Type type);
+
+        [LoggerMessage(9, LogLevel.Debug, "'{Type}' identified as object.", EventName = nameof(ObjectType))]
+        public static partial void ObjectType(ILogger<FormDataMetadataFactory> logger, Type type);
+
+        [LoggerMessage(10, LogLevel.Debug, "Constructor found for type '{Type}' with parameters '{Parameters}'.", EventName = nameof(ConstructorFound))]
+        public static partial void ConstructorFound(ILogger<FormDataMetadataFactory> logger, Type type, string parameters);
+
+        [LoggerMessage(11, LogLevel.Debug, "Constructor parameter '{Name}' of type '{ParameterType}' found for type '{Type}'.", EventName = nameof(ConstructorParameter))]
+        public static partial void ConstructorParameter(ILogger<FormDataMetadataFactory> logger, Type type, string name, Type parameterType);
+
+        [LoggerMessage(12, LogLevel.Debug, "Candidate property '{Name}' of type '{PropertyType}'.", EventName = nameof(CandidateProperty))]
+        public static partial void CandidateProperty(ILogger<FormDataMetadataFactory> logger, string name, Type propertyType);
+
+        [LoggerMessage(13, LogLevel.Debug, "Candidate property {PropertyName} has a matching constructor parameter '{ConstructorParameterName}'.", EventName = nameof(MatchingConstructorParameterFound))]
+        public static partial void MatchingConstructorParameterFound(ILogger<FormDataMetadataFactory> logger, string constructorParameterName, string propertyName);
+
+        [LoggerMessage(14, LogLevel.Debug, "Candidate property or constructor parameter {PropertyName} defines a custom name '{CustomName}'.", EventName = nameof(CustomParameterNameMetadata))]
+        public static partial void CustomParameterNameMetadata(ILogger<FormDataMetadataFactory> logger, string customName, string propertyName);
+
+        [LoggerMessage(15, LogLevel.Debug, "Candidate property {Name} will not be mapped. It has been explicitly ignored.", EventName = nameof(IgnoredProperty))]
+        public static partial void IgnoredProperty(ILogger<FormDataMetadataFactory> logger, string name);
+
+        [LoggerMessage(16, LogLevel.Debug, "Candidate property {Name} will not be mapped. It has no public setter.", EventName = nameof(NonPublicSetter))]
+        public static partial void NonPublicSetter(ILogger<FormDataMetadataFactory> logger, string name);
+
+        [LoggerMessage(17, LogLevel.Debug, "Candidate property {Name} is marked as required.", EventName = nameof(PropertyRequired))]
+        public static partial void PropertyRequired(ILogger<FormDataMetadataFactory> logger, string name);
+
+        [LoggerMessage(18, LogLevel.Debug, "Metadata created for {Type}.", EventName = nameof(MetadataComputed))]
+        public static partial void MetadataComputed(ILogger<FormDataMetadataFactory> logger, Type type);
+
+        [LoggerMessage(19, LogLevel.Debug, "Can not map type generic type definition '{Type}'.", EventName = nameof(GenericTypeDefinitionNotSupported))]
+        public static partial void GenericTypeDefinitionNotSupported(ILogger<FormDataMetadataFactory> logger, Type type);
+
+        [LoggerMessage(20, LogLevel.Debug, "Unable to select a constructor. Multiple public constructors found for type '{Type}'.", EventName = nameof(MultiplePublicConstructorsFound))]
+        public static partial void MultiplePublicConstructorsFound(ILogger<FormDataMetadataFactory> logger, Type type);
+
+        [LoggerMessage(21, LogLevel.Debug, "Can not map interface type '{Type}'.", EventName = nameof(InterfacesNotSupported))]
+        public static partial void InterfacesNotSupported(ILogger<FormDataMetadataFactory> logger, Type type);
+
+        [LoggerMessage(22, LogLevel.Debug, "Can not map abstract type '{Type}'.", EventName = nameof(AbstractClassesNotSupported))]
+        public static partial void AbstractClassesNotSupported(ILogger<FormDataMetadataFactory> logger, Type type);
+
+        [LoggerMessage(23, LogLevel.Debug, "Unable to select a constructor. No public constructors found for type '{Type}'.", EventName = nameof(NoPublicConstructorFound))]
+        public static partial void NoPublicConstructorFound(ILogger<FormDataMetadataFactory> logger, Type type);
+
+        [LoggerMessage(24, LogLevel.Debug, "Can not map type '{Type}'. Constructor parameter {Name} of type {ParameterType} is not supported.", EventName = nameof(ConstructorParameterTypeNotSupported))]
+        public static partial void ConstructorParameterTypeNotSupported(ILogger<FormDataMetadataFactory> logger, Type type, string name, Type parameterType);
+
+        [LoggerMessage(25, LogLevel.Debug, "Can not map type '{Type}'. Property {Name} of type {PropertyType} is not supported.", EventName = nameof(PropertyTypeNotSupported))]
+        public static partial void PropertyTypeNotSupported(ILogger<FormDataMetadataFactory> logger, Type type, string name, Type propertyType);
+    }
+}
+
+=== baseTip 4f556f73a610b386e5ec29355a300e493d30c4c5 src/Components/Endpoints/src/FormMapping/Metadata/FormDataParameterMetadata.cs:1-25 ===
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
+
+using System.Reflection;
+
+namespace Microsoft.AspNetCore.Components.Endpoints.FormMapping.Metadata;
+internal class FormDataParameterMetadata(ParameterInfo parameter, FormDataTypeMetadata parameterTypeInfo) : IFormDataValue
+{
+    public ParameterInfo Parameter { get; } = parameter;
+    public string Name { get; set; } = parameter.Name!;
+    public Type Type { get; set; } = parameter.ParameterType;
+
+    public bool Required => true;
+
+    internal FormDataTypeMetadata ParameterMetadata { get; } = parameterTypeInfo;
+}
+
+internal interface IFormDataValue
+{
+    public string Name { get; }
+
+    public Type Type { get; }
+
+    public bool Required { get; }
+}
+
+=== baseTip 4f556f73a610b386e5ec29355a300e493d30c4c5 src/Components/Endpoints/src/FormMapping/FormDataReader.cs:1-318 ===
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
+
+using System.Collections;
+using System.Diagnostics;
+using System.Diagnostics.CodeAnalysis;
+using System.Globalization;
+using System.Runtime.CompilerServices;
+using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.WebUtilities;
+using Microsoft.Extensions.Primitives;
+
+namespace Microsoft.AspNetCore.Components.Endpoints.FormMapping;
+
+[DebuggerDisplay($"{{{nameof(DebuggerDisplay)}(),nq}}")]
+internal struct FormDataReader : IDisposable
+{
+    private readonly IReadOnlyDictionary<FormKey, StringValues> _readOnlyMemoryKeys;
+    private readonly Memory<char> _prefixBuffer;
+    private Memory<char> _currentPrefixBuffer;
+    private int _currentDepth;
+    private int _errorCount;
+
+    // As an implementation detail, reuse FormKey for the values.
+    // It's just a thin wrapper over ReadOnlyMemory<char> that caches
+    // the computed hash code.
+
+    private PrefixResolver _prefixResolver;
+
+    public FormDataReader(IReadOnlyDictionary<FormKey, StringValues> formCollection, CultureInfo culture, Memory<char> buffer)
+    {
+        _readOnlyMemoryKeys = formCollection;
+        Culture = culture;
+        _prefixBuffer = buffer;
+    }
+
+    public FormDataReader(IReadOnlyDictionary<FormKey, StringValues> formCollection, CultureInfo culture, Memory<char> buffer, IFormFileCollection formFileCollection)
+        : this(formCollection, culture, buffer)
+    {
+        FormFileCollection = formFileCollection;
+    }
+
+    internal ReadOnlyMemory<char> CurrentPrefix => _currentPrefixBuffer;
+
+    public IFormatProvider Culture { get; }
+
+    public IFormFileCollection? FormFileCollection { get; internal set; }
+
+    public int MaxRecursionDepth { get; set; } = 64;
+
+    public int MaxCollectionSize { get; set; } = FormReader.DefaultValueCountLimit;
+
+    public Action<string, FormattableString, string?>? ErrorHandler { get; set; }
+
+    public Action<string, object>? AttachInstanceToErrorsHandler { get; set; }
+
+    public int MaxErrorCount { get; set; } = 200;
+
+    public void AddMappingError(FormattableString errorMessage, string? attemptedValue)
+    {
+        ArgumentNullException.ThrowIfNull(errorMessage);
+
+        if (ErrorHandler == null)
+        {
+            throw new FormDataMappingException(new FormDataMappingError(_currentPrefixBuffer.ToString(), errorMessage, attemptedValue));
+        }
+
+        _errorCount++;
+        if (_errorCount == MaxErrorCount)
+        {
+            ErrorHandler.Invoke(
+                _currentPrefixBuffer.ToString(),
+                FormattableStringFactory.Create($"Maximum number of errors ({MaxErrorCount}) reached. Further errors will be suppressed."),
+                null);
+        }
+
+        if (_errorCount >= MaxErrorCount)
+        {
+            return;
+        }
+
+        ErrorHandler.Invoke(_currentPrefixBuffer.ToString(), errorMessage, attemptedValue);
+    }
+
+    public void AddMappingError(Exception exception, string? attemptedValue)
+    {
+        ArgumentNullException.ThrowIfNull(exception);
+
+        // Avoid re-wrapping the exception if it is already a FormDataMappingException
+        // and we don't have an ErrorHandler configured.
+        if (exception is FormDataMappingException && ErrorHandler == null)
+        {
+            throw exception;
+        }
+
+        var errorMessage = FormattableStringFactory.Create(exception.Message);
+        AddMappingError(errorMessage, attemptedValue);
+    }
+
+    public void AttachInstanceToErrors(object value)
+    {
+        if (AttachInstanceToErrorsHandler == null)
+        {
+            return;
+        }
+
+        AttachInstanceToErrorsHandler(_currentPrefixBuffer.ToString(), value);
+    }
+
+    internal FormKeyCollection GetKeys()
+    {
+        // Scan the input dictionary for keys matching the current prefix followed by a bracket segment.
+        // This avoids building a large upfront dictionary of all prefix→key mappings.
+        var prefix = _currentPrefixBuffer;
+        var result = new HashSet<FormKey>();
+
+        foreach (var kvp in _readOnlyMemoryKeys)
+        {
+            var key = kvp.Key.Value;
+
+            // The key must start with the current prefix (case-insensitive).
+            if (key.Length <= prefix.Length ||
+                !key.Span[..prefix.Length].Equals(prefix.Span, StringComparison.OrdinalIgnoreCase))
+            {
+                continue;
+            }
+
+            // Immediately after the prefix, there must be a '['.
+            if (key.Span[prefix.Length] != '[')
+            {
+                continue;
+            }
+
+            // Find the closing ']' after the '['.
+            var remaining = key[prefix.Length..];
+            var closeIndex = remaining.Span[1..].IndexOf(']');
+            if (closeIndex == -1)
+            {
+                // Malformed key — no closing bracket. Skip it.
+                continue;
+            }
+
+            // Extract "[value]" (closeIndex is relative to position 1, so add 2 for the full segment).
+            var segment = remaining[..(closeIndex + 2)];
+            result.Add(new FormKey(segment));
+
+            // Allow one extra item through so collection/dictionary binding can still detect overflow
+            // and report the existing max-size error instead of silently truncating the input.
+            if (result.Count > MaxCollectionSize)
+            {
+                break;
+            }
+        }
+
+        return result.Count > 0
+            ? new FormKeyCollection(result)
+            : FormKeyCollection.Empty;
+    }
+
+    // This only ever gets invoked if we have a recursive type.
+    // Recursive types make an existential check for the current prefix to determine if they
+    // need to continue mapping data.
+    // At that point, we are placing the keys into a sorted array, and we use binary search to
+    // determine if the prefix exists.
+    // We only make this search on recursive paths, as opposed to in every new scope that we push.
+    internal bool CurrentPrefixExists()
+    {
+        if (CurrentPrefix.Span.Length == 0)
+        {
+            // Avoid creating the prefix array at the root level.
+            return _readOnlyMemoryKeys.Count > 0;
+        }
+
+        if (!_prefixResolver.HasValues)
+        {
+            _prefixResolver = new PrefixResolver(_readOnlyMemoryKeys.Keys, _readOnlyMemoryKeys.Count);
+        }
+
+        return _prefixResolver.HasPrefix(_currentPrefixBuffer);
+    }
+
+    internal void PopPrefix(string key)
+    {
+        PopPrefix(key.AsSpan());
+    }
+
+    internal void PopPrefix(ReadOnlySpan<char> key)
+    {
+        if (_currentDepth > MaxRecursionDepth)
+        {
+            return;
+        }
+
+        _currentDepth--;
+        Debug.Assert(_currentDepth >= 0);
+        var keyLength = key.Length;
+        // If keyLength is bigger than the current scope keyLength typically means there is a
+        // bug where some part of the code has not popped the scope appropriately.
+        Debug.Assert(_currentPrefixBuffer.Length >= keyLength);
+        if (_currentPrefixBuffer.Length == keyLength || _currentPrefixBuffer.Span[^(keyLength + 1)] != '.')
+        {
+            _currentPrefixBuffer = _currentPrefixBuffer[..^keyLength];
+        }
+        else
+        {
+            _currentPrefixBuffer = _currentPrefixBuffer[..^(keyLength + 1)];
+        }
+    }
+
+    internal void PushPrefix(string key)
+    {
+        PushPrefix(key.AsSpan());
+    }
+
+    internal void PushPrefix(scoped ReadOnlySpan<char> key)
+    {
+        _currentDepth++;
+        // We automatically append a "." before adding the suffix, except when its the first element pushed to the
+        // scope, or when we are accessing a property after a collection or an indexer like items[1].
+        var separator = _currentPrefixBuffer.Length > 0 && key[0] != '['
+            ? ".".AsSpan()
+            : "".AsSpan();
+        if (_currentDepth > MaxRecursionDepth)
+        {
+            throw new InvalidOperationException($"The maximum recursion depth of '{MaxRecursionDepth}' was exceeded for '{_currentPrefixBuffer}{separator}{key}'.");
+        }
+
+        Debug.Assert(_prefixBuffer.Length >= (_currentPrefixBuffer.Length + separator.Length));
+
+        separator.CopyTo(_prefixBuffer.Span[_currentPrefixBuffer.Length..]);
+
+        var startingPoint = _currentPrefixBuffer.Length + separator.Length;
+        _currentPrefixBuffer = _prefixBuffer.Slice(0, startingPoint + key.Length);
+        key.CopyTo(_prefixBuffer[startingPoint..].Span);
+    }
+
+    internal readonly bool TryGetValue([NotNullWhen(true)] out string? value)
+    {
+        var foundSingleValue = _readOnlyMemoryKeys.TryGetValue(new FormKey(_currentPrefixBuffer), out var result) || result.Count == 1;
+        if (foundSingleValue)
+        {
+            value = result[0];
+        }
+        else
+        {
+            value = null;
+        }
+
+        return foundSingleValue;
+    }
+
+    internal readonly bool TryGetValues(out StringValues values) =>
+        _readOnlyMemoryKeys.TryGetValue(new FormKey(_currentPrefixBuffer), out values);
+
+    internal string GetPrefix() => _currentPrefixBuffer.ToString();
+
+    internal string GetLastPrefixSegment()
+    {
+        var index = _currentPrefixBuffer.Span.LastIndexOfAny(".[");
+        if (index == -1)
+        {
+            return _currentPrefixBuffer.ToString();
+        }
+        if (_currentPrefixBuffer.Span[index] == '.')
+        {
+            return _currentPrefixBuffer.Span[(index + 1)..].ToString();
+        }
+        else
+        {
+            // Return the value without the closing bracket ]
+            return _currentPrefixBuffer.Span[(index + 1)..^1].ToString();
+        }
+    }
+
+    public void Dispose()
+    {
+        _prefixResolver.Dispose();
+    }
+
+    internal readonly struct FormKeyCollection : IEnumerable<ReadOnlyMemory<char>>
+    {
+        private readonly HashSet<FormKey> _values;
+        internal static readonly FormKeyCollection Empty;
+
+        public bool HasValues() => _values != null;
+
+        public FormKeyCollection(HashSet<FormKey> values) => _values = values;
+
+        public Enumerator GetEnumerator() => new Enumerator(_values.GetEnumerator());
+
+        IEnumerator<ReadOnlyMemory<char>> IEnumerable<ReadOnlyMemory<char>>.GetEnumerator() => GetEnumerator();
+
+        IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
+
+        internal struct Enumerator : IEnumerator<ReadOnlyMemory<char>>
+        {
+            private HashSet<FormKey>.Enumerator _enumerator;
+
+            public Enumerator(HashSet<FormKey>.Enumerator enumerator)
+            {
+                _enumerator = enumerator;
+            }
+
+            public ReadOnlyMemory<char> Current => _enumerator.Current.Value;
+
+            object IEnumerator.Current => _enumerator.Current;
+
+            void IDisposable.Dispose() => _enumerator.Dispose();
+
+            public bool MoveNext() => _enumerator.MoveNext();
+
+            void IEnumerator.Reset() { }
+        }
+    }
+
+    private readonly string DebuggerDisplay =>
+        $"Key count = {_readOnlyMemoryKeys.Count}, Prefix = {_currentPrefixBuffer}, Error count = {_errorCount}, Current depth = {_currentDepth}";
+}
+
+=== baseTip 4f556f73a610b386e5ec29355a300e493d30c4c5 src/Components/Endpoints/src/FormMapping/FormDataMapper.cs:1-48 ===
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
+
+using System.Diagnostics.CodeAnalysis;
+using Microsoft.Extensions.Logging;
+
+namespace Microsoft.AspNetCore.Components.Endpoints.FormMapping;
+
+internal static partial class FormDataMapper
+{
+    [RequiresDynamicCode(FormMappingHelpers.RequiresDynamicCodeMessage)]
+    [RequiresUnreferencedCode(FormMappingHelpers.RequiresUnreferencedCodeMessage)]
+    public static T? Map<T>(
+        FormDataReader reader,
+        FormDataMapperOptions options)
+    {
+        FormDataConverter<T>? converter;
+        try
+        {
+            converter = options.ResolveConverter<T>();
+            if (converter == null)
+            {
+                Log.CannotResolveConverter(options.Logger, typeof(T), null);
+                return default;
+            }
+        }
+        catch (Exception ex)
+        {
+            Log.CannotResolveConverter(options.Logger, typeof(T), ex);
+            return default;
+        }
+
+        if (converter.TryRead(ref reader, typeof(T), options, out var result, out _))
+        {
+            return result;
+        }
+
+        // Always return the result, even if it has failures. This is because we do not want
+        // to loose the data that we were able to deserialize.
+        return result;
+    }
+
+    private static partial class Log
+    {
+        [LoggerMessage(1, LogLevel.Warning, "Cannot resolve converter for type '{Type}'.", EventName = "CannotResolveConverter")]
+        public static partial void CannotResolveConverter(ILogger logger, Type type, Exception? ex);
+    }
+}
+

@@ -290,6 +290,100 @@ stimuli:
         -EvalName allowed-prompt-text `
         -Destination (Join-Path $testRoot 'allowed-prompt-text')
 
+    New-RestrictedCandidate 'review-pull-request' @'
+stimuli:
+  - name: review-case
+    prompt: Review the staged case.
+'@
+    $agentsDir = Join-Path $candidateRoot '.github/agents'
+    $docsDir = Join-Path $candidateRoot 'docs'
+    New-Item -ItemType Directory -Path $agentsDir, $docsDir -Force | Out-Null
+    Set-Content (Join-Path $agentsDir 'review-guide-worker.agent.md') $candidateDataMarker
+    Set-Content (Join-Path $agentsDir 'review-candidate-verifier.agent.md') $candidateDataMarker
+    Set-Content (Join-Path $agentsDir 'unrelated.agent.md') 'UNRELATED_AGENT'
+    Set-Content (Join-Path $docsDir 'CrossCuttingGuidance.md') $candidateDataMarker
+    Set-Content (Join-Path $docsDir 'BlazorComponentsGuidance.md') $candidateDataMarker
+    Set-Content (Join-Path $docsDir 'UnrelatedDoc.md') 'UNRELATED_DOC'
+    foreach ($controlFile in @(
+        'grade_disposition.mjs',
+        'review-vs-baseline.experiment.yaml',
+        'review-smoke.experiment.yaml'
+    )) {
+        Set-Content (Join-Path $trustedRoot "eng/skill-evals/$controlFile") $trustedMarker
+    }
+
+    $reviewDestination = Join-Path $testRoot 'staged-review-pull-request'
+    & $stageRun `
+        -TrustedRoot $trustedRoot `
+        -CandidateRoot $candidateRoot `
+        -EvalName review-pull-request `
+        -Destination $reviewDestination
+
+    $stagedReviewFiles = @(
+        Get-ChildItem $reviewDestination -Recurse -File -Force |
+            ForEach-Object {
+                [IO.Path]::GetRelativePath($reviewDestination, $_.FullName).Replace('\', '/')
+            } |
+            Sort-Object
+    )
+    $expectedReviewFiles = @(
+        '.github/agents/review-candidate-verifier.agent.md'
+        '.github/agents/review-guide-worker.agent.md'
+        '.github/skills/review-pull-request/SKILL.md'
+        'docs/BlazorComponentsGuidance.md'
+        'docs/CrossCuttingGuidance.md'
+        'eng/skill-evals/assert_results.ps1'
+        'eng/skill-evals/grade_disposition.mjs'
+        'eng/skill-evals/review-vs-baseline.experiment.yaml'
+        'eng/skill-evals/review-smoke.experiment.yaml'
+        'eng/skill-evals/review-pull-request/eval.vally.yaml'
+        'eng/skill-evals/run.ps1'
+        'eng/skill-evals/skills-smoke.experiment.yaml'
+        'eng/skill-evals/skills-vs-baseline.experiment.yaml'
+    ) | Sort-Object
+    Assert-True (
+        @(Compare-Object $expectedReviewFiles $stagedReviewFiles).Count -eq 0
+    ) "Unexpected staged review-pull-request files: $($stagedReviewFiles -join ', ')."
+
+    foreach ($relativePath in @(
+        '.github/agents/review-candidate-verifier.agent.md'
+        '.github/agents/review-guide-worker.agent.md'
+        'docs/CrossCuttingGuidance.md'
+        'docs/BlazorComponentsGuidance.md'
+    )) {
+        $sourcePath = Join-Path $candidateRoot $relativePath
+        $missingDestination = Join-Path $testRoot ([guid]::NewGuid().ToString('N'))
+        Remove-Item $sourcePath
+        try {
+            Assert-Throws {
+                & $stageRun `
+                    -TrustedRoot $trustedRoot `
+                    -CandidateRoot $candidateRoot `
+                    -EvalName review-pull-request `
+                    -Destination $missingDestination
+            } "Missing candidate support file '$relativePath'"
+            Assert-True (-not (Test-Path $missingDestination)) 'Failed staging left a partial tree.'
+        } finally {
+            Set-Content $sourcePath $candidateDataMarker
+        }
+    }
+
+    $componentEval = Join-Path $candidateRoot 'eng/skill-evals/review-candidate-verifier'
+    New-Item -ItemType Directory -Path $componentEval -Force | Out-Null
+    Set-Content (Join-Path $componentEval 'eval.vally.yaml') $candidateDataMarker
+    $componentDestination = Join-Path $testRoot 'staged-verifier'
+    & $stageRun -TrustedRoot $trustedRoot -CandidateRoot $candidateRoot `
+        -EvalName review-candidate-verifier -Destination $componentDestination
+    Assert-True (
+        -not (Test-Path (Join-Path $componentDestination '.github/skills/review-candidate-verifier'))
+    ) 'A component suite must not invent a runtime skill.'
+    Assert-True (
+        (Get-Content (Join-Path $componentDestination 'eng/skill-evals/grade_disposition.mjs') -Raw).Trim() -eq $trustedMarker
+    ) 'The component grader does not come from the trusted control plane.'
+    Assert-True (
+        Test-Path (Join-Path $componentDestination '.github/agents/review-candidate-verifier.agent.md')
+    ) 'The component verifier profile is missing.'
+
     Write-Host 'Trusted skill-eval staging self-test passed.'
 } finally {
     Remove-Item $testRoot -Recurse -Force

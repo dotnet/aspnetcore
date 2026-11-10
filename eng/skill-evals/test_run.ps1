@@ -60,6 +60,15 @@ if ($args -contains '--version') {
 if ($env:SKILL_EVAL_FAKE_FAILURE) {
     throw 'fake Vally failure'
 }
+if ($args[0] -eq 'eval' -and ($args -join ' ') -like '*review-candidate-verifier*') {
+    $output = $args[([array]::IndexOf($args, '--output-dir') + 1)]
+    $run = Join-Path $output '2026-01-01T00-00-00'
+    New-Item -ItemType Directory -Path $run -Force | Out-Null
+    Set-Content (Join-Path $run 'results.jsonl') ''
+    if ($env:SKILL_EVAL_FAKE_EXIT) {
+        exit 1
+    }
+}
 [ordered]@{
     WorkingDirectory = (Get-Location).Path
     Arguments = [string[]]$args
@@ -82,8 +91,8 @@ if ($env:SKILL_EVAL_FAKE_FAILURE) {
         Read-Invocations |
             Where-Object { $_.Arguments[0] -eq 'experiment' }
     )
-    Assert-True ($validateInvocations.Count -eq 2) (
-        'Default validation did not resolve both experiments.'
+    Assert-True ($validateInvocations.Count -eq 4) (
+        'Default validation did not resolve generic and reviewer experiments.'
     )
     foreach ($invocation in $validateInvocations) {
         Assert-True ($invocation.Arguments[1] -eq 'run') (
@@ -102,6 +111,12 @@ if ($env:SKILL_EVAL_FAKE_FAILURE) {
     Assert-True ($validateInvocations.Arguments -contains (
         Join-Path $repoRoot 'eng/skill-evals/skills-smoke.experiment.yaml'
     )) 'Default validation did not resolve the smoke experiment.'
+    Assert-True ($validateInvocations.Arguments -contains (
+        Join-Path $repoRoot 'eng/skill-evals/review-vs-baseline.experiment.yaml'
+    )) 'Default validation did not resolve the reviewer experiment.'
+    Assert-True ($validateInvocations.Arguments -contains (
+        Join-Path $repoRoot 'eng/skill-evals/review-smoke.experiment.yaml'
+    )) 'Default validation did not resolve the reviewer smoke experiment.'
 
     Remove-Item $record
     & $runner Validate `
@@ -162,6 +177,114 @@ if ($env:SKILL_EVAL_FAKE_FAILURE) {
     Assert-True ($specializedInvocation[0] -eq 'eval') 'Specialized run did not use Vally eval.'
     Assert-True ($specializedInvocation -contains '--eval-spec') 'Specialized run omitted --eval-spec.'
 
+    Remove-Item $record
+    & $runner Validate `
+        -Suite review-pull-request `
+        -Vally $fakeVally `
+        -VallyPrefix @()
+    $suiteInvocations = @(Read-Invocations)
+    $suiteLint = @($suiteInvocations | Where-Object { $_.Arguments[0] -eq 'lint' })
+    Assert-True ($suiteLint.Count -eq 1) 'Suite validation linted unrelated specifications.'
+    Assert-True ($suiteLint[0].Arguments -contains (
+        Join-Path $repoRoot 'eng/skill-evals/review-pull-request/eval.vally.yaml'
+    )) 'Suite validation did not lint the selected specification.'
+    $suitePlans = @($suiteInvocations | Where-Object { $_.Arguments[0] -eq 'experiment' })
+    Assert-True ($suitePlans.Count -eq 2) 'Suite validation did not resolve both experiments.'
+    foreach ($invocation in $suitePlans) {
+        Assert-True ($invocation.Arguments -contains '--dry-run') 'Suite validation could invoke models.'
+        Assert-True ($invocation.Arguments -contains '--eval-filter') 'Suite validation omitted its filter.'
+        Assert-True ($invocation.Arguments -contains 'review-pull-request/eval.vally.yaml') 'Suite validation selected the wrong eval.'
+    }
+
+    & $runner Run `
+        -Suite review-pull-request `
+        -Vally $fakeVally `
+        -VallyPrefix @() `
+        -OutputDirectory $output
+    $suiteRun = Read-Invocation
+    Assert-True ($suiteRun[0] -eq 'experiment') 'Suite run bypassed experiment skill ownership.'
+    Assert-True ($suiteRun -contains 'review-pull-request/eval.vally.yaml') 'Suite run selected the wrong eval.'
+    Assert-True ($suiteRun -contains (Join-Path $repoRoot 'eng/skill-evals/review-vs-baseline.experiment.yaml')) (
+        'Reviewer run used the generic treatment.'
+    )
+    & $runner Run -Suite review-pull-request `
+        -Experiment eng/skill-evals/skills-smoke.experiment.yaml `
+        -Vally $fakeVally -VallyPrefix @() -OutputDirectory $output
+    Assert-True ((Read-Invocation) -contains (Join-Path $repoRoot 'eng/skill-evals/review-smoke.experiment.yaml')) (
+        'Reviewer smoke run used the generic treatment.'
+    )
+
+    foreach ($smoke in @($false, $true)) {
+        $componentOutput = Join-Path $testRoot "component-$smoke"
+        $options = @{ Suite = 'review-candidate-verifier'; Vally = $fakeVally; VallyPrefix = @(); OutputDirectory = $componentOutput }
+        if ($smoke) {
+            $options.Experiment = 'eng/skill-evals/skills-smoke.experiment.yaml'
+        }
+        & $runner Run @options
+        $componentRun = Read-Invocation
+        Assert-True ($componentRun[0] -eq 'eval') 'Component run used a skill comparison experiment.'
+        $plan = Get-Content (Join-Path $componentOutput '2026-01-01T00-00-00/plan-snapshot.json') -Raw | ConvertFrom-Json
+        $runs = if ($smoke) { 1 } else { 5 }
+        Assert-True ($plan.evals[0].runs -eq $runs) 'Component plan has the wrong repeat count.'
+        Assert-True ($componentRun[([array]::IndexOf($componentRun, '--runs') + 1)] -eq "$runs") 'Component invocation has the wrong repeat count.'
+        Assert-True ($plan.evals[0].threshold -eq 0.8 -and $plan.evals[0].plannedStimulusCount -eq 3) (
+            'Component plan lost its per-case 4/5 disposition gate.'
+        )
+    }
+    $componentOutput = Join-Path $testRoot 'component-review-smoke'
+    & $runner Run -Suite review-candidate-verifier `
+        -Experiment eng/skill-evals/review-smoke.experiment.yaml `
+        -Vally $fakeVally -VallyPrefix @() -OutputDirectory $componentOutput
+    $componentRun = Read-Invocation
+    Assert-True ($componentRun[([array]::IndexOf($componentRun, '--runs') + 1)] -eq '1') (
+        'Reviewer smoke selection unexpectedly ran the full component suite.'
+    )
+
+    $env:SKILL_EVAL_FAKE_EXIT = 'true'
+    $failedOutput = Join-Path $testRoot 'component-exit-one'
+    & $runner Run -Suite review-candidate-verifier -Vally $fakeVally -VallyPrefix @() -OutputDirectory $failedOutput
+    Assert-True ($LASTEXITCODE -eq 1) 'Component Vally exit code was not propagated.'
+    Assert-True (Test-Path (Join-Path $failedOutput '2026-01-01T00-00-00/plan-snapshot.json')) (
+        'A failed component run lost its plan snapshot.'
+    )
+    Remove-Item Env:SKILL_EVAL_FAKE_EXIT
+
+    Remove-Item $record
+    & $runner Validate -Eval eng/skill-evals/review-candidate-verifier/eval.vally.yaml `
+        -Vally $fakeVally -VallyPrefix @()
+    $componentValidation = @(Read-Invocations)
+    Assert-True ($componentValidation.Count -eq 1 -and $componentValidation[0].Arguments[0] -eq 'lint') (
+        'Component -Eval validation planned unrelated comparison experiments.'
+    )
+
+    Remove-Item $record
+    & $runner Run -Vally $fakeVally -VallyPrefix @() -OutputDirectory (Join-Path $testRoot 'all-results')
+    $allRuns = @(Read-Invocations | Where-Object { $_.Arguments[0] -in @('experiment', 'eval') })
+    $suiteCount = @(Get-ChildItem (Join-Path $repoRoot 'eng/skill-evals') -Directory |
+        Where-Object { Test-Path (Join-Path $_.FullName 'eval.vally.yaml') }).Count
+    Assert-True ($allRuns.Count -eq $suiteCount) 'Default run omitted a standard suite.'
+    Assert-True (($allRuns.Arguments -join ' ') -like '*review-candidate-verifier*') 'Default run omitted the component suite.'
+    Assert-True ($allRuns.Arguments -contains (Join-Path $repoRoot 'eng/skill-evals/review-vs-baseline.experiment.yaml')) (
+        'Default run omitted the reviewer comparison.'
+    )
+
+    foreach ($invalidSuite in @('../outside', '..', 'missing-suite')) {
+        $rejected = $false
+        try {
+            & $runner Lint -Suite $invalidSuite -Vally $fakeVally -VallyPrefix @()
+        } catch {
+            $rejected = $_.Exception.Message -match 'Invalid suite name|Missing suite specification'
+        }
+        Assert-True $rejected "Invalid or missing suite '$invalidSuite' was not rejected."
+    }
+    $ambiguousSelectionRejected = $false
+    try {
+        & $runner Lint -Suite review-pull-request -Eval $specialized -Vally $fakeVally -VallyPrefix @()
+    } catch {
+        $ambiguousSelectionRejected = $_.Exception.Message -like '*Specify either -Suite or -Eval*'
+    }
+    Assert-True $ambiguousSelectionRejected 'Conflicting suite and eval selectors were not rejected.'
+
     $env:SKILL_EVAL_FAKE_FAILURE = 'true'
     $failurePropagated = $false
     try {
@@ -175,6 +298,7 @@ if ($env:SKILL_EVAL_FAKE_FAILURE) {
 } finally {
     Remove-Item Env:SKILL_EVAL_RUNNER_RECORD -ErrorAction SilentlyContinue
     Remove-Item Env:SKILL_EVAL_FAKE_FAILURE -ErrorAction SilentlyContinue
+    Remove-Item Env:SKILL_EVAL_FAKE_EXIT -ErrorAction SilentlyContinue
     if ($hadPreviousVally) {
         $env:SKILL_EVAL_VALLY = $previousVally
     } else {

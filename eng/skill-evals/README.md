@@ -9,10 +9,12 @@ stay here.
 
 `eng/skill-evals/<skill>/eval.vally.yaml` is the standard one-skill lane,
 auto-discovered by this repository's experiment and runner.
-`skills-vs-baseline.experiment.yaml` runs each of those specs twice with the
+`skills-vs-baseline.experiment.yaml` runs the generic skill specs twice with the
 same stimuli: once without a skill and once with exactly
 `.github/skills/<skill>` loaded. The experiment owns `environment.skills`;
-standard specs must not set it themselves.
+standard specs must not set it themselves. Reviewer comparison uses
+`review-vs-baseline.experiment.yaml` and `review-smoke.experiment.yaml` instead.
+The verifier component suite has no skill arm and runs directly.
 
 Any other `*.vally.yaml` file is a specialized suite. Specialized suites are not
 auto-discovered and must be passed explicitly to the runner. Keep fixture files
@@ -20,28 +22,67 @@ beside the spec that consumes them, normally under a `fixtures` directory. Do
 not place eval specs, `evals` directories, or eval runners in runtime skill
 directories. A runtime skill may use a `fixtures` directory for non-eval assets.
 
-`review-pull-request/catch-policy.vally.yaml` is a specialized, offline policy
-exercise. It stages the current reviewer skill, cross-cutting guide, diff, old/head source,
-dependency implementations, and one selected scenario into each trial workspace.
-Five independent stimuli cover unspecified policy, existing feedback, propagation,
-best-effort reporting, and a nonthrowing producer control. The agent must derive the
-effect from source rather than receive the expected behavior in its prompt.
-Static tool-result checks require the relevant guidance and source to be read;
-binary judging checks the reasoning separately. These checks do not prove every
-line was read or replace the semantic judge. Five trials per stimulus must all pass.
-Platform-required native skill acquisition is allowed, but does not replace reading
-the staged guidance or authorize coordinator execution.
-The executor and judge models are both pinned to the reviewer skill's supported
-`gpt-5.6-sol`. Because they share a model identity, the judge is not independent-
-model corroboration. Overrides are separate model-compatibility results, not
-evidence that the default reviewer improved.
-This does not invoke live PR review or measure baseline-versus-skilled improvement.
-Run it explicitly with
-`./eng/skill-evals/run.ps1 Run -Eval eng/skill-evals/review-pull-request/catch-policy.vally.yaml --require-pass`.
+The standard `review-pull-request` suite uses frozen source and diff excerpts from
+ASP.NET Core PRs #70106, #69782, #70304, #69721, and #70299. These cover exact-input
+old/head comparison, constructor mapping versus a lower-layer head test, renderer
+disposal and issue intent, an unproven external browser-test path, and existing
+feedback on render-mode-dependent navigation. Each case carries its source roles,
+Git blob identities, original line ranges, and fixture SHA-256 hashes in
+`provenance.json`. Issue and feedback excerpts identify their captured public
+revision metadata. Neutral stimulus names and destination paths do not encode
+expected dispositions. A sixth case integrates the synthetic public catch-policy
+example from #70312. It omits the explicit missing-policy hints and the redundant
+existing-question case. It does not represent production framework source.
+It replaces the retired standalone catch-policy suite and its duplicate fixtures.
+Fixture attributes retain LF and upstream whitespace so Git checkout preserves
+the frozen hashes on Windows and Unix.
+
+These are offline single-context candidate exercises, not full bundle preparation,
+guide-worker dispatch, verifier integration, live PR review, or browser tests.
+Both arms share frozen source and both guidance documents. Only the skilled arm
+receives the skill and verifier/worker instructions. Baseline does not receive
+`SKILL.md` or either agent profile. `tool-calls.required` matches both read arguments and
+returned bytes, including actual skill text from native acquisition or an installed
+file read. A success acknowledgement or a filename citation does not satisfy those
+checks. Content signatures prove the specified bytes appeared in a tool result,
+not that every possible review path ran.
+
+Only the deterministic program grader contributes to disposition scores. It checks
+the status line, C1's section placement, inline confidence, and existing-thread
+deduplication. Skill acquisition, read receipts, and LLM rubrics have zero weight.
+The result gate checks evidence/guidance receipts for both arms and skill/profile
+receipts for skilled only. A missing baseline skill cannot lower its disposition
+score. Each skilled stimulus must independently meet its threshold. Baseline
+disposition scores are reported, not threshold-gated.
+
+The zero-weight LLM rubrics remain secondary diagnostics, not semantic quality
+gates. They still incur judge calls during a model-bearing run. The subject and
+judge both use `gpt-5.6-sol`; the judge is not independent-model corroboration.
+These public development cases are not held-out evidence. Five repeats do not
+create five independent PR lineages.
+
+The `review-candidate-verifier` component suite checks normalized `decision` and
+applicable `downgradeKind`, `dropBasis`, and `contradictedLink` fields. It tolerates
+irrelevant JSON and citation-format differences. Every case must pass at least
+four of five trials independently. Read receipts remain a separate integrity
+gate. Case a uses public C# source. Case b adds an assigned synthetic propagation
+contract, not an actual public API guarantee. Case c uses a synthetic JavaScript
+component and an immutable observation artifact. Component attributes preserve the exact supplied
+bytes, including existing line endings. Provenance records hashes and case kinds.
+
+Cases a, b, and c were measured at 4/5, 5/5, and 5/5 on the predecessor verifier
+text. They have not yet been re-run against the merged guard clauses.
+Case d uses a scenario close to the one @maraf reported at 3/10 DROP and 7/10
+DOWNGRADE(intent). It has not been measured, so it is not gated.
+
+Model-free validation checks layout, schema, source hashes, read-guard coverage,
+and experiment selection. It does not establish adjudication quality. A
+model-bearing `Run` and inspection of every trial's actual read receipts and
+semantic result remain necessary before making a behavioral claim.
 
 The experiment deliberately does not override `runs`. A standard spec owns its
-trial count through `defaults.runs`. The existing specs retain five runs and 25
-trials each. The dotnet/skills quality gate uses five trials as the minimum at
+trial count through `defaults.runs`. The reviewer suite has 30 trials per arm.
+The component suite has 15 trials. The dotnet/skills quality gate uses five trials as the minimum at
 which a clean sweep can support a one-sided sign test at 5%; enforcing a
 trial-count policy here remains a documented follow-up.
 
@@ -56,6 +97,14 @@ Run these commands from any directory:
 # Prove every validator rule and runner isolation with self-tests
 ./eng/skill-evals/run.ps1 Test
 
+# Select this suite for layout, lint, and both experiment dry-runs.
+./eng/skill-evals/run.ps1 Validate -Suite review-pull-request
+./eng/skill-evals/run.ps1 Validate -Suite review-candidate-verifier
+# Run infrastructure self-tests plus the selected suite's fixture checks.
+./eng/skill-evals/run.ps1 Test -Suite review-pull-request
+# The original staging self-test also has this forwarding entry point.
+./eng/skill-evals/tests/test_stage_run.ps1
+
 # Strict Vally parsing/schema lint; does not call a model
 ./eng/skill-evals/run.ps1 Lint
 
@@ -63,8 +112,16 @@ Run these commands from any directory:
 ./eng/skill-evals/run.ps1 Run
 ./eng/skill-evals/run.ps1 Run -Eval eng/skill-evals/review-public-api/eval.vally.yaml
 ./eng/skill-evals/run.ps1 Run -Eval eng/skill-evals/review-public-api/eval.vally.yaml -Experiment eng/skill-evals/skills-smoke.experiment.yaml
+./eng/skill-evals/run.ps1 Run -Suite review-candidate-verifier
 ./eng/skill-evals/run.ps1 Run -Eval eng/skill-evals/<skill>/<specialized>.vally.yaml
 ```
+
+Without a suite or explicit experiment, `Run` dispatches each standard suite into
+its own output subdirectory. This includes reviewer comparison and the direct
+verifier component suite. `assert_results.ps1` checks that combined output
+recursively. A direct component run writes a plan beside Vally's timestamped
+`results.jsonl`; it does not invent an experiment variant directory. Smoke selects
+one repeat per case and cannot establish the full component 4/5 gate.
 
 ## Hosted entry point
 
@@ -179,7 +236,7 @@ invocation. The runner prints the resolved command and reported version for
 provenance. Additional Vally arguments can be appended to the command. Run
 output defaults to `artifacts/skill-evals`.
 
-Standard runs use Vally's experiment `--compare` mode. Vally 0.13 and later do
+Skill-comparison runs use Vally's experiment `--compare` mode. Vally 0.13 and later do
 not use the old per-stimulus `pairwise` grader, so comparison is owned by the
 experiment rather than repeated in each eval spec.
 

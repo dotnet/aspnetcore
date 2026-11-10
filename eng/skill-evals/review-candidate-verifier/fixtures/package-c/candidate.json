@@ -1,0 +1,10 @@
+{
+  "candidateId": "C2",
+  "claim": "After the work and log callbacks throw, process returns with status Running and without a status notification.",
+  "changedLine": {
+    "role": "head",
+    "path": "src/Engine/Conversation.mjs",
+    "line": 35
+  },
+  "repro": "Register an onStatusChanged observer. Supply a work callback that throws ProcessingFailure and a log callback that throws LoggingFailure. Invoke process and inspect its return, public status field, and observer notifications."
+}

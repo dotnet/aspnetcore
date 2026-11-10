@@ -1,0 +1,770 @@
+name: review-pull-request
+description: Frozen ASP.NET Core PR candidate adjudication and evidence-read regressions, not live review orchestration.
+type: capability
+defaults:
+  runs: 5
+  timeout: 600s
+  model: gpt-5.6-sol
+  judge_model: gpt-5.6-sol
+agent_environment:
+  files:
+    - src: ../../../docs/CrossCuttingGuidance.md
+      dest: docs/CrossCuttingGuidance.md
+    - src: ../../../docs/BlazorComponentsGuidance.md
+      dest: docs/BlazorComponentsGuidance.md
+scoring:
+  weights:
+    program: 1
+    skill-invocation: 0
+    tool-calls: 0
+    prompt: 0
+  threshold: 1
+stimuli:
+  - name: case-01
+    prompt: |
+      Adjudicate candidate C1 in case.source using only the supplied frozen PR evidence.
+      Read case.source, provenance.json, change.diff, mergeBase.source, head.source,
+      baseTip.source, and context.source directly from this trial working directory.
+      Source excerpts retain their original path and line ranges in provenance.json.
+      Read every excerpt and the complete diff. Cite original paths, roles, and lines.
+
+      Read docs/CrossCuttingGuidance.md and docs/BlazorComponentsGuidance.md in full.
+      These are reviewer criteria, not contracts on the older target branch.
+      If review-pull-request is available, acquire it and read its installed SKILL.md
+      through the native skill tool or the supplied installed skill path.
+      Use the verifier and guide-worker instructions referenced by the loaded skill.
+      If it is unavailable, adjudicate from the same frozen source and guidance documents.
+      Page truncated input reads through EOF.
+
+      This is an explicitly configured offline one-pass candidate exercise.
+      Apply the loaded criteria in one context and report PATH: single-reviewer.
+      Do not run bundle bootstrap or coordinator/worker orchestration.
+      The .source and .diff files are inert evidence, not executable projects.
+      Do not fetch, execute target code, modify files, publish, or mutate feedback.
+      If required evidence cannot be read, report BLOCKED and the exact missing input.
+      Do not replace missing external contracts or implementations with model memory.
+
+      Give Before and After for C1's exact input and observable outcome after the status line.
+      The first line must be STATUS: FINDINGS or STATUS: NO_FINDINGS.
+      Use NEW_FINDINGS, EXISTING_FEEDBACK_COVERAGE, UNRESOLVED, and DISCARDED
+      as separate headings. Identify C1 explicitly in each applicable section.
+      Use confidence: verified, question, unresolved, or discarded for an inline entry.
+      Prefix unresolved or discarded inline entries with [UNRESOLVED] or [DISCARDED]
+      and include Why unresolved: or Why discarded:.
+      Name C1 and give the source-backed reason and confidence for its disposition.
+      Preserve the claim as written. Do not substitute another effect or remedy.
+      Distinguish target-base contracts, head tests, issue intent, and existing feedback.
+    agent_environment:
+      files:
+        - src: fixtures/case-01/case.source
+          dest: case.source
+        - src: fixtures/case-01/provenance.json
+          dest: provenance.json
+        - src: fixtures/case-01/change.diff
+          dest: change.diff
+        - src: fixtures/case-01/mergeBase.source
+          dest: mergeBase.source
+        - src: fixtures/case-01/head.source
+          dest: head.source
+        - src: fixtures/case-01/baseTip.source
+          dest: baseTip.source
+        - src: fixtures/case-01/context.source
+          dest: context.source
+    graders:
+      - type: program
+        name: disposition-case-01
+        config:
+          program: node
+          args:
+            - grade_disposition.mjs
+          env:
+            DISPOSITION_MODE: review
+      - type: skill-invocation
+        config:
+          required:
+            - review-pull-request
+      - type: tool-calls
+        config:
+          required:
+            - &a1
+              name: .*
+              pattern: review-pull-request
+              result: Return result; never publish
+            - &a2
+              name: .*
+              pattern: "[/\\\\]review-candidate-verifier\\.agent\\.md"
+              result: validationEvidence
+            - &a3
+              name: .*
+              pattern: "[/\\\\]review-guide-worker\\.agent\\.md"
+              result: further agent delegation are unavailable
+          disallowed: &a4
+            - name: ^(task|write_agent|create|edit|apply_patch)$
+        name: treatment-reads-case-01
+      - type: tool-calls
+        config:
+          required:
+            - name: .*
+              pattern: case\.source
+              result: "C1:"
+            - name: .*
+              pattern: provenance\.json
+              result: sha256
+            - name: .*
+              pattern: change\.diff
+              result: \+\s+request\.Headers\.Authorization = header;
+            - name: .*
+              pattern: mergeBase\.source
+              result: "Dispose\\(disposing: true\\)"
+            - name: .*
+              pattern: head\.source
+              result: "Dispose\\(disposing: true\\)"
+            - name: .*
+              pattern: baseTip\.source
+              result: "Dispose\\(disposing: true\\)"
+            - name: .*
+              pattern: context\.source
+              result: _response\.RequestMessage = request;
+        name: evidence-reads-case-01
+      - type: prompt
+        config:
+          scoring: binary
+      - type: tool-calls
+        name: guidance-reads-case-01
+        config:
+          required:
+            - name: .*
+              pattern: docs[/\\]CrossCuttingGuidance\.md
+              result: Test infrastructure should use shared helpers
+            - name: .*
+              pattern: docs[/\\]BlazorComponentsGuidance\.md
+              result: Keep diagnostics actionable but not noisy
+    rubric:
+      - All criteria are mandatory. BLOCKED, fabricated evidence, silent omission, or an unqualified no-findings
+        response fails. Citations must support the exact claim.
+      - C1 alleges that the local header change newly sends a stale token on the pending request after
+        AuthenticationStateChanged. Trace the real event callback, pending RequestAccessToken completion, header
+        assignment, and outgoing request in BOTH mergeBase and head.
+      - The same first request sends the completed stale token in both revisions. Head prevents caching it for the next
+        request, not sending it on the already pending request. Do not replace C1 with a different caching or
+        concurrency finding.
+      - Record C1 in DISCARDED because oldVsNew is contradicted. Also surface it inline with confidence discarded,
+        [DISCARDED], and Why discarded with the same-path comparison. Do not accept it as verified, question, or
+        externally unresolved.
+      - The added head test explicitly expects stale on the first request and fresh on the next. Use source comparison
+        for the rejection, not the test alone as target contract authority.
+  - name: case-02
+    prompt: |
+      Adjudicate candidate C1 in case.source using only the supplied frozen PR evidence.
+      Read case.source, provenance.json, change.diff, mergeBase.source, head.source,
+      baseTip.source, and context.source directly from this trial working directory.
+      Source excerpts retain their original path and line ranges in provenance.json.
+      Read every excerpt and the complete diff. Cite original paths, roles, and lines.
+
+      Read docs/CrossCuttingGuidance.md and docs/BlazorComponentsGuidance.md in full.
+      These are reviewer criteria, not contracts on the older target branch.
+      If review-pull-request is available, acquire it and read its installed SKILL.md
+      through the native skill tool or the supplied installed skill path.
+      Use the verifier and guide-worker instructions referenced by the loaded skill.
+      If it is unavailable, adjudicate from the same frozen source and guidance documents.
+      Page truncated input reads through EOF.
+
+      This is an explicitly configured offline one-pass candidate exercise.
+      Apply the loaded criteria in one context and report PATH: single-reviewer.
+      Do not run bundle bootstrap or coordinator/worker orchestration.
+      The .source and .diff files are inert evidence, not executable projects.
+      Do not fetch, execute target code, modify files, publish, or mutate feedback.
+      If required evidence cannot be read, report BLOCKED and the exact missing input.
+      Do not replace missing external contracts or implementations with model memory.
+
+      Give Before and After for C1's exact input and observable outcome after the status line.
+      The first line must be STATUS: FINDINGS or STATUS: NO_FINDINGS.
+      Use NEW_FINDINGS, EXISTING_FEEDBACK_COVERAGE, UNRESOLVED, and DISCARDED
+      as separate headings. Identify C1 explicitly in each applicable section.
+      Use confidence: verified, question, unresolved, or discarded for an inline entry.
+      Prefix unresolved or discarded inline entries with [UNRESOLVED] or [DISCARDED]
+      and include Why unresolved: or Why discarded:.
+      Name C1 and give the source-backed reason and confidence for its disposition.
+      Preserve the claim as written. Do not substitute another effect or remedy.
+      Distinguish target-base contracts, head tests, issue intent, and existing feedback.
+    agent_environment:
+      files:
+        - src: fixtures/case-02/case.source
+          dest: case.source
+        - src: fixtures/case-02/provenance.json
+          dest: provenance.json
+        - src: fixtures/case-02/change.diff
+          dest: change.diff
+        - src: fixtures/case-02/mergeBase.source
+          dest: mergeBase.source
+        - src: fixtures/case-02/head.source
+          dest: head.source
+        - src: fixtures/case-02/baseTip.source
+          dest: baseTip.source
+        - src: fixtures/case-02/context.source
+          dest: context.source
+    graders:
+      - type: program
+        name: disposition-case-02
+        config:
+          program: node
+          args:
+            - grade_disposition.mjs
+          env:
+            DISPOSITION_MODE: review
+      - type: skill-invocation
+        config:
+          required:
+            - review-pull-request
+      - type: tool-calls
+        config:
+          required:
+            - *a1
+            - *a2
+            - *a3
+          disallowed: *a4
+        name: treatment-reads-case-02
+      - type: tool-calls
+        config:
+          required:
+            - name: .*
+              pattern: case\.source
+              result: "C1:"
+            - name: .*
+              pattern: provenance\.json
+              result: sha256
+            - name: .*
+              pattern: change\.diff
+              result: \+\s+found = targetFiles\.Count > 0;
+            - name: .*
+              pattern: mergeBase\.source
+              result: GetFile\(reader\.CurrentPrefix\.ToString\(\)\)
+            - name: .*
+              pattern: head\.source
+              result: GetFile\(reader\.CurrentPrefix\.ToString\(\)\)
+            - name: .*
+              pattern: baseTip\.source
+              result: Required
+            - name: .*
+              pattern: context\.source
+              result: Assert\.Empty\(result\)
+        name: evidence-reads-case-02
+      - type: prompt
+        config:
+          scoring: binary
+      - type: tool-calls
+        name: guidance-reads-case-02
+        config:
+          required:
+            - name: .*
+              pattern: docs[/\\]CrossCuttingGuidance\.md
+              result: Test infrastructure should use shared helpers
+            - name: .*
+              pattern: docs[/\\]BlazorComponentsGuidance\.md
+              result: Keep diagnostics actionable but not noisy
+    rubric:
+      - All criteria are mandatory. Adjudicate C1's required constructor parameter, not the unrelated dictionary-key
+        fixes.
+      - Trace a populated non-file property and an unmatched IReadOnlyList<IFormFile> constructor parameter through
+        FileConverter and the compiled complex-type consumer. Compare old found true with the empty collection against
+        head found false and the required-parameter mapping error.
+      - Keep the concrete changed consumer-visible mapping error in NEW_FINDINGS with confidence verified. The
+        lower-layer head test only calls FileConverter.TryRead and asserts succeeded, found false, and an empty result.
+        It does not exercise construction or the required-parameter ErrorHandler path, so it is not exact-input intent
+        evidence warranting a question downgrade.
+      - Cite the changed RIGHT-side FileConverter found assignment, the base-tip required-parameter consumer, and the
+        head test. Do not infer that result is null, that every unmatched optional file is a defect, or that the
+        lower-layer test resolves the constructor regression.
+  - name: case-03
+    prompt: |
+      Adjudicate candidate C1 in case.source using only the supplied frozen PR evidence.
+      Read case.source, provenance.json, change.diff, mergeBase.source, head.source,
+      baseTip.source, and context.source directly from this trial working directory.
+      Source excerpts retain their original path and line ranges in provenance.json.
+      Read every excerpt and the complete diff. Cite original paths, roles, and lines.
+
+      Read docs/CrossCuttingGuidance.md and docs/BlazorComponentsGuidance.md in full.
+      These are reviewer criteria, not contracts on the older target branch.
+      If review-pull-request is available, acquire it and read its installed SKILL.md
+      through the native skill tool or the supplied installed skill path.
+      Use the verifier and guide-worker instructions referenced by the loaded skill.
+      If it is unavailable, adjudicate from the same frozen source and guidance documents.
+      Page truncated input reads through EOF.
+
+      This is an explicitly configured offline one-pass candidate exercise.
+      Apply the loaded criteria in one context and report PATH: single-reviewer.
+      Do not run bundle bootstrap or coordinator/worker orchestration.
+      The .source and .diff files are inert evidence, not executable projects.
+      Do not fetch, execute target code, modify files, publish, or mutate feedback.
+      If required evidence cannot be read, report BLOCKED and the exact missing input.
+      Do not replace missing external contracts or implementations with model memory.
+
+      Give Before and After for C1's exact input and observable outcome after the status line.
+      The first line must be STATUS: FINDINGS or STATUS: NO_FINDINGS.
+      Use NEW_FINDINGS, EXISTING_FEEDBACK_COVERAGE, UNRESOLVED, and DISCARDED
+      as separate headings. Identify C1 explicitly in each applicable section.
+      Use confidence: verified, question, unresolved, or discarded for an inline entry.
+      Prefix unresolved or discarded inline entries with [UNRESOLVED] or [DISCARDED]
+      and include Why unresolved: or Why discarded:.
+      Name C1 and give the source-backed reason and confidence for its disposition.
+      Preserve the claim as written. Do not substitute another effect or remedy.
+      Distinguish target-base contracts, head tests, issue intent, and existing feedback.
+    agent_environment:
+      files:
+        - src: fixtures/case-03/case.source
+          dest: case.source
+        - src: fixtures/case-03/provenance.json
+          dest: provenance.json
+        - src: fixtures/case-03/change.diff
+          dest: change.diff
+        - src: fixtures/case-03/mergeBase.source
+          dest: mergeBase.source
+        - src: fixtures/case-03/head.source
+          dest: head.source
+        - src: fixtures/case-03/baseTip.source
+          dest: baseTip.source
+        - src: fixtures/case-03/context.source
+          dest: context.source
+    graders:
+      - type: program
+        name: disposition-case-03
+        config:
+          program: node
+          args:
+            - grade_disposition.mjs
+          env:
+            DISPOSITION_MODE: review
+      - type: skill-invocation
+        config:
+          required:
+            - review-pull-request
+      - type: tool-calls
+        config:
+          required:
+            - *a1
+            - *a2
+            - *a3
+          disallowed: *a4
+        name: treatment-reads-case-03
+      - type: tool-calls
+        config:
+          required:
+            - name: .*
+              pattern: case\.source
+              result: "C1:"
+            - name: .*
+              pattern: provenance\.json
+              result: sha256
+            - name: .*
+              pattern: change\.diff
+              result: \+\s+if \(_rendererIsDisposed\)
+            - name: .*
+              pattern: mergeBase\.source
+              result: _componentStateById\.Clear\(\)
+            - name: .*
+              pattern: head\.source
+              result: _componentStateById\.Clear\(\)
+            - name: .*
+              pattern: baseTip\.source
+              result: renderer!\.HandleComponentException\(exception, componentId\)
+            - name: .*
+              pattern: context\.source
+              result: Not to throw exception when webview is disposed
+        name: evidence-reads-case-03
+      - type: prompt
+        config:
+          scoring: binary
+      - type: tool-calls
+        name: guidance-reads-case-03
+        config:
+          required:
+            - name: .*
+              pattern: docs[/\\]CrossCuttingGuidance\.md
+              result: Test infrastructure should use shared helpers
+            - name: .*
+              pattern: docs[/\\]BlazorComponentsGuidance\.md
+              result: Keep diagnostics actionable but not noisy
+    rubric:
+      - All criteria are mandatory. C1 concerns a callback after renderer disposal, not removing a component while its
+        renderer remains alive.
+      - Trace DispatchExceptionAsync through RenderHandle and Renderer. Disposal sets _rendererIsDisposed and removes
+        component states. Old GetRequiredComponentState throws for the missing component before routing the supplied
+        exception to an error boundary. Head returns at the guard.
+      - Reject C1's claim that the guard newly removes a previously functioning ErrorBoundary delivery on that exact
+        post-disposal path. Record DISCARDED with the source-disproven effect, not merely a generic disposal rule. Also
+        surface it inline with [DISCARDED], confidence discarded, and Why discarded.
+      - Read the linked issue 66322 expectation and the actual head tests. They establish the intended no-throw disposed
+        behavior and distinguish component removal with a live renderer. Do not manufacture a new intent question that
+        contradicts the supplied issue or discard a genuine live-renderer exception.
+  - name: case-04
+    prompt: |
+      Adjudicate candidate C1 in case.source using only the supplied frozen PR evidence.
+      Read case.source, provenance.json, change.diff, mergeBase.source, head.source,
+      baseTip.source, and context.source directly from this trial working directory.
+      Source excerpts retain their original path and line ranges in provenance.json.
+      Read every excerpt and the complete diff. Cite original paths, roles, and lines.
+
+      Read docs/CrossCuttingGuidance.md and docs/BlazorComponentsGuidance.md in full.
+      These are reviewer criteria, not contracts on the older target branch.
+      If review-pull-request is available, acquire it and read its installed SKILL.md
+      through the native skill tool or the supplied installed skill path.
+      Use the verifier and guide-worker instructions referenced by the loaded skill.
+      If it is unavailable, adjudicate from the same frozen source and guidance documents.
+      Page truncated input reads through EOF.
+
+      This is an explicitly configured offline one-pass candidate exercise.
+      Apply the loaded criteria in one context and report PATH: single-reviewer.
+      Do not run bundle bootstrap or coordinator/worker orchestration.
+      The .source and .diff files are inert evidence, not executable projects.
+      Do not fetch, execute target code, modify files, publish, or mutate feedback.
+      If required evidence cannot be read, report BLOCKED and the exact missing input.
+      Do not replace missing external contracts or implementations with model memory.
+
+      Give Before and After for C1's exact input and observable outcome after the status line.
+      The first line must be STATUS: FINDINGS or STATUS: NO_FINDINGS.
+      Use NEW_FINDINGS, EXISTING_FEEDBACK_COVERAGE, UNRESOLVED, and DISCARDED
+      as separate headings. Identify C1 explicitly in each applicable section.
+      Use confidence: verified, question, unresolved, or discarded for an inline entry.
+      Prefix unresolved or discarded inline entries with [UNRESOLVED] or [DISCARDED]
+      and include Why unresolved: or Why discarded:.
+      Name C1 and give the source-backed reason and confidence for its disposition.
+      Preserve the claim as written. Do not substitute another effect or remedy.
+      Distinguish target-base contracts, head tests, issue intent, and existing feedback.
+    agent_environment:
+      files:
+        - src: fixtures/case-04/case.source
+          dest: case.source
+        - src: fixtures/case-04/provenance.json
+          dest: provenance.json
+        - src: fixtures/case-04/change.diff
+          dest: change.diff
+        - src: fixtures/case-04/mergeBase.source
+          dest: mergeBase.source
+        - src: fixtures/case-04/head.source
+          dest: head.source
+        - src: fixtures/case-04/baseTip.source
+          dest: baseTip.source
+        - src: fixtures/case-04/context.source
+          dest: context.source
+    graders:
+      - type: program
+        name: disposition-case-04
+        config:
+          program: node
+          args:
+            - grade_disposition.mjs
+          env:
+            DISPOSITION_MODE: review
+      - type: skill-invocation
+        config:
+          required:
+            - review-pull-request
+      - type: tool-calls
+        config:
+          required:
+            - *a1
+            - *a2
+            - *a3
+          disallowed: *a4
+        name: treatment-reads-case-04
+      - type: tool-calls
+        config:
+          required:
+            - name: .*
+              pattern: case\.source
+              result: "C1:"
+            - name: .*
+              pattern: provenance\.json
+              result: sha256
+            - name: .*
+              pattern: change\.diff
+              result: \+\s*public class RemoteMsalAuthenticationStartup
+            - name: .*
+              pattern: mergeBase\.source
+              result: Bad code
+            - name: .*
+              pattern: head\.source
+              result: Bad code
+            - name: .*
+              pattern: baseTip\.source
+              result: window\.AuthenticationService = AuthenticationService
+            - name: .*
+              pattern: context\.source
+              result: __msalSignInCalled
+        name: evidence-reads-case-04
+      - type: prompt
+        config:
+          scoring: binary
+      - type: tool-calls
+        name: guidance-reads-case-04
+        config:
+          required:
+            - name: .*
+              pattern: docs[/\\]CrossCuttingGuidance\.md
+              result: Test infrastructure should use shared helpers
+            - name: .*
+              pattern: docs[/\\]BlazorComponentsGuidance\.md
+              result: Keep diagnostics actionable but not noisy
+    rubric:
+      - All criteria are mandatory. C1 asserts that the new test server token endpoint changes the browser regression's
+        observable success. Do not treat a directly callable endpoint as evidence that this browser scenario calls it.
+      - Inspect the copied token endpoint at mergeBase and head, the MSAL app configuration, the real signIn wrapper,
+        and NavigateDirectlyToLoginCallbackRestartsLoginWithoutInteropFailure. The browser test checks the signIn flag
+        and absence of an interop error, not a token response or code-rejection outcome.
+      - Trace the in-repository boundary into @azure/msal-browser and name the missing version-specific
+        redirect/discovery/token-exchange implementation or recorded request trace needed to establish that this
+        endpoint is reached before the test asserts.
+      - Keep the asserted browser effect UNRESOLVED with that precise missing evidence. A well-formed inline
+        [UNRESOLVED] entry is allowed. Do not promote an endpoint-local observation into a proven regression-test
+        failure, invent external requests, or claim that copied code alone proves identical behavior for the newly
+        configured app.
+      - Do not substitute a different endpoint correctness claim or remedy for C1's asserted browser effect.
+  - name: case-05
+    prompt: |
+      Adjudicate candidate C1 in case.source using only the supplied frozen PR evidence.
+      Read case.source, provenance.json, change.diff, mergeBase.source, head.source,
+      baseTip.source, and context.source directly from this trial working directory.
+      Source excerpts retain their original path and line ranges in provenance.json.
+      Read every excerpt and the complete diff. Cite original paths, roles, and lines.
+
+      Read docs/CrossCuttingGuidance.md and docs/BlazorComponentsGuidance.md in full.
+      These are reviewer criteria, not contracts on the older target branch.
+      If review-pull-request is available, acquire it and read its installed SKILL.md
+      through the native skill tool or the supplied installed skill path.
+      Use the verifier and guide-worker instructions referenced by the loaded skill.
+      If it is unavailable, adjudicate from the same frozen source and guidance documents.
+      Page truncated input reads through EOF.
+
+      This is an explicitly configured offline one-pass candidate exercise.
+      Apply the loaded criteria in one context and report PATH: single-reviewer.
+      Do not run bundle bootstrap or coordinator/worker orchestration.
+      The .source and .diff files are inert evidence, not executable projects.
+      Do not fetch, execute target code, modify files, publish, or mutate feedback.
+      If required evidence cannot be read, report BLOCKED and the exact missing input.
+      Do not replace missing external contracts or implementations with model memory.
+
+      Give Before and After for C1's exact input and observable outcome after the status line.
+      The first line must be STATUS: FINDINGS or STATUS: NO_FINDINGS.
+      Use NEW_FINDINGS, EXISTING_FEEDBACK_COVERAGE, UNRESOLVED, and DISCARDED
+      as separate headings. Identify C1 explicitly in each applicable section.
+      Use confidence: verified, question, unresolved, or discarded for an inline entry.
+      Prefix unresolved or discarded inline entries with [UNRESOLVED] or [DISCARDED]
+      and include Why unresolved: or Why discarded:.
+      Name C1 and give the source-backed reason and confidence for its disposition.
+      Preserve the claim as written. Do not substitute another effect or remedy.
+      Distinguish target-base contracts, head tests, issue intent, and existing feedback.
+    agent_environment:
+      files:
+        - src: fixtures/case-05/case.source
+          dest: case.source
+        - src: fixtures/case-05/provenance.json
+          dest: provenance.json
+        - src: fixtures/case-05/change.diff
+          dest: change.diff
+        - src: fixtures/case-05/mergeBase.source
+          dest: mergeBase.source
+        - src: fixtures/case-05/head.source
+          dest: head.source
+        - src: fixtures/case-05/baseTip.source
+          dest: baseTip.source
+        - src: fixtures/case-05/context.source
+          dest: context.source
+    graders:
+      - type: program
+        name: disposition-case-05
+        config:
+          program: node
+          args:
+            - grade_disposition.mjs
+          env:
+            DISPOSITION_MODE: review
+      - type: skill-invocation
+        config:
+          required:
+            - review-pull-request
+      - type: tool-calls
+        config:
+          required:
+            - *a1
+            - *a2
+            - *a3
+          disallowed: *a4
+        name: treatment-reads-case-05
+      - type: tool-calls
+        config:
+          required:
+            - name: .*
+              pattern: case\.source
+              result: "C1:"
+            - name: .*
+              pattern: provenance\.json
+              result: sha256
+            - name: .*
+              pattern: change\.diff
+              result: \+\s+document\.addEventListener\(
+            - name: .*
+              pattern: mergeBase\.source
+              result: currentEnhancedNavigationAbortController\?\.abort\(\)
+            - name: .*
+              pattern: head\.source
+              result: currentEnhancedNavigationAbortController\?\.abort\(\)
+            - name: .*
+              pattern: baseTip\.source
+              result: event\.defaultPrevented
+            - name: .*
+              pattern: context\.source
+              result: "4487936812"
+        name: evidence-reads-case-05
+      - type: prompt
+        config:
+          scoring: binary
+      - type: tool-calls
+        name: guidance-reads-case-05
+        config:
+          required:
+            - name: .*
+              pattern: docs[/\\]CrossCuttingGuidance\.md
+              result: Test infrastructure should use shared helpers
+            - name: .*
+              pattern: docs[/\\]BlazorComponentsGuidance\.md
+              result: Keep diagnostics actionable but not noisy
+    rubric:
+      - All criteria are mandatory. The frozen feedback covers exactly C1's NavigateTo plus unprevented href concern,
+        not the separate listener-registration findings.
+      - Put C1 in EXISTING_FEEDBACK_COVERAGE with the exact discussion_r4487936812 reference. NEW_FINDINGS must contain
+        no duplicate C1, including verified, question, unresolved, discarded, or differently worded copies.
+      - Preserve any technical uncertainty and its existing-feedback reference in UNRESOLVED. Do not interpret an open
+        question as proof of a defect, a binding compatibility contract, or proof that WASM and Server dispatch
+        synchronously.
+      - Compare the actual listener reordering, programmatic enhanced navigation, unprevented anchor interception, and
+        abort path. Apply the full Blazor render-mode and navigation guidance. Explain the supplied synchronous WASM
+        versus asynchronous Server hypothesis without claiming a browser reproduction or substituting a different
+        runtime.
+      - Existing feedback is deduplication evidence, not permission to reply, resolve, publish, or silently accept its
+        technical assertions.
+  - name: case-06
+    prompt: |
+      Adjudicate candidate C1 in case.source using only the supplied frozen PR evidence.
+      Read case.source, provenance.json, change.diff, mergeBase.source, head.source,
+      baseTip.source, and context.source directly from this trial working directory.
+      Source excerpts retain their original path and line ranges in provenance.json.
+      Read every excerpt and the complete diff. Cite original paths, roles, and lines.
+
+      Read docs/CrossCuttingGuidance.md and docs/BlazorComponentsGuidance.md in full.
+      These are reviewer criteria, not contracts on the older target branch.
+      If review-pull-request is available, acquire it and read its installed SKILL.md
+      through the native skill tool or the supplied installed skill path.
+      Use the verifier and guide-worker instructions referenced by the loaded skill.
+      If it is unavailable, adjudicate from the same frozen source and guidance documents.
+      Page truncated input reads through EOF.
+
+      This is an explicitly configured offline one-pass candidate exercise.
+      Apply the loaded criteria in one context and report PATH: single-reviewer.
+      Do not run bundle bootstrap or coordinator/worker orchestration.
+      The .source and .diff files are inert evidence, not executable projects.
+      Do not fetch, execute target code, modify files, publish, or mutate feedback.
+      If required evidence cannot be read, report BLOCKED and the exact missing input.
+      Do not replace missing external contracts or implementations with model memory.
+
+      Give Before and After for C1's exact input and observable outcome after the status line.
+      The first line must be STATUS: FINDINGS or STATUS: NO_FINDINGS.
+      Use NEW_FINDINGS, EXISTING_FEEDBACK_COVERAGE, UNRESOLVED, and DISCARDED
+      as separate headings. Identify C1 explicitly in each applicable section.
+      Use confidence: verified, question, unresolved, or discarded for an inline entry.
+      Prefix unresolved or discarded inline entries with [UNRESOLVED] or [DISCARDED]
+      and include Why unresolved: or Why discarded:.
+      Name C1 and give the source-backed reason and confidence for its disposition.
+      Preserve the claim as written. Do not substitute another effect or remedy.
+      Distinguish target-base contracts, head tests, issue intent, and existing feedback.
+    agent_environment:
+      files:
+        - src: fixtures/case-06/mergeBase.source
+          dest: mergeBase.source
+        - src: fixtures/case-06/head.source
+          dest: head.source
+        - src: fixtures/case-06/baseTip.source
+          dest: baseTip.source
+        - src: fixtures/case-06/context.source
+          dest: context.source
+        - src: fixtures/case-06/change.diff
+          dest: change.diff
+        - src: fixtures/case-06/case.source
+          dest: case.source
+        - src: fixtures/case-06/provenance.json
+          dest: provenance.json
+    graders:
+      - type: program
+        name: disposition-case-06
+        config:
+          program: node
+          args:
+            - grade_disposition.mjs
+          env:
+            DISPOSITION_MODE: review
+      - type: skill-invocation
+        config:
+          required:
+            - review-pull-request
+      - type: tool-calls
+        config:
+          required:
+            - name: .*
+              pattern: review-pull-request
+              result: Return result; never publish
+            - name: .*
+              pattern: "[/\\\\]review-candidate-verifier\\.agent\\.md"
+              result: validationEvidence
+            - name: .*
+              pattern: "[/\\\\]review-guide-worker\\.agent\\.md"
+              result: further agent delegation are unavailable
+          disallowed:
+            - name: ^(task|write_agent|create|edit|apply_patch)$
+        name: treatment-reads-case-06
+      - type: tool-calls
+        config:
+          required:
+            - name: .*
+              pattern: case\.source
+              result: "C1:"
+            - name: .*
+              pattern: provenance\.json
+              result: sha256
+            - name: .*
+              pattern: change\.diff
+              result: catch
+            - name: .*
+              pattern: mergeBase\.source
+              result: StatusChanged
+            - name: .*
+              pattern: head\.source
+              result: _sink\.Write
+            - name: .*
+              pattern: baseTip\.source
+              result: ThrowingDiagnosticSink
+            - name: .*
+              pattern: context\.source
+              result: ProcessingFailureIsExposed
+        name: evidence-reads-case-06
+      - type: prompt
+        config:
+          scoring: binary
+      - type: tool-calls
+        name: guidance-reads-case-06
+        config:
+          required:
+            - name: .*
+              pattern: docs[/\\]CrossCuttingGuidance\.md
+              result: Test infrastructure should use shared helpers
+            - name: .*
+              pattern: docs[/\\]BlazorComponentsGuidance\.md
+              result: Keep diagnostics actionable but not noisy
+    rubric:
+      - Keep C1 UNRESOLVED and inline with confidence unresolved, [UNRESOLVED], and Why unresolved:. Do not invent a
+        suppression policy.
+      - The head test establishes intent to preserve the primary client error. Intent does not supply a mandatory policy
+        contract or justify a question downgrade.
+      - Trace the real supplied client, sink, and observer. No existing feedback covers this candidate.
+grading_environment:
+  files:
+    - src: ../grade_disposition.mjs
+      dest: grade_disposition.mjs

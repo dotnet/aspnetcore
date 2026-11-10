@@ -1,0 +1,145 @@
+{
+  "repository": "dotnet/aspnetcore",
+  "pullRequest": 70299,
+  "sourceRoles": {
+    "mergeBase": "2a731a48bdbe8747100ce19282d8b96bb93b876e",
+    "head": "0317f5f729136a3a4f7320ab8bff3aa7d66fe5d6",
+    "baseTip": "2a731a48bdbe8747100ce19282d8b96bb93b876e"
+  },
+  "files": [
+    {
+      "file": "mergeBase.source",
+      "sha256": "19d83bf27940b4b66a5957ce363efd9c17c1d4757788b77891aa708cc5c01574",
+      "sources": [
+        {
+          "role": "mergeBase",
+          "commit": "2a731a48bdbe8747100ce19282d8b96bb93b876e",
+          "path": "src/Components/Web.JS/src/Services/NavigationEnhancement.ts",
+          "blob": "7bd29bee95bb154787994017aceb0d29960ebebb",
+          "ranges": [
+            [
+              60,
+              67
+            ],
+            [
+              75,
+              89
+            ],
+            [
+              91,
+              116
+            ],
+            [
+              200,
+              226
+            ]
+          ]
+        }
+      ]
+    },
+    {
+      "file": "head.source",
+      "sha256": "2d34778b27f6c9fab6ae76e225d9bc1bd335b5422d54a6f94f0bb2c0ee4e25d0",
+      "sources": [
+        {
+          "role": "head",
+          "commit": "0317f5f729136a3a4f7320ab8bff3aa7d66fe5d6",
+          "path": "src/Components/Web.JS/src/Services/NavigationEnhancement.ts",
+          "blob": "dd06e2cf5beb414f8760fabfe97424414a032220",
+          "ranges": [
+            [
+              63,
+              72
+            ],
+            [
+              84,
+              98
+            ],
+            [
+              129,
+              159
+            ],
+            [
+              100,
+              105
+            ],
+            [
+              107,
+              115
+            ],
+            [
+              117,
+              127
+            ],
+            [
+              243,
+              269
+            ]
+          ]
+        }
+      ]
+    },
+    {
+      "file": "baseTip.source",
+      "sha256": "5eac5e1629c5d668ca00cd19a8e9ee49f11393e210323de6f78d97e274ac4d3a",
+      "sources": [
+        {
+          "role": "baseTip",
+          "commit": "2a731a48bdbe8747100ce19282d8b96bb93b876e",
+          "path": "src/Components/Web.JS/src/Services/NavigationUtils.ts",
+          "blob": "9976eafc898cdc52039a75029da0c8dcfcdb6fb0",
+          "ranges": [
+            [
+              1,
+              158
+            ]
+          ]
+        }
+      ]
+    },
+    {
+      "file": "context.source",
+      "sha256": "f8f95a6e4bf3d5556b291e3294f880939669309ed03a29bc8dd0c6261bc58aaa",
+      "sources": [
+        {
+          "role": "head",
+          "commit": "0317f5f729136a3a4f7320ab8bff3aa7d66fe5d6",
+          "path": "src/Components/test/testassets/TestContentPackage/InteractiveNavigationComponent.razor",
+          "blob": "71217ca2ee717f7a6e9abd1adb7df6369413f2c1",
+          "ranges": [
+            [
+              1,
+              41
+            ]
+          ]
+        },
+        {
+          "role": "head",
+          "commit": "0317f5f729136a3a4f7320ab8bff3aa7d66fe5d6",
+          "path": "src/Components/Web.JS/src/Rendering/Events/EventDelegatorListeners.ts",
+          "blob": "6b3737d7c0fecb9b8ae6805fe9744cb149e4c04e",
+          "ranges": [
+            [
+              1,
+              33
+            ]
+          ]
+        }
+      ],
+      "feedback": {
+        "url": "https://github.com/dotnet/aspnetcore/pull/70299#discussion_r4487936812",
+        "commit": "0317f5f729136a3a4f7320ab8bff3aa7d66fe5d6",
+        "updatedAt": "2026-11-06T01:08:38Z",
+        "role": "frozen existing feedback, not a target contract or runtime trace"
+      }
+    },
+    {
+      "file": "change.diff",
+      "sha256": "eb4815b07d61137eead6c4526cafa73e5c352547fe00acb53297b9c4b419e5e9"
+    },
+    {
+      "file": "case.source",
+      "sha256": "7e72e1a5ecbfcc32c1be9ac2bbdd3bc2a66291542ab2baef7dca26efa02f122a"
+    }
+  ]
+}

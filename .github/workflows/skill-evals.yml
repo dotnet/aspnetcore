@@ -6,6 +6,9 @@ on:
   pull_request:
     paths:
       - '.github/skills/**'
+      - '.github/agents/review-*.agent.md'
+      - 'docs/CrossCuttingGuidance.md'
+      - 'docs/BlazorComponentsGuidance.md'
       - 'eng/skill-evals/**'
       - '.github/workflows/skill-evals.yml'
   push:
@@ -13,6 +16,9 @@ on:
       - main
     paths:
       - '.github/skills/**'
+      - '.github/agents/review-*.agent.md'
+      - 'docs/CrossCuttingGuidance.md'
+      - 'docs/BlazorComponentsGuidance.md'
       - 'eng/skill-evals/**'
       - '.github/workflows/skill-evals.yml'
   workflow_dispatch:
@@ -33,7 +39,11 @@ on:
         required: true
         default: review-public-api
         options:
+          - port-components-platform-api
+          - pr-attention-queue
           - review-public-api
+          - review-pull-request
+          - review-candidate-verifier
           - validate-blazor-feature
       run_type:
         description: Trial count to use when action is Run
@@ -279,7 +289,16 @@ jobs:
               MATCHED_EVAL=false
               for EVAL_NAME in "${ALL_EVALS[@]}"; do
                 if [[ "$FILE" == ".github/skills/$EVAL_NAME/"* ||
-                      "$FILE" == "eng/skill-evals/$EVAL_NAME/"* ]]; then
+                      "$FILE" == "eng/skill-evals/$EVAL_NAME/"* ||
+                      ( "$EVAL_NAME" == 'review-pull-request' && (
+                        "$FILE" == '.github/agents/review-guide-worker.agent.md' ||
+                        "$FILE" == '.github/agents/review-candidate-verifier.agent.md' ||
+                        "$FILE" == 'docs/CrossCuttingGuidance.md' ||
+                        "$FILE" == 'docs/BlazorComponentsGuidance.md'
+                      ) ) ||
+                      ( "$EVAL_NAME" == 'review-candidate-verifier' &&
+                        "$FILE" == '.github/agents/review-candidate-verifier.agent.md'
+                      ) ]]; then
                   AFFECTED+=("$EVAL_NAME")
                   MATCHED_EVAL=true
                 fi

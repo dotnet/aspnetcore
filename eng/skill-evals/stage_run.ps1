@@ -203,15 +203,27 @@ $trustedFiles = @(
     'eng/skill-evals/skills-vs-baseline.experiment.yaml'
     'eng/skill-evals/skills-smoke.experiment.yaml'
 )
+if ($EvalName -in @('review-pull-request', 'review-candidate-verifier')) {
+    $trustedFiles += 'eng/skill-evals/grade_disposition.mjs'
+    if ($EvalName -eq 'review-pull-request') {
+        $trustedFiles += @(
+            'eng/skill-evals/review-vs-baseline.experiment.yaml'
+            'eng/skill-evals/review-smoke.experiment.yaml'
+        )
+    }
+}
 $candidateSkill = Join-Path $candidateRootPath ".github/skills/$EvalName"
 $candidateEvalRoot = Join-Path $candidateRootPath "eng/skill-evals/$EvalName"
 $candidateEval = Join-Path $candidateEvalRoot 'eval.vally.yaml'
 $candidateFixtures = Join-Path $candidateEvalRoot 'fixtures'
 
-if (-not (Test-Path $candidateSkill -PathType Container)) {
+if ($EvalName -ne 'review-candidate-verifier' -and
+    -not (Test-Path $candidateSkill -PathType Container)) {
     throw "Missing candidate skill directory at '$candidateSkill'."
 }
-Assert-TreeIsSafe $candidateSkill $candidateRootPath "Candidate skill '$EvalName'"
+if ($EvalName -ne 'review-candidate-verifier') {
+    Assert-TreeIsSafe $candidateSkill $candidateRootPath "Candidate skill '$EvalName'"
+}
 if (-not (Test-Path $candidateEval -PathType Leaf)) {
     throw "Missing candidate eval specification at '$candidateEval'."
 }
@@ -241,10 +253,12 @@ try {
         Copy-Item (Join-Path $trustedRootPath $relativePath) $target
     }
 
-    $skillTarget = Join-Path $destinationPath ".github/skills/$EvalName"
-    New-Item -ItemType Directory -Path (Split-Path $skillTarget -Parent) -Force |
-        Out-Null
-    Copy-Item $candidateSkill $skillTarget -Recurse -Force
+    if ($EvalName -ne 'review-candidate-verifier') {
+        $skillTarget = Join-Path $destinationPath ".github/skills/$EvalName"
+        New-Item -ItemType Directory -Path (Split-Path $skillTarget -Parent) -Force |
+            Out-Null
+        Copy-Item $candidateSkill $skillTarget -Recurse -Force
+    }
 
     $evalTargetRoot = Join-Path $destinationPath "eng/skill-evals/$EvalName"
     New-Item -ItemType Directory -Path $evalTargetRoot -Force | Out-Null
@@ -256,6 +270,30 @@ try {
             Get-ChildItem $fixturesTarget -Recurse -File -Force | ForEach-Object {
                 chmod +x $_.FullName
             }
+        }
+    }
+
+    if ($EvalName -in @('review-pull-request', 'review-candidate-verifier')) {
+        $reviewSupportFiles = @(
+            '.github/agents/review-candidate-verifier.agent.md'
+        )
+        if ($EvalName -eq 'review-pull-request') {
+            $reviewSupportFiles += @(
+                '.github/agents/review-guide-worker.agent.md'
+                'docs/CrossCuttingGuidance.md'
+                'docs/BlazorComponentsGuidance.md'
+            )
+        }
+        foreach ($relativePath in $reviewSupportFiles) {
+            $sourcePath = Join-Path $candidateRootPath $relativePath
+            if (-not (Test-Path $sourcePath -PathType Leaf)) {
+                throw "Missing candidate support file '$relativePath'."
+            }
+            Assert-TreeIsSafe $sourcePath $candidateRootPath "Candidate support file '$relativePath'"
+            $targetPath = Join-Path $destinationPath $relativePath
+            New-Item -ItemType Directory -Path (Split-Path $targetPath -Parent) -Force |
+                Out-Null
+            Copy-Item $sourcePath $targetPath -Force
         }
     }
 

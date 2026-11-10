@@ -1,0 +1,151 @@
+{
+  "repository": "dotnet/aspnetcore",
+  "pullRequest": 69782,
+  "sourceRoles": {
+    "mergeBase": "4f556f73a610b386e5ec29355a300e493d30c4c5",
+    "head": "cfe304ed94f2c9de0e1069947ba51c8c82690ba7",
+    "baseTip": "4f556f73a610b386e5ec29355a300e493d30c4c5"
+  },
+  "files": [
+    {
+      "file": "mergeBase.source",
+      "sha256": "8abba8f0360a7d24e52517cecef7e365f689fa554df5dd81ad58aa6e7d9f5f4a",
+      "sources": [
+        {
+          "role": "mergeBase",
+          "commit": "4f556f73a610b386e5ec29355a300e493d30c4c5",
+          "path": "src/Components/Endpoints/src/FormMapping/Converters/FileConverter.cs",
+          "blob": "fb2d1b74eae55c6c61cfb3bfbf30b4f08c2c79ff",
+          "ranges": [
+            [
+              1,
+              86
+            ]
+          ]
+        }
+      ]
+    },
+    {
+      "file": "head.source",
+      "sha256": "69b46771aa41acfbc6394eb67e7024eaf1900485561a562cbd78dff3e2b15571",
+      "sources": [
+        {
+          "role": "head",
+          "commit": "cfe304ed94f2c9de0e1069947ba51c8c82690ba7",
+          "path": "src/Components/Endpoints/src/FormMapping/Converters/FileConverter.cs",
+          "blob": "1218cae3d76bff951a6711a966648ed08fc66b6b",
+          "ranges": [
+            [
+              1,
+              89
+            ]
+          ]
+        }
+      ]
+    },
+    {
+      "file": "baseTip.source",
+      "sha256": "70227fa96f82af98184a4ee45d5f34fcad6aae1c595f2efce558235dc5b335a6",
+      "sources": [
+        {
+          "role": "baseTip",
+          "commit": "4f556f73a610b386e5ec29355a300e493d30c4c5",
+          "path": "src/Components/Endpoints/src/FormMapping/Converters/FileConverter.cs",
+          "blob": "fb2d1b74eae55c6c61cfb3bfbf30b4f08c2c79ff",
+          "ranges": [
+            [
+              1,
+              86
+            ]
+          ]
+        },
+        {
+          "role": "baseTip",
+          "commit": "4f556f73a610b386e5ec29355a300e493d30c4c5",
+          "path": "src/Components/Endpoints/src/FormMapping/Factories/ComplexType/ComplexTypeExpressionConverterFactoryOfT.cs",
+          "blob": "96146387c11ca2a7fa96a06b9e1fbdea515923b6",
+          "ranges": [
+            [
+              1,
+              621
+            ]
+          ]
+        },
+        {
+          "role": "baseTip",
+          "commit": "4f556f73a610b386e5ec29355a300e493d30c4c5",
+          "path": "src/Components/Endpoints/src/FormMapping/Metadata/FormDataMetadataFactory.cs",
+          "blob": "ff2fa90f11333969775a6b426c46581310936114",
+          "ranges": [
+            [
+              1,
+              428
+            ]
+          ]
+        },
+        {
+          "role": "baseTip",
+          "commit": "4f556f73a610b386e5ec29355a300e493d30c4c5",
+          "path": "src/Components/Endpoints/src/FormMapping/Metadata/FormDataParameterMetadata.cs",
+          "blob": "1d631872df400af8e691dbed26218491bb3daed2",
+          "ranges": [
+            [
+              1,
+              25
+            ]
+          ]
+        },
+        {
+          "role": "baseTip",
+          "commit": "4f556f73a610b386e5ec29355a300e493d30c4c5",
+          "path": "src/Components/Endpoints/src/FormMapping/FormDataReader.cs",
+          "blob": "f142f0e9e003ea913fbc66149ca9634449e99b1b",
+          "ranges": [
+            [
+              1,
+              318
+            ]
+          ]
+        },
+        {
+          "role": "baseTip",
+          "commit": "4f556f73a610b386e5ec29355a300e493d30c4c5",
+          "path": "src/Components/Endpoints/src/FormMapping/FormDataMapper.cs",
+          "blob": "00873d0f9baf500d71c719697aabd3d10cfc632a",
+          "ranges": [
+            [
+              1,
+              48
+            ]
+          ]
+        }
+      ]
+    },
+    {
+      "file": "context.source",
+      "sha256": "8217b34af259159122162b8dc3ed55bbac2546d86c7dca8ed69cdb8a6cf2230b",
+      "sources": [
+        {
+          "role": "head",
+          "commit": "cfe304ed94f2c9de0e1069947ba51c8c82690ba7",
+          "path": "src/Components/Endpoints/test/Binding/FormDataMapperTests.cs",
+          "blob": "1c8d7e66f14c3cb1264589608657ed6bdb7bbb30",
+          "ranges": [
+            [
+              2512,
+              2528
+            ]
+          ]
+        }
+      ]
+    },
+    {
+      "file": "change.diff",
+      "sha256": "19e641ec597c9b3d9d3d3985178bc2e34713fa628eeb0616cca4ba757b025f56"
+    },
+    {
+      "file": "case.source",
+      "sha256": "4325461840a90e04aef5ad5eff7734c3e386343a21e45aa158a4474710b12985"
+    }
+  ]
+}
