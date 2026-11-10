@@ -482,6 +482,21 @@ public abstract class ComponentRenderingTestBase : ServerTestBase<ToggleExecutio
     }
 
     [Fact]
+    public void CanUseBlurAsyncExtensionToBlurElement()
+    {
+        var appElement = Browser.MountTestComponent<ElementFocusComponent>();
+
+        var inputElement = appElement.FindElement(By.Id("focus-out-input"));
+
+        inputElement.Click();
+        Browser.Equal("focus-out-input", () => Browser.SwitchTo().ActiveElement().GetDomAttribute("id"));
+
+        appElement.FindElement(By.Id("focus-out-button")).Click();
+
+        Browser.NotEqual("focus-out-input", () => Browser.SwitchTo().ActiveElement().GetDomAttribute("id"));
+    }
+
+    [Fact]
     public void CanCaptureReferencesToDynamicallyAddedElements()
     {
         var appElement = Browser.MountTestComponent<ElementRefComponent>();
