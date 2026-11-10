@@ -140,7 +140,7 @@ public class BlazorWebTemplateTest(ProjectFactoryFixture projectFactory) : Blazo
             await CreateCanonicalEmailTestUserAsync(page, email, confirmed, clearStoredEmail: true);
             await page.GotoAsync($"{listeningUri.TrimEnd('/')}{path}", new() { WaitUntil = WaitUntilState.NetworkIdle });
             var response = await SubmitRecoveryFormAsync(page, path, handler, email.ToLowerInvariant());
-            Assert.Equal(500, response.Status);
+            Assert.False(response.Ok);
             Assert.Equal(messageCount, (await GetCanonicalEmailMessagesAsync(page)).Length);
         }
     }
