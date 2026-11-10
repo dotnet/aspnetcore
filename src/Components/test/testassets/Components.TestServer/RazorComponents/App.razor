@@ -272,7 +272,7 @@
                     // We use a short timeout so tests don't take too long, except for tests that
                     // need the circuit to survive navigating through pages with no interactive
                     // components so that components get reactivated on the existing circuit.
-                    circuitInactivityTimeoutMs: keepCircuitAlive ? 20000 : 100,
+                    circuitInactivityTimeoutMs: Number(getQueryParam('circuit-inactivity-timeout-ms')) || (keepCircuitAlive ? 20000 : 100),
                 },
                 enableClassicInitializers: enableClassicInitializers,
                 webAssembly: webAssemblySettings,

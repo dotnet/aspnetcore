@@ -3,6 +3,7 @@
 
 import { beforeWebStart, afterWebStarted, beforeServerStart, afterServerStarted } from '../autopause.lib.module';
 import { BlazorActivityHost } from '../AutoPauseManager';
+import { jest } from '@jest/globals';
 
 type ActivityHandler = (ev: { busy: boolean }) => void;
 
@@ -111,5 +112,42 @@ describe('autopause initializer', () => {
     beforeServerStart({ autoPauseEnabled: true, autoPauseHiddenDelayMilliseconds: 100 });
     afterServerStarted(blazor);
     expect(blazor.added).toHaveLength(1);
+  });
+
+  it('retries a rejected resume after normal circuit-closed callbacks', async () => {
+    jest.useFakeTimers();
+    const blazor = createBlazor();
+    const circuitHandlers: Array<{ onCircuitClosed?: () => void }> = [];
+    let resumeAttempts = 0;
+    blazor.resumeCircuit = async () => {
+      resumeAttempts++;
+      circuitHandlers.forEach(handler => handler.onCircuitClosed?.());
+      return false;
+    };
+    const setVisibility = (state: 'visible' | 'hidden') => {
+      Object.defineProperty(document, 'visibilityState', { configurable: true, get: () => state });
+      document.dispatchEvent(new Event('visibilitychange'));
+    };
+    try {
+      setVisibility('visible');
+      beforeServerStart({ autoPauseEnabled: true, autoPauseHiddenDelayMilliseconds: 100, circuitHandlers });
+      afterServerStarted(blazor);
+      setVisibility('hidden');
+      await jest.advanceTimersByTimeAsync(100);
+      setVisibility('visible');
+      await jest.advanceTimersByTimeAsync(0);
+      expect(resumeAttempts).toBe(1);
+
+      setVisibility('hidden');
+      await jest.advanceTimersByTimeAsync(10);
+      setVisibility('visible');
+      await jest.advanceTimersByTimeAsync(0);
+      expect(resumeAttempts).toBe(2);
+    } finally {
+      beforeServerStart({ autoPauseEnabled: false });
+      afterServerStarted(blazor);
+      setVisibility('visible');
+      jest.useRealTimers();
+    }
   });
 });

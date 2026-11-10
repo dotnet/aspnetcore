@@ -51,6 +51,7 @@ export interface IBlazor {
   formValidation?: ValidationService;
 
   _internal: {
+    circuitEvents?: EventTarget;
     navigationManager: typeof navigationManagerInternalFunctions | any;
     domWrapper: typeof domFunctions;
     Virtualize: typeof Virtualize;

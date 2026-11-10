@@ -52,4 +52,60 @@ public class AutoPauseEnhancedNavigationTests : AutoPauseTestBase<App>
         Browser.Equal("2", () => Browser.Exists(By.Id("persistent-counter-count")).Text);
     }
 
+    [Fact]
+    public void AutoPause_DoesNotResumeDisposedCircuitAfterEnhancedNavigation()
+    {
+        Navigate("/subdir/persistent-state/server-pause?auto-pause=true&auto-pause-delay-ms=200&circuit-inactivity-timeout-ms=5000");
+        var htmlElement = Browser.Exists(By.TagName("html"));
+        Browser.NotEqual("", () => Browser.Exists(By.Id("circuit-id")).Text);
+        Browser.Exists(By.Id("increment-persistent-counter-count")).Click();
+        Browser.Equal("1", () => Browser.Exists(By.Id("persistent-counter-count")).Text);
+
+        Browser.Exists(By.Id("navigate-to-static-auto-pause")).Click();
+        Browser.Equal("static", () => Browser.Exists(By.Id("execution-mode")).Text);
+        Browser.False(() => htmlElement.IsStale());
+
+        WithHiddenTab(js =>
+        {
+            Browser.Equal("block", () => js.ExecuteScript(
+                "return window.testWindow.getComputedStyle(window.testWindow.document.getElementById('components-reconnect-modal')).display;"));
+            Browser.True(() => (bool)js.ExecuteScript(
+                "return window.testWindow.performance.getEntriesByType('resource').some(entry => entry.name.includes('/_blazor/disconnect'));"));
+        });
+
+        Browser.Exists(By.Id("navigate-to-auto-pause")).Click();
+        Browser.NotEqual("", () => Browser.Exists(By.Id("circuit-id")).Text);
+        Browser.Exists(By.Id("increment-persistent-counter-count")).Click();
+        Browser.Equal("1", () => Browser.Exists(By.Id("persistent-counter-count")).Text);
+        Browser.False(() => htmlElement.IsStale());
+
+        WithHiddenTab(js => Browser.Equal("block", () => js.ExecuteScript(
+            "return window.testWindow.getComputedStyle(window.testWindow.document.getElementById('components-reconnect-modal')).display;")));
+        WaitForResumedUI();
+        Browser.Equal("1", () => Browser.Exists(By.Id("persistent-counter-count")).Text);
+        Browser.Exists(By.Id("increment-persistent-counter-count")).Click();
+        Browser.Equal("2", () => Browser.Exists(By.Id("persistent-counter-count")).Text);
+    }
+
+    private void WithHiddenTab(Action<IJavaScriptExecutor> action)
+    {
+        var originalWindow = Browser.CurrentWindowHandle;
+        var existingWindows = Browser.WindowHandles;
+        // WebDriver cannot evaluate an unselected tab, so let the cover tab observe its opener.
+        ((IJavaScriptExecutor)Browser).ExecuteScript("window.open('about:blank', '_blank').testWindow = window;");
+        var coverWindow = Browser.WindowHandles.Except(existingWindows).Single();
+        Browser.SwitchTo().Window(coverWindow);
+        try
+        {
+            var js = (IJavaScriptExecutor)Browser;
+            Browser.Equal("hidden", () => js.ExecuteScript("return window.testWindow.document.visibilityState;"));
+            action(js);
+        }
+        finally
+        {
+            Browser.Close();
+            Browser.SwitchTo().Window(originalWindow);
+        }
+    }
+
 }

@@ -261,6 +261,26 @@ describe('AutoPauseManager', () => {
     expect(resumeCircuit).toHaveBeenCalledTimes(1);
   });
 
+  test('ignores a pause completion from a disposed circuit', async () => {
+    const circuitEvents = new EventTarget();
+    Object.assign(host, { _internal: { circuitEvents } });
+    let resolvePause: ((value: boolean) => void) | undefined;
+    pauseCircuit.mockImplementation(() => new Promise<boolean>(resolve => { resolvePause = resolve; }));
+
+    create();
+    setVisibility('hidden');
+    jest.advanceTimersByTime(1000);
+    await flushPromises();
+    expect(pauseCircuit).toHaveBeenCalledTimes(1);
+
+    circuitEvents.dispatchEvent(new Event('disposed'));
+    setVisibility('visible');
+    resolvePause!(true);
+    await flushPromises();
+
+    expect(resumeCircuit).not.toHaveBeenCalled();
+  });
+
   describe('circuit-activity drain cancellation', () => {
     test('pauses after the circuit reports idle when the tab stays hidden', async () => {
       create();

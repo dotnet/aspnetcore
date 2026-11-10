@@ -81,6 +81,7 @@ export class CircuitManager implements DotNet.DotNetCallDispatcher {
     this._eventRegistry = eventRegistry;
     this._renderQueue = new RenderQueue(this._logger);
     this._dispatcher = DotNet.attachDispatcher(this);
+    Blazor._internal.circuitEvents ??= new EventTarget();
   }
 
   public start(): Promise<boolean> {
@@ -646,7 +647,9 @@ export class CircuitManager implements DotNet.DotNetCallDispatcher {
     await this._startPromise;
 
     this._disposed = true;
+    Blazor._internal.circuitEvents?.dispatchEvent(new Event('disposed'));
     this._connection?.stop();
+    this._options.reconnectionHandler?.onConnectionUp();
 
     // Dispose the circuit on the server immediately. Closing the SignalR connection alone
     // without sending the disconnect message will result in the circuit being kept
