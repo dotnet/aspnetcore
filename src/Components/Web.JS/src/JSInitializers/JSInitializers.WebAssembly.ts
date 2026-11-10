@@ -1,12 +1,12 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-import { MonoConfig } from '@microsoft/dotnet-runtime';
+import { LoaderConfig } from '@microsoft/dotnet-runtime';
 import { WebAssemblyStartOptions } from '../Platform/WebAssemblyStartOptions';
 import { WebRendererId } from '../Rendering/WebRendererId';
 import { JSAsset, JSInitializer } from './JSInitializers';
 
-export async function fetchAndInvokeInitializers(options: Partial<WebAssemblyStartOptions>, loadedConfig: MonoConfig): Promise<JSInitializer> {
+export async function fetchAndInvokeInitializers(options: Partial<WebAssemblyStartOptions>, loadedConfig: LoaderConfig): Promise<JSInitializer> {
   if (options.initializers) {
     // Initializers were already resolved, so we don't have to fetch them, we just invoke the beforeStart ones
     // and return the list of afterStarted ones so they get processed in the same way as in traditional Blazor Server.
