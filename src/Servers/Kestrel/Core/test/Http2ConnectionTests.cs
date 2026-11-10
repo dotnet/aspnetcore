@@ -12,6 +12,7 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.Connections;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Features;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http;
@@ -650,12 +651,26 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
                 expectedErrorMessage: CoreStrings.FormatHttp2ErrorStreamClosed(Http2FrameType.DATA, streamId: 1));
         }
 
-        [Fact]
-        public async Task HEADERS_Received_Decoded()
+        [Theory]
+        [InlineData("/", "/", "")]
+        [InlineData("/%23", "/%23", "")]
+        [InlineData("/a?q=%23", "/a", "?q=%23")]
+        [InlineData("/a%3Fb%23c?q=%23", "/a%3Fb%23c", "?q=%23")]
+        public async Task HEADERS_Received_Decoded(string path, string expectedPath, string expectedQuery)
         {
-            await InitializeConnectionAsync(_readHeadersApplication);
+            var headers = _browserRequestHeaders.Select(header => header.Key == ":path"
+                ? new KeyValuePair<string, string>(":path", path)
+                : header);
 
-            await StartStreamAsync(1, _browserRequestHeaders, endStream: true);
+            await InitializeConnectionAsync(context =>
+            {
+                Assert.Equal(expectedPath, context.Request.Path.Value);
+                Assert.Equal(expectedQuery, context.Request.QueryString.Value);
+                Assert.Equal(path, context.Features.Get<IHttpRequestFeature>().RawTarget);
+                return _readHeadersApplication(context);
+            });
+
+            await StartStreamAsync(1, headers, endStream: true);
 
             await ExpectAsync(Http2FrameType.HEADERS,
                 withLength: 55,
@@ -666,7 +681,59 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
                 withFlags: (byte)Http2DataFrameFlags.END_STREAM,
                 withStreamId: 1);
 
-            VerifyDecodedRequestHeaders(_browserRequestHeaders);
+            VerifyDecodedRequestHeaders(headers);
+
+            await StopConnectionAsync(expectedLastStreamId: 1, ignoreNonGoAwayFrames: false);
+        }
+
+        [Theory]
+        [InlineData("/#")]
+        [InlineData("/a#b?q=v")]
+        [InlineData("/a?q=v#")]
+        [InlineData("/%61#b")]
+        [InlineData("/%61?q=v#")]
+        public Task HEADERS_Received_FragmentInPath_Reset(string path)
+        {
+            var headers = new[]
+            {
+                new KeyValuePair<string, string>(":method", "GET"),
+                new KeyValuePair<string, string>(":path", path),
+                new KeyValuePair<string, string>(":scheme", "http"),
+            };
+
+            return HEADERS_Received_InvalidHeaderFields_StreamError(
+                headers, CoreStrings.FormatBadRequest_InvalidRequestTarget_Detail(path));
+        }
+
+        [Fact]
+        public async Task HEADERS_Received_FragmentInPath_AcceptedWhenEnabled()
+        {
+            _connectionContext.ServiceContext.ServerOptions.AllowFragmentInRequestTarget = true;
+            var path = "/a#b?q=v";
+            var headers = _browserRequestHeaders.Select(header => header.Key == ":path"
+                ? new KeyValuePair<string, string>(":path", path)
+                : header);
+
+            await InitializeConnectionAsync(context =>
+            {
+                Assert.Equal("/a#b", context.Request.Path.Value);
+                Assert.Equal("?q=v", context.Request.QueryString.Value);
+                Assert.Equal(path, context.Features.Get<IHttpRequestFeature>().RawTarget);
+                return _readHeadersApplication(context);
+            });
+
+            await StartStreamAsync(1, headers, endStream: true);
+
+            await ExpectAsync(Http2FrameType.HEADERS,
+                withLength: 55,
+                withFlags: (byte)Http2HeadersFrameFlags.END_HEADERS,
+                withStreamId: 1);
+            await ExpectAsync(Http2FrameType.DATA,
+                withLength: 0,
+                withFlags: (byte)Http2DataFrameFlags.END_STREAM,
+                withStreamId: 1);
+
+            VerifyDecodedRequestHeaders(headers);
 
             await StopConnectionAsync(expectedLastStreamId: 1, ignoreNonGoAwayFrames: false);
         }

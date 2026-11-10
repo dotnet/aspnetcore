@@ -60,8 +60,14 @@ namespace Microsoft.AspNetCore.Identity.UI.Pages.Account.Internal
                     values: new { code },
                     protocol: Request.Scheme);
 
+                var storedEmail = await _userManager.GetEmailAsync(user);
+                if (string.IsNullOrEmpty(storedEmail))
+                {
+                    throw new InvalidOperationException("Users must have an email.");
+                }
+
                 await _emailSender.SendEmailAsync(
-                    Input.Email,
+                    storedEmail,
                     "Reset Password",
                     $"Please reset your password by <a href='{HtmlEncoder.Default.Encode(callbackUrl)}'>clicking here</a>.");
 

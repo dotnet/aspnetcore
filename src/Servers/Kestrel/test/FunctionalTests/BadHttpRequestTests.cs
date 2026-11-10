@@ -188,6 +188,29 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
             }
         }
 
+        [Theory]
+        [MemberData(nameof(HttpParsingData.FragmentRequestTargetData), MemberType = typeof(HttpParsingData))]
+        public async Task BadRequestForFragmentInOriginFormTarget(string target, string version)
+        {
+            await TestBadRequest(
+                $"GET {target} {version}\r\nHost: localhost\r\n\r\n",
+                "400 Bad Request",
+                CoreStrings.FormatBadRequest_InvalidRequestTarget_Detail(target));
+        }
+
+        [Theory]
+        [MemberData(nameof(HttpParsingData.FragmentRequestTargetData), MemberType = typeof(HttpParsingData))]
+        [InlineData("#", "HTTP/1.0")]
+        [InlineData("#", "HTTP/1.1")]
+        public async Task BadRequestForFragmentInAbsoluteFormTarget(string target, string version)
+        {
+            var absoluteTarget = $"http://localhost{target}";
+            await TestBadRequest(
+                $"GET {absoluteTarget} {version}\r\nHost: localhost\r\nConnection: close\r\n\r\n",
+                "400 Bad Request",
+                CoreStrings.FormatBadRequest_InvalidRequestTarget_Detail(absoluteTarget));
+        }
+
         private async Task TestBadRequest(string request, string expectedResponseStatusCode, string expectedExceptionMessage, string expectedAllowHeader = null)
         {
             BadHttpRequestException loggedException = null;

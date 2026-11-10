@@ -210,6 +210,11 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
 
             _requestTargetForm = HttpRequestTarget.OriginForm;
 
+            if (!ServerOptions.AllowFragmentInRequestTarget && target.IndexOf((byte)'#') >= 0)
+            {
+                ThrowRequestTargetRejected(target);
+            }
+
             // URIs are always encoded/escaped to ASCII https://tools.ietf.org/html/rfc3986#page-11
             // Multibyte Internationalized Resource Identifiers (IRIs) are first converted to utf8;
             // then encoded/escaped to ASCII  https://www.ietf.org/rfc/rfc3987.txt "Mapping of IRIs to URIs"
@@ -332,6 +337,11 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             // From the spec:
             //    a server MUST accept the absolute-form in requests, even though
             //    HTTP/1.1 clients will only send them in requests to proxies.
+
+            if (!ServerOptions.AllowFragmentInRequestTarget && target.IndexOf((byte)'#') >= 0)
+            {
+                ThrowRequestTargetRejected(target);
+            }
 
             RawTarget = target.GetAsciiStringNonNullCharacters();
 

@@ -665,6 +665,14 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
                 throw new Http2StreamErrorException(_currentHeadersStream.StreamId, CoreStrings.Http2ErrorMissingMandatoryPseudoHeaderFields, Http2ErrorCode.PROTOCOL_ERROR);
             }
 
+            // https://tools.ietf.org/html/rfc7540#section-8.1.2.3
+            var path = _currentHeadersStream.RequestHeaders[":path"].ToString();
+            if (!_context.ServiceContext.ServerOptions.AllowFragmentInRequestTarget && path.IndexOf('#') >= 0)
+            {
+                throw new Http2StreamErrorException(_currentHeadersStream.StreamId,
+                    CoreStrings.FormatBadRequest_InvalidRequestTarget_Detail(path), Http2ErrorCode.PROTOCOL_ERROR);
+            }
+
             _streams[_incomingFrame.StreamId] = _currentHeadersStream;
             _ = _currentHeadersStream.ProcessRequestsAsync(application);
         }

@@ -22,6 +22,27 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core
     /// </summary>
     public class KestrelServerOptions
     {
+        private const string AllowFragmentInRequestTargetSwitch = "Microsoft.AspNetCore.Server.Kestrel.AllowFragmentInRequestTarget";
+
+        /// <summary>
+        /// Allows a literal <c>#</c> in HTTP/1.x origin-form and absolute-form request targets
+        /// and in the HTTP/2 <c>:path</c> pseudo-header.
+        /// </summary>
+        private bool? _allowFragmentInRequestTarget;
+        internal bool AllowFragmentInRequestTarget
+        {
+            get
+            {
+                if (!_allowFragmentInRequestTarget.HasValue)
+                {
+                    _allowFragmentInRequestTarget = AppContext.TryGetSwitch(AllowFragmentInRequestTargetSwitch, out var enabled) && enabled;
+                }
+
+                return _allowFragmentInRequestTarget.Value;
+            }
+            set => _allowFragmentInRequestTarget = value;
+        }
+
         /// <summary>
         /// Configures the endpoints that Kestrel should listen to.
         /// </summary>

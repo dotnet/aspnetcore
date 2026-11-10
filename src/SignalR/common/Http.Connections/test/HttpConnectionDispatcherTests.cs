@@ -32,7 +32,7 @@ using Xunit.Abstractions;
 
 namespace Microsoft.AspNetCore.Http.Connections.Tests
 {
-    public class HttpConnectionDispatcherTests : VerifiableLoggedTest
+    public partial class HttpConnectionDispatcherTests : VerifiableLoggedTest
     {
         public HttpConnectionDispatcherTests(ITestOutputHelper output) : base(output)
         {

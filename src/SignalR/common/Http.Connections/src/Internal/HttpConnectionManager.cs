@@ -9,6 +9,7 @@ using System.Diagnostics;
 using System.IO;
 using System.IO.Pipelines;
 using System.Net.WebSockets;
+using System.Security.Claims;
 using System.Security.Cryptography;
 using System.Threading;
 using System.Threading.Tasks;
@@ -75,13 +76,32 @@ namespace Microsoft.AspNetCore.Http.Connections.Internal
         /// Creates a connection without Pipes setup to allow saving allocations until Pipes are needed.
         /// </summary>
         /// <returns></returns>
-        public HttpConnectionContext CreateConnection(PipeOptions transportPipeOptions, PipeOptions appPipeOptions)
+        public HttpConnectionContext CreateConnection(
+            PipeOptions transportPipeOptions,
+            PipeOptions appPipeOptions)
+        {
+            return CreateConnection(transportPipeOptions, appPipeOptions, negotiatedUser: null, hasNegotiatedUser: false);
+        }
+
+        internal HttpConnectionContext CreateConnection(
+            PipeOptions transportPipeOptions,
+            PipeOptions appPipeOptions,
+            ClaimsPrincipal negotiatedUser)
+        {
+            return CreateConnection(transportPipeOptions, appPipeOptions, negotiatedUser, hasNegotiatedUser: true);
+        }
+
+        private HttpConnectionContext CreateConnection(
+            PipeOptions transportPipeOptions,
+            PipeOptions appPipeOptions,
+            ClaimsPrincipal negotiatedUser,
+            bool hasNegotiatedUser)
         {
             var id = MakeNewConnectionId();
 
             Log.CreatedNewConnection(_logger, id);
             var connectionTimer = HttpConnectionsEventSource.Log.ConnectionStart(id);
-            var connection = new HttpConnectionContext(id, _connectionLogger);
+            var connection = new HttpConnectionContext(id, _connectionLogger, negotiatedUser, hasNegotiatedUser);
             var pair = DuplexPipe.CreateConnectionPair(transportPipeOptions, appPipeOptions);
             connection.Transport = pair.Application;
             connection.Application = pair.Transport;

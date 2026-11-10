@@ -10,6 +10,7 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <Compile Include="$(SharedSourceRoot)PooledMemoryStream.cs" />
     <Compile Include="$(SharedSourceRoot)WebEncoders\**\*.cs" />
   </ItemGroup>
 
