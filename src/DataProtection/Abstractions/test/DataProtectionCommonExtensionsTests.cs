@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
+using System.Buffers;
 using System.Collections.Generic;
 using System.Security.Cryptography;
 using System.Text;
@@ -309,4 +310,126 @@ public class DataProtectionCommonExtensionsTests
         // Assert
         Assert.Equal("Hello", retVal);
     }
+#if NET
+    [Fact]
+    public void Protect_SpanProtector_UsesSpanPath_Success()
+    {
+        var protector = new FakeSpanDataProtector(
+            protect: plaintext => { Assert.Equal(new byte[] { 0x48, 0x65, 0x6c, 0x6c, 0x6f }, plaintext); return new byte[] { 0x01, 0x02, 0x03, 0x04, 0x05 }; },
+            unprotect: null);
+
+        Assert.Equal("AQIDBAU", protector.Protect("Hello"));
+    }
+
+    [Fact]
+    public void Protect_SpanProtector_EmptyString_Success()
+    {
+        var protector = new FakeSpanDataProtector(
+            protect: plaintext => { Assert.Empty(plaintext); return new byte[] { 0x01 }; },
+            unprotect: null);
+
+        Assert.Equal("AQ", protector.Protect(""));
+    }
+
+    [Fact]
+    public void Protect_SpanProtector_LargeOutput_GrowsBuffer()
+    {
+        var output = new byte[100_000];
+        new Random(42).NextBytes(output);
+        var protector = new FakeSpanDataProtector(protect: _ => output, unprotect: null);
+
+        Assert.Equal(Convert.ToBase64String(output).TrimEnd('=').Replace('+', '-').Replace('/', '_'), protector.Protect("x"));
+    }
+
+    [Fact]
+    public void Protect_SpanProtector_InvalidUtf8_Failure()
+    {
+        var protector = new FakeSpanDataProtector(protect: null, unprotect: null);
+
+        var ex = Assert.Throws<CryptographicException>(() => protector.Protect("Hello\ud800"));
+        Assert.IsAssignableFrom<EncoderFallbackException>(ex.InnerException);
+    }
+
+    [Fact]
+    public void Protect_SpanProtector_ProtectorThrows_ExceptionPropagates()
+    {
+        var expected = new CryptographicException("from protector");
+        var protector = new FakeSpanDataProtector(protect: _ => throw expected, unprotect: null);
+
+        Assert.Same(expected, Assert.Throws<CryptographicException>(() => protector.Protect("Hello")));
+    }
+
+    [Fact]
+    public void Unprotect_SpanProtector_UsesSpanPath_Success()
+    {
+        var protector = new FakeSpanDataProtector(
+            protect: null,
+            unprotect: protectedData => { Assert.Equal(new byte[] { 0x01, 0x02, 0x03, 0x04, 0x05 }, protectedData); return new byte[] { 0x48, 0x65, 0x6c, 0x6c, 0x6f }; });
+
+        Assert.Equal("Hello", protector.Unprotect("AQIDBAU"));
+    }
+
+    [Fact]
+    public void Unprotect_SpanProtector_PlaintextLargerThanPayload_GrowsBuffer()
+    {
+        var plaintext = new string('a', 50_000) + "\u00fc";
+        var protector = new FakeSpanDataProtector(protect: null, unprotect: _ => Encoding.UTF8.GetBytes(plaintext));
+
+        Assert.Equal(plaintext, protector.Unprotect("AQIDBAU"));
+    }
+
+    [Fact]
+    public void Unprotect_SpanProtector_InvalidBase64BeforeDecryption_Failure()
+    {
+        var protector = new FakeSpanDataProtector(protect: null, unprotect: null);
+
+        Assert.Throws<CryptographicException>(() => protector.Unprotect("A"));
+    }
+
+    [Fact]
+    public void Unprotect_SpanProtector_InvalidUtf8AfterDecryption_Failure()
+    {
+        var protector = new FakeSpanDataProtector(protect: null, unprotect: _ => new byte[] { 0xff });
+
+        var ex = Assert.Throws<CryptographicException>(() => protector.Unprotect("AQIDBAU"));
+        Assert.IsAssignableFrom<DecoderFallbackException>(ex.InnerException);
+    }
+
+    // Writes its output in small chunks to exercise buffer growth; the byte[] overloads must not be used.
+    private sealed class FakeSpanDataProtector : ISpanDataProtector
+    {
+        private readonly Func<byte[], byte[]> _protect;
+        private readonly Func<byte[], byte[]> _unprotect;
+
+        public FakeSpanDataProtector(Func<byte[], byte[]> protect, Func<byte[], byte[]> unprotect)
+        {
+            _protect = protect;
+            _unprotect = unprotect;
+        }
+
+        public IDataProtector CreateProtector(string purpose) => throw new NotSupportedException();
+
+        public byte[] Protect(byte[] plaintext) => throw new InvalidOperationException("The byte[] overload should not be called.");
+
+        public byte[] Unprotect(byte[] protectedData) => throw new InvalidOperationException("The byte[] overload should not be called.");
+
+        public void Protect<TWriter>(ReadOnlySpan<byte> plaintext, ref TWriter destination) where TWriter : IBufferWriter<byte>, allows ref struct
+            => WriteInChunks(_protect(plaintext.ToArray()), ref destination);
+
+        public void Unprotect<TWriter>(ReadOnlySpan<byte> protectedData, ref TWriter destination) where TWriter : IBufferWriter<byte>, allows ref struct
+            => WriteInChunks(_unprotect(protectedData.ToArray()), ref destination);
+
+        private static void WriteInChunks<TWriter>(byte[] data, ref TWriter destination) where TWriter : IBufferWriter<byte>, allows ref struct
+        {
+            for (var offset = 0; offset < data.Length;)
+            {
+                var chunk = Math.Min(4096, data.Length - offset);
+                var span = destination.GetSpan(chunk);
+                data.AsSpan(offset, chunk).CopyTo(span);
+                destination.Advance(chunk);
+                offset += chunk;
+            }
+        }
+    }
+#endif
 }
