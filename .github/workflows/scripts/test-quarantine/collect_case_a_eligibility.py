@@ -21,10 +21,12 @@ import time
 import urllib.error
 import urllib.parse
 import urllib.request
+import xml.etree.ElementTree as ET
 
 
 WORK_ITEM_SUFFIX = ".WorkItemExecution"
 QUARANTINE = "QuarantinedTest"
+QUARANTINE_HISTORY_PATTERN = "QuarantinedTest|^[[:space:]]*#(if|elif|else|endif)"
 OPERATING_SYSTEMS = (
     "OperatingSystems.Linux",
     "OperatingSystems.MacOSX",
@@ -89,6 +91,468 @@ SOURCE_C_FAILURE_PATTERN = re.compile(
     r"(?m)^[ \t]*(?P<test>.+?)[ \t]+\[FAIL\][ \t]*$"
 )
 IDENTITY_HISTORY_CACHE = {}
+PROJECT_CONTEXT_CACHE = {}
+PROJECT_PATH_CACHE = {}
+PROJECT_QUARANTINE_HISTORY_CACHE = {}
+PROJECT_LINEAGE_CACHE = {}
+FIRST_PARENT_ORDER_CACHE = {}
+PROJECT_RENAME_HINTS = {
+    (
+        "5a70f5312fb57fc3788e5af56a99e7b43761e195",
+        "src/Components/test/E2ETest/Microsoft.AspNetCore.Components.E2ETests.csproj",
+    ): (
+        "src/Components/test/Microsoft.AspNetCore.Components.E2ETest/"
+        "Microsoft.AspNetCore.Components.E2ETest.csproj"
+    ),
+}
+
+
+def file_lineage(root, relative_path, history_ref):
+    history = git_result(
+        root, "log", "--first-parent", "--follow", "--name-status",
+        "--find-renames",
+        "--format=@@COMMIT@@%H", history_ref, "--", relative_path,
+    )
+    locations = []
+    if history.returncode == 0:
+        path = relative_path
+        commit = None
+        for line in history.stdout.splitlines():
+            if line.startswith("@@COMMIT@@"):
+                commit = line.removeprefix("@@COMMIT@@")
+                continue
+            fields = line.split("\t")
+            if commit is None or len(fields) < 2 or fields[-1] != path:
+                continue
+            locations.append((commit, path))
+            status = fields[0][0]
+            # A copy starts a new identity; only renames preserve its lineage.
+            if status in ("A", "C"):
+                predecessor = PROJECT_RENAME_HINTS.get((commit, path))
+                if predecessor:
+                    parent = git_result(root, "rev-parse", f"{commit}^")
+                    if parent.returncode != 0:
+                        return []
+                    parent = parent.stdout.strip()
+                    if (
+                        git_result(root, "cat-file", "-e", f"{parent}:{predecessor}").returncode
+                        or git_result(root, "cat-file", "-e", f"{commit}:{predecessor}").returncode == 0
+                        or git_result(root, "cat-file", "-e", f"{parent}:{path}").returncode == 0
+                    ):
+                        return []
+                    previous = file_lineage(root, predecessor, parent)
+                    if not previous:
+                        return []
+                    locations.extend(previous)
+                break
+            if status == "R":
+                path = fields[1]
+            commit = None
+    return locations
+
+
+def project_lineage(root, project_root, history_ref="HEAD"):
+    history_ref = git(root, "rev-parse", history_ref)
+    key = (str(root), project_root, history_ref)
+    if key in PROJECT_LINEAGE_CACHE:
+        return PROJECT_LINEAGE_CACHE[key]
+    files = list(pathlib.Path(root, project_root).glob("*.csproj"))
+    locations = (
+        file_lineage(root, str(files[0].relative_to(root)), history_ref)
+        if len(files) == 1 else []
+    )
+    result = {
+        "locations": locations,
+        "order": first_parent_order(root, history_ref),
+    } if locations else None
+    PROJECT_LINEAGE_CACHE[key] = result
+    return result
+
+
+def project_context(root, project_root, commit=None):
+    root = pathlib.Path(root)
+    if commit is not None and not re.fullmatch(r"[0-9a-f]{40}", commit):
+        resolved = git_result(root, "rev-parse", "--verify", commit)
+        if resolved.returncode != 0:
+            return None
+        commit = resolved.stdout.strip()
+    key = (str(root), project_root, commit)
+    if commit is not None and key in PROJECT_CONTEXT_CACHE:
+        return PROJECT_CONTEXT_CACHE[key]
+    if commit is None:
+        files = [str(path.relative_to(root)) for path in (root / project_root).glob("*.csproj")]
+    else:
+        lineage = project_lineage(root, project_root)
+        position = lineage["order"].get(commit) if lineage else None
+        files = next((
+            [path] for sha, path in lineage["locations"]
+            if position is not None and lineage["order"][sha] >= position
+        ), []) if lineage else []
+    if len(files) != 1:
+        return None
+    try:
+        text = (
+            (root / files[0]).read_text(encoding="utf-8-sig")
+            if commit is None else git(root, "show", f"{commit}:{files[0]}")
+        )
+        document = ET.fromstring(text)
+    except (OSError, ET.ParseError, subprocess.CalledProcessError):
+        return None
+    constants = set()
+    includes = []
+    compile_items = []
+    supported = True
+    for group in document:
+        for item in group:
+            tag = item.tag.rsplit("}", 1)[-1]
+            if tag == "DefineConstants":
+                value = (item.text or "").replace("$(DefineConstants)", ";".join(sorted(constants)))
+                if group.get("Condition") or item.get("Condition") or "$(" in value:
+                    supported = False
+                constants = set(re.findall(r"\b[A-Za-z_][A-Za-z0-9_]*\b", value))
+            elif tag == "Compile":
+                values = [item.get(name, "") for name in ("Include", "Exclude", "Remove")]
+                conditional = bool(group.get("Condition") or item.get("Condition"))
+                compile_items.append({
+                    name: [pattern for pattern in value.replace("\\", "/").split(";") if pattern]
+                    for name, value in zip(("include", "exclude", "remove"), values)
+                } | {
+                    "conditional": conditional,
+                    "conditions": [
+                        condition for condition in (group.get("Condition"), item.get("Condition"))
+                        if condition
+                    ],
+                })
+                # Conditional literal paths still need history scans, not exact ownership.
+                if "$(" not in values[0] and "@(" not in values[0]:
+                    includes.extend(values[0].replace("\\", "/").split(";"))
+    result = {
+        "constants": constants,
+        "supported": supported,
+        "includes": [value for value in includes if value],
+        "compile_items": compile_items,
+        "project_root": str(pathlib.PurePosixPath(files[0]).parent),
+    }
+    if commit is not None:
+        PROJECT_CONTEXT_CACHE[key] = result
+    return result
+
+
+def compile_glob_matches(root, project_root, pattern, relative_path):
+    absolute = os.path.normpath(os.path.join(str(root), project_root, pattern))
+    path = os.path.normpath(os.path.join(str(root), relative_path))
+    expression = re.escape(absolute).replace(r"\*\*/", "(?:.*/)?")
+    expression = expression.replace(r"\*", "[^/]*").replace(r"\?", "[^/]")
+    return re.fullmatch(expression, path) is not None
+
+
+def project_membership(
+    root, project_root, context, relative_path, *, allow_conditional=False, properties=None,
+):
+    if context is None:
+        return None
+    project_root = context["project_root"]
+    local = pathlib.PurePosixPath(project_root) in pathlib.PurePosixPath(relative_path).parents
+    conditions = [
+        condition for item in context["compile_items"] for condition in item["conditions"]
+    ]
+    comparisons = [
+        re.fullmatch(r"\s*'\$\((\w+)\)'\s*(==|!=)\s*'([^'$()]*)'\s*", condition)
+        for condition in conditions
+    ]
+    if allow_conditional and local and properties is None and comparisons and all(comparisons):
+        names = {match[1].casefold() for match in comparisons}
+        if len(names) == 1:
+            name = names.pop()
+            values = {match[3].casefold() for match in comparisons}
+            other = "__other__"
+            while other in values:
+                other += "_"
+            memberships = [
+                project_membership(
+                    root, project_root, context, relative_path, properties={name: value},
+                )
+                for value in [*values, other]
+            ]
+            if True in memberships:
+                return True
+            return None if None in memberships else False
+
+    def matches(patterns):
+        unknown = False
+        for pattern in patterns:
+            if "$(" in pattern or "@(" in pattern:
+                unknown = True
+            elif compile_glob_matches(root, project_root, pattern, relative_path):
+                return True
+        return None if unknown else False
+
+    membership = local
+    for item in context["compile_items"]:
+        conditional = item["conditional"]
+        if properties is not None:
+            selected = []
+            for condition in item["conditions"]:
+                match = re.fullmatch(
+                    r"\s*'\$\((\w+)\)'\s*(==|!=)\s*'([^'$()]*)'\s*", condition,
+                )
+                if match is None or match[1].casefold() not in properties:
+                    selected.append(None)
+                else:
+                    equal = properties[match[1].casefold()] == match[3].casefold()
+                    selected.append(equal if match[2] == "==" else not equal)
+            if False in selected:
+                continue
+            conditional = None in selected
+        included = matches(item["include"])
+        excluded = matches(item["exclude"])
+        if included is not False and excluded is not True:
+            if included is True and excluded is False and not conditional:
+                membership = True
+            elif membership is False:
+                membership = None
+        removed = matches(item["remove"])
+        if removed is True and not conditional:
+            membership = False
+        elif removed is not False and membership is not False:
+            membership = None
+    return membership
+
+
+def project_includes(root, project_root, context, relative_path, *, allow_conditional=False):
+    return project_membership(
+        root, project_root, context, relative_path, allow_conditional=allow_conditional,
+    ) is True
+
+
+def conditional_source(text, constants):
+    """Mask inactive C# branches without moving source lines or offsets."""
+    clean = sanitize_csharp(text)
+    stack = []
+    active = True
+    output = []
+
+    def evaluate(expression):
+        tokens = re.findall(r"&&|\|\||==|!=|[!()]|[A-Za-z_][A-Za-z0-9_]*", expression)
+        if "".join(tokens) != re.sub(r"\s+", "", expression):
+            raise ValueError("unsupported preprocessor expression")
+        position = 0
+
+        def atom():
+            nonlocal position
+            token = tokens[position]
+            position += 1
+            if token == "!":
+                return not atom()
+            if token == "(":
+                value = disjunction()
+                if tokens[position] != ")":
+                    raise ValueError("unbalanced preprocessor expression")
+                position += 1
+                return value
+            if not re.fullmatch(r"[A-Za-z_][A-Za-z0-9_]*", token):
+                raise ValueError("invalid preprocessor token")
+            return token == "true" or (token != "false" and token in constants)
+
+        def equality():
+            nonlocal position
+            value = atom()
+            while position < len(tokens) and tokens[position] in ("==", "!="):
+                operator = tokens[position]
+                position += 1
+                other = atom()
+                value = (value == other) if operator == "==" else (value != other)
+            return value
+
+        def conjunction():
+            nonlocal position
+            value = equality()
+            while position < len(tokens) and tokens[position] == "&&":
+                position += 1
+                other = equality()
+                value = value and other
+            return value
+
+        def disjunction():
+            nonlocal position
+            value = conjunction()
+            while position < len(tokens) and tokens[position] == "||":
+                position += 1
+                other = conjunction()
+                value = value or other
+            return value
+
+        value = disjunction()
+        if position != len(tokens):
+            raise ValueError("trailing preprocessor tokens")
+        return value
+
+    try:
+        for line, clean_line in zip(text.splitlines(keepends=True), clean.splitlines(keepends=True)):
+            directive = re.match(r"^\s*#\s*(if|elif|else|endif|define|undef)\b(.*)", clean_line)
+            if directive:
+                kind, expression = directive.groups()
+                if kind == "if":
+                    selected = evaluate(expression.strip())
+                    stack.append([active, selected])
+                    active = active and selected
+                elif kind == "elif":
+                    parent, selected = stack[-1]
+                    branch = evaluate(expression.strip())
+                    active = parent and not selected and branch
+                    stack[-1][1] = selected or branch
+                elif kind == "else":
+                    parent, selected = stack[-1]
+                    active = parent and not selected
+                    stack[-1][1] = True
+                elif kind == "endif":
+                    active = stack.pop()[0]
+                else:
+                    return None
+            output.append(line if active and not directive else re.sub(r"[^\r\n]", " ", line))
+    except (ValueError, IndexError):
+        return None
+    return "".join(output) if not stack else None
+
+
+def has_conditional_namespace(text):
+    clean = sanitize_csharp(text)
+    return (
+        re.search(r"(?m)^\s*#\s*if\b", clean) is not None
+        and len(re.findall(r"\bnamespace\s+[A-Za-z_][A-Za-z0-9_.]*\s*[;{]", clean)) > 1
+    )
+
+
+def source_views(root, relative_path, text, projects):
+    assembly_source = ASSEMBLY_QUARANTINE_PATTERN.search(sanitize_csharp(text)) is not None
+    needs_context = has_conditional_namespace(text) or assembly_source
+    configuration_independent = not assembly_source and not re.search(
+        r"(?m)^\s*#\s*(?:if|elif|else|endif)\b", sanitize_csharp(text),
+    )
+    if not needs_context and not has_quarantine_attribute(text):
+        return [(find_project_root(root, relative_path), text)]
+    views = []
+    for project_root, context in projects.items():
+        membership = project_membership(
+            root, project_root, context, relative_path, allow_conditional=configuration_independent,
+        )
+        if membership is not True:
+            if membership is None:
+                if pathlib.PurePosixPath(project_root) in pathlib.PurePosixPath(relative_path).parents or (
+                    context and any(
+                        compile_glob_matches(root, project_root, pattern, relative_path)
+                        for pattern in context["includes"]
+                    )
+                ):
+                    views.append((pathlib.Path(root, project_root), None))
+            continue
+        processed = text
+        if needs_context:
+            processed = conditional_source(text, context["constants"]) if context["supported"] else None
+        if processed is not None:
+            views.append((pathlib.Path(root, project_root), processed))
+        else:
+            views.append((pathlib.Path(root, project_root), None))
+    return views
+
+
+def project_paths(root, project_root, commit):
+    context = project_context(root, project_root, commit)
+    project_root = context["project_root"] if context else project_root
+    paths = {project_root}
+    if context is not None:
+        for pattern in context["includes"]:
+            prefix = re.split(r"[*?]", pattern, maxsplit=1)[0]
+            if not prefix.endswith("/"):
+                prefix = str(pathlib.PurePosixPath(prefix).parent)
+            path = os.path.normpath(os.path.join(project_root, prefix))
+            if path != ".." and not path.startswith("../") and not os.path.isabs(path):
+                paths.add(path)
+    return sorted(paths)
+
+
+def project_history_paths(root, project_root, history_ref):
+    resolved = git_result(root, "rev-parse", "--verify", history_ref)
+    if resolved.returncode != 0:
+        return [project_root]
+    history_ref = resolved.stdout.strip()
+    key = (str(root), project_root, history_ref)
+    if key in PROJECT_PATH_CACHE:
+        return PROJECT_PATH_CACHE[key]
+    paths = set(project_paths(root, project_root, history_ref))
+    lineage = project_lineage(root, project_root, history_ref)
+    if lineage:
+        for commit, _ in lineage["locations"]:
+            paths.update(project_paths(root, project_root, commit))
+    PROJECT_PATH_CACHE[key] = sorted(paths)
+    return PROJECT_PATH_CACHE[key]
+
+
+def project_quarantine_history(root, project_root, history_ref):
+    resolved = git_result(root, "rev-parse", "--verify", history_ref)
+    if resolved.returncode != 0:
+        return resolved
+    history_ref = resolved.stdout.strip()
+    key = (str(root), project_root, history_ref)
+    if key in PROJECT_QUARANTINE_HISTORY_CACHE:
+        return PROJECT_QUARANTINE_HISTORY_CACHE[key]
+    source = git_result(
+        root, "log", "--first-parent", "--format=%H%x09%P%x09%cI",
+        "-G", QUARANTINE_HISTORY_PATTERN, history_ref, "--",
+        *project_history_paths(root, project_root, history_ref),
+    )
+    lineage = project_lineage(root, project_root, history_ref)
+    project_files = sorted({path for _, path in lineage["locations"]}) if lineage else [
+        f":(glob){project_root}/*.csproj",
+    ]
+    project = git_result(
+        root, "log", "--first-parent", "--format=%H%x09%P%x09%cI",
+        history_ref, "--", *project_files,
+    )
+    if source.returncode != 0 or project.returncode != 0:
+        return source if source.returncode != 0 else project
+    lines = {line.split("\t")[0]: line for line in
+             source.stdout.splitlines() + project.stdout.splitlines()}
+    if project.stdout:
+        order = first_parent_order(root, history_ref)
+        source.stdout = "\n".join(lines[sha] for sha in sorted(lines, key=order.__getitem__))
+    PROJECT_QUARANTINE_HISTORY_CACHE[key] = source
+    return source
+
+
+def contextual_source(root, relative_path, text, project_root, commit=None):
+    if not has_conditional_namespace(text) and not ASSEMBLY_QUARANTINE_PATTERN.search(sanitize_csharp(text)):
+        return text
+    context = project_context(root, project_root, commit)
+    if not context or not context["supported"] or not project_includes(
+        root, project_root, context, relative_path,
+    ):
+        return None
+    return conditional_source(text, context["constants"])
+
+
+def identity_project(root, relative_path, type_name):
+    projects = {
+        str(path.parent.relative_to(root)): project_context(
+            root, str(path.parent.relative_to(root)),
+        )
+        for path in pathlib.Path(root, "src").rglob("*.csproj")
+    }
+    text = pathlib.Path(root, relative_path).read_text(encoding="utf-8")
+    matches = set()
+    for project_root, view in source_views(root, relative_path, text, projects):
+        if view is None:
+            continue
+        clean = sanitize_csharp(view)
+        namespace = re.search(r"\bnamespace\s+([A-Za-z_][A-Za-z0-9_.]*)\s*;", clean)
+        file_namespace = namespace.group(1) if namespace else None
+        ranges = declaration_ranges(clean)
+        if any(
+            full_type_name(ranges, entry[4], file_namespace, declared_type=entry[3]) == type_name
+            for entry in ranges if entry[2] == "type"
+        ):
+            matches.add(str(project_root.relative_to(root)))
+    return next(iter(matches)) if len(matches) == 1 else None
 
 
 def has_quarantine_attribute(text):
@@ -228,7 +692,7 @@ def square_bracket_delta(value):
     return depth
 
 
-def logical_attributes(attributes):
+def logical_attributes(attributes, *, include_locations=False):
     result = []
     start = None
     depth = 0
@@ -242,14 +706,15 @@ def logical_attributes(attributes):
             if depth == 0:
                 inner = " ".join(attributes[start:index].splitlines()).strip()
                 result.extend(
-                    f"[{item}]"
+                    (f"[{item}]", attributes.count("\n", 0, start - 1))
+                    if include_locations else f"[{item}]"
                     for item in split_arguments(inner)
                     if item
                 )
     return result
 
 
-def quarantine_attributes(attributes):
+def quarantine_attributes(attributes, attribute_locations=None):
     result = {
         "method": [],
         "data": [],
@@ -289,6 +754,10 @@ def quarantine_attributes(attributes):
                 "data": raw_data,
                 "values": data_values(raw_data),
             })
+    if attribute_locations is not None:
+        for kind in ("method", "data"):
+            for attribute in result[kind]:
+                attribute["attribute_lines"] = attribute_locations[attribute["attribute"]]
     return result
 
 
@@ -420,8 +889,9 @@ def declaration_ranges(clean):
     return ranges
 
 
-def attribute_block(lines, declaration_line):
+def attribute_block(lines, declaration_line, *, include_locations=False):
     collected = []
+    collected_lines = []
     bracket_depth = 0
     index = declaration_line - 1
     while index >= 0:
@@ -429,14 +899,23 @@ def attribute_block(lines, declaration_line):
         if not stripped or stripped.startswith("//"):
             if collected:
                 collected.append(lines[index])
+                collected_lines.append(index + 1)
             index -= 1
             continue
         bracket_depth += stripped.count("]") - stripped.count("[")
         if stripped.startswith("[") or bracket_depth > 0:
             collected.append(lines[index])
+            collected_lines.append(index + 1)
             index -= 1
             continue
         break
+    if include_locations:
+        attributes = "\n".join(reversed(collected))
+        physical_lines = list(reversed(collected_lines))
+        locations = {}
+        for attribute, line in logical_attributes(attributes, include_locations=True):
+            locations.setdefault(attribute, []).append(physical_lines[line])
+        return attributes, locations
     return "\n".join(reversed(collected))
 
 
@@ -472,6 +951,21 @@ def find_project_root(root, relative_path):
     return file_path.parent
 
 
+def source_files(root):
+    root = pathlib.Path(root)
+    projects = {
+        str(path.parent.relative_to(root)): project_context(
+            root, str(path.parent.relative_to(root)),
+        )
+        for path in (root / "src").rglob("*.csproj")
+    }
+    for file_path in (root / "src").rglob("*.cs"):
+        relative_path = str(file_path.relative_to(root)).replace(os.sep, "/")
+        text = file_path.read_text(encoding="utf-8", errors="replace")
+        for project_root, view in source_views(root, relative_path, text, projects):
+            yield relative_path, project_root, view
+
+
 def build_source_index(root):
     root = pathlib.Path(root)
     files = []
@@ -481,13 +975,17 @@ def build_source_index(root):
     assembly_targets = []
     method_index = {}
     type_index = {}
+    unresolved_sources = {}
 
-    for file_path in pathlib.Path(root, "src").rglob("*.cs"):
-        relative_path = str(file_path.relative_to(root)).replace(os.sep, "/")
-        text = file_path.read_text(encoding="utf-8", errors="replace")
+    for relative_path, project_root, text in source_files(root):
+        if text is None:
+            unresolved_sources.setdefault(relative_path, set()).add(str(project_root))
+            raw = (root / relative_path).read_text(encoding="utf-8", errors="replace")
+            if ASSEMBLY_QUARANTINE_PATTERN.search(sanitize_csharp(raw)):
+                assembly_quarantine_ambiguities[str(project_root)] = True
+            continue
         clean = sanitize_csharp(text)
         lines = text.splitlines()
-        project_root = find_project_root(root, relative_path)
         file_namespace = None
         namespace_match = re.search(
             r"(?m)^[ \t]*namespace\s+([A-Za-z_][A-Za-z0-9_.]*)\s*;",
@@ -510,7 +1008,7 @@ def build_source_index(root):
                 assembly_quarantines[str(project_root)] = True
             else:
                 assembly_quarantine_ambiguities[str(project_root)] = True
-            for line in lines:
+            for line_number, line in enumerate(lines, 1):
                 if not ASSEMBLY_QUARANTINE_PATTERN.search(
                     sanitize_csharp(line)
                 ):
@@ -522,6 +1020,7 @@ def build_source_index(root):
                     "project_root": str(project_root),
                     "issue": int(issue.group("issue")) if issue else None,
                     "quarantine_attribute": line,
+                    "attribute_lines": [line_number],
                 })
 
         for entry in ranges:
@@ -535,14 +1034,22 @@ def build_source_index(root):
                 declared_type=entry[3],
             )
             declaration_line = clean.count("\n", 0, position)
-            attributes = attribute_block(lines, declaration_line)
+            attributes, attribute_locations = attribute_block(lines, declaration_line, include_locations=True)
+            prefix_start = max(
+                clean.rfind(delimiter, 0, position) for delimiter in (";", "{", "}", "]")
+            ) + 1
             quarantined = has_quarantine_attribute(attributes)
             if quarantined:
                 type_quarantines[(str(project_root), type_name)] = True
             type_index.setdefault(type_name, []).append({
                 "type": type_name,
                 "base": entry[5],
+                "is_abstract": re.search(r"\babstract\b", clean[prefix_start:position]) is not None,
                 "path": relative_path,
+                "attribute_lines": sorted({
+                    line for attribute, locations in attribute_locations.items()
+                    if has_quarantine_attribute(attribute) for line in locations
+                }),
                 "project_root": str(project_root),
                 "quarantined": quarantined,
                 "quarantine_attribute": attributes if quarantined else "",
@@ -572,13 +1079,24 @@ def build_source_index(root):
             type_name = full_type_name(ranges, position, file_namespace)
             method = method_match.group("method")
             method_line = clean.count("\n", 0, position)
-            attributes = attribute_block(lines, method_line)
-            parsed_attributes = quarantine_attributes(attributes)
+            attributes, attribute_locations = attribute_block(lines, method_line, include_locations=True)
+            parsed_attributes = quarantine_attributes(attributes, attribute_locations)
             method_index.setdefault(method, []).append({
                 "path": relative_path,
                 "type": type_name,
                 "method": method,
                 "method_line": method_line + 1,
+                "attribute_lines": sorted({
+                    line for attribute in parsed_attributes["method"]
+                    for line in attribute["attribute_lines"]
+                }),
+                "is_test": any(
+                    re.search(
+                        r"\[\s*(?:global::)?(?:\w+\.)*\w*(?:Fact|Theory)(?:Attribute)?\b",
+                        sanitize_csharp(attribute),
+                    ) is not None
+                    for attribute in logical_attributes(attributes)
+                ),
                 "project_root": project_root,
                 "method_quarantined": bool(parsed_attributes["method"]),
                 "method_operating_systems": (
@@ -629,6 +1147,7 @@ def build_source_index(root):
         "methods": method_index,
         "types": type_index,
         "assemblies": assembly_targets,
+        "unresolved_sources": unresolved_sources,
     }
 
 
@@ -693,8 +1212,11 @@ def resolve_base_type(source_index, current_type, base_name, project_root):
 
 
 def resolve_base_type_name(type_names, current_type, base_name):
+    type_names = set(type_names)
     namespace = current_type.rsplit(".", 1)[0] if "." in current_type else ""
     qualified_base = f"{namespace}.{base_name}" if namespace else base_name
+    if re.fullmatch(r"[A-Za-z_][A-Za-z0-9_]*", base_name) and qualified_base in type_names:
+        return {"status": "exact", "type": qualified_base}
     candidates = {
         name
         for name in type_names
@@ -844,10 +1366,142 @@ def resolve_source(root, test_name, source_index=None):
         "method": None,
         "project_root": entry["project_root"],
     } for entry in runner_types)
+    delegated = matches[0]
+    visited = {delegated["type"]}
+    while True:
+        text = pathlib.Path(root, delegated["path"]).read_text(encoding="utf-8-sig")
+        delegation = rf"\bbase\s*\.\s*{re.escape(method)}\s*\("
+        if not re.search(delegation, text):
+            break
+        text = contextual_source(
+            root, delegated["path"], text, str(pathlib.Path(project_root).relative_to(root)),
+        )
+        if text is None:
+            return {"status": "ambiguous", "matches": matches[:5]}
+        snapshot = target_snapshot(text, delegated["type"], method)
+        if snapshot is None or not re.search(
+            delegation,
+            sanitize_csharp(snapshot[1][0][1]),
+        ):
+            break
+        owner = logical_type(source_index, delegated["type"], project_root)
+        while True:
+            base = resolve_base_type(source_index, owner["type"], owner["base"], project_root) if (
+                owner["status"] == "exact" and owner["base"]
+            ) else {"status": "missing"}
+            if base["status"] != "exact" or base["type"] in visited:
+                return {"status": "ambiguous", "matches": matches[:5]}
+            visited.add(base["type"])
+            inherited = [
+                entry for entry in source_index["methods"].get(method, [])
+                if entry["type"] == base["type"] and entry["project_root"] == project_root
+            ]
+            if inherited:
+                break
+            owner = logical_type(source_index, base["type"], project_root)
+            if owner["status"] != "exact" or not owner["base_declaration"]:
+                return {"status": "ambiguous", "matches": []}
+            locations.append({
+                "path": owner["base_declaration"]["path"],
+                "type": owner["type"],
+                "method": None,
+                "project_root": project_root,
+            })
+        if len(inherited) != 1:
+            return {"status": "ambiguous", "matches": inherited[:5]}
+        delegated = inherited[0]
+        locations.append({
+            "path": delegated["path"],
+            "type": delegated["type"],
+            "method": method,
+            "project_root": project_root,
+        })
     result["history_locations"] = list({
-        (entry["path"], entry["type"], entry["method"]): entry
+        (entry["path"], entry["type"], entry["method"]): dict(entry)
         for entry in locations
     }.values())
+    setup_types = [(owner, set()) for owner in [declaring_type, *runner_types]]
+    visited = set()
+    while setup_types:
+        owner, ancestors = setup_types.pop()
+        if owner["type"] in ancestors:
+            return {"status": "ambiguous", "matches": matches[:5]}
+        if owner["type"] in visited:
+            continue
+        visited.add(owner["type"])
+        locations.extend({
+            "path": declaration["path"],
+            "type": owner["type"],
+            "method": None,
+            "project_root": owner["project_root"],
+            "setup_only": True,
+        } for declaration in owner["declarations"])
+        if owner["base"]:
+            base = resolve_base_type(
+                source_index, owner["type"], owner["base"], owner["project_root"],
+            )
+            if base["status"] == "ambiguous":
+                return {"status": "ambiguous", "matches": matches[:5]}
+            if base["status"] == "exact":
+                base_owner = logical_type(source_index, base["type"], owner["project_root"])
+                if base_owner["status"] != "exact":
+                    return {"status": "ambiguous", "matches": matches[:5]}
+                setup_types.append((base_owner, ancestors | {owner["type"]}))
+    history_locations = {}
+    for location in locations:
+        key = (location["path"], location["type"])
+        if key not in history_locations or location["method"] is not None:
+            history_locations[key] = location
+    result["freshness_locations"] = list(history_locations.values())
+    texts = {
+        entry["path"]: contextual_source(
+            root, entry["path"],
+            pathlib.Path(root, entry["path"]).read_text(encoding="utf-8-sig"),
+            str(pathlib.Path(entry["project_root"]).relative_to(root)),
+        )
+        for entry in result["freshness_locations"]
+    }
+    if any(text is None for text in texts.values()):
+        return {"status": "ambiguous", "matches": matches[:5]}
+    method_names = {
+        name for name, declarations in source_index["methods"].items()
+        if any(
+            declaration["type"] in visited and declaration["project_root"] == project_root
+            for declaration in declarations
+        )
+    }
+    test_methods = {
+        name for name, declarations in source_index["methods"].items()
+        if any(
+            declaration["is_test"]
+            and declaration["type"] in visited
+            and declaration["project_root"] == project_root
+            for declaration in declarations
+        )
+    }
+    dependencies = set()
+    while True:
+        references = set()
+        for location in result["freshness_locations"]:
+            text = texts[location["path"]]
+            snapshot = target_snapshot(
+                text, location["type"], location["method"], dependencies, test_methods,
+            )
+            if snapshot is None:
+                location["whole_file"] = True
+                fragments = [text]
+            else:
+                fragments = [
+                    value for section in snapshot[:2] for member in section for value in member
+                ] + list(snapshot[2])
+            references.update(re.findall(r"\b[A-Za-z_]\w*\b", "\n".join(fragments)))
+        expanded = dependencies | (references & method_names)
+        if expanded == dependencies:
+            break
+        dependencies = expanded
+    for location in result["freshness_locations"]:
+        location["dependencies"] = sorted(dependencies)
+        location["test_methods"] = sorted(test_methods)
     assembly_locations = [locations[0]]
     if runner_types:
         assembly_locations.append(locations[1])
@@ -877,6 +1531,8 @@ def historical_assembly_state(root, project_root, commit, state_cache):
     if commit is None:
         return {"status": "exact", "quarantined": False, "issue": None}
 
+    context = project_context(root, project_root, commit)
+    paths_to_scan = project_paths(root, project_root, commit)
     tree = git_result(
         root,
         "ls-tree",
@@ -884,7 +1540,7 @@ def historical_assembly_state(root, project_root, commit, state_cache):
         "--name-only",
         commit,
         "--",
-        project_root,
+        *paths_to_scan,
     )
     if tree.returncode != 0:
         result = {"status": "ambiguous"}
@@ -905,7 +1561,7 @@ def historical_assembly_state(root, project_root, commit, state_cache):
         QUARANTINE,
         commit,
         "--",
-        project_root,
+        *paths_to_scan,
     )
     if matches.returncode not in (0, 1):
         return {"status": "ambiguous"}
@@ -916,10 +1572,20 @@ def historical_assembly_state(root, project_root, commit, state_cache):
         relative_path = match.split(":", 1)[-1]
         if not relative_path.endswith(".cs"):
             continue
+        membership = project_membership(root, project_root, context, relative_path)
+        if membership is False:
+            continue
         content = git_result(root, "show", f"{commit}:{relative_path}")
         if content.returncode != 0:
             return {"status": "ambiguous"}
         if not ASSEMBLY_QUARANTINE_PATTERN.search(sanitize_csharp(content.stdout)):
+            continue
+        if membership is None:
+            return {"status": "ambiguous"}
+        text = contextual_source(root, relative_path, content.stdout, project_root, commit)
+        if text is None:
+            return {"status": "ambiguous"}
+        if not ASSEMBLY_QUARANTINE_PATTERN.search(sanitize_csharp(text)):
             continue
 
         directory = pathlib.PurePosixPath(relative_path).parent
@@ -932,14 +1598,17 @@ def historical_assembly_state(root, project_root, commit, state_cache):
             if directory_string in ("", "."):
                 break
             directory = directory.parent
+        owning_project_root = context["project_root"] if context else project_root
+        if project_includes(root, project_root, context, relative_path):
+            associated_directory = owning_project_root
         if associated_directory is None:
             return {"status": "ambiguous"}
-        if associated_directory != project_root:
+        if associated_directory != owning_project_root:
             continue
-        if len(project_directories[associated_directory]) != 1:
+        if len(project_directories.get(associated_directory, [])) != 1:
             return {"status": "ambiguous"}
         assembly_files.append(relative_path)
-        for source_line in content.stdout.splitlines():
+        for source_line in text.splitlines():
             if not ASSEMBLY_QUARANTINE_PATTERN.search(
                 sanitize_csharp(source_line)
             ):
@@ -962,17 +1631,7 @@ def historical_assembly_state(root, project_root, commit, state_cache):
 
 
 def assembly_quarantine_history(root, project_root, history_ref):
-    history = git_result(
-        root,
-        "log",
-        "--first-parent",
-        "--format=%H%x09%P%x09%cI",
-        "-G",
-        QUARANTINE,
-        history_ref,
-        "--",
-        project_root,
-    )
+    history = project_quarantine_history(root, project_root, history_ref)
     if history.returncode != 0:
         return {"status": "ambiguous"}
 
@@ -1023,11 +1682,14 @@ def historical_project_source_index(
     content_cache,
     *,
     quarantine_only=False,
+    types_only=False,
 ):
-    cache_key = (commit, project_root, quarantine_only)
+    cache_key = (commit, project_root, quarantine_only, types_only)
     if cache_key in source_cache:
         return source_cache[cache_key]
 
+    context = project_context(root, project_root, commit)
+    paths_to_scan = project_paths(root, project_root, commit)
     tree = git_result(
         root,
         "ls-tree",
@@ -1035,7 +1697,7 @@ def historical_project_source_index(
         "--name-only",
         commit,
         "--",
-        project_root,
+        *paths_to_scan,
     )
     if tree.returncode != 0:
         return {"status": "ambiguous"}
@@ -1050,7 +1712,7 @@ def historical_project_source_index(
             QUARANTINE,
             commit,
             "--",
-            project_root,
+            *paths_to_scan,
         )
         if matches.returncode not in (0, 1):
             return {"status": "ambiguous"}
@@ -1063,7 +1725,8 @@ def historical_project_source_index(
         if path.endswith(".csproj"):
             directory = str(pathlib.PurePosixPath(path).parent)
             project_directories.setdefault(directory, []).append(path)
-    if len(project_directories.get(project_root, [])) > 1:
+    owning_project_root = context["project_root"] if context else project_root
+    if len(project_directories.get(owning_project_root, [])) > 1:
         result = {"status": "ambiguous"}
         source_cache[cache_key] = result
         return result
@@ -1082,14 +1745,18 @@ def historical_project_source_index(
             continue
         if quarantine_paths is not None and relative_path not in quarantine_paths:
             continue
+        membership = project_membership(root, project_root, context, relative_path)
+        if membership is False:
+            continue
         directory = pathlib.PurePosixPath(relative_path).parent
         while str(directory) not in project_directories:
             if str(directory) in ("", "."):
                 directory = None
                 break
             directory = directory.parent
-        if directory is None or str(directory) != project_root:
-            continue
+        if directory is None or str(directory) != owning_project_root:
+            if not project_includes(root, project_root, context, relative_path):
+                continue
 
         content_key = (commit, relative_path)
         if content_key not in content_cache:
@@ -1100,6 +1767,25 @@ def historical_project_source_index(
                 return result
             content_cache[content_key] = content.stdout
         text = content_cache[content_key]
+        if membership is None and context is not None:
+            membership = project_membership(
+                root, project_root, context, relative_path,
+                allow_conditional=(
+                    not re.search(r"(?m)^\s*#\s*(?:if|elif|else|endif)\b", sanitize_csharp(text))
+                    and not ASSEMBLY_QUARANTINE_PATTERN.search(sanitize_csharp(text))
+                ),
+            )
+            if membership is False:
+                continue
+            if membership is None:
+                result = {"status": "ambiguous"}
+                source_cache[cache_key] = result
+                return result
+        text = contextual_source(root, relative_path, text, project_root, commit)
+        if text is None:
+            result = {"status": "ambiguous"}
+            source_cache[cache_key] = result
+            return result
         clean = sanitize_csharp(text)
         lines = text.splitlines()
         file_namespace = None
@@ -1139,6 +1825,8 @@ def historical_project_source_index(
                     type_quarantine_issues[type_name] = None
                 else:
                     type_quarantine_issues[type_name] = issue
+        if types_only:
+            continue
         for match in METHOD_PATTERN.finditer(clean):
             key = (
                 full_type_name(ranges, match.start(), file_namespace),
@@ -1193,6 +1881,53 @@ def historical_project_source_index(
     return result
 
 
+def historical_runner_absent(
+    root, project_root, runner_type, commit, source_cache, content_cache,
+):
+    if commit is None:
+        return True
+    runner_type = normalize_type_name(runner_type)
+    cache_key = ("runner-absence", commit, project_root, runner_type)
+    if cache_key in source_cache:
+        return source_cache[cache_key]
+    source_cache[cache_key] = False
+    short_name = re.split(r"[<`]", runner_type.rsplit(".", 1)[-1], maxsplit=1)[0]
+    matches = git_result(
+        root, "grep", "-l", "-z", "-F", short_name, commit, "--",
+        *project_paths(root, project_root, commit),
+    )
+    if matches.returncode not in (0, 1):
+        return False
+    for entry in matches.stdout.split("\0"):
+        relative_path = entry.split(":", 1)[-1]
+        if not relative_path.endswith(".cs"):
+            continue
+        content_key = (commit, relative_path)
+        if content_key not in content_cache:
+            content = git_result(root, "show", f"{commit}:{relative_path}")
+            if content.returncode != 0:
+                return False
+            content_cache[content_key] = content.stdout
+        clean = sanitize_csharp(content_cache[content_key])
+        if re.search(r"(?m)^\s*#\s*(?:if|elif|else|endif)\b", clean):
+            return False
+        namespace_match = re.search(
+            r"(?m)^[ \t]*namespace\s+([A-Za-z_][A-Za-z0-9_.]*)\s*;", clean,
+        )
+        file_namespace = namespace_match.group(1) if namespace_match else None
+        ranges = declaration_ranges(clean)
+        if any(
+            entry[2] == "type"
+            and full_type_name(
+                ranges, entry[4], file_namespace, declared_type=entry[3],
+            ) == runner_type
+            for entry in ranges
+        ):
+            return False
+    source_cache[cache_key] = True
+    return True
+
+
 def historical_test_source(
     root,
     project_root,
@@ -1201,6 +1936,12 @@ def historical_test_source(
     source_cache,
     content_cache,
 ):
+    source_test_name, _ = split_test_name(test_name)
+    runner_type, method = source_test_name.rsplit(".", 1)
+    if historical_runner_absent(
+        root, project_root, runner_type, commit, source_cache, content_cache,
+    ):
+        return {"status": "missing"}
     source_index = historical_project_source_index(
         root,
         project_root,
@@ -1211,8 +1952,6 @@ def historical_test_source(
     if source_index["status"] != "exact":
         return {"status": "ambiguous"}
 
-    source_test_name, _ = split_test_name(test_name)
-    runner_type, method = source_test_name.rsplit(".", 1)
     current_type = normalize_type_name(runner_type)
     if current_type not in source_index["types"]:
         return {"status": "missing"}
@@ -1301,6 +2040,25 @@ def assembly_quarantine_transition(
     return {"status": "none"}
 
 
+def known_type_ancestry(source_index, type_name):
+    current_type = normalize_type_name(type_name)
+    visited = set()
+    while current_type in source_index["types"] and current_type not in visited:
+        visited.add(current_type)
+        bases = source_index["bases"].get(current_type, set())
+        if len(bases) > 1:
+            return None
+        if not bases:
+            return visited
+        base_type = resolve_base_type_name(
+            source_index["types"], current_type, next(iter(bases)),
+        )
+        if base_type["status"] != "exact":
+            return visited
+        current_type = base_type["type"]
+    return None
+
+
 def type_quarantine_transition(
     root,
     project_root,
@@ -1309,23 +2067,15 @@ def type_quarantine_transition(
     history_cache,
     source_cache,
     content_cache,
+    *,
+    stop_commit=None,
 ):
     root = pathlib.Path(root)
     relative_project_root = str(
         pathlib.Path(project_root).relative_to(root)
     ).replace(os.sep, "/")
     if relative_project_root not in history_cache:
-        history = git_result(
-            root,
-            "log",
-            "--first-parent",
-            "--format=%H%x09%P%x09%cI",
-            "-G",
-            QUARANTINE,
-            history_ref,
-            "--",
-            relative_project_root,
-        )
+        history = project_quarantine_history(root, relative_project_root, history_ref)
         if history.returncode != 0:
             history_cache[relative_project_root] = {
                 "lines": None,
@@ -1337,35 +2087,36 @@ def type_quarantine_transition(
                 "tests": {},
             }
     cached_history = history_cache[relative_project_root]
-    if test_name in cached_history["tests"]:
-        return cached_history["tests"][test_name]
+    target_key = (test_name, stop_commit)
+    if target_key in cached_history["tests"]:
+        return cached_history["tests"][target_key]
     history = cached_history["lines"]
     if history is None:
         return {"status": "ambiguous"}
 
+    source_test_name, _ = split_test_name(test_name)
+    runner_type = source_test_name.rsplit(".", 1)[0]
     for line in history:
         sha, parent_values, timestamp = line.split("\t", 2)
         parent = parent_values.split()[0] if parent_values else None
-        current_index = historical_project_source_index(
-            root,
-            relative_project_root,
-            sha,
-            source_cache,
-            content_cache,
-        )
-        if parent is None:
-            parent_index = {
-                "status": "exact",
-                "type_quarantines": set(),
-            }
-        else:
-            parent_index = historical_project_source_index(
-                root,
-                relative_project_root,
-                parent,
-                source_cache,
-                content_cache,
-            )
+        indices = []
+        for commit in (sha, parent):
+            if historical_runner_absent(
+                root, relative_project_root, runner_type, commit,
+                source_cache, content_cache,
+            ):
+                index = {
+                    "status": "exact",
+                    "type_quarantines": set(),
+                    "type_quarantine_issues": {},
+                }
+            else:
+                index = historical_project_source_index(
+                    root, relative_project_root, commit, source_cache,
+                    content_cache, types_only=True,
+                )
+            indices.append(index)
+        current_index, parent_index = indices
         if (
             current_index["status"] != "exact"
             or parent_index["status"] != "exact"
@@ -1375,7 +2126,7 @@ def type_quarantine_transition(
                 "commit": sha,
                 "utc": timestamp,
             }
-            cached_history["tests"][test_name] = result
+            cached_history["tests"][target_key] = result
             return result
         current_types = current_index["type_quarantines"]
         parent_types = parent_index["type_quarantines"]
@@ -1384,6 +2135,18 @@ def type_quarantine_transition(
             ("added", current_types - parent_types, sha),
             ("removed", parent_types - current_types, parent),
         ):
+            if not changed_types:
+                continue
+            source_index = current_index if status == "added" else parent_index
+            known_types = known_type_ancestry(source_index, runner_type)
+            if known_types:
+                for changed_type in list(changed_types):
+                    if changed_type in known_types:
+                        continue
+                    changed_ancestry = known_type_ancestry(source_index, changed_type)
+                    # A sibling/descendant cannot be an ancestor without a cycle.
+                    if changed_ancestry and changed_ancestry.intersection(known_types):
+                        changed_types.discard(changed_type)
             if not changed_types:
                 continue
             historical_source = historical_test_source(
@@ -1410,6 +2173,8 @@ def type_quarantine_transition(
                     for changed_type in matching_types
                 )
         if not applicable_changes:
+            if sha == stop_commit:
+                break
             continue
         if (
             len(applicable_changes) != 1
@@ -1421,7 +2186,7 @@ def type_quarantine_transition(
                 "commit": sha,
                 "utc": timestamp,
             }
-            cached_history["tests"][test_name] = result
+            cached_history["tests"][target_key] = result
             return result
         result = {
             "status": applicable_changes[0][0],
@@ -1431,10 +2196,10 @@ def type_quarantine_transition(
             "type": applicable_changes[0][1],
             "issue": applicable_changes[0][2],
         }
-        cached_history["tests"][test_name] = result
+        cached_history["tests"][target_key] = result
         return result
     result = {"status": "none"}
-    cached_history["tests"][test_name] = result
+    cached_history["tests"][target_key] = result
     return result
 
 
@@ -1569,11 +2334,21 @@ def target_identity_rename_detected(
     method,
     history_ref,
 ):
+    current_text = pathlib.Path(root, relative_path).read_text(encoding="utf-8")
+    conditional_project = (
+        identity_project(root, relative_path, type_name)
+        if has_conditional_namespace(current_text) else None
+    )
+    if has_conditional_namespace(current_text) and conditional_project is None:
+        return True
+    if conditional_project is not None:
+        history_ref = git(root, "rev-parse", history_ref)
     type_short_name = type_name.rsplit(".", 1)[-1]
     identity_cache_key = (
         str(pathlib.Path(root).resolve()),
         relative_path,
         history_ref,
+        conditional_project,
     )
     if identity_cache_key not in IDENTITY_HISTORY_CACHE:
         history = git_result(
@@ -1605,7 +2380,15 @@ def target_identity_rename_detected(
                 )
                 if content.returncode != 0:
                     continue
-                clean = sanitize_csharp(content.stdout)
+                text = content.stdout
+                if conditional_project is not None:
+                    text = contextual_source(
+                        root, historical_path, text, conditional_project, commit,
+                    )
+                    if text is None:
+                        IDENTITY_HISTORY_CACHE[identity_cache_key] = None
+                        return True
+                clean = sanitize_csharp(text)
                 file_namespace_match = re.search(
                     r"(?m)^[ \t]*namespace\s+"
                     r"([A-Za-z_][A-Za-z0-9_.]*)\s*;",
@@ -1709,6 +2492,8 @@ def target_identity_rename_detected(
         newer_counts = newer["method_counts"].get(type_name, {})
         if not newer_counts.get(method, 0):
             continue
+        if type_name not in older["types"] and older["types"] - newer["types"]:
+            return True
         older_signatures = older["method_signatures"].get(
             type_name,
             {},
@@ -1730,7 +2515,12 @@ def target_identity_rename_detected(
 def namespace_rename_detected(root, relative_path, type_name, history_ref):
     path = pathlib.Path(root, relative_path)
     try:
-        current = sanitize_csharp(path.read_text(encoding="utf-8"))
+        text = path.read_text(encoding="utf-8")
+        if has_conditional_namespace(text):
+            return target_identity_rename_detected(
+                root, relative_path, type_name, None, history_ref,
+            )
+        current = sanitize_csharp(text)
     except OSError:
         return True
     file_namespace_match = re.search(
@@ -1831,17 +2621,7 @@ def method_quarantine_transitions(
         pathlib.Path(project_root).relative_to(root)
     ).replace(os.sep, "/")
     if relative_project_root not in history_cache:
-        history = git_result(
-            root,
-            "log",
-            "--first-parent",
-            "--format=%H%x09%P%x09%cI",
-            "-G",
-            QUARANTINE,
-            history_ref,
-            "--",
-            relative_project_root,
-        )
+        history = project_quarantine_history(root, relative_project_root, history_ref)
         history_cache[relative_project_root] = {
             "lines": (
                 history.stdout.splitlines()
@@ -1932,17 +2712,7 @@ def data_quarantine_transitions(
         pathlib.Path(project_root).relative_to(root)
     ).replace(os.sep, "/")
     if relative_project_root not in history_cache:
-        history = git_result(
-            root,
-            "log",
-            "--first-parent",
-            "--format=%H%x09%P%x09%cI",
-            "-G",
-            QUARANTINE,
-            history_ref,
-            "--",
-            relative_project_root,
-        )
+        history = project_quarantine_history(root, relative_project_root, history_ref)
         history_cache[relative_project_root] = {
             "lines": (
                 history.stdout.splitlines()
@@ -2036,17 +2806,7 @@ def target_quarantine_transitions(
         pathlib.Path(project_root).relative_to(root)
     ).replace(os.sep, "/")
     if relative_project_root not in history_cache:
-        history = git_result(
-            root,
-            "log",
-            "--first-parent",
-            "--format=%H%x09%P%x09%cI",
-            "-G",
-            QUARANTINE,
-            history_ref,
-            "--",
-            relative_project_root,
-        )
+        history = project_quarantine_history(root, relative_project_root, history_ref)
         history_cache[relative_project_root] = (
             history.stdout.splitlines()
             if history.returncode == 0 else None
@@ -2285,17 +3045,7 @@ def type_quarantine_transitions(
     relative_project_root = str(
         pathlib.Path(project_root).relative_to(root)
     ).replace(os.sep, "/")
-    history = git_result(
-        root,
-        "log",
-        "--first-parent",
-        "--format=%H%x09%P%x09%cI",
-        "-G",
-        QUARANTINE,
-        history_ref,
-        "--",
-        relative_project_root,
-    )
+    history = project_quarantine_history(root, relative_project_root, history_ref)
     if history.returncode != 0:
         return [{"status": "ambiguous"}]
 
@@ -2374,6 +3124,33 @@ def quarantine_reference(attribute):
     return next(iter(references)) if len(references) == 1 else None
 
 
+def unproven_quarantine_paths(source_index):
+    consumers = {}
+
+    def record(scope, declaration, data=None):
+        key = (
+            scope, declaration["path"], declaration.get("type"),
+            declaration.get("method"), data,
+        )
+        consumers.setdefault(key, set()).add(declaration["project_root"])
+
+    for assembly in source_index["assemblies"]:
+        record("assembly", assembly)
+    for declarations in source_index["types"].values():
+        for declaration in declarations:
+            if declaration["quarantined"]:
+                record("type", declaration)
+    for declarations in source_index["methods"].values():
+        for declaration in declarations:
+            if declaration["method_quarantined"]:
+                record("method", declaration)
+            for attribute in declaration["data_quarantines"]:
+                record("data", declaration, attribute["values"])
+    return set(source_index.get("unresolved_sources", {})) | {
+        key[1] for key, projects in consumers.items() if len(projects) > 1
+    }
+
+
 def current_quarantine_targets(source_index):
     targets = []
     seen = set()
@@ -2394,6 +3171,7 @@ def current_quarantine_targets(source_index):
                         "project_root": declaration["project_root"],
                         "type": declaration["type"],
                         "method": declaration["method"],
+                        "attribute_lines": declaration["attribute_lines"],
                         "reference": quarantine_reference(
                             declaration["quarantine_attribute"]
                         ),
@@ -2419,6 +3197,7 @@ def current_quarantine_targets(source_index):
                     "type": declaration["type"],
                     "method": declaration["method"],
                     "data": data_attribute["data"],
+                    "attribute_lines": data_attribute["attribute_lines"],
                     "operating_systems": list(
                         data_attribute["operating_system_values"] or ()
                     ),
@@ -2440,6 +3219,7 @@ def current_quarantine_targets(source_index):
                 "project_root": declaration["project_root"],
                 "type": declaration["type"],
                 "method": None,
+                "attribute_lines": declaration["attribute_lines"],
                 "reference": quarantine_reference(
                     declaration["quarantine_attribute"]
                 ),
@@ -2455,10 +3235,15 @@ def current_quarantine_targets(source_index):
             "project_root": assembly["project_root"],
             "type": None,
             "method": None,
+            "attribute_lines": assembly["attribute_lines"],
             "reference": quarantine_reference(
                 assembly["quarantine_attribute"]
             ),
         })
+    ambiguous_paths = unproven_quarantine_paths(source_index)
+    for target in targets:
+        if target["path"] in ambiguous_paths:
+            target["source_ambiguous"] = True
     return targets
 
 
@@ -2524,19 +3309,6 @@ def collect_requarantine_history(
                             declaration["method"],
                             history_ref,
                         )
-                        or target_identity_rename_detected(
-                            root,
-                            declaration["path"],
-                            declaration["type"],
-                            None,
-                            history_ref,
-                        )
-                        or namespace_rename_detected(
-                            root,
-                            declaration["path"],
-                            declaration["type"],
-                            history_ref,
-                        )
                     ):
                         events = [{"status": "ambiguous"}]
                     targets.append({
@@ -2545,6 +3317,10 @@ def collect_requarantine_history(
                         "type": declaration["type"],
                         "method": declaration["method"],
                         "issue": issue,
+                        "introduced_utc": next((
+                            event.get("utc") for event in events
+                            if event["status"] == "added"
+                        ), None),
                         "status": (
                             classify_current_quarantine_history(events)
                             if issue is not None else "ambiguous"
@@ -2593,19 +3369,6 @@ def collect_requarantine_history(
                         declaration["method"],
                         history_ref,
                     )
-                    or target_identity_rename_detected(
-                        root,
-                        declaration["path"],
-                        declaration["type"],
-                        None,
-                        history_ref,
-                    )
-                    or namespace_rename_detected(
-                        root,
-                        declaration["path"],
-                        declaration["type"],
-                        history_ref,
-                    )
                 ):
                     events = [{"status": "ambiguous"}]
                 targets.append({
@@ -2615,6 +3378,10 @@ def collect_requarantine_history(
                     "method": declaration["method"],
                     "data": data_attribute["data"],
                     "issue": issue,
+                    "introduced_utc": next((
+                        event.get("utc") for event in events
+                        if event["status"] == "added"
+                    ), None),
                     "status": (
                         classify_current_quarantine_history(events)
                         if issue is not None else "ambiguous"
@@ -2672,6 +3439,10 @@ def collect_requarantine_history(
                 "type": declaration["type"],
                 "method": None,
                 "issue": issue,
+                "introduced_utc": next((
+                    event.get("utc") for event in events
+                    if event["status"] == "added"
+                ), None),
                 "status": (
                     classify_current_quarantine_history(events)
                     if issue is not None else "ambiguous"
@@ -2716,6 +3487,10 @@ def collect_requarantine_history(
             "scope": "assembly",
             "path": assembly["path"],
             "issue": assembly["issue"],
+            "introduced_utc": next((
+                event.get("utc") for event in events
+                if event["status"] == "added"
+            ), None),
             "type": None,
             "method": None,
             "status": (
@@ -2727,6 +3502,12 @@ def collect_requarantine_history(
                 else "ambiguous"
             ),
         })
+
+    ambiguous_paths = unproven_quarantine_paths(source_index)
+    for target in targets:
+        if target["path"] in ambiguous_paths:
+            target["status"] = "ambiguous"
+            target["introduced_utc"] = None
 
     return {
         "schema_version": 1,
@@ -2749,33 +3530,179 @@ def collect_requarantine_history(
     }
 
 
-def latest_file_change(root, relative_path, history_ref):
-    value = git(
-        root,
-        "log",
-        "-1",
-        "--first-parent",
-        "--follow",
-        "--format=%H%x09%cI",
-        history_ref,
-        "--",
-        relative_path,
+def member_snapshot(text, clean, match):
+    stack = []
+    body = expression = False
+    for index in range(match.end() - 1, len(clean)):
+        character = clean[index]
+        if not stack and clean.startswith("=>", index):
+            expression = True
+        if character in "([{":
+            if character == "{" and not stack and not expression:
+                body = True
+            stack.append(character)
+        elif character in ")]}":
+            if not stack or stack.pop() != {")": "(", "]": "[", "}": "{"}[character]:
+                return None
+            if body and not stack:
+                break
+        elif character == ";" and not stack:
+            break
+    else:
+        return None
+    attributes = attribute_block(text.splitlines(), clean.count("\n", 0, match.start()))
+    return attributes, text[match.start():index + 1]
+
+
+def target_snapshot(text, type_name, method, dependencies=(), test_methods=()):
+    clean = sanitize_csharp(text)
+    namespace = re.search(r"(?m)^\s*namespace\s+([A-Za-z_][A-Za-z0-9_.]*)\s*;", clean)
+    namespace = namespace[1] if namespace else None
+    ranges = declaration_ranges(clean)
+    type_ranges = [
+        entry for entry in ranges
+        if entry[2] == "type"
+        and full_type_name(ranges, entry[4], namespace, declared_type=entry[3]) == type_name
+    ]
+    headers = tuple(
+        (
+            attribute_block(text.splitlines(), clean.count("\n", 0, entry[4])),
+            text[entry[4]:entry[0] + 1],
+        )
+        for entry in type_ranges
     )
-    sha, timestamp = value.split("\t", 1)
+    if not headers:
+        return None
+    methods = [
+        match for match in METHOD_PATTERN.finditer(clean)
+        if full_type_name(ranges, match.start(), namespace) == type_name
+    ]
+    selected = [match for match in methods if match["method"] == method] if method else []
+    if method and len(selected) != 1:
+        return None
+    constructor = re.compile(
+        rf"(?m)^[ \t]*(?:(?:public|internal|protected|private|static)\s+)*"
+        rf"{re.escape(type_name.rsplit('.', 1)[-1])}\s*\("
+    )
+    constructors = [
+        match for match in constructor.finditer(clean)
+        if full_type_name(ranges, match.start(), namespace) == type_name
+    ]
+    members = {}
+    spans = []
+    line_offsets = [0, *(match.end() for match in re.finditer("\n", text))]
+    for match in [*methods, *constructors]:
+        fragment = member_snapshot(text, clean, match)
+        if fragment is None:
+            return None
+        members[match.start()] = fragment
+        line = clean.count("\n", 0, match.start())
+        _, attributes = attribute_block(text.splitlines(), line, include_locations=True)
+        start_line = min(
+            (number for numbers in attributes.values() for number in numbers),
+            default=line + 1,
+        )
+        spans.append((line_offsets[start_line - 1], match.start() + len(fragment[1])))
+    state = []
+    for opening, closing, *_ in type_ranges:
+        cursor = opening + 1
+        for start, end in sorted(spans):
+            if opening < start < closing:
+                if start < cursor or end > closing:
+                    return None
+                if (fragment := text[cursor:start].strip()) and sanitize_csharp(fragment).strip():
+                    state.append(fragment)
+                cursor = end
+        if (fragment := text[cursor:closing].strip()) and sanitize_csharp(fragment).strip():
+            state.append(fragment)
+    setup = []
+    for match in methods:
+        attributes, fragment = members[match.start()]
+        test = match["method"] in test_methods or re.search(
+            r"\[\s*(?:global::)?(?:\w+\.)*"
+            r"(?:Fact|Theory|ConditionalFact|ConditionalTheory)(?:Attribute)?\b",
+            attributes,
+        )
+        if (
+            match["method"] in ("InitializeAsync", "Dispose", "DisposeAsync")
+            or (
+                not test
+                and (
+                    attributes
+                    or re.search(r"\b(?:virtual|override)\b", clean[match.start():match.end()])
+                )
+            )
+        ):
+            setup.append(match)
+    references = set(dependencies)
+    references.update(re.findall(r"\b[A-Za-z_]\w*\b", "\n".join(state)))
+    pending = [
+        *selected, *constructors, *setup,
+        *(match for match in methods if match["method"] in references),
+    ]
+    fragments = []
+    seen = set()
+    while pending:
+        match = pending.pop(0)
+        if match.start() in seen:
+            continue
+        seen.add(match.start())
+        fragment = members[match.start()]
+        fragments.append(fragment)
+        references = set(re.findall(r"\b[A-Za-z_]\w*\b", "\n".join(fragment)))
+        pending.extend(candidate for candidate in methods if candidate["method"] in references)
+    return headers, tuple(fragments), tuple(state)
+
+
+def latest_target_change(root, location, history_ref):
+    newer = None
+    snapshot = None
+    meaningful = False
+    for commit, path in file_lineage(root, location["path"], history_ref):
+        text = git(root, "show", f"{commit}:{path}")
+        project_root = str(pathlib.Path(location["project_root"]).relative_to(root))
+        text = contextual_source(root, path, text, project_root, commit)
+        older_snapshot = (
+            target_snapshot(
+                text, location["type"], location["method"], location.get("dependencies", ()),
+                location.get("test_methods", ()),
+            )
+            if text and not location.get("whole_file") else None
+        )
+        if text and older_snapshot is None:
+            older_snapshot = ("whole-file", text)
+        elif older_snapshot and location.get("setup_only") and all(
+            not attributes.strip() and re.fullmatch(r"\s*class\s+\w+\s*\{\s*", header)
+            for attributes, header in older_snapshot[0]
+        ):
+            older_snapshot = ((), *older_snapshot[1:])
+        meaningful |= bool(older_snapshot and any(older_snapshot))
+        if newer is not None and older_snapshot != snapshot:
+            break
+        newer = commit
+        snapshot = older_snapshot
+    if newer is None:
+        raise ValueError(f"No source history for {location['path']}")
+    if location.get("setup_only") and not meaningful:
+        return None
     return {
-        "utc": timestamp,
+        "utc": git(root, "show", "-s", "--format=%cI", newer),
         "reason": "latest-test-file-change",
-        "commit": sha,
+        "commit": newer,
     }
 
 
 def first_parent_order(root, history_ref):
-    return {
-        commit: index
-        for index, commit in enumerate(
-            git(root, "rev-list", "--first-parent", history_ref).splitlines()
-        )
-    }
+    history_ref = git(root, "rev-parse", history_ref)
+    key = (str(root), history_ref)
+    if key not in FIRST_PARENT_ORDER_CACHE:
+        FIRST_PARENT_ORDER_CACHE[key] = {
+            commit: index
+            for index, commit in enumerate(
+                git(root, "rev-list", "--first-parent", history_ref).splitlines()
+            )
+        }
+    return FIRST_PARENT_ORDER_CACHE[key]
 
 
 def newest_history_item(items, history_order):
@@ -2799,42 +3726,12 @@ def project_history_is_complete(
 
     project_cache_key = (relative_project_root, None)
     if project_cache_key not in cache:
-        project_files = list(pathlib.Path(project_root).glob("*.csproj"))
+        lineage = project_lineage(root, relative_project_root, history_ref)
         project_metadata = None
-        if len(project_files) == 1:
-            project_file = str(
-                project_files[0].relative_to(root)
-            ).replace(os.sep, "/")
-            project_history = git_result(
-                root,
-                "log",
-                "--first-parent",
-                "--follow",
-                "--format=@@COMMIT@@%H",
-                "--name-only",
-                history_ref,
-                "--",
-                project_file,
-            )
-            project_commits = []
-            historical_project_files = []
-            for line in project_history.stdout.splitlines():
-                if line.startswith("@@COMMIT@@"):
-                    project_commits.append(line.removeprefix("@@COMMIT@@"))
-                elif line:
-                    historical_project_files.append(line)
-            history_order = first_parent_order(root, history_ref)
-            if (
-                project_history.returncode == 0
-                and project_commits
-                and project_commits[-1] in history_order
-                and not any(
-                    str(pathlib.PurePosixPath(path).parent)
-                    != relative_project_root
-                    for path in historical_project_files
-                )
-            ):
-                project_metadata = (project_commits[-1], history_order)
+        if lineage:
+            creation = lineage["locations"][-1][0]
+            if creation in lineage["order"]:
+                project_metadata = (creation, lineage["order"])
         cache[project_cache_key] = project_metadata
     project_metadata = cache[project_cache_key]
     if project_metadata is None:
@@ -2843,35 +3740,31 @@ def project_history_is_complete(
     project_creation, history_order = project_metadata
 
     for target_path in target_paths:
-        target_history = git_result(
-            root,
-            "log",
-            "--first-parent",
-            "--follow",
-            "--format=@@COMMIT@@%H",
-            "--name-only",
-            history_ref,
-            "--",
-            target_path,
+        linked_target = (
+            pathlib.PurePosixPath(relative_project_root)
+            not in pathlib.PurePosixPath(target_path).parents
+            and project_includes(
+                root, relative_project_root,
+                project_context(root, relative_project_root, history_ref),
+                target_path,
+            )
         )
-        commits = []
-        historical_target_paths = []
-        for line in target_history.stdout.splitlines():
-            if line.startswith("@@COMMIT@@"):
-                commits.append(line.removeprefix("@@COMMIT@@"))
-            elif line:
-                historical_target_paths.append(line)
+        history_paths = project_history_paths(root, relative_project_root, history_ref)
+        target_history = file_lineage(root, target_path, history_ref)
+        commits = [sha for sha, _ in target_history]
+        historical_target_paths = [path for _, path in target_history]
         if (
-            target_history.returncode != 0
-            or not commits
+            not commits
             or commits[-1] not in history_order
-            or history_order[commits[-1]] > history_order[project_creation]
+            or (
+                not linked_target
+                and history_order[commits[-1]] > history_order[project_creation]
+            )
             or any(
-                not (
-                    pathlib.PurePosixPath(path)
-                    == pathlib.PurePosixPath(relative_project_root)
-                    or pathlib.PurePosixPath(relative_project_root)
-                    in pathlib.PurePosixPath(path).parents
+                not any(
+                    pathlib.PurePosixPath(path) == pathlib.PurePosixPath(scope)
+                    or pathlib.PurePosixPath(scope) in pathlib.PurePosixPath(path).parents
+                    for scope in history_paths
                 )
                 for path in historical_target_paths
             )
@@ -2982,6 +3875,38 @@ def github_commit_contains(repository, ancestor, descendant, token):
     raise ValueError(f"Unexpected GitHub comparison status: {status!r}")
 
 
+def github_issue_exists(repository, issue, token):
+    if not token:
+        raise ValueError("A GitHub token is required to verify tracking issues")
+    request = urllib.request.Request(
+        f"https://api.github.com/repos/{repository}/issues/{issue}",
+        headers={
+            "Authorization": f"Bearer {token}",
+            "Accept": "application/vnd.github+json",
+            "User-Agent": "aspnetcore-test-quarantine",
+        },
+    )
+    for attempt in range(3):
+        try:
+            with urllib.request.urlopen(request, timeout=30) as response:
+                data = json.load(response)
+            return (
+                data.get("number") == issue
+                and data.get("url") == f"https://api.github.com/repos/{repository}/issues/{issue}"
+                and "pull_request" not in data
+                and data.get("state") in ("open", "closed")
+            )
+        except urllib.error.HTTPError as error:
+            if error.code == 404:
+                return False
+            if attempt == 2 or error.code not in (403, 429) and error.code < 500:
+                raise
+        except OSError:
+            if attempt == 2:
+                raise
+        time.sleep(2 * (attempt + 1))
+
+
 def commit_contains(root, repository, ancestor, descendant, token):
     if not ancestor or not descendant:
         raise ValueError("Both ancestor and descendant commits are required")
@@ -3054,6 +3979,7 @@ def collect(
     pr_files_provider=None,
     commit_contains_provider=None,
     history_ref="HEAD",
+    issue_exists_provider=None,
 ):
     root = pathlib.Path(root)
     token = os.environ.get("GH_TOKEN", "")
@@ -3069,6 +3995,9 @@ def collect(
             token,
         )
     )
+    issue_exists_provider = issue_exists_provider or (
+        lambda issue: github_issue_exists(repository, issue, token)
+    )
     source_index = build_source_index(root)
     history_commit = git(root, "rev-parse", "--verify", history_ref)
     history_order = first_parent_order(root, history_ref)
@@ -3080,6 +4009,7 @@ def collect(
     receipts = {}
     pr_files_cache = {}
     ancestry_cache = {}
+    issue_cache = {}
     project_history_cache = {}
     assembly_history_cache = {}
     method_history_cache = {}
@@ -3112,6 +4042,7 @@ def collect(
             "eligible_failure_builds": [],
             "case_b_eligible": False,
             "case_b_issue": None,
+            "case_b_issue_verified": False,
             "quarantine_operating_systems": None,
             "evidence": None,
             "reasons": reasons,
@@ -3130,7 +4061,7 @@ def collect(
         if not project_history_is_complete(
             root,
             source["project_root"],
-            [location["path"] for location in source["history_locations"]],
+            [location["path"] for location in source["freshness_locations"]],
             history_ref,
             project_history_cache,
         ):
@@ -3146,20 +4077,13 @@ def collect(
                     history_ref,
                 )
                 or (
-                    location["method"] is not None
-                    and target_identity_rename_detected(
+                    location["method"] is None
+                    and namespace_rename_detected(
                         root,
                         location["path"],
                         location["type"],
-                        None,
                         history_ref,
                     )
-                )
-                or namespace_rename_detected(
-                    root,
-                    location["path"],
-                    location["type"],
-                    history_ref,
                 )
             )
             for location in source["history_locations"]
@@ -3213,6 +4137,19 @@ def collect(
             transitions.append(
                 events[0] if events else {"status": "none"}
             )
+        known_transitions = [
+            item for item in transitions
+            if item["status"] in ("added", "removed") and item.get("commit") in history_order
+        ]
+        latest_known = (
+            newest_history_item(known_transitions, history_order)
+            if known_transitions else {}
+        )
+        type_history_stop = (
+            latest_known["commit"]
+            if not quarantined and latest_known.get("status") == "removed"
+            else None
+        )
         transitions.append(type_quarantine_transition(
             root,
             source["assembly_project_root"],
@@ -3221,6 +4158,7 @@ def collect(
             type_history_cache,
             historical_source_cache,
             historical_content_cache,
+            stop_commit=type_history_stop,
         ))
         transitions.append(assembly_quarantine_transition(
             root,
@@ -3258,19 +4196,6 @@ def collect(
                 receipt["status"] = "ineligible"
                 reasons.append("original-quarantine-issue-unproven")
                 continue
-            transition_cutoff = {
-                "utc": transition["utc"],
-                "reason": "latest-quarantine-transition",
-                "commit": transition["commit"],
-            }
-            file_cutoffs = [
-                latest_file_change(root, location["path"], history_ref)
-                for location in source["history_locations"]
-            ]
-            history_cutoff = newest_history_item(
-                [transition_cutoff, *file_cutoffs],
-                history_order,
-            )
             receipt["originating_case"] = "case-b"
             reasons.append("latest-quarantine-transition-removed")
         elif transition["status"] != "none":
@@ -3278,14 +4203,21 @@ def collect(
             continue
         else:
             receipt["originating_case"] = "case-a"
-            history_cutoffs = [
-                latest_file_change(root, location["path"], history_ref)
-                for location in source["history_locations"]
-            ]
-            history_cutoff = newest_history_item(
-                history_cutoffs,
-                history_order,
-            )
+        history_cutoffs = []
+        freshness_locations = []
+        for location in source["freshness_locations"]:
+            cutoff = latest_target_change(root, location, history_ref)
+            if cutoff is not None:
+                history_cutoffs.append(cutoff)
+                freshness_locations.append(location)
+        source["freshness_locations"] = freshness_locations
+        if case_b:
+            history_cutoffs.insert(0, {
+                "utc": transition["utc"],
+                "reason": "latest-quarantine-transition",
+                "commit": transition["commit"],
+            })
+        history_cutoff = newest_history_item(history_cutoffs, history_order)
 
         cutoffs = [history_cutoff]
         prior_attempt = latest_closed_attempt(closed_prs, test_name)
@@ -3367,7 +4299,7 @@ def collect(
                     continue
                 if any(
                     location["path"] in changed_files
-                    for location in source["history_locations"]
+                    for location in source["freshness_locations"]
                 ):
                     receipt["excluded_builds"].append({
                         "build": build_id,
@@ -3386,7 +4318,14 @@ def collect(
         if case_b:
             receipt["status"] = "ineligible"
             if included:
-                receipt["case_b_eligible"] = True
+                issue = receipt["case_b_issue"]
+                if issue not in issue_cache:
+                    issue_cache[issue] = issue_exists_provider(issue) is True
+                receipt["case_b_issue_verified"] = issue_cache[issue]
+                if receipt["case_b_issue_verified"]:
+                    receipt["case_b_eligible"] = True
+                else:
+                    reasons.append("original-quarantine-issue-unverified")
             else:
                 reasons.append("no-post-cutoff-failures")
             continue
