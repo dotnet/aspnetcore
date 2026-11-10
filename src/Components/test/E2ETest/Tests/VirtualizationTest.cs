@@ -5079,7 +5079,6 @@ public class VirtualizationTest : ServerTestBase<ToggleExecutionModeServerFixtur
     [InlineData(false, false)]
     [InlineData(true, false)]
     [InlineData(false, true)]
-    [InlineData(true, true)]
     public void AnchorMode_WindowScroll_End_PrependAtTop_ViewportStaysStable(bool variableHeight, bool useItemsProvider)
     {
         MountWindowScrollAnchorModeComponent("2", variableHeight, useItemsProvider, delay: useItemsProvider);
@@ -5098,6 +5097,10 @@ public class VirtualizationTest : ServerTestBase<ToggleExecutionModeServerFixtur
         AssertWindowScrollViewportStaysStable(js, root, indexBefore, topBefore,
             "Window End mode at top: same item should stay at same position after prepend");
     }
+
+    [Fact]
+    public virtual void AnchorMode_WindowScroll_End_PrependAtTop_VariableHeightItemsProvider_ViewportStaysStable()
+        => AnchorMode_WindowScroll_End_PrependAtTop_ViewportStaysStable(variableHeight: true, useItemsProvider: true);
 
     [Theory]
     [InlineData(false, false)]
