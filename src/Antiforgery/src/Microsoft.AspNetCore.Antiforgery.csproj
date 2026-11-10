@@ -26,6 +26,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <Compile Include="$(SharedSourceRoot)CookiePathEscaper.cs" LinkBase="Shared" />
     <Compile Include="$(SharedSourceRoot)HttpExtensions.cs" LinkBase="Shared" />
     <Compile Include="$(SharedSourceRoot)MiddlewareInvokedKeys.cs" LinkBase="Shared" />
     <Compile Include="$(SharedSourceRoot)SafeHttpMethods.cs" LinkBase="Shared" />
