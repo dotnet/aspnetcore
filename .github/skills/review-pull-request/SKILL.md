@@ -207,7 +207,9 @@ Independently check every returned candidate before acceptance. Require:
 3. Frozen old-side behavior, frozen head behavior, and the actual called overload,
    producer-to-consumer path, and any required target-base or primary contract. A
    sibling helper is not evidence about the called helper. Read its full body and
-   return path before accepting **or discarding** a claim.
+   return path before accepting **or discarding** a claim. If diff and source appear
+   inconsistent, re-read the exact old/head files and verify their roles before
+   reporting an evidence mismatch.
 4. No equivalent earlier issue, review, resolved inline comment, or current
    feedback; no speculative, stylistic, or otherwise unsupported clause.
 
@@ -215,6 +217,28 @@ For an incomplete-fix or new-feature omission, require a binding issue, API, or
 repository contract; a missing test or unclear intent alone is not a material
 behavioral finding. Do not create a candidate that merely requests a test or a
 rationale without a concrete effect.
+
+For new or broadened exception suppression, independently check the failure policy:
+separate the original operation error from secondary logging, cleanup, callback, or
+recovery errors. Preserving the former does not prove that the latter is handled.
+Compare the exact old/new failure path and verify any expected or best-effort policy
+against the target contract, not just the PR rationale or new tests. If the reachable
+suppression and observable effect are established but the required policy is not,
+retain that concrete candidate in `UNRESOLVED` with the missing contract; do not
+silently convert it to LGTM or invent a defect. Documented best-effort handling is
+counterevidence, and an empty catch alone is not a finding.
+Policy uncertainty does not establish a failure producer: when the selected source
+path rules out the secondary failure, discard that claim rather than inventing a
+missing contract or retaining a hypothetical failure in `UNRESOLVED`.
+
+The coordinator must assess existing feedback before deduplicating publication.
+Record supported duplicates in `EXISTING_FEEDBACK_COVERAGE`; record a concrete
+unsettled failure-policy concern in `UNRESOLVED` with its existing thread reference
+and missing evidence, even when the thread already covers the concern.
+Deduplication prevents repeat publication; it does not settle the failure policy.
+Do not re-emit the duplicate as a new finding or an optional nit. Never treat a review
+comment as contract authority. Keep coordinator-only feedback inputs out of guide
+worker assignments.
 
 Reject a candidate when source disproves it, with the precise called edge and full
 return path. A discard that argues behavior is unchanged must compare the old and new
