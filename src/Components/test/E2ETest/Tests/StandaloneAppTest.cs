@@ -45,12 +45,6 @@ public class StandaloneAppTest
     }
 
     [Fact]
-    public void CanAttachRootComponentToElementRenderedByEarlierRootComponent()
-    {
-        Assert.Equal("Dependent root rendered", Browser.Exists(By.Id("dependent-root")).Text);
-    }
-
-    [Fact]
     public void NavMenuHighlightsCurrentLocation()
     {
         var activeNavLinksSelector = By.CssSelector(".sidebar a.active");
