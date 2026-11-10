@@ -19,12 +19,12 @@
         @if (!string.IsNullOrEmpty(options.EditProfilePolicyId))
         {
             <li class="nav-item">
-                <a class="nav-link text-dark" asp-area="MicrosoftIdentity" asp-controller="Account" asp-action="EditProfile">Hello @User.Identity?.Name!</a>
+                <a class="nav-link text-dark text-break" asp-area="MicrosoftIdentity" asp-controller="Account" asp-action="EditProfile">Hello @User.Identity?.Name!</a>
             </li>
         }
         else
         {
-            <span class="navbar-text text-dark">Hello @User.Identity?.Name!</span>
+            <span class="navbar-text text-dark text-break">Hello @User.Identity?.Name!</span>
         }
         <li class="nav-item">
             <a class="nav-link text-dark" asp-area="MicrosoftIdentity" asp-controller="Account" asp-action="SignOut">Sign out</a>
@@ -39,7 +39,7 @@ else
 #else
 @if (User.Identity?.IsAuthenticated == true)
 {
-        <span class="navbar-text text-dark">Hello @User.Identity?.Name!</span>
+        <span class="navbar-text text-dark text-break">Hello @User.Identity?.Name!</span>
         <li class="nav-item">
             <a class="nav-link text-dark" asp-area="MicrosoftIdentity" asp-controller="Account" asp-action="SignOut">Sign out</a>
         </li>

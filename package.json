@@ -14,6 +14,7 @@
     "src/Components/WebAssembly/Authentication.Msal/src/Interop",
     "src/Components/CustomElements/src/js",
     "src/Components/Server.AutoPause/src/js",
+    "src/Components/Platform/src/js",
     "src/ProjectTemplates/test/Templates.Tests"
   ],
   "scripts": {

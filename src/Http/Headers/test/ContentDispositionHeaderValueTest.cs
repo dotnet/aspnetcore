@@ -154,6 +154,26 @@ public class ContentDispositionHeaderValueTest
         Assert.Null(contentDisposition.FileName.Value);
     }
 
+    [Theory]
+    [InlineData("\"=?utf-8?b?Zm9vLmh0bWw=?=\"", "foo.html")] // lowercase encoding type
+    [InlineData("\"=?utf-8?B??=\"", "")] // empty data
+    [InlineData("\"=?utf-8?B?Zm9v?Lmh0bWw=?=\"", "=?utf-8?B?Zm9v?Lmh0bWw=?=")] // too many separators
+    [InlineData("\"=?utf-8?BZm9vLmh0bWw=?=\"", "=?utf-8?BZm9vLmh0bWw=?=")] // too few separators
+    [InlineData("\"=?utf-8?Q?Zm9vLmh0bWw=?=\"", "=?utf-8?Q?Zm9vLmh0bWw=?=")] // unsupported encoding type
+    [InlineData("\"=?utf-8?BB?Zm9vLmh0bWw=?=\"", "=?utf-8?BB?Zm9vLmh0bWw=?=")] // unsupported encoding type
+    [InlineData("\"x=?utf-8?B?Zm9vLmh0bWw=?=\"", "x=?utf-8?B?Zm9vLmh0bWw=?=")] // bad prefix
+    [InlineData("\"=?utf-8?B?Zm9vLmh0bWw=?=x\"", "=?utf-8?B?Zm9vLmh0bWw=?=x")] // bad suffix
+    [InlineData("\"=??B?Zm9vLmh0bWw=?=\"", "=??B?Zm9vLmh0bWw=?=")] // empty encoding name
+    [InlineData("\"=?utf-8?B?Zm9v!?=\"", "=?utf-8?B?Zm9v!?=")] // invalid base64
+    [InlineData("\"attachment\"", "attachment")] // not encoded
+    public void FileName_MimeEncodedVariants_DecodedOrReturnedUnquoted(string value, string expected)
+    {
+        var contentDisposition = new ContentDispositionHeaderValue("inline");
+        contentDisposition.Parameters.Add(new NameValueHeaderValue("filename", value));
+
+        Assert.Equal(expected, contentDisposition.FileName.ToString());
+    }
+
     [Fact]
     public void FileName_UnknownOrBadEncoding_PropertyFails()
     {
