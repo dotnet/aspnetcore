@@ -91,40 +91,6 @@ internal
         public ReadOnlyMemory<char> DecodeValue()
             => Decode(EncodedValue);
 
-        /// <summary>
-        /// Decodes the name from this name/value pair directly into a string.
-        /// </summary>
-        internal string DecodeNameToString()
-            => DecodeToString(EncodedName);
-
-        /// <summary>
-        /// Decodes the value from this name/value pair directly into a string.
-        /// </summary>
-        internal string DecodeValueToString()
-            => DecodeToString(EncodedValue);
-
-        private static string DecodeToString(ReadOnlyMemory<char> chars)
-        {
-#if NET
-            ReadOnlySpan<char> source = chars.Span;
-            if (!source.ContainsAny('%', '+'))
-            {
-                return chars.ToString();
-            }
-
-            if (!source.Contains('+'))
-            {
-                return Uri.UnescapeDataString(source);
-            }
-
-            // Uri.UnescapeDataString returns the same instance when there is nothing to unescape.
-            var replaced = string.Create(source.Length, chars, static (destination, chars) => chars.Span.Replace(destination, '+', ' '));
-            return Uri.UnescapeDataString(replaced);
-#else
-            return Decode(chars).ToString();
-#endif
-        }
-
         private static ReadOnlyMemory<char> Decode(ReadOnlyMemory<char> chars)
         {
             ReadOnlySpan<char> source = chars.Span;
