@@ -570,6 +570,22 @@ class MessagePackHubProtocolTest {
         assertEquals(HubMessageType.PING, messages.get(1).getMessageType());
     }
 
+    @ParameterizedTest
+    @ValueSource(bytes = {(byte) 0xC4, (byte) 0xC5})
+    public void truncatedBinaryHeaderCannotReadNextMessage(byte binaryHeader) {
+        byte[] messageBytes = {0x0B, (byte) 0x95, 0x01, (byte) 0x80, (byte) 0xC0, (byte) 0xA4, 0x74, 0x65, 0x73, 0x74,
+            (byte) 0x91, binaryHeader, 0x02, (byte) 0x91, 0x06};
+        TestBinder binder = new TestBinder(new Type[] { byte[].class }, null);
+
+        List<HubMessage> messages = messagePackHubProtocol.parseMessages(ByteBuffer.wrap(messageBytes), binder);
+
+        assertEquals(2, messages.size());
+        assertEquals(HubMessageType.INVOCATION_BINDING_FAILURE, messages.get(0).getMessageType());
+        InvocationBindingFailureMessage failure = (InvocationBindingFailureMessage) messages.get(0);
+        assertEquals("MessageInsufficientBufferException", failure.getException().getClass().getSimpleName());
+        assertEquals(HubMessageType.PING, messages.get(1).getMessageType());
+    }
+
     @Test
     public void invocationBindingFailureWhenNestedBinaryLengthExceedsRemainingBytes() {
         byte[] messageBytes = {0x0E, (byte) 0x95, 0x01, (byte) 0x80, (byte) 0xC0, (byte) 0xA4, 0x74, 0x65, 0x73, 0x74,

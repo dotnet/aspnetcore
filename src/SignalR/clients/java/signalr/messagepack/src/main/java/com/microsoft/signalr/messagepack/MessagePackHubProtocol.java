@@ -16,6 +16,7 @@ import java.util.Map;
 
 import org.msgpack.core.MessageBufferPacker;
 import org.msgpack.core.MessageFormat;
+import org.msgpack.core.MessageInsufficientBufferException;
 import org.msgpack.core.MessagePack;
 import org.msgpack.core.MessagePackException;
 import org.msgpack.core.MessagePacker;
@@ -85,6 +86,10 @@ public class MessagePackHubProtocol implements HubProtocol {
             } catch (IOException ex) {
                 throw new RuntimeException("Error reading length header.", ex);
             }
+            int payloadStart = payload.position();
+            int payloadLimit = payload.limit();
+            int messageEnd = payloadStart + length;
+            payload.limit(messageEnd);
             // Instantiate MessageUnpacker
             try(MessageUnpacker unpacker = MessagePack.newDefaultUnpacker(payload)) {
 
@@ -134,10 +139,30 @@ public class MessagePackHubProtocol implements HubProtocol {
                 // Returning a ByteBuffer rather than a Buffer. This causes issues on Android - see https://github.com/dotnet/aspnetcore/pull/26614
                 ((Buffer) payload).position(payload.position() + readBytes);
             } catch (MessagePackException | IOException ex) {
+                if (ex instanceof MessageInsufficientBufferException && payloadLimit > messageEnd
+                        && !hasCompleteMessageAt(payload, messageEnd, payloadLimit)) {
+                    throw new RuntimeException(String.format("MessagePack message was length %d but claimed to be length %d.", length + 1, length));
+                }
                 throw new RuntimeException("Error reading MessagePack data.", ex);
+            } finally {
+                payload.limit(payloadLimit);
             }
         }
         return hubMessages;
+    }
+
+    private boolean hasCompleteMessageAt(ByteBuffer payload, int position, int limit) {
+        ByteBuffer remaining = payload.duplicate();
+        remaining.clear();
+        remaining.limit(limit);
+        remaining.position(position);
+
+        try {
+            int length = Utils.readLengthHeader(remaining);
+            return remaining.remaining() >= length;
+        } catch (IOException | RuntimeException ex) {
+            return false;
+        }
     }
 
     @Override
