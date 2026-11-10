@@ -204,6 +204,7 @@ def collect(
     pr_files_provider=lambda _: set(),
     commit_contains_provider=lambda _ancestor, _descendant: True,
     module=None,
+    issue_exists_provider=lambda _: True,
 ):
     module = module or MODULE
     serialized = json.dumps(data, separators=(",", ":")).encode()
@@ -217,6 +218,7 @@ def collect(
         subprocess.check_output(["git", "-C", root, "rev-parse", "HEAD"], text=True).strip(),
         pr_files_provider=pr_files_provider,
         commit_contains_provider=commit_contains_provider,
+        issue_exists_provider=issue_exists_provider,
     )
 
 
@@ -772,6 +774,7 @@ def test_theory_data_quarantine_support():
             "method": "ReturnsExpectedResponse",
             "data": "HttpProtocols.Http3",
             "issue": 1,
+            "introduced_utc": "2026-08-04T00:00:00Z",
             "status": "re-quarantined",
         }], history
 
@@ -964,7 +967,7 @@ def test_build_source_ancestry():
         commit(root, "Unquarantine test", "2026-08-04T00:00:00Z")
         unquarantine_commit = run_output(root, "git", "rev-parse", "HEAD")
         file_path.write_text(
-            source() + "\n// Fix the test after unquarantining it.\n",
+            source().replace("    {\n    }", "    {\n        Assert.True(true);\n    }"),
             encoding="utf-8",
         )
         commit(root, "Fix test after unquarantine", "2026-08-10T00:00:00Z")
@@ -1148,6 +1151,7 @@ def test_requarantine_history():
             "type": "Microsoft.AspNetCore.Tests.SampleTests",
             "method": "ReturnsExpectedResponse",
             "issue": 1,
+            "introduced_utc": "2026-08-02T00:00:00Z",
             "status": "first-quarantine",
         }], first
 
@@ -1355,7 +1359,7 @@ public partial class SampleTests
         commit(root, "Move test project", "2026-08-04T00:00:00Z")
 
         moved_project = MODULE.collect_requarantine_history(root, "HEAD")
-        assert moved_project["targets"][0]["status"] == "ambiguous", moved_project
+        assert moved_project["targets"][0]["status"] == "re-quarantined", moved_project
 
     with tempfile.TemporaryDirectory() as directory:
         root = pathlib.Path(directory)
@@ -1364,15 +1368,13 @@ public partial class SampleTests
         commit(root, "Quarantine before project move", "2026-08-01T00:00:00Z")
         file_path.write_text(source(), encoding="utf-8")
         commit(root, "Unquarantine before project move", "2026-08-02T00:00:00Z")
+        removal_commit = run_output(root, "git", "rev-parse", "HEAD")
         run(root, "git", "mv", "src/Sample.Tests", "src/Renamed.Tests")
         commit(root, "Move unquarantined test project", "2026-08-03T00:00:00Z")
 
         moved_case_b = collect_result(root, evidence())
-        assert moved_case_b["status"] == "unproven", moved_case_b
-        assert moved_case_b["originating_case"] == "unknown", moved_case_b
-        assert moved_case_b["reasons"] == ["project-history-incomplete"], (
-            moved_case_b
-        )
+        assert_case_b(moved_case_b, removal_commit)
+        assert moved_case_b["case_b_eligible"], moved_case_b
 
     with tempfile.TemporaryDirectory() as directory:
         root = pathlib.Path(directory)
@@ -2695,8 +2697,8 @@ def test_assembly_quarantine_history():
             "src/Sample.Tests/RenamedSampleTests.cs"
         )
         assert result["latest_quarantine_transition"] == "removed"
-        assert result["cutoff"]["commit"] == rename_commit
-        assert result["cutoff"]["reason"] == "latest-test-file-change", result
+        assert result["cutoff"]["commit"] == removal_commit
+        assert result["cutoff"]["reason"] == "latest-quarantine-transition", result
         assert removal_commit != rename_commit
 
     with tempfile.TemporaryDirectory() as directory:
@@ -3897,7 +3899,951 @@ def run_output(root, *args):
     ).strip()
 
 
+def test_conditional_shared_source(module=None):
+    module = module or MODULE
+    with tempfile.TemporaryDirectory() as directory:
+        root = pathlib.Path(directory)
+        initialize_git_repository(root)
+        shared = root / "src/SharedTests/HttpsTests.cs"
+        shared.parent.mkdir(parents=True)
+        text = """#if !IIS_FUNCTIONALS
+#if IISEXPRESS_FUNCTIONALS
+namespace Sample.IISExpress;
+#elif NEWHANDLER_FUNCTIONALS
+namespace Sample.NewHandler;
+#else
+namespace Sample.Other;
+#endif
+#else
+namespace Sample.IIS;
+#endif
+public class ClientCertificateTests
+{
+    [ConditionalTheory]
+    [MemberData(nameof(Variants))]
+    public void HttpsNoClientCert_NoClientCert()
+    {
+    }
+}
+"""
+        shared.write_text(text, encoding="utf-8")
+        for project, symbol in (
+            ("IIS.Tests", "IIS_FUNCTIONALS"),
+            ("IISExpress.Tests", "IISEXPRESS_FUNCTIONALS"),
+            ("NewHandler.Tests", "NEWHANDLER_FUNCTIONALS"),
+        ):
+            directory = root / "src" / project
+            directory.mkdir()
+            (directory / f"{project}.csproj").write_text(
+                f'<Project><PropertyGroup><DefineConstants>\n{symbol}\n</DefineConstants>'
+                '</PropertyGroup><ItemGroup><Compile Include="../SharedTests/**/*.cs" />'
+                '<Compile Include="$(SharedSourceRoot)ServerInfrastructure/**/*.cs" '
+                'Exclude="$(SharedSourceRoot)ServerInfrastructure/DuplexPipe.cs" />'
+                '</ItemGroup></Project>',
+                encoding="utf-8",
+            )
+        excluded = root / "src/Excluded.Tests"
+        excluded.mkdir()
+        (excluded / "Excluded.Tests.csproj").write_text(
+            '<Project><PropertyGroup><DefineConstants>IIS_FUNCTIONALS</DefineConstants>'
+            '</PropertyGroup><ItemGroup><Compile Include="../SharedTests/**/*.cs" '
+            'Exclude="../SharedTests/HttpsTests.cs" /></ItemGroup></Project>',
+            encoding="utf-8",
+        )
+        commit(root, "Add shared conditional namespace test", "2026-08-01T00:00:00Z")
+        first_commit = subprocess.check_output(
+            ["git", "-C", root, "rev-parse", "HEAD"], text=True,
+        ).strip()
+        for namespace, project in (
+            ("IIS", "IIS.Tests"),
+            ("IISExpress", "IISExpress.Tests"),
+            ("NewHandler", "NewHandler.Tests"),
+        ):
+            name = f"Sample.{namespace}.ClientCertificateTests.HttpsNoClientCert_NoClientCert"
+            receipt = collect_result(
+                root, evidence(test_name=name), test_name=name, module=module,
+            )
+            assert receipt["status"] == "eligible", (namespace, receipt)
+            resolved = receipt["source_resolution"]
+            assert resolved["path"] == "src/SharedTests/HttpsTests.cs", resolved
+            assert resolved["project_root"] == str(root / "src" / project), resolved
+            historical = module.historical_test_source(
+                root, f"src/{project}", name, first_commit, {}, {},
+            )
+            assert historical["status"] == "exact", (namespace, historical)
+            print(f"PASS conditional shared namespace: {namespace}")
+
+        attribute = f"#if IIS_FUNCTIONALS\n    {QUARANTINE_ATTRIBUTE}\n#endif\n"
+        shared.write_text(text.replace("    [ConditionalTheory]", attribute + "    [ConditionalTheory]"), encoding="utf-8")
+        commit(root, "Quarantine only the IIS variant", "2026-08-02T00:00:00Z")
+        iis = "Sample.IIS.ClientCertificateTests.HttpsNoClientCert_NoClientCert"
+        express = "Sample.IISExpress.ClientCertificateTests.HttpsNoClientCert_NoClientCert"
+        assert_already_quarantined(collect_result(
+            root, evidence(test_name=iis), test_name=iis, module=module,
+        ))
+        assert collect_result(
+            root, evidence(test_name=express), test_name=express, module=module,
+        )["status"] == "eligible"
+        shared.write_text(text, encoding="utf-8")
+        commit(root, "Unquarantine only the IIS variant", "2026-08-03T00:00:00Z")
+        removal = subprocess.check_output(
+            ["git", "-C", root, "rev-parse", "HEAD"], text=True,
+        ).strip()
+        assert_case_b(collect_result(
+            root, evidence(test_name=iis), test_name=iis, module=module,
+        ), removal)
+        express_result = collect_result(
+            root, evidence(test_name=express), test_name=express, module=module,
+        )
+        assert express_result["originating_case"] == "case-a", express_result
+
+        project_file = root / "src/IIS.Tests/IIS.Tests.csproj"
+        project_text = project_file.read_text()
+        shared.write_text(text.replace(
+            "    [ConditionalTheory]",
+            f"#if IIS_FUNCTIONALS && FLAG\n    {QUARANTINE_ATTRIBUTE}\n#endif\n    [ConditionalTheory]",
+        ), encoding="utf-8")
+        commit(root, "Add symbol-gated quarantine", "2026-08-04T00:00:00Z")
+        project_file.write_text(
+            project_text.replace("IIS_FUNCTIONALS", "IIS_FUNCTIONALS;FLAG"),
+            encoding="utf-8",
+        )
+        commit(root, "Activate quarantine through project symbols", "2026-08-05T00:00:00Z")
+        project_file.write_text(project_text, encoding="utf-8")
+        commit(root, "Deactivate quarantine through project symbols", "2026-08-06T00:00:00Z")
+        removal = subprocess.check_output(
+            ["git", "-C", root, "rev-parse", "HEAD"], text=True,
+        ).strip()
+        assert_case_b(collect_result(
+            root, evidence(test_name=iis), test_name=iis, module=module,
+        ), removal)
+        print("PASS project-symbol-only quarantine transitions")
+
+        for modification in (
+            '<Compile Remove="../SharedTests/HttpsTests.cs" Condition="true" />',
+            '<Compile Remove="$(UnknownSharedFiles)" />',
+        ):
+            project_file.write_text(
+                project_text.replace("</ItemGroup>", modification + "</ItemGroup>"),
+                encoding="utf-8",
+            )
+            unresolved = module.resolve_source(root, iis)
+            assert unresolved["status"] == "missing", (modification, unresolved)
+            print(f"PASS unresolved Compile removal: {modification}")
+        project_file.write_text(project_text.replace(
+            "</PropertyGroup>", "<DefineConstants>REPLACEMENT</DefineConstants></PropertyGroup>",
+        ), encoding="utf-8")
+        assert module.resolve_source(root, iis)["status"] == "missing"
+        project_file.write_text(project_text.replace(
+            "</PropertyGroup>", "<DefineConstants>$(DefineConstants);EXTRA</DefineConstants></PropertyGroup>",
+        ), encoding="utf-8")
+        assert module.resolve_source(root, iis)["status"] == "exact"
+        print("PASS ordered DefineConstants replacement and append")
+
+        project_file.write_text(
+            project_text.replace("IIS_FUNCTIONALS", "$(UnresolvedSymbols)"),
+            encoding="utf-8",
+        )
+        ambiguous = collect_result(
+            root, evidence(test_name=iis), test_name=iis, module=module,
+        )
+        assert ambiguous["status"] == "unproven", ambiguous
+        assert "source-missing" in ambiguous["reasons"], ambiguous
+
+
+def test_shared_source_review_case(case, module=None):
+    module = module or MODULE
+    with tempfile.TemporaryDirectory() as directory:
+        root = pathlib.Path(directory)
+        initialize_git_repository(root)
+        shared = root / "src/SharedTests"
+        shared.mkdir(parents=True)
+        block = case == "block"
+        express_namespace = "Sample.IIS.Express" if case == "prefix" else "Sample.IISExpress"
+        source = (
+            "#if IIS_FUNCTIONALS\nnamespace Sample.IIS"
+            + (" {\n" if block else ";\n")
+            + f"#else\nnamespace {express_namespace}"
+            + (" {\n" if block else ";\n")
+            + "#endif\npublic class ClientCertificateTests\n{\n"
+            "    [Fact]\n    public void HttpsNoClientCert_NoClientCert() {}\n}\n"
+            + ("}\n" if block else "")
+        )
+        (shared / "HttpsTests.cs").write_text(source, encoding="utf-8")
+        for project, symbol in (("IIS.Tests", "IIS_FUNCTIONALS"), ("Express.Tests", "IISEXPRESS_FUNCTIONALS")):
+            path = root / "src" / project
+            path.mkdir()
+            include = "../SharedTests/Https*.cs" if case == "wildcard" else "../SharedTests/**/*.cs"
+            exclusion = ' Exclude="../SharedTests/Excluded.cs"' if case.startswith("excluded") else ""
+            remove = '<Compile Remove="$(UnknownFiles)" />' if case == "unknown" else ""
+            (path / f"{project}.csproj").write_text(
+                f"<Project><PropertyGroup><DefineConstants>{symbol}</DefineConstants>"
+                f'</PropertyGroup><ItemGroup><Compile Include="{include}"{exclusion} />'
+                f"{remove}</ItemGroup></Project>", encoding="utf-8",
+            )
+        if case in ("assembly", "excluded", "excluded-namespace", "unknown"):
+            attribute_source = (
+                source.replace("    [Fact]", f"    {QUARANTINE_ATTRIBUTE}\n    [Fact]")
+                if case == "excluded-namespace" else '#if IIS_FUNCTIONALS\n'
+                '[assembly: QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/1")]\n'
+                '#endif\n'
+            )
+            (shared / ("Excluded.cs" if case.startswith("excluded") else "AssemblyInfo.cs")).write_text(
+                attribute_source, encoding="utf-8",
+            )
+        commit(root, "Shared-source review fixture", "2026-08-01T00:00:00Z")
+        sha = run_output(root, "git", "rev-parse", "HEAD")
+        name = "Sample.IIS.ClientCertificateTests.HttpsNoClientCert_NoClientCert"
+        if case == "prefix":
+            name = express_namespace + ".ClientCertificateTests.HttpsNoClientCert_NoClientCert"
+        if case in ("wildcard", "block", "prefix"):
+            result = collect_result(root, evidence(test_name=name), test_name=name, module=module)
+            assert result["status"] == "eligible", (case, result)
+        else:
+            iis = module.historical_assembly_state(root, "src/IIS.Tests", sha, {})
+            express = module.historical_assembly_state(root, "src/Express.Tests", sha, {})
+            if case == "unknown":
+                assert iis["status"] == express["status"] == "ambiguous", (iis, express)
+            else:
+                assert iis["status"] == express["status"] == "exact", (iis, express)
+                assert iis["quarantined"] == (case == "assembly"), iis
+                assert not express["quarantined"], express
+                index = module.build_source_index(root)
+                assert not module.resolve_source(
+                    root, "Sample.IISExpress.ClientCertificateTests.HttpsNoClientCert_NoClientCert", index,
+                )["assembly_quarantined"]
+                if case == "assembly":
+                    (shared / "AssemblyInfo.cs").write_text("", encoding="utf-8")
+                    commit(root, "Remove IIS assembly quarantine", "2026-08-02T00:00:00Z")
+                    history = module.assembly_quarantine_history(root, "src/Express.Tests", "HEAD")
+                    assert history == {"status": "exact", "events": []}, history
+        print(f"PASS shared-source review: {case}")
+
+
+def test_compile_membership_order(case, module=None):
+    module = module or MODULE
+    with tempfile.TemporaryDirectory() as directory:
+        root = pathlib.Path(directory)
+        initialize_git_repository(root)
+        project = root / "src/Consumer"
+        project.mkdir(parents=True)
+        (project / "Tests.cs").write_text(
+            "namespace Sample;\npublic class Tests\n{\n"
+            "    [Fact]\n    public void Test() {}\n}\n", encoding="utf-8",
+        )
+        shared = root / "src/Shared/AssemblyInfo.cs"
+        shared.parent.mkdir()
+        shared.write_text(
+            '[assembly: QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/1")]\n',
+            encoding="utf-8",
+        )
+        include = '<Compile Include="../Shared/AssemblyInfo.cs" />'
+        remove = '<Compile Remove="../Shared/AssemblyInfo.cs" />'
+        items = {
+            "remove-include": remove + include,
+            "include-remove": include + remove,
+            "uncertain-include": remove + include.replace(" />", ' Condition="$(Unknown)" />'),
+            "uncertain-remove-include": remove.replace(" />", ' Condition="$(Unknown)" />') + include,
+        }[case]
+        initial_include = "" if case == "uncertain-include" else include
+        (project / "Consumer.csproj").write_text(
+            f"<Project><ItemGroup>{initial_include}{items}</ItemGroup></Project>", encoding="utf-8",
+        )
+        commit(root, "Ordered shared assembly membership", "2026-08-01T00:00:00Z")
+        sha = run_output(root, "git", "rev-parse", "HEAD")
+        historical = module.historical_assembly_state(root, "src/Consumer", sha, {})
+        current = module.resolve_source(root, "Sample.Tests.Test")
+        if case == "uncertain-include":
+            assert historical["status"] == "ambiguous", historical
+            assert current["assembly_quarantine_ambiguous"], current
+        else:
+            assert historical["status"] == "exact", historical
+            expected = case != "include-remove"
+            assert historical["quarantined"] == expected, historical
+            assert current["assembly_quarantined"] == expected, current
+        print(f"PASS ordered Compile membership: {case}")
+
+
+def test_project_move_preserves_quarantine_history(module=None):
+    module = module or MODULE
+    with tempfile.TemporaryDirectory() as directory:
+        root = pathlib.Path(directory)
+        project, path = initialize_repository(root)
+        project_file = project / "Sample.Tests.csproj"
+        project_text = "<Project>\n" + "".join(
+            f"<PropertyGroup><Setting{i}>old{i}</Setting{i}></PropertyGroup>\n"
+            for i in range(10)
+        ) + "</Project>\n"
+        project_file.write_text(project_text, encoding="utf-8")
+        commit(root, "Add test", "2026-08-01T00:00:00Z")
+        path.write_text(source(QUARANTINE_ATTRIBUTE), encoding="utf-8")
+        commit(root, "Quarantine test", "2026-08-02T00:00:00Z")
+        path.write_text(source(), encoding="utf-8")
+        commit(root, "Unquarantine test", "2026-08-03T00:00:00Z")
+        removal = run_output(root, "git", "rev-parse", "HEAD")
+        moved = root / "src/Moved.Tests"
+        run(root, "git", "mv", project, moved)
+        for i in range(7):
+            project_text = project_text.replace(f">old{i}<", f">new{i}<")
+        (moved / project_file.name).write_text(project_text, encoding="utf-8")
+        commit(root, "Move test project", "2026-08-04T00:00:00Z")
+        move = run_output(root, "git", "rev-parse", "HEAD")
+        unproven = collect_result(root, evidence(), module=module)
+        assert unproven["reasons"] == ["project-history-incomplete"], unproven
+        hint = {(move, "src/Moved.Tests/Sample.Tests.csproj"): "src/Sample.Tests/Sample.Tests.csproj"}
+        with mock.patch.dict(module.PROJECT_RENAME_HINTS, hint), mock.patch.object(
+            module, "PROJECT_LINEAGE_CACHE", {},
+        ), mock.patch.object(
+            module, "PROJECT_PATH_CACHE", {},
+        ):
+            result = collect_result(root, evidence(), module=module)
+            assert_case_b(result, removal)
+            assert result["case_b_eligible"], result
+            path = moved / path.name
+            path.write_text(source(QUARANTINE_ATTRIBUTE), encoding="utf-8")
+            commit(root, "Re-quarantine moved test", "2026-08-05T00:00:00Z")
+            history = module.collect_requarantine_history(root, "HEAD")
+            assert history["targets"][0]["status"] == "re-quarantined", history
+
+
+def test_copied_project_does_not_inherit_original_history(module=None):
+    module = module or MODULE
+    with tempfile.TemporaryDirectory() as directory:
+        root = pathlib.Path(directory)
+        old, path = initialize_repository(root)
+        path.write_text(source(QUARANTINE_ATTRIBUTE).replace("SampleTests", "OldTests"), encoding="utf-8")
+        commit(root, "Add original project", "2026-08-01T00:00:00Z")
+        new = root / "src/New.Tests"
+        new.mkdir()
+        (new / "New.Tests.csproj").write_text(
+            (old / "Sample.Tests.csproj").read_text(), encoding="utf-8",
+        )
+        (new / "NewTests.cs").write_text(source(), encoding="utf-8")
+        commit(root, "Copy project configuration for a new test project", "2026-08-02T00:00:00Z")
+        result = collect_result(root, evidence(), module=module)
+        assert result["status"] == "eligible", result
+        assert result["originating_case"] == "case-a", result
+
+
+def test_method_introduced_after_namespace_change(module=None):
+    module = module or MODULE
+    with tempfile.TemporaryDirectory() as directory:
+        root = pathlib.Path(directory)
+        _, path = initialize_repository(root)
+        baseline = class_source("Microsoft.AspNetCore.OldTests", "SampleTests")
+        path.write_text(baseline, encoding="utf-8")
+        commit(root, "Add original test class", "2026-08-01T00:00:00Z")
+        path.write_text(baseline.replace(".OldTests", ".Tests"), encoding="utf-8")
+        commit(root, "Rename namespace before the test exists", "2026-08-02T00:00:00Z")
+        path.write_text(source(), encoding="utf-8")
+        commit(root, "Add a new test", "2026-08-03T00:00:00Z")
+        result = collect_result(root, evidence(), module=module)
+        assert result["status"] == "eligible", result
+        path.write_text(source(QUARANTINE_ATTRIBUTE), encoding="utf-8")
+        commit(root, "Quarantine the new test", "2026-08-04T00:00:00Z")
+        history = module.collect_requarantine_history(root, "HEAD")
+        assert history["targets"][0]["status"] == "first-quarantine", history
+        path.write_text(
+            source(QUARANTINE_ATTRIBUTE).replace(".Tests;", ".RenamedTests;"),
+            encoding="utf-8",
+        )
+        commit(root, "Rename the namespace after the test exists", "2026-08-05T00:00:00Z")
+        history = module.collect_requarantine_history(root, "HEAD")
+        assert history["targets"][0]["status"] == "ambiguous", history
+
+
+def test_conditional_server_runner_is_case_b(module=None):
+    module = module or MODULE
+    with tempfile.TemporaryDirectory() as directory:
+        root = pathlib.Path(directory)
+        project, path = initialize_repository(root)
+        (project / "Sample.Tests.csproj").write_text(
+            '<Project><ItemGroup><Compile Include="$(SharedSourceRoot)Process/**/*.cs" />'
+            '</ItemGroup><ItemGroup Condition="\'$(UseMonoRuntime)\' == \'false\'">'
+            '<Compile Remove="ServerExecutionTests/**/*.cs" />'
+            '</ItemGroup><ItemGroup><Compile Include="$(RepoRoot)src/Shared/Helper.cs" />'
+            '</ItemGroup></Project>', encoding="utf-8",
+        )
+        runners = project / "ServerExecutionTests/Runners.cs"
+        runners.parent.mkdir()
+        runners.write_text(class_source(
+            "Microsoft.AspNetCore.Tests", "ServerRoutingTest", base="SampleTests",
+            members=method_member("Other", QUARANTINE_ATTRIBUTE),
+        ), encoding="utf-8")
+        commit(root, "Add conditionally compiled server runner", "2026-08-01T00:00:00Z")
+        path.write_text(source(QUARANTINE_ATTRIBUTE), encoding="utf-8")
+        commit(root, "Quarantine inherited test", "2026-08-02T00:00:00Z")
+        path.write_text(source(), encoding="utf-8")
+        commit(root, "Unquarantine inherited test", "2026-08-03T00:00:00Z")
+        removal = run_output(root, "git", "rev-parse", "HEAD")
+        name = "Microsoft.AspNetCore.Tests.ServerRoutingTest.ReturnsExpectedResponse"
+        result = collect_result(
+            root, evidence(regression=True, builds=(101,), test_name=name),
+            test_name=name, module=module,
+        )
+        assert_case_b(result, removal)
+        assert result["case_b_eligible"], result
+        project_file = project / "Sample.Tests.csproj"
+        project_file.write_text(
+            project_file.read_text().replace(
+                "</Project>",
+                '<ItemGroup Condition="\'$(UseMonoRuntime)\' != \'false\'">'
+                '<Compile Remove="ServerExecutionTests/**/*.cs" /></ItemGroup></Project>',
+            ), encoding="utf-8",
+        )
+        assert module.resolve_source(root, name)["status"] == "missing"
+
+
+def test_unrelated_file_edit_does_not_reset_cutoff(module=None):
+    module = module or MODULE
+    with tempfile.TemporaryDirectory() as directory:
+        root = pathlib.Path(directory)
+        _, path = initialize_repository(root)
+        commit(root, "Add test", "2026-08-01T00:00:00Z")
+        original = run_output(root, "git", "rev-parse", "HEAD")
+        sibling = method_member("Unrelated")
+        path.write_text(source().replace("\n}\n", "\n" + sibling + "\n}\n"), encoding="utf-8")
+        commit(root, "Add an unrelated test after the failures", "2026-08-17T00:00:00Z")
+        result = collect_result(root, evidence(), module=module)
+        assert result["status"] == "eligible", result
+        assert result["cutoff"]["commit"] == original, result
+        path.write_text(source(QUARANTINE_ATTRIBUTE), encoding="utf-8")
+        commit(root, "Quarantine test", "2026-08-18T00:00:00Z")
+        path.write_text(source(), encoding="utf-8")
+        commit(root, "Unquarantine test", "2026-08-19T00:00:00Z")
+        removal = run_output(root, "git", "rev-parse", "HEAD")
+        path.write_text(source() + "\n// Unrelated file comment\n", encoding="utf-8")
+        commit(root, "Update unrelated file comment", "2026-08-22T00:00:00Z")
+        data = evidence(builds=(101,))
+        data["builds"]["101"]["startedUtc"] = "2026-08-20T00:00:00Z"
+        result = collect_result(root, data, module=module)
+        assert_case_b(result, removal)
+        assert result["case_b_eligible"], result
+
+
+def test_class_fix_advances_cutoff_and_required_ancestor(module=None):
+    module = module or MODULE
+    for inherited in (False, True):
+        with tempfile.TemporaryDirectory() as directory:
+            root = pathlib.Path(directory)
+            project, path = initialize_repository(root)
+            name = TEST_NAME
+            type_name = "SampleTests"
+            if inherited:
+                path = project / "DerivedTests.cs"
+                type_name = "DerivedTests"
+                path.write_text(class_source(
+                    "Microsoft.AspNetCore.Tests", type_name, base="SampleTests",
+                ), encoding="utf-8")
+                name = TEST_NAME.replace("SampleTests", type_name)
+            commit(root, "Add test", "2026-08-01T00:00:00Z")
+            original = run_output(root, "git", "rev-parse", "HEAD")
+            path.write_text(path.read_text().replace(
+                f"public class {type_name}",
+                f'[Collection("NonParallel")]\npublic class {type_name}',
+            ), encoding="utf-8")
+            commit(root, "Fix test class concurrency", "2026-08-17T00:00:00Z")
+            fix = run_output(root, "git", "rev-parse", "HEAD")
+            result = collect_result(root, evidence(test_name=name), test_name=name, module=module)
+            assert result["status"] == "ineligible", result
+            assert result["cutoff"]["commit"] == fix, result
+            data = source_b_evidence(test_name=name)
+            for build in data["builds"].values():
+                build.update(startedUtc="2026-08-20T00:00:00Z", sourceVersion=original)
+            result = collect_result(
+                root, data, test_name=name, module=module,
+                commit_contains_provider=lambda ancestor, descendant: module.commit_contains(
+                    root, "dotnet/aspnetcore", ancestor, descendant, "",
+                ),
+            )
+            assert result["required_ancestor"] == fix, result
+            assert result["eligible_failure_builds"] == [], result
+            assert {item["reason"] for item in result["excluded_builds"]} == {
+                "source-version-before-cutoff",
+            }, result
+
+
+def test_setup_and_helper_fixes_advance_cutoff(module=None):
+    module = module or MODULE
+    for member in ("constructor", "helper"):
+        with tempfile.TemporaryDirectory() as directory:
+            root = pathlib.Path(directory)
+            _, path = initialize_repository(root)
+            text = class_source(
+                "Microsoft.AspNetCore.Tests", "SampleTests",
+                members=[
+                    "public SampleTests() { Configure(1); }",
+                    "[Fact]\npublic void ReturnsExpectedResponse() { WaitUntilReady(); }",
+                    "private void WaitUntilReady() { Configure(2); }",
+                    "private void Configure(int value) { }",
+                ],
+            )
+            path.write_text(text, encoding="utf-8")
+            commit(root, "Add test and setup", "2026-08-01T00:00:00Z")
+            old, new = ("Configure(1)", "Configure(3)") if member == "constructor" else (
+                "Configure(2)", "Configure(4)",
+            )
+            path.write_text(text.replace(old, new), encoding="utf-8")
+            commit(root, f"Fix {member}", "2026-08-17T00:00:00Z")
+            fix = run_output(root, "git", "rev-parse", "HEAD")
+            result = collect_result(root, evidence(), module=module)
+            assert result["status"] == "ineligible", result
+            assert result["required_ancestor"] == fix, result
+            path.write_text(path.read_text().replace(
+                "private void Configure(int value) { }",
+                "private void Configure(int value) { Apply(value); }\n"
+                "private void Apply(int value) { }",
+            ), encoding="utf-8")
+            commit(root, "Add transitive setup helper", "2026-08-18T00:00:00Z")
+            path.write_text(path.read_text().replace(
+                "private void Apply(int value) { }",
+                "private void Apply(int value) { value++; }",
+            ), encoding="utf-8")
+            commit(root, "Fix transitive setup helper", "2026-08-19T00:00:00Z")
+            result = collect_result(root, evidence(), module=module)
+            assert result["required_ancestor"] == run_output(root, "git", "rev-parse", "HEAD"), result
+
+
+def test_delegating_override_tracks_base_fix(module=None):
+    module = module or MODULE
+    with tempfile.TemporaryDirectory() as directory:
+        root = pathlib.Path(directory)
+        project, path = initialize_repository(root)
+        path.write_text(source().replace(
+            "public void ReturnsExpectedResponse()", "public virtual void ReturnsExpectedResponse()",
+        ), encoding="utf-8")
+        (project / "DerivedTests.cs").write_text(class_source(
+            "Microsoft.AspNetCore.Tests", "DerivedTests", base="SampleTests",
+            members="public override void ReturnsExpectedResponse() => base.ReturnsExpectedResponse();",
+        ), encoding="utf-8")
+        commit(root, "Add delegating test override", "2026-08-01T00:00:00Z")
+        original = run_output(root, "git", "rev-parse", "HEAD")
+        path.write_text(path.read_text().replace(
+            "    {\n    }", "    {\n        Assert.True(true);\n    }",
+        ), encoding="utf-8")
+        commit(root, "Fix base test implementation", "2026-08-17T00:00:00Z")
+        fix = run_output(root, "git", "rev-parse", "HEAD")
+        name = TEST_NAME.replace("SampleTests", "DerivedTests")
+        data = source_b_evidence(test_name=name)
+        for build in data["builds"].values():
+            build.update(startedUtc="2026-08-20T00:00:00Z", sourceVersion=original)
+        result = collect_result(
+            root, data, test_name=name, module=module,
+            commit_contains_provider=lambda ancestor, descendant: module.commit_contains(
+                root, "dotnet/aspnetcore", ancestor, descendant, "",
+            ),
+        )
+        assert result["required_ancestor"] == fix, result
+        assert result["eligible_failure_builds"] == [], result
+        assert len(result["source_resolution"]["history_locations"]) == 2, result
+
+
+def test_lifecycle_and_state_fixes_advance_cutoff(module=None):
+    module = module or MODULE
+    changes = [
+        ("lifecycle hook", "Configure(1)", "Configure(2)"),
+        ("lifecycle helper", "Configure(int value) { }", "Configure(int value) { value++; }"),
+        ("field initializer", "LongDelay = 10", "LongDelay = 20"),
+        ("property accessor", "get { return ReadDelay(); }", "get { return ReadDelay() + 1; }"),
+        ("accessor helper", "ReadDelay() => ShortDelay", "ReadDelay() => ShortDelay + 1"),
+        ("explicit lifecycle", "Configure(3)", "Configure(4)"),
+        ("method group", "OnReady() { }", "OnReady() { Wait(1); }"),
+    ]
+    for label, old, new in changes:
+        for case_b in (False, True) if label == "field initializer" else (False,):
+            with tempfile.TemporaryDirectory() as directory:
+                root = pathlib.Path(directory)
+                _, path = initialize_repository(root)
+                text = class_source(
+                    "Microsoft.AspNetCore.Tests", "SampleTests",
+                    members=[
+                        "private const int LongDelay = 10;",
+                        "private static readonly int ShortDelay = LongDelay / 10;",
+                        "private int Delay { get { return ReadDelay(); } }",
+                        "private int ReadDelay() => ShortDelay;",
+                        "private Action Callback => OnReady;",
+                        "private void OnReady() { }",
+                        "public Task InitializeAsync() { Configure(1); return Task.CompletedTask; }",
+                        "Task IAsyncLifetime.InitializeAsync() { Configure(3); return Task.CompletedTask; }",
+                        "private void Configure(int value) { }",
+                        "[Fact]\npublic void ReturnsExpectedResponse() { Wait(Delay); Callback(); }",
+                    ],
+                )
+                path.write_text(text, encoding="utf-8")
+                commit(root, "Add test dependencies", "2026-08-01T00:00:00Z")
+                if case_b:
+                    path.write_text(text.replace("[Fact]", QUARANTINE_ATTRIBUTE + "\n[Fact]"), encoding="utf-8")
+                    commit(root, "Quarantine test", "2026-08-02T00:00:00Z")
+                    path.write_text(text, encoding="utf-8")
+                    commit(root, "Unquarantine test", "2026-08-03T00:00:00Z")
+                original = run_output(root, "git", "rev-parse", "HEAD")
+                path.write_text(text.replace(old, new), encoding="utf-8")
+                commit(root, f"Fix {label}", "2026-08-17T00:00:00Z")
+                fix = run_output(root, "git", "rev-parse", "HEAD")
+                result = collect_result(root, evidence(), module=module)
+                assert result["cutoff"]["commit"] == fix, result
+                assert result["eligible_failure_builds"] == [], result
+                data = source_b_evidence()
+                for build in data["builds"].values():
+                    build.update(startedUtc="2026-08-20T00:00:00Z", sourceVersion=original)
+                ancestry = lambda ancestor, descendant: module.commit_contains(
+                    root, "dotnet/aspnetcore", ancestor, descendant, "",
+                )
+                result = collect_result(
+                    root, data, module=module, commit_contains_provider=ancestry,
+                )
+                assert result["required_ancestor"] == fix, result
+                assert result["eligible_failure_builds"] == [], result
+                assert {item["reason"] for item in result["excluded_builds"]} == {
+                    "source-version-before-cutoff",
+                }, result
+                for build in data["builds"].values():
+                    build["sourceVersion"] = fix
+                result = collect_result(
+                    root, data, module=module, commit_contains_provider=ancestry,
+                )
+                assert result["eligible_failure_builds"] == [101, 102], result
+                assert result["case_b_eligible"] if case_b else result["status"] == "eligible", result
+
+
+def test_inherited_and_partial_setup_dependencies_advance_cutoff(module=None):
+    module = module or MODULE
+    changes = [
+        ("base hook", "Base.cs", "InitializeAsyncCore();", "InitializeAsyncCore(); Configure();"),
+        ("inherited helper", "Base.cs", "ReadDelay() => Delay", "ReadDelay() => Delay + 1"),
+        ("partial state", "Base.State.cs", "Delay = 1", "Delay = 2"),
+        ("override helper", "SampleTests.cs", "Configure() { }", "Configure() { Count++; }"),
+    ]
+    for label, file_name, old, new in changes:
+        with tempfile.TemporaryDirectory() as directory:
+            root = pathlib.Path(directory)
+            project, path = initialize_repository(root)
+            path.write_text(class_source(
+                "Microsoft.AspNetCore.Tests", "SampleTests", base="TestBase",
+                members=[
+                    "[Fact]\npublic void ReturnsExpectedResponse() { Wait(ReadDelay()); }",
+                    "protected override void InitializeAsyncCore() { Configure(); }",
+                    "private void Configure() { }",
+                    "private int Count;",
+                ],
+            ), encoding="utf-8")
+            (project / "Base.cs").write_text(class_source(
+                "Microsoft.AspNetCore.Tests", "TestBase", partial=True,
+                members=[
+                    "public Task InitializeAsync() { InitializeAsyncCore(); return Task.CompletedTask; }",
+                    "protected virtual void InitializeAsyncCore() { }",
+                    "protected int ReadDelay() => Delay;",
+                    "private void Configure() { }",
+                ],
+            ), encoding="utf-8")
+            (project / "Base.State.cs").write_text(class_source(
+                "Microsoft.AspNetCore.Tests", "TestBase", partial=True,
+                members="protected int Delay = 1;",
+            ), encoding="utf-8")
+            commit(root, "Add inherited setup and state", "2026-08-01T00:00:00Z")
+            original = run_output(root, "git", "rev-parse", "HEAD")
+            changed_path = project / file_name
+            changed_path.write_text(changed_path.read_text().replace(old, new), encoding="utf-8")
+            commit(root, f"Fix {label}", "2026-08-17T00:00:00Z")
+            fix = run_output(root, "git", "rev-parse", "HEAD")
+            data = source_b_evidence()
+            for build in data["builds"].values():
+                build.update(startedUtc="2026-08-20T00:00:00Z", sourceVersion=original)
+            result = collect_result(
+                root, data, module=module,
+                commit_contains_provider=lambda ancestor, descendant: module.commit_contains(
+                    root, "dotnet/aspnetcore", ancestor, descendant, "",
+                ),
+            )
+            assert result["required_ancestor"] == fix, result
+            assert result["eligible_failure_builds"] == [], result
+            result = collect_result(
+                root, data, module=module,
+                pr_files_provider=lambda _: {str(changed_path.relative_to(root))},
+            )
+            assert {item["reason"] for item in result["excluded_builds"]} == {
+                "source-b-pr-changed-test-file",
+            }, result
+
+
+def test_partial_setup_rename_before_method_birth_is_not_identity_ambiguity(module=None):
+    module = module or MODULE
+    with tempfile.TemporaryDirectory() as directory:
+        root = pathlib.Path(directory)
+        project, path = initialize_repository(root)
+        path.write_text(class_source(
+            "Microsoft.AspNetCore.OldTests", "SampleTests", partial=True,
+        ), encoding="utf-8")
+        state = project / "SampleTests.State.cs"
+        state.write_text(class_source(
+            "Microsoft.AspNetCore.OldTests", "SampleTests", partial=True,
+            members="private int Delay = 1;",
+        ), encoding="utf-8")
+        commit(root, "Add partial setup before the test", "2026-08-01T00:00:00Z")
+        for file in (path, state):
+            file.write_text(file.read_text().replace(".OldTests", ".Tests"), encoding="utf-8")
+        commit(root, "Rename namespace before test introduction", "2026-08-02T00:00:00Z")
+        path.write_text(class_source(
+            "Microsoft.AspNetCore.Tests", "SampleTests", partial=True,
+            members="[Fact]\npublic void ReturnsExpectedResponse() { Wait(Delay); }",
+        ), encoding="utf-8")
+        commit(root, "Add test using partial setup", "2026-08-03T00:00:00Z")
+        result = collect_result(root, evidence(), module=module)
+        assert result["status"] == "eligible", result
+        assert "target-identity-rename-ambiguous" not in result["reasons"], result
+
+
+def test_removed_partial_setup_still_advances_cutoff(module=None):
+    module = module or MODULE
+    with tempfile.TemporaryDirectory() as directory:
+        root = pathlib.Path(directory)
+        project, path = initialize_repository(root)
+        path.write_text(class_source(
+            "Microsoft.AspNetCore.Tests", "SampleTests", partial=True,
+            members=method_member(),
+        ), encoding="utf-8")
+        setup = project / "SampleTests.Setup.cs"
+        setup.write_text(class_source(
+            "Microsoft.AspNetCore.Tests", "SampleTests", partial=True,
+            members="static SampleTests() { ConfigureGlobal(); }",
+        ), encoding="utf-8")
+        commit(root, "Add partial constructor setup", "2026-08-01T00:00:00Z")
+        setup.write_text(class_source(
+            "Microsoft.AspNetCore.Tests", "SampleTests", partial=True,
+        ), encoding="utf-8")
+        commit(root, "Remove partial setup", "2026-08-17T00:00:00Z")
+        fix = run_output(root, "git", "rev-parse", "HEAD")
+        result = collect_result(root, evidence(), module=module)
+        assert result["required_ancestor"] == fix, result
+        assert result["eligible_failure_builds"] == [], result
+
+
+def test_inherited_sibling_override_is_not_setup_unless_referenced(module=None):
+    module = module or MODULE
+    for callback in (False, True):
+        with tempfile.TemporaryDirectory() as directory:
+            root = pathlib.Path(directory)
+            project, path = initialize_repository(root)
+            path.write_text(class_source(
+                "Microsoft.AspNetCore.Tests", "SampleTests",
+                members=[
+                    "[Fact]\npublic virtual void ReturnsExpectedResponse() { }",
+                    "[Fact]\npublic virtual void Sibling() { }",
+                ],
+            ), encoding="utf-8")
+            runner = project / "DerivedTests.cs"
+            runner.write_text(class_source(
+                "Microsoft.AspNetCore.Tests", "DerivedTests", base="SampleTests",
+                members=[
+                    "public override void Sibling() => base.Sibling();",
+                    "public Task InitializeAsync() { Sibling(); return Task.CompletedTask; }"
+                    if callback else "",
+                ],
+            ), encoding="utf-8")
+            commit(root, "Add inherited sibling test override", "2026-08-01T00:00:00Z")
+            original = run_output(root, "git", "rev-parse", "HEAD")
+            runner.write_text(runner.read_text().replace(
+                "=> base.Sibling();", "{ base.Sibling(); Wait(1); }",
+            ), encoding="utf-8")
+            commit(root, "Change sibling override", "2026-08-17T00:00:00Z")
+            fix = run_output(root, "git", "rev-parse", "HEAD")
+            name = TEST_NAME.replace("SampleTests", "DerivedTests")
+            result = collect_result(
+                root, evidence(test_name=name), test_name=name, module=module,
+            )
+            assert result["cutoff"]["commit"] == (fix if callback else original), result
+            assert result["status"] == ("ineligible" if callback else "eligible"), result
+
+
+def test_pre_runner_unrelated_source_ambiguity_does_not_hide_candidate(module=None):
+    module = module or MODULE
+    with tempfile.TemporaryDirectory() as directory:
+        root = pathlib.Path(directory)
+        project, path = initialize_repository(root)
+        path.write_text("", encoding="utf-8")
+        (project / "Unrelated.cs").write_text(
+            class_source("Microsoft.AspNetCore.Tests", "Unrelated"), encoding="utf-8",
+        )
+        other = project / "Other.cs"
+        other.write_text(class_source(
+            "Microsoft.AspNetCore.Tests", "Other", type_quarantine=QUARANTINE_ATTRIBUTE,
+        ), encoding="utf-8")
+        project_file = project / "Sample.Tests.csproj"
+        project_file.write_text(
+            '<Project><ItemGroup><Compile Remove="Unrelated.cs" Condition="$(Unknown)" />'
+            '</ItemGroup></Project>', encoding="utf-8",
+        )
+        commit(root, "Quarantine an old unrelated class", "2026-08-01T00:00:00Z")
+        other.write_text(class_source("Microsoft.AspNetCore.Tests", "Other"), encoding="utf-8")
+        commit(root, "Unquarantine the unrelated class", "2026-08-02T00:00:00Z")
+        project_file.write_text("<Project />", encoding="utf-8")
+        path.write_text(source(), encoding="utf-8")
+        commit(root, "Add the new runner after old source ambiguity is gone", "2026-08-03T00:00:00Z")
+        result = collect_result(root, evidence(), module=module)
+        assert result["status"] == "eligible", result
+        assert result["originating_case"] == "case-a", result
+
+
+def test_external_historical_base_remains_ambiguous(module=None):
+    module = module or MODULE
+    with tempfile.TemporaryDirectory() as directory:
+        root = pathlib.Path(directory)
+        project, path = initialize_repository(root)
+        external = root / "src/External"
+        external.mkdir()
+        (external / "External.csproj").write_text("<Project />", encoding="utf-8")
+        (external / "ExternalBase.cs").write_text(class_source(
+            "Microsoft.AspNetCore.Tests", "ExternalBase",
+            members=method_member().replace("public void", "public virtual void"),
+        ), encoding="utf-8")
+        (project / "Sample.Tests.csproj").write_text(
+            '<Project><ItemGroup><ProjectReference Include="../External/External.csproj" />'
+            '</ItemGroup></Project>', encoding="utf-8",
+        )
+        path.write_text(class_source(
+            "Microsoft.AspNetCore.Tests", "SampleTests", base="ExternalBase",
+            type_quarantine=QUARANTINE_ATTRIBUTE,
+        ), encoding="utf-8")
+        commit(root, "Quarantine an externally inherited test", "2026-08-01T00:00:00Z")
+        path.write_text(class_source(
+            "Microsoft.AspNetCore.Tests", "SampleTests", base="ExternalBase",
+        ), encoding="utf-8")
+        commit(root, "Remove the inherited quarantine", "2026-08-02T00:00:00Z")
+        path.write_text(class_source(
+            "Microsoft.AspNetCore.Tests", "SampleTests", base="ExternalBase",
+            members=method_member().replace("public void", "public override void"),
+        ), encoding="utf-8")
+        commit(root, "Declare the inherited test locally", "2026-08-03T00:00:00Z")
+        result = collect_result(root, evidence(), module=module)
+        assert result["status"] == "unproven", result
+        assert "quarantine-history-ambiguous" in result["reasons"], result
+
+        for day, quarantine in (("04", QUARANTINE_ATTRIBUTE), ("05", "")):
+            path.write_text(class_source(
+                "Microsoft.AspNetCore.Tests", "SampleTests", base="ExternalBase",
+                members=method_member(quarantine=quarantine).replace(
+                    "public void", "public override void",
+                ),
+            ), encoding="utf-8")
+            commit(root, "Change the proven local method quarantine", f"2026-08-{day}T00:00:00Z")
+        result = collect_result(root, evidence(), module=module)
+        assert result["case_b_eligible"] is True, result
+        assert result["case_b_issue"] == 1, result
+
+        for day, quarantine in (("06", QUARANTINE_ATTRIBUTE), ("07", "")):
+            path.write_text(class_source(
+                "Microsoft.AspNetCore.Tests", "SampleTests", base="ExternalBase",
+                type_quarantine=quarantine,
+            ), encoding="utf-8")
+            commit(root, "Change the unresolved inherited quarantine", f"2026-08-{day}T00:00:00Z")
+        path.write_text(class_source(
+            "Microsoft.AspNetCore.Tests", "SampleTests", base="ExternalBase",
+            members=method_member().replace("public void", "public override void"),
+        ), encoding="utf-8")
+        commit(root, "Restore the local override", "2026-08-08T00:00:00Z")
+        result = collect_result(root, evidence(), module=module)
+        assert result["status"] == "unproven", result
+        assert "quarantine-history-ambiguous" in result["reasons"], result
+
+
+def test_sibling_quarantine_with_unresolved_base_is_unrelated(module=None):
+    module = module or MODULE
+    for quarantined_type in ("Sibling", "CommonBase"):
+        with tempfile.TemporaryDirectory() as directory:
+            root = pathlib.Path(directory)
+            project, path = initialize_repository(root)
+            (project / "OtherNamespace.cs").write_text(class_source(
+                "AnotherNamespace", "CommonBase",
+            ), encoding="utf-8")
+            external = root / "src/External"
+            external.mkdir()
+            (external / "External.csproj").write_text("<Project />", encoding="utf-8")
+            (external / "ExternalBase.cs").write_text(class_source(
+                "Microsoft.AspNetCore.Tests", "ExternalBase",
+                members=method_member().replace("public void", "public virtual void"),
+            ), encoding="utf-8")
+            (project / "Sample.Tests.csproj").write_text(
+                '<Project><ItemGroup><ProjectReference Include="../External/External.csproj" />'
+                '</ItemGroup></Project>', encoding="utf-8",
+            )
+            path.write_text(class_source(
+                "Microsoft.AspNetCore.Tests", "SampleTests", base="CommonBase",
+            ), encoding="utf-8")
+            for name, base in (("CommonBase", "ExternalBase"), ("Sibling", "CommonBase")):
+                (project / f"{name}.cs").write_text(class_source(
+                    "Microsoft.AspNetCore.Tests", name, base=base,
+                    type_quarantine=QUARANTINE_ATTRIBUTE if name == quarantined_type else "",
+                ), encoding="utf-8")
+            commit(root, "Quarantine a sibling or actual ancestor", "2026-08-01T00:00:00Z")
+            for name, base in (("CommonBase", "ExternalBase"), ("Sibling", "CommonBase")):
+                (project / f"{name}.cs").write_text(class_source(
+                    "Microsoft.AspNetCore.Tests", name, base=base,
+                ), encoding="utf-8")
+            commit(root, "Remove the type quarantine", "2026-08-02T00:00:00Z")
+            path.write_text(class_source(
+                "Microsoft.AspNetCore.Tests", "SampleTests", base="CommonBase",
+                members=method_member().replace("public void", "public override void"),
+            ), encoding="utf-8")
+            commit(root, "Declare the inherited test locally", "2026-08-03T00:00:00Z")
+            result = collect_result(root, evidence(), module=module)
+            if quarantined_type == "Sibling":
+                assert result["status"] == "eligible", result
+            else:
+                assert result["status"] == "unproven", result
+                assert "quarantine-history-ambiguous" in result["reasons"], result
+
+
+def test_type_history_preserves_unrelated_membership_ambiguity(module=None):
+    module = module or MODULE
+    with tempfile.TemporaryDirectory() as directory:
+        root = pathlib.Path(directory)
+        project, path = initialize_repository(root)
+        (project / "Unrelated.cs").write_text(class_source(
+            "Microsoft.AspNetCore.Tests", "Unrelated",
+        ), encoding="utf-8")
+        (project / "Sample.Tests.csproj").write_text(
+            '<Project><ItemGroup><Compile Remove="Unrelated.cs" '
+            'Condition="\'$(First)\' == \'X\' And \'$(Second)\' == \'Y\'" />'
+            '</ItemGroup></Project>', encoding="utf-8",
+        )
+        other = project / "Other.cs"
+        other.write_text(class_source(
+            "Microsoft.AspNetCore.Tests", "Other",
+            members=method_member("OtherTest", QUARANTINE_ATTRIBUTE),
+        ), encoding="utf-8")
+        commit(root, "Quarantine an unrelated method amid unknown ownership", "2026-08-01T00:00:00Z")
+        other.write_text(class_source(
+            "Microsoft.AspNetCore.Tests", "Other", members=method_member("OtherTest"),
+        ), encoding="utf-8")
+        commit(root, "Remove the unrelated method quarantine", "2026-08-02T00:00:00Z")
+        result = collect_result(root, evidence(), module=module)
+        assert result["status"] == "unproven", result
+        assert "quarantine-history-ambiguous" in result["reasons"], result
+
+
 def main():
+    test_lifecycle_and_state_fixes_advance_cutoff()
+    test_inherited_and_partial_setup_dependencies_advance_cutoff()
+    test_partial_setup_rename_before_method_birth_is_not_identity_ambiguity()
+    test_removed_partial_setup_still_advances_cutoff()
+    test_inherited_sibling_override_is_not_setup_unless_referenced()
+    test_pre_runner_unrelated_source_ambiguity_does_not_hide_candidate()
+    test_external_historical_base_remains_ambiguous()
+    test_sibling_quarantine_with_unresolved_base_is_unrelated()
+    test_type_history_preserves_unrelated_membership_ambiguity()
+    test_setup_and_helper_fixes_advance_cutoff()
+    test_delegating_override_tracks_base_fix()
+    test_class_fix_advances_cutoff_and_required_ancestor()
+    test_project_move_preserves_quarantine_history()
+    test_copied_project_does_not_inherit_original_history()
+    test_method_introduced_after_namespace_change()
+    test_conditional_server_runner_is_case_b()
+    test_unrelated_file_edit_does_not_reset_cutoff()
+    for case in ("remove-include", "include-remove", "uncertain-include", "uncertain-remove-include"):
+        test_compile_membership_order(case)
+    for case in ("wildcard", "block", "prefix", "assembly", "excluded", "excluded-namespace", "unknown"):
+        test_shared_source_review_case(case)
+    test_conditional_shared_source()
     test_kestrel_condition_rows()
     for condition in (
         "[MsQuicSupported]",
@@ -4129,8 +5075,7 @@ public class DerivedTests : BaseTests
 
 namespace Microsoft.AspNetCore.Server.Tests;
 
-// An edit to the runner type must invalidate older failures.
-public class DerivedTests : BaseTests
+public class DerivedTests : Microsoft.AspNetCore.Tests.BaseTests
 {
 }
 """,

@@ -399,6 +399,10 @@ internal sealed partial class ComponentHub : Hub
         {
             var circuitClient = new CircuitClientProxy(Clients.Caller, Context.ConnectionId);
             var resourceCollection = Context.GetHttpContext().GetEndpoint()?.Metadata.GetMetadata<ResourceAssetCollection>();
+            // Resume with Context.User from this connection, not a saved principal.
+            // Persisted state may predate permission changes. Successfully restoring it
+            // does not establish that previous permissions still apply. Application
+            // operations must check the current user's permissions.
             circuitHost = await _circuitFactory.CreateCircuitHostAsync(
                 [],
                 circuitClient,
