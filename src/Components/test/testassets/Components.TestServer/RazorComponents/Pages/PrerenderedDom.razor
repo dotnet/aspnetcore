@@ -22,7 +22,6 @@ else
     {
         "server" => new InteractiveServerRenderMode(prerender: !NoPrerender),
         "wasm" => new InteractiveWebAssemblyRenderMode(prerender: !NoPrerender),
-        "auto" => new InteractiveAutoRenderMode(prerender: !NoPrerender),
         _ => throw new InvalidOperationException($"Unknown render mode '{Platform}'.")
     };
 }

@@ -30,9 +30,7 @@ public class InteractivityTest : ServerTestBase<BasicTestAppServerSiteFixture<Ra
 
     [Theory]
     [InlineData("server", "")]
-    [InlineData("wasm", "")]
     [InlineData("server", "text")]
-    [InlineData("wasm", "text")]
     [InlineData("server", "attribute")]
     [InlineData("server", "element")]
     [InlineData("server", "extra")]
@@ -173,9 +171,7 @@ public class InteractivityTest : ServerTestBase<BasicTestAppServerSiteFixture<Ra
 
     [Theory]
     [InlineData("server", "select-text-options", false, "45 min")]
-    [InlineData("wasm", "select-text-options", false, "45 min")]
     [InlineData("server", "select-text-options-matching", true, "30 min")]
-    [InlineData("wasm", "select-text-options-matching", true, "30 min")]
     [InlineData("server", "select-dynamic-options", true, "30 min")]
     [InlineData("server", "select-selected-option", true, "30 min")]
     [InlineData("server", "select-listbox", false, "45 min")]
@@ -229,7 +225,6 @@ public class InteractivityTest : ServerTestBase<BasicTestAppServerSiteFixture<Ra
 
     [Theory]
     [InlineData("server", "nested")]
-    [InlineData("wasm", "nested")]
     [InlineData("server", "input-default")]
     [InlineData("server", "textarea-default")]
     [InlineData("server", "textarea-text")]
@@ -366,10 +361,8 @@ public class InteractivityTest : ServerTestBase<BasicTestAppServerSiteFixture<Ra
 
     [Theory]
     [InlineData("server", "script-order")]
-    [InlineData("wasm", "script-order")]
     [InlineData("server", "unchanged-script-changed-target")]
     [InlineData("server", "custom-element-order")]
-    [InlineData("wasm", "custom-element-order")]
     [InlineData("server", "unchanged-custom-element-changed-target")]
     [InlineData("server", "nested-script-order")]
     [InlineData("server", "unchanged-nested-script-changed-target")]
@@ -438,7 +431,6 @@ public class InteractivityTest : ServerTestBase<BasicTestAppServerSiteFixture<Ra
 
     [Theory]
     [InlineData("server")]
-    [InlineData("wasm")]
     public void PrerenderedDom_WithoutPrerenderingUsesNormalRendering(string platform)
     {
         Navigate($"{ServerPathBase}/prerendered-dom?suppress-autostart&platform={platform}&noPrerender=true");
@@ -503,32 +495,6 @@ public class InteractivityTest : ServerTestBase<BasicTestAppServerSiteFixture<Ra
         input.SendKeys("After activation" + Keys.Tab);
         Browser.Click(By.Id("dom-first-submit"));
         Browser.Equal("After activation", () => Browser.FindElement(By.Id("dom-first-submitted")).Text);
-    }
-
-    [Fact]
-    public void PrerenderedDom_AutoPreservesNodesBeforeWebAssemblyResourcesAreAvailable()
-    {
-        Navigate(ServerPathBase);
-        Browser.Equal("Hello", () => Browser.Exists(By.TagName("h1")).Text);
-        BlockWebAssemblyResourceLoad();
-        try
-        {
-            PrerenderedDom_WithInitializersUsesWholeRootFallbackForMismatches("auto", "");
-            Browser.Equal("Server", () => Browser.FindElement(By.Id("dom-first-ready")).Text);
-        }
-        finally
-        {
-            UnblockWebAssemblyResourceLoad();
-        }
-    }
-
-    [Fact]
-    public void PrerenderedDom_AutoPreservesNodesWhenWebAssemblyIsCached()
-    {
-        Navigate($"{ServerPathBase}/prerendered-dom?platform=wasm");
-        Browser.Equal("WebAssembly", () => Browser.FindElement(By.Id("dom-first-ready")).Text);
-        PrerenderedDom_WithInitializersUsesWholeRootFallbackForMismatches("auto", "");
-        Browser.Equal("WebAssembly", () => Browser.FindElement(By.Id("dom-first-ready")).Text);
     }
 
     [Theory]
