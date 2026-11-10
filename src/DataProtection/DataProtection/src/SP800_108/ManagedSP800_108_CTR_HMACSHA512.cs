@@ -96,9 +96,10 @@ internal static class ManagedSP800_108_CTR_HMACSHA512
         var prfInputLength = checked(sizeof(uint) /* [i]_2 */ + label.Length + 1 /* 0x00 */ + (contextHeader.Length + contextData.Length) + sizeof(uint) /* [K]_2 */);
 
 #if NET10_0_OR_GREATER
+        // 256 bytes covers typical purpose chains (the AAD is the KDF label); larger inputs use a heap array.
         byte[]? prfInputArray = null;
-        Span<byte> prfInput = prfInputLength <= 128
-            ? stackalloc byte[128].Slice(0, prfInputLength)
+        Span<byte> prfInput = prfInputLength <= 256
+            ? stackalloc byte[256].Slice(0, prfInputLength)
             : (prfInputArray = new byte[prfInputLength]);
 #else
         var prfInputArray = new byte[prfInputLength];
