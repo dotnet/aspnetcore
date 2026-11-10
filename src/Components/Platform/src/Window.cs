@@ -89,7 +89,31 @@ public sealed class Window : IInternalAsyncDisposal
     /// <param name="factory">The callback that creates the projection.</param>
     /// <returns>The projection keyed by <typeparamref name="T"/>.</returns>
     internal T GetOrAddFeature<T>(Func<FeatureContext, T> factory) where T : class
-        => GetOrAddFeatureCore(subkey: null, factory);
+    {
+        ArgumentNullException.ThrowIfNull(factory);
+
+        return GetOrAddFeatureCore(subkey: null, static (context, factory) => factory(context), factory);
+    }
+
+    /// <summary>
+    /// Gets the projection of type <typeparamref name="T"/>, creating it on first access with
+    /// <paramref name="factoryArgument"/>.
+    /// </summary>
+    /// <remarks>
+    /// Use this overload when the factory needs a value other than the <see cref="FeatureContext"/>, such as
+    /// the owner of the projection, so that the factory can be a <see langword="static"/> lambda.
+    /// </remarks>
+    /// <typeparam name="T">The projection type.</typeparam>
+    /// <typeparam name="TArg">The type of the argument to pass to <paramref name="factory"/>.</typeparam>
+    /// <param name="factory">The callback that creates the projection.</param>
+    /// <param name="factoryArgument">The argument to pass to <paramref name="factory"/>.</param>
+    /// <returns>The projection keyed by <typeparamref name="T"/>.</returns>
+    internal T GetOrAddFeature<T, TArg>(Func<FeatureContext, TArg, T> factory, TArg factoryArgument) where T : class
+    {
+        ArgumentNullException.ThrowIfNull(factory);
+
+        return GetOrAddFeatureCore(subkey: null, factory, factoryArgument);
+    }
 
     /// <summary>
     /// Gets the projection of type <typeparamref name="T"/> identified by <paramref name="subkey"/>,
@@ -106,14 +130,13 @@ public sealed class Window : IInternalAsyncDisposal
     internal T GetOrAddFeature<T>(string subkey, Func<FeatureContext, T> factory) where T : class
     {
         ArgumentNullException.ThrowIfNull(subkey);
-
-        return GetOrAddFeatureCore(subkey, factory);
-    }
-
-    private T GetOrAddFeatureCore<T>(string? subkey, Func<FeatureContext, T> factory) where T : class
-    {
         ArgumentNullException.ThrowIfNull(factory);
 
+        return GetOrAddFeatureCore(subkey, static (context, factory) => factory(context), factory);
+    }
+
+    private T GetOrAddFeatureCore<T, TArg>(string? subkey, Func<FeatureContext, TArg, T> factory, TArg factoryArgument) where T : class
+    {
         ObjectDisposedException.ThrowIf(_disposed, this);
 
         var key = (typeof(T), subkey);
@@ -123,7 +146,7 @@ public sealed class Window : IInternalAsyncDisposal
             return (T)existing;
         }
 
-        var created = factory(_context);
+        var created = factory(_context, factoryArgument);
         _features[key] = created;
 
         return created;
