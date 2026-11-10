@@ -83,7 +83,6 @@ export class CircuitManager implements DotNet.DotNetCallDispatcher {
     this._eventRegistry = eventRegistry;
     this._renderQueue = new RenderQueue(this._logger);
     this._dispatcher = DotNet.attachDispatcher(this);
-    Blazor._internal.circuitEvents ??= new EventTarget();
   }
 
   public start(): Promise<boolean> {
@@ -647,7 +646,11 @@ export class CircuitManager implements DotNet.DotNetCallDispatcher {
     Blazor._internal.circuitEvents?.dispatchEvent(new Event('disposed'));
     if (this._pauseUiVisible) {
       this._pauseUiVisible = false;
-      this._options.reconnectionHandler?.onConnectionUp();
+      try {
+        this._options.reconnectionHandler?.onConnectionUp();
+      } catch (error) {
+        this._logger.log(LogLevel.Error, `Failed to clean up the paused circuit UI: ${error}`);
+      }
     }
 
     if (!this._startPromise) {

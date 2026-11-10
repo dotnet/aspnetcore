@@ -61,6 +61,7 @@ public class AutoPauseEnhancedNavigationTests : AutoPauseTestBase<App>
         Browser.Exists(By.Id("increment-persistent-counter-count")).Click();
         Browser.Equal("1", () => Browser.Exists(By.Id("persistent-counter-count")).Text);
 
+        // Chrome drains its browser log when read, isolating errors from this navigation.
         Browser.GetBrowserLogs(LogLevel.Severe);
         var js = (IJavaScriptExecutor)Browser;
         js.ExecuteScript("""

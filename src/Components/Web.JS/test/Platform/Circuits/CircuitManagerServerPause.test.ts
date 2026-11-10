@@ -12,6 +12,8 @@ import { ConsoleLogger } from '../../../src/Platform/Logging/Loggers';
 import { LogLevel } from '../../../src/Platform/Logging/Logger';
 import * as rendererInterop from '../../../src/Rendering/WebRendererInteropMethods';
 
+const initialCircuitEvents = Blazor._internal.circuitEvents;
+
 interface InternalServerPause {
   handleServerInitiatedPause(): Promise<void>;
   pauseCircuit(externalSignal?: AbortSignal): Promise<boolean>;
@@ -66,7 +68,7 @@ describe('CircuitManager pause deferral', () => {
       jest.spyOn(connection, 'start').mockResolvedValue();
       jest.spyOn(connection, 'stop').mockResolvedValue();
       jest.spyOn(connection, 'invoke').mockImplementation(async method => {
-        if (method === 'StartCircuit') {
+        if (method === 'StartCircuit' || method === 'ResumeCircuit') {
           return 'test-circuit';
         }
         if (method === 'PauseCircuit') {
@@ -111,6 +113,10 @@ describe('CircuitManager pause deferral', () => {
       return { display, onConnectionUp: jest.spyOn(handler, 'onConnectionUp') };
     }
 
+    test('provides the disposal event target before the first circuit is constructed', () => {
+      expect(initialCircuitEvents).toBeInstanceOf(EventTarget);
+    });
+
     test.each(['default', 'custom'])('ordinary connection loss does not trigger pause UI cleanup (%s)', async kind => {
       const { display, onConnectionUp } = configureHandler(kind);
       await circuit.start();
@@ -138,6 +144,26 @@ describe('CircuitManager pause deferral', () => {
       }
     });
 
+    test.each(['default', 'custom'])('connection loss after resuming does not retain pause UI ownership (%s)', async kind => {
+      const { display, onConnectionUp } = configureHandler(kind);
+      await circuit.start();
+      expect(await circuit.pauseCircuit()).toBe(true);
+      expect(await circuit.resume()).toBe(true);
+      expect(onConnectionUp).toHaveBeenCalledTimes(1);
+      onConnectionUp.mockClear();
+      display.hide.mockClear();
+
+      connectionClosed!(new Error('Connection lost after resuming'));
+      await circuit.dispose();
+
+      expect(onConnectionUp).not.toHaveBeenCalled();
+      expect(display.hide).not.toHaveBeenCalled();
+      if (kind === 'default') {
+        expect(display.show).toHaveBeenLastCalledWith({ type: 'reconnect', remote: false, currentAttempt: 0, secondsToNextAttempt: 0 });
+        expect(display.failed).toHaveBeenCalledTimes(1);
+      }
+    });
+
     test('publishes retirement once before awaiting startup or creating a replacement', async () => {
       const startup = Promise.withResolvers<void>();
       jest.spyOn(connection, 'start').mockReturnValue(startup.promise);
@@ -159,17 +185,30 @@ describe('CircuitManager pause deferral', () => {
       expect(disposed).toHaveBeenCalledTimes(1);
     });
 
-    test('cleanup callback errors reject the shared disposal promise instead of throwing synchronously', async () => {
+    test('cleanup callback errors are logged without preventing transport disposal', async () => {
       const { onConnectionUp } = configureHandler('custom');
       const error = new Error('Custom cleanup failed');
       onConnectionUp.mockImplementation(() => { throw error; });
       await circuit.start();
       expect(await circuit.pauseCircuit()).toBe(true);
+      jest.mocked(connection.stop).mockClear();
+      const log = jest.spyOn(logger, 'log');
+      const onCircuitClosed = jest.fn();
+      options.circuitHandlers.push({ onCircuitClosed });
 
       const disposal = circuit.dispose();
 
       expect(circuit.dispose()).toBe(disposal);
-      await expect(disposal).rejects.toBe(error);
+      const result = await Promise.allSettled([disposal]);
+      expect(connection.stop).toHaveBeenCalledTimes(1);
+      expect(fetch).toHaveBeenCalledTimes(1);
+      expect(fetch).toHaveBeenCalledWith('_blazor/disconnect', { method: 'POST', body: expect.any(FormData) });
+      const body = jest.mocked(fetch).mock.calls[0][1]?.body;
+      expect(body instanceof FormData && body.get('circuitId')).toBe('test-circuit');
+      expect(onCircuitClosed).toHaveBeenCalledTimes(1);
+      expect(log.mock.calls.filter(([level]) => level === LogLevel.Error))
+        .toEqual([[LogLevel.Error, `Failed to clean up the paused circuit UI: ${error}`]]);
+      expect(result).toEqual([{ status: 'fulfilled', value: undefined }]);
       expect(onConnectionUp).toHaveBeenCalledTimes(1);
     });
   });

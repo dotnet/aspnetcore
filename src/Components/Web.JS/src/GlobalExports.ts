@@ -112,6 +112,7 @@ export const Blazor: IBlazor = {
   runtime: {} as RuntimeAPI,
 
   _internal: {
+    circuitEvents: new EventTarget(),
     navigationManager: navigationManagerInternalFunctions,
     domWrapper: domFunctions,
     Virtualize,
