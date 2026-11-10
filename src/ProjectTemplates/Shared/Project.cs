@@ -599,7 +599,7 @@ public class Project : IDisposable
             arguments +
                 $" --debug:disable-sdk-templates --debug:custom-hive \"{TemplatePackageInstaller.CustomHivePath}\"" +
                 $" -o {TemplateOutputDir}",
-            environmentVariables: AddBootstrapSdkEnvironmentVariables(null),
+            envVars: AddBootstrapSdkEnvironmentVariables(null),
             envVarToRemove: _msBuildSdksPathEnvironmentVariable);
         await result.Exited;
         Assert.True(result.ExitCode == 0, result.GetFormattedOutput());
