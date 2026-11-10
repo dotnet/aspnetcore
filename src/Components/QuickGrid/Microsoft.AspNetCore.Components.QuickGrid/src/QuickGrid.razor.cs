@@ -57,7 +57,7 @@ public partial class QuickGrid<TGridItem> : IAsyncDisposable
     /// Optional. A template to render in the table footer area. If specified, the template will
     /// be rendered inside a single &lt;tfoot&gt; row which spans all columns.
     /// </summary>
-    [Parameter] public RenderFragment? FooterTemplate { get; set; }
+    [Parameter] public RenderFragment? GridFooterTemplate { get; set; }
 
     /// <summary>
     /// If true, the grid will be rendered with virtualization. This is normally used in conjunction with

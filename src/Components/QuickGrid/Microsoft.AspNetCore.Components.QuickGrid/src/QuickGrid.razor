@@ -9,8 +9,8 @@
     <Defer>
         @{
             FinishCollectingColumns();
-            var hasColumnFooters = _columns.Any(col => col.FooterTemplate is not null);
-            var hasGridFooter = FooterTemplate is not null;
+            var hasColumnFooters = _columns.Any(col => col.ColumnFooterTemplate is not null);
+            var hasGridFooter = GridFooterTemplate is not null;
             var footerRowCount = (hasColumnFooters ? 1 : 0) + (hasGridFooter ? 1 : 0);
             var ariaBodyRowCount = !Virtualize && Pagination is not null
                 ? Math.Max(_ariaBodyRowCount, Pagination.ItemsPerPage)
@@ -55,7 +55,7 @@
                     {
                         <tr aria-rowindex="@(ariaBodyRowCount + 2 + (hasColumnFooters ? 1 : 0))">
                             <td colspan="@_columns.Count" class="grid-footer-cell">
-                                @FooterTemplate
+                                @GridFooterTemplate
                             </td>
                         </tr>
                     }
@@ -141,7 +141,7 @@
     {
         foreach (var col in _columns)
         {
-            <td class="grid-column-footer-cell @ColumnClass(col)" @key="@col">@col.FooterTemplate</td>
+            <td class="grid-column-footer-cell @ColumnClass(col)" @key="@col">@col.ColumnFooterTemplate</td>
         }
     }
 }

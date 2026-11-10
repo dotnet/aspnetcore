@@ -70,7 +70,7 @@ public class QuickGridFooterTemplateTest
             && attributeValue.Contains(value, StringComparison.Ordinal));
 
     [Fact]
-    public void FooterTemplate_NotSet_DoesNotRenderTfoot()
+    public void GridFooterTemplate_NotSet_DoesNotRenderTfoot()
     {
         var renderer = RenderGrid(new GridWithNoFooter(), out _);
 
@@ -78,7 +78,7 @@ public class QuickGridFooterTemplateTest
     }
 
     [Fact]
-    public void FooterTemplate_Set_RendersWithFooterContent()
+    public void GridFooterTemplate_Set_RendersWithFooterContent()
     {
         var renderer = RenderGrid(new GridWithFooter(), out _);
 
@@ -88,7 +88,7 @@ public class QuickGridFooterTemplateTest
     }
 
     [Fact]
-    public void FooterTemplate_Set_DoesNotAffectColumnCollection()
+    public void GridFooterTemplate_Set_DoesNotAffectColumnCollection()
     {
         var renderer = RenderGrid(new GridWithFooterAndMultipleColumns(), out _);
 
@@ -99,7 +99,7 @@ public class QuickGridFooterTemplateTest
     }
 
     [Fact]
-    public void FooterTemplate_UpdatedOnRerender_ReflectsNewContent()
+    public void GridFooterTemplate_UpdatedOnRerender_ReflectsNewContent()
     {
         var component = new GridWithDynamicFooter();
         var renderer = RenderGrid(component, out var componentId);
@@ -116,7 +116,7 @@ public class QuickGridFooterTemplateTest
     }
 
     [Fact]
-    public void FooterTemplate_SetToNull_RemovesFooter()
+    public void GridFooterTemplate_SetToNull_RemovesFooter()
     {
         var component = new GridWithToggleableFooter();
         var renderer = RenderGrid(component, out var componentId);
@@ -172,7 +172,7 @@ public class QuickGridFooterTemplateTest
     }
 
     [Fact]
-    public void FooterTemplate_WithEmptyItems_StillRenders()
+    public void GridFooterTemplate_WithEmptyItems_StillRenders()
     {
         var renderer = RenderGrid(new GridWithFooterAndEmptyItems(), out _);
 
@@ -192,7 +192,7 @@ public class QuickGridFooterTemplateTest
     }
 
     [Fact]
-    public void FooterTemplate_WithPagination_Renders()
+    public void GridFooterTemplate_WithPagination_Renders()
     {
         var renderer = RenderGrid(new GridWithFooterAndPagination(), out _);
 
@@ -210,7 +210,7 @@ public class QuickGridFooterTemplateTest
     [InlineData(5, 5, 0, true, true)]
     [InlineData(2, 0, 0, true, true)]
     [InlineData(0, 0, 0, true, true)]
-    public async Task FooterTemplate_AriaRows_IncludePaginationFillers(
+    public async Task GridFooterTemplate_AriaRows_IncludePaginationFillers(
         int totalItemCount, int itemsPerPage, int pageIndex, bool hasColumnFooter, bool hasGridFooter)
     {
         var items = Enumerable.Range(1, totalItemCount)
@@ -255,7 +255,7 @@ public class QuickGridFooterTemplateTest
     }
 
     [Fact]
-    public void FooterTemplate_WithRowClass_BothApplied()
+    public void GridFooterTemplate_WithRowClass_BothApplied()
     {
         var renderer = RenderGrid(new GridWithFooterAndRowClass(), out _);
 
@@ -284,7 +284,7 @@ public class QuickGridFooterTemplateTest
     }
 
     [Fact]
-    public void FooterTemplate_WithItemsProvider_Renders()
+    public void GridFooterTemplate_WithItemsProvider_Renders()
     {
         var renderer = RenderGrid(new GridWithFooterAndItemsProvider(), out _);
 
@@ -297,7 +297,7 @@ public class QuickGridFooterTemplateTest
     // use ItemsProvider to capture the sorted items and update a variable the footer template reads.
     // The footer template is a RenderFragment — it re-renders when the grid refreshes after sort.
     [Fact]
-    public async Task FooterTemplate_WithItemsProvider_ReflectsFirstItemAfterSort()
+    public async Task GridFooterTemplate_WithItemsProvider_ReflectsFirstItemAfterSort()
     {
         var component = new GridWithSortAwareFooterViaProvider();
         var renderer = RenderGrid(component, out _);
@@ -338,7 +338,45 @@ public class QuickGridFooterTemplateTest
         Assert.True(ContainsContent(GetGridFrames(renderer), "First: 1"));
     }
 
+    [Fact]
+    public void ExistingFooterTemplateParametersOnDerivedTypes_DoNotClashWithFooterParameters()
+    {
+        var renderer = RenderGrid(new GridWithDerivedTypesDeclaringFooterTemplate(), out _);
+
+        var frames = GetGridFrames(renderer);
+        Assert.False(HasElement(frames, "tfoot"));
+        Assert.Equal(1, CountElements(frames, "th"));
+    }
+
     // --- Helper components ---
+
+    private sealed class CustomGridDeclaringFooterTemplate : QuickGrid<TestItem>
+    {
+        [Parameter] public RenderFragment FooterTemplate { get; set; }
+    }
+
+    private sealed class CustomColumnDeclaringFooterTemplate : PropertyColumn<TestItem, int>
+    {
+        [Parameter] public RenderFragment FooterTemplate { get; set; }
+    }
+
+    private sealed class GridWithDerivedTypesDeclaringFooterTemplate : ComponentBase
+    {
+        protected override void BuildRenderTree(RenderTreeBuilder builder)
+        {
+            builder.OpenComponent<CustomGridDeclaringFooterTemplate>(0);
+            builder.AddAttribute(1, "Items", _testItems);
+            builder.AddAttribute(2, "FooterTemplate", (RenderFragment)(b => b.AddContent(0, "Custom grid footer")));
+            builder.AddAttribute(3, "ChildContent", (RenderFragment)(b =>
+            {
+                b.OpenComponent<CustomColumnDeclaringFooterTemplate>(0);
+                b.AddAttribute(1, "Property", (System.Linq.Expressions.Expression<Func<TestItem, int>>)(p => p.Id));
+                b.AddAttribute(2, "FooterTemplate", (RenderFragment)(fb => fb.AddContent(0, "Custom column footer")));
+                b.CloseComponent();
+            }));
+            builder.CloseComponent();
+        }
+    }
 
     private class TestItem
     {
@@ -386,7 +424,7 @@ public class QuickGridFooterTemplateTest
                 b.AddAttribute(1, "Property", (System.Linq.Expressions.Expression<Func<TestItem, int>>)(p => p.Id));
                 b.CloseComponent();
             }));
-            builder.AddAttribute(3, "FooterTemplate", (RenderFragment)(b =>
+            builder.AddAttribute(3, "GridFooterTemplate", (RenderFragment)(b =>
             {
                 b.AddContent(0, "Footer content");
             }));
@@ -415,7 +453,7 @@ public class QuickGridFooterTemplateTest
                 b.AddAttribute(3, "Property", (System.Linq.Expressions.Expression<Func<TestItem, string>>)(p => p.Name));
                 b.CloseComponent();
             }));
-            builder.AddAttribute(3, "FooterTemplate", (RenderFragment)(b =>
+            builder.AddAttribute(3, "GridFooterTemplate", (RenderFragment)(b =>
             {
                 b.AddContent(0, $"Total: {_testItems.Count()}");
             }));
@@ -440,7 +478,7 @@ public class QuickGridFooterTemplateTest
                 b.AddAttribute(1, "Property", (System.Linq.Expressions.Expression<Func<TestItem, int>>)(p => p.Id));
                 b.CloseComponent();
             }));
-            builder.AddAttribute(3, "FooterTemplate", (RenderFragment)(b =>
+            builder.AddAttribute(3, "GridFooterTemplate", (RenderFragment)(b =>
             {
                 b.AddContent(0, FooterText);
             }));
@@ -462,7 +500,7 @@ public class QuickGridFooterTemplateTest
                 b.AddAttribute(1, "Property", (System.Linq.Expressions.Expression<Func<TestItem, int>>)(p => p.Id));
                 b.CloseComponent();
             }));
-            builder.AddAttribute(3, "FooterTemplate", ShowFooter
+            builder.AddAttribute(3, "GridFooterTemplate", ShowFooter
                 ? (RenderFragment)(b => b.AddContent(0, "Footer content"))
                 : null);
             builder.CloseComponent();
@@ -502,12 +540,12 @@ public class QuickGridFooterTemplateTest
             {
                 b.OpenComponent<PropertyColumn<TestItem, int>>(0);
                 b.AddAttribute(1, "Property", (System.Linq.Expressions.Expression<Func<TestItem, int>>)(p => p.Id));
-                b.AddAttribute(2, "FooterTemplate", (RenderFragment)(fb => fb.AddContent(0, "Total IDs")));
+                b.AddAttribute(2, "ColumnFooterTemplate", (RenderFragment)(fb => fb.AddContent(0, "Total IDs")));
                 b.CloseComponent();
 
                 b.OpenComponent<PropertyColumn<TestItem, string>>(3);
                 b.AddAttribute(4, "Property", (System.Linq.Expressions.Expression<Func<TestItem, string>>)(p => p.Name));
-                b.AddAttribute(5, "FooterTemplate", (RenderFragment)(fb => fb.AddContent(0, "Total Names")));
+                b.AddAttribute(5, "ColumnFooterTemplate", (RenderFragment)(fb => fb.AddContent(0, "Total Names")));
                 b.CloseComponent();
             }));
             builder.CloseComponent();
@@ -535,7 +573,7 @@ public class QuickGridFooterTemplateTest
 
                 b.OpenComponent<PropertyColumn<TestItem, string>>(2);
                 b.AddAttribute(3, "Property", (System.Linq.Expressions.Expression<Func<TestItem, string>>)(p => p.Name));
-                b.AddAttribute(4, "FooterTemplate", (RenderFragment)(fb => fb.AddContent(0, $"Count: {_testItems.Count()}")));
+                b.AddAttribute(4, "ColumnFooterTemplate", (RenderFragment)(fb => fb.AddContent(0, $"Count: {_testItems.Count()}")));
                 b.CloseComponent();
             }));
             builder.CloseComponent();
@@ -559,10 +597,10 @@ public class QuickGridFooterTemplateTest
             {
                 b.OpenComponent<PropertyColumn<TestItem, int>>(0);
                 b.AddAttribute(1, "Property", (System.Linq.Expressions.Expression<Func<TestItem, int>>)(p => p.Id));
-                b.AddAttribute(2, "FooterTemplate", (RenderFragment)(fb => fb.AddContent(0, "Column footer")));
+                b.AddAttribute(2, "ColumnFooterTemplate", (RenderFragment)(fb => fb.AddContent(0, "Column footer")));
                 b.CloseComponent();
             }));
-            builder.AddAttribute(3, "FooterTemplate", (RenderFragment)(b =>
+            builder.AddAttribute(3, "GridFooterTemplate", (RenderFragment)(b =>
             {
                 b.AddContent(0, $"Grand total: {_testItems.Count()}");
             }));
@@ -590,7 +628,7 @@ public class QuickGridFooterTemplateTest
                 b.AddAttribute(1, "Property", (System.Linq.Expressions.Expression<Func<TestItem, int>>)(p => p.Id));
                 b.CloseComponent();
             }));
-            builder.AddAttribute(3, "FooterTemplate", (RenderFragment)(b =>
+            builder.AddAttribute(3, "GridFooterTemplate", (RenderFragment)(b =>
             {
                 b.AddContent(0, "No items");
             }));
@@ -616,7 +654,7 @@ public class QuickGridFooterTemplateTest
             {
                 b.OpenComponent<PropertyColumn<TestItem, int>>(0);
                 b.AddAttribute(1, "Property", (System.Linq.Expressions.Expression<Func<TestItem, int>>)(p => p.Id));
-                b.AddAttribute(2, "FooterTemplate", (RenderFragment)(fb => fb.AddContent(0, "Total: 0")));
+                b.AddAttribute(2, "ColumnFooterTemplate", (RenderFragment)(fb => fb.AddContent(0, "Total: 0")));
                 b.CloseComponent();
             }));
             builder.CloseComponent();
@@ -643,7 +681,7 @@ public class QuickGridFooterTemplateTest
                 b.AddAttribute(1, "Property", (System.Linq.Expressions.Expression<Func<TestItem, int>>)(p => p.Id));
                 b.CloseComponent();
             }));
-            builder.AddAttribute(4, "FooterTemplate", (RenderFragment)(b =>
+            builder.AddAttribute(4, "GridFooterTemplate", (RenderFragment)(b =>
             {
                 b.AddContent(0, $"Page {_pagination.CurrentPageIndex + 1}");
             }));
@@ -668,14 +706,14 @@ public class QuickGridFooterTemplateTest
                     (System.Linq.Expressions.Expression<Func<TestItem, int>>)(item => item.Id));
                 if (hasColumnFooter)
                 {
-                    b.AddAttribute(2, nameof(ColumnBase<TestItem>.FooterTemplate),
+                    b.AddAttribute(2, nameof(ColumnBase<TestItem>.ColumnFooterTemplate),
                         (RenderFragment)(footer => footer.AddContent(0, "Column footer")));
                 }
                 b.CloseComponent();
             }));
             if (hasGridFooter)
             {
-                builder.AddAttribute(4, nameof(QuickGrid<TestItem>.FooterTemplate),
+                builder.AddAttribute(4, nameof(QuickGrid<TestItem>.GridFooterTemplate),
                     (RenderFragment)(footer => footer.AddContent(0, "Grid footer")));
             }
             builder.CloseComponent();
@@ -695,7 +733,7 @@ public class QuickGridFooterTemplateTest
                 b.OpenComponent<PropertyColumn<TestItem, int>>(0);
                 b.AddAttribute(1, "Property", (System.Linq.Expressions.Expression<Func<TestItem, int>>)(p => p.Id));
                 b.AddAttribute(2, "Sortable", true);
-                b.AddAttribute(3, "FooterTemplate", (RenderFragment)(fb => fb.AddContent(0, "ID total")));
+                b.AddAttribute(3, "ColumnFooterTemplate", (RenderFragment)(fb => fb.AddContent(0, "ID total")));
                 b.CloseComponent();
 
                 b.OpenComponent<PropertyColumn<TestItem, string>>(4);
@@ -724,7 +762,7 @@ public class QuickGridFooterTemplateTest
                 b.AddAttribute(1, "Property", (System.Linq.Expressions.Expression<Func<TestItem, int>>)(p => p.Id));
                 b.CloseComponent();
             }));
-            builder.AddAttribute(4, "FooterTemplate", (RenderFragment)(b =>
+            builder.AddAttribute(4, "GridFooterTemplate", (RenderFragment)(b =>
             {
                 b.AddContent(0, "Footer with row class");
             }));
@@ -747,7 +785,7 @@ public class QuickGridFooterTemplateTest
             {
                 b.OpenComponent<PropertyColumn<TestItem, int>>(0);
                 b.AddAttribute(1, "Property", (System.Linq.Expressions.Expression<Func<TestItem, int>>)(p => p.Id));
-                b.AddAttribute(2, "FooterTemplate", (RenderFragment)(fb => fb.AddContent(0, ColumnFooterText)));
+                b.AddAttribute(2, "ColumnFooterTemplate", (RenderFragment)(fb => fb.AddContent(0, ColumnFooterText)));
                 b.CloseComponent();
             }));
             builder.CloseComponent();
@@ -773,7 +811,7 @@ public class QuickGridFooterTemplateTest
                 b.AddAttribute(1, "Property", (System.Linq.Expressions.Expression<Func<TestItem, int>>)(p => p.Id));
                 b.CloseComponent();
             }));
-            builder.AddAttribute(3, "FooterTemplate", (RenderFragment)(b =>
+            builder.AddAttribute(3, "GridFooterTemplate", (RenderFragment)(b =>
             {
                 b.AddContent(0, "Provider footer");
             }));
@@ -783,7 +821,7 @@ public class QuickGridFooterTemplateTest
         }
     }
 
-    // Captures the first item ID from each ItemsProvider call, so the grid-level FooterTemplate
+    // Captures the first item ID from each ItemsProvider call, so the GridFooterTemplate
     // can reflect the current sorted view.
     private sealed class GridWithSortAwareFooterViaProvider : ComponentBase
     {
@@ -825,7 +863,7 @@ public class QuickGridFooterTemplateTest
                 b.AddComponentReferenceCapture(4, r => _idColumn = (ColumnBase<TestItem>)r);
                 b.CloseComponent();
             }));
-            builder.AddAttribute(3, "FooterTemplate", (RenderFragment)(b =>
+            builder.AddAttribute(3, "GridFooterTemplate", (RenderFragment)(b =>
             {
                 b.AddContent(0, $"First: {CurrentFirstItemId}");
             }));
@@ -834,7 +872,7 @@ public class QuickGridFooterTemplateTest
         }
     }
 
-    // Same pattern but with a column-level FooterTemplate instead of grid-level.
+    // Same pattern but with a ColumnFooterTemplate instead of grid-level.
     private sealed class GridWithSortAwareColumnFooterViaProvider : ComponentBase
     {
         private static readonly TestItem[] _sourceItems =
@@ -872,7 +910,7 @@ public class QuickGridFooterTemplateTest
                 b.AddAttribute(1, "Property", (System.Linq.Expressions.Expression<Func<TestItem, int>>)(p => p.Id));
                 b.AddAttribute(2, "Title", "Id");
                 b.AddAttribute(3, "Sortable", true);
-                b.AddAttribute(4, "FooterTemplate", (RenderFragment)(fb =>
+                b.AddAttribute(4, "ColumnFooterTemplate", (RenderFragment)(fb =>
                 {
                     fb.AddContent(0, $"First: {CurrentFirstItemId}");
                 }));

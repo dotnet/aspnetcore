@@ -3,10 +3,10 @@
 <label><input id="show-column-footers" type="checkbox" @bind="showColumnFooters" /> Show column footers</label>
 <label><input id="show-grid-footer" type="checkbox" @bind="showGridFooter" /> Show grid footer</label>
 
-<QuickGrid Items="@items" id="footer-grid" FooterTemplate="@(showGridFooter ? gridFooter : null)">
-    <PropertyColumn Property="@(item => item.Id)" FooterTemplate="@(showColumnFooters ? idFooter : null)" />
+<QuickGrid Items="@items" id="footer-grid" GridFooterTemplate="@(showGridFooter ? gridFooter : null)">
+    <PropertyColumn Property="@(item => item.Id)" ColumnFooterTemplate="@(showColumnFooters ? idFooter : null)" />
     <PropertyColumn Property="@(item => item.Name)" />
-    <PropertyColumn Property="@(item => item.Amount)" Align="Align.Right" FooterTemplate="@(showColumnFooters ? amountFooter : null)" />
+    <PropertyColumn Property="@(item => item.Amount)" Align="Align.Right" ColumnFooterTemplate="@(showColumnFooters ? amountFooter : null)" />
 </QuickGrid>
 
 @code {
