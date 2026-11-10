@@ -1,8 +1,5 @@
 ﻿@inject NavigationManager Navigation
 
-<p id="navigation-runtime">@RendererInfo.Name</p>
-<a id="navigate-with-href" href="nav/other" @onclick="NavigateToAnotherPage">Navigate with an unprevented link</a>
-<a id="navigate-with-prevented-href" href="nav/other" @onclick="NavigateToAnotherPage" @onclick:preventDefault>Navigate with a prevented link</a>
 <button type="button" id="navigate-to-another-page" @onclick="NavigateToAnotherPage">Navigate to another page</button>
 <br />
 <button type="button" id="refresh-with-navigate-to" @onclick="RefreshWithNavigateTo">Perform enhanced refresh with @(nameof(NavigationManager.NavigateTo))</button>
