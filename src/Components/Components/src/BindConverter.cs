@@ -2130,7 +2130,6 @@ public static class BindConverter
                     $"Apply '{typeof(TypeConverterAttribute).Name}' to the type to register a converter.");
             }
 
-            var canAcceptNull = default(T) is null;
             return ConvertWithTypeConverter;
 
             bool ConvertWithTypeConverter(object? obj, CultureInfo? culture, out T value)
@@ -2139,7 +2138,7 @@ public static class BindConverter
                 if (obj == null)
                 {
                     value = default!;
-                    return canAcceptNull;
+                    return true;
                 }
 
                 try

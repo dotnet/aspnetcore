@@ -797,6 +797,42 @@ public class BindConverterTest
     }
 
     [Fact]
+    public void TryConvertTo_TypeConverter_NullInputReturnsDefaultForValueType()
+    {
+        var successfullyConverted = BindConverter.TryConvertTo<TimeSpan>(null, CultureInfo.InvariantCulture, out var actual);
+
+        Assert.True(successfullyConverted);
+        Assert.Equal(TimeSpan.Zero, actual);
+    }
+
+    [Fact]
+    public void TryConvertTo_TypeConverter_NullInputDoesNotInvokeConverter()
+    {
+        var successfullyConverted = BindConverter.TryConvertTo<ThrowingType>(null, CultureInfo.InvariantCulture, out var actual);
+
+        Assert.True(successfullyConverted);
+        Assert.Equal(default(ThrowingType), actual);
+    }
+
+    [Fact]
+    public void TryConvertTo_TypeConverter_NullInputReturnsDefaultForReferenceType()
+    {
+        var successfullyConverted = BindConverter.TryConvertTo<Person>(null, CultureInfo.InvariantCulture, out var actual);
+
+        Assert.True(successfullyConverted);
+        Assert.Null(actual);
+    }
+
+    [Fact]
+    public void TryConvertTo_ArrayOfTypeConverterValues_NullElementReturnsDefault()
+    {
+        var successfullyConverted = BindConverter.TryConvertTo<TimeSpan[]>(new string[] { null }, CultureInfo.InvariantCulture, out var actual);
+
+        Assert.True(successfullyConverted);
+        Assert.Equal(new[] { TimeSpan.Zero }, actual);
+    }
+
+    [Fact]
     public void TryConvertTo_TypeConverter_InvalidStringReturnsFalse()
     {
         var successfullyConverted = BindConverter.TryConvertTo<Person>("not valid json", CultureInfo.CurrentCulture, out var actual);
