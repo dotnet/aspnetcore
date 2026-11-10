@@ -145,10 +145,7 @@ internal sealed partial class RemoteNavigationManager : NavigationManager, IHost
             }
             catch (TaskCanceledException ex)
             {
-                // No cancellation token is passed to the interop call, so in practice this is the
-                // JSInteropDefaultCallTimeout elapsing, e.g. because the navigateTo call or its reply was
-                // lost during a transient disconnect. Any other cancellation is also logged here rather
-                // than terminating a circuit that may still be live.
+                // An interop timeout shouldn't terminate a circuit that may still be live.
                 Log.NavigationTimedOut(_logger, uri, ex);
             }
             catch (Exception ex)
