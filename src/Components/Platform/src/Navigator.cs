@@ -1,6 +1,8 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Collections.Immutable;
+using System.Runtime.InteropServices;
 using Microsoft.JSInterop;
 
 namespace Microsoft.AspNetCore.Components.Platform;
@@ -36,11 +38,13 @@ public sealed class Navigator : IInternalAsyncDisposal
     /// Gets the languages that the user prefers, with the most preferred language first.
     /// </summary>
     /// <returns>The language tags, such as <c>"en-US"</c>.</returns>
-    public async ValueTask<IReadOnlyList<string>> GetLanguagesAsync()
+    public async ValueTask<ImmutableArray<string>> GetLanguagesAsync()
     {
         var navigator = await GetReferenceAsync().ConfigureAwait(false);
 
-        return await navigator.GetValueAsync<string[]>("languages").ConfigureAwait(false);
+        var languages = await navigator.GetValueAsync<string[]>("languages").ConfigureAwait(false);
+
+        return ImmutableCollectionsMarshal.AsImmutableArray(languages);
     }
 
     /// <summary>
