@@ -6120,13 +6120,10 @@ public class RendererTest
         Assert.Empty(renderer.HandledExceptions);
     }
 
-
     private class DispatchExceptionComponent : ComponentBase
     {
         public Task DispatchAsync(Exception exception) => DispatchExceptionAsync(exception);
     }
-
-
 
     private class ComponentThatAwaitsTask : ComponentBase
     {
