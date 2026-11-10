@@ -68,8 +68,15 @@ internal sealed class AbortLink : IAsyncDisposable
 
         // Waits for a running callback, so no abort is sent through a disposed reference.
         await _registration.DisposeAsync();
-        await _controller.DisposeAsync();
-        await Signal.DisposeAsync();
+        try
+        {
+            await _controller.DisposeAsync();
+        }
+        finally
+        {
+            // The link is already gone from its owner, so this is the only chance to release the signal.
+            await Signal.DisposeAsync();
+        }
     }
 
     // Runs the callback at once if the token is already canceled.

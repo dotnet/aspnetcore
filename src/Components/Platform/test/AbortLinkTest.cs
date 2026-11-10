@@ -159,6 +159,22 @@ public class AbortLinkTest
     }
 
     [Fact]
+    public async Task DisposeAsync_DisposesTheSignalWhenTheControllerDisposalFails()
+    {
+        var jsRuntime = new RecordingJSRuntime();
+        var context = new FeatureContext(jsRuntime, new RecordingLoggerFactory());
+        var timeout = new TaskCanceledException("The JS interop call timed out.");
+        jsRuntime.Controller.DisposeException = timeout;
+        using var cts = new CancellationTokenSource();
+        var link = await context.AbortLinkFactory.CreateAsync(cts.Token);
+
+        var exception = await Assert.ThrowsAsync<TaskCanceledException>(() => link!.DisposeAsync().AsTask());
+
+        Assert.Same(timeout, exception);
+        Assert.True(jsRuntime.Signal.Disposed);
+    }
+
+    [Fact]
     public async Task ScopeDisposal_ReleasesTheLinksStillOpen()
     {
         var jsRuntime = new RecordingJSRuntime();
@@ -299,11 +315,15 @@ public class AbortLinkTest
         public ValueTask<TValue> InvokeAsync<TValue>(string identifier, CancellationToken cancellationToken, object?[]? args)
             => throw new NotSupportedException();
 
+        public Exception? DisposeException { get; set; }
+
         public ValueTask DisposeAsync()
         {
             DisposeCount++;
 
-            return ValueTask.CompletedTask;
+            return DisposeException is { } exception
+                ? ValueTask.FromException(exception)
+                : ValueTask.CompletedTask;
         }
     }
 }
