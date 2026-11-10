@@ -6139,7 +6139,9 @@ public class Http2ConnectionTests : Http2TestBase
 
         await SendRstStreamAsync(1);
 
-        // Confirm the server has processed the reset and removed the stream.
+        await WaitForStreamAsync(1).DefaultTimeout();
+
+        // Confirm the connection loop has processed the completed stream.
         await SendPingAsync(Http2PingFrameFlags.NONE);
         await ExpectAsync(Http2FrameType.PING,
             withLength: 8,
