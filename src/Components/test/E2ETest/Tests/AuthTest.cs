@@ -21,6 +21,7 @@ public class AuthTest : ServerTestBase<ToggleExecutionModeServerFixture<Program>
     protected const string PageRequiringAuthorization = "Page requiring any authentication";
     protected const string PageRequiringPolicy = "Page requiring policy";
     protected const string PageRequiringRole = "Page requiring role";
+    protected const string PageRequiringSlowAsyncPolicy = "Page requiring slow async policy";
 
     public AuthTest(
         BrowserFixture browserFixture,
@@ -220,14 +221,38 @@ public class AuthTest : ServerTestBase<ToggleExecutionModeServerFixture<Program>
         AssertExpectedLayoutUsed();
     }
 
+    [Fact]
+    public void Router_SupersededAuthorizationResultIsNotAppliedToNewPage()
+    {
+        // A single AuthorizeRouteView reuses one inner component instance for every route, so an
+        // authorization result computed for one page must never be applied to another.
+        SignInAs("Bert", "IrrelevantRole");
+        var appElement = MountAndNavigateToAuthTest(PageRequiringSlowAsyncPolicy);
+
+        Browser.Contains("Authorizing", () => appElement.Text);
+        Browser.DoesNotExist(By.CssSelector("#slow-auth-success"));
+
+        appElement.FindElement(By.LinkText(PageRequiringRole)).Click();
+        Browser.Equal("Sorry, Bert, you're not authorized.", () =>
+            appElement.FindElement(By.CssSelector("#auth-failure")).Text);
+
+        appElement.FindElement(By.Id("release-slow-auth")).Click();
+        Browser.Equal("True", () => appElement.FindElement(By.Id("slow-auth-settled")).Text);
+
+        Browser.Equal("Sorry, Bert, you're not authorized.", () =>
+            appElement.FindElement(By.CssSelector("#auth-failure")).Text);
+        Browser.DoesNotExist(By.CssSelector("#slow-auth-success"));
+        AssertExpectedLayoutUsed();
+    }
+
     private void AssertExpectedLayoutUsed()
     {
         Browser.Exists(By.Id("auth-links"));
     }
 
-    protected IWebElement MountAndNavigateToAuthTest(string authLinkText)
+    protected IWebElement MountAndNavigateToAuthTest(string authLinkText, string queryString = "")
     {
-        Navigate(ServerPathBase);
+        Navigate($"{ServerPathBase}{queryString}");
         var appElement = Browser.MountTestComponent<BasicTestApp.AuthTest.AuthRouter>();
         Browser.Exists(By.Id("auth-links"));
         appElement.FindElement(By.LinkText(authLinkText)).Click();

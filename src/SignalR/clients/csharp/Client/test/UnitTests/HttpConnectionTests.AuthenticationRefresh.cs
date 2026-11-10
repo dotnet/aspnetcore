@@ -296,6 +296,114 @@ public partial class HttpConnectionTests
         }
 
         [Fact]
+        public async Task RefreshAuthenticationAsyncAdoptsAccessTokenFromResponseForSubsequentTransportRequests()
+        {
+            // The client should adopt the optional returned refreshed access token as the transport credential so subsequent Long Polling polls/sends carry the refreshed token.
+            var testHttpHandler = new TestHttpMessageHandler(autoNegotiate: false);
+            testHttpHandler.OnNegotiate((_, _) => ResponseUtils.CreateResponse(HttpStatusCode.OK, ResponseUtils.CreateNegotiationContent(negotiateVersion: 1)));
+            testHttpHandler.OnLongPollDelete(_ => ResponseUtils.CreateResponse(HttpStatusCode.Accepted));
+
+            var firstPollReceivedTcs = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+            var releaseFirstPollTcs = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+            var refreshedPollAuthTcs = new TaskCompletionSource<string>(TaskCreationOptions.RunContinuationsAsynchronously);
+            var pollCount = 0;
+            testHttpHandler.OnLongPoll(async (request, _) =>
+            {
+                var poll = Interlocked.Increment(ref pollCount);
+                if (poll == 1)
+                {
+                    // A poll carrying the connect-time token is in flight. Park it until the refresh completes.
+                    firstPollReceivedTcs.TrySetResult();
+                    await releaseFirstPollTcs.Task;
+                    return ResponseUtils.CreateResponse(HttpStatusCode.OK);
+                }
+
+                // The next poll is issued after the refresh adopted the response accessToken; capture its token.
+                refreshedPollAuthTcs.TrySetResult(request.Headers.Authorization?.Parameter);
+                return ResponseUtils.CreateResponse(HttpStatusCode.NoContent);
+            });
+
+            OnRefresh(testHttpHandler, (_, _) =>
+                Task.FromResult(ResponseUtils.CreateResponse(HttpStatusCode.OK,
+                    "{\"connectionId\":\"abc\",\"tokenLifetimeSeconds\":60,\"accessToken\":\"service-token\"}")));
+
+            // The application (app-plane) token never changes; the new transport credential comes from the response.
+            Task<string> AccessTokenProvider()
+            {
+                return Task.FromResult("app-token");
+            }
+
+            using (var noErrorScope = new VerifyNoErrorsScope())
+            {
+                await WithConnectionAsync(
+                    CreateConnection(testHttpHandler, loggerFactory: noErrorScope.LoggerFactory, accessTokenProvider: AccessTokenProvider),
+                    async connection =>
+                    {
+                        await connection.StartAsync().DefaultTimeout();
+                        await firstPollReceivedTcs.Task.DefaultTimeout();
+
+                        await ((IAuthenticationRefreshFeature)connection).RefreshAuthenticationAsync().DefaultTimeout();
+
+                        // Allow the next poll to be issued now that the cache should hold the refreshed service token.
+                        releaseFirstPollTcs.TrySetResult();
+
+                        var refreshedPollAuth = await refreshedPollAuthTcs.Task.DefaultTimeout();
+                        Assert.Equal("service-token", refreshedPollAuth);
+                    });
+            }
+        }
+
+        [Fact]
+        public async Task RefreshAuthenticationAsyncUsesApplicationTokenAfterRedirect()
+        {
+            // /refresh belongs to the application auth plane. The /refresh request must be authenticated with the application's own AccessTokenProvider token, not the redirected one.
+            var testHttpHandler = new TestHttpMessageHandler(autoNegotiate: false);
+            var negotiateCount = 0;
+            testHttpHandler.OnNegotiate((request, _) =>
+            {
+                negotiateCount++;
+                if (negotiateCount == 1)
+                {
+                    return ResponseUtils.CreateResponse(HttpStatusCode.OK,
+                        "{\"url\":\"http://redirected.example/hub?existing=true\",\"accessToken\":\"redirect-token\"}");
+                }
+
+                return ResponseUtils.CreateResponse(HttpStatusCode.OK, ResponseUtils.CreateNegotiationContent(negotiateVersion: 1));
+            });
+            testHttpHandler.OnLongPoll(_ => ResponseUtils.CreateResponse(HttpStatusCode.NoContent));
+            testHttpHandler.OnLongPollDelete(_ => ResponseUtils.CreateResponse(HttpStatusCode.Accepted));
+
+            var refreshRequestTcs = new TaskCompletionSource<HttpRequestMessage>(TaskCreationOptions.RunContinuationsAsynchronously);
+            OnRefresh(testHttpHandler, (request, _) =>
+            {
+                refreshRequestTcs.TrySetResult(request);
+                return Task.FromResult(ResponseUtils.CreateResponse(HttpStatusCode.OK, "{\"connectionId\":\"abc\",\"tokenLifetimeSeconds\":60}"));
+            });
+
+            // Transport (after redirect) uses "redirect-token"; the app-plane provider stays "app-token".
+            Task<string> AccessTokenProvider()
+            {
+                return Task.FromResult("app-token");
+            }
+
+            using (var noErrorScope = new VerifyNoErrorsScope())
+            {
+                await WithConnectionAsync(
+                    CreateConnection(testHttpHandler, url: "http://original.example/hub", loggerFactory: noErrorScope.LoggerFactory, accessTokenProvider: AccessTokenProvider),
+                    async connection =>
+                    {
+                        await connection.StartAsync().DefaultTimeout();
+                        await ((IAuthenticationRefreshFeature)connection).RefreshAuthenticationAsync().DefaultTimeout();
+                    });
+            }
+
+            var request = await refreshRequestTcs.Task.DefaultTimeout();
+            Assert.NotNull(request.Headers.Authorization);
+            Assert.Equal("Bearer", request.Headers.Authorization.Scheme);
+            Assert.Equal("app-token", request.Headers.Authorization.Parameter);
+        }
+
+        [Fact]
         public async Task RefreshAuthenticationAsyncSendsBearerTokenWhenAccessTokenProviderConfigured()
         {
             var testHttpHandler = new TestHttpMessageHandler(autoNegotiate: false);

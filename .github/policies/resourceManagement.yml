@@ -504,36 +504,6 @@ configuration:
       - isAction:
           action: Opened
       - targetsBranch:
-          branch: release/9.0
-      then:
-      - addMilestone:
-          milestone: 9.0.x
-      - addReply:
-          reply: >-
-            Hi ${issueAuthor}. If this is not a tell-mode PR, please make sure to follow the instructions laid out in the [servicing process](https://aka.ms/aspnet/servicing) document.
-
-            Otherwise, please add `tell-mode` label.
-      description: Add release/9.0 targeting PRs to the servicing project
-    - if:
-      - payloadType: Pull_Request
-      - isAction:
-          action: Opened
-      - targetsBranch:
-          branch: release/8.0
-      then:
-      - addMilestone:
-          milestone: 8.0.x
-      - addReply:
-          reply: >-
-            Hi ${issueAuthor}. If this is not a tell-mode PR, please make sure to follow the instructions laid out in the [servicing process](https://aka.ms/aspnet/servicing) document.
-
-            Otherwise, please add `tell-mode` label.
-      description: Add release/8.0 targeting PRs to the servicing project
-    - if:
-      - payloadType: Pull_Request
-      - isAction:
-          action: Opened
-      - targetsBranch:
           branch: release/2.3
       then:
       - addMilestone:
@@ -550,6 +520,25 @@ configuration:
           action: Opened
       - targetsBranch:
           branch: release/10.0
+      - activitySenderHasPermission:
+          permission: Read
+      - not:
+          isActivitySender:
+            user: dotnet-maestro
+            issueAuthor: False
+      - not:
+          isActivitySender:
+            user: dotnet-maestro-bot
+            issueAuthor: False
+      then:
+      - addLabel:
+          label: servicing-consider
+    - if:
+      - payloadType: Pull_Request
+      - isAction:
+          action: Opened
+      - targetsBranch:
+          branch: release/11.0
       - activitySenderHasPermission:
           permission: Read
       - not:
@@ -611,30 +600,19 @@ configuration:
       then:
       - removeMilestone
       - addMilestone:
-          milestone: 10.0.10
+          milestone: 10.0.14
       description: '[Milestone Assignments] Assign Milestone to PRs merged to release/10.0 branch'
     - if:
       - payloadType: Pull_Request
       - isAction:
           action: Closed
       - targetsBranch:
-          branch: release/9.0
+          branch: release/11.0
       then:
       - removeMilestone
       - addMilestone:
-          milestone: 9.0.18
-      description: '[Milestone Assignments] Assign Milestone to PRs merged to release/9.0 branch'
-    - if:
-      - payloadType: Pull_Request
-      - isAction:
-          action: Closed
-      - targetsBranch:
-          branch: release/8.0
-      then:
-      - removeMilestone
-      - addMilestone:
-          milestone: 8.0.29
-      description: '[Milestone Assignments] Assign Milestone to PRs merged to release/8.0 branch'
+          milestone: 11.0.0
+      description: '[Milestone Assignments] Assign Milestone to PRs merged to release/11.0 branch'
     - if:
       - payloadType: Issues
       - labelAdded:
@@ -672,11 +650,11 @@ configuration:
 
             ${assignees}, after you commit this PR please take the following actions, as part of the breaking changes announcement process:
 
-            \n- [ ] Create an announcement issue by using the [ASP.NET Core breaking change](https://github.com/aspnet/Announcements/issues/new?assignees=&labels=Breaking+change&template=breaking-change.yaml&title=%5BBreaking+change%5D%3A+) issue template.
+            - [ ] Create an announcement issue by using the [ASP.NET Core breaking change](https://github.com/aspnet/Announcements/issues/new?assignees=&labels=Breaking+change&template=breaking-change.yaml&title=%5BBreaking+change%5D%3A+) issue template.
 
-            \n- [ ] Link the breaking change announcement issue from this PR.
+            - [ ] Link the breaking change announcement issue from this PR.
 
-            \n- [ ] Remove the `needs-breaking-change-announcement` label.
+            - [ ] Remove the `needs-breaking-change-announcement` label.
       description: Breaking change actions reminder
     - if:
       - payloadType: Issues
@@ -740,7 +718,6 @@ configuration:
       description: '[Infrastructure PRs] Add area-infrastructure label to dependabot update Pull Requests & enable auto-merge'
 onFailure:
 onSuccess:
-
 
 
 

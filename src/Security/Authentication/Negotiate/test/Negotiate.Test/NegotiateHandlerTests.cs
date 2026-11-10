@@ -1,13 +1,16 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Security.Authentication.ExtendedProtection;
 using System.Security.Claims;
+using System.Security.Cryptography.X509Certificates;
 using System.Security.Principal;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Connections;
 using Microsoft.AspNetCore.Connections.Features;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.Routing;
 using Microsoft.AspNetCore.TestHost;
 using Microsoft.Extensions.Caching.Memory;
@@ -123,6 +126,74 @@ public class NegotiateHandlerTests
         await NtlmStage1And2Auth(server, testConnection);
     }
 
+    [Fact]
+    public async Task NtlmStage1And2Auth_HttpsEndpointChannelBinding_UsesSingleStateAndReadsChannelBindingOnce()
+    {
+        var expectedToken = new byte[] { 0x01, 0x23, 0x45, 0x67 };
+        var factory = new TestNegotiateStateFactory();
+        using var host = await CreateHostAsync(options => options.StateFactory = factory);
+        var server = host.GetTestServer();
+        var connection = new TestConnection
+        {
+            IsHttps = true,
+            HasTlsConnectionFeature = true,
+            ChannelBindingAvailable = true,
+            ChannelBindingToken = expectedToken,
+        };
+
+        await NtlmStage1Auth(server, connection);
+
+        Assert.Equal(ChannelBindingKind.Endpoint, Assert.Single(connection.RequestedKinds));
+        Assert.Equal(expectedToken, Assert.Single(factory.ChannelBindingTokens).ToArray());
+        Assert.Equal(1, factory.CreateCount);
+        Assert.Single(factory.CreatedStates);
+
+        connection.ChannelBindingAvailable = false;
+        connection.ChannelBindingToken = new byte[] { 0x89 };
+        await NtlmStage2Auth(server, connection);
+
+        Assert.Single(factory.ChannelBindingTokens);
+        Assert.Equal(1, factory.CreateCount);
+        Assert.Single(factory.CreatedStates);
+        Assert.Equal(1, connection.ChannelBindingReadCount);
+        Assert.Equal(expectedToken, factory.ChannelBindingTokens[0].ToArray());
+    }
+
+    [Theory]
+    [InlineData(true, false, false, 0)]
+    [InlineData(true, true, false, 1)]
+    [InlineData(false, true, true, 0)]
+    public async Task NtlmStage1Auth_NoUsableChannelBinding_CreatesStateWithEmptyToken(
+        bool isHttps,
+        bool hasTlsConnectionFeature,
+        bool channelBindingAvailable,
+        int expectedTlsReads)
+    {
+        var factory = new TestNegotiateStateFactory();
+        using var host = await CreateHostAsync(options => options.StateFactory = factory);
+        var server = host.GetTestServer();
+        var connection = new TestConnection
+        {
+            IsHttps = isHttps,
+            HasTlsConnectionFeature = hasTlsConnectionFeature,
+            ChannelBindingAvailable = channelBindingAvailable,
+            ChannelBindingToken = new byte[] { 0x01 },
+        };
+
+        await NtlmStage1Auth(server, connection);
+
+        Assert.Single(factory.ChannelBindingTokens);
+        Assert.True(factory.ChannelBindingTokens[0].IsEmpty);
+        Assert.Equal(1, factory.CreateCount);
+        Assert.Single(factory.CreatedStates);
+        Assert.Equal(expectedTlsReads, connection.ChannelBindingReadCount);
+        Assert.Equal(expectedTlsReads, connection.RequestedKinds.Count);
+        if (expectedTlsReads == 1)
+        {
+            Assert.Equal(ChannelBindingKind.Endpoint, connection.RequestedKinds[0]);
+        }
+    }
+
     [Theory]
     [InlineData(false)]
     [InlineData(true)]
@@ -215,7 +286,7 @@ public class NegotiateHandlerTests
     public async Task RBACClaimsRetrievedFromCacheAfterKerberosCompleted()
     {
         var claimsCache = new MemoryCache(new MemoryCacheOptions());
-        claimsCache.Set("name", new string[] { "CN=Domain Admins,CN=Users,DC=domain,DC=net" });
+        claimsCache.Set("name@domain.NET", new string[] { "CN=Domain Admins,CN=Users,DC=domain,DC=net" });
         NegotiateOptions negotiateOptions = null;
         using var host = await CreateHostAsync(options =>
             {
@@ -498,22 +569,59 @@ public class NegotiateHandlerTests
             {
                 context.Features.Set<IConnectionItemsFeature>(connection);
                 context.Features.Set<IConnectionCompleteFeature>(connection);
+                if (connection.IsHttps)
+                {
+                    context.Request.Scheme = "https";
+                }
+                if (connection.HasTlsConnectionFeature)
+                {
+                    context.Features.Set<ITlsConnectionFeature>(connection);
+                }
             }
         });
     }
 
-    private class TestConnection : IConnectionItemsFeature, IConnectionCompleteFeature
+    private class TestConnection : IConnectionItemsFeature, IConnectionCompleteFeature, ITlsConnectionFeature
     {
         public IDictionary<object, object> Items { get; set; } = new ConnectionItems();
+        public bool IsHttps { get; set; }
+        public bool HasTlsConnectionFeature { get; set; }
+        public bool ChannelBindingAvailable { get; set; }
+        public ReadOnlyMemory<byte> ChannelBindingToken { get; set; }
+        public int ChannelBindingReadCount { get; private set; }
+        public List<ChannelBindingKind> RequestedKinds { get; } = new();
+        public X509Certificate2 ClientCertificate { get; set; }
 
         public void OnCompleted(Func<object, Task> callback, object state)
         {
+        }
+
+        public Task<X509Certificate2> GetClientCertificateAsync(CancellationToken cancellationToken)
+            => Task.FromResult(ClientCertificate);
+
+        public bool TryGetChannelBindingBytes(ChannelBindingKind kind, out ReadOnlyMemory<byte> channelBindingToken)
+        {
+            ChannelBindingReadCount++;
+            RequestedKinds.Add(kind);
+            channelBindingToken = ChannelBindingAvailable ? ChannelBindingToken : default;
+            return ChannelBindingAvailable;
         }
     }
 
     private class TestNegotiateStateFactory : INegotiateStateFactory
     {
-        public INegotiateState CreateInstance() => new TestNegotiateState();
+        public int CreateCount { get; private set; }
+        public List<ReadOnlyMemory<byte>> ChannelBindingTokens { get; } = new();
+        public List<TestNegotiateState> CreatedStates { get; } = new();
+
+        public INegotiateState CreateInstance(ReadOnlyMemory<byte> channelBindingToken)
+        {
+            CreateCount++;
+            ChannelBindingTokens.Add(channelBindingToken.ToArray());
+            var state = new TestNegotiateState();
+            CreatedStates.Add(state);
+            return state;
+        }
     }
 
     private class TestNegotiateState : INegotiateState
@@ -554,7 +662,7 @@ public class NegotiateHandlerTests
             {
                 throw new InvalidOperationException("Authentication is not complete.");
             }
-            return new GenericIdentity("name", _protocol);
+            return new GenericIdentity("name@domain.NET", _protocol);
         }
 
         public string GetOutgoingBlob(string incomingBlob, out BlobErrorType errorType, out Exception ex)

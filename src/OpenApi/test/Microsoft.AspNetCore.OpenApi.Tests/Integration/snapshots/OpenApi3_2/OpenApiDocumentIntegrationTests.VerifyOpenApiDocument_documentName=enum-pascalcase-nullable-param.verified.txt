@@ -25,7 +25,14 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/PascalCaseStatus"
+                  "oneOf": [
+                    {
+                      "type": "null"
+                    },
+                    {
+                      "$ref": "#/components/schemas/PascalCaseStatus"
+                    }
+                  ]
                 }
               }
             }
@@ -40,8 +47,7 @@
         "enum": [
           "Active",
           "Inactive",
-          "Pending",
-          null
+          "Pending"
         ]
       }
     }

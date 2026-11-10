@@ -4,19 +4,6 @@ This document is for common build errors and how to resolve them.
 
 NB: Some problems might be due to older build assets that conflict with newer commits. It's recommended to run `git clean -xddff` between checkouts. If this command fails due to locked files you can try to stop any existing `dotnet` or `.NET Host` process and retry.
 
-## Warning BUILD001
-
-> warning BUILD001: Reference to '&hellip;' was removed since the last stable release of this package. &hellip;
-
-This warning indicates a breaking change might have been made to a package or assembly due to the removal of a reference which was used
-in a previous release of this assembly. See [ReferenceResolution](./ReferenceResolution.md) for how to suppress.
-
-## Error BUILD002
-
-> error BUILD002: Package references changed since the last release&hellip;
-
-Similar to BUILD001, but this error is not suppressible. This error only appears in servicing builds, which should not change references between assemblies or packages.
-
 ## Error BUILD003
 
 > error BUILD003: Multiple project files named 'Banana.csproj' exist. Project files should have a unique name to avoid conflicts in build output.
@@ -116,9 +103,16 @@ When attempting to restore servicing tags e.g. `v3.1.7`,  the NuGet.config file 
 
 The `darc-int-...` feeds in NuGet.config are used only when building internally and are not needed after the tags are created. Delete all such entries in the file and retry.
 
-## Error: Generated code is not up to date in eng/ProjectReferences.props.
+## Error: Generated code is not up to date in an eng/*.props project inventory
 
-After some project additions or moves, you may need to update the two `DotNetProjects Include` lists in `eng/Build.props`
+`eng/scripts/CodeCheck.ps1` runs `eng/scripts/GenerateProjectList.ps1` and reports this error when
+the generated project inventories do not match the project files. The generated inventories are
+`eng/RequiresDelayedBuildProjects.props`, `eng/SharedFramework.Local.props`,
+`eng/ShippingAssemblies.props`, and `eng/TrimmableProjects.props`.
+
+Follow the [project addition, move, or removal checklist](AddingNewProjects.md#adding-moving-or-removing-a-project).
+In particular, ensure the project is included in the appropriate `DotNetProjects` list in
+`eng/Build.props`, run `eng/scripts/GenerateProjectList.ps1`, and include the generated changes.
 
 ## Warning: Requested Microsoft.AspNetCore.App v&hellip; does not exist
 

@@ -6,8 +6,10 @@ using System.Buffers;
 using System.Diagnostics;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
+#if NET
 using System.Runtime.Intrinsics;
 using System.Runtime.Intrinsics.X86;
+#endif
 
 #if QueryStringEnumerable_In_WebUtilities
 namespace Microsoft.AspNetCore.WebUtilities;
@@ -92,6 +94,7 @@ internal
         private static ReadOnlyMemory<char> Decode(ReadOnlyMemory<char> chars)
         {
             ReadOnlySpan<char> source = chars.Span;
+#if NET
             if (!source.ContainsAny('%', '+'))
             {
                 return chars;
@@ -101,6 +104,13 @@ internal
             var success = Uri.TryUnescapeDataString(buffer, buffer, out var unescapedLength);
             Debug.Assert(success);
             return buffer.AsMemory(0, unescapedLength);
+#else
+            if (source.IndexOf('%') < 0 && source.IndexOf('+') < 0)
+            {
+                return chars;
+            }
+            return Uri.UnescapeDataString(chars.ToString().Replace('+', ' ')).AsMemory();
+#endif
         }
     }
 

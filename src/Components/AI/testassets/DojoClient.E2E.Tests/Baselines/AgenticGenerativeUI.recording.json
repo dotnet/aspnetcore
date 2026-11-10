@@ -1,0 +1,205 @@
+{
+  "calls": [
+    {
+      "prompt": "Please build a plan to go to mars in 5 steps.",
+      "messageCount": 2,
+      "toolNames": [
+        "create_plan",
+        "update_plan_step"
+      ],
+      "frames": [
+        {
+          "name": "plan-created",
+          "functionCall": {
+            "callId": "agentic-plan-create-1",
+            "name": "create_plan",
+            "arguments": {
+              "steps": [
+                "Develop a comprehensive mission plan, detailing objectives, budget, and timeline.",
+                "Design and test a spacecraft capable of transporting humans and cargo to Mars.",
+                "Select and train astronaut crew for the mission.",
+                "Establish communication systems and infrastructure for Mars exploration.",
+                "Launch the spacecraft and execute the mission to Mars."
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "prompt": "Please build a plan to go to mars in 5 steps.",
+      "messageCount": 4,
+      "toolNames": [
+        "create_plan",
+        "update_plan_step"
+      ],
+      "toolResultCallIds": [
+        "agentic-plan-create-1"
+      ],
+      "frames": [
+        {
+          "name": "before-step-1"
+        },
+        {
+          "name": "step-1-call",
+          "functionCall": {
+            "callId": "agentic-plan-step-1",
+            "name": "update_plan_step",
+            "arguments": {
+              "index": 0,
+              "status": "completed"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "prompt": "Please build a plan to go to mars in 5 steps.",
+      "messageCount": 6,
+      "toolNames": [
+        "create_plan",
+        "update_plan_step"
+      ],
+      "toolResultCallIds": [
+        "agentic-plan-create-1",
+        "agentic-plan-step-1"
+      ],
+      "frames": [
+        {
+          "name": "before-step-2"
+        },
+        {
+          "name": "step-2-call",
+          "functionCall": {
+            "callId": "agentic-plan-step-2",
+            "name": "update_plan_step",
+            "arguments": {
+              "index": 1,
+              "status": "completed"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "prompt": "Please build a plan to go to mars in 5 steps.",
+      "messageCount": 8,
+      "toolNames": [
+        "create_plan",
+        "update_plan_step"
+      ],
+      "toolResultCallIds": [
+        "agentic-plan-create-1",
+        "agentic-plan-step-1",
+        "agentic-plan-step-2"
+      ],
+      "frames": [
+        {
+          "name": "before-step-3"
+        },
+        {
+          "name": "step-3-call",
+          "functionCall": {
+            "callId": "agentic-plan-step-3",
+            "name": "update_plan_step",
+            "arguments": {
+              "index": 2,
+              "status": "completed"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "prompt": "Please build a plan to go to mars in 5 steps.",
+      "messageCount": 10,
+      "toolNames": [
+        "create_plan",
+        "update_plan_step"
+      ],
+      "toolResultCallIds": [
+        "agentic-plan-create-1",
+        "agentic-plan-step-1",
+        "agentic-plan-step-2",
+        "agentic-plan-step-3"
+      ],
+      "frames": [
+        {
+          "name": "before-step-4"
+        },
+        {
+          "name": "step-4-call",
+          "functionCall": {
+            "callId": "agentic-plan-step-4",
+            "name": "update_plan_step",
+            "arguments": {
+              "index": 3,
+              "status": "completed"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "prompt": "Please build a plan to go to mars in 5 steps.",
+      "messageCount": 12,
+      "toolNames": [
+        "create_plan",
+        "update_plan_step"
+      ],
+      "toolResultCallIds": [
+        "agentic-plan-create-1",
+        "agentic-plan-step-1",
+        "agentic-plan-step-2",
+        "agentic-plan-step-3",
+        "agentic-plan-step-4"
+      ],
+      "frames": [
+        {
+          "name": "before-step-5"
+        },
+        {
+          "name": "step-5-call",
+          "functionCall": {
+            "callId": "agentic-plan-step-5",
+            "name": "update_plan_step",
+            "arguments": {
+              "index": 4,
+              "status": "completed"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "prompt": "Please build a plan to go to mars in 5 steps.",
+      "messageCount": 14,
+      "toolNames": [
+        "create_plan",
+        "update_plan_step"
+      ],
+      "toolResultCallIds": [
+        "agentic-plan-create-1",
+        "agentic-plan-step-1",
+        "agentic-plan-step-2",
+        "agentic-plan-step-3",
+        "agentic-plan-step-4",
+        "agentic-plan-step-5"
+      ],
+      "frames": [
+        {
+          "name": "before-summary"
+        },
+        {
+          "name": "summary-complete",
+          "chunks": [
+            "All five steps in the Mars mission plan are complete."
+          ]
+        },
+        {
+          "name": "response-complete"
+        }
+      ]
+    }
+  ]
+}

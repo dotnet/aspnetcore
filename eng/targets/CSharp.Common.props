@@ -7,8 +7,8 @@
   </PropertyGroup>
 
   <ItemGroup Condition=" $(IsTestProject) ">
-    <Reference Include="Microsoft.AspNetCore.InternalTesting" />
-    <Reference Include="Moq" />
+    <PackageReference Include="Moq" />
+    <ProjectReference Include="$(RepoRoot)src/Testing/src/Microsoft.AspNetCore.InternalTesting.csproj" />
     <Compile Include="$(SharedSourceRoot)test\SuccessfulTests.cs" LinkBase="SharedTests" Visible="false" />
   </ItemGroup>
 

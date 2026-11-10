@@ -1,6 +1,7 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Runtime.CompilerServices;
 using Microsoft.AspNetCore.RateLimiting;
 
 namespace Microsoft.AspNetCore.Builder;
@@ -40,9 +41,18 @@ public static class RateLimiterEndpointConventionBuilderExtensions
         ArgumentNullException.ThrowIfNull(builder);
         ArgumentNullException.ThrowIfNull(policy);
 
+        // Inline policies are not named, so historically they all shared a single null partition-key
+        // namespace. That let two distinct inline policies collide onto the same limiter whenever their
+        // GetPartition methods returned equal keys. Derive a stable namespace from the policy instance so
+        // distinct policy objects are isolated while the same instance reused across endpoints still shares
+        // a limiter. This is captured once here rather than inside the convention callback so endpoint
+        // rebuilds don't regenerate it. It is intentionally kept separate from the telemetry-facing
+        // EnableRateLimitingAttribute.PolicyName so rate-limiting metrics are unaffected.
+        var policyName = $"__inlinePolicy_{RuntimeHelpers.GetHashCode(policy)}";
+
         builder.Add(endpointBuilder =>
         {
-            endpointBuilder.Metadata.Add(new EnableRateLimitingAttribute(new DefaultRateLimiterPolicy(RateLimiterOptions.ConvertPartitioner<TPartitionKey>(null, policy.GetPartition), policy.OnRejected)));
+            endpointBuilder.Metadata.Add(new EnableRateLimitingAttribute(new DefaultRateLimiterPolicy(RateLimiterOptions.ConvertPartitioner<TPartitionKey>(policyName, policy.GetPartition), policy.OnRejected)));
         });
         return builder;
     }

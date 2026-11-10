@@ -1,0 +1,4 @@
+﻿@page "/PageRequiringSlowAsyncPolicy"
+@using Microsoft.AspNetCore.Authorization
+@attribute [Authorize(Policy = "SlowPolicyRequiringGate")]
+<div id="slow-auth-success">Welcome to PageRequiringSlowAsyncPolicy!</div>

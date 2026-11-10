@@ -100,6 +100,11 @@ internal sealed partial class KestrelTrace : ILogger
         Http2Log.Http2FlowControlQueueMaximumTooLow(_http2Logger, connectionId, expected, actual);
     }
 
+    public void Http2StreamPooled(string connectionId, int streamId)
+    {
+        Http2Log.Http2StreamPooled(_http2Logger, connectionId, streamId);
+    }
+
     private static partial class Http2Log
     {
         [LoggerMessage(29, LogLevel.Debug, @"Connection id ""{ConnectionId}"": HTTP/2 connection error.", EventName = "Http2ConnectionError")]
@@ -154,5 +159,8 @@ internal sealed partial class KestrelTrace : ILogger
 
         [LoggerMessage(66, LogLevel.Debug, @"Connection id ""{ConnectionId}"" configured maximum flow control queue size {Actual} is less than the maximum streams per connection {Expected}. Increasing configured value to {Expected}.", EventName = "Http2FlowControlQueueMaximumTooLow")]
         public static partial void Http2FlowControlQueueMaximumTooLow(ILogger logger, string connectionId, int expected, int actual);
+
+        [LoggerMessage(67, LogLevel.Trace, @"Connection id ""{ConnectionId}"" stream ID {StreamId} pooled for reuse.", EventName = "Http2StreamPooled")]
+        public static partial void Http2StreamPooled(ILogger logger, string connectionId, int streamId);
     }
 }
