@@ -7,7 +7,7 @@ description: >-
   porting, or projecting a browser API (window.* or navigator.*) for Blazor, such as "wrap the
   Cookie Store API as a .NET API" or "add navigator.clipboard to Components.Platform"; designing the
   public API and API proposal of a family; mapping Web IDL types to .NET; extending or testing a
-  family in src/Components/Platform; and the disposal, cancellation, trimming, and E2E rules of
+  family in src/Components/Platform; and the disposal, cancellation, event, trimming, and E2E rules of
   that package. DO NOT USE FOR DOM manipulation, application-specific JavaScript, migrating
   existing framework code such as ProtectedBrowserStorage, or filing the API review issue itself
   (use api-review).
@@ -20,15 +20,18 @@ Web Storage (`Storage.cs`, `WindowWebStorageExtensions.cs`, and `test/StorageTes
 reference implementation. Read it before writing code, and copy its shape unless a rule below says
 otherwise. Cookie Store (`CookieStore.cs`, its dictionaries and enum, `test/CookieStoreTest.cs`,
 and `CookieStoreTests` in the E2E tests) shows what Web Storage lacks. It has a browser object that
-can be missing, dictionaries, an enum, an `[Experimental]` member, and JSON assertions in unit tests.
+can be missing, dictionaries, a Web IDL enum, an `[Experimental]` member, an event, and JSON
+assertions in unit tests. URL (`Url.cs`, `UrlSearchParams.cs`, and `WindowUrlExtensions.cs`) shows
+objects that the application creates and owns, and an `iterable<>`.
 
 ## Scope
 
 - Port one API family per change, so each family stays small and separately reviewable.
 - Keep DOM manipulation and application-specific JavaScript out of this package.
-- Leave out events and other callbacks from JavaScript to .NET for now, such as the `onchange`
-  event handler of `CookieStore`. Their design, including how to deliver them without a JavaScript
-  module, is not decided yet. List them as deferred members, and raise them as an open question.
+- Port the events of the family with the shared event listener API, as "Add events" below
+  describes. Leave out other callbacks from JavaScript to .NET, such as the callback that
+  `navigator.locks.request()` calls while it holds the lock. Their design is not decided yet. List
+  them as deferred members, and raise them as an open question.
 - Do not migrate existing framework code, such as `ProtectedBrowserStorage`, to the projection. The
   package ships on its own, and an assembly in the shared framework, such as
   `Microsoft.AspNetCore.Components.Server`, cannot reference it. Reviewers also found no benefit in
@@ -48,7 +51,8 @@ examples below use the Cookie Store API.
 - List every interface, dictionary, enum, typedef, and member that the family reaches from its
   entry point, such as `window.cookieStore`. Mark each one as implement, defer, or exclude, and give
   the reason. For example, the `get`, `getAll`, `set`, and `delete` operations are implemented,
-  `onchange` is deferred as an event, and `CookieStoreManager` is excluded. It is exposed to
+  the `change` event is implemented as an event key instead of `onchange`, and
+  `CookieStoreManager` is excluded. It is exposed to
   `Window` too, but only through another entry point, `ServiceWorkerRegistration.cookies`, so it
   belongs to a separate slice. Check the `Exposed` attribute in the Web IDL before you give such a
   reason.
@@ -97,6 +101,10 @@ examples below use the Cookie Store API.
   yet, such as `Navigator`, stop and raise it as an open question. Keep the property synchronous
   and non-nullable even when the browser object can be missing. "Implement" below says how to
   handle that.
+- Map a Web IDL constructor to `CreateAsync` on a `<Type>Constructor` object, and reach that object
+  through a synchronous property of the global object. For example, `new URL(url)` becomes
+  `Window.Url.CreateAsync(url)`. Put static operations, such as `URL.parse()`, on the same object.
+  The created object belongs to the caller. "Implement" below says how it is disposed.
 - Mark each member that is not Baseline with
   `[Experimental("ASP0040", UrlFormat = "https://aka.ms/aspnet/analyzer/{0}")]`. The whole package
   shares this ID, so never allocate a new one. Write its lines in `PublicAPI.Unshipped.txt` without
@@ -118,15 +126,31 @@ examples below use the Cookie Store API.
 
 - Put the projection in `src/Components/Platform/src`. Add one type for the family, such as
   `Clipboard.cs`, and one extension class on its owner, such as `NavigatorClipboardExtensions.cs`.
-  Get the instance with `window.GetOrAddFeature(...)`, and pass a subkey when two properties share one type, as
-  `LocalStorage` and `SessionStorage` do.
+- Name the extension class `<Owner><Type>Extensions` after the type that the property returns, such
+  as `WindowScreenExtensions` for `Screen`, and `NavigatorStorageManagerExtensions` for
+  `navigator.storage`, which returns a `StorageManager`. Do not name it after the property, such as
+  `NavigatorStorageExtensions`. That name is easy to confuse with Web Storage, a property name can
+  be plural, such as `locks`, and the type name matches the MDN page. `WindowWebStorageExtensions`
+  keeps the name of its specification, because two properties share one type there.
+- Get the instance with `window.GetOrAddFeature(...)`, and pass a subkey when two properties share
+  one type, as `LocalStorage` and `SessionStorage` do. The factory receives the internal
+  `FeatureContext`, which holds what all projections of the scope share. So a new shared part does
+  not change the signature of every factory. Pass the projection only what it uses, such as
+  `context.JSRuntime`, and `context.CreateEventListenerCollection()` for a family with events.
+- Write the factory as a `static` lambda, such as
+  `window.GetOrAddFeature(static context => new Screen(context.JSRuntime))`. It captures nothing,
+  so the compiler caches one delegate, and the property allocates nothing on each access. A lambda
+  that captures a variable creates a new delegate every time the property is read.
 - Let the trimmer drop each unused member of a used family too. Do not reach family members through
   reflection or tables that reference every member. Use `[DynamicDependency]` only on a method that
   passes or receives a dictionary through JS interop, as the type mapping describes. Keep the build free of trim
   warnings.
-- Do not add a JavaScript module. Use only the `IJSRuntime` and `IJSObjectReference` features of
-  .NET 10 and later, such as `InvokeConstructorAsync`, `GetValueAsync`, and `SetValueAsync`. If a
-  feature seems to need JavaScript of its own, stop and raise it as an open question.
+- Do not add JavaScript for a family. Use the `IJSRuntime` and `IJSObjectReference` features of
+  .NET 10 and later, such as `InvokeConstructorAsync`, `GetValueAsync`, and `SetValueAsync`. The
+  package has one shared JavaScript bundle, `js/Platform.ts`, for events and callbacks from
+  JavaScript to .NET. Reach it only through the event listener API, and do not add a function for
+  one family to it. If a feature seems to need JavaScript of its own, stop and raise it as an open
+  question.
 - Do not add locks or other synchronization. Blazor runs on a single threaded synchronization
   context, so only one thread runs at a time.
 - Acquire a JS object reference lazily on first use and share the pending task between callers. Do
@@ -148,10 +172,16 @@ examples below use the Cookie Store API.
   A public `IAsyncDisposable` let one caller break the wrapper for the rest of the scope. An
   explicit `IAsyncDisposable` implementation hid `DisposeAsync` from IntelliSense, but
   `await using` still compiled. With the internal interface, `await using` does not compile.
-- This disposal rule covers only shared wrappers that `Window` hands out. Disposal of an object
-  that a call creates and the caller owns is not designed yet. Examples are the `Cache` that
-  `caches.open()` returns and a `Lock` from Web Locks. When a family returns such an object, stop
-  and raise it as an open question.
+- This disposal rule covers only shared wrappers that `Window` hands out. An object that a call
+  creates and the caller owns, such as the `Url` from `Window.Url.CreateAsync()` or the `Cache`
+  from `caches.open()`, implements public `IAsyncDisposable` itself. Do not add an owner type or a
+  wrapper around it. When another object also returns the same type, such as `url.SearchParams`,
+  keep one sealed type, and say in its XML docs that its owner disposes it and callers must not, as
+  `UrlSearchParams` does. Review accepted the risk that a caller disposes such an instance anyway,
+  as with a `Stream`.
+- A caller-owned object that a component keeps for a long time, such as a `WebSocket`, leaks when
+  the component is disposed before `CreateAsync` completes. Nobody receives the object. When a
+  family creates such an object, raise this as an open question.
 - Never let disposal throw. `Window` disposes features in access order, and an exception stops the
   rest. Do not wait for a pending acquisition either. It could hold up scope disposal until the JS
   interop timeout, which is one minute by default. Release the reference only when the acquisition
@@ -159,12 +189,63 @@ examples below use the Cookie Store API.
   This is accepted. It happens only when the scope ends during an acquisition, and it leaves at
   most one reference for each family. A circuit that waits a minute to close costs more. After
   disposal, throw `ObjectDisposedException` from every member.
+- Do not add handling for a race or a failure that can happen only while the scope is disposed. In
+  Interactive Server, `CircuitHost` calls `MarkPermanentlyDisconnected()` on the JS runtime before
+  it disposes the scope. So every JS call during disposal fails at once with
+  `JSDisconnectedException`, and `JSObjectReference.DisposeAsync` ignores that exception. In
+  WebAssembly, the scope is not disposed while the page is open. Make an exception only for a fix of
+  one or two lines that stops a real leak in .NET, such as a callback that stays registered on a
+  token the caller keeps for a long time.
 - When the caller passes no `CancellationToken`, call the `IJSRuntime` overload without a token.
   Any token, even `CancellationToken.None`, turns off the default timeout of `JSRuntime`.
+- When a member takes a `CancellationToken` but cannot get the browser object, throw that failure,
+  such as `NotSupportedException` for a missing object, even if the token was canceled meanwhile.
+  Nothing was done, so the failure tells the caller more. Once the operation itself can go ahead,
+  the token decides. A failure of the operation while the token is canceled becomes
+  `OperationCanceledException` for that token.
 - Pass JS arguments in `params` form, such as `InvokeAsync<CookieListItem?>("get", name)`, as most
   of the repository does. Write the argument list as `[...]` only when an argument could be taken
   for something else. An array or `null` becomes the argument list itself, and a `TimeSpan` or
   `CancellationToken` binds to the timeout or cancellation overload.
+
+## Add events
+
+Events use one API for every family. `CookieStore.ChangeEvent` and `Window.StorageEvent` are the
+references.
+
+- Do not project an event handler attribute, such as `onchange`, as a property or as
+  `SetOnChangeAsync()`. A projection is shared in the scope, so one handler slot would let one caller
+  replace or remove the handler of another, and the handler that the page's own JavaScript sets.
+- Give each event one key, a static `EventType<TTarget, TEvent>` property named `<Name>Event`, on
+  the target type, such as `CookieStore.ChangeEvent` for the `change` event. For an event on
+  `Window`, declare the key as a static member in an `extension(Window)` block of the family's
+  extension class, as `WindowWebStorageExtensions` does for `Window.StorageEvent`. Keys belong to
+  one target even when two targets fire events with the same name, because the event object can
+  differ. A key of another target does not compile.
+- When the target is not `Window`, give it two `AddEventListenerAsync<TEvent>` overloads, one with a
+  `CancellationToken` and one without, and copy them from `CookieStore` with their XML docs.
+  `Window` already has them. The result is a plain `IAsyncDisposable` that removes the listener.
+  Do not add `RemoveEventListenerAsync()` or the `once`, `capture`, `passive`, and `signal` options.
+  Canceling the token removes the listener, as disposing the result does.
+- Create the key with `EventTypes.Create<TTarget, TEvent>(name, shapesJson)`. The shape JSON is an
+  `ArgumentShape` list (see `js/Platform.ts`) that names the properties to copy from the event
+  object. `null` copies a plain value, a dictionary, or a sequence of them as it is. When a property
+  holds a shared object that the package already projects, such as `storageArea`, use
+  `{"$known":[...]}` and the `EventTypes.Create` overload that converts a payload into the event
+  object, as `StorageEventPayload` does. The bridge never creates a JS object reference for an
+  event. When an event carries any other browser object, stop and raise it as an open question.
+- Map the event interface to a sealed class with `{ get; init; }` properties, like a dictionary that
+  the browser returns. Keep the Web IDL name, such as `CookieChangeEvent`, and copy only the members
+  that the event interface itself declares. When an event is a plain `Event` with no members of
+  its own, stop and raise the .NET event type as an open question.
+- Take `context.CreateEventListenerCollection()` in the factory. In disposal, dispose the listeners
+  first and the reference of the target after them, because a listener needs that reference to
+  remove itself. When the event object contains a dictionary, put `[DynamicDependency]` for that
+  dictionary type on `AddEventListenerAsync`, as `CookieStore` does for `CookieListItem`.
+- Unit tests check the shape JSON and the event name that reach the browser, the event object that
+  a listener receives, and that two listeners stay independent. Copy the event tests in
+  `CookieStoreTest`. The E2E test fires the event in the browser, also from code that is not .NET,
+  and checks that a removed listener receives nothing, as `CookieStoreTests` does.
 
 ## Document
 
@@ -206,8 +287,9 @@ internals. Follow the majority phrasing in this repository and `ProtectedBrowser
   WebAssembly app below can show it.
 - Keep tests few and readable. Avoid tricks that depend on ordering. When ordering cannot be
   avoided, make it visible in the test and explain it in one comment.
-- Add the new type to both `LiveBrowserObjectMethods_AreAsynchronous` and
-  `SharedInstances_CannotBeDisposedByApplicationCode` in `PublicApiTest`.
+- Add the new type to `LiveBrowserObjectMethods_AreAsynchronous` in `PublicApiTest`. Add a shared
+  type to `SharedInstances_CannotBeDisposedByApplicationCode`. Check that a caller-owned type can
+  be disposed, as `CallerOwnedUrlSearchParams_CanBeDisposedByApplicationCode` does.
 - Exercise the public API in Interactive Server and WebAssembly through `PlatformTestApp` and
   `PlatformTestApp.E2E.Tests`. These E2E tests run on Helix in CI with a prebuilt app. A local run
   from the build output does not use that layout, so also run the tests from the output of
