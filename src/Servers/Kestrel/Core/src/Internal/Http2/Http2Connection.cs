@@ -1499,6 +1499,7 @@ internal sealed partial class Http2Connection : IHttp2StreamLifetimeHandler, IHt
             stream.DrainExpirationTimestamp = TimeProvider.GetTimestamp(StreamPoolExpiry);
 
             StreamPool.Push(stream);
+            Log.Http2StreamPooled(ConnectionId, stream.StreamId);
         }
         else
         {
