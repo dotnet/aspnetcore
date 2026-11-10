@@ -3,6 +3,11 @@
   <Import Project="../../eng/targets/Microsoft.AspNetCore.Components.Testing.props" />
 
   <PropertyGroup>
+    <!-- The E2E harness requires NativeAOT; skip it when the target does not support NativeAOT. -->
+    <ExcludeFromBuild Condition="'$(NativeAotSupported)' != 'true'">true</ExcludeFromBuild>
+  </PropertyGroup>
+
+  <PropertyGroup>
     <TargetFramework>$(DefaultNetCoreTargetFramework)</TargetFramework>
     <Nullable>enable</Nullable>
     <OutputType>Exe</OutputType>

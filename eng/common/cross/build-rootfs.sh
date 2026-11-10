@@ -5,7 +5,7 @@ set -e
 usage()
 {
     echo "Usage: $0 [BuildArch] [CodeName] [lldbx.y] [llvmx[.y]] [--skipunmount] --rootfsdir <directory>]"
-    echo "BuildArch can be: arm(default), arm64, loongarch64, ppc64le, riscv64, s390x, x64, x86"
+    echo "BuildArch can be: arm(default), arm64, loongarch64, ppc64le, riscv64, s390x, x64"
     echo "CodeName - optional, Code name for Linux, can be: xenial(default), zesty, bionic, alpine"
     echo "                               for alpine can be specified with version: alpineX.YY or alpineedge"
     echo "                               for FreeBSD can be: freebsd14, freebsd15"
@@ -228,12 +228,6 @@ while :; do
             __OpenBSDMachineArch=amd64
             __illumosArch=x86_64
             __HaikuArch=x86_64
-            __UbuntuRepo="https://archive.ubuntu.com/ubuntu/"
-            ;;
-        x86)
-            __BuildArch=x86
-            __UbuntuArch=i386
-            __AlpineArch=x86
             __UbuntuRepo="https://archive.ubuntu.com/ubuntu/"
             ;;
         lldb*)
@@ -460,9 +454,6 @@ case "$__AlpineVersion" in
         if [[ "$__AlpineArch" =~ s390x|ppc64le ]]; then
             __AlpineVersion=3.15 # minimum version that supports lldb-dev
             __AlpinePackages+=" llvm12-libs"
-        elif [[ "$__AlpineArch" == "x86" ]]; then
-            __AlpineVersion=3.17 # minimum version that supports lldb-dev
-            __AlpinePackages+=" llvm15-libs"
         elif [[ "$__AlpineArch" == "loongarch64" ]]; then
             __AlpineVersion=3.21 # minimum version that supports lldb-dev
             __AlpinePackages+=" llvm19-libs"

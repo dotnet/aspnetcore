@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Buffers;
+using System.Diagnostics.CodeAnalysis;
 using System.Text;
 
 namespace Microsoft.AspNetCore.WebUtilities;
@@ -346,17 +347,32 @@ public class BufferedReadStream : Stream
     public string ReadLine(int lengthLimit)
     {
         CheckDisposed();
-        using (var builder = new MemoryStream(200))
+        MemoryStream? builder = null;
+        try
         {
             bool foundCR = false, foundCRLF = false;
             var lineLength = 0;
 
             while (!foundCRLF && EnsureBuffered())
             {
+                if (builder is null)
+                {
+                    if (TryReadLineFromBuffer(lengthLimit, out var line))
+                    {
+                        return line;
+                    }
+
+                    builder = new MemoryStream(200);
+                }
+
                 ProcessLineChar(builder, ref lineLength, lengthLimit, ref foundCR, ref foundCRLF);
             }
 
-            return DecodeLine(builder, foundCRLF);
+            return builder is null ? string.Empty : DecodeLine(builder, foundCRLF);
+        }
+        finally
+        {
+            builder?.Dispose();
         }
     }
 
@@ -371,18 +387,54 @@ public class BufferedReadStream : Stream
     public async Task<string> ReadLineAsync(int lengthLimit, CancellationToken cancellationToken)
     {
         CheckDisposed();
-        using (var builder = new MemoryStream(200))
+        MemoryStream? builder = null;
+        try
         {
             bool foundCR = false, foundCRLF = false;
             var lineLength = 0;
 
             while (!foundCRLF && await EnsureBufferedAsync(cancellationToken))
             {
+                if (builder is null)
+                {
+                    if (TryReadLineFromBuffer(lengthLimit, out var line))
+                    {
+                        return line;
+                    }
+
+                    builder = new MemoryStream(200);
+                }
+
                 ProcessLineChar(builder, ref lineLength, lengthLimit, ref foundCR, ref foundCRLF);
             }
 
-            return DecodeLine(builder, foundCRLF);
+            return builder is null ? string.Empty : DecodeLine(builder, foundCRLF);
         }
+        finally
+        {
+            builder?.Dispose();
+        }
+    }
+
+    // Fast path for the common case where the whole line, including the terminating CRLF, is already buffered.
+    // This avoids accumulating the line in a temporary MemoryStream one byte at a time.
+    private bool TryReadLineFromBuffer(int lengthLimit, [NotNullWhen(true)] out string? line)
+    {
+        var buffered = _buffer.AsSpan(_bufferOffset, _bufferCount);
+        var index = buffered.IndexOf("\r\n"u8);
+
+        // ProcessLineChar enforces the limit on every byte up to and including the CR,
+        // so defer to it when the limit would be exceeded so the same exception is produced.
+        if (index < 0 || index >= lengthLimit)
+        {
+            line = null;
+            return false;
+        }
+
+        line = Encoding.UTF8.GetString(buffered.Slice(0, index));
+        _bufferOffset += index + 2;
+        _bufferCount -= index + 2;
+        return true;
     }
 
     private void ProcessLineChar(MemoryStream builder, ref int lineLength, int lengthLimit, ref bool foundCR, ref bool foundCRLF)
