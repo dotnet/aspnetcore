@@ -93,6 +93,60 @@ public class BlazorWebTemplateTest(ProjectFactoryFixture projectFactory) : Blazo
 
     [Theory]
     [InlineData(BrowserKind.Chromium)]
+    public async Task BlazorWebTemplate_RecoveryEmailsUseStoredAddressAndDoNotSendWithoutIt(BrowserKind browserKind)
+    {
+        if (!BrowserManager.IsAvailable(browserKind))
+        {
+            EnsureBrowserAvailable(browserKind);
+            return;
+        }
+
+        var project = await CreateBuildPublishAsync(args: ["-int", "None", "-au", "Individual"], onlyCreate: true);
+        AddCanonicalEmailTestEndpoints(project);
+        await project.RunDotNetBuildAsync();
+
+        using var aspNetProcess = project.StartBuiltProjectAsync();
+        Assert.False(
+            aspNetProcess.Process.HasExited,
+            ErrorMessages.GetFailedProcessMessageOrEmpty("Run built project", project, aspNetProcess.Process));
+
+        await using var browser = await BrowserManager.GetBrowserInstance(browserKind, BrowserContextInfo);
+        var page = await browser.NewPageAsync();
+        var listeningUri = aspNetProcess.ListeningUri.AbsoluteUri;
+        await page.GotoAsync(listeningUri, new() { WaitUntil = WaitUntilState.NetworkIdle });
+
+        var forgotStoredEmail = $"Forgot.{Guid.NewGuid()}@example.com";
+        await CreateCanonicalEmailTestUserAsync(page, forgotStoredEmail, confirmed: true);
+        await page.GotoAsync($"{listeningUri}Account/ForgotPassword", new() { WaitUntil = WaitUntilState.NetworkIdle });
+        await SubmitRecoveryFormAsync(page, "/Account/ForgotPassword", "forgot-password", forgotStoredEmail.ToLowerInvariant());
+        await page.WaitForURLAsync("**/Account/ForgotPasswordConfirmation**", new() { WaitUntil = WaitUntilState.NetworkIdle });
+        Assert.Equal(new[] { forgotStoredEmail }, await GetCanonicalEmailMessagesAsync(page));
+
+        var resendStoredEmail = $"Resend.{Guid.NewGuid()}@example.com";
+        await CreateCanonicalEmailTestUserAsync(page, resendStoredEmail, confirmed: false);
+        await page.GotoAsync($"{listeningUri}Account/ResendEmailConfirmation", new() { WaitUntil = WaitUntilState.NetworkIdle });
+        await SubmitRecoveryFormAsync(page, "/Account/ResendEmailConfirmation", "resend-email-confirmation", resendStoredEmail.ToLowerInvariant());
+        await page.WaitForSelectorAsync("text=Verification email sent. Please check your email.");
+        Assert.Equal(new[] { forgotStoredEmail, resendStoredEmail }, await GetCanonicalEmailMessagesAsync(page));
+
+        var messageCount = (await GetCanonicalEmailMessagesAsync(page)).Length;
+        foreach (var (path, handler, confirmed) in new[]
+        {
+            ("/Account/ForgotPassword", "forgot-password", true),
+            ("/Account/ResendEmailConfirmation", "resend-email-confirmation", false),
+        })
+        {
+            var email = $"Missing.{Guid.NewGuid()}@example.com";
+            await CreateCanonicalEmailTestUserAsync(page, email, confirmed, clearStoredEmail: true);
+            await page.GotoAsync($"{listeningUri.TrimEnd('/')}{path}", new() { WaitUntil = WaitUntilState.NetworkIdle });
+            var response = await SubmitRecoveryFormAsync(page, path, handler, email.ToLowerInvariant());
+            Assert.Equal(500, response.Status);
+            Assert.Equal(messageCount, (await GetCanonicalEmailMessagesAsync(page)).Length);
+        }
+    }
+
+    [Theory]
+    [InlineData(BrowserKind.Chromium)]
     [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/69095")]
     public async Task BlazorWebTemplate_CanUsePasskeys(BrowserKind browserKind)
     {
@@ -446,6 +500,68 @@ public class BlazorWebTemplateTest(ProjectFactoryFixture projectFactory) : Blazo
         Assert.NotEqual(account.GetProperty("id").GetString(), registrationUserId);
         Assert.Equal(0, account.GetProperty("state").GetProperty("saveAttempts").GetInt32());
         Assert.Empty(account.GetProperty("passkeys").EnumerateArray());
+    }
+
+    private static void AddCanonicalEmailTestEndpoints(Project project)
+    {
+        var testAsset = File.ReadAllText(Path.Combine(AppContext.BaseDirectory, "TestAssets", "CanonicalEmailTest.cs"));
+        File.WriteAllText(
+            Path.Combine(project.TemplateOutputDir, "CanonicalEmailTest.cs"),
+            testAsset.Replace("TestApp", project.ProjectName, StringComparison.Ordinal));
+
+        var programPath = Path.Combine(project.TemplateOutputDir, "Program.cs");
+        var program = File.ReadAllText(programPath);
+        const string buildMarker = "var app = builder.Build();";
+        const string runMarker = "app.Run();";
+        Assert.Contains(buildMarker, program);
+        Assert.Contains(runMarker, program);
+        program = program.Replace(
+            buildMarker,
+            $"{project.ProjectName}.CanonicalEmailTest.AddServices(builder.Services);{Environment.NewLine}{Environment.NewLine}{buildMarker}",
+            StringComparison.Ordinal);
+        program = program.Replace(
+            runMarker,
+            $"{project.ProjectName}.CanonicalEmailTest.MapEndpoints(app);{Environment.NewLine}{Environment.NewLine}{runMarker}",
+            StringComparison.Ordinal);
+        File.WriteAllText(programPath, program);
+    }
+
+    private static Task CreateCanonicalEmailTestUserAsync(IPage page, string email, bool confirmed, bool clearStoredEmail = false)
+        => page.EvaluateAsync(
+            """
+            async request => {
+                const response = await fetch('/test/canonical-email/users', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(request),
+                });
+                if (!response.ok) {
+                    throw new Error(`Test user creation failed: ${response.status} ${await response.text()}`);
+                }
+            }
+            """,
+            new { email, confirmed, clearStoredEmail });
+
+    private static Task<string[]> GetCanonicalEmailMessagesAsync(IPage page)
+        => page.EvaluateAsync<string[]>(
+            """
+            async () => {
+                const response = await fetch('/test/canonical-email/messages');
+                if (!response.ok) {
+                    throw new Error(`Message inspection failed: ${response.status}`);
+                }
+                return await response.json();
+            }
+            """);
+
+    private static async Task<IResponse> SubmitRecoveryFormAsync(IPage page, string path, string handler, string email)
+    {
+        var responseTask = page.WaitForResponseAsync(response =>
+            response.Request.Method == "POST" && new Uri(response.Url).AbsolutePath == path);
+        await Task.WhenAll(
+            responseTask,
+            SubmitFormAsync(page, handler, new Dictionary<string, string> { ["Input.Email"] = email }));
+        return await responseTask;
     }
 
     private static void AddPasskeyUpgradeTestEndpoints(Project project)
