@@ -362,6 +362,160 @@ stimuli:
         config:
           scoring: binary
 
+  - name: design-web-idl-enum
+    prompt: |
+      Design the .NET projection of the type attribute of the Screen Orientation API in
+      Microsoft.AspNetCore.Components.Platform, including the OrientationType type. Assume that
+      Screen.Orientation already returns a shared ScreenOrientation projection. Produce only the
+      design proposal, the planned C# signatures, and the planned unit tests. Do not edit files or
+      begin implementation. Treat this as the complete pinned Web IDL input and do not use the
+      network:
+
+        enum OrientationType {
+          "portrait-primary",
+          "portrait-secondary",
+          "landscape-primary",
+          "landscape-secondary"
+        };
+
+        [Exposed=Window]
+        interface ScreenOrientation {
+          readonly attribute OrientationType type;
+        };
+
+      A future browser may report a value that is not in this list.
+    tags:
+      network: none
+      phase: design
+    rubric:
+      - OrientationType is a hand-written readonly struct that wraps the string, not a C# enum and not a record struct.
+      - OrientationType has a public constructor that takes the string, static properties PortraitPrimary, PortraitSecondary, LandscapePrimary, and LandscapeSecondary, and a Value property with the exact Web IDL string.
+      - A value that the package does not define reaches the application instead of failing deserialization, and the answer does not leave unknown values as an open question.
+      - The type uses the package's Web IDL enum JSON converter (WebIdlEnumJsonConverter) rather than JsonStringEnumConverter.
+      - The type declares its equality members (Equals, GetHashCode, == and !=) explicitly.
+      - Because the Web IDL gives OrientationType no default, default(OrientationType).Value throws InvalidOperationException, while default(OrientationType).ToString() does not throw.
+      - The attribute is projected as GetTypeAsync returning ValueTask<OrientationType>.
+      - The planned unit tests cover default(OrientationType) and an unknown string from the browser.
+      - No source implementation is attempted before the proposal is agreed.
+    graders:
+      - type: tool-calls
+        config:
+          disallowed:
+            - edit
+            - create
+      - type: skill-invocation
+        config:
+          required:
+            - port-components-platform-api
+      - type: prompt
+        config:
+          scoring: binary
+
+  - name: design-window-event
+    prompt: |
+      Design the .NET projection of the deviceorientation event of Window in
+      Microsoft.AspNetCore.Components.Platform. Show how a Blazor component starts and stops
+      listening. Produce only the design proposal and planned C# signatures. Do not edit files or
+      begin implementation. Treat this as the complete pinned Web IDL input and do not use the
+      network:
+
+        [Exposed=Window, SecureContext]
+        interface DeviceOrientationEvent : Event {
+          readonly attribute double? alpha;
+          readonly attribute double? beta;
+          readonly attribute double? gamma;
+          readonly attribute boolean absolute;
+        };
+
+        partial interface Window {
+          [SecureContext] attribute EventHandler ondeviceorientation;
+        };
+    tags:
+      network: none
+      phase: design
+    rubric:
+      - No ondeviceorientation property and no SetOnDeviceOrientationAsync method is added.
+      - The event is identified by a static EventType<Window, DeviceOrientationEvent> key on Window, declared as a static member in an extension(Window) block.
+      - The component listens with the existing Window.AddEventListenerAsync and stops by disposing the returned IAsyncDisposable, with no RemoveEventListenerAsync.
+      - The key is created through the package's internal event type factory with a shape that copies alpha, beta, gamma, and absolute, and no JavaScript is added for this family.
+      - DeviceOrientationEvent is a sealed class with init-only properties, and Alpha, Beta, and Gamma are nullable doubles.
+      - No source implementation is attempted before the proposal is agreed.
+    graders:
+      - type: tool-calls
+        config:
+          disallowed:
+            - edit
+            - create
+      - type: skill-invocation
+        config:
+          required:
+            - port-components-platform-api
+      - type: prompt
+        config:
+          scoring: binary
+
+  - name: review-cache-storage-proposal
+    prompt: |
+      Review this proposed Components.Platform projection of the part of the Cache Storage API that
+      does not need Fetch types. Return a corrected public API proposal and explain each material
+      correction. Do not review the members that wait for Fetch types. Do not edit files or begin
+      implementation.
+
+        public sealed class CacheStorage
+        {
+            public ValueTask<bool> HasAsync(string cacheName);
+            public ValueTask<CacheHandle> OpenAsync(string cacheName);
+            public ValueTask<bool> DeleteAsync(string cacheName);
+            public ValueTask<IReadOnlyList<string>> KeysAsync();
+        }
+
+        public sealed class CacheHandle : IAsyncDisposable
+        {
+            public Cache Value { get; }
+            public ValueTask DisposeAsync();
+        }
+
+        public sealed class Cache
+        {
+            public ValueTask AddAsync(string request);
+            public ValueTask<bool> DeleteAsync(string request);
+        }
+
+        public static class WindowCachesExtensions
+        {
+            extension(Window window)
+            {
+                public CacheStorage Caches { get; }
+            }
+        }
+
+      The source Web IDL exposes [SameObject] readonly attribute CacheStorage caches on the global
+      object. keys() returns Promise<sequence<DOMString>>. open() returns Promise<Cache>, and each
+      call creates a new Cache object.
+    tags:
+      network: none
+      phase: design
+    rubric:
+      - KeysAsync returns ValueTask<ImmutableArray<string>> instead of IReadOnlyList<string>.
+      - The CacheHandle type is removed, and OpenAsync returns the Cache itself.
+      - Cache implements public IAsyncDisposable because the caller who opened it owns it, and the answer does not treat its disposal as an undecided open question.
+      - CacheStorage stays a shared wrapper without a public IAsyncDisposable or DisposeAsync.
+      - The extension class is named after the returned type, such as WindowCacheStorageExtensions, rather than after the caches property.
+      - No source implementation is attempted before the corrected proposal is agreed.
+    graders:
+      - type: tool-calls
+        config:
+          disallowed:
+            - edit
+            - create
+      - type: skill-invocation
+        config:
+          required:
+            - port-components-platform-api
+      - type: prompt
+        config:
+          scoring: binary
+
 scoring:
   weights:
     skill-invocation: 0.3
