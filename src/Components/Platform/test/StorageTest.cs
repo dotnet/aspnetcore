@@ -3,8 +3,10 @@
 
 #nullable enable
 
+using System.Text.Json;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.JSInterop;
+using Microsoft.JSInterop.Infrastructure;
 using Xunit;
 
 namespace Microsoft.AspNetCore.Components.Platform.Tests;
@@ -139,6 +141,56 @@ public class StorageTest
         await provider.DisposeAsync();
 
         Assert.Equal(0, jsRuntime.GetValueCallCount);
+    }
+
+    [Fact]
+    public async Task StorageEvent_DeliversTheExistingStorageAsTheStorageArea()
+    {
+        var jsRuntime = new BrowserJSRuntime();
+        await using var provider = CreateServiceProvider(jsRuntime);
+        var window = provider.GetRequiredService<IBrowserPlatform>().Window;
+        var received = new List<StorageEvent>();
+
+        await window.AddEventListenerAsync(Window.StorageEvent, storageEvent =>
+        {
+            received.Add(storageEvent);
+            return Task.CompletedTask;
+        });
+        await jsRuntime.InvokeLastCallbackAsync(
+            """[{"key":"k","oldValue":null,"newValue":"v","url":"https://localhost/","storageArea":"localStorage"}]""");
+        await jsRuntime.InvokeLastCallbackAsync(
+            """[{"key":null,"oldValue":null,"newValue":null,"url":"https://localhost/","storageArea":"sessionStorage"}]""");
+
+        // The window is object 1, the module is object 2, and the function is object 3.
+        Assert.Equal(JSCallType.GetValue, Assert.Single(jsRuntime.CallsTo("window")).CallType);
+        using var createCallbackArgs = JsonDocument.Parse(Assert.Single(jsRuntime.CallsTo("createCallback")).ArgsJson);
+        Assert.Contains("""
+            "storageArea":{"$known":["localStorage","sessionStorage"]}
+            """, createCallbackArgs.RootElement[1].GetString());
+        var addition = Assert.Single(jsRuntime.CallsTo("addEventListener"));
+        Assert.Equal((1, """["storage",{"__jsObjectId":3}]"""), (addition.TargetInstanceId, addition.ArgsJson));
+        Assert.Equal(("k", null, "v", "https://localhost/"), (received[0].Key, received[0].OldValue, received[0].NewValue, received[0].Url));
+        Assert.Same(window.LocalStorage, received[0].StorageArea);
+        Assert.Null(received[1].Key);
+        Assert.Same(window.SessionStorage, received[1].StorageArea);
+    }
+
+    [Fact]
+    public async Task ScopeDisposal_RemovesWindowListeners()
+    {
+        var jsRuntime = new BrowserJSRuntime();
+        var provider = CreateServiceProvider(jsRuntime);
+        var window = provider.GetRequiredService<IBrowserPlatform>().Window;
+        await window.AddEventListenerAsync(Window.StorageEvent, _ => Task.CompletedTask);
+
+        await provider.DisposeAsync();
+
+        Assert.Equal(1, Assert.Single(jsRuntime.CallsTo("removeEventListener")).TargetInstanceId);
+        Assert.Equal(
+            ["[3]", "[1]", "[2]"],
+            jsRuntime.CallsTo("DotNet.disposeJSObjectReferenceById").Select(call => call.ArgsJson));
+        await Assert.ThrowsAsync<ObjectDisposedException>(
+            () => window.AddEventListenerAsync(Window.StorageEvent, _ => Task.CompletedTask).AsTask());
     }
 
     private static ServiceProvider CreateServiceProvider(IJSRuntime jsRuntime)
