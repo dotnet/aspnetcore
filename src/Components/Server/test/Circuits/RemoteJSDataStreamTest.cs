@@ -301,6 +301,7 @@ public class RemoteJSDataStreamTest
                 break;
             }
 
+            Assert.Equal(RemoteJSDataStreamResult.ChunkAccepted, result);
             acceptedChunks++;
         }
 
