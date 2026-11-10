@@ -47,6 +47,8 @@ internal sealed partial class HttpConnectionDispatcher
     private readonly HttpConnectionsMetrics _metrics;
     private readonly ILogger _logger;
     private const int _protocolVersion = 1;
+    private const string AuthenticationRefreshRequiredError = "authentication_refresh_required";
+    private const string ConnectionTokenHeaderName = "X-SignalR-Connection-Token";
 
     // This should be kept in sync with CookieAuthenticationHandler
     private const string HeaderValueNoCache = "no-cache";
@@ -157,8 +159,9 @@ internal sealed partial class HttpConnectionDispatcher
             return;
         }
 
-        // Get connection token from query string (same pattern as send/poll/delete)
-        var connectionToken = GetConnectionToken(context);
+        // Unlike transport requests, /refresh requires the private connection token in a non-safelisted
+        // header so a cross-origin browser request must successfully complete a CORS preflight.
+        var connectionToken = context.Request.Headers[ConnectionTokenHeaderName];
         if (StringValues.IsNullOrEmpty(connectionToken))
         {
             await WriteRefreshErrorAsync(context, StatusCodes.Status400BadRequest, "missing_connection_token");
@@ -849,6 +852,14 @@ internal sealed partial class HttpConnectionDispatcher
                 userRefreshHandled = true;
                 if (principalChanged && !stale)
                 {
+                    if (transportType == HttpTransportType.LongPolling
+                        && !options.UseLegacyLongPollingAuthenticationRefresh
+                        && !connection.IsUserAssociatedWithConnection(newPrincipal))
+                    {
+                        await WriteRefreshErrorAsync(context, StatusCodes.Status409Conflict, AuthenticationRefreshRequiredError);
+                        return false;
+                    }
+
                     var updateResult = await connection.UpdateUserAsync(
                         newPrincipal,
                         newExpiration,
