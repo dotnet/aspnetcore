@@ -504,36 +504,6 @@ configuration:
       - isAction:
           action: Opened
       - targetsBranch:
-          branch: release/9.0
-      then:
-      - addMilestone:
-          milestone: 9.0.x
-      - addReply:
-          reply: >-
-            Hi ${issueAuthor}. If this is not a tell-mode PR, please make sure to follow the instructions laid out in the [servicing process](https://aka.ms/aspnet/servicing) document.
-
-            Otherwise, please add `tell-mode` label.
-      description: Add release/9.0 targeting PRs to the servicing project
-    - if:
-      - payloadType: Pull_Request
-      - isAction:
-          action: Opened
-      - targetsBranch:
-          branch: release/8.0
-      then:
-      - addMilestone:
-          milestone: 8.0.x
-      - addReply:
-          reply: >-
-            Hi ${issueAuthor}. If this is not a tell-mode PR, please make sure to follow the instructions laid out in the [servicing process](https://aka.ms/aspnet/servicing) document.
-
-            Otherwise, please add `tell-mode` label.
-      description: Add release/8.0 targeting PRs to the servicing project
-    - if:
-      - payloadType: Pull_Request
-      - isAction:
-          action: Opened
-      - targetsBranch:
           branch: release/2.3
       then:
       - addMilestone:
@@ -643,28 +613,6 @@ configuration:
       - addMilestone:
           milestone: 11.0.0
       description: '[Milestone Assignments] Assign Milestone to PRs merged to release/11.0 branch'
-    - if:
-      - payloadType: Pull_Request
-      - isAction:
-          action: Closed
-      - targetsBranch:
-          branch: release/9.0
-      then:
-      - removeMilestone
-      - addMilestone:
-          milestone: 9.0.22
-      description: '[Milestone Assignments] Assign Milestone to PRs merged to release/9.0 branch'
-    - if:
-      - payloadType: Pull_Request
-      - isAction:
-          action: Closed
-      - targetsBranch:
-          branch: release/8.0
-      then:
-      - removeMilestone
-      - addMilestone:
-          milestone: 8.0.33
-      description: '[Milestone Assignments] Assign Milestone to PRs merged to release/8.0 branch'
     - if:
       - payloadType: Issues
       - labelAdded:
