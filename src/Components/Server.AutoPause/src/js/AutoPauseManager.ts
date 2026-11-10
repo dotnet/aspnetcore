@@ -9,8 +9,7 @@ export interface AutoPauseConfig {
   hiddenDelayMilliseconds: number;
 }
 
-// The subset of the Blazor global this manager depends on: the stable public pause/resume
-// primitives and the 'circuitactivitychanged' event.
+// Uses the public pause/resume and activity APIs, plus same-version internal circuit disposal.
 export interface BlazorActivityHost {
   _internal?: { circuitEvents?: EventTarget };
   pauseCircuit?: (signal?: AbortSignal) => Promise<boolean>;
@@ -91,7 +90,9 @@ export class AutoPauseManager {
   private onCircuitDisposed(): void {
     this._circuitVersion++;
     this._autoPaused = false;
+    this.clearHiddenTimer();
     this._activeAbortController?.abort();
+    this.onActivityChanged(false);
   }
 
   private onActivityChanged(busy: boolean): void {
@@ -230,7 +231,7 @@ export class AutoPauseManager {
       }
       // If the tab is still hidden (e.g. it flipped visible then hidden again during an
       // aborted attempt), reschedule so we don't get stuck unpaused with no timer.
-      if (!this._disposed && !this._autoPaused && document.visibilityState === 'hidden') {
+      if (!this._disposed && circuitVersion === this._circuitVersion && !this._autoPaused && document.visibilityState === 'hidden') {
         this.startHiddenTimer();
       }
     }

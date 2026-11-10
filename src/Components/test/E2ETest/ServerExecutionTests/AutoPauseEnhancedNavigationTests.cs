@@ -61,17 +61,38 @@ public class AutoPauseEnhancedNavigationTests : AutoPauseTestBase<App>
         Browser.Exists(By.Id("increment-persistent-counter-count")).Click();
         Browser.Equal("1", () => Browser.Exists(By.Id("persistent-counter-count")).Text);
 
+        Browser.GetBrowserLogs(LogLevel.Severe);
+        var js = (IJavaScriptExecutor)Browser;
+        js.ExecuteScript("""
+            window.resumeAttempts = 0;
+            window.visibilityChanges = [];
+            const resumeCircuit = Blazor.resumeCircuit;
+            Blazor.resumeCircuit = (...args) => {
+                window.resumeAttempts++;
+                return resumeCircuit(...args);
+            };
+            document.addEventListener('visibilitychange', () => window.visibilityChanges.push(document.visibilityState));
+            """);
+
         Browser.Exists(By.Id("navigate-to-static-auto-pause")).Click();
         Browser.Equal("static", () => Browser.Exists(By.Id("execution-mode")).Text);
         Browser.False(() => htmlElement.IsStale());
 
-        WithHiddenTab(js =>
+        WithHiddenTab(hiddenJs =>
         {
-            Browser.Equal("block", () => js.ExecuteScript(
+            Browser.Equal("block", () => hiddenJs.ExecuteScript(
                 "return window.testWindow.getComputedStyle(window.testWindow.document.getElementById('components-reconnect-modal')).display;"));
-            Browser.True(() => (bool)js.ExecuteScript(
-                "return window.testWindow.performance.getEntriesByType('resource').some(entry => entry.name.includes('/_blazor/disconnect'));"));
+            Browser.True(() => (bool)hiddenJs.ExecuteScript(
+                "return window.testWindow.performance.getEntriesByType('resource').some(entry => entry.name.includes('/_blazor/disconnect'));"),
+                TimeSpan.FromSeconds(30));
         });
+
+        Browser.True(() => (bool)js.ExecuteScript("return window.visibilityChanges.at(-1) === 'visible';"));
+        Browser.Equal("static", () => Browser.Exists(By.Id("execution-mode")).Text);
+        WaitForResumedUI();
+        Assert.Equal(0L, js.ExecuteScript("return window.resumeAttempts;"));
+        Assert.DoesNotContain(Browser.GetBrowserLogs(LogLevel.Severe),
+            entry => entry.Message.Contains("The circuit associated with this dispatcher is no longer available", StringComparison.Ordinal));
 
         Browser.Exists(By.Id("navigate-to-auto-pause")).Click();
         Browser.NotEqual("", () => Browser.Exists(By.Id("circuit-id")).Text);
@@ -79,7 +100,7 @@ public class AutoPauseEnhancedNavigationTests : AutoPauseTestBase<App>
         Browser.Equal("1", () => Browser.Exists(By.Id("persistent-counter-count")).Text);
         Browser.False(() => htmlElement.IsStale());
 
-        WithHiddenTab(js => Browser.Equal("block", () => js.ExecuteScript(
+        WithHiddenTab(hiddenJs => Browser.Equal("block", () => hiddenJs.ExecuteScript(
             "return window.testWindow.getComputedStyle(window.testWindow.document.getElementById('components-reconnect-modal')).display;")));
         WaitForResumedUI();
         Browser.Equal("1", () => Browser.Exists(By.Id("persistent-counter-count")).Text);
@@ -92,13 +113,24 @@ public class AutoPauseEnhancedNavigationTests : AutoPauseTestBase<App>
         var originalWindow = Browser.CurrentWindowHandle;
         var existingWindows = Browser.WindowHandles;
         // WebDriver cannot evaluate an unselected tab, so let the cover tab observe its opener.
-        ((IJavaScriptExecutor)Browser).ExecuteScript("window.open('about:blank', '_blank').testWindow = window;");
+        ((IJavaScriptExecutor)Browser).ExecuteScript("""
+            const button = document.createElement('button');
+            button.id = 'hide-auto-pause-tab';
+            button.textContent = 'Hide tab';
+            button.addEventListener('click', () => {
+                button.remove();
+                window.open('about:blank', '_blank').testWindow = window;
+            });
+            document.body.appendChild(button);
+            """);
+        Browser.Exists(By.Id("hide-auto-pause-tab")).Click();
         var coverWindow = Browser.WindowHandles.Except(existingWindows).Single();
         Browser.SwitchTo().Window(coverWindow);
         try
         {
             var js = (IJavaScriptExecutor)Browser;
-            Browser.Equal("hidden", () => js.ExecuteScript("return window.testWindow.document.visibilityState;"));
+            Browser.True(() => (string)js.ExecuteScript("return window.testWindow.document.visibilityState;") == "hidden",
+                TimeSpan.FromSeconds(30));
             action(js);
         }
         finally

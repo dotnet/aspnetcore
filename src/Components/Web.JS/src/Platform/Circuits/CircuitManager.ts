@@ -66,6 +66,8 @@ export class CircuitManager implements DotNet.DotNetCallDispatcher {
 
   private _activePauseDeferral?: AbortController;
 
+  private _pauseUiVisible = false;
+
   public constructor(
     componentManager: RootComponentManager<ServerComponentDescriptor>,
     appState: string,
@@ -314,6 +316,7 @@ export class CircuitManager implements DotNet.DotNetCallDispatcher {
       return false;
     }
 
+    this._pauseUiVisible = false;
     this._options.reconnectionHandler!.onConnectionUp();
 
     return true;
@@ -401,6 +404,7 @@ export class CircuitManager implements DotNet.DotNetCallDispatcher {
 
       // Notify the reconnection handler that we are pausing the circuit.
       // This is used to trigger the UI display.
+      this._pauseUiVisible = true;
       this._options.reconnectionHandler?.onConnectionDown(this._options.reconnectionOptions, undefined, true, remote);
 
       // Indicate to the server that we want to pause the circuit.
@@ -491,6 +495,7 @@ export class CircuitManager implements DotNet.DotNetCallDispatcher {
         }
       }
 
+      this._pauseUiVisible = false;
       this._options.reconnectionHandler!.onConnectionUp();
       this._componentManager.onComponentReload?.(WebRendererId.Server);
       return resumingPromise;
@@ -629,13 +634,22 @@ export class CircuitManager implements DotNet.DotNetCallDispatcher {
 
   public dispose(): Promise<void> {
     if (!this._disposePromise) {
-      this._disposePromise = this.disposeCore();
+      const { promise, resolve, reject } = Promise.withResolvers<void>();
+      this._disposePromise = promise;
+      this.disposeCore().then(resolve, reject);
     }
 
     return this._disposePromise;
   }
 
   private async disposeCore(): Promise<void> {
+    // Retire automatic pause before awaiting startup, which can overlap a replacement circuit.
+    Blazor._internal.circuitEvents?.dispatchEvent(new Event('disposed'));
+    if (this._pauseUiVisible) {
+      this._pauseUiVisible = false;
+      this._options.reconnectionHandler?.onConnectionUp();
+    }
+
     if (!this._startPromise) {
       // The circuit hasn't started, so there isn't anything to dispose.
       this._disposed = true;
@@ -647,9 +661,7 @@ export class CircuitManager implements DotNet.DotNetCallDispatcher {
     await this._startPromise;
 
     this._disposed = true;
-    Blazor._internal.circuitEvents?.dispatchEvent(new Event('disposed'));
     this._connection?.stop();
-    this._options.reconnectionHandler?.onConnectionUp();
 
     // Dispose the circuit on the server immediately. Closing the SignalR connection alone
     // without sending the disconnect message will result in the circuit being kept

@@ -115,6 +115,7 @@ describe('autopause initializer', () => {
   });
 
   it('retries a rejected resume after normal circuit-closed callbacks', async () => {
+    // Resume raises onCircuitClosed too; it must not invalidate disposal-version bookkeeping.
     jest.useFakeTimers();
     const blazor = createBlazor();
     const circuitHandlers: Array<{ onCircuitClosed?: () => void }> = [];

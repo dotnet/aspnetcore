@@ -25,6 +25,7 @@ describe('AutoPauseManager', () => {
   let pauseCircuit: jest.Mock<(signal?: AbortSignal) => Promise<boolean>>;
   let resumeCircuit: jest.Mock<() => Promise<boolean>>;
   let activityListener: ((ev: { busy: boolean }) => void) | undefined;
+  let circuitEvents: EventTarget;
   let host: BlazorActivityHost;
   let manager: AutoPauseManager | undefined;
 
@@ -34,7 +35,9 @@ describe('AutoPauseManager', () => {
     pauseCircuit = jest.fn<(signal?: AbortSignal) => Promise<boolean>>().mockResolvedValue(true);
     resumeCircuit = jest.fn<() => Promise<boolean>>().mockResolvedValue(true);
     activityListener = undefined;
+    circuitEvents = new EventTarget();
     host = {
+      _internal: { circuitEvents },
       pauseCircuit,
       resumeCircuit,
       addEventListener: (_type, handler) => { activityListener = handler; },
@@ -262,8 +265,6 @@ describe('AutoPauseManager', () => {
   });
 
   test('ignores a pause completion from a disposed circuit', async () => {
-    const circuitEvents = new EventTarget();
-    Object.assign(host, { _internal: { circuitEvents } });
     let resolvePause: ((value: boolean) => void) | undefined;
     pauseCircuit.mockImplementation(() => new Promise<boolean>(resolve => { resolvePause = resolve; }));
 
@@ -279,6 +280,87 @@ describe('AutoPauseManager', () => {
     await flushPromises();
 
     expect(resumeCircuit).not.toHaveBeenCalled();
+  });
+
+  test('circuit disposal cancels a pending hidden timer', async () => {
+    create();
+    setVisibility('hidden');
+    circuitEvents.dispatchEvent(new Event('disposed'));
+
+    jest.advanceTimersByTime(5000);
+    await flushPromises();
+
+    expect(pauseCircuit).not.toHaveBeenCalled();
+  });
+
+  test('an obsolete pause completion does not rearm the hidden timer', async () => {
+    let resolvePause: ((value: boolean) => void) | undefined;
+    pauseCircuit.mockImplementation(() => new Promise<boolean>(resolve => { resolvePause = resolve; }));
+    create();
+    setVisibility('hidden');
+    jest.advanceTimersByTime(1000);
+    await flushPromises();
+
+    circuitEvents.dispatchEvent(new Event('disposed'));
+    resolvePause!(false);
+    await flushPromises();
+    jest.advanceTimersByTime(5000);
+    await flushPromises();
+
+    expect(pauseCircuit).toHaveBeenCalledTimes(1);
+  });
+
+  test('circuit disposal abandons an idle wait without retaining the old busy state', async () => {
+    create();
+    setBusy(true);
+    setVisibility('hidden');
+    jest.advanceTimersByTime(1000);
+    await flushPromises();
+    expect(pauseCircuit).not.toHaveBeenCalled();
+
+    circuitEvents.dispatchEvent(new Event('disposed'));
+    await flushPromises();
+    setVisibility('visible');
+    setVisibility('hidden');
+    jest.advanceTimersByTime(1000);
+    await flushPromises();
+
+    expect(pauseCircuit).toHaveBeenCalledTimes(1);
+  });
+
+  test.each(['rejection', 'exception'])('ignores a resume %s after circuit disposal', async outcome => {
+    const resume = Promise.withResolvers<boolean>();
+    resumeCircuit.mockReturnValue(resume.promise);
+    create();
+    setVisibility('hidden');
+    jest.advanceTimersByTime(1000);
+    await flushPromises();
+    setVisibility('visible');
+    expect(resumeCircuit).toHaveBeenCalledTimes(1);
+
+    circuitEvents.dispatchEvent(new Event('disposed'));
+    if (outcome === 'rejection') {
+      resume.resolve(false);
+    } else {
+      resume.reject(new Error('Resume failed'));
+    }
+    await flushPromises();
+    setVisibility('hidden');
+    setVisibility('visible');
+    await flushPromises();
+
+    expect(resumeCircuit).toHaveBeenCalledTimes(1);
+  });
+
+  test('dispose removes its circuit disposal listener', () => {
+    const add = jest.spyOn(circuitEvents, 'addEventListener');
+    const remove = jest.spyOn(circuitEvents, 'removeEventListener');
+    create();
+    const listener = add.mock.calls.find(([type]) => type === 'disposed')![1];
+
+    manager!.dispose();
+
+    expect(remove).toHaveBeenCalledWith('disposed', listener);
   });
 
   describe('circuit-activity drain cancellation', () => {
