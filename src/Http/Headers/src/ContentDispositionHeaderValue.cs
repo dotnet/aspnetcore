@@ -620,6 +620,8 @@ public class ContentDispositionHeaderValue
         var value = input.AsSpan();
         var length = Rfc5987Prefix.Length;
         var remaining = value;
+        // This length-counting scan must stay in sync with the write loop in string.Create below.
+        // If the two drift and this undercounts, the result silently keeps trailing '\0' chars.
         while (true)
         {
             var index = remaining.IndexOfAnyExcept(Rfc5987AttrChar);

@@ -305,6 +305,7 @@ public class ContentDispositionHeaderValueTest
     [InlineData("na\u00EFve.txt", "attachment; filename=na_ve.txt; filename*=UTF-8''na%C3%AFve.txt")]
     [InlineData("\u20AC.txt", "attachment; filename=_.txt; filename*=UTF-8''%E2%82%AC.txt")]
     [InlineData("\U0001F600 x.txt", "attachment; filename=\"__ x.txt\"; filename*=UTF-8''%F0%9F%98%80%20x.txt")]
+    [InlineData("a \u00FC b\U0001F600c", "attachment; filename=\"a _ b__c\"; filename*=UTF-8''a%20%C3%BC%20b%F0%9F%98%80c")]
     public void SetHttpFileName_ToString_FormatsExpectedHeader(string httpFileName, string expected)
     {
         var contentDisposition = new ContentDispositionHeaderValue("attachment");
