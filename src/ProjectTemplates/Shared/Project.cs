@@ -245,7 +245,8 @@ public class Project : IDisposable
         environmentVariables ??= new Dictionary<string, string>();
 
         // The Helix payload places Directory.Build.props outside the generated projects' parent
-        // directory hierarchy, so pass the bootstrap SDK pruning workarounds to child processes.
+        // directory hierarchy, so pass runtime selection and bootstrap SDK pruning workarounds to child processes.
+        environmentVariables["UseMonoRuntime"] = "false";
         environmentVariables["LoadPrunePackageDataFromNearestFramework"] = "true";
         environmentVariables["AllowMissingPrunePackageData"] = "true";
 
@@ -598,6 +599,7 @@ public class Project : IDisposable
             arguments +
                 $" --debug:disable-sdk-templates --debug:custom-hive \"{TemplatePackageInstaller.CustomHivePath}\"" +
                 $" -o {TemplateOutputDir}",
+            environmentVariables: AddBootstrapSdkEnvironmentVariables(null),
             envVarToRemove: _msBuildSdksPathEnvironmentVariable);
         await result.Exited;
         Assert.True(result.ExitCode == 0, result.GetFormattedOutput());
