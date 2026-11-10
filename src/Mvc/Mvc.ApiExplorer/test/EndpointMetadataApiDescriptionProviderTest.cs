@@ -104,7 +104,7 @@ public partial class EndpointMetadataApiDescriptionProviderTest
     public void AddsMultipleRequestFormatsFromMetadataWithRequestTypeAndOptionalBodyParameter()
     {
         var apiDescription = GetApiDescription(
-            [Consumes(typeof(InferredJsonClass), "application/custom0", "application/custom1", IsOptional = true)]
+            [Consumes<InferredJsonClass>("application/custom0", "application/custom1", IsOptional = true)]
         () =>
             { });
 
@@ -119,7 +119,7 @@ public partial class EndpointMetadataApiDescriptionProviderTest
     public void AddsMultipleRequestFormatsFromMetadataWithRequiredBodyParameter()
     {
         var apiDescription = GetApiDescription(
-            [Consumes(typeof(InferredJsonClass), "application/custom0", "application/custom1", IsOptional = false)]
+            [Consumes<InferredJsonClass>("application/custom0", "application/custom1", IsOptional = false)]
         (InferredJsonClass fromBody) =>
             { }, httpMethods: ["POST"]);
 
