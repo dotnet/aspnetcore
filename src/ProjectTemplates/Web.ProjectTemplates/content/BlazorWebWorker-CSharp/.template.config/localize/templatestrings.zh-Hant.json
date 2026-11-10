@@ -1,4 +1,4 @@
-﻿{
+{
   "author": "Microsoft",
   "name": "Blazor 背景工作角色",
   "description": "用於建立類別庫的專案，其可在 Blazor WebAssembly 或 Blazor Web 應用程式的背景工作角色上執行 .NET 程式碼。",
