@@ -69,11 +69,11 @@ stimuli:
               pattern: changes\.diff
               result: "@@"
             - name: .*
-              pattern: source[/\\]head[/\\]
-              result: class AgentContext
+              pattern: source[/\\]+head[/\\]+.*AgentContext\.cs
+              result: LogProcessingError
             - name: .*
-              pattern: source[/\\]mergeBase[/\\]
-              result: class AgentContext
+              pattern: source[/\\]+mergeBase[/\\]+.*AgentContext\.cs
+              result: ConversationStatus\.Error
             - name: .*
               pattern: CrossCuttingGuidance\.md
               result: catch
@@ -129,11 +129,11 @@ stimuli:
               pattern: changes\.diff
               result: "@@"
             - name: .*
-              pattern: source[/\\]head[/\\]
-              result: class AgentContext
+              pattern: source[/\\]+head[/\\]+.*AgentContext\.cs
+              result: LogProcessingError
             - name: .*
-              pattern: source[/\\]mergeBase[/\\]
-              result: class AgentContext
+              pattern: source[/\\]+mergeBase[/\\]+.*AgentContext\.cs
+              result: ConversationStatus\.Error
             - name: .*
               pattern: CrossCuttingGuidance\.md
               result: catch
@@ -192,11 +192,11 @@ stimuli:
               pattern: changes\.diff
               result: "@@"
             - name: .*
-              pattern: source[/\\]head[/\\]
-              result: class Conversation
+              pattern: source[/\\]+head[/\\]+.*Conversation\.mjs
+              result: this\.status
             - name: .*
-              pattern: source[/\\]mergeBase[/\\]
-              result: class Conversation
+              pattern: source[/\\]+mergeBase[/\\]+.*Conversation\.mjs
+              result: this\.status
             - name: .*
               pattern: CrossCuttingGuidance\.md
               result: catch

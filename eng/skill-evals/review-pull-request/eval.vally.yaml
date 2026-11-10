@@ -92,11 +92,11 @@ stimuli:
               result: Return result; never publish
             - &a2
               name: .*
-              pattern: "[/\\\\]review-candidate-verifier\\.agent\\.md"
+              pattern: "[/\\\\]+review-candidate-verifier\\.agent\\.md"
               result: validationEvidence
             - &a3
               name: .*
-              pattern: "[/\\\\]review-guide-worker\\.agent\\.md"
+              pattern: "[/\\\\]+review-guide-worker\\.agent\\.md"
               result: further agent delegation are unavailable
           disallowed: &a4
             - name: ^(task|write_agent|create|edit|apply_patch)$
@@ -134,10 +134,10 @@ stimuli:
         config:
           required:
             - name: .*
-              pattern: docs[/\\]CrossCuttingGuidance\.md
+              pattern: docs[/\\]+CrossCuttingGuidance\.md
               result: Test infrastructure should use shared helpers
             - name: .*
-              pattern: docs[/\\]BlazorComponentsGuidance\.md
+              pattern: docs[/\\]+BlazorComponentsGuidance\.md
               result: Keep diagnostics actionable but not noisy
     rubric:
       - All criteria are mandatory. BLOCKED, fabricated evidence, silent omission, or an unqualified no-findings
@@ -257,10 +257,10 @@ stimuli:
         config:
           required:
             - name: .*
-              pattern: docs[/\\]CrossCuttingGuidance\.md
+              pattern: docs[/\\]+CrossCuttingGuidance\.md
               result: Test infrastructure should use shared helpers
             - name: .*
-              pattern: docs[/\\]BlazorComponentsGuidance\.md
+              pattern: docs[/\\]+BlazorComponentsGuidance\.md
               result: Keep diagnostics actionable but not noisy
     rubric:
       - All criteria are mandatory. Adjudicate C1's required constructor parameter, not the unrelated dictionary-key
@@ -379,10 +379,10 @@ stimuli:
         config:
           required:
             - name: .*
-              pattern: docs[/\\]CrossCuttingGuidance\.md
+              pattern: docs[/\\]+CrossCuttingGuidance\.md
               result: Test infrastructure should use shared helpers
             - name: .*
-              pattern: docs[/\\]BlazorComponentsGuidance\.md
+              pattern: docs[/\\]+BlazorComponentsGuidance\.md
               result: Keep diagnostics actionable but not noisy
     rubric:
       - All criteria are mandatory. C1 concerns a callback after renderer disposal, not removing a component while its
@@ -500,10 +500,10 @@ stimuli:
         config:
           required:
             - name: .*
-              pattern: docs[/\\]CrossCuttingGuidance\.md
+              pattern: docs[/\\]+CrossCuttingGuidance\.md
               result: Test infrastructure should use shared helpers
             - name: .*
-              pattern: docs[/\\]BlazorComponentsGuidance\.md
+              pattern: docs[/\\]+BlazorComponentsGuidance\.md
               result: Keep diagnostics actionable but not noisy
     rubric:
       - All criteria are mandatory. C1 asserts that the new test server token endpoint changes the browser regression's
@@ -623,10 +623,10 @@ stimuli:
         config:
           required:
             - name: .*
-              pattern: docs[/\\]CrossCuttingGuidance\.md
+              pattern: docs[/\\]+CrossCuttingGuidance\.md
               result: Test infrastructure should use shared helpers
             - name: .*
-              pattern: docs[/\\]BlazorComponentsGuidance\.md
+              pattern: docs[/\\]+BlazorComponentsGuidance\.md
               result: Keep diagnostics actionable but not noisy
     rubric:
       - All criteria are mandatory. The frozen feedback covers exactly C1's NavigateTo plus unprevented href concern,
@@ -712,10 +712,10 @@ stimuli:
               pattern: review-pull-request
               result: Return result; never publish
             - name: .*
-              pattern: "[/\\\\]review-candidate-verifier\\.agent\\.md"
+              pattern: "[/\\\\]+review-candidate-verifier\\.agent\\.md"
               result: validationEvidence
             - name: .*
-              pattern: "[/\\\\]review-guide-worker\\.agent\\.md"
+              pattern: "[/\\\\]+review-guide-worker\\.agent\\.md"
               result: further agent delegation are unavailable
           disallowed:
             - name: ^(task|write_agent|create|edit|apply_patch)$
@@ -753,10 +753,10 @@ stimuli:
         config:
           required:
             - name: .*
-              pattern: docs[/\\]CrossCuttingGuidance\.md
+              pattern: docs[/\\]+CrossCuttingGuidance\.md
               result: Test infrastructure should use shared helpers
             - name: .*
-              pattern: docs[/\\]BlazorComponentsGuidance\.md
+              pattern: docs[/\\]+BlazorComponentsGuidance\.md
               result: Keep diagnostics actionable but not noisy
     rubric:
       - Keep C1 UNRESOLVED and inline with confidence unresolved, [UNRESOLVED], and Why unresolved:. Do not invent a

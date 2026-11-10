@@ -1049,19 +1049,25 @@ applicable:
   prescribed assertion fails on revert and passes at `head`. Apply the `trigger` BCL
   contract and external-evidence rules to that reverted path as well.
 - `contract`: the applicable assigned base-tip or primary-repository contract (including
-  repository guidance), or `n/a` when no contract applies. Check whether a base-tip or
+  repository guidance), or `n/a` when no contract is required. Check whether a base-tip or
   primary-repository contract requires the head operation or forbids the candidate's
-  proposed alternative even when the candidate does not cite a contract. Head
-  production code is the change under review and is never a contract. A head
-  declaration may serve only when `oldVsNew` is `n/a` and the claim is not an
-  incomplete-fix, new-feature omission, or secondary-failure suppression claim. For an
-  incomplete-fix or new-feature omission claim, a binding assigned issue, API, or
-  base-tip/primary-repository contract is mandatory
-  (`contract` cannot be `n/a` or a head declaration/test; use `null` and return `DROP`
-  with `dropBasis: "unestablished"` when missing). A secondary-failure suppression
-  claim requires that binding contract only when it concerns suppression policy alone,
-  without independently proven consumer-visible harm caused by that suppression
-  (such as data loss, a wrong return value, or a resource leak).
+  proposed alternative even when the candidate does not cite a contract. General
+  exception-handling or coding-style guidance (such as catching only exceptions that can be
+  handled or enriched) does not by itself require a secondary failure to propagate or forbid
+  its suppression unless the contract explicitly specifies the propagation or suppression
+  behavior for that secondary operation or failure mode. Head production code is the change
+  under review and is never a contract. A head declaration may serve only when `oldVsNew` is
+  `n/a` and the claim is not an incomplete-fix, new-feature omission, or secondary-failure
+  suppression claim. For an incomplete-fix or new-feature omission claim, a binding assigned
+  issue, API, or base-tip/primary-repository contract is mandatory (`contract` cannot be
+  `n/a` or a head declaration/test; use `null` and return `DROP` with
+  `dropBasis: "unestablished"` when missing). A secondary-failure suppression claim likewise
+  requires that mandatory binding contract (`contract` cannot be `n/a` or a head
+  declaration/test; use `null` and return `DROP` with `dropBasis: "unestablished"` when
+  missing) unless the suppression causes independently proven consumer-visible harm beyond
+  non-propagation of the secondary exception or normal completion after the primary outcome
+  is recorded (such as corrupted or stale state, a skipped state transition or notification,
+  data loss, a wrong return value, or a resource leak).
 - `intent`: a PR-added or PR-changed head test that exercises the claimed exact input
   and asserts the claimed consumer-visible effect, or `n/a`. A head test that covers a
   different input, layer, or sibling case is not intent evidence and does not
