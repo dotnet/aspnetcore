@@ -151,6 +151,9 @@
     <MicrosoftAspNetCoreAzureAppServicesSiteExtension100Version>10.0.0-rtm-25523-111</MicrosoftAspNetCoreAzureAppServicesSiteExtension100Version>
     <MicrosoftAspNetCoreAzureAppServicesSiteExtension100x64Version>$(MicrosoftAspNetCoreAzureAppServicesSiteExtension100Version)</MicrosoftAspNetCoreAzureAppServicesSiteExtension100x64Version>
     <MicrosoftAspNetCoreAzureAppServicesSiteExtension100x86Version>$(MicrosoftAspNetCoreAzureAppServicesSiteExtension100Version)</MicrosoftAspNetCoreAzureAppServicesSiteExtension100x86Version>
+    <MicrosoftAspNetCoreAzureAppServicesSiteExtension110Version>11.0.0-rtm-26529-118</MicrosoftAspNetCoreAzureAppServicesSiteExtension110Version>
+    <MicrosoftAspNetCoreAzureAppServicesSiteExtension110x64Version>$(MicrosoftAspNetCoreAzureAppServicesSiteExtension110Version)</MicrosoftAspNetCoreAzureAppServicesSiteExtension110x64Version>
+    <MicrosoftAspNetCoreAzureAppServicesSiteExtension110x86Version>$(MicrosoftAspNetCoreAzureAppServicesSiteExtension110Version)</MicrosoftAspNetCoreAzureAppServicesSiteExtension110x86Version>
     <!-- 3rd party dependencies -->
     <AzureIdentityVersion>1.21.0</AzureIdentityVersion>
     <AngleSharpVersion>1.5.2</AngleSharpVersion>

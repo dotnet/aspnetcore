@@ -35,6 +35,8 @@
     <PackageReference Include="Microsoft.AspNet.WebApi.Client" />
     <PackageReference Include="Microsoft.AspNetCore.AzureAppServices.SiteExtension.10.0.x64" />
     <PackageReference Include="Microsoft.AspNetCore.AzureAppServices.SiteExtension.10.0.x86" />
+    <PackageReference Include="Microsoft.AspNetCore.AzureAppServices.SiteExtension.11.0.x64" />
+    <PackageReference Include="Microsoft.AspNetCore.AzureAppServices.SiteExtension.11.0.x86" />
     <PackageReference Include="Microsoft.AspNetCore.AzureAppServices.SiteExtension.8.0.x64" />
     <PackageReference Include="Microsoft.AspNetCore.AzureAppServices.SiteExtension.8.0.x86" />
     <PackageReference Include="Microsoft.AspNetCore.AzureAppServices.SiteExtension.9.0.x64" />
