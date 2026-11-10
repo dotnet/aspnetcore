@@ -15,7 +15,7 @@ internal sealed class FeatureContext : IInternalAsyncDisposal
     // Typed as the interface, so that disposal does not keep the type in an app that never adds a listener.
     private IInternalAsyncDisposal? _callbackFactory;
     // Typed as the interface for the same reason, for an app that never cancels a browser operation.
-    private IInternalAsyncDisposal? _abortLinks;
+    private IInternalAsyncDisposal? _abortLinkFactory;
 
     public FeatureContext(IJSRuntime jsRuntime, ILoggerFactory loggerFactory)
     {
@@ -37,15 +37,15 @@ internal sealed class FeatureContext : IInternalAsyncDisposal
     /// <summary>
     /// Gets the factory that a projection uses to abort a browser operation when a <see cref="CancellationToken"/> is canceled.
     /// </summary>
-    public AbortLinkFactory AbortLinks
-        => (AbortLinkFactory)(_abortLinks ??= new AbortLinkFactory(JSRuntime, _loggerFactory.CreateLogger<AbortLinkFactory>()));
+    public AbortLinkFactory AbortLinkFactory
+        => (AbortLinkFactory)(_abortLinkFactory ??= new AbortLinkFactory(JSRuntime, _loggerFactory.CreateLogger<AbortLinkFactory>()));
 
     // Window calls this last, after every listener that needs the module is removed.
     async ValueTask IInternalAsyncDisposal.InternalDisposeAsync()
     {
-        if (_abortLinks is not null)
+        if (_abortLinkFactory is not null)
         {
-            await _abortLinks.InternalDisposeAsync();
+            await _abortLinkFactory.InternalDisposeAsync();
         }
 
         if (_callbackFactory is not null)

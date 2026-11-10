@@ -73,7 +73,7 @@ internal sealed class AbortLink : IAsyncDisposable
     }
 
     // Runs the callback at once if the token is already canceled.
-    internal void AbortWhenCanceled(CancellationToken cancellationToken)
+    internal void RegisterAbort(CancellationToken cancellationToken)
         => _registration = cancellationToken.Register(static state => ((AbortLink)state!).Abort(), this);
 
     // Runs on the thread that cancels the token, which in Interactive Server may be outside the circuit's

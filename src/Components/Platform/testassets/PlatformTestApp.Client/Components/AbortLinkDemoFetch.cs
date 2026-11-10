@@ -12,17 +12,17 @@ namespace PlatformTestApp.Client.Components;
 internal sealed class AbortLinkDemoFetch
 {
     private readonly IJSRuntime _jsRuntime;
-    private readonly AbortLinkFactory _abortLinks;
+    private readonly AbortLinkFactory _abortLinkFactory;
 
-    public AbortLinkDemoFetch(IJSRuntime jsRuntime, AbortLinkFactory abortLinks)
+    public AbortLinkDemoFetch(IJSRuntime jsRuntime, AbortLinkFactory abortLinkFactory)
     {
         _jsRuntime = jsRuntime;
-        _abortLinks = abortLinks;
+        _abortLinkFactory = abortLinkFactory;
     }
 
     public async Task<string> FetchTextAsync(string url, CancellationToken cancellationToken, Action? onBodyReadStarted = null)
     {
-        var link = await _abortLinks.CreateAsync(cancellationToken);
+        var link = await _abortLinkFactory.CreateAsync(cancellationToken);
         try
         {
             // CancellationToken.None also turns off the interop timeout. Only the link cancels the request.

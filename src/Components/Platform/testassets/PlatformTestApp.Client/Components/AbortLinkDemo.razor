@@ -22,7 +22,7 @@
 
     // Gets the demo feature the way a family gets its projection, so it uses the abort links of the scope.
     private AbortLinkDemoFetch Fetch
-        => Browser.Window.GetOrAddFeature(static context => new AbortLinkDemoFetch(context.JSRuntime, context.AbortLinks));
+        => Browser.Window.GetOrAddFeature(static context => new AbortLinkDemoFetch(context.JSRuntime, context.AbortLinkFactory));
 
     private Task FetchNotCanceledAsync() => RunAsync("Not canceled", async id =>
     {

@@ -72,7 +72,7 @@ internal sealed partial class AbortLinkFactory : IInternalAsyncDisposal
         ObjectDisposedException.ThrowIf(_disposed, this);
 
         _links.Add(link);
-        link.AbortWhenCanceled(cancellationToken);
+        link.RegisterAbort(cancellationToken);
 
         return link;
     }
