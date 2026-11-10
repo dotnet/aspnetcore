@@ -2,7 +2,7 @@
 {
     @(Changed ? "Carol" : "Alice")
 }
-else if (!Empty)
+else
 {
     @if (Changed)
     {
@@ -22,7 +22,6 @@ else if (!Empty)
 
 @code {
     [Parameter] public bool Changed { get; set; }
-    [Parameter] public bool Empty { get; set; }
     [Parameter] public bool TextOnly { get; set; }
 
     private int count;

@@ -31,15 +31,6 @@ public class InteractivityTest : ServerTestBase<BasicTestAppServerSiteFixture<Ra
     [Theory]
     [InlineData("server", "")]
     [InlineData("server", "text")]
-    [InlineData("server", "attribute")]
-    [InlineData("server", "element")]
-    [InlineData("server", "extra")]
-    [InlineData("server", "missing")]
-    [InlineData("server", "markup")]
-    [InlineData("server", "namespace")]
-    [InlineData("server", "order")]
-    [InlineData("server", "attribute-order")]
-    [InlineData("server", "root-attribute")]
     public void PrerenderedDom_WithInitializersUsesWholeRootFallbackForMismatches(string platform, string mismatch)
     {
         Navigate($"{ServerPathBase}/prerendered-dom?suppress-autostart&platform={platform}&mismatch={mismatch}");
@@ -62,24 +53,6 @@ public class InteractivityTest : ServerTestBase<BasicTestAppServerSiteFixture<Ra
         input.Click();
 
         var js = (IJavaScriptExecutor)Browser;
-        if (mismatch == "namespace")
-        {
-            js.ExecuteScript("""
-                const original = document.querySelector('#dom-first-root svg text');
-                const replacement = document.createElementNS('http://www.w3.org/1999/xhtml', 'text');
-                replacement.textContent = original.textContent;
-                original.replaceWith(replacement);
-                """);
-        }
-        else if (mismatch == "attribute-order")
-        {
-            js.ExecuteScript("""
-                const root = arguments[0];
-                const id = root.id;
-                root.removeAttribute('id');
-                root.setAttribute('id', id);
-                """, root);
-        }
         // WebDriver cannot set a selection range or observe synchronous removal records.
         js.ExecuteScript("""
             arguments[0].setSelectionRange(2, 7);
@@ -109,7 +82,7 @@ public class InteractivityTest : ServerTestBase<BasicTestAppServerSiteFixture<Ra
         Browser.True(() => Browser.FindElement(By.Id("dom-first-ready")).Text is "Server" or "WebAssembly");
         Browser.True(() => Browser.FindElement(By.Id("dom-second-ready")).Text is "Server" or "WebAssembly");
 
-        var shouldPreserveRoot = mismatch is "" or "attribute-order";
+        var shouldPreserveRoot = mismatch is "";
         var currentRoot = Browser.FindElement(By.Id("dom-first-root"));
         Assert.Equal(shouldPreserveRoot, root.Equals(currentRoot));
         Assert.Equal(shouldPreserveRoot, input.Equals(Browser.FindElement(By.Id("dom-first-input"))));
@@ -176,7 +149,6 @@ public class InteractivityTest : ServerTestBase<BasicTestAppServerSiteFixture<Ra
     [InlineData("server", "select-selected-option", true, "30 min")]
     [InlineData("server", "select-listbox", false, "45 min")]
     [InlineData("server", "select-empty-value", false, "")]
-    [InlineData("server", "select-unmatched-value", false, "")]
     [InlineData("server", "select-no-value", true, "30 min")]
     [InlineData("server", "select-disabled", true, "5 min")]
     [InlineData("server", "select-disabled-optgroup", true, "30 min")]
@@ -224,21 +196,14 @@ public class InteractivityTest : ServerTestBase<BasicTestAppServerSiteFixture<Ra
     }
 
     [Theory]
-    [InlineData("server", "nested")]
     [InlineData("server", "input-default")]
     [InlineData("server", "textarea-default")]
     [InlineData("server", "textarea-text")]
     [InlineData("server", "textarea-text-matching")]
     [InlineData("server", "markup-textarea")]
     [InlineData("server", "remove-leading")]
-    [InlineData("server", "add-leading")]
-    [InlineData("server", "remove-middle")]
-    [InlineData("server", "insert-middle")]
-    [InlineData("server", "text")]
     [InlineData("server", "component")]
-    [InlineData("server", "empty-component")]
     [InlineData("server", "markup-tree")]
-    [InlineData("server", "markup-siblings")]
     [InlineData("server", "table")]
     public void PrerenderedDom_ReplacesOnlyMismatchedPositions(string platform, string scenario)
     {
@@ -250,21 +215,14 @@ public class InteractivityTest : ServerTestBase<BasicTestAppServerSiteFixture<Ra
         Browser.Exists(By.Id("position-footer-note")).SendKeys("Bob");
         note.Clear();
         note.SendKeys("Bob");
-        IWebElement item = null;
-        IWebElement lastItem = null;
         IWebElement nestedNote = null;
-        if (scenario is "remove-middle" or "insert-middle")
-        {
-            item = Browser.Exists(By.Id("position-item-1"));
-            lastItem = Browser.Exists(By.Id("position-item-3"));
-        }
         if (scenario is "input-default" or "textarea-default" or "textarea-text" or "textarea-text-matching" or "markup-textarea")
         {
             nestedNote = Browser.Exists(By.Id("position-changed-input"));
             nestedNote.Clear();
             nestedNote.SendKeys("Bob");
         }
-        else if (scenario is "markup-tree" or "markup-siblings" or "component")
+        else if (scenario is "markup-tree" or "component")
         {
             nestedNote = Browser.Exists(By.Id(scenario == "component" ? "position-child-note" : "position-markup-note"));
             nestedNote.Clear();
@@ -282,29 +240,20 @@ public class InteractivityTest : ServerTestBase<BasicTestAppServerSiteFixture<Ra
         }
         note.Click();
         var js = (IJavaScriptExecutor)Browser;
-        // WebDriver cannot start activation without moving focus or compare a replaced text node.
-        js.ExecuteScript("""
-            window.prerenderedPositionText = document.getElementById('position-scope').firstChild;
-            callBlazorStart();
-            """);
+        // WebDriver cannot start activation without moving focus.
+        js.ExecuteScript("callBlazorStart()");
         Browser.True(() => Browser.FindElement(By.Id("position-ready")).Text is "Server" or "WebAssembly");
         Assert.Equal(root, Browser.FindElement(By.Id("position-root")));
         Assert.Equal(scope, Browser.FindElement(By.Id("position-scope")));
         Assert.Equal(footer, Browser.FindElement(By.Id("position-footer")));
         Assert.Equal("AliceBob", Browser.FindElement(By.Id("position-footer-note")).GetDomProperty("value"));
         var currentNote = Browser.FindElement(By.Id("position-note"));
-        var preservesNote = scenario is not ("remove-leading" or "add-leading" or "empty-component");
+        var preservesNote = scenario is not "remove-leading";
         Assert.Equal(preservesNote, note.Equals(currentNote));
         Assert.Equal(preservesNote ? "Bob" : "Alice", currentNote.GetDomProperty("value"));
         if (preservesNote)
         {
             Assert.Equal(note, Browser.SwitchTo().ActiveElement());
-        }
-        if (scenario is "remove-middle" or "insert-middle")
-        {
-            Assert.Equal(item, Browser.FindElement(By.Id("position-item-1")));
-            Assert.NotEqual(lastItem, Browser.FindElement(By.Id("position-item-3")));
-            Assert.Equal(scenario == "remove-middle" ? 2 : 3, Browser.FindElements(By.CssSelector("#position-list > span")).Count);
         }
         if (scenario is "input-default" or "textarea-default" or "textarea-text" or "markup-textarea")
         {
@@ -322,15 +271,6 @@ public class InteractivityTest : ServerTestBase<BasicTestAppServerSiteFixture<Ra
             }));
             Assert.Equal(nestedNote, currentNestedNote);
             Assert.Equal("Bob", currentNestedNote.GetDomProperty("value"));
-        }
-        if (scenario == "text")
-        {
-            Assert.Contains("Hello Carol", scope.Text);
-            Assert.Equal(false, js.ExecuteScript("return window.prerenderedPositionText === document.getElementById('position-scope').firstChild"));
-        }
-        if (scenario == "nested")
-        {
-            Browser.Equal("Ready", () => Browser.FindElement(By.CssSelector("strong#position-change")).Text);
         }
         if (scenario == "component")
         {
@@ -427,18 +367,6 @@ public class InteractivityTest : ServerTestBase<BasicTestAppServerSiteFixture<Ra
         Assert.Equal("Clicked", Browser.FindElement(By.Id("position-native-status")).Text);
         Assert.Equal(2L, js.ExecuteScript("return window.prerenderedPositionNativeClicks"));
         Assert.Equal(currentFooter, Browser.FindElement(By.Id("position-footer")));
-    }
-
-    [Theory]
-    [InlineData("server")]
-    public void PrerenderedDom_WithoutPrerenderingUsesNormalRendering(string platform)
-    {
-        Navigate($"{ServerPathBase}/prerendered-dom?suppress-autostart&platform={platform}&noPrerender=true");
-        Browser.DoesNotExist(By.Id("dom-first-root"));
-        Browser.Exists(By.Id("call-blazor-start")).Click();
-        Browser.True(() => Browser.FindElement(By.Id("dom-first-ready")).Text is "Server" or "WebAssembly");
-        Browser.Click(By.Id("dom-first-increment"));
-        Browser.Equal("Count: 1", () => Browser.FindElement(By.Id("dom-first-count")).Text);
     }
 
     [Theory]

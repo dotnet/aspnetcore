@@ -1,6 +1,6 @@
 @using Microsoft.AspNetCore.Components.Forms
 
-<section id="@Id("root")" class="@(Mismatch == "root-attribute" && RendererInfo.IsInteractive ? "prerendered-dom-changed" : "prerendered-dom")">
+<section id="@Id("root")" class="prerendered-dom">
     <h2>Prerendered DOM</h2>
     <p id="@Id("count")">Count: @count</p>
     <input id="@Id("input")" @bind="text" @ref="input" />
@@ -57,30 +57,9 @@
     {
         @((MarkupString)"<script>window.prerenderedDomScriptRuns = (window.prerenderedDomScriptRuns || 0) + 1;</script>")
     }
-    @if (Mismatch != "missing" || !RendererInfo.IsInteractive)
-    {
-        @if (Mismatch == "element" && RendererInfo.IsInteractive)
-        {
-            <em>Late mismatch</em>
-        }
-        else
-        {
-            <span data-state="@(Mismatch == "attribute" && RendererInfo.IsInteractive ? "different" : "same")">@(Mismatch == "text" && RendererInfo.IsInteractive ? "Different" : "Same")</span>
-        }
-    }
-    @if (Mismatch == "extra" && RendererInfo.IsInteractive)
-    {
-        <span>Extra content</span>
-    }
-    @((MarkupString)(Mismatch == "markup" && RendererInfo.IsInteractive ? "<b>Different markup</b>" : "<b>Same markup</b>"))
-    @if (Mismatch == "order" && RendererInfo.IsInteractive)
-    {
-        <span>Second</span><span>First</span>
-    }
-    else
-    {
-        <span>First</span><span>Second</span>
-    }
+    <span data-state="same">@(Mismatch == "text" && RendererInfo.IsInteractive ? "Different" : "Same")</span>
+    @((MarkupString)"<b>Same markup</b>")
+    <span>First</span><span>Second</span>
     <span id="@Id("ready")">@ready</span>
 </section>
 

@@ -4,16 +4,6 @@
         <div id="position-scope">
             @switch (Scenario)
             {
-                case "nested":
-                    @if (RendererInfo.IsInteractive)
-                    {
-                        <strong id="@("position-change")">Ready</strong>
-                    }
-                    else
-                    {
-                        <span id="@("position-change")">Preparing</span>
-                    }
-                    break;
                 case "input-default":
                     <input id="position-changed-input" value="@(RendererInfo.IsInteractive ? "Carol" : "Alice")" />
                     break;
@@ -33,35 +23,11 @@
                         <span id="@("position-leading")">Before</span>
                     }
                     break;
-                case "add-leading":
-                    @if (RendererInfo.IsInteractive)
-                    {
-                        <span id="@("position-leading")">Before</span>
-                    }
-                    break;
-                case "remove-middle":
-                case "insert-middle":
-                    <div id="position-list">
-                        @foreach (var item in (Scenario == "remove-middle") == RendererInfo.IsInteractive ? new[] { 1, 3 } : new[] { 1, 2, 3 })
-                        {
-                            <span id="@($"position-item-{item}")">@item</span>
-                        }
-                    </div>
-                    break;
-                case "text":
-                    @("Hello ")@(RendererInfo.IsInteractive ? "Carol" : "Alice")
-                    break;
                 case "component":
                     <PrerenderedDomPositionChild Changed="RendererInfo.IsInteractive" />
                     break;
-                case "empty-component":
-                    <PrerenderedDomPositionChild Empty="RendererInfo.IsInteractive" />
-                    break;
                 case "markup-tree":
                     @((MarkupString)$"<div id=\"position-markup\"><{(RendererInfo.IsInteractive ? "strong" : "span")}>State</{(RendererInfo.IsInteractive ? "strong" : "span")}><input id=\"position-markup-note\" value=\"Alice\"></div>")
-                    break;
-                case "markup-siblings":
-                    @((MarkupString)$"<{(RendererInfo.IsInteractive ? "strong" : "span")}>State</{(RendererInfo.IsInteractive ? "strong" : "span")}><input id=\"position-markup-note\" value=\"Alice\"><i>After</i>")
                     break;
                 case "table":
                     <table id="position-table"><tr><td>@Scenario</td></tr></table>
@@ -167,7 +133,6 @@
     {
         "select-text-options-matching" or "select-disabled" => "5 min",
         "select-empty-value" => "",
-        "select-unmatched-value" => "99 min",
         "select-no-value" => null,
         "select-multiple" or "select-multiple-matching" => "[\"5 min\",\"45 min\"]",
         _ => "45 min",

@@ -14,14 +14,13 @@ else
 @code {
     [SupplyParameterFromQuery] public string Platform { get; set; }
     [SupplyParameterFromQuery] public string Mismatch { get; set; }
-    [SupplyParameterFromQuery] public bool NoPrerender { get; set; }
     [SupplyParameterFromQuery] public bool IncludeForm { get; set; }
     [SupplyParameterFromQuery] public string Scenario { get; set; }
 
     private IComponentRenderMode Mode => Platform switch
     {
-        "server" => new InteractiveServerRenderMode(prerender: !NoPrerender),
-        "wasm" => new InteractiveWebAssemblyRenderMode(prerender: !NoPrerender),
+        "server" => new InteractiveServerRenderMode(prerender: true),
+        "wasm" => new InteractiveWebAssemblyRenderMode(prerender: true),
         _ => throw new InvalidOperationException($"Unknown render mode '{Platform}'.")
     };
 }
