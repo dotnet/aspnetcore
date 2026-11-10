@@ -26,6 +26,7 @@ public class PublicApiTest
     [InlineData(typeof(Window))]
     [InlineData(typeof(Storage))]
     [InlineData(typeof(CookieStore))]
+    [InlineData(typeof(Navigator))]
     [InlineData(typeof(Screen))]
     public void SharedInstances_CannotBeDisposedByApplicationCode(Type type)
     {
@@ -50,6 +51,7 @@ public class PublicApiTest
             typeof(CookieStore),
             typeof(Url),
             typeof(UrlSearchParams),
+            typeof(Navigator),
             typeof(Screen),
             typeof(Window),
         ];
