@@ -16,6 +16,8 @@
 ~Microsoft.AspNetCore.Components.RenderTree.RenderTreeFrame.NamedEventType.get -> string
 ~Microsoft.AspNetCore.Components.RenderTree.RenderTreeFrame.TextContent.get -> string
 ~override Microsoft.AspNetCore.Components.RenderTree.RenderTreeFrame.ToString() -> string
+abstract Microsoft.AspNetCore.Components.CascadingParameterSubscription.Dispose() -> void
+abstract Microsoft.AspNetCore.Components.CascadingParameterSubscription.GetCurrentValue() -> object?
 abstract Microsoft.AspNetCore.Components.Dispatcher.CheckAccess() -> bool
 abstract Microsoft.AspNetCore.Components.Dispatcher.InvokeAsync(System.Action! workItem) -> System.Threading.Tasks.Task!
 abstract Microsoft.AspNetCore.Components.Dispatcher.InvokeAsync(System.Func<System.Threading.Tasks.Task!>! workItem) -> System.Threading.Tasks.Task!
@@ -28,6 +30,12 @@ abstract Microsoft.AspNetCore.Components.RenderModeAttribute.Mode.get -> Microso
 abstract Microsoft.AspNetCore.Components.RenderTree.Renderer.Dispatcher.get -> Microsoft.AspNetCore.Components.Dispatcher!
 abstract Microsoft.AspNetCore.Components.RenderTree.Renderer.HandleException(System.Exception! exception) -> void
 abstract Microsoft.AspNetCore.Components.RenderTree.Renderer.UpdateDisplayAsync(in Microsoft.AspNetCore.Components.RenderTree.RenderBatch renderBatch) -> System.Threading.Tasks.Task!
+Microsoft.AspNetCore.Components.AcceptsAssetPathAttribute
+Microsoft.AspNetCore.Components.AcceptsAssetPathAttribute.AcceptsAssetPathAttribute(string! elementName, string! attributeName) -> void
+Microsoft.AspNetCore.Components.AcceptsAssetPathAttribute.AttributeName.get -> string!
+Microsoft.AspNetCore.Components.AcceptsAssetPathAttribute.ElementName.get -> string!
+Microsoft.AspNetCore.Components.AssetPathAttribute
+Microsoft.AspNetCore.Components.AssetPathAttribute.AssetPathAttribute() -> void
 Microsoft.AspNetCore.Components.BindConverter
 Microsoft.AspNetCore.Components.BindElementAttribute
 Microsoft.AspNetCore.Components.BindElementAttribute.BindElementAttribute(string! element, string? suffix, string! valueAttribute, string! changeAttribute) -> void
@@ -35,6 +43,23 @@ Microsoft.AspNetCore.Components.BindElementAttribute.ChangeAttribute.get -> stri
 Microsoft.AspNetCore.Components.BindElementAttribute.Element.get -> string!
 Microsoft.AspNetCore.Components.BindElementAttribute.Suffix.get -> string?
 Microsoft.AspNetCore.Components.BindElementAttribute.ValueAttribute.get -> string!
+Microsoft.AspNetCore.Components.CacheBehavior
+Microsoft.AspNetCore.Components.CacheBehavior.Rerender = 0 -> Microsoft.AspNetCore.Components.CacheBehavior
+Microsoft.AspNetCore.Components.CacheBehavior.Throw = 1 -> Microsoft.AspNetCore.Components.CacheBehavior
+Microsoft.AspNetCore.Components.CacheBehaviorAttribute
+Microsoft.AspNetCore.Components.CacheBehaviorAttribute.Behavior.get -> Microsoft.AspNetCore.Components.CacheBehavior
+Microsoft.AspNetCore.Components.CacheBehaviorAttribute.CacheBehaviorAttribute(Microsoft.AspNetCore.Components.CacheBehavior behavior) -> void
+Microsoft.AspNetCore.Components.CacheConditionAttribute
+Microsoft.AspNetCore.Components.CacheConditionAttribute.CacheConditionAttribute(Microsoft.AspNetCore.Components.CacheVaryBy varyBy) -> void
+Microsoft.AspNetCore.Components.CacheConditionAttribute.VaryBy.get -> Microsoft.AspNetCore.Components.CacheVaryBy
+Microsoft.AspNetCore.Components.CacheVaryBy
+Microsoft.AspNetCore.Components.CacheVaryBy.Cookie = 8 -> Microsoft.AspNetCore.Components.CacheVaryBy
+Microsoft.AspNetCore.Components.CacheVaryBy.Culture = 32 -> Microsoft.AspNetCore.Components.CacheVaryBy
+Microsoft.AspNetCore.Components.CacheVaryBy.Header = 4 -> Microsoft.AspNetCore.Components.CacheVaryBy
+Microsoft.AspNetCore.Components.CacheVaryBy.None = 0 -> Microsoft.AspNetCore.Components.CacheVaryBy
+Microsoft.AspNetCore.Components.CacheVaryBy.Query = 1 -> Microsoft.AspNetCore.Components.CacheVaryBy
+Microsoft.AspNetCore.Components.CacheVaryBy.Route = 2 -> Microsoft.AspNetCore.Components.CacheVaryBy
+Microsoft.AspNetCore.Components.CacheVaryBy.User = 16 -> Microsoft.AspNetCore.Components.CacheVaryBy
 Microsoft.AspNetCore.Components.CascadingParameterAttribute
 Microsoft.AspNetCore.Components.CascadingParameterAttribute.CascadingParameterAttribute() -> void
 Microsoft.AspNetCore.Components.CascadingParameterAttribute.Name.get -> string?
@@ -46,6 +71,8 @@ Microsoft.AspNetCore.Components.CascadingParameterInfo.Attribute.get -> Microsof
 Microsoft.AspNetCore.Components.CascadingParameterInfo.CascadingParameterInfo() -> void
 Microsoft.AspNetCore.Components.CascadingParameterInfo.PropertyName.get -> string!
 Microsoft.AspNetCore.Components.CascadingParameterInfo.PropertyType.get -> System.Type!
+Microsoft.AspNetCore.Components.CascadingParameterSubscription
+Microsoft.AspNetCore.Components.CascadingParameterSubscription.CascadingParameterSubscription() -> void
 Microsoft.AspNetCore.Components.CascadingTypeParameterAttribute
 Microsoft.AspNetCore.Components.CascadingTypeParameterAttribute.CascadingTypeParameterAttribute(string! name) -> void
 Microsoft.AspNetCore.Components.CascadingTypeParameterAttribute.Name.get -> string!
@@ -162,6 +189,8 @@ Microsoft.AspNetCore.Components.IComponent.Attach(Microsoft.AspNetCore.Component
 Microsoft.AspNetCore.Components.IComponent.SetParametersAsync(Microsoft.AspNetCore.Components.ParameterView parameters) -> System.Threading.Tasks.Task!
 Microsoft.AspNetCore.Components.IComponentActivator
 Microsoft.AspNetCore.Components.IComponentActivator.CreateInstance(System.Type! componentType) -> Microsoft.AspNetCore.Components.IComponent!
+Microsoft.AspNetCore.Components.IComponentPropertyActivator
+Microsoft.AspNetCore.Components.IComponentPropertyActivator.GetActivator(System.Type! componentType) -> System.Action<System.IServiceProvider!, Microsoft.AspNetCore.Components.IComponent!>!
 Microsoft.AspNetCore.Components.IComponentRenderMode
 Microsoft.AspNetCore.Components.IHandleAfterRender
 Microsoft.AspNetCore.Components.IHandleAfterRender.OnAfterRenderAsync() -> System.Threading.Tasks.Task!
@@ -237,6 +266,8 @@ Microsoft.AspNetCore.Components.NavigationOptions.ForceLoad.init -> void
 Microsoft.AspNetCore.Components.NavigationOptions.HistoryEntryState.get -> string?
 Microsoft.AspNetCore.Components.NavigationOptions.HistoryEntryState.init -> void
 Microsoft.AspNetCore.Components.NavigationOptions.NavigationOptions() -> void
+Microsoft.AspNetCore.Components.NavigationOptions.RelativeToCurrentUri.get -> bool
+Microsoft.AspNetCore.Components.NavigationOptions.RelativeToCurrentUri.init -> void
 Microsoft.AspNetCore.Components.NavigationOptions.ReplaceHistoryEntry.get -> bool
 Microsoft.AspNetCore.Components.NavigationOptions.ReplaceHistoryEntry.init -> void
 Microsoft.AspNetCore.Components.OwningComponentBase
@@ -340,6 +371,7 @@ Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder.OpenComponent<TCompo
 Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder.OpenElement(int sequence, string! elementName) -> void
 Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder.OpenRegion(int sequence) -> void
 Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder.RenderTreeBuilder() -> void
+Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder.SetAttributeValue(int frameIndex, object? value) -> void
 Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder.SetKey(object? value) -> void
 Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder.SetUpdatesAttributeName(string! updatesAttributeName) -> void
 Microsoft.AspNetCore.Components.RenderModeAttribute
@@ -527,8 +559,6 @@ Microsoft.AspNetCore.Components.Routing.Router.NotFoundPage.get -> System.Type?
 Microsoft.AspNetCore.Components.Routing.Router.NotFoundPage.set -> void
 Microsoft.AspNetCore.Components.Routing.Router.OnNavigateAsync.get -> Microsoft.AspNetCore.Components.EventCallback<Microsoft.AspNetCore.Components.Routing.NavigationContext!>
 Microsoft.AspNetCore.Components.Routing.Router.OnNavigateAsync.set -> void
-Microsoft.AspNetCore.Components.Routing.Router.PreferExactMatches.get -> bool
-Microsoft.AspNetCore.Components.Routing.Router.PreferExactMatches.set -> void
 Microsoft.AspNetCore.Components.Routing.Router.Router() -> void
 Microsoft.AspNetCore.Components.Routing.Router.SetParametersAsync(Microsoft.AspNetCore.Components.ParameterView parameters) -> System.Threading.Tasks.Task!
 Microsoft.AspNetCore.Components.Sections.SectionContent
@@ -718,6 +748,7 @@ static Microsoft.AspNetCore.Components.Infrastructure.ComponentsMetricsServiceCo
 static Microsoft.AspNetCore.Components.Infrastructure.PersistentStateProviderServiceCollectionExtensions.AddSupplyValueFromPersistentComponentStateProvider(this Microsoft.Extensions.DependencyInjection.IServiceCollection! services) -> Microsoft.Extensions.DependencyInjection.IServiceCollection!
 static Microsoft.AspNetCore.Components.Infrastructure.RegisterPersistentComponentStateServiceCollectionExtensions.AddPersistentServiceRegistration<TService>(Microsoft.Extensions.DependencyInjection.IServiceCollection! services, Microsoft.AspNetCore.Components.IComponentRenderMode! componentRenderMode) -> Microsoft.Extensions.DependencyInjection.IServiceCollection!
 static Microsoft.AspNetCore.Components.MarkupString.explicit operator Microsoft.AspNetCore.Components.MarkupString(string! value) -> Microsoft.AspNetCore.Components.MarkupString
+static Microsoft.AspNetCore.Components.NavigationManagerExtensions.GetUriWithFragment(this Microsoft.AspNetCore.Components.NavigationManager! navigationManager, string? fragment) -> string!
 static Microsoft.AspNetCore.Components.NavigationManagerExtensions.GetUriWithQueryParameter(this Microsoft.AspNetCore.Components.NavigationManager! navigationManager, string! name, bool value) -> string!
 static Microsoft.AspNetCore.Components.NavigationManagerExtensions.GetUriWithQueryParameter(this Microsoft.AspNetCore.Components.NavigationManager! navigationManager, string! name, bool? value) -> string!
 static Microsoft.AspNetCore.Components.NavigationManagerExtensions.GetUriWithQueryParameter(this Microsoft.AspNetCore.Components.NavigationManager! navigationManager, string! name, decimal value) -> string!
@@ -753,6 +784,7 @@ static Microsoft.Extensions.DependencyInjection.CascadingValueServiceCollectionE
 static Microsoft.Extensions.DependencyInjection.CascadingValueServiceCollectionExtensions.TryAddCascadingValue<TValue>(this Microsoft.Extensions.DependencyInjection.IServiceCollection! serviceCollection, string! name, System.Func<System.IServiceProvider!, TValue>! valueFactory) -> void
 static Microsoft.Extensions.DependencyInjection.CascadingValueServiceCollectionExtensions.TryAddCascadingValue<TValue>(this Microsoft.Extensions.DependencyInjection.IServiceCollection! serviceCollection, System.Func<System.IServiceProvider!, Microsoft.AspNetCore.Components.CascadingValueSource<TValue>!>! sourceFactory) -> void
 static Microsoft.Extensions.DependencyInjection.CascadingValueServiceCollectionExtensions.TryAddCascadingValue<TValue>(this Microsoft.Extensions.DependencyInjection.IServiceCollection! serviceCollection, System.Func<System.IServiceProvider!, TValue>! valueFactory) -> void
+static Microsoft.Extensions.DependencyInjection.CascadingValueServiceCollectionExtensions.TryAddCascadingValueSupplier<TAttribute>(this Microsoft.Extensions.DependencyInjection.IServiceCollection! serviceCollection, System.Func<System.IServiceProvider!, System.Func<Microsoft.AspNetCore.Components.Rendering.ComponentState!, TAttribute!, Microsoft.AspNetCore.Components.CascadingParameterInfo, Microsoft.AspNetCore.Components.CascadingParameterSubscription!>!>! subscribeFactory) -> Microsoft.Extensions.DependencyInjection.IServiceCollection!
 static readonly Microsoft.AspNetCore.Components.EventCallback.Empty -> Microsoft.AspNetCore.Components.EventCallback
 static readonly Microsoft.AspNetCore.Components.EventCallback.Factory -> Microsoft.AspNetCore.Components.EventCallbackFactory!
 static readonly Microsoft.AspNetCore.Components.EventCallback<TValue>.Empty -> Microsoft.AspNetCore.Components.EventCallback<TValue>
