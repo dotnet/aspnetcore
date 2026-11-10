@@ -10,7 +10,7 @@
 @inject IdentityRedirectManager RedirectManager
 
 <h4>Confirm it's you</h4>
-<p class="text-info">@Purpose</p>
+<p>@Purpose</p>
 
 <StatusMessage Message="@message" />
 
@@ -20,7 +20,9 @@
         <div class="col-xl-6">
             <EditForm Model="Input" FormName="confirm-password" OnValidSubmit="ConfirmPasswordAsync" method="post">
                 <DataAnnotationsValidator />
-                <ValidationSummary class="text-danger" role="alert" />
+                <div role="alert" aria-atomic="true">
+                    <ValidationSummary class="text-danger" />
+                </div>
                 <div class="form-floating mb-3">
                     <InputText type="password" @bind-Value="Input.Password" id="Input.Password" class="form-control" autocomplete="current-password" aria-required="true" placeholder="Please enter your password." />
                     <label for="Input.Password" class="form-label">Password</label>

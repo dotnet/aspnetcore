@@ -1,3 +1,5 @@
+import json
+import re
 import unittest
 from pathlib import Path
 
@@ -98,8 +100,8 @@ class WorkflowPolicyTests(unittest.TestCase):
         trigger = self.workflow.split("on:", 1)[1].split("permissions:", 1)[0]
         self.assertIn("workflow_dispatch:", trigger)
         self.assertNotIn("pull_request:", trigger)
-        preparation = self.workflow.split("  - name: Resolve source version and existing docs draft", 1)[1]
-        self.assertLess(preparation.index("prepare_context.py"), preparation.index("source-branches.json"))
+        preparation = self.workflow.split("- name: Resolve source version and existing docs draft", 1)[1]
+        self.assertLess(preparation.index("prepare_run.py"), preparation.index("source-branches.json"))
         self.assertLess(preparation.index('!= "eligible"'), preparation.index("resolve_target_version.py"))
         self.assertEqual(2, self.workflow.count('--source-preflight "${RUNNER_TEMP}'))
         self.assertEqual(2, self.compiled_workflow.count('--source-preflight "${RUNNER_TEMP}'))
@@ -114,8 +116,25 @@ class WorkflowPolicyTests(unittest.TestCase):
         self.assertNotIn("github.rest.issues", attribution)
         self.assertNotIn("assignees:", self.workflow)
         self.assertNotIn("reviewers:", self.workflow)
-        self.assertIn("Omit `body` to preserve the existing generated description", self.workflow)
-        self.assertIn('\\"allow_body\\":false', self.compiled_workflow)
+        self.assertIn("Do not emit `update_pull_request` or edit the title or body.", self.workflow)
+        self.assertNotIn("  update-pull-request:", self.workflow)
+        self.assertNotIn('\\"required_title_prefix\\"', self.compiled_workflow)
+
+    def test_compiler_and_setup_use_the_same_published_release(self):
+        metadata = json.loads(self.compiled_workflow.splitlines()[0].removeprefix("# gh-aw-metadata: "))
+        version = metadata["compiler_version"]
+        self.assertRegex(version, r"^v[0-9]+\.[0-9]+\.[0-9]+$")
+        self.assertTrue(metadata["strict"])
+        manifest = json.loads(self.compiled_workflow.splitlines()[1].removeprefix("# gh-aw-manifest: "))
+        setup_actions = [action for action in manifest["actions"] if action["repo"] == "github/gh-aw-actions/setup"]
+        self.assertEqual(1, len(setup_actions))
+        setup_action = setup_actions[0]
+        self.assertEqual(version, setup_action["version"])
+        self.assertRegex(setup_action["sha"], r"^[a-f0-9]{40}$")
+        setup = re.findall(r"uses: github/gh-aw-actions/setup@(.+)", self.compiled_workflow)
+        self.assertTrue(setup)
+        self.assertEqual({f'{setup_action["sha"]} # {version}'}, set(setup))
+        self.assertNotIn("github/gh-aw/actions/setup@", self.compiled_workflow)
 
 
 if __name__ == "__main__":

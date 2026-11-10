@@ -86,6 +86,13 @@
     <Project Path="src/Components/Media/src/Microsoft.AspNetCore.Components.Media.csproj" />
     <Project Path="src/Components/Media/test/Microsoft.AspNetCore.Components.Media.Tests.csproj" />
   </Folder>
+  <Folder Name="/src/Components/Platform/">
+    <Project Path="src/Components/Platform/src/Microsoft.AspNetCore.Components.Platform.csproj" />
+    <Project Path="src/Components/Platform/test/Microsoft.AspNetCore.Components.Platform.Tests.csproj" />
+    <Project Path="src/Components/Platform/testassets/PlatformTestApp.Client/PlatformTestApp.Client.csproj" />
+    <Project Path="src/Components/Platform/testassets/PlatformTestApp.E2E.Tests/PlatformTestApp.E2E.Tests.csproj" />
+    <Project Path="src/Components/Platform/testassets/PlatformTestApp/PlatformTestApp.csproj" />
+  </Folder>
   <Folder Name="/src/Components/Endpoints/">
     <Project Path="src/Components/Endpoints/src/Microsoft.AspNetCore.Components.Endpoints.csproj" />
     <Project Path="src/Components/Endpoints/test/Microsoft.AspNetCore.Components.Endpoints.Tests.csproj" />
@@ -313,6 +320,7 @@
     <Project Path="src/Hosting/Abstractions/src/Microsoft.AspNetCore.Hosting.Abstractions.csproj" />
   </Folder>
   <Folder Name="/src/Hosting/Hosting/">
+    <Project Path="src/Hosting/Hosting/perf/Microbenchmarks/Microsoft.AspNetCore.Hosting.Microbenchmarks.csproj" />
     <Project Path="src/Hosting/Hosting/src/Microsoft.AspNetCore.Hosting.csproj" />
     <Project Path="src/Hosting/Hosting/test/Microsoft.AspNetCore.Hosting.Tests.csproj" />
   </Folder>
@@ -1292,6 +1300,7 @@
     <Build Solution="*|Any CPU" Project="false" />
     <Build Solution="*|arm64" Project="false" />
   </Project>
+  <Project Path="src/StaticAssets/perf/Microbenchmarks/Microsoft.AspNetCore.StaticAssets.Microbenchmarks.csproj" />
   <Project Path="src/StaticAssets/src/Microsoft.AspNetCore.StaticAssets.csproj" />
   <Project Path="src/StaticAssets/test/Microsoft.AspNetCore.StaticAssets.Tests.csproj" />
   <Project Path="src/Testing/src/Microsoft.AspNetCore.InternalTesting.csproj" />
