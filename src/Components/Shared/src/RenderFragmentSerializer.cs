@@ -144,15 +144,9 @@ internal static partial class RenderFragmentSerializer
                 case RenderTreeFrameType.Region:
                 {
                     var subtreeEnd = position + frame.RegionSubtreeLength;
-                    var node = new RenderTreeNode
-                    {
-                        Type = "region",
-                        Sequence = frame.Sequence,
-                        Children = new(),
-                    };
                     position++;
-                    SerializeChildren(ref position, frames, subtreeEnd, node.Children, currentCapture, logger, ownerComponentType);
-                    target.Add(node);
+                    // Inline region's children into the parent
+                    SerializeChildren(ref position, frames, subtreeEnd, target, currentCapture, logger, ownerComponentType);
                     break;
                 }
                 case RenderTreeFrameType.ElementReferenceCapture:
@@ -273,15 +267,6 @@ internal static partial class RenderFragmentSerializer
             var node = nodes[i];
             switch (node.Type)
             {
-                case "region":
-                    builder.OpenRegion(node.Sequence ?? 0);
-                    if (node.Children is not null)
-                    {
-                        DeserializeNodes(builder, node.Children, jsonOptions, typeCache);
-                    }
-                    builder.CloseRegion();
-                    break;
-
                 case "element":
                     builder.OpenElement(0, node.Tag!);
                     if (node.Key is not null)

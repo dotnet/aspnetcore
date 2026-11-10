@@ -1,144 +1,273 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-#nullable disable warnings
-
-using System.Collections.Concurrent;
 using System.Diagnostics.CodeAnalysis;
-using System.Reflection;
-using Microsoft.AspNetCore.Components.HotReload;
-using Microsoft.AspNetCore.Components.Reflection;
 using Microsoft.AspNetCore.Components.Rendering;
-using static Microsoft.AspNetCore.Internal.LinkerFlags;
+using Microsoft.AspNetCore.Components.Test.Helpers;
+using Microsoft.Extensions.DependencyInjection;
 
-namespace Microsoft.AspNetCore.Components;
+namespace Microsoft.AspNetCore.Components.Test;
 
-/// <summary>
-/// Displays the specified page component, rendering it inside its layout
-/// and any further nested layouts.
-/// </summary>
-public class RouteView : IComponent
+public class RouteViewTest
 {
-    private RenderHandle _renderHandle;
-    private static readonly ConcurrentDictionary<Type, Type?> _layoutAttributeCache = new();
-    private static readonly ConcurrentDictionary<Type, bool> _routePageKeyCache = new();
-    private const string RoutePageKey = "route-page";
+    private readonly TestRenderer _renderer;
+    private readonly RouteViewTestNavigationManager _navigationManager;
+    private readonly RouteView _routeViewComponent;
+    private readonly int _routeViewComponentId;
 
-    static RouteView()
+    public RouteViewTest()
     {
-        if (HotReloadManager.IsSupported)
+        var serviceCollection = new ServiceCollection();
+        _navigationManager = new RouteViewTestNavigationManager();
+        serviceCollection.AddSingleton<NavigationManager>(_navigationManager);
+        var services = serviceCollection.BuildServiceProvider();
+        _renderer = new TestRenderer(services);
+
+        var componentFactory = new ComponentFactory(new DefaultComponentActivator(services), new DefaultComponentPropertyActivator(), _renderer);
+        _routeViewComponent = (RouteView)componentFactory.InstantiateComponent(services, typeof(RouteView), null, null);
+
+        _routeViewComponentId = _renderer.AssignRootComponentId(_routeViewComponent);
+    }
+
+    [Fact]
+    public void ThrowsIfNoRouteDataSupplied()
+    {
+        var ex = Assert.Throws<InvalidOperationException>(() =>
         {
-            HotReloadManager.Default.OnDeltaApplied += () =>
+            // Throws synchronously, so no need to await
+            _ = _routeViewComponent.SetParametersAsync(ParameterView.Empty);
+        });
+
+        Assert.Equal($"The {nameof(RouteView)} component requires a non-null value for the parameter {nameof(RouteView.RouteData)}.", ex.Message);
+    }
+
+    [Fact]
+    public void RendersPageInsideLayoutView()
+    {
+        // Arrange
+        var routeParams = new Dictionary<string, object>
             {
-                _layoutAttributeCache.Clear();
-                _routePageKeyCache.Clear();
+                { nameof(ComponentWithLayout.Message), "Test message" }
             };
-        }
-    }
+        var routeData = new RouteData(typeof(ComponentWithLayout), routeParams);
 
-    /// <summary>
-    /// Gets or sets the route data. This determines the page that will be
-    /// displayed and the parameter values that will be supplied to the page.
-    /// </summary>
-    [Parameter]
-    [EditorRequired]
-    public RouteData RouteData { get; set; }
-
-    /// <summary>
-    /// Gets or sets the type of a layout to be used if the page does not
-    /// declare any layout. If specified, the type must implement <see cref="IComponent"/>
-    /// and accept a parameter named <see cref="LayoutComponentBase.Body"/>.
-    /// </summary>
-    [Parameter]
-    public Type DefaultLayout { get; set; }
-
-    /// <inheritdoc />
-    public void Attach(RenderHandle renderHandle)
-    {
-        _renderHandle = renderHandle;
-    }
-
-    /// <inheritdoc />
-    public Task SetParametersAsync(ParameterView parameters)
-    {
-        parameters.SetParameterProperties(this);
-
-        if (RouteData == null)
-        {
-            throw new InvalidOperationException($"The {nameof(RouteView)} component requires a non-null value for the parameter {nameof(RouteData)}.");
-        }
-
-        _renderHandle.Render(Render);
-        return Task.CompletedTask;
-    }
-
-    /// <summary>
-    /// Renders the component.
-    /// </summary>
-    /// <param name="builder">The <see cref="RenderTreeBuilder"/>.</param>
-    [UnconditionalSuppressMessage("Trimming", "IL2110", Justification = "Layout components are preserved because the LayoutAttribute constructor parameter is correctly annotated.")]
-    [UnconditionalSuppressMessage("Trimming", "IL2111", Justification = "Layout components are preserved because the LayoutAttribute constructor parameter is correctly annotated.")]
-    [UnconditionalSuppressMessage("Trimming", "IL2118", Justification = "Layout components are preserved because the LayoutAttribute constructor parameter is correctly annotated.")]
-    protected virtual void Render(RenderTreeBuilder builder)
-    {
-        // An old layout can replay this fragment after RouteData changes, so capture its matching route.
-        var routeData = RouteData;
-        var pageLayoutType = _layoutAttributeCache
-            .GetOrAdd(routeData.PageType, static type => type.GetCustomAttribute<LayoutAttribute>()?.LayoutType)
-            ?? DefaultLayout;
-
-        builder.OpenComponent<LayoutView>(0);
-        builder.AddComponentParameter(1, nameof(LayoutView.Layout), pageLayoutType);
-        builder.AddComponentParameter(2, nameof(LayoutView.ChildContent), (RenderFragment)(contentBuilder => RenderPageWithParameters(contentBuilder, routeData)));
-        builder.CloseComponent();
-    }
-
-    private static void RenderPageWithParameters(RenderTreeBuilder builder, RouteData routeData)
-    {
-        var pageType = routeData.PageType;
-        if (!_routePageKeyCache.TryGetValue(pageType, out var requiresDistinctIdentity))
-        {
-            requiresDistinctIdentity = AcceptsLayoutBody(pageType);
-            _routePageKeyCache.TryAdd(pageType, requiresDistinctIdentity);
-        }
-
-        if (requiresDistinctIdentity)
-        {
-            // A routed page must not reuse a previous layout instance of the same type.
-            builder.OpenRegion(0);
-        }
-
-        builder.OpenComponent(0, routeData.PageType);
-        if (requiresDistinctIdentity)
-        {
-            builder.SetKey(RoutePageKey);
-        }
-
-        foreach (var kvp in routeData.RouteValues)
-        {
-            builder.AddComponentParameter(1, kvp.Key, kvp.Value);
-        }
-
-        builder.CloseComponent();
-
-        if (requiresDistinctIdentity)
-        {
-            builder.CloseRegion();
-        }
-    }
-
-    private static bool AcceptsLayoutBody([DynamicallyAccessedMembers(Component)] Type pageType)
-    {
-        foreach (var property in ComponentProperties.GetCandidateBindableProperties(pageType))
-        {
-            if (property.Name == LayoutComponentBase.BodyPropertyName
-                && property.PropertyType == typeof(RenderFragment)
-                && property.IsDefined(typeof(ParameterAttribute)))
+        // Act
+        _renderer.Dispatcher.InvokeAsync(() => _routeViewComponent.SetParametersAsync(ParameterView.FromDictionary(new Dictionary<string, object>
             {
-                return true;
+                { nameof(RouteView.RouteData), routeData },
+            })));
+
+        // Assert: RouteView renders LayoutView
+        var batch = _renderer.Batches.Single();
+        var routeViewFrames = _renderer.GetCurrentRenderTreeFrames(_routeViewComponentId).AsEnumerable();
+        Assert.Collection(routeViewFrames,
+            frame => AssertFrame.Component<LayoutView>(frame, subtreeLength: 3, sequence: 0),
+            frame => AssertFrame.Attribute(frame, nameof(LayoutView.Layout), (object)typeof(TestLayout), sequence: 1),
+            frame => AssertFrame.Attribute(frame, nameof(LayoutView.ChildContent), sequence: 2));
+
+        // Assert: LayoutView renders TestLayout
+        var layoutViewComponentId = batch.GetComponentFrames<LayoutView>().Single().ComponentId;
+        var layoutViewFrames = _renderer.GetCurrentRenderTreeFrames(layoutViewComponentId).AsEnumerable();
+        Assert.Collection(layoutViewFrames,
+            frame => AssertFrame.Component<TestLayout>(frame, subtreeLength: 2, sequence: 0),
+            frame => AssertFrame.Attribute(frame, nameof(LayoutComponentBase.Body), sequence: 1));
+
+        // Assert: TestLayout renders page
+        var testLayoutComponentId = batch.GetComponentFrames<TestLayout>().Single().ComponentId;
+        var testLayoutFrames = _renderer.GetCurrentRenderTreeFrames(testLayoutComponentId).AsEnumerable();
+        Assert.Collection(testLayoutFrames,
+            frame => AssertFrame.Text(frame, "Layout starts here", sequence: 0),
+            frame => AssertFrame.Region(frame, subtreeLength: 3),
+            frame => AssertFrame.Component<ComponentWithLayout>(frame, sequence: 1, subtreeLength: 2),
+            frame => AssertFrame.Attribute(frame, nameof(ComponentWithLayout.Message), "Test message", sequence: 2),
+            frame => AssertFrame.Text(frame, "Layout ends here", sequence: 2));
+
+        // Assert: page itself is rendered, having received parameters from the original route data
+        var pageComponentId = batch.GetComponentFrames<ComponentWithLayout>().Single().ComponentId;
+        var pageFrames = _renderer.GetCurrentRenderTreeFrames(pageComponentId).AsEnumerable();
+        Assert.Collection(pageFrames,
+            frame => AssertFrame.Text(frame, "Hello from the page with message 'Test message'", sequence: 0));
+
+        // Assert: nothing else was rendered
+        Assert.Equal(4, batch.DiffsInOrder.Count);
+    }
+
+    [Fact]
+    public void UsesDefaultLayoutIfNoneSetOnPage()
+    {
+        // Arrange
+        var routeParams = new Dictionary<string, object>();
+        var routeData = new RouteData(typeof(ComponentWithoutLayout), routeParams);
+
+        // Act
+        _renderer.Dispatcher.InvokeAsync(() => _routeViewComponent.SetParametersAsync(ParameterView.FromDictionary(new Dictionary<string, object>
+            {
+                { nameof(RouteView.RouteData), routeData },
+                { nameof(RouteView.DefaultLayout), typeof(OtherLayout) },
+            })));
+
+        // Assert: uses default layout
+        // Not asserting about what else gets rendered as that's covered by other tests
+        var batch = _renderer.Batches.Single();
+        var routeViewFrames = _renderer.GetCurrentRenderTreeFrames(_routeViewComponentId).AsEnumerable();
+        Assert.Collection(routeViewFrames,
+            frame => AssertFrame.Component<LayoutView>(frame, subtreeLength: 3, sequence: 0),
+            frame => AssertFrame.Attribute(frame, nameof(LayoutView.Layout), (object)typeof(OtherLayout), sequence: 1),
+            frame => AssertFrame.Attribute(frame, nameof(LayoutView.ChildContent), sequence: 2));
+    }
+
+    [Fact]
+    public void UsesNoLayoutIfNoneSetOnPageAndNoDefaultSet()
+    {
+        // Arrange
+        var routeParams = new Dictionary<string, object>();
+        var routeData = new RouteData(typeof(ComponentWithoutLayout), routeParams);
+
+        // Act
+        _renderer.Dispatcher.InvokeAsync(() => _routeViewComponent.SetParametersAsync(ParameterView.FromDictionary(new Dictionary<string, object>
+            {
+                { nameof(RouteView.RouteData), routeData },
+            })));
+
+        // Assert: uses no layout
+        // Not asserting about what else gets rendered as that's covered by other tests
+        var batch = _renderer.Batches.Single();
+        var routeViewFrames = _renderer.GetCurrentRenderTreeFrames(_routeViewComponentId).AsEnumerable();
+        Assert.Collection(routeViewFrames,
+            frame => AssertFrame.Component<LayoutView>(frame, subtreeLength: 3, sequence: 0),
+            frame => AssertFrame.Attribute(frame, nameof(LayoutView.Layout), (object)null, sequence: 1),
+            frame => AssertFrame.Attribute(frame, nameof(LayoutView.ChildContent), sequence: 2));
+    }
+
+    [Fact]
+    public void PageLayoutSupersedesDefaultLayout()
+    {
+        // Arrange
+        var routeParams = new Dictionary<string, object>();
+        var routeData = new RouteData(typeof(ComponentWithLayout), routeParams);
+
+        // Act
+        _renderer.Dispatcher.InvokeAsync(() => _routeViewComponent.SetParametersAsync(ParameterView.FromDictionary(new Dictionary<string, object>
+            {
+                { nameof(RouteView.RouteData), routeData },
+                { nameof(RouteView.DefaultLayout), typeof(OtherLayout) },
+            })));
+
+        // Assert: uses layout specified by page
+        // Not asserting about what else gets rendered as that's covered by other tests
+        var batch = _renderer.Batches.Single();
+        var routeViewFrames = _renderer.GetCurrentRenderTreeFrames(_routeViewComponentId).AsEnumerable();
+        Assert.Collection(routeViewFrames,
+            frame => AssertFrame.Component<LayoutView>(frame, subtreeLength: 3, sequence: 0),
+            frame => AssertFrame.Attribute(frame, nameof(LayoutView.Layout), (object)typeof(TestLayout), sequence: 1),
+            frame => AssertFrame.Attribute(frame, nameof(LayoutView.ChildContent), sequence: 2));
+    }
+
+    [Fact]
+    public void DoesNotReuseLayoutInstanceWhenSameComponentBecomesThePage()
+    {
+        _renderer.Dispatcher.InvokeAsync(() => _routeViewComponent.SetParametersAsync(ParameterView.FromDictionary(new Dictionary<string, object>
+            {
+                { nameof(RouteView.RouteData), new RouteData(typeof(RoutableLayoutChildPage), new Dictionary<string, object>()) },
+            })));
+        var layoutInstanceId = _renderer.Batches.Single().GetComponentFrames<RoutableLayoutPage>().Single().ComponentId;
+
+        _renderer.Dispatcher.InvokeAsync(() => _routeViewComponent.SetParametersAsync(ParameterView.FromDictionary(new Dictionary<string, object>
+            {
+                { nameof(RouteView.RouteData), new RouteData(typeof(RoutableLayoutPage), new Dictionary<string, object>()) },
+            })));
+
+        var batch = _renderer.Batches[1];
+        Assert.Contains(layoutInstanceId, batch.DisposedComponentIDs);
+        var pageInstanceId = batch.GetComponentFrames<RoutableLayoutPage>().Single().ComponentId;
+        Assert.Collection(_renderer.GetCurrentRenderTreeFrames(pageInstanceId).AsEnumerable(),
+            frame => AssertFrame.Text(frame, "Parent page", sequence: 0));
+    }
+
+    private class RouteViewTestNavigationManager : NavigationManager
+    {
+        public RouteViewTestNavigationManager() =>
+            Initialize("https://www.example.com/subdir/", "https://www.example.com/subdir/");
+
+        public void NotifyLocationChanged(string uri)
+        {
+            Uri = uri;
+            NotifyLocationChanged(false);
+        }
+    }
+
+    private class ComponentWithoutLayout : AutoRenderComponent
+    {
+        [Parameter] public string Message { get; set; }
+
+        protected override void BuildRenderTree(RenderTreeBuilder builder)
+        {
+            builder.AddContent(0, $"Hello from the page with message '{Message}'");
+        }
+    }
+
+    [Layout(typeof(TestLayout))]
+    private class ComponentWithLayout : AutoRenderComponent
+    {
+        [Parameter] public string Message { get; set; }
+
+        protected override void BuildRenderTree(RenderTreeBuilder builder)
+        {
+            builder.AddContent(0, $"Hello from the page with message '{Message}'");
+        }
+    }
+
+    private class TestLayout : AutoRenderComponent
+    {
+        [Parameter]
+        public RenderFragment Body { get; set; }
+
+        protected override void BuildRenderTree(RenderTreeBuilder builder)
+        {
+            builder.AddContent(0, "Layout starts here");
+            builder.AddContent(1, Body);
+            builder.AddContent(2, "Layout ends here");
+        }
+    }
+
+    [Layout(typeof(TestLayout))]
+    private class RoutableLayoutPage : AutoRenderComponent
+    {
+        [Parameter]
+        public RenderFragment Body { get; set; }
+
+        protected override void BuildRenderTree(RenderTreeBuilder builder)
+        {
+            if (Body is null)
+            {
+                builder.AddContent(0, "Parent page");
+            }
+            else
+            {
+                builder.AddContent(1, Body);
             }
         }
+    }
 
-        return false;
+    [Layout(typeof(RoutableLayoutPage))]
+    private class RoutableLayoutChildPage : AutoRenderComponent
+    {
+        protected override void BuildRenderTree(RenderTreeBuilder builder)
+        {
+            builder.AddContent(0, "Child page");
+        }
+    }
+
+    private class OtherLayout : AutoRenderComponent
+    {
+        [Parameter]
+        public RenderFragment Body { get; set; }
+
+        protected override void BuildRenderTree(RenderTreeBuilder builder)
+        {
+            builder.AddContent(0, "OtherLayout starts here");
+            builder.AddContent(1, Body);
+            builder.AddContent(2, "OtherLayout ends here");
+        }
     }
 }

@@ -7,9 +7,7 @@ using System.Collections.Concurrent;
 using System.Diagnostics.CodeAnalysis;
 using System.Reflection;
 using Microsoft.AspNetCore.Components.HotReload;
-using Microsoft.AspNetCore.Components.Reflection;
 using Microsoft.AspNetCore.Components.Rendering;
-using static Microsoft.AspNetCore.Internal.LinkerFlags;
 
 namespace Microsoft.AspNetCore.Components;
 
@@ -21,18 +19,12 @@ public class RouteView : IComponent
 {
     private RenderHandle _renderHandle;
     private static readonly ConcurrentDictionary<Type, Type?> _layoutAttributeCache = new();
-    private static readonly ConcurrentDictionary<Type, bool> _routePageKeyCache = new();
-    private const string RoutePageKey = "route-page";
 
     static RouteView()
     {
         if (HotReloadManager.IsSupported)
         {
-            HotReloadManager.Default.OnDeltaApplied += () =>
-            {
-                _layoutAttributeCache.Clear();
-                _routePageKeyCache.Clear();
-            };
+            HotReloadManager.Default.OnDeltaApplied += _layoutAttributeCache.Clear;
         }
     }
 
@@ -81,64 +73,27 @@ public class RouteView : IComponent
     [UnconditionalSuppressMessage("Trimming", "IL2118", Justification = "Layout components are preserved because the LayoutAttribute constructor parameter is correctly annotated.")]
     protected virtual void Render(RenderTreeBuilder builder)
     {
-        // An old layout can replay this fragment after RouteData changes, so capture its matching route.
-        var routeData = RouteData;
         var pageLayoutType = _layoutAttributeCache
-            .GetOrAdd(routeData.PageType, static type => type.GetCustomAttribute<LayoutAttribute>()?.LayoutType)
+            .GetOrAdd(RouteData.PageType, static type => type.GetCustomAttribute<LayoutAttribute>()?.LayoutType)
             ?? DefaultLayout;
 
         builder.OpenComponent<LayoutView>(0);
         builder.AddComponentParameter(1, nameof(LayoutView.Layout), pageLayoutType);
-        builder.AddComponentParameter(2, nameof(LayoutView.ChildContent), (RenderFragment)(contentBuilder => RenderPageWithParameters(contentBuilder, routeData)));
+        builder.AddComponentParameter(2, nameof(LayoutView.ChildContent), (RenderFragment)RenderPageWithParameters);
         builder.CloseComponent();
     }
 
-    private static void RenderPageWithParameters(RenderTreeBuilder builder, RouteData routeData)
+    private void RenderPageWithParameters(RenderTreeBuilder builder)
     {
-        var pageType = routeData.PageType;
-        if (!_routePageKeyCache.TryGetValue(pageType, out var requiresDistinctIdentity))
-        {
-            requiresDistinctIdentity = AcceptsLayoutBody(pageType);
-            _routePageKeyCache.TryAdd(pageType, requiresDistinctIdentity);
-        }
+        // Use a sequence distinct from LayoutView's layout frame so a page is never matched
+        // with a layout instance of the same component type (for example, a routable layout).
+        builder.OpenComponent(1, RouteData.PageType);
 
-        if (requiresDistinctIdentity)
+        foreach (var kvp in RouteData.RouteValues)
         {
-            // A routed page must not reuse a previous layout instance of the same type.
-            builder.OpenRegion(0);
-        }
-
-        builder.OpenComponent(0, routeData.PageType);
-        if (requiresDistinctIdentity)
-        {
-            builder.SetKey(RoutePageKey);
-        }
-
-        foreach (var kvp in routeData.RouteValues)
-        {
-            builder.AddComponentParameter(1, kvp.Key, kvp.Value);
+            builder.AddComponentParameter(2, kvp.Key, kvp.Value);
         }
 
         builder.CloseComponent();
-
-        if (requiresDistinctIdentity)
-        {
-            builder.CloseRegion();
-        }
-    }
-
-    private static bool AcceptsLayoutBody([DynamicallyAccessedMembers(Component)] Type pageType)
-    {
-        foreach (var property in ComponentProperties.GetCandidateBindableProperties(pageType))
-        {
-            if (property.Name == LayoutComponentBase.BodyPropertyName
-                && property.PropertyType == typeof(RenderFragment)
-                && property.IsDefined(typeof(ParameterAttribute)))
-            {
-                return true;
-            }
-        }
-
-        return false;
     }
 }
