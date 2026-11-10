@@ -1,0 +1,12 @@
+<form @formname="RiskyForm" @onsubmit="HandleSubmit">
+    <button type="submit">Submit</button>
+</form>
+
+@code {
+    protected override void OnInitialized()
+        => throw new InvalidOperationException("Simulated failure during named-form POST rendering.");
+
+    private void HandleSubmit()
+    {
+    }
+}
