@@ -1188,7 +1188,7 @@ public class RoutingTest : ServerTestBase<ToggleExecutionModeServerFixture<Progr
     }
 
     [Fact]
-    public void NavigationLock_CanBlockExternalNavigation()
+    public virtual void NavigationLock_CanBlockExternalNavigation()
     {
         InitializeBrowser(BrowserFixture.NavigationPromptContext);
         InitializeAsyncCore();

@@ -61,6 +61,23 @@ public class BlazorWebTemplateTest(ProjectFactoryFixture projectFactory) : Blazo
 
     [Theory]
     [InlineData(BrowserKind.Chromium)]
+    public async Task BlazorWebTemplate_PerPageCounterDoesNotLogRenderModeMismatch(BrowserKind browserKind)
+    {
+        var project = await CreateBuildPublishAsync(args: ["-int", "Server"], onlyCreate: true);
+        await project.RunDotNetBuildAsync();
+
+        using var aspNetProcess = project.StartBuiltProjectAsync();
+        await TestBasicInteractionInNewPageAsync(
+            browserKind,
+            aspNetProcess.ListeningUri.AbsoluteUri,
+            project.ProjectName,
+            pagesToExclude: BlazorTemplatePages.Home);
+
+        Assert.DoesNotContain("has its SectionOutlet in render mode", aspNetProcess.Process.Output);
+    }
+
+    [Theory]
+    [InlineData(BrowserKind.Chromium)]
     public async Task BlazorWebTemplate_WeatherDoesNotOverflowAtNarrowViewport(BrowserKind browserKind)
     {
         if (!BrowserManager.IsAvailable(browserKind))
@@ -205,6 +222,25 @@ public class BlazorWebTemplateTest(ProjectFactoryFixture projectFactory) : Blazo
         await page.FillAsync("[name=\"Input.Email\"]", userName);
         await page.FillAsync("[name=\"Input.Password\"]", password);
 
+        var shouldSignal = persistenceOutcome is "Failure" or "DatabaseFailure";
+        string redisplayedPage = null;
+        if (shouldSignal)
+        {
+            await page.RouteAsync(url => new Uri(url).AbsolutePath == "/Account/PasskeyUpgrade", async route =>
+            {
+                if (route.Request.Method != "POST" || redisplayedPage is not null)
+                {
+                    await route.ContinueAsync();
+                    return;
+                }
+
+                await using var response = await route.FetchAsync(new() { MaxRedirects = 0 });
+                // Retain the HTML before delivering it since it automatically submits the continuation form.
+                redisplayedPage = await response.TextAsync();
+                await route.FulfillAsync(new() { Response = response });
+            });
+        }
+
         var upgradeRequests = new List<IRequest>();
         page.Request += (_, request) =>
         {
@@ -263,7 +299,6 @@ public class BlazorWebTemplateTest(ProjectFactoryFixture projectFactory) : Blazo
             Assert.Empty(passkeys);
         }
 
-        var shouldSignal = persistenceOutcome is "Failure" or "DatabaseFailure";
         var signals = await page.EvaluateAsync<JsonElement>("JSON.parse(sessionStorage.getItem('upgrade-signals') ?? '[]')");
         if (shouldSignal && signalOutcome is not "Unsupported")
         {
@@ -284,7 +319,8 @@ public class BlazorWebTemplateTest(ProjectFactoryFixture projectFactory) : Blazo
         if (shouldSignal)
         {
             Assert.Equal(200, upgradeResponse.Status);
-            var redisplayedPage = upgradeResponseBody;
+            Assert.NotNull(upgradeResponseBody);
++           var redisplayedPage = upgradeResponseBody;
             Assert.Contains("unknown-credential-signal-options=", redisplayedPage);
             Assert.DoesNotContain("creation-options=", redisplayedPage);
             Assert.Contains("_handler=passkey-upgrade", upgradeRequests[1].PostData);
