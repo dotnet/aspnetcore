@@ -5,11 +5,11 @@
 
 using System.Collections.Concurrent;
 using System.Diagnostics.CodeAnalysis;
-using System.Linq;
 using System.Reflection;
 using Microsoft.AspNetCore.Components.HotReload;
 using Microsoft.AspNetCore.Components.Reflection;
 using Microsoft.AspNetCore.Components.Rendering;
+using static Microsoft.AspNetCore.Internal.LinkerFlags;
 
 namespace Microsoft.AspNetCore.Components;
 
@@ -21,13 +21,18 @@ public class RouteView : IComponent
 {
     private RenderHandle _renderHandle;
     private static readonly ConcurrentDictionary<Type, Type?> _layoutAttributeCache = new();
-    private const string RoutePageWithBodyKey = "route-page-with-body";
-    private const string RoutePageWithoutBodyKey = "route-page-without-body";
+    private static readonly ConcurrentDictionary<Type, bool> _routePageKeyCache = new();
+    private const string RoutePageKey = "route-page";
+
     static RouteView()
     {
         if (HotReloadManager.IsSupported)
         {
-            HotReloadManager.Default.OnDeltaApplied += _layoutAttributeCache.Clear;
+            HotReloadManager.Default.OnDeltaApplied += () =>
+            {
+                _layoutAttributeCache.Clear();
+                _routePageKeyCache.Clear();
+            };
         }
     }
 
@@ -90,26 +95,50 @@ public class RouteView : IComponent
 
     private static void RenderPageWithParameters(RenderTreeBuilder builder, RouteData routeData)
     {
-        // Custom layouts can invoke the body directly more than once, so isolate each page's key.
-        builder.OpenRegion(0);
+        var pageType = routeData.PageType;
+        if (!_routePageKeyCache.TryGetValue(pageType, out var requiresDistinctIdentity))
+        {
+            requiresDistinctIdentity = AcceptsLayoutBody(pageType);
+            _routePageKeyCache.TryAdd(pageType, requiresDistinctIdentity);
+        }
+
+        if (requiresDistinctIdentity)
+        {
+            // A routed page must not reuse a previous layout instance of the same type.
+            builder.OpenRegion(0);
+        }
+
         builder.OpenComponent(0, routeData.PageType);
-        var bodyParameterSupplied = false;
-         foreach (var kvp in routeData.RouteValues)
+        if (requiresDistinctIdentity)
+        {
+            builder.SetKey(RoutePageKey);
+        }
+
+        foreach (var kvp in routeData.RouteValues)
         {
             builder.AddComponentParameter(1, kvp.Key, kvp.Value);
-            if (string.Equals(kvp.Key, nameof(LayoutComponentBase.Body), StringComparison.OrdinalIgnoreCase))
+        }
+
+        builder.CloseComponent();
+
+        if (requiresDistinctIdentity)
+        {
+            builder.CloseRegion();
+        }
+    }
+
+    private static bool AcceptsLayoutBody([DynamicallyAccessedMembers(Component)] Type pageType)
+    {
+        foreach (var property in ComponentProperties.GetCandidateBindableProperties(pageType))
+        {
+            if (property.Name == LayoutComponentBase.BodyPropertyName
+                && property.PropertyType == typeof(RenderFragment)
+                && property.IsDefined(typeof(ParameterAttribute)))
             {
-                bodyParameterSupplied = ComponentProperties.GetCandidateBindableProperties(routeData.PageType)
-                    .Any(property => string.Equals(property.Name, nameof(LayoutComponentBase.Body), StringComparison.OrdinalIgnoreCase)
-                        && property.PropertyType == typeof(RenderFragment)
-                        && property.IsDefined(typeof(ParameterAttribute)));
+                return true;
             }
         }
 
-        // Only a layout-compatible Body parameter needs a different identity when supplied or omitted.
-        builder.SetKey(bodyParameterSupplied ? RoutePageWithBodyKey : RoutePageWithoutBodyKey);
-
-        builder.CloseComponent();
-        builder.CloseRegion();
+        return false;
     }
 }

@@ -147,7 +147,7 @@ public class RenderFragmentSerializerTest
         {
             builder.OpenRegion(0);
             builder.OpenComponent<TestComponent>(0);
-            builder.SetKey("route-page-with-body");
+            builder.SetKey("route-page");
             builder.CloseComponent();
             builder.CloseRegion();
         };
@@ -158,7 +158,7 @@ public class RenderFragmentSerializerTest
         Assert.Equal("region", node.Type);
         var pageNode = Assert.Single(node.Children!);
         Assert.Equal("component", pageNode.Type);
-        Assert.Equal("route-page-with-body", pageNode.Key);
+        Assert.Equal("route-page", pageNode.Key);
 
         var json = JsonSerializer.Serialize(result, _jsonOptions);
         var deserialized = JsonSerializer.Deserialize<List<RenderTreeNode>>(json, _jsonOptions)!;
@@ -178,7 +178,7 @@ public class RenderFragmentSerializerTest
             frame =>
             {
                 Assert.Equal(RenderTreeFrameType.Component, frame.FrameType);
-                Assert.Equal("route-page-with-body", frame.ComponentKey);
+                Assert.Equal("route-page", frame.ComponentKey);
             },
             frame =>
             {
@@ -188,7 +188,7 @@ public class RenderFragmentSerializerTest
             frame =>
             {
                 Assert.Equal(RenderTreeFrameType.Component, frame.FrameType);
-                Assert.Equal("route-page-with-body", frame.ComponentKey);
+                Assert.Equal("route-page", frame.ComponentKey);
             });
     }
 
