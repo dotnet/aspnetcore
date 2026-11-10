@@ -3,6 +3,7 @@
 
 #nullable enable
 
+using Microsoft.Extensions.Logging;
 using Microsoft.JSInterop;
 using Xunit;
 
@@ -14,8 +15,9 @@ public class AbortLinkTest
     public async Task CreateAsync_ReturnsNullWithoutAnyCallForATokenThatCannotBeCanceled()
     {
         var jsRuntime = new RecordingJSRuntime();
+        var context = new FeatureContext(jsRuntime, new RecordingLoggerFactory());
 
-        var link = await AbortLink.CreateAsync(jsRuntime, CancellationToken.None);
+        var link = await context.AbortLinks.CreateAsync(CancellationToken.None);
 
         Assert.Null(link);
         Assert.Empty(jsRuntime.Constructed);
@@ -25,9 +27,10 @@ public class AbortLinkTest
     public async Task CreateAsync_ThrowsWithoutAnyCallForACanceledToken()
     {
         var jsRuntime = new RecordingJSRuntime();
+        var context = new FeatureContext(jsRuntime, new RecordingLoggerFactory());
         var canceled = new CancellationToken(canceled: true);
 
-        var exception = await Assert.ThrowsAnyAsync<OperationCanceledException>(() => AbortLink.CreateAsync(jsRuntime, canceled).AsTask());
+        var exception = await Assert.ThrowsAnyAsync<OperationCanceledException>(() => context.AbortLinks.CreateAsync(canceled).AsTask());
 
         Assert.Equal(canceled, exception.CancellationToken);
         Assert.Empty(jsRuntime.Constructed);
@@ -37,9 +40,10 @@ public class AbortLinkTest
     public async Task CreateAsync_CreatesAControllerAndReadsItsSignal()
     {
         var jsRuntime = new RecordingJSRuntime();
+        var context = new FeatureContext(jsRuntime, new RecordingLoggerFactory());
         using var cts = new CancellationTokenSource();
 
-        await using var link = await AbortLink.CreateAsync(jsRuntime, cts.Token);
+        await using var link = await context.AbortLinks.CreateAsync(cts.Token);
 
         Assert.NotNull(link);
         Assert.Same(jsRuntime.Signal, link.Signal);
@@ -49,11 +53,20 @@ public class AbortLinkTest
     }
 
     [Fact]
+    public void AbortLinks_IsSharedByTheScope()
+    {
+        var context = new FeatureContext(new RecordingJSRuntime(), new RecordingLoggerFactory());
+
+        Assert.Same(context.AbortLinks, context.AbortLinks);
+    }
+
+    [Fact]
     public async Task Cancel_AbortsTheController()
     {
         var jsRuntime = new RecordingJSRuntime();
+        var context = new FeatureContext(jsRuntime, new RecordingLoggerFactory());
         using var cts = new CancellationTokenSource();
-        await using var link = await AbortLink.CreateAsync(jsRuntime, cts.Token);
+        await using var link = await context.AbortLinks.CreateAsync(cts.Token);
 
         cts.Cancel();
 
@@ -61,16 +74,38 @@ public class AbortLinkTest
     }
 
     [Fact]
-    public async Task Cancel_DoesNotThrowWhenAbortFails()
+    public async Task Cancel_IgnoresADisconnectedCircuit()
     {
         var jsRuntime = new RecordingJSRuntime();
+        var loggerFactory = new RecordingLoggerFactory();
+        var context = new FeatureContext(jsRuntime, loggerFactory);
         jsRuntime.Controller.InvokeException = new JSDisconnectedException("The circuit is disconnected.");
         using var cts = new CancellationTokenSource();
-        await using var link = await AbortLink.CreateAsync(jsRuntime, cts.Token);
+        await using var link = await context.AbortLinks.CreateAsync(cts.Token);
 
         cts.Cancel();
 
         Assert.Equal(["abort"], jsRuntime.Controller.Invocations);
+        Assert.Empty(loggerFactory.Entries);
+    }
+
+    [Fact]
+    public async Task Cancel_LogsAnyOtherFailureOfAbort()
+    {
+        var jsRuntime = new RecordingJSRuntime();
+        var loggerFactory = new RecordingLoggerFactory();
+        var context = new FeatureContext(jsRuntime, loggerFactory);
+        var failure = new JSException("abort failed");
+        jsRuntime.Controller.InvokeException = failure;
+        using var cts = new CancellationTokenSource();
+        await using var link = await context.AbortLinks.CreateAsync(cts.Token);
+
+        cts.Cancel();
+
+        var entry = Assert.Single(loggerFactory.Entries);
+        Assert.Equal(LogLevel.Warning, entry.Level);
+        Assert.Equal("AbortFailed", entry.EventId.Name);
+        Assert.Same(failure, entry.Exception);
     }
 
     [Fact]
@@ -78,9 +113,10 @@ public class AbortLinkTest
     {
         var pending = new TaskCompletionSource<IJSObjectReference>();
         var jsRuntime = new RecordingJSRuntime { PendingConstructor = pending };
+        var context = new FeatureContext(jsRuntime, new RecordingLoggerFactory());
         using var cts = new CancellationTokenSource();
 
-        var creation = AbortLink.CreateAsync(jsRuntime, cts.Token).AsTask();
+        var creation = context.AbortLinks.CreateAsync(cts.Token).AsTask();
         cts.Cancel();
         pending.SetResult(jsRuntime.Controller);
         var exception = await Assert.ThrowsAnyAsync<OperationCanceledException>(() => creation);
@@ -95,11 +131,12 @@ public class AbortLinkTest
     public async Task CreateAsync_DisposesTheControllerWhenReadingTheSignalFails()
     {
         var jsRuntime = new RecordingJSRuntime();
+        var context = new FeatureContext(jsRuntime, new RecordingLoggerFactory());
         var disconnected = new JSDisconnectedException("The circuit is disconnected.");
         jsRuntime.Controller.GetValueException = disconnected;
         using var cts = new CancellationTokenSource();
 
-        var exception = await Assert.ThrowsAsync<JSDisconnectedException>(() => AbortLink.CreateAsync(jsRuntime, cts.Token).AsTask());
+        var exception = await Assert.ThrowsAsync<JSDisconnectedException>(() => context.AbortLinks.CreateAsync(cts.Token).AsTask());
 
         Assert.Same(disconnected, exception);
         Assert.True(jsRuntime.Controller.Disposed);
@@ -109,8 +146,9 @@ public class AbortLinkTest
     public async Task DisposeAsync_StopsListeningAndDisposesBothReferences()
     {
         var jsRuntime = new RecordingJSRuntime();
+        var context = new FeatureContext(jsRuntime, new RecordingLoggerFactory());
         using var cts = new CancellationTokenSource();
-        var link = await AbortLink.CreateAsync(jsRuntime, cts.Token);
+        var link = await context.AbortLinks.CreateAsync(cts.Token);
 
         await link!.DisposeAsync();
         cts.Cancel();
@@ -118,6 +156,71 @@ public class AbortLinkTest
         Assert.Empty(jsRuntime.Controller.Invocations);
         Assert.True(jsRuntime.Controller.Disposed);
         Assert.True(jsRuntime.Signal.Disposed);
+    }
+
+    [Fact]
+    public async Task ScopeDisposal_ReleasesTheLinksStillOpen()
+    {
+        var jsRuntime = new RecordingJSRuntime();
+        var context = new FeatureContext(jsRuntime, new RecordingLoggerFactory());
+        using var cts = new CancellationTokenSource();
+        await context.AbortLinks.CreateAsync(cts.Token);
+        Assert.False(jsRuntime.Controller.Disposed);
+
+        await ((IInternalAsyncDisposal)context).InternalDisposeAsync();
+        cts.Cancel();
+
+        Assert.Empty(jsRuntime.Controller.Invocations);
+        Assert.True(jsRuntime.Controller.Disposed);
+        Assert.True(jsRuntime.Signal.Disposed);
+    }
+
+    [Fact]
+    public async Task ScopeDisposal_DoesNotReleaseALinkTwice()
+    {
+        var jsRuntime = new RecordingJSRuntime();
+        var context = new FeatureContext(jsRuntime, new RecordingLoggerFactory());
+        using var cts = new CancellationTokenSource();
+        var link = await context.AbortLinks.CreateAsync(cts.Token);
+        await link!.DisposeAsync();
+
+        await ((IInternalAsyncDisposal)context).InternalDisposeAsync();
+
+        Assert.Equal(1, jsRuntime.Controller.DisposeCount);
+        Assert.Equal(1, jsRuntime.Signal.DisposeCount);
+    }
+
+    [Fact]
+    public async Task CreateAsync_ThrowsWithoutAnyCallAfterScopeDisposal()
+    {
+        var jsRuntime = new RecordingJSRuntime();
+        var context = new FeatureContext(jsRuntime, new RecordingLoggerFactory());
+        var abortLinks = context.AbortLinks;
+        using var cts = new CancellationTokenSource();
+
+        await ((IInternalAsyncDisposal)context).InternalDisposeAsync();
+
+        await Assert.ThrowsAsync<ObjectDisposedException>(() => abortLinks.CreateAsync(cts.Token).AsTask());
+        Assert.Empty(jsRuntime.Constructed);
+    }
+
+    [Fact]
+    public async Task CreateAsync_ThrowsAndReleasesTheReferencesWhenTheScopeEndsDuringCreation()
+    {
+        var pending = new TaskCompletionSource<IJSObjectReference>();
+        var jsRuntime = new RecordingJSRuntime { PendingConstructor = pending };
+        var context = new FeatureContext(jsRuntime, new RecordingLoggerFactory());
+        using var cts = new CancellationTokenSource();
+
+        var creation = context.AbortLinks.CreateAsync(cts.Token).AsTask();
+        await ((IInternalAsyncDisposal)context).InternalDisposeAsync();
+        pending.SetResult(jsRuntime.Controller);
+        await Assert.ThrowsAsync<ObjectDisposedException>(() => creation);
+        cts.Cancel();
+
+        Assert.True(jsRuntime.Controller.Disposed);
+        Assert.True(jsRuntime.Signal.Disposed);
+        Assert.Empty(jsRuntime.Controller.Invocations);
     }
 
     [Fact]
@@ -171,7 +274,9 @@ public class AbortLinkTest
 
         public Exception? InvokeException { get; set; }
 
-        public bool Disposed { get; private set; }
+        public int DisposeCount { get; private set; }
+
+        public bool Disposed => DisposeCount > 0;
 
         public ValueTask<TValue> GetValueAsync<TValue>(string identifier)
         {
@@ -196,7 +301,7 @@ public class AbortLinkTest
 
         public ValueTask DisposeAsync()
         {
-            Disposed = true;
+            DisposeCount++;
 
             return ValueTask.CompletedTask;
         }

@@ -28,6 +28,8 @@ public partial class AbortLinkTests : BrowserTest
         _page = await _context.NewPageAsync();
     }
 
+    private ILocator Result => _page.Locator("#abortlink-result");
+
     [TestMethod]
     public async Task AbortLink_LeavesTheRequestAloneUntilTheTokenIsCanceled()
     {
@@ -35,11 +37,11 @@ public partial class AbortLinkTests : BrowserTest
         {
             await NavigateAsync(path, "#fetch-not-canceled");
 
-            await RunAsync("#fetch-not-canceled", "Not canceled: ok");
-            await AssertServerSawAsync("completed");
+            var requestId = await RunAsync("#fetch-not-canceled", "Not canceled: ok");
+            await AssertServerStateAsync(requestId, "completed");
 
-            await RunAsync("#fetch-without-token", "Without token: ok");
-            await AssertServerSawAsync("completed");
+            requestId = await RunAsync("#fetch-without-token", "Without token: ok");
+            await AssertServerStateAsync(requestId, "completed");
         }
     }
 
@@ -48,14 +50,19 @@ public partial class AbortLinkTests : BrowserTest
     {
         foreach (var path in AbortLinkPaths)
         {
-            await NavigateAsync(path, "#cancel-before-headers");
+            await NavigateAsync(path, "#start-before-headers");
 
-            await RunAsync("#cancel-before-headers", "Cancel before headers: Canceled (JSException)");
-            await AssertServerSawAsync("aborted");
+            // Cancel only once the server holds the request, so the abort cannot stop it before it is sent.
+            var nextRun = await GetNextRunAsync();
+            var requestId = await StartAsync("#start-before-headers");
+            await AssertServerStateAsync(requestId, "started");
+            await _page.Locator("#cancel").ClickAsync();
+            await ExpectResultAsync(nextRun, "Cancel before headers: Canceled (JSException)");
+            await AssertServerStateAsync(requestId, "aborted");
 
             // The signal stays bound to the response, so canceling also stops reading the body.
-            await RunAsync("#cancel-during-body", "Cancel during body: Canceled (JSException)");
-            await AssertServerSawAsync("aborted");
+            requestId = await RunAsync("#cancel-during-body", "Cancel during body: Canceled (JSException)");
+            await AssertServerStateAsync(requestId, "aborted");
         }
     }
 
@@ -66,8 +73,8 @@ public partial class AbortLinkTests : BrowserTest
         {
             await NavigateAsync(path, "#cancel-before-start");
 
-            await RunAsync("#cancel-before-start", "Cancel before start: Canceled (no inner exception)");
-            await AssertServerSawAsync("unknown");
+            var requestId = await RunAsync("#cancel-before-start", "Cancel before start: Canceled (no inner exception)");
+            await AssertServerStateAsync(requestId, "unknown");
         }
     }
 
@@ -77,36 +84,41 @@ public partial class AbortLinkTests : BrowserTest
         await _page.WaitForInteractiveAsync(interactiveSelector);
     }
 
-    private async Task RunAsync(string buttonSelector, string expectedResult)
+    private async Task<string> RunAsync(string buttonSelector, string expectedResult)
     {
-        var result = _page.Locator("#abortlink-result");
-        // Waiting for the next run keeps a step from passing on the text of the previous step.
-        var nextRun = int.Parse(await result.GetAttributeAsync("data-run") ?? "", CultureInfo.InvariantCulture) + 1;
+        var nextRun = await GetNextRunAsync();
+        var requestId = await StartAsync(buttonSelector);
+        await ExpectResultAsync(nextRun, expectedResult);
 
-        await _page.Locator(buttonSelector).ClickAsync();
-        await Expect(result).ToHaveAttributeAsync("data-run", nextRun.ToString(CultureInfo.InvariantCulture));
-        await Expect(result).ToHaveTextAsync(expectedResult);
+        return requestId;
     }
 
-    // The server notices a closed connection a little after the browser rejects, so poll for its record.
-    private async Task AssertServerSawAsync(string expectedState)
-    {
-        var requestId = await _page.Locator("#abortlink-result").GetAttributeAsync("data-request-id");
-        var deadline = DateTime.UtcNow.AddSeconds(10);
-        string state;
-        do
-        {
-            state = await _page.EvaluateAsync<string>(
-                "id => fetch('/abortlink/log/' + id).then(response => response.text())",
-                requestId);
-            if (state == expectedState)
-            {
-                return;
-            }
+    // Waiting for the next run keeps a step from passing on the text of the previous step.
+    private async Task<int> GetNextRunAsync()
+        => int.Parse(await Result.GetAttributeAsync("data-run") ?? "", CultureInfo.InvariantCulture) + 1;
 
-            await Task.Delay(100);
-        }
-        while (DateTime.UtcNow < deadline);
+    // Each run renders a new request ID as soon as it starts.
+    private async Task<string> StartAsync(string buttonSelector)
+    {
+        var previousId = await Result.GetAttributeAsync("data-request-id") ?? "";
+        await _page.Locator(buttonSelector).ClickAsync();
+        await Expect(Result).Not.ToHaveAttributeAsync("data-request-id", previousId);
+
+        return await Result.GetAttributeAsync("data-request-id") ?? "";
+    }
+
+    private async Task ExpectResultAsync(int nextRun, string expectedResult)
+    {
+        await Expect(Result).ToHaveAttributeAsync("data-run", nextRun.ToString(CultureInfo.InvariantCulture));
+        await Expect(Result).ToHaveTextAsync(expectedResult);
+    }
+
+    // The server answers once the request reaches the state, because it notices an abort a little after the browser.
+    private async Task AssertServerStateAsync(string requestId, string expectedState)
+    {
+        var state = await _page.EvaluateAsync<string>(
+            "([id, state]) => fetch('/abortlink/wait/' + id + '/' + encodeURIComponent(state)).then(response => response.text())",
+            new[] { requestId, expectedState });
 
         Assert.AreEqual(expectedState, state, $"The server state of request {requestId}.");
     }

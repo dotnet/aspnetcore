@@ -22,45 +22,105 @@ app.MapRazorComponents<App>()
     .AddAdditionalAssemblies(typeof(PlatformTestApp.Client._Imports).Assembly);
 
 // Records whether the browser aborted each request of the abort link demo, which the page itself cannot see.
-var abortLinkRequests = new ConcurrentDictionary<string, string>();
-app.MapGet("/abortlink/slow-headers", async (string id, int delay, HttpContext context) =>
+// The held requests end only when the browser aborts them, so no step depends on a delay.
+var abortLinkRequests = new ConcurrentDictionary<string, AbortLinkRequest>();
+app.MapGet("/abortlink/respond", (string id) =>
 {
-    abortLinkRequests[id] = "started";
+    abortLinkRequests.GetOrAdd(id, _ => new()).Set("completed");
+    return Results.Text("ok");
+});
+app.MapGet("/abortlink/hold-headers", async (string id, HttpContext context) =>
+{
+    var request = abortLinkRequests.GetOrAdd(id, _ => new());
+    request.Set("started");
     try
     {
-        await Task.Delay(delay, context.RequestAborted);
+        await Task.Delay(AbortLinkRequest.HoldTimeout, context.RequestAborted);
     }
     catch (OperationCanceledException)
     {
-        abortLinkRequests[id] = "aborted";
+        request.Set("aborted");
         return Results.Empty;
     }
 
-    abortLinkRequests[id] = "completed";
+    request.Set("not aborted");
     return Results.Text("ok");
 });
-app.MapGet("/abortlink/slow-body", async (string id, HttpContext context) =>
+app.MapGet("/abortlink/hold-body", async (string id, HttpContext context) =>
 {
-    abortLinkRequests[id] = "started";
+    var request = abortLinkRequests.GetOrAdd(id, _ => new());
+    request.Set("started");
     context.Response.ContentType = "text/plain";
     try
     {
-        for (var chunk = 0; chunk < 40; chunk++)
-        {
-            await context.Response.WriteAsync("chunk\n", context.RequestAborted);
-            await context.Response.Body.FlushAsync(context.RequestAborted);
-            await Task.Delay(250, context.RequestAborted);
-        }
+        await context.Response.WriteAsync("chunk\n", context.RequestAborted);
+        await context.Response.Body.FlushAsync(context.RequestAborted);
+        await Task.Delay(AbortLinkRequest.HoldTimeout, context.RequestAborted);
     }
     catch (Exception ex) when (ex is OperationCanceledException or IOException)
     {
-        abortLinkRequests[id] = "aborted";
+        request.Set("aborted");
         return;
     }
 
-    abortLinkRequests[id] = "completed";
+    request.Set("not aborted");
 });
 app.MapGet("/abortlink/log/{id}", (string id) =>
-    abortLinkRequests.TryGetValue(id, out var state) ? state : "unknown");
+    abortLinkRequests.TryGetValue(id, out var request) ? request.State : "unknown");
+// Answers once the request reaches the state, or with its state at the timeout.
+app.MapGet("/abortlink/wait/{id}/{state}", (string id, string state) =>
+    abortLinkRequests.GetOrAdd(id, _ => new()).WaitAsync(state));
 
 app.Run();
+
+internal sealed class AbortLinkRequest
+{
+    // Long enough that only an abort ends a held request during a test.
+    public static readonly TimeSpan HoldTimeout = TimeSpan.FromSeconds(30);
+    private static readonly TimeSpan WaitTimeout = TimeSpan.FromSeconds(10);
+
+    private readonly object _lock = new();
+    private TaskCompletionSource _changed = new(TaskCreationOptions.RunContinuationsAsynchronously);
+
+    public string State { get; private set; } = "unknown";
+
+    public void Set(string state)
+    {
+        TaskCompletionSource changed;
+        lock (_lock)
+        {
+            State = state;
+            changed = _changed;
+            _changed = new(TaskCreationOptions.RunContinuationsAsynchronously);
+        }
+
+        changed.SetResult();
+    }
+
+    public async Task<string> WaitAsync(string state)
+    {
+        using var timeout = new CancellationTokenSource(WaitTimeout);
+        while (true)
+        {
+            Task changed;
+            lock (_lock)
+            {
+                if (State == state)
+                {
+                    return State;
+                }
+
+                changed = _changed.Task;
+            }
+
+            try
+            {
+                await changed.WaitAsync(timeout.Token);
+            }
+            catch (OperationCanceledException)
+            {
+                return State;
+            }
+        }
+    }
+}
