@@ -331,12 +331,14 @@ Microsoft.AspNetCore.Identity.UserManager<TUser>.UserValidators.get -> System.Co
 Microsoft.AspNetCore.Identity.UserManager<TUser>.ValidatePasswordAsync(TUser! user, string? password) -> System.Threading.Tasks.Task<Microsoft.AspNetCore.Identity.IdentityResult!>!
 Microsoft.AspNetCore.Identity.UserManager<TUser>.ValidateUserAsync(TUser! user) -> System.Threading.Tasks.Task<Microsoft.AspNetCore.Identity.IdentityResult!>!
 Microsoft.AspNetCore.Identity.UserOptions
-Microsoft.AspNetCore.Identity.UserOptions.AllowedUserNameCharacters.get -> string!
+Microsoft.AspNetCore.Identity.UserOptions.AllowedUserNameCharacters.get -> string?
 Microsoft.AspNetCore.Identity.UserOptions.AllowedUserNameCharacters.set -> void
 Microsoft.AspNetCore.Identity.UserOptions.RequireUniqueEmail.get -> bool
 Microsoft.AspNetCore.Identity.UserOptions.RequireUniqueEmail.set -> void
 Microsoft.AspNetCore.Identity.UserOptions.UserOptions() -> void
 Microsoft.AspNetCore.Identity.UserPasskeyInfo
+Microsoft.AspNetCore.Identity.UserPasskeyInfo.Aaguid.get -> byte[]?
+Microsoft.AspNetCore.Identity.UserPasskeyInfo.Aaguid.set -> void
 Microsoft.AspNetCore.Identity.UserPasskeyInfo.AttestationObject.get -> byte[]!
 Microsoft.AspNetCore.Identity.UserPasskeyInfo.ClientDataJson.get -> byte[]!
 Microsoft.AspNetCore.Identity.UserPasskeyInfo.CreatedAt.get -> System.DateTimeOffset
