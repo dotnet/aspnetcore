@@ -1,4 +1,4 @@
-﻿// Licensed to the .NET Foundation under one or more agreements.
+// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using Microsoft.AspNetCore.Http;
@@ -125,8 +125,8 @@ public class RequestFormLimitsAttribute : Attribute, IFilterFactory, IOrderedFil
     int? IFormOptionsMetadata.MultipartBoundaryLengthLimit => MultipartBoundaryLengthLimit;
 
     /// <summary>
-    /// A limit for the number of headers to allow in each multipart section. Headers with the same name will
-    /// be combined. Form sections that exceed this limit will throw an <see cref="InvalidDataException"/>
+    /// A limit for the number of header lines to allow in each multipart section. Headers with the same name
+    /// count separately. Form sections that exceed this limit will throw an <see cref="InvalidDataException"/>
     /// when parsed.
     /// </summary>
     public int MultipartHeadersCountLimit
