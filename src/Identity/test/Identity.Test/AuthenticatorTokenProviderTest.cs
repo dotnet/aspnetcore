@@ -26,12 +26,15 @@ public class AuthenticatorTokenProviderTest
         Assert.True(await provider.ValidateAsync("purpose", code.ToString(CultureInfo.InvariantCulture), manager.Object, user));
     }
 
-    [Fact]
-    public async Task ValidateAsyncThrowsForInvalidKey()
+    [Theory]
+    [InlineData(8)]
+    [InlineData(400)]
+    public async Task ValidateAsyncThrowsForInvalidKey(int keyLength)
     {
+        var key = new string('A', keyLength - 1) + "!";
         var user = new PocoUser();
         var manager = MockHelpers.MockUserManager<PocoUser>();
-        manager.Setup(m => m.GetAuthenticatorKeyAsync(user)).ReturnsAsync("MZXW6YT!");
+        manager.Setup(m => m.GetAuthenticatorKeyAsync(user)).ReturnsAsync(key);
         var provider = new AuthenticatorTokenProvider<PocoUser>();
 
         await Assert.ThrowsAsync<FormatException>(() => provider.ValidateAsync("purpose", "123456", manager.Object, user));
