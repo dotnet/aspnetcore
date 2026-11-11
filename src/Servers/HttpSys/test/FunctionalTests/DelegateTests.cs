@@ -280,6 +280,7 @@ public class DelegateTests : LoggedTest
         Assert.Equal(_expectedResponseString, responseString);
 
         destination?.Dispose();
+        GC.KeepAlive(queueHandle);
     }
 
     [ConditionalFact]
