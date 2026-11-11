@@ -1,8 +1,9 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-import { ArrayValues, EditType, FrameType, RenderBatch, RenderTreeDiff, RenderTreeFrame, countDescendantFrames } from './RenderBatch/RenderBatch';
-import { LogicalElement, adoptLogicalChild, getLogicalRootDescriptor, isSvgElement, isMathMLElement, resetLogicalChildren, toLogicalElement } from './LogicalElements';
+import { ArrayValues, FrameType, RenderBatch, RenderTreeDiff, RenderTreeFrame, countDescendantFrames } from './RenderBatch/RenderBatch';
+import { LogicalElement, adoptLogicalChild, getLogicalRootDescriptor, isSvgElement, isMathMLElement, resetLogicalChildren, toLogicalElement, getLogicalDomNodeContainer, getElementNamespace } from './LogicalElements';
+import { internalAttributeNamePrefix } from './DomSpecialPropertyUtil';
 
 interface Cursor {
   parent: Node;
@@ -27,16 +28,13 @@ interface TextRun {
 
 export type PrerenderedFramesForRendering = Map<number, {
   nodes: Node[];
-  replaceElementPlaceholders?: () => void;
-  rebuildMarkupLogicalChildren?: () => void;
+  prepareMarkupForRendering?: () => void;
 }>;
 
 export class PrerenderedDom {
   private readonly plannedFrames: PrerenderedFramesForRendering = new Map();
 
-  private readonly matchingTextRuns = new Map<Text, TextRun>();
-
-  private readonly components = new Set<number>();
+  private readonly matchingTextRuns: { text: Text; run: TextRun }[] = [];
 
   private readonly preservedElements: Element[] = [];
 
@@ -44,7 +42,7 @@ export class PrerenderedDom {
 
   private readonly insertions: Insertion[] = [];
 
-  private readonly removals = new Set<Node>();
+  private readonly removals: Node[] = [];
 
   private hasDifferences = false;
 
@@ -73,7 +71,7 @@ export class PrerenderedDom {
     }
     this.queueRemainingNodeRemovals(cursor);
     // A retained initializer cannot be rerun safely when its dependent DOM changes.
-    return cursor.next === end && !(this.hasDifferences && this.hasPreservedInitializer);
+    return !(this.hasDifferences && this.hasPreservedInitializer);
   }
 
   public applyRootPlan(root: LogicalElement, framesForRendering: PrerenderedFramesForRendering): void {
@@ -95,7 +93,7 @@ export class PrerenderedDom {
   }
 
   private splitTextNodesAtFrameBoundaries(): void {
-    for (const [text, run] of this.matchingTextRuns) {
+    for (const { text, run } of this.matchingTextRuns) {
       const parts = new Map<number, Text>([[0, text]]);
       let offset = run.content.length;
       for (let index = run.segments.length - 1; index >= 0; index--) {
@@ -128,10 +126,6 @@ export class PrerenderedDom {
   }
 
   private planComponent(componentId: number, cursor: Cursor, selectValue?: string | null): boolean {
-    if (this.components.has(componentId)) {
-      return false;
-    }
-    this.components.add(componentId);
     const diff = this.diffs.get(componentId);
     if (diff === undefined) {
       return !this.diffs.has(componentId);
@@ -142,22 +136,16 @@ export class PrerenderedDom {
     const values = segmentReader.values(edits);
     const offset = segmentReader.offset(edits);
     const editCount = segmentReader.count(edits);
-    let siblingIndex = 0;
     for (let i = offset; i < offset + editCount; i++) {
       const edit = diffReader.editsEntry(values, i);
-      if (editReader.editType(edit) !== EditType.prependFrame || editReader.siblingIndex(edit) !== siblingIndex) {
+      if (!this.planFrame(editReader.newTreeIndex(edit), cursor, selectValue)) {
         return false;
       }
-      const plannedChildCount = this.planFrame(editReader.newTreeIndex(edit), cursor, selectValue);
-      if (plannedChildCount < 0) {
-        return false;
-      }
-      siblingIndex += plannedChildCount;
     }
     return true;
   }
 
-  private planFrame(index: number, cursor: Cursor, selectValue?: string | null): number {
+  private planFrame(index: number, cursor: Cursor, selectValue?: string | null): boolean {
     const { frameReader } = this.batch;
     const frame = this.batch.referenceFramesEntry(this.frames, index);
     switch (frameReader.frameType(frame)) {
@@ -168,13 +156,13 @@ export class PrerenderedDom {
         const nodes: Node[] = [];
         this.plannedFrames.set(index, { nodes });
         this.queueTextSegment(content, cursor, nodes);
-        return 1;
+        return true;
       }
       case FrameType.component: {
         const container = document.createComment('!');
         this.queueInsertion(container, cursor);
         this.plannedFrames.set(index, { nodes: [container] });
-        return this.planComponent(frameReader.componentId(frame), cursor, selectValue) ? 1 : -1;
+        return this.planComponent(frameReader.componentId(frame), cursor, selectValue);
       }
       case FrameType.region:
         return this.planFrameRange(index + 1, index + frameReader.subtreeLength(frame), cursor, selectValue);
@@ -197,43 +185,37 @@ export class PrerenderedDom {
         const markupInsertions = this.insertions.slice(insertionStart);
         this.plannedFrames.set(index, {
           nodes,
-          replaceElementPlaceholders: () => {
+          prepareMarkupForRendering: () => {
             for (const { node, elementToConnect } of markupInsertions) {
               if (elementToConnect) {
                 node!.parentNode!.replaceChild(elementToConnect, node!);
               }
             }
-          },
-          rebuildMarkupLogicalChildren: () => {
             for (const element of preservedElements) {
               const logical = toLogicalElement(element, true);
               resetLogicalChildren(logical);
-              const container = element instanceof HTMLTemplateElement ? element.content : element;
+              const container = getLogicalDomNodeContainer(element);
               Array.from(container.childNodes).forEach((child, childIndex) => adoptLogicalChild(child, logical, childIndex));
             }
           },
         });
-        return 1;
+        return true;
       }
       case FrameType.elementReferenceCapture:
       case FrameType.namedEvent:
-        return 0;
+        return true;
       default:
-        return -1;
+        return false;
     }
   }
 
-  private planElementSubtree(index: number, frame: RenderTreeFrame, cursor: Cursor, selectValue?: string | null): number {
+  private planElementSubtree(index: number, frame: RenderTreeFrame, cursor: Cursor, selectValue?: string | null): boolean {
     const { frameReader } = this.batch;
     this.planPendingText(cursor);
     const element = cursor.next;
     const tagName = frameReader.elementName(frame)!;
     const parentElement = cursor.parent instanceof Element ? cursor.parent : null;
-    const namespace = tagName === 'svg' || (parentElement !== null && isSvgElement(parentElement))
-      ? 'http://www.w3.org/2000/svg'
-      : tagName === 'math' || (parentElement !== null && isMathMLElement(parentElement))
-        ? 'http://www.w3.org/1998/Math/MathML'
-        : 'http://www.w3.org/1999/xhtml';
+    const namespace = getElementNamespace(tagName, parentElement);
     if (!(element instanceof Element) || element === cursor.end || element.namespaceURI !== namespace ||
         element.localName !== (namespace === 'http://www.w3.org/1999/xhtml' ? tagName.toLowerCase() : tagName)) {
       return this.planElementReplacement(index, cursor);
@@ -270,7 +252,7 @@ export class PrerenderedDom {
       normalizeFormAction = true;
     }
     for (const name of Array.from(attributes.keys())) {
-      if (name.startsWith('__internal_') && !element.hasAttribute(name)) {
+      if (name.startsWith(internalAttributeNamePrefix) && !element.hasAttribute(name)) {
         attributes.delete(name);
       }
     }
@@ -287,30 +269,27 @@ export class PrerenderedDom {
     if (normalizeFormAction) {
       this.formActions.push(element);
     }
-    const container = element instanceof HTMLTemplateElement ? element.content : element;
+    const container = getLogicalDomNodeContainer(element);
     const children: Cursor = { parent: container, next: container.firstChild };
     if (!(element instanceof HTMLTextAreaElement && value !== null)) {
-      if (this.planFrameRange(childIndex, end, children, element instanceof HTMLSelectElement ? value : selectValue) < 0) {
-        return -1;
+      if (!this.planFrameRange(childIndex, end, children, element instanceof HTMLSelectElement ? value : selectValue)) {
+        return false;
       }
       this.queueRemainingNodeRemovals(children);
     }
     cursor.next = element.nextSibling;
-    return 1;
+    return true;
   }
 
-  private planFrameRange(start: number, end: number, cursor: Cursor, selectValue?: string | null): number {
-    let totalChildCount = 0;
+  private planFrameRange(start: number, end: number, cursor: Cursor, selectValue?: string | null): boolean {
     for (let index = start; index < end; index++) {
-      const plannedChildCount = this.planFrame(index, cursor, selectValue);
-      if (plannedChildCount < 0) {
-        return -1;
+      if (!this.planFrame(index, cursor, selectValue)) {
+        return false;
       }
-      totalChildCount += plannedChildCount;
       const frame = this.batch.referenceFramesEntry(this.frames, index);
       index += countDescendantFrames(this.batch, frame);
     }
-    return totalChildCount;
+    return true;
   }
 
   private queueTextSegment(content: string, cursor: Cursor, nodes: Node[]): void {
@@ -371,7 +350,7 @@ export class PrerenderedDom {
     }
     if (run.content) {
       if (textMatches) {
-        this.matchingTextRuns.set(text, run);
+        this.matchingTextRuns.push({ text, run });
         cursor.next = text.nextSibling;
       } else {
         this.hasDifferences = true;
@@ -395,19 +374,19 @@ export class PrerenderedDom {
     return insertion;
   }
 
-  private planElementReplacement(index: number, cursor: Cursor): number {
+  private planElementReplacement(index: number, cursor: Cursor): boolean {
     this.hasDifferences = true;
     const placeholder = document.createComment('!');
     this.queueInsertion(placeholder, cursor);
     this.plannedFrames.set(index, { nodes: [placeholder] });
     this.queueNextNodeRemoval(cursor);
-    return 1;
+    return true;
   }
 
   private queueNextNodeRemoval(cursor: Cursor): void {
     if (cursor.next && cursor.next !== cursor.end) {
       this.hasDifferences = true;
-      this.removals.add(cursor.next);
+      this.removals.push(cursor.next);
       cursor.next = cursor.next.nextSibling;
     }
   }
@@ -436,8 +415,8 @@ export class PrerenderedDom {
       if (actual instanceof Element && expected instanceof Element) {
         preservedElements.push(actual);
         this.hasPreservedInitializer ||= mayInitializeDom(actual);
-        const container = actual instanceof HTMLTemplateElement ? actual.content : actual;
-        const expectedContainer = expected instanceof HTMLTemplateElement ? expected.content : expected;
+        const container = getLogicalDomNodeContainer(actual);
+        const expectedContainer = getLogicalDomNodeContainer(expected);
         const children: Cursor = { parent: container, next: container.firstChild };
         for (const child of Array.from(expectedContainer.childNodes)) {
           this.planMarkupNode(child, children, [], preservedElements);

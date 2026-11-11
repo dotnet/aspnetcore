@@ -9,6 +9,7 @@
 // and the SSR DOM merging logic.
 
 export const deferredValuePropname = '_blazorDeferredValue';
+export const internalAttributeNamePrefix = '__internal_';
 
 export function rememberDeferredValue(element: Element, value: string | null): void {
   if (element instanceof HTMLInputElement || element instanceof HTMLTextAreaElement) {

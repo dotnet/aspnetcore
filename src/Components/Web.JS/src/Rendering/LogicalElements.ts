@@ -279,6 +279,14 @@ export function isMathMLElement(element: LogicalElement | Element): boolean {
   return closestElement instanceof Element && closestElement.namespaceURI === 'http://www.w3.org/1998/Math/MathML';
 }
 
+export function getElementNamespace(tagName: string, parent: LogicalElement | Element | null): string {
+  return tagName === 'svg' || (parent !== null && isSvgElement(parent))
+    ? 'http://www.w3.org/2000/svg'
+    : tagName === 'math' || (parent !== null && isMathMLElement(parent))
+      ? 'http://www.w3.org/1998/Math/MathML'
+      : 'http://www.w3.org/1999/xhtml';
+}
+
 export function getLogicalChildrenArray(element: LogicalElement): LogicalElement[] {
   return element[logicalChildrenPropname] as LogicalElement[];
 }
@@ -401,7 +409,7 @@ function appendDomNode(child: Node, parent: LogicalElement) {
   }
 }
 
-function getLogicalDomNodeContainer(parent: Node): Element | DocumentFragment {
+export function getLogicalDomNodeContainer(parent: Node): Element | DocumentFragment {
   if (parent instanceof HTMLTemplateElement) {
     return parent.content;
   }

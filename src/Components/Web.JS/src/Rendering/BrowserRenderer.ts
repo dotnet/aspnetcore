@@ -3,16 +3,15 @@
 
 import { RenderBatch, ArrayBuilderSegment, RenderTreeEdit, RenderTreeFrame, RenderTreeDiff, EditType, FrameType, ArrayValues, countDescendantFrames } from './RenderBatch/RenderBatch';
 import { EventDelegator } from './Events/EventDelegator';
-import { LogicalElement, PermutationListEntry, toLogicalElement, insertLogicalChild, removeLogicalChild, getLogicalParent, getLogicalChild, createAndInsertLogicalContainer, isSvgElement, isMathMLElement, permuteLogicalChildren, getClosestDomElement, emptyLogicalElement, getLogicalChildrenArray, depthFirstNodeTreeTraversal, getLogicalRootDescriptor, adoptLogicalChild } from './LogicalElements';
+import { LogicalElement, PermutationListEntry, toLogicalElement, insertLogicalChild, removeLogicalChild, getLogicalParent, getLogicalChild, createAndInsertLogicalContainer, isSvgElement, isMathMLElement, permuteLogicalChildren, getClosestDomElement, emptyLogicalElement, getLogicalChildrenArray, depthFirstNodeTreeTraversal, getLogicalRootDescriptor, adoptLogicalChild, getElementNamespace } from './LogicalElements';
 import { applyCaptureIdToElement } from './ElementReferenceCapture';
 import { attachToEventDelegator as attachNavigationManagerToEventDelegator } from '../Services/NavigationManager';
-import { applyAnyDeferredValue, deferredValuePropname, tryApplySpecialProperty, rememberDeferredValue } from './DomSpecialPropertyUtil';
+import { applyAnyDeferredValue, deferredValuePropname, tryApplySpecialProperty, rememberDeferredValue, internalAttributeNamePrefix } from './DomSpecialPropertyUtil';
 import { PrerenderedDom, PrerenderedFramesForRendering } from './PrerenderedDom';
 const sharedTemplateElemForParsing = document.createElement('template');
 const sharedSvgElemForParsing = document.createElementNS('http://www.w3.org/2000/svg', 'g');
 const sharedMathMLElemForParsing = document.createElementNS('http://www.w3.org/1998/Math/MathML', 'mrow');
 const elementsToClearOnRootComponentRender = new Set<LogicalElement>();
-const internalAttributeNamePrefix = '__internal_';
 const eventPreventDefaultAttributeNamePrefix = 'preventDefault_';
 const eventStopPropagationAttributeNamePrefix = 'stopPropagation_';
 const interactiveRootComponentPropname = Symbol();
@@ -345,6 +344,7 @@ export class BrowserRenderer {
   private insertElement(batch: RenderBatch, componentId: number, parent: LogicalElement, childIndex: number, frames: ArrayValues<RenderTreeFrame>, frame: RenderTreeFrame, frameIndex: number) {
     const frameReader = batch.frameReader;
     const tagName = frameReader.elementName(frame)!;
+    const namespace = getElementNamespace(tagName, parent);
 
     const plannedNode = this.framesForRendering.get(frameIndex)?.nodes[0];
     const isPreservedElement = plannedNode instanceof Element;
@@ -352,9 +352,9 @@ export class BrowserRenderer {
     if (isPreservedElement) {
       domElement = plannedNode;
       adoptLogicalChild(domElement, parent, childIndex);
-    } else if (tagName === 'svg' || isSvgElement(parent)) {
+    } else if (namespace === 'http://www.w3.org/2000/svg') {
       domElement = document.createElementNS('http://www.w3.org/2000/svg', tagName);
-    } else if (tagName === 'math' || isMathMLElement(parent)) {
+    } else if (namespace === 'http://www.w3.org/1998/Math/MathML') {
       domElement = document.createElementNS('http://www.w3.org/1998/Math/MathML', tagName);
     } else {
       domElement = document.createElement(tagName);
@@ -417,8 +417,7 @@ export class BrowserRenderer {
     if (fragmentNodes) {
       adoptLogicalChild(fragmentNodes[0], parent, childIndex);
       const markupContainer = toLogicalElement(fragmentNodes[0]);
-      markupPlan?.replaceElementPlaceholders?.();
-      markupPlan?.rebuildMarkupLogicalChildren?.();
+      markupPlan?.prepareMarkupForRendering?.();
       for (let index = 1; index < fragmentNodes.length; index++) {
         adoptLogicalChild(fragmentNodes[index], markupContainer, index - 1);
       }
