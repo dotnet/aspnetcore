@@ -129,9 +129,18 @@ internal sealed class NamedPipeConnectionListener : IConnectionListener
                 // WaitForConnectionAsync can throw IOException when the pipe is broken.
                 NamedPipeLog.ConnectionListenerBrokenPipe(_log, ex);
 
-                // Dispose existing pipe, create a new one and continue accepting.
-                nextStream.Dispose();
-                nextStream = _namedPipeServerStreamPool.Get();
+                // Create a new pipe and continue accepting. We create the new one before disposing
+                // the broken one to ensure there is always a created stream and another process
+                // can't create a stream with the same name with a different access policy.
+                var brokenStream = nextStream;
+                try
+                {
+                    nextStream = _namedPipeServerStreamPool.Get();
+                }
+                finally
+                {
+                    brokenStream.Dispose();
+                }
             }
             catch (OperationCanceledException) when (_listeningToken.IsCancellationRequested)
             {

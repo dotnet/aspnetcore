@@ -337,6 +337,13 @@ internal abstract partial class Http2Stream : HttpProtocol, IThreadPoolWorkItem,
             return false;
         }
 
+        // https://www.rfc-editor.org/rfc/rfc9113#section-8.3.1
+        if (!ServerOptions.AllowFragmentInRequestTarget && path.Contains('#'))
+        {
+            ResetAndAbort(new ConnectionAbortedException(CoreStrings.FormatHttp2StreamErrorPathInvalid(RawTarget)), Http2ErrorCode.PROTOCOL_ERROR);
+            return false;
+        }
+
         var queryIndex = path.IndexOf('?');
         QueryString = queryIndex == -1 ? string.Empty : path.Substring(queryIndex);
 
@@ -463,6 +470,8 @@ internal abstract partial class Http2Stream : HttpProtocol, IThreadPoolWorkItem,
 
     public Task OnDataAsync(Http2Frame dataFrame, in ReadOnlySequence<byte> payload)
     {
+        _inputFlowControl.Advance(dataFrame.PayloadLength);
+
         // Since padding isn't buffered, immediately count padding bytes as read for flow control purposes.
         if (dataFrame.DataHasPadding)
         {
@@ -485,8 +494,6 @@ internal abstract partial class Http2Stream : HttpProtocol, IThreadPoolWorkItem,
                     // Call before flushing the request body pipe, because that might induce a window update.
                     _inputFlowControl.StopWindowUpdates();
                 }
-
-                _inputFlowControl.Advance((int)dataPayload.Length);
 
                 // This check happens after flow control so that when we throw and abort, the byte count is returned to the connection
                 // level accounting.

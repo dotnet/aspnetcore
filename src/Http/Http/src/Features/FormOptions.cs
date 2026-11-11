@@ -86,8 +86,8 @@ public class FormOptions
     public int MultipartBoundaryLengthLimit { get; set; } = DefaultMultipartBoundaryLengthLimit;
 
     /// <summary>
-    /// A limit for the number of headers to allow in each multipart section. Headers with the same name will
-    /// be combined. Form sections that exceed this limit will throw an <see cref="InvalidDataException"/>
+    /// A limit for the number of header lines to allow in each multipart section. Headers with the same name
+    /// count separately. Form sections that exceed this limit will throw an <see cref="InvalidDataException"/>
     /// when parsed.
     /// Defaults to 16.
     /// </summary>

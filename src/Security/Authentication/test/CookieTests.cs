@@ -1228,21 +1228,24 @@ public class CookieTests : SharedAuthenticationTests<CookieAuthenticationOptions
         Assert.Equal("Alice", FindClaimValue(transaction6, ClaimTypes.Name));
     }
 
-    [Fact]
-    public async Task CookieUsesPathBaseByDefault()
+    [Theory]
+    [InlineData("/base", "path=/base")]
+    [InlineData("/a;b", "path=/a%3Bb")]
+    [InlineData("/a%3Bb", "path=/a%3Bb")]
+    public async Task CookieUsesPathBaseByDefault(string pathBase, string expectedCookiePath)
     {
         using var host = await CreateHost(o => { },
         context =>
         {
-            Assert.Equal(new PathString("/base"), context.Request.PathBase);
+            Assert.Equal(PathString.FromUriComponent(pathBase), context.Request.PathBase);
             return context.SignInAsync("Cookies",
                 new ClaimsPrincipal(new ClaimsIdentity(new GenericIdentity("Alice", "Cookies"))));
         },
-        new Uri("http://example.com/base"));
+        new Uri("http://example.com" + pathBase));
 
         using var server = host.GetTestServer();
-        var transaction1 = await SendAsync(server, "http://example.com/base/testpath");
-        Assert.Contains("path=/base", transaction1.SetCookie);
+        var transaction1 = await SendAsync(server, "http://example.com" + pathBase + "/testpath");
+        Assert.Contains(expectedCookiePath, transaction1.SetCookie);
     }
 
     [Fact]

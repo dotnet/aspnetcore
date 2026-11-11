@@ -135,6 +135,103 @@ public class MultipartReaderTests
     }
 
     [Fact]
+    public async Task MultipartReader_MixedHeaderNamesCountExceeded_Throws()
+    {
+        using var stream = MakeStream($"--{Boundary}\r\n" +
+            "First: one\r\nSecond: two\r\nFirst: three\r\n\r\n" +
+            $"body\r\n--{Boundary}--\r\n");
+        var reader = new MultipartReader(Boundary, stream)
+        {
+            HeadersCountLimit = 2,
+        };
+
+        var exception = await Assert.ThrowsAsync<InvalidDataException>(() => reader.ReadNextSectionAsync());
+        Assert.Equal("Multipart headers count limit 2 exceeded.", exception.Message);
+    }
+
+    [Theory]
+    [InlineData(1, "Custom-header", "value")]
+    [InlineData(1, "custom-HEADER", "value")]
+    [InlineData(1, "Custom-header", "")]
+    [InlineData(2, "Custom-header", "value")]
+    [InlineData(3, "Custom-header", "value")]
+    [InlineData(MultipartReader.DefaultHeadersCountLimit, "Custom-header", "value")]
+    public async Task MultipartReader_RepeatedHeaderCountExceeded_Throws(int limit, string repeatedName, string value)
+    {
+        var headers = $"Custom-header: {value}\r\n" +
+            string.Concat(Enumerable.Repeat($"{repeatedName}: {value}\r\n", limit));
+        using var stream = MakeStream($"--{Boundary}\r\n{headers}\r\nbody\r\n--{Boundary}--\r\n");
+        var reader = new MultipartReader(Boundary, stream)
+        {
+            HeadersCountLimit = limit,
+        };
+
+        var exception = await Assert.ThrowsAsync<InvalidDataException>(() => reader.ReadNextSectionAsync());
+        Assert.Equal($"Multipart headers count limit {limit} exceeded.", exception.Message);
+    }
+
+    [Theory]
+    [InlineData(1, "value")]
+    [InlineData(2, "value")]
+    [InlineData(3, "value")]
+    [InlineData(MultipartReader.DefaultHeadersCountLimit, "value")]
+    [InlineData(2, "")]
+    [InlineData(1, "one, two, three")]
+    public async Task MultipartReader_HeaderCountAtLimit_SucceedsForEachSection(int limit, string value)
+    {
+        var headers = $"Custom-header: {value}\r\n" +
+            string.Concat(Enumerable.Repeat($"custom-HEADER: {value}\r\n", limit - 1));
+        var part = $"--{Boundary}\r\n{headers}\r\nbody\r\n";
+        using var stream = MakeStream(part + part + $"--{Boundary}--\r\n");
+        var reader = new MultipartReader(Boundary, stream)
+        {
+            HeadersCountLimit = limit,
+        };
+
+        for (var i = 0; i < 2; i++)
+        {
+            var section = await reader.ReadNextSectionAsync();
+            Assert.NotNull(section);
+            Assert.Single(section.Headers);
+            Assert.Equal(Enumerable.Repeat(value, limit), section.Headers["Custom-header"].ToArray());
+            using var bodyReader = new StreamReader(section.Body);
+            Assert.Equal("body", await bodyReader.ReadToEndAsync());
+        }
+
+        Assert.Null(await reader.ReadNextSectionAsync());
+    }
+
+    [Fact]
+    public async Task MultipartReader_ZeroHeaderCountLimit_NoHeaders_Success()
+    {
+        using var stream = MakeStream($"--{Boundary}\r\n\r\nbody\r\n--{Boundary}--\r\n");
+        var reader = new MultipartReader(Boundary, stream)
+        {
+            HeadersCountLimit = 0,
+        };
+
+        var section = await reader.ReadNextSectionAsync();
+        Assert.NotNull(section);
+        Assert.Empty(section.Headers);
+        using var bodyReader = new StreamReader(section.Body);
+        Assert.Equal("body", await bodyReader.ReadToEndAsync());
+        Assert.Null(await reader.ReadNextSectionAsync());
+    }
+
+    [Fact]
+    public async Task MultipartReader_ZeroHeaderCountLimit_WithHeader_Throws()
+    {
+        using var stream = MakeStream(OnePartBody);
+        var reader = new MultipartReader(Boundary, stream)
+        {
+            HeadersCountLimit = 0,
+        };
+
+        var exception = await Assert.ThrowsAsync<InvalidDataException>(() => reader.ReadNextSectionAsync());
+        Assert.Equal("Multipart headers count limit 0 exceeded.", exception.Message);
+    }
+
+    [Fact]
     public async Task MultipartReader_HeadersLengthExceeded_Throws()
     {
         var stream = MakeStream(OnePartBodyTwoHeaders);

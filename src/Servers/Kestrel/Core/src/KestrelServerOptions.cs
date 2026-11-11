@@ -28,6 +28,7 @@ public class KestrelServerOptions
     internal const string DisableHttp1LineFeedTerminatorsSwitchKey = "Microsoft.AspNetCore.Server.Kestrel.DisableHttp1LineFeedTerminators";
     private const string FinOnErrorSwitch = "Microsoft.AspNetCore.Server.Kestrel.FinOnError";
     internal const string CertificateFileWatchingSwitch = "Microsoft.AspNetCore.Server.Kestrel.DisableCertificateFileWatching";
+    private const string AllowFragmentInRequestTargetSwitch = "Microsoft.AspNetCore.Server.Kestrel.AllowFragmentInRequestTarget";
     private static readonly bool _finOnError;
     private static readonly bool _disableCertificateFileWatching;
 
@@ -250,6 +251,25 @@ public class KestrelServerOptions
             return _disableHttp1LineFeedTerminators.Value;
         }
         set => _disableHttp1LineFeedTerminators = value;
+    }
+
+    /// <summary>
+    /// Allows a literal <c>#</c> in HTTP/1.x origin-form and absolute-form request targets
+    /// and in the HTTP/2 and HTTP/3 <c>:path</c> pseudo-header.
+    /// </summary>
+    private bool? _allowFragmentInRequestTarget;
+    internal bool AllowFragmentInRequestTarget
+    {
+        get
+        {
+            if (!_allowFragmentInRequestTarget.HasValue)
+            {
+                _allowFragmentInRequestTarget = AppContext.TryGetSwitch(AllowFragmentInRequestTargetSwitch, out var enabled) && enabled;
+            }
+
+            return _allowFragmentInRequestTarget.Value;
+        }
+        set => _allowFragmentInRequestTarget = value;
     }
 
     /// <summary>

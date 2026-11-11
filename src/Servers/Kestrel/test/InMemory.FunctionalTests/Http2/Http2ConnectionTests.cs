@@ -1328,6 +1328,78 @@ public class Http2ConnectionTests : Http2TestBase
     }
 
     [Fact]
+    public async Task DATA_Received_WithPaddingOnly_DoesNotIncreaseInputFlowControlWindow()
+    {
+        var initialWindowSize = (int)Http2PeerSettings.DefaultInitialWindowSize;
+        _serviceContext.ServerOptions.Limits.Http2.InitialStreamWindowSize = initialWindowSize;
+        _serviceContext.ServerOptions.Limits.Http2.InitialConnectionWindowSize = initialWindowSize * 2;
+
+        await InitializeConnectionAsync(_waitForAbortApplication, expectedSettingsCount: 3);
+
+        await StartStreamAsync(1, _browserRequestHeaders, endStream: false);
+        await SendDataWithPaddingAsync(1, _noData, padLength: 255, endStream: false);
+
+        var bytesRemaining = initialWindowSize;
+        while (bytesRemaining > 0)
+        {
+            var dataLength = Math.Min(bytesRemaining, _maxData.Length);
+            await SendDataAsync(1, _maxData.AsMemory(0, dataLength), endStream: false);
+            bytesRemaining -= dataLength;
+        }
+
+        await SendDataAsync(1, _maxData.AsMemory(0, 1), endStream: false);
+
+        await WaitForConnectionErrorAsync<Http2ConnectionErrorException>(
+            ignoreNonGoAwayFrames: false,
+            expectedLastStreamId: 1,
+            expectedErrorCode: Http2ErrorCode.FLOW_CONTROL_ERROR,
+            expectedErrorMessage: CoreStrings.Http2ErrorFlowControlWindowExceeded);
+
+        AssertConnectionEndReason(ConnectionEndReason.FlowControlWindowExceeded);
+    }
+
+    [Theory]
+    [InlineData(false, 0, 0)]
+    [InlineData(false, 255, 0)]
+    [InlineData(false, 0, 1)]
+    [InlineData(false, 255, 1)]
+    [InlineData(true, 0, 0)]
+    [InlineData(true, 255, 0)]
+    [InlineData(true, 0, 1)]
+    [InlineData(true, 255, 1)]
+    public async Task DATA_Received_WithPadding_ExceedsInputFlowControlWindow_ConnectionError(bool connectionWindow, byte padLength, int dataLength)
+    {
+        var initialWindowSize = (int)Http2PeerSettings.DefaultInitialWindowSize;
+        _serviceContext.ServerOptions.Limits.Http2.InitialStreamWindowSize = connectionWindow ? initialWindowSize * 2 : initialWindowSize;
+        _serviceContext.ServerOptions.Limits.Http2.InitialConnectionWindowSize = connectionWindow ? initialWindowSize : initialWindowSize * 2;
+
+        await InitializeConnectionAsync(_waitForAbortApplication,
+            expectedSettingsCount: connectionWindow ? 4 : 3,
+            expectedWindowUpdate: !connectionWindow);
+
+        await StartStreamAsync(1, _browserRequestHeaders, endStream: false);
+
+        // Leave one byte less than the padded frame's full payload in the selected window.
+        var bytesRemaining = initialWindowSize - padLength - dataLength;
+        while (bytesRemaining > 0)
+        {
+            var frameLength = Math.Min(bytesRemaining, _maxData.Length);
+            await SendDataAsync(1, _maxData.AsMemory(0, frameLength), endStream: false);
+            bytesRemaining -= frameLength;
+        }
+
+        await SendDataWithPaddingAsync(1, _maxData.AsMemory(0, dataLength), padLength, endStream: false);
+
+        await WaitForConnectionErrorAsync<Http2ConnectionErrorException>(
+            ignoreNonGoAwayFrames: false,
+            expectedLastStreamId: 1,
+            expectedErrorCode: Http2ErrorCode.FLOW_CONTROL_ERROR,
+            expectedErrorMessage: CoreStrings.Http2ErrorFlowControlWindowExceeded);
+
+        AssertConnectionEndReason(ConnectionEndReason.FlowControlWindowExceeded);
+    }
+
+    [Fact]
     public async Task DATA_Received_ButNotConsumedByApp_CountsTowardsInputFlowControl()
     {
         var initialConnectionWindowSize = _serviceContext.ServerOptions.Limits.Http2.InitialConnectionWindowSize;
