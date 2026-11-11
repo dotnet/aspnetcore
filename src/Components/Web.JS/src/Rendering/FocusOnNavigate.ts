@@ -4,12 +4,23 @@
 import { domFunctions } from '../DomWrapper';
 import { JSEventRegistry } from '../Services/JSEventRegistry';
 import { isForSamePath } from '../Services/NavigationUtils';
+import { depthFirstNodeTreeTraversal, LogicalElement } from './LogicalElements';
 
 const customElementName = 'blazor-focus-on-navigate';
 let currentFocusOnNavigateElement: FocusOnNavigateElement | null = null;
 let locationOnLastNavigation = location.href;
 let allowApplyFocusAfterEnhancedNavigation = false;
-let focusedSelector: string | null = null;
+let focusedNavigationElement: NavigationFocus | null = null;
+
+interface NavigationFocus {
+  element: Element;
+  selector: string;
+  owner: FocusOnNavigateElement;
+}
+
+export interface PendingNavigationFocus extends NavigationFocus {
+  root: LogicalElement;
+}
 
 export function enableFocusOnNavigate(jsEventRegistry: JSEventRegistry) {
   customElements.define(customElementName, FocusOnNavigateElement);
@@ -42,11 +53,10 @@ function onInitialPageLoad() {
 }
 
 function onEnhancedNavigationStart() {
-  focusedSelector = null;
-
   // Only move focus when navigating to a new page.
   if (!isForSamePath(locationOnLastNavigation, location.href)) {
     allowApplyFocusAfterEnhancedNavigation = true;
+    focusedNavigationElement = null;
   }
 
   locationOnLastNavigation = location.href;
@@ -58,54 +68,81 @@ function onEnhancedNavigationEnd() {
   }
 }
 
-function onFocusIn(event: FocusEvent) {
+function onFocusIn() {
   // If the user explicitly focuses a different element before a navigation completes,
   // don't move focus again.
   allowApplyFocusAfterEnhancedNavigation = false;
-
-  if (event.target === document.body) {
-    const navigationTarget = focusedSelector ? document.querySelector(focusedSelector) : null;
-    if (navigationTarget?.isConnected) {
-      focusedSelector = null;
-    }
-
-    return;
-  }
-
-  focusedSelector = null;
 }
 
 function tryApplyFocus() {
-  const selector = currentFocusOnNavigateElement?.getAttribute('selector');
-  if (!selector) {
-    focusedSelector = null;
-    return;
+  focusedNavigationElement = null;
+  const owner = currentFocusOnNavigateElement;
+  const selector = owner?.getAttribute('selector');
+  if (owner && selector) {
+    const element = document.querySelector(selector);
+    domFunctions.focusBySelector(selector);
+    if (element && document.activeElement === element && currentFocusOnNavigateElement === owner && owner.getAttribute('selector') === selector) {
+      focusedNavigationElement = { element, selector, owner };
+    }
   }
-
-  domFunctions.focusBySelector(selector);
-  const activeElement = document.activeElement;
-  focusedSelector = activeElement instanceof Element && activeElement.matches(selector)
-    ? selector
-    : null;
 }
 
-export function restoreFocusAfterPrerenderClear(previouslyActive: Element | null): void {
-  if (!focusedSelector || !(previouslyActive instanceof Element) || !previouslyActive.matches(focusedSelector)) {
+export function captureNavigationFocus(root: LogicalElement): PendingNavigationFocus | null {
+  const focus = focusedNavigationElement;
+  if (!focus) {
+    return null;
+  }
+
+  if (document.activeElement !== focus.element) {
+    return null;
+  }
+
+  if (!findElementInLogicalRoot(root, element => element === focus.element)) {
+    return null;
+  }
+
+  focusedNavigationElement = null;
+  return { ...focus, root };
+}
+
+export function restoreNavigationFocus(focus: PendingNavigationFocus): void {
+  if (!canRestoreFocus(focus)) {
     return;
   }
 
-  if (previouslyActive.isConnected) {
+  const replacement = findElementInLogicalRoot(focus.root, element => element.matches(focus.selector));
+  if (!replacement || !replacement.isConnected) {
     return;
   }
 
-  if (document.activeElement && document.activeElement !== document.body) {
-    focusedSelector = null;
-    return;
+  if (!('focus' in replacement) || typeof replacement.focus !== 'function'
+    || !('tabIndex' in replacement) || typeof replacement.tabIndex !== 'number') {
+    throw new Error('Unable to focus an invalid element.');
   }
 
-  const selector = focusedSelector;
-  focusedSelector = null;
-  domFunctions.focusBySelector(selector);
+  if (!replacement.hasAttribute('tabindex')) {
+    replacement.tabIndex = -1;
+  }
+
+  replacement.focus({ preventScroll: true });
+}
+
+function canRestoreFocus(focus: PendingNavigationFocus): boolean {
+  return !focus.element.isConnected
+    && (document.activeElement === null || document.activeElement === document.body)
+    && currentFocusOnNavigateElement === focus.owner
+    && focus.owner.isConnected
+    && focus.owner.getAttribute('selector') === focus.selector;
+}
+
+function findElementInLogicalRoot(root: LogicalElement, predicate: (element: Element) => boolean): Element | null {
+  for (const child of depthFirstNodeTreeTraversal(root)) {
+    if (child !== root && child instanceof Element && predicate(child)) {
+      return child;
+    }
+  }
+
+  return null;
 }
 
 class FocusOnNavigateElement extends HTMLElement {
@@ -117,7 +154,7 @@ class FocusOnNavigateElement extends HTMLElement {
   disconnectedCallback() {
     if (currentFocusOnNavigateElement === this) {
       currentFocusOnNavigateElement = null;
-      focusedSelector = null;
+      focusedNavigationElement = null;
     }
   }
 }
