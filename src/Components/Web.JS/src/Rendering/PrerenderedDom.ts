@@ -81,6 +81,9 @@ export class PrerenderedDom {
     resetLogicalChildren(root);
     for (const element of this.preservedElements) {
       resetLogicalChildren(toLogicalElement(element, true));
+      if (element instanceof HTMLInputElement) {
+        normalizeInputDefaults(element);
+      }
     }
     for (const element of this.formActions) {
       element.removeAttribute('action');
@@ -430,6 +433,39 @@ export class PrerenderedDom {
       nodes.push(expected);
       this.queueNextNodeRemoval(cursor);
     }
+  }
+}
+
+function normalizeInputDefaults(element: HTMLInputElement): void {
+  // Mark the live state dirty before removing SSR defaults so attribute changes cannot reset it.
+  if (element.hasAttribute('checked')) {
+    const checked = element.checked;
+    element.checked = checked;
+    element.removeAttribute('checked');
+  }
+  if (element.hasAttribute('value')) {
+    switch (element.type) {
+      case 'hidden':
+      case 'button':
+      case 'submit':
+      case 'reset':
+      case 'image':
+      case 'checkbox':
+      case 'radio':
+        // These input types also store property-assigned values in the attribute.
+        return;
+      case 'file':
+        break;
+      default: {
+        // Incomplete native edits already mark the value dirty, and assigning it would discard them.
+        if (!element.validity.badInput) {
+          const value = element.value;
+          element.value = value;
+        }
+        break;
+      }
+    }
+    element.removeAttribute('value');
   }
 }
 

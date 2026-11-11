@@ -285,6 +285,8 @@ On the first interactive render, `Web.JS` compares prerendered DOM nodes with th
 
 Matching uses rendered defaults, not live user edits. Kept nodes retain input, focus, selection, and scroll state without updating the component model or replaying events. Each root is handled independently. Later renders, circuit restoration, and enhanced navigation are unchanged.
 
+For input element frames, adoption restores ordinary interactive form-reset defaults without changing the live value or checked state. Raw markup keeps its HTML defaults.
+
 A statically rendered parent can establish interactive roots, but the selected render mode defines an execution boundary. Components within an interactive hierarchy execute in the runtime that owns that hierarchy unless another independently activated root is established at an allowed boundary.
 
 ### Navigation and Document Lifetime

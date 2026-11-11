@@ -69,6 +69,24 @@
                     <button id="position-target" data-phase="@RendererInfo.Name" type="button">Native target</button>
                     @((MarkupString)ClickListenerScript)
                     break;
+                case "form-reset":
+                    <form id="reset-form">
+                        <input id="reset-text" value="@resetText" />
+                        <input id="reset-pristine" value="@initialText" />
+                        <input id="reset-check" type="checkbox" checked="@resetChecked" value="Check value" />
+                        <input id="reset-pristine-check" type="checkbox" checked="@initialChecked" />
+                        <input id="reset-radio-first" type="radio" name="reset-radio" checked="@initialChecked" value="First" />
+                        <input id="reset-radio-second" type="radio" name="reset-radio" checked="@(!initialChecked)" value="Second" />
+                        <input id="reset-range" type="range" min="0" max="100" value="@initialRange" />
+                        <input id="reset-number" type="number" value="@initialRange" />
+                        <input id="reset-hidden" type="hidden" value="@hiddenValue" />
+                        <input id="reset-button" type="button" value="@buttonCaption" />
+                        <input id="reset-file" type="file" value="@emptyValue" />
+                        @((MarkupString)"<input id=\"reset-markup\" value=\"Markup default\">")
+                        <button id="reset-update" type="button" @onclick="UpdateResetInputs">Update</button>
+                        <button id="reset-native" type="reset">Reset</button>
+                    </form>
+                    break;
             }
             <input id="position-note" value="Alice" />
         </div>
@@ -91,6 +109,14 @@
     private ElementReference textarea;
     private string ready = "";
     private string selectValue;
+    private string resetText = "Initial";
+    private bool resetChecked = true;
+    private string initialText = "Initial";
+    private bool initialChecked = true;
+    private string initialRange = "20";
+    private string hiddenValue = "Hidden value";
+    private string buttonCaption = "Button caption";
+    private string emptyValue = "";
 
     private string SelectValue => selectValue ?? (Scenario switch
     {
@@ -102,6 +128,12 @@
 
     private void UpdateSelectValue()
         => selectValue = Scenario == "select-multiple-matching" ? "[\"15 min\"]" : "15 min";
+
+    private void UpdateResetInputs()
+    {
+        resetText = "Changed";
+        resetChecked = false;
+    }
 
     private const string ClickListenerScript = """
         <script>

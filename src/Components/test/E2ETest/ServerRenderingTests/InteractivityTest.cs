@@ -239,6 +239,77 @@ public class InteractivityTest : ServerTestBase<BasicTestAppServerSiteFixture<Ra
     }
 
     [Theory]
+    [InlineData("server", false)]
+    [InlineData("server", true)]
+    [InlineData("wasm", false)]
+    [InlineData("wasm", true)]
+    public void PrerenderedDom_PreservesLiveInputsButUsesInteractiveResetDefaults(string platform, bool updateBeforeReset)
+    {
+        Navigate($"{ServerPathBase}/prerendered-dom?suppress-autostart&platform={platform}&scenario=form-reset");
+        var input = Browser.Exists(By.Id("reset-text"));
+        input.ReplaceText("User edit");
+        Browser.Exists(By.Id("reset-check")).Click();
+        Browser.Exists(By.Id("reset-radio-second")).Click();
+        var number = Browser.Exists(By.Id("reset-number"));
+        number.ReplaceText("-");
+        var validationMessage = number.GetDomProperty("validationMessage");
+        Assert.False(string.IsNullOrEmpty(validationMessage));
+        var file = Browser.Exists(By.Id("reset-file"));
+        file.SendKeys(typeof(InteractivityTest).Assembly.Location);
+        var fileValue = file.GetDomProperty("value");
+        Assert.False(string.IsNullOrEmpty(fileValue));
+        UserSelectsText(input, start: 2, length: 4);
+
+        StartInteractivityAndWaitForReady("position-ready");
+
+        Assert.Equal(input, Browser.FindElement(By.Id("reset-text")));
+        Assert.Equal("User edit", input.GetDomProperty("value"));
+        Assert.Equal(input, Browser.SwitchTo().ActiveElement());
+        Assert.Equal("2", input.GetDomProperty("selectionStart"));
+        Assert.Equal("6", input.GetDomProperty("selectionEnd"));
+        Assert.Equal("Initial", Browser.FindElement(By.Id("reset-pristine")).GetDomProperty("value"));
+        Assert.False(Browser.FindElement(By.Id("reset-check")).Selected);
+        Assert.True(Browser.FindElement(By.Id("reset-pristine-check")).Selected);
+        Assert.True(Browser.FindElement(By.Id("reset-radio-second")).Selected);
+        Assert.Equal("20", Browser.FindElement(By.Id("reset-range")).GetDomProperty("value"));
+        Assert.Equal(number, Browser.FindElement(By.Id("reset-number")));
+        Assert.Equal(validationMessage, number.GetDomProperty("validationMessage"));
+        Assert.Equal(file, Browser.FindElement(By.Id("reset-file")));
+        Assert.Equal(fileValue, file.GetDomProperty("value"));
+
+        if (updateBeforeReset)
+        {
+            Browser.Click(By.Id("reset-update"));
+            Browser.Equal("Changed", () => input.GetDomProperty("value"));
+        }
+        AssertNativeResetDefaults();
+
+        var footer = Browser.FindElement(By.Id("position-footer"));
+        AssertUserCanRemoveAndRecreateScope(footer);
+        AssertNativeResetDefaults();
+
+        void AssertNativeResetDefaults()
+        {
+            Browser.Click(By.Id("reset-native"));
+            Assert.Equal("", Browser.FindElement(By.Id("reset-text")).GetDomProperty("value"));
+            Assert.Equal("", Browser.FindElement(By.Id("reset-pristine")).GetDomProperty("value"));
+            Assert.False(Browser.FindElement(By.Id("reset-check")).Selected);
+            Assert.False(Browser.FindElement(By.Id("reset-pristine-check")).Selected);
+            Assert.False(Browser.FindElement(By.Id("reset-radio-first")).Selected);
+            Assert.False(Browser.FindElement(By.Id("reset-radio-second")).Selected);
+            Assert.Equal("50", Browser.FindElement(By.Id("reset-range")).GetDomProperty("value"));
+            Assert.Equal("", Browser.FindElement(By.Id("reset-number")).GetDomProperty("value"));
+            Assert.Equal("", Browser.FindElement(By.Id("reset-number")).GetDomProperty("validationMessage"));
+            Assert.Equal("", Browser.FindElement(By.Id("reset-file")).GetDomProperty("value"));
+            Assert.Equal("Check value", Browser.FindElement(By.Id("reset-check")).GetDomProperty("value"));
+            Assert.Equal("First", Browser.FindElement(By.Id("reset-radio-first")).GetDomProperty("value"));
+            Assert.Equal("Hidden value", Browser.FindElement(By.Id("reset-hidden")).GetDomProperty("value"));
+            Assert.Equal("Button caption", Browser.FindElement(By.Id("reset-button")).GetDomProperty("value"));
+            Assert.Equal("Markup default", Browser.FindElement(By.Id("reset-markup")).GetDomProperty("value"));
+        }
+    }
+
+    [Theory]
     [InlineData("input-default")]
     [InlineData("textarea-default")]
     [InlineData("remove-leading")]
