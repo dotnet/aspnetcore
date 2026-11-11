@@ -61,216 +61,20 @@
       "sha256": "4aac99289d9812ac59c50e5eb702c0226c0afee26ba14d68366a82a55ab0feef"
     },
     {
-      "file": "source/head/src/Components/AI/src/Attributes/ToolBlockAttribute.cs",
-      "sha256": "f1cb40278e1883d3f044a5292b67580638947b6886c23ab5609d3de9ae793318"
-    },
-    {
-      "file": "source/head/src/Components/AI/src/Attributes/ToolParameterAttribute.cs",
-      "sha256": "36126cf9ea9e6044e205423706d904ebda948dd45ad261fb2acd92fb47c836b0"
-    },
-    {
-      "file": "source/head/src/Components/AI/src/Attributes/ToolResultAttribute.cs",
-      "sha256": "30dd2c43dd178cb80a0bf307c03c579cdad7da3870157bf27f489994793158f2"
-    },
-    {
-      "file": "source/head/src/Components/AI/src/Blocks/ActivityContentBlock.cs",
-      "sha256": "045b3483d94b348ecae3f6874a55ffc07c5d716842ffece8ebb80e357875fb43"
-    },
-    {
-      "file": "source/head/src/Components/AI/src/Blocks/ApprovalStatus.cs",
-      "sha256": "67ffd303a2a959438dcee7520c48825ab4c267c3f7ad8237d1df71560eebaadc"
-    },
-    {
-      "file": "source/head/src/Components/AI/src/Blocks/BlockLifecycleState.cs",
-      "sha256": "653b8ea2c192d31e74e0d35bd8c32b66b8ab5c8e7b2e602047bf2987cbea13cb"
-    },
-    {
       "file": "source/head/src/Components/AI/src/Blocks/ContentBlock.cs",
       "sha256": "7cab62ac70d7faa70dacbdb4bd36723b4061612ab921b9f7d7d019d3ba905261"
-    },
-    {
-      "file": "source/head/src/Components/AI/src/Blocks/ContentBlockChangedSubscription.cs",
-      "sha256": "db8418766c5f51568ff64f531a384c6447b882886fb566f52cc46965db072fae"
-    },
-    {
-      "file": "source/head/src/Components/AI/src/Blocks/FunctionApprovalBlock.cs",
-      "sha256": "3861d6f6db30ad1a3da01d2291abe20d874e1873bbf118232ae17cfab1d43698"
-    },
-    {
-      "file": "source/head/src/Components/AI/src/Blocks/FunctionInvocationContentBlock.cs",
-      "sha256": "155bccb3735677881e333392d74867a35ff7a42241c8713864813b15f81b0504"
     },
     {
       "file": "source/head/src/Components/AI/src/Blocks/IInteractiveBlock.cs",
       "sha256": "0f6c4f9e859a917755b75bcf335273c37461525fc72d7e5564ba2594c99ba90f"
     },
     {
-      "file": "source/head/src/Components/AI/src/Blocks/RichContentBlock.cs",
-      "sha256": "54084f5f145084e86452408d39e7c75a5d948f5986b3f7e2c127ce9055bc75b9"
-    },
-    {
-      "file": "source/head/src/Components/AI/src/Blocks/RichText/BlockQuoteNode.cs",
-      "sha256": "71d307651982e43a7724696cc4213f590818d7453d7670143a6a86c301ac631f"
-    },
-    {
-      "file": "source/head/src/Components/AI/src/Blocks/RichText/CodeBlockNode.cs",
-      "sha256": "1f56939978bf0c37cd897eefcdd76d42cde7456257e595508a57bd6be1f69c3a"
-    },
-    {
-      "file": "source/head/src/Components/AI/src/Blocks/RichText/DefinitionNode.cs",
-      "sha256": "6d5bbd145d541ad60a375e35ec003d27866fc498c7011b7199f4bc40f31fa75d"
-    },
-    {
-      "file": "source/head/src/Components/AI/src/Blocks/RichText/EmphasisNode.cs",
-      "sha256": "46a28b95716f15cf2bee5266d972751debaa0417e78b90fde9fc5aab76b652b7"
-    },
-    {
-      "file": "source/head/src/Components/AI/src/Blocks/RichText/FootnoteDefinitionNode.cs",
-      "sha256": "bf88a0391d31df6a4719a5b940c22a44ce379358fc4ac63a5a45915168b50cba"
-    },
-    {
-      "file": "source/head/src/Components/AI/src/Blocks/RichText/FootnoteNode.cs",
-      "sha256": "921ba26b82510d648df61f66b93f58a7bb8beefa38c0bc6cc29608662920e6f0"
-    },
-    {
-      "file": "source/head/src/Components/AI/src/Blocks/RichText/FootnoteReferenceNode.cs",
-      "sha256": "7924dd754285a4c89af87d20927e225f48b1174ffb1a578ddde39888f5b091e5"
-    },
-    {
-      "file": "source/head/src/Components/AI/src/Blocks/RichText/HeadingNode.cs",
-      "sha256": "3c5c019ac54d8f752d544c924b3978446d73b67bbd3d52fcff50e454ac4d27dc"
-    },
-    {
-      "file": "source/head/src/Components/AI/src/Blocks/RichText/HtmlNode.cs",
-      "sha256": "6829bcc853a0ba7d6be31fc9d16ff04c99a1db68793d0cba44fa5f33ba8bbeba"
-    },
-    {
-      "file": "source/head/src/Components/AI/src/Blocks/RichText/ImageNode.cs",
-      "sha256": "0825486c8473f53d0f20db7b8f52a9c487949a6812cc6945d8bc66a74c325384"
-    },
-    {
-      "file": "source/head/src/Components/AI/src/Blocks/RichText/ImageReferenceNode.cs",
-      "sha256": "24fe2f8c410480313b80082ebae104f7c07430129ea18929e7367e98ad9ccf03"
-    },
-    {
-      "file": "source/head/src/Components/AI/src/Blocks/RichText/InlineCodeNode.cs",
-      "sha256": "f8f00723a4759faec86da90a1af4e8b8bcfb1d58c4369e98bb2f48628d9b7176"
-    },
-    {
-      "file": "source/head/src/Components/AI/src/Blocks/RichText/LineBreakNode.cs",
-      "sha256": "98debdacd45632cefd2771f282a6a4fffbc13ef3e9a8f3835c3d15e0720e90d4"
-    },
-    {
-      "file": "source/head/src/Components/AI/src/Blocks/RichText/LinkNode.cs",
-      "sha256": "f87fe0d3f3de2c7e4b226dc4220c5f87300bfbcb98445c68d3ac7073997169bb"
-    },
-    {
-      "file": "source/head/src/Components/AI/src/Blocks/RichText/LinkReferenceNode.cs",
-      "sha256": "320ea107547bbb7c03897515ce525718e4facb0047f21da0d3283e7f7f298f6d"
-    },
-    {
-      "file": "source/head/src/Components/AI/src/Blocks/RichText/ListItemNode.cs",
-      "sha256": "7f833996a9d0b386722e0d4e0829aa9e7ea88a521c767103d09e7a60130ba18a"
-    },
-    {
-      "file": "source/head/src/Components/AI/src/Blocks/RichText/ListNode.cs",
-      "sha256": "8f34e045f65106f690b92cd44b243ebab3653474a6cf835736c18715035cd0fb"
-    },
-    {
-      "file": "source/head/src/Components/AI/src/Blocks/RichText/ParagraphNode.cs",
-      "sha256": "03f3650301497e04f74360a5c7929d5e8a3f0d44da4fc6f2df47b2de8c8e2e51"
-    },
-    {
-      "file": "source/head/src/Components/AI/src/Blocks/RichText/ReferenceKind.cs",
-      "sha256": "796c5d0d27544f74749374eeb69761131392063825434bfb3166c900f3e0b47a"
-    },
-    {
-      "file": "source/head/src/Components/AI/src/Blocks/RichText/RichTextContent.cs",
-      "sha256": "584b50645c92a21a470d8129392380d9e479c33a92c3f2eb9a227367ad93f610"
-    },
-    {
-      "file": "source/head/src/Components/AI/src/Blocks/RichText/RichTextNode.cs",
-      "sha256": "3c6870d4f61c3c94b084fe0a78e384a3da7dce8dab86a999d0975430de4bfeea"
-    },
-    {
-      "file": "source/head/src/Components/AI/src/Blocks/RichText/StrikethroughNode.cs",
-      "sha256": "e4d1a1696ec000209647ff389361f65f4346bb37707d407d26116706c350df46"
-    },
-    {
-      "file": "source/head/src/Components/AI/src/Blocks/RichText/StrongNode.cs",
-      "sha256": "45712e7dbebc5d3631517182d9d8596f6b244d5c17077e2b8dfd6b44905a1fc5"
-    },
-    {
-      "file": "source/head/src/Components/AI/src/Blocks/RichText/TableCellNode.cs",
-      "sha256": "767df77d890d1be243c272f75b76186a4812513c612d50808dbe4df5f7438e05"
-    },
-    {
-      "file": "source/head/src/Components/AI/src/Blocks/RichText/TableColumnAlignment.cs",
-      "sha256": "7cf9b683a0ba9c2ed5355b9af2bc31940935d10f152943608809561b7dad93b0"
-    },
-    {
-      "file": "source/head/src/Components/AI/src/Blocks/RichText/TableNode.cs",
-      "sha256": "ca387647fa183558a24c20ffb0edaa3c575499bf2099c0284ee28c59706198dd"
-    },
-    {
-      "file": "source/head/src/Components/AI/src/Blocks/RichText/TableRowNode.cs",
-      "sha256": "f5c0a16960e90b686d54c0aeba5cc495ae900b4679d26a088d0f59413d4c8f13"
-    },
-    {
-      "file": "source/head/src/Components/AI/src/Blocks/RichText/TextNode.cs",
-      "sha256": "677866abd2c640f862e69129786912b8dafefbbbd3f1b1633bac47778c8cb5a8"
-    },
-    {
-      "file": "source/head/src/Components/AI/src/Blocks/RichText/ThematicBreakNode.cs",
-      "sha256": "12e11fb9fdc2b250b22818dd8f9664f6a247ab95a83125ebd3ac75ccbd336423"
-    },
-    {
-      "file": "source/head/src/Components/AI/src/Blocks/UIActionBlock.cs",
-      "sha256": "b2d7f7f306d359ce1633dd32dd5a8bc7de7120769999230a3828bf5347ca2b3e"
-    },
-    {
-      "file": "source/head/src/Components/AI/src/Components/AgentBoundary.cs",
-      "sha256": "5a0ad7c1b8c0ff594d3ae03c9d25a40dfc672ce477f9e5df396ed407fef582d8"
-    },
-    {
-      "file": "source/head/src/Components/AI/src/Components/BlockContainer.cs",
-      "sha256": "52a97be2d51ce402a2de5e8b859c81cfaed580d929840c2b9dbdc0aaec5b5c71"
-    },
-    {
-      "file": "source/head/src/Components/AI/src/Components/BlockRenderer.cs",
-      "sha256": "0524975d553822256ae5c1b85a356bce3d08f416bfe934625add4b33eac43e51"
-    },
-    {
-      "file": "source/head/src/Components/AI/src/Components/BlockRendererRegistration.cs",
-      "sha256": "52912560b6351526ab6190015f6087ee93ec8b53b0a49e67f44633bb57e011ec"
-    },
-    {
-      "file": "source/head/src/Components/AI/src/Components/ChatPage.cs",
-      "sha256": "2dc2a16d7f5d00c2e19f695151824fb0c2d1e76fa30b859d89f0a53c6338464b"
-    },
-    {
-      "file": "source/head/src/Components/AI/src/Components/ConversationTurnRenderer.cs",
-      "sha256": "eaf2d4a5f947e751c3b6cfacd6c5e532d172417ee10c289bf9f5c400535cac3d"
-    },
-    {
       "file": "source/head/src/Components/AI/src/Components/MessageInput.cs",
       "sha256": "d0ddd1d72a79945463c3ddf92b2861b4e2b05d47fb4bebcbc7feef5685397091"
     },
     {
-      "file": "source/head/src/Components/AI/src/Components/MessageList.cs",
-      "sha256": "b7006ea1165874ab2c1d162da6c95ca966679a5af6088ab230794c05dcd0cd62"
-    },
-    {
-      "file": "source/head/src/Components/AI/src/Components/MessageListContext.cs",
-      "sha256": "98bbe96c5ff3a39af9e9b7acc231ec141dc799dbfb0d7f3e23ee4ada057afbc5"
-    },
-    {
       "file": "source/head/src/Components/AI/src/Engine/AgentContext.cs",
       "sha256": "cbabd18763571b3ad936002d1d54ea35d6f2c537f7df131655bca0334f2c3ccd"
-    },
-    {
-      "file": "source/head/src/Components/AI/src/Engine/AgentState.cs",
-      "sha256": "b885933998219a8100bfcaabf7e23b6eceb5abaa291f37d82597d4484d8bbd3c"
     },
     {
       "file": "source/head/src/Components/AI/src/Engine/ConversationStatus.cs",
@@ -281,10 +85,6 @@
       "sha256": "3a5dbc73c955c5dec1fa04e195c35387477287a0b5e78013b2c91d65477295ea"
     },
     {
-      "file": "source/head/src/Components/AI/src/Engine/IConversationThread.cs",
-      "sha256": "3c4314b600c5c87b52ffeede6ea22ed2fa584899f6438c24510044cea1e02930"
-    },
-    {
       "file": "source/head/src/Components/AI/src/Engine/UIAgent.cs",
       "sha256": "15f260ac18c35efde79d4822641961f0ea002bfe398d366b123ad5887b1ea919"
     },
@@ -293,308 +93,28 @@
       "sha256": "8f20da705a199ebf56ece8f9e073107a9a7ec8404884c69e4c748fd5f1224061"
     },
     {
-      "file": "source/head/src/Components/AI/src/Engine/UIAgentOfT.cs",
-      "sha256": "0855d67e41020e645a6b5852c02a64103f4c1513c23e1a7292439829e0b52040"
-    },
-    {
-      "file": "source/head/src/Components/AI/src/Microsoft.AspNetCore.Components.AI.csproj",
-      "sha256": "5a7d5fd6755234d24e24df43a1c3eac89b0d611bc6055d309c5916287e3123e4"
-    },
-    {
-      "file": "source/head/src/Components/AI/src/Pipeline/ActivityHandler.cs",
-      "sha256": "c72db965d47185f450d5f797051125b9955bd9132ea4a5d84d369ce64a8d4a85"
-    },
-    {
-      "file": "source/head/src/Components/AI/src/Pipeline/BlockMappingContext.cs",
-      "sha256": "91d8ed84a46c3b2e82d11bed099d14a216c95bee3cb7bf8039b6611af3223a82"
-    },
-    {
       "file": "source/head/src/Components/AI/src/Pipeline/BlockMappingPipeline.cs",
       "sha256": "3efb30f16570e2754c38b579e3fdb4dc4d5b9d750b3a9408c7fa1238c11258ee"
-    },
-    {
-      "file": "source/head/src/Components/AI/src/Pipeline/BlockMappingPipelineLog.cs",
-      "sha256": "18a23af9bd27c95959d0917294f6ee96e9c7873d4a2067bc6502ef654ad01644"
-    },
-    {
-      "file": "source/head/src/Components/AI/src/Pipeline/BlockMappingResult.cs",
-      "sha256": "3bb7afa62fae00d6b7116f28c2c44b2d62e870c32cce22bfe202ece60e3fb144"
-    },
-    {
-      "file": "source/head/src/Components/AI/src/Pipeline/ContentBlockHandler.cs",
-      "sha256": "3ca4bf65c9c707e58facec456ae06fb155b514f5e2498872160b99e5a3dd70e9"
-    },
-    {
-      "file": "source/head/src/Components/AI/src/Pipeline/FunctionApprovalHandler.cs",
-      "sha256": "c48f3920b80b23886fe47bb9156e92d39dab8fd7f699c4113fa8b17fe272217f"
-    },
-    {
-      "file": "source/head/src/Components/AI/src/Pipeline/FunctionInvocationHandler.cs",
-      "sha256": "420e7b798cf15e7f987b9106177002815cb41288bf7f9e1c29613cf7bca2d8cd"
-    },
-    {
-      "file": "source/head/src/Components/AI/src/Pipeline/HandlerEntry.cs",
-      "sha256": "c3e250713a61f37bd3f37dc42a74bf3c5e0689a0b0e31b16fcf8d09f04839c00"
-    },
-    {
-      "file": "source/head/src/Components/AI/src/Pipeline/HandleResult.cs",
-      "sha256": "e052511e82662de87979323e6f5699a94c56d4e1d719dfd38dafe852fb733cd3"
-    },
-    {
-      "file": "source/head/src/Components/AI/src/Pipeline/IActiveEntry.cs",
-      "sha256": "2faffc0f2c4e47dec85d89eb56a086c39f52c8d4a87957e985e3d79770aac2f8"
-    },
-    {
-      "file": "source/head/src/Components/AI/src/Pipeline/IHandlerEntry.cs",
-      "sha256": "4af13fd202275f8189ce060d88e8f1b6266115a24a60474d7376969432319dd4"
-    },
-    {
-      "file": "source/head/src/Components/AI/src/Pipeline/RichTextContentHandler.cs",
-      "sha256": "c7bd4d6b7f4f5f6698ecaa71aebcecce67292fe0f1a8ccbbee64a90883efa9c3"
-    },
-    {
-      "file": "source/head/src/Components/AI/src/Pipeline/StateMapperContext.cs",
-      "sha256": "8500c1f1fcd34fb8a55bc986e56ee42161bdda751ff2b97fba1b1ed29122836a"
-    },
-    {
-      "file": "source/head/src/Components/AI/src/Pipeline/TextBlockHandler.cs",
-      "sha256": "28c8e506a5a6e3f51d1c4516f66a2b8492538340418b4fd2b03b3f0219b965f5"
-    },
-    {
-      "file": "source/head/src/Components/AI/src/Pipeline/UIActionHandler.cs",
-      "sha256": "f33e60159c8d801d9ae2c289822315d6a52a78cf33e9c384d35b48de0d7a56df"
-    },
-    {
-      "file": "source/head/src/Components/AI/src/Pipeline/UIAgentOptions.cs",
-      "sha256": "f4181e9108cec5ee9bc1d13cc8c83a58f5519f6e91567fd0a170f877b1021327"
-    },
-    {
-      "file": "source/head/src/Components/AI/src/PublicAPI.Shipped.txt",
-      "sha256": "3c3b422dddb1efeb0fc5b228608fd8682452b2a9507d4031894bce3c4dedadbd"
-    },
-    {
-      "file": "source/head/src/Components/AI/src/PublicAPI.Unshipped.txt",
-      "sha256": "b36a49c1d91321adb5412e3f3c9d932c8acef4636fb7e040b9c0410971505719"
-    },
-    {
-      "file": "source/head/src/Components/AI/src/wwwroot/ai-chat.css",
-      "sha256": "29d0497cdca03d412edd3ece98cb923edf2834e6054c4fb0a03d30a31251832c"
     },
     {
       "file": "source/head/src/Engine/Conversation.mjs",
       "sha256": "13e383993dd60d8548089196ada34afcf791c7995ffda48104bbe23bf15cff11"
     },
     {
-      "file": "source/mergeBase/src/Components/AI/src/Attributes/ToolBlockAttribute.cs",
-      "sha256": "f1cb40278e1883d3f044a5292b67580638947b6886c23ab5609d3de9ae793318"
-    },
-    {
-      "file": "source/mergeBase/src/Components/AI/src/Attributes/ToolParameterAttribute.cs",
-      "sha256": "36126cf9ea9e6044e205423706d904ebda948dd45ad261fb2acd92fb47c836b0"
-    },
-    {
-      "file": "source/mergeBase/src/Components/AI/src/Attributes/ToolResultAttribute.cs",
-      "sha256": "30dd2c43dd178cb80a0bf307c03c579cdad7da3870157bf27f489994793158f2"
-    },
-    {
-      "file": "source/mergeBase/src/Components/AI/src/Blocks/ActivityContentBlock.cs",
-      "sha256": "045b3483d94b348ecae3f6874a55ffc07c5d716842ffece8ebb80e357875fb43"
-    },
-    {
-      "file": "source/mergeBase/src/Components/AI/src/Blocks/ApprovalStatus.cs",
-      "sha256": "67ffd303a2a959438dcee7520c48825ab4c267c3f7ad8237d1df71560eebaadc"
-    },
-    {
-      "file": "source/mergeBase/src/Components/AI/src/Blocks/BlockLifecycleState.cs",
-      "sha256": "653b8ea2c192d31e74e0d35bd8c32b66b8ab5c8e7b2e602047bf2987cbea13cb"
-    },
-    {
       "file": "source/mergeBase/src/Components/AI/src/Blocks/ContentBlock.cs",
       "sha256": "7cab62ac70d7faa70dacbdb4bd36723b4061612ab921b9f7d7d019d3ba905261"
-    },
-    {
-      "file": "source/mergeBase/src/Components/AI/src/Blocks/ContentBlockChangedSubscription.cs",
-      "sha256": "db8418766c5f51568ff64f531a384c6447b882886fb566f52cc46965db072fae"
-    },
-    {
-      "file": "source/mergeBase/src/Components/AI/src/Blocks/FunctionApprovalBlock.cs",
-      "sha256": "3861d6f6db30ad1a3da01d2291abe20d874e1873bbf118232ae17cfab1d43698"
-    },
-    {
-      "file": "source/mergeBase/src/Components/AI/src/Blocks/FunctionInvocationContentBlock.cs",
-      "sha256": "155bccb3735677881e333392d74867a35ff7a42241c8713864813b15f81b0504"
     },
     {
       "file": "source/mergeBase/src/Components/AI/src/Blocks/IInteractiveBlock.cs",
       "sha256": "0f6c4f9e859a917755b75bcf335273c37461525fc72d7e5564ba2594c99ba90f"
     },
     {
-      "file": "source/mergeBase/src/Components/AI/src/Blocks/RichContentBlock.cs",
-      "sha256": "54084f5f145084e86452408d39e7c75a5d948f5986b3f7e2c127ce9055bc75b9"
-    },
-    {
-      "file": "source/mergeBase/src/Components/AI/src/Blocks/RichText/BlockQuoteNode.cs",
-      "sha256": "71d307651982e43a7724696cc4213f590818d7453d7670143a6a86c301ac631f"
-    },
-    {
-      "file": "source/mergeBase/src/Components/AI/src/Blocks/RichText/CodeBlockNode.cs",
-      "sha256": "1f56939978bf0c37cd897eefcdd76d42cde7456257e595508a57bd6be1f69c3a"
-    },
-    {
-      "file": "source/mergeBase/src/Components/AI/src/Blocks/RichText/DefinitionNode.cs",
-      "sha256": "6d5bbd145d541ad60a375e35ec003d27866fc498c7011b7199f4bc40f31fa75d"
-    },
-    {
-      "file": "source/mergeBase/src/Components/AI/src/Blocks/RichText/EmphasisNode.cs",
-      "sha256": "46a28b95716f15cf2bee5266d972751debaa0417e78b90fde9fc5aab76b652b7"
-    },
-    {
-      "file": "source/mergeBase/src/Components/AI/src/Blocks/RichText/FootnoteDefinitionNode.cs",
-      "sha256": "bf88a0391d31df6a4719a5b940c22a44ce379358fc4ac63a5a45915168b50cba"
-    },
-    {
-      "file": "source/mergeBase/src/Components/AI/src/Blocks/RichText/FootnoteNode.cs",
-      "sha256": "921ba26b82510d648df61f66b93f58a7bb8beefa38c0bc6cc29608662920e6f0"
-    },
-    {
-      "file": "source/mergeBase/src/Components/AI/src/Blocks/RichText/FootnoteReferenceNode.cs",
-      "sha256": "7924dd754285a4c89af87d20927e225f48b1174ffb1a578ddde39888f5b091e5"
-    },
-    {
-      "file": "source/mergeBase/src/Components/AI/src/Blocks/RichText/HeadingNode.cs",
-      "sha256": "3c5c019ac54d8f752d544c924b3978446d73b67bbd3d52fcff50e454ac4d27dc"
-    },
-    {
-      "file": "source/mergeBase/src/Components/AI/src/Blocks/RichText/HtmlNode.cs",
-      "sha256": "6829bcc853a0ba7d6be31fc9d16ff04c99a1db68793d0cba44fa5f33ba8bbeba"
-    },
-    {
-      "file": "source/mergeBase/src/Components/AI/src/Blocks/RichText/ImageNode.cs",
-      "sha256": "0825486c8473f53d0f20db7b8f52a9c487949a6812cc6945d8bc66a74c325384"
-    },
-    {
-      "file": "source/mergeBase/src/Components/AI/src/Blocks/RichText/ImageReferenceNode.cs",
-      "sha256": "24fe2f8c410480313b80082ebae104f7c07430129ea18929e7367e98ad9ccf03"
-    },
-    {
-      "file": "source/mergeBase/src/Components/AI/src/Blocks/RichText/InlineCodeNode.cs",
-      "sha256": "f8f00723a4759faec86da90a1af4e8b8bcfb1d58c4369e98bb2f48628d9b7176"
-    },
-    {
-      "file": "source/mergeBase/src/Components/AI/src/Blocks/RichText/LineBreakNode.cs",
-      "sha256": "98debdacd45632cefd2771f282a6a4fffbc13ef3e9a8f3835c3d15e0720e90d4"
-    },
-    {
-      "file": "source/mergeBase/src/Components/AI/src/Blocks/RichText/LinkNode.cs",
-      "sha256": "f87fe0d3f3de2c7e4b226dc4220c5f87300bfbcb98445c68d3ac7073997169bb"
-    },
-    {
-      "file": "source/mergeBase/src/Components/AI/src/Blocks/RichText/LinkReferenceNode.cs",
-      "sha256": "320ea107547bbb7c03897515ce525718e4facb0047f21da0d3283e7f7f298f6d"
-    },
-    {
-      "file": "source/mergeBase/src/Components/AI/src/Blocks/RichText/ListItemNode.cs",
-      "sha256": "7f833996a9d0b386722e0d4e0829aa9e7ea88a521c767103d09e7a60130ba18a"
-    },
-    {
-      "file": "source/mergeBase/src/Components/AI/src/Blocks/RichText/ListNode.cs",
-      "sha256": "8f34e045f65106f690b92cd44b243ebab3653474a6cf835736c18715035cd0fb"
-    },
-    {
-      "file": "source/mergeBase/src/Components/AI/src/Blocks/RichText/ParagraphNode.cs",
-      "sha256": "03f3650301497e04f74360a5c7929d5e8a3f0d44da4fc6f2df47b2de8c8e2e51"
-    },
-    {
-      "file": "source/mergeBase/src/Components/AI/src/Blocks/RichText/ReferenceKind.cs",
-      "sha256": "796c5d0d27544f74749374eeb69761131392063825434bfb3166c900f3e0b47a"
-    },
-    {
-      "file": "source/mergeBase/src/Components/AI/src/Blocks/RichText/RichTextContent.cs",
-      "sha256": "584b50645c92a21a470d8129392380d9e479c33a92c3f2eb9a227367ad93f610"
-    },
-    {
-      "file": "source/mergeBase/src/Components/AI/src/Blocks/RichText/RichTextNode.cs",
-      "sha256": "3c6870d4f61c3c94b084fe0a78e384a3da7dce8dab86a999d0975430de4bfeea"
-    },
-    {
-      "file": "source/mergeBase/src/Components/AI/src/Blocks/RichText/StrikethroughNode.cs",
-      "sha256": "e4d1a1696ec000209647ff389361f65f4346bb37707d407d26116706c350df46"
-    },
-    {
-      "file": "source/mergeBase/src/Components/AI/src/Blocks/RichText/StrongNode.cs",
-      "sha256": "45712e7dbebc5d3631517182d9d8596f6b244d5c17077e2b8dfd6b44905a1fc5"
-    },
-    {
-      "file": "source/mergeBase/src/Components/AI/src/Blocks/RichText/TableCellNode.cs",
-      "sha256": "767df77d890d1be243c272f75b76186a4812513c612d50808dbe4df5f7438e05"
-    },
-    {
-      "file": "source/mergeBase/src/Components/AI/src/Blocks/RichText/TableColumnAlignment.cs",
-      "sha256": "7cf9b683a0ba9c2ed5355b9af2bc31940935d10f152943608809561b7dad93b0"
-    },
-    {
-      "file": "source/mergeBase/src/Components/AI/src/Blocks/RichText/TableNode.cs",
-      "sha256": "ca387647fa183558a24c20ffb0edaa3c575499bf2099c0284ee28c59706198dd"
-    },
-    {
-      "file": "source/mergeBase/src/Components/AI/src/Blocks/RichText/TableRowNode.cs",
-      "sha256": "f5c0a16960e90b686d54c0aeba5cc495ae900b4679d26a088d0f59413d4c8f13"
-    },
-    {
-      "file": "source/mergeBase/src/Components/AI/src/Blocks/RichText/TextNode.cs",
-      "sha256": "677866abd2c640f862e69129786912b8dafefbbbd3f1b1633bac47778c8cb5a8"
-    },
-    {
-      "file": "source/mergeBase/src/Components/AI/src/Blocks/RichText/ThematicBreakNode.cs",
-      "sha256": "12e11fb9fdc2b250b22818dd8f9664f6a247ab95a83125ebd3ac75ccbd336423"
-    },
-    {
-      "file": "source/mergeBase/src/Components/AI/src/Blocks/UIActionBlock.cs",
-      "sha256": "b2d7f7f306d359ce1633dd32dd5a8bc7de7120769999230a3828bf5347ca2b3e"
-    },
-    {
-      "file": "source/mergeBase/src/Components/AI/src/Components/AgentBoundary.cs",
-      "sha256": "5a0ad7c1b8c0ff594d3ae03c9d25a40dfc672ce477f9e5df396ed407fef582d8"
-    },
-    {
-      "file": "source/mergeBase/src/Components/AI/src/Components/BlockContainer.cs",
-      "sha256": "52a97be2d51ce402a2de5e8b859c81cfaed580d929840c2b9dbdc0aaec5b5c71"
-    },
-    {
-      "file": "source/mergeBase/src/Components/AI/src/Components/BlockRenderer.cs",
-      "sha256": "0524975d553822256ae5c1b85a356bce3d08f416bfe934625add4b33eac43e51"
-    },
-    {
-      "file": "source/mergeBase/src/Components/AI/src/Components/BlockRendererRegistration.cs",
-      "sha256": "52912560b6351526ab6190015f6087ee93ec8b53b0a49e67f44633bb57e011ec"
-    },
-    {
-      "file": "source/mergeBase/src/Components/AI/src/Components/ChatPage.cs",
-      "sha256": "2dc2a16d7f5d00c2e19f695151824fb0c2d1e76fa30b859d89f0a53c6338464b"
-    },
-    {
-      "file": "source/mergeBase/src/Components/AI/src/Components/ConversationTurnRenderer.cs",
-      "sha256": "eaf2d4a5f947e751c3b6cfacd6c5e532d172417ee10c289bf9f5c400535cac3d"
-    },
-    {
       "file": "source/mergeBase/src/Components/AI/src/Components/MessageInput.cs",
       "sha256": "d0ddd1d72a79945463c3ddf92b2861b4e2b05d47fb4bebcbc7feef5685397091"
     },
     {
-      "file": "source/mergeBase/src/Components/AI/src/Components/MessageList.cs",
-      "sha256": "b7006ea1165874ab2c1d162da6c95ca966679a5af6088ab230794c05dcd0cd62"
-    },
-    {
-      "file": "source/mergeBase/src/Components/AI/src/Components/MessageListContext.cs",
-      "sha256": "98bbe96c5ff3a39af9e9b7acc231ec141dc799dbfb0d7f3e23ee4ada057afbc5"
-    },
-    {
       "file": "source/mergeBase/src/Components/AI/src/Engine/AgentContext.cs",
       "sha256": "61ca1e7434f6046328435ec8df5bd069c3198af8bb6b2db9912ff4c66cf7b084"
-    },
-    {
-      "file": "source/mergeBase/src/Components/AI/src/Engine/AgentState.cs",
-      "sha256": "b885933998219a8100bfcaabf7e23b6eceb5abaa291f37d82597d4484d8bbd3c"
     },
     {
       "file": "source/mergeBase/src/Components/AI/src/Engine/ConversationStatus.cs",
@@ -605,10 +125,6 @@
       "sha256": "3a5dbc73c955c5dec1fa04e195c35387477287a0b5e78013b2c91d65477295ea"
     },
     {
-      "file": "source/mergeBase/src/Components/AI/src/Engine/IConversationThread.cs",
-      "sha256": "3c4314b600c5c87b52ffeede6ea22ed2fa584899f6438c24510044cea1e02930"
-    },
-    {
       "file": "source/mergeBase/src/Components/AI/src/Engine/UIAgent.cs",
       "sha256": "63783e5da3d7b6fbf0c339d2e3a2298498b2b455a587e79f5f25431bf9812943"
     },
@@ -617,92 +133,8 @@
       "sha256": "f7eb199a984d4b163a972c13e709de02e203789b8e0e834793b94487344e2df7"
     },
     {
-      "file": "source/mergeBase/src/Components/AI/src/Engine/UIAgentOfT.cs",
-      "sha256": "0855d67e41020e645a6b5852c02a64103f4c1513c23e1a7292439829e0b52040"
-    },
-    {
-      "file": "source/mergeBase/src/Components/AI/src/Microsoft.AspNetCore.Components.AI.csproj",
-      "sha256": "5a7d5fd6755234d24e24df43a1c3eac89b0d611bc6055d309c5916287e3123e4"
-    },
-    {
-      "file": "source/mergeBase/src/Components/AI/src/Pipeline/ActivityHandler.cs",
-      "sha256": "c72db965d47185f450d5f797051125b9955bd9132ea4a5d84d369ce64a8d4a85"
-    },
-    {
-      "file": "source/mergeBase/src/Components/AI/src/Pipeline/BlockMappingContext.cs",
-      "sha256": "91d8ed84a46c3b2e82d11bed099d14a216c95bee3cb7bf8039b6611af3223a82"
-    },
-    {
       "file": "source/mergeBase/src/Components/AI/src/Pipeline/BlockMappingPipeline.cs",
       "sha256": "3efb30f16570e2754c38b579e3fdb4dc4d5b9d750b3a9408c7fa1238c11258ee"
-    },
-    {
-      "file": "source/mergeBase/src/Components/AI/src/Pipeline/BlockMappingPipelineLog.cs",
-      "sha256": "18a23af9bd27c95959d0917294f6ee96e9c7873d4a2067bc6502ef654ad01644"
-    },
-    {
-      "file": "source/mergeBase/src/Components/AI/src/Pipeline/BlockMappingResult.cs",
-      "sha256": "3bb7afa62fae00d6b7116f28c2c44b2d62e870c32cce22bfe202ece60e3fb144"
-    },
-    {
-      "file": "source/mergeBase/src/Components/AI/src/Pipeline/ContentBlockHandler.cs",
-      "sha256": "3ca4bf65c9c707e58facec456ae06fb155b514f5e2498872160b99e5a3dd70e9"
-    },
-    {
-      "file": "source/mergeBase/src/Components/AI/src/Pipeline/FunctionApprovalHandler.cs",
-      "sha256": "c48f3920b80b23886fe47bb9156e92d39dab8fd7f699c4113fa8b17fe272217f"
-    },
-    {
-      "file": "source/mergeBase/src/Components/AI/src/Pipeline/FunctionInvocationHandler.cs",
-      "sha256": "420e7b798cf15e7f987b9106177002815cb41288bf7f9e1c29613cf7bca2d8cd"
-    },
-    {
-      "file": "source/mergeBase/src/Components/AI/src/Pipeline/HandlerEntry.cs",
-      "sha256": "c3e250713a61f37bd3f37dc42a74bf3c5e0689a0b0e31b16fcf8d09f04839c00"
-    },
-    {
-      "file": "source/mergeBase/src/Components/AI/src/Pipeline/HandleResult.cs",
-      "sha256": "e052511e82662de87979323e6f5699a94c56d4e1d719dfd38dafe852fb733cd3"
-    },
-    {
-      "file": "source/mergeBase/src/Components/AI/src/Pipeline/IActiveEntry.cs",
-      "sha256": "2faffc0f2c4e47dec85d89eb56a086c39f52c8d4a87957e985e3d79770aac2f8"
-    },
-    {
-      "file": "source/mergeBase/src/Components/AI/src/Pipeline/IHandlerEntry.cs",
-      "sha256": "4af13fd202275f8189ce060d88e8f1b6266115a24a60474d7376969432319dd4"
-    },
-    {
-      "file": "source/mergeBase/src/Components/AI/src/Pipeline/RichTextContentHandler.cs",
-      "sha256": "c7bd4d6b7f4f5f6698ecaa71aebcecce67292fe0f1a8ccbbee64a90883efa9c3"
-    },
-    {
-      "file": "source/mergeBase/src/Components/AI/src/Pipeline/StateMapperContext.cs",
-      "sha256": "8500c1f1fcd34fb8a55bc986e56ee42161bdda751ff2b97fba1b1ed29122836a"
-    },
-    {
-      "file": "source/mergeBase/src/Components/AI/src/Pipeline/TextBlockHandler.cs",
-      "sha256": "28c8e506a5a6e3f51d1c4516f66a2b8492538340418b4fd2b03b3f0219b965f5"
-    },
-    {
-      "file": "source/mergeBase/src/Components/AI/src/Pipeline/UIActionHandler.cs",
-      "sha256": "f33e60159c8d801d9ae2c289822315d6a52a78cf33e9c384d35b48de0d7a56df"
-    },
-    {
-      "file": "source/mergeBase/src/Components/AI/src/Pipeline/UIAgentOptions.cs",
-      "sha256": "f4181e9108cec5ee9bc1d13cc8c83a58f5519f6e91567fd0a170f877b1021327"
-    },
-    {
-      "file": "source/mergeBase/src/Components/AI/src/PublicAPI.Shipped.txt",
-      "sha256": "3c3b422dddb1efeb0fc5b228608fd8682452b2a9507d4031894bce3c4dedadbd"
-    },
-    {
-      "file": "source/mergeBase/src/Components/AI/src/PublicAPI.Unshipped.txt",
-      "sha256": "b36a49c1d91321adb5412e3f3c9d932c8acef4636fb7e040b9c0410971505719"
-    },
-    {
-      "file": "source/mergeBase/src/Components/AI/src/wwwroot/ai-chat.css",
-      "sha256": "29d0497cdca03d412edd3ece98cb923edf2834e6054c4fb0a03d30a31251832c"
     },
     {
       "file": "source/mergeBase/src/Engine/Conversation.mjs",
