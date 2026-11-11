@@ -606,6 +606,14 @@ public class StaticAssetsIntegrationTests
         Assert.NotEqual(initialETag, response.Headers.ETag);
         Assert.Equal("Hello, World! Modified", await response.Content.ReadAsStringAsync());
 
+        var wildcardRequest = new HttpRequestMessage(HttpMethod.Get, "/sample.txt");
+        wildcardRequest.Headers.IfNoneMatch.ParseAdd("*");
+        var wildcardResponse = await client.SendAsync(wildcardRequest);
+
+        Assert.Equal(HttpStatusCode.NotModified, wildcardResponse.StatusCode);
+        Assert.Equal(response.Headers.ETag, wildcardResponse.Headers.ETag);
+        Assert.Equal(response.Content.Headers.LastModified, wildcardResponse.Content.Headers.LastModified);
+
         Directory.Delete(webRoot, true);
     }
 
@@ -672,6 +680,15 @@ public class StaticAssetsIntegrationTests
         using var reader = new StreamReader(gzipStream);
         var content = reader.ReadToEnd();
         Assert.Equal("Hello, World! Modified", content);
+
+        var wildcardRequest = new HttpRequestMessage(HttpMethod.Get, "/sample.txt");
+        wildcardRequest.Headers.AcceptEncoding.Add(new StringWithQualityHeaderValue("gzip"));
+        wildcardRequest.Headers.IfNoneMatch.ParseAdd("*");
+        var wildcardResponse = await client.SendAsync(wildcardRequest);
+
+        Assert.Equal(HttpStatusCode.NotModified, wildcardResponse.StatusCode);
+        Assert.Equal(response.Headers.ETag, wildcardResponse.Headers.ETag);
+        Assert.Equal(response.Content.Headers.LastModified, wildcardResponse.Content.Headers.LastModified);
 
         Directory.Delete(webRoot, true);
     }
@@ -741,6 +758,8 @@ public class StaticAssetsIntegrationTests
             [
                 new TestResource("sample.txt", "Hello, World!", false),
             ]);
+        var filePath = Path.Combine(webRoot, "sample.txt");
+        File.SetLastWriteTimeUtc(filePath, DateTime.UtcNow.AddSeconds(-10));
 
         var builder = WebApplication.CreateEmptyBuilder(new WebApplicationOptions
         {
@@ -770,7 +789,8 @@ public class StaticAssetsIntegrationTests
         Assert.True(initialResponse.Content.Headers.LastModified.HasValue);
         var initialLastModified = initialResponse.Content.Headers.LastModified.Value;
 
-        File.WriteAllText(Path.Combine(webRoot, "sample.txt"), "Hello, World! Modified");
+        File.WriteAllText(filePath, "Hello, World! Modified");
+        File.SetLastWriteTimeUtc(filePath, DateTime.UtcNow.AddSeconds(-5));
 
         var request = new HttpRequestMessage(HttpMethod.Get, "/sample.txt");
         request.Headers.IfModifiedSince = initialLastModified;
@@ -778,6 +798,16 @@ public class StaticAssetsIntegrationTests
 
         Assert.Equal(HttpStatusCode.OK, response.StatusCode);
         Assert.Equal("Hello, World! Modified", await response.Content.ReadAsStringAsync());
+
+        var updatedLastModified = response.Content.Headers.LastModified;
+        Assert.True(updatedLastModified.HasValue);
+        var currentRequest = new HttpRequestMessage(HttpMethod.Get, "/sample.txt");
+        currentRequest.Headers.IfModifiedSince = updatedLastModified;
+        var currentResponse = await client.SendAsync(currentRequest);
+
+        Assert.Equal(HttpStatusCode.NotModified, currentResponse.StatusCode);
+        Assert.Equal(response.Headers.ETag, currentResponse.Headers.ETag);
+        Assert.Equal(updatedLastModified, currentResponse.Content.Headers.LastModified);
 
         Directory.Delete(webRoot, true);
     }
