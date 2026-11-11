@@ -222,7 +222,10 @@ public class ContentDispositionHeaderValue
     /// <inheritdoc />
     public override string ToString()
     {
-        return _dispositionType + NameValueHeaderValue.ToString(_parameters, ';', true);
+        var sb = StringBuilderCache.Acquire();
+        sb.Append(_dispositionType.AsSpan());
+        NameValueHeaderValue.ToString(_parameters, ';', true, sb);
+        return StringBuilderCache.GetStringAndRelease(sb);
     }
 
     /// <inheritdoc />
