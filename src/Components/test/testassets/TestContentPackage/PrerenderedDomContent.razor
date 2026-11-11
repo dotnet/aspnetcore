@@ -57,7 +57,7 @@
     {
         @((MarkupString)"<script>window.prerenderedDomScriptRuns = (window.prerenderedDomScriptRuns || 0) + 1;</script>")
     }
-    <span data-state="same">@(Mismatch == "text" && RendererInfo.IsInteractive ? "Different" : "Same")</span>
+    <span data-state="same">@(Mismatch && RendererInfo.IsInteractive ? "Different" : "Same")</span>
     @((MarkupString)"<b>Same markup</b>")
     <span>First</span><span>Second</span>
     <span id="@Id("ready")">@ready</span>
@@ -65,7 +65,7 @@
 
 @code {
     [Parameter] public string IdSuffix { get; set; }
-    [Parameter] public string Mismatch { get; set; }
+    [Parameter] public bool Mismatch { get; set; }
     [Parameter] public bool IncludeForm { get; set; }
 
     private int count;
