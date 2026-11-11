@@ -2,7 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 import { afterEach, describe, expect, jest, test } from '@jest/globals';
-import { HubConnection } from '@microsoft/signalr';
+import { HubConnection, HubConnectionState } from '@microsoft/signalr';
 import { sendJSDataStream } from '../../../src/Platform/Circuits/CircuitStreamingInterop';
 
 describe('CircuitStreamingInterop', () => {
@@ -95,12 +95,28 @@ describe('CircuitStreamingInterop', () => {
     const invoke = jest.fn<HubConnection['invoke']>().mockRejectedValue(new Error('Stream failed.'));
     const send = jest.fn<HubConnection['send']>().mockRejectedValue(new Error("Cannot send data if the connection is not in the 'Connected' State."));
     const onComplete = jest.fn();
-    const connection = { invoke, send } as unknown as HubConnection;
+    const connection = { invoke, send, state: HubConnectionState.Disconnected } as unknown as HubConnection;
 
     sendJSDataStream(connection, new Uint8Array([1]), 7, 1, 1000, onComplete);
     await jest.runAllTimersAsync();
 
     expect(send).toHaveBeenCalledWith('ReceiveJSDataChunk', 7, -1, null, 'Error: Stream failed.');
+    expect(onComplete).toHaveBeenCalledTimes(1);
+  });
+
+  test('surfaces an error reporting failure while the connection is open', async () => {
+    jest.useFakeTimers();
+    const invoke = jest.fn<HubConnection['invoke']>().mockRejectedValue(new Error('Stream failed.'));
+    const sendError = new Error('Send failed.');
+    const send = jest.fn<HubConnection['send']>().mockRejectedValue(sendError);
+    const onComplete = jest.fn();
+    const connection = { invoke, send, state: HubConnectionState.Connected } as unknown as HubConnection;
+    const setTimeoutSpy = jest.spyOn(globalThis, 'setTimeout');
+
+    sendJSDataStream(connection, new Uint8Array([1]), 7, 1, 1000, onComplete);
+    const backgroundWork = setTimeoutSpy.mock.calls[0][0] as () => Promise<void>;
+
+    await expect(backgroundWork()).rejects.toBe(sendError);
     expect(onComplete).toHaveBeenCalledTimes(1);
   });
 });
