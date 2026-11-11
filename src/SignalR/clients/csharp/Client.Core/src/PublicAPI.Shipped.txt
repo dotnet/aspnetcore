@@ -1,5 +1,20 @@
 #nullable enable
+Microsoft.AspNetCore.SignalR.Client.AuthenticationRefreshedContext
+Microsoft.AspNetCore.SignalR.Client.AuthenticationRefreshedContext.HubConnection.get -> Microsoft.AspNetCore.SignalR.Client.HubConnection!
+Microsoft.AspNetCore.SignalR.Client.AuthenticationRefreshedContext.NewTokenLifetime.get -> System.TimeSpan?
+Microsoft.AspNetCore.SignalR.Client.AuthenticationRefreshedContext.RefreshedAt.get -> System.DateTimeOffset
+Microsoft.AspNetCore.SignalR.Client.AuthenticationRefreshFailedContext
+Microsoft.AspNetCore.SignalR.Client.AuthenticationRefreshFailedContext.Exception.get -> System.Exception!
+Microsoft.AspNetCore.SignalR.Client.AuthenticationRefreshFailedContext.HubConnection.get -> Microsoft.AspNetCore.SignalR.Client.HubConnection!
+Microsoft.AspNetCore.SignalR.Client.AuthenticationRefreshOptions
+Microsoft.AspNetCore.SignalR.Client.AuthenticationRefreshOptions.AuthenticationRefreshOptions() -> void
+Microsoft.AspNetCore.SignalR.Client.AuthenticationRefreshOptions.EnableAutoRefresh.get -> bool
+Microsoft.AspNetCore.SignalR.Client.AuthenticationRefreshOptions.EnableAutoRefresh.set -> void
+Microsoft.AspNetCore.SignalR.Client.AuthenticationRefreshOptions.RefreshBeforeExpiration.get -> System.TimeSpan
+Microsoft.AspNetCore.SignalR.Client.AuthenticationRefreshOptions.RefreshBeforeExpiration.set -> void
 Microsoft.AspNetCore.SignalR.Client.HubConnection
+Microsoft.AspNetCore.SignalR.Client.HubConnection.AuthenticationRefreshed -> System.Func<Microsoft.AspNetCore.SignalR.Client.AuthenticationRefreshedContext!, System.Threading.Tasks.Task!>?
+Microsoft.AspNetCore.SignalR.Client.HubConnection.AuthenticationRefreshFailed -> System.Func<Microsoft.AspNetCore.SignalR.Client.AuthenticationRefreshFailedContext!, System.Threading.Tasks.Task!>?
 Microsoft.AspNetCore.SignalR.Client.HubConnection.Closed -> System.Func<System.Exception?, System.Threading.Tasks.Task!>?
 Microsoft.AspNetCore.SignalR.Client.HubConnection.ConnectionId.get -> string?
 Microsoft.AspNetCore.SignalR.Client.HubConnection.HandshakeTimeout.get -> System.TimeSpan
@@ -10,6 +25,7 @@ Microsoft.AspNetCore.SignalR.Client.HubConnection.KeepAliveInterval.get -> Syste
 Microsoft.AspNetCore.SignalR.Client.HubConnection.KeepAliveInterval.set -> void
 Microsoft.AspNetCore.SignalR.Client.HubConnection.Reconnected -> System.Func<string?, System.Threading.Tasks.Task!>?
 Microsoft.AspNetCore.SignalR.Client.HubConnection.Reconnecting -> System.Func<System.Exception?, System.Threading.Tasks.Task!>?
+Microsoft.AspNetCore.SignalR.Client.HubConnection.RefreshAuthenticationAsync(System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.Task<System.TimeSpan?>!
 Microsoft.AspNetCore.SignalR.Client.HubConnection.ServerTimeout.get -> System.TimeSpan
 Microsoft.AspNetCore.SignalR.Client.HubConnection.ServerTimeout.set -> void
 Microsoft.AspNetCore.SignalR.Client.HubConnection.State.get -> Microsoft.AspNetCore.SignalR.Client.HubConnectionState
@@ -49,6 +65,7 @@ override Microsoft.AspNetCore.SignalR.Client.HubConnectionBuilder.Equals(object?
 override Microsoft.AspNetCore.SignalR.Client.HubConnectionBuilder.GetHashCode() -> int
 override Microsoft.AspNetCore.SignalR.Client.HubConnectionBuilder.ToString() -> string?
 static Microsoft.AspNetCore.SignalR.Client.HubConnectionBuilderExtensions.ConfigureLogging(this Microsoft.AspNetCore.SignalR.Client.IHubConnectionBuilder! hubConnectionBuilder, System.Action<Microsoft.Extensions.Logging.ILoggingBuilder!>! configureLogging) -> Microsoft.AspNetCore.SignalR.Client.IHubConnectionBuilder!
+static Microsoft.AspNetCore.SignalR.Client.HubConnectionBuilderExtensions.WithAuthenticationRefresh(this Microsoft.AspNetCore.SignalR.Client.IHubConnectionBuilder! hubConnectionBuilder, System.Action<Microsoft.AspNetCore.SignalR.Client.AuthenticationRefreshOptions!>! configure) -> Microsoft.AspNetCore.SignalR.Client.IHubConnectionBuilder!
 static Microsoft.AspNetCore.SignalR.Client.HubConnectionBuilderExtensions.WithAutomaticReconnect(this Microsoft.AspNetCore.SignalR.Client.IHubConnectionBuilder! hubConnectionBuilder, Microsoft.AspNetCore.SignalR.Client.IRetryPolicy! retryPolicy) -> Microsoft.AspNetCore.SignalR.Client.IHubConnectionBuilder!
 static Microsoft.AspNetCore.SignalR.Client.HubConnectionBuilderExtensions.WithAutomaticReconnect(this Microsoft.AspNetCore.SignalR.Client.IHubConnectionBuilder! hubConnectionBuilder, System.TimeSpan[]! reconnectDelays) -> Microsoft.AspNetCore.SignalR.Client.IHubConnectionBuilder!
 static Microsoft.AspNetCore.SignalR.Client.HubConnectionBuilderExtensions.WithAutomaticReconnect(this Microsoft.AspNetCore.SignalR.Client.IHubConnectionBuilder! hubConnectionBuilder) -> Microsoft.AspNetCore.SignalR.Client.IHubConnectionBuilder!

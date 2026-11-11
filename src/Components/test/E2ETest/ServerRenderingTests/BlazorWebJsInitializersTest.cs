@@ -38,6 +38,12 @@ public class BlazorWebJsInitializersTest : ServerTestBase<BasicTestAppServerSite
             Browser.Exists(By.Id(callback));
         }
 
+        if (webassembly)
+        {
+            Browser.True(() => (bool)((IJavaScriptExecutor)Browser).ExecuteScript(
+                "return performance.getEntriesByType('resource').some(entry => entry.name.endsWith('/WasmMinimal/_framework/dotnet.js'))"));
+        }
+
         Browser.Equal(expectedInvokedCallbacks.Length, () => Browser.FindElements(By.CssSelector("#initializers-content > p")).Count);
 
         if (server)
