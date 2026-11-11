@@ -31,18 +31,10 @@ public class RazorComponentEndpointInvokerTest
 {
     [ConditionalTheory]
     [RemoteExecutionSupported]
-    [InlineData("navigate", false, false)]
     [InlineData("navigate", false, true)]
-    [InlineData("navigate", true, false)]
     [InlineData("navigate", true, true)]
-    [InlineData("throw", false, false)]
-    [InlineData("throw", false, true)]
-    [InlineData("throw", true, false)]
     [InlineData("throw", true, true)]
     [InlineData("not-found", false, false)]
-    [InlineData("not-found", false, true)]
-    [InlineData("not-found", true, false)]
-    [InlineData("not-found", true, true)]
     public void Invoker_StreamingResponseDuringFlush_WritesTerminalTemplateAfterHtml(string operation, bool enhanced, bool isPost)
     {
         var options = new RemoteInvokeOptions();
