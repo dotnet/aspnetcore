@@ -44,6 +44,8 @@ export class CircuitManager implements DotNet.DotNetCallDispatcher {
 
   private _startPromise?: Promise<boolean>;
 
+  private _startCircuitUri?: string;
+
   private _renderingFailed = false;
 
   private _disposePromise?: Promise<void>;
@@ -112,10 +114,11 @@ export class CircuitManager implements DotNet.DotNetCallDispatcher {
     }
 
     const componentsJson = JSON.stringify(this._componentManager.initialComponents.map(c => descriptorToMarker(c)));
+    this._startCircuitUri = navigationManagerFunctions.getLocationHref();
     this._circuitId = await this._connection.invoke<string>(
       'StartCircuit',
       navigationManagerFunctions.getBaseURI(),
-      navigationManagerFunctions.getLocationHref(),
+      this._startCircuitUri,
       componentsJson,
       this._applicationState || ''
     );
@@ -527,6 +530,17 @@ export class CircuitManager implements DotNet.DotNetCallDispatcher {
   private throwIfDispatchingWhenDisposed() {
     if (this._disposed) {
       throw new Error('The circuit associated with this dispatcher is no longer available.');
+    }
+  }
+
+  public onRendererAttached(): void {
+    // Location changes are not delivered to the circuit until its renderer attaches, so
+    // one that happens after 'StartCircuit' captured the URI would otherwise be lost.
+    const startCircuitUri = this._startCircuitUri;
+    this._startCircuitUri = undefined;
+    const uri = navigationManagerFunctions.getLocationHref();
+    if (startCircuitUri !== undefined && uri !== startCircuitUri) {
+      this.sendLocationChanged(uri, history.state?.userState, false);
     }
   }
 

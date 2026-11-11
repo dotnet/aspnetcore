@@ -660,6 +660,28 @@ public class EnhancedNavigationTest : ServerTestBase<BasicTestAppServerSiteFixtu
         Browser.Equal("2", () => Browser.Exists(By.Id("query-wasm")).Text);
     }
 
+    [Fact]
+    public void NavigationManagerUriGetsUpdatedOnEnhancedNavigationBeforeServerRendererAttaches()
+    {
+        Navigate($"{ServerPathBase}/nav");
+        Browser.Equal("Hello", () => Browser.Exists(By.TagName("h1")).Text);
+
+        ((IJavaScriptExecutor)Browser).ExecuteScript("sessionStorage.setItem('block-server-renderer-attach', 'true')");
+        Navigate($"{ServerPathBase}/nav/location-changed/server");
+        Browser.Equal("Page with location changed components", () => Browser.Exists(By.TagName("h1")).Text);
+
+        // 'StartCircuit' has been processed, but the server renderer has not attached yet
+        Browser.Exists(By.Id("server-renderer-attach-blocked"));
+
+        ((IJavaScriptExecutor)Browser).ExecuteScript("Blazor.navigateTo('nav/location-changed/server?query=1')");
+        Browser.Contains("/nav/location-changed/server?query=1", () => Browser.Url);
+
+        ((IJavaScriptExecutor)Browser).ExecuteScript("window.unblockServerRendererAttach()");
+
+        Browser.Contains("/nav/location-changed/server?query=1", () => Browser.Exists(By.Id("nav-uri-server")).Text);
+        Browser.Equal("1", () => Browser.Exists(By.Id("query-server")).Text);
+    }
+
     [Theory]
     [InlineData("server")]
     [InlineData("wasm")]
