@@ -18,6 +18,7 @@ Microsoft.AspNetCore.Components.Server.CircuitOptions.HybridPersistenceCache.get
 Microsoft.AspNetCore.Components.Server.CircuitOptions.HybridPersistenceCache.set -> void
 Microsoft.AspNetCore.Components.Server.CircuitOptions.JSInteropDefaultCallTimeout.get -> System.TimeSpan
 Microsoft.AspNetCore.Components.Server.CircuitOptions.JSInteropDefaultCallTimeout.set -> void
+Microsoft.AspNetCore.Components.Server.CircuitOptions.JsonTypeInfoResolvers.get -> System.Collections.Generic.IList<System.Text.Json.Serialization.Metadata.IJsonTypeInfoResolver!>!
 Microsoft.AspNetCore.Components.Server.CircuitOptions.MaxBufferedUnacknowledgedRenderBatches.get -> int
 Microsoft.AspNetCore.Components.Server.CircuitOptions.MaxBufferedUnacknowledgedRenderBatches.set -> void
 Microsoft.AspNetCore.Components.Server.CircuitOptions.PersistedCircuitDistributedRetentionPeriod.get -> System.TimeSpan?
@@ -34,6 +35,7 @@ Microsoft.AspNetCore.Components.Server.CircuitRootComponentOptions.MaxJSRootComp
 Microsoft.AspNetCore.Components.Server.CircuitRootComponentOptions.MaxJSRootComponents.set -> void
 Microsoft.AspNetCore.Components.Server.Circuits.Circuit
 Microsoft.AspNetCore.Components.Server.Circuits.Circuit.Id.get -> string!
+Microsoft.AspNetCore.Components.Server.Circuits.Circuit.RequestCircuitPauseAsync(System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.Task<bool>!
 Microsoft.AspNetCore.Components.Server.Circuits.CircuitHandler
 Microsoft.AspNetCore.Components.Server.Circuits.CircuitHandler.CircuitHandler() -> void
 Microsoft.AspNetCore.Components.Server.Circuits.CircuitInboundActivityContext
@@ -58,6 +60,8 @@ Microsoft.AspNetCore.Components.Server.ServerAuthenticationStateProvider (forwar
 Microsoft.AspNetCore.Components.Server.ServerAuthenticationStateProvider.ServerAuthenticationStateProvider() -> void (forwarded, contained in Microsoft.AspNetCore.Components.Endpoints)
 Microsoft.AspNetCore.Components.Server.ServerAuthenticationStateProvider.SetAuthenticationState(System.Threading.Tasks.Task<Microsoft.AspNetCore.Components.Authorization.AuthenticationState!>! authenticationStateTask) -> void (forwarded, contained in Microsoft.AspNetCore.Components.Endpoints)
 Microsoft.AspNetCore.Components.Server.ServerComponentsEndpointOptions
+Microsoft.AspNetCore.Components.Server.ServerComponentsEndpointOptions.ConfigureConnection.get -> System.Action<Microsoft.AspNetCore.Http.Connections.HttpConnectionDispatcherOptions!>?
+Microsoft.AspNetCore.Components.Server.ServerComponentsEndpointOptions.ConfigureConnection.set -> void
 Microsoft.AspNetCore.Components.Server.ServerComponentsEndpointOptions.ConfigureWebSocketAcceptContext.get -> System.Func<Microsoft.AspNetCore.Http.HttpContext!, Microsoft.AspNetCore.Http.WebSocketAcceptContext!, System.Threading.Tasks.Task!>?
 Microsoft.AspNetCore.Components.Server.ServerComponentsEndpointOptions.ConfigureWebSocketAcceptContext.set -> void
 Microsoft.AspNetCore.Components.Server.ServerComponentsEndpointOptions.ContentSecurityFrameAncestorsPolicy.get -> string?

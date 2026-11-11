@@ -199,18 +199,13 @@ public sealed class WebAssemblyHostBuilder
         Services.AddSingleton<IWebAssemblyHostEnvironment>(hostEnvironment);
         Services.AddSingleton<IHostEnvironment>(sp => new WebAssemblyHostEnvironmentAdapter(sp.GetRequiredService<IWebAssemblyHostEnvironment>()));
 
-        var configFiles = new[]
-        {
-            "appsettings.json",
-            $"appsettings.{applicationEnvironment}.json"
-        };
+        var configFiles = _jsMethods.GetAppSettingsFiles();
 
         foreach (var configFile in configFiles)
         {
-            if (File.Exists(configFile))
+            var appSettingsJson = _jsMethods.GetAppSettingsBytes(configFile);
+            if (appSettingsJson is not null)
             {
-                var appSettingsJson = File.ReadAllBytes(configFile);
-
                 // Perf: Using this over AddJsonStream. This allows the linker to trim out the "File"-specific APIs and assemblies
                 // for Configuration, of where there are several.
                 Configuration.Add<JsonStreamConfigurationSource>(s => s.Stream = new MemoryStream(appSettingsJson));
