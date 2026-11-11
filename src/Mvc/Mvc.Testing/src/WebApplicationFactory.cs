@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Linq;
+using System.Net;
 using System.Net.Http;
 using System.Reflection;
 using System.Text.Json;
@@ -227,6 +228,15 @@ public partial class WebApplicationFactory<TEntryPoint> : IDisposable, IAsyncDis
         if (_configureKestrelOptions is not null)
         {
             builder.UseKestrel(_configureKestrelOptions);
+        }
+        else if (_kestrelPort is int port)
+        {
+            // Configure the endpoint here (during the app's own startup) instead of mutating
+            // IServerAddressesFeature after the host is built. Apps that start themselves
+            // (e.g. minimal apps run via DeferredHostBuilder) bind Kestrel on their own thread
+            // and can make the addresses collection read-only before the factory could update it,
+            // causing an intermittent InvalidOperationException.
+            builder.UseKestrel(options => options.Listen(IPAddress.Loopback, port));
         }
         else
         {
