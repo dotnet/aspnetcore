@@ -483,6 +483,7 @@ internal sealed partial class WebSocketsTransport : ITransport, IStatefulReconne
                 }
 
                 Log.MessageReceived(_logger, receiveResult.MessageType, receiveResult.Count, receiveResult.EndOfMessage);
+                TransportContentLog.Write(_logger, _httpConnectionOptions.LogMessageContent, received: true, memory.Span.Slice(0, receiveResult.Count));
 
                 _application.Output.Advance(receiveResult.Count);
 
@@ -559,6 +560,7 @@ internal sealed partial class WebSocketsTransport : ITransport, IStatefulReconne
 
                             if (WebSocketCanSend(socket))
                             {
+                                TransportContentLog.Write(_logger, _httpConnectionOptions.LogMessageContent, received: false, buffer);
                                 await socket.SendAsync(buffer, _webSocketMessageType, _stopCts.Token).ConfigureAwait(false);
                             }
                             else

@@ -1,1 +1,3 @@
 #nullable enable
+Microsoft.AspNetCore.Http.Connections.Client.HttpConnectionOptions.LogMessageContent.get -> bool
+Microsoft.AspNetCore.Http.Connections.Client.HttpConnectionOptions.LogMessageContent.set -> void

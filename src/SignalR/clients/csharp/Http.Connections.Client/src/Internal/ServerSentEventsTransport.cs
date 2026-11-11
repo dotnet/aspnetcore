@@ -91,7 +91,7 @@ internal sealed partial class ServerSentEventsTransport : ITransport
 
         // Start sending and polling (ask for binary if the server supports it)
         var receiving = ProcessEventStream(response, _transportCts.Token);
-        var sending = SendUtils.SendMessages(url, _application, _httpClient, _logger, _inputCts.Token);
+        var sending = SendUtils.SendMessages(url, _application, _httpClient, _logger, _inputCts.Token, _httpConnectionOptions.LogMessageContent);
 
         // Wait for send or receive to complete
         var trigger = await Task.WhenAny(receiving, sending).ConfigureAwait(false);
@@ -140,6 +140,7 @@ internal sealed partial class ServerSentEventsTransport : ITransport
                 await foreach (var item in parser.EnumerateAsync(cancellationToken).ConfigureAwait(false))
                 {
                     Log.MessageToApplication(_logger, item.Data.Length);
+                    TransportContentLog.Write(_logger, _httpConnectionOptions.LogMessageContent, received: true, item.Data.AsSpan());
 
                     // When cancellationToken is canceled the next line will cancel pending flushes on the pipe unblocking the await.
                     // Avoid passing the passed in context.
