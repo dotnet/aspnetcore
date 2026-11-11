@@ -4,6 +4,9 @@
 #nullable enable
 
 using System;
+#if NET6_0_OR_GREATER
+using System.Buffers.Binary;
+#endif
 using System.Diagnostics;
 using System.Net;
 using System.Security.Cryptography;
@@ -29,9 +32,6 @@ internal static class Rfc6238AuthenticationService
         ulong timestepNumber,
         byte[]? modifierBytes)
     {
-        // # of 0's = length of pin
-        const int Mod = 1000000;
-
         // See https://tools.ietf.org/html/rfc4226
         // We can add an optional modifier
 #if NET6_0_OR_GREATER
@@ -43,15 +43,22 @@ internal static class Rfc6238AuthenticationService
 #endif
 
 #if NET6_0_OR_GREATER
-        Span<byte> modifierCombinedBytes = timestepAsBytes;
         if (modifierBytes is not null)
         {
-            modifierCombinedBytes = ApplyModifier(timestepAsBytes, modifierBytes);
+            return ComputeTotp(key, ApplyModifier(timestepAsBytes, modifierBytes));
         }
+        return ComputeTotp(key, timestepAsBytes);
+    }
+
+    // Computes the TOTP over an input that already starts with the big-endian timestep number.
+    private static int ComputeTotp(byte[] key, ReadOnlySpan<byte> input)
+    {
         Span<byte> hash = stackalloc byte[HMACSHA1.HashSizeInBytes];
-        res = HMACSHA1.TryHashData(key, modifierCombinedBytes, hash, out var written);
+        var res = HMACSHA1.TryHashData(key, input, hash, out var written);
         Debug.Assert(res);
         Debug.Assert(written == hash.Length);
+        return GetCode(hash);
+    }
 #else
         byte[] hash;
         if (modifierBytes is null)
@@ -62,7 +69,14 @@ internal static class Rfc6238AuthenticationService
         {
             hash = hashAlgorithm.ComputeHash(ApplyModifier(timestepAsBytes, modifierBytes));
         }
+        return GetCode(hash);
+    }
 #endif
+
+    private static int GetCode(ReadOnlySpan<byte> hash)
+    {
+        // # of 0's = length of pin
+        const int Mod = 1000000;
 
         // Generate DT string
         var offset = hash[hash.Length - 1] & 0xf;
@@ -101,10 +115,17 @@ internal static class Rfc6238AuthenticationService
         // Allow a variance of no greater than 9 minutes in either direction
         var currentTimeStep = GetCurrentTimeStepNumber();
 
-        var modifierBytes = modifier is not null ? _encoding.GetBytes(modifier) : null;
 #if NET6_0_OR_GREATER
-        return ComputeTotp(securityToken, currentTimeStep, modifierBytes);
+        if (modifier is null)
+        {
+            return ComputeTotp(securityToken, currentTimeStep, modifierBytes: null);
+        }
+
+        var input = CreateTotpInput(modifier);
+        BinaryPrimitives.WriteUInt64BigEndian(input, currentTimeStep);
+        return ComputeTotp(securityToken, input);
 #else
+        var modifierBytes = modifier is not null ? _encoding.GetBytes(modifier) : null;
         using (var hashAlgorithm = new HMACSHA1(securityToken))
         {
             return ComputeTotp(hashAlgorithm, currentTimeStep, modifierBytes);
@@ -119,18 +140,15 @@ internal static class Rfc6238AuthenticationService
         // Allow a variance of no greater than 9 minutes in either direction
         var currentTimeStep = GetCurrentTimeStepNumber();
 
-#if !NET6_0_OR_GREATER
+#if NET6_0_OR_GREATER
+        return ValidateCodeInWindow(securityToken, code, (long)currentTimeStep, modifier);
+#else
         using (var hashAlgorithm = new HMACSHA1(securityToken))
-#endif
         {
             var modifierBytes = modifier is not null ? _encoding.GetBytes(modifier) : null;
             for (var i = -2; i <= 2; i++)
             {
-#if NET6_0_OR_GREATER
-                var computedTotp = ComputeTotp(securityToken, (ulong)((long)currentTimeStep + i), modifierBytes);
-#else
                 var computedTotp = ComputeTotp(hashAlgorithm, (ulong)((long)currentTimeStep + i), modifierBytes);
-#endif
                 if (computedTotp == code)
                 {
                     return true;
@@ -140,5 +158,47 @@ internal static class Rfc6238AuthenticationService
 
         // No match
         return false;
+#endif
     }
+
+#if NET6_0_OR_GREATER
+    // Checks the code against the timesteps in [currentTimeStep - 2, currentTimeStep + 2]. The modifier is encoded
+    // once and a single HMAC instance is reused for the whole window, so the key is only set up once.
+    internal static bool ValidateCodeInWindow(byte[] key, int code, long currentTimeStep, string? modifier)
+    {
+        var input = modifier is not null ? CreateTotpInput(modifier) : new byte[sizeof(long)];
+        var hash = new byte[HMACSHA1.HashSizeInBytes];
+        try
+        {
+            using var hmac = IncrementalHash.CreateHMAC(HashAlgorithmName.SHA1, key);
+            for (var i = -2; i <= 2; i++)
+            {
+                BinaryPrimitives.WriteUInt64BigEndian(input, (ulong)(currentTimeStep + i));
+                hmac.AppendData(input);
+                var res = hmac.TryGetHashAndReset(hash, out var written);
+                Debug.Assert(res);
+                Debug.Assert(written == hash.Length);
+                if (GetCode(hash) == code)
+                {
+                    return true;
+                }
+            }
+
+            // No match
+            return false;
+        }
+        finally
+        {
+            CryptographicOperations.ZeroMemory(hash);
+        }
+    }
+
+    // Returns a buffer laid out as [8-byte timestep][UTF-8 modifier]; callers write the timestep before hashing.
+    private static byte[] CreateTotpInput(string modifier)
+    {
+        var input = new byte[checked(sizeof(long) + _encoding.GetByteCount(modifier))];
+        _encoding.GetBytes(modifier, 0, modifier.Length, input, sizeof(long));
+        return input;
+    }
+#endif
 }
