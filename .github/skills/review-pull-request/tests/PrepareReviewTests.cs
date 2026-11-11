@@ -674,6 +674,12 @@ public class PrepareReviewTests
             Assert.Equal(count, classified.Included.Count + classified.Context.Count + classified.Skipped.Count);
             Assert.All(classified.Context, link => Assert.Equal("context", link.Role));
             Assert.All(classified.Skipped, link => Assert.NotNull(link.Reason));
+            Assert.All(classified.Included, link =>
+            {
+                var target = File.ReadAllText(Path.Combine(RepositoryRoot, link.Path));
+                var resolved = PrepareReviewProgram.ResolvePolicy(target, link.Anchor!, link.Path);
+                Assert.StartsWith("#", resolved, StringComparison.Ordinal);
+            });
         }
         var architecture = PrepareReviewProgram.GuideLinks(
             File.ReadAllText(Path.Combine(RepositoryRoot, "docs/BlazorComponentsGuidance.md")),
@@ -684,8 +690,15 @@ public class PrepareReviewTests
             architecture.Included.Select(link => $"{link.Path}#{link.Anchor}"));
         Assert.Contains("src/Components/AGENTS.md#cross-runtime-design-checkpoint",
             architecture.Included.Select(link => $"{link.Path}#{link.Anchor}"));
+        Assert.Contains("src/Components/AGENTS.md#permanent-regression-test-boundary",
+            architecture.Included.Select(link => $"{link.Path}#{link.Anchor}"));
         Assert.Contains("src/Components/AGENTS.md#creating-e2e-tests",
             architecture.Included.Select(link => $"{link.Path}#{link.Anchor}"));
+        var permanentBoundary = PrepareReviewProgram.ResolvePolicy(
+            File.ReadAllText(Path.Combine(RepositoryRoot, "src/Components/AGENTS.md")),
+            "permanent-regression-test-boundary",
+            "src/Components/AGENTS.md");
+        Assert.Contains("src/Components/test/E2ETest", permanentBoundary, StringComparison.Ordinal);
         var sample = "- Apply [binding](Policy.md#binding).\n" +
             "- Orient with [architecture](../src/Components/ARCHITECTURE.md).\n" +
             "- Read [design](<../src/Components/DESIGN.md> \"Context\").\n" +
@@ -698,10 +711,13 @@ public class PrepareReviewTests
         Assert.Equal(["sample"], links.Skipped.Select(link => link.Anchor));
         var mixed = File.ReadAllLines(Path.Combine(RepositoryRoot, "docs/BlazorComponentsGuidance.md"))
             .Single(line => line.Contains("For Components E2E work", StringComparison.Ordinal));
+        Assert.Contains("src/Components/JSInterop/", mixed, StringComparison.Ordinal);
+        Assert.Contains("src/Components/Web.JS/", mixed, StringComparison.Ordinal);
         var mixedLinks = PrepareReviewProgram.GuideLinks(mixed, "docs/BlazorComponentsGuidance.md");
         Assert.Equal([
             "CONTRIBUTING.md#tests",
             ".github/copilot-instructions.md#running-tests",
+            "src/Components/AGENTS.md#permanent-regression-test-boundary",
             "src/Components/AGENTS.md#creating-e2e-tests",
         ], mixedLinks.Included.Select(link => $"{link.Path}#{link.Anchor}"));
         Assert.Empty(mixedLinks.Skipped);
@@ -709,9 +725,50 @@ public class PrepareReviewTests
             PrepareReviewProgram.GuideLinks("[bad](Policy.md#)", "docs/Guide.md"));
     }
 
+    [Fact]
+    public async Task ProjectsRealBlazorComponentsGuidancePermanentBoundaryPolicyIntoWorkerManifest()
+    {
+        await using var fixture = await Fixture.CreateAsync(components: true);
+        foreach (var relativePath in new[]
+        {
+            "docs/BlazorComponentsGuidance.md",
+            "docs/Trimming.md",
+            "CONTRIBUTING.md",
+            ".github/copilot-instructions.md",
+            "src/Components/AGENTS.md",
+            "src/Components/ARCHITECTURE.md",
+        })
+        {
+            var fullPath = Path.Combine(RepositoryRoot, relativePath.Replace('/', Path.DirectorySeparatorChar));
+            await fixture.WriteGuidanceAsync(relativePath, await File.ReadAllTextAsync(fullPath, Utf8NoBom));
+        }
+
+        var manifest = await fixture.PrepareAsync();
+        Assert.True((await fixture.CheckAsync())["ready"]!.GetValue<bool>());
+
+        var policy = Assert.Single(manifest["policies"]!.AsArray().Select(item => item!.AsObject()),
+            item => item["path"]!.GetValue<string>() == "src/Components/AGENTS.md"
+                && item["anchor"]!.GetValue<string>() == "permanent-regression-test-boundary");
+        Assert.Equal("docs/BlazorComponentsGuidance.md", policy["guide"]!.GetValue<string>());
+        var bodyPath = policy["body"]!["path"]!.GetValue<string>();
+        var bodyText = await fixture.RequiredTextAsync(policy["body"]!);
+        Assert.Contains("### Permanent regression test boundary", bodyText, StringComparison.Ordinal);
+        Assert.Contains("src/Components/test/E2ETest", bodyText, StringComparison.Ordinal);
+
+        var blazorGuide = Assert.Single(manifest["guides"]!.AsArray().Select(item => item!.AsObject()),
+            item => item["path"]!.GetValue<string>() == "docs/BlazorComponentsGuidance.md");
+        var assignedPolicy = Assert.Single(
+            blazorGuide["assignment"]!["files"]!.AsArray().Select(item => item!.AsObject()),
+            file => file["kind"]!.GetValue<string>() == "policy"
+                && file["path"]!.GetValue<string>() == bodyPath);
+        Assert.Equal(policy["body"]!["utf8Bytes"]!.GetValue<int>(), assignedPolicy["utf8Bytes"]!.GetValue<int>());
+        Assert.Equal(policy["body"]!["sha256"]!.GetValue<string>(), assignedPolicy["sha256"]!.GetValue<string>());
+    }
+
     [Theory]
     [InlineData("code-clarity-and-durable-knowledge", "Code Clarity and Durable Knowledge")]
     [InlineData("cross-runtime-design-checkpoint", "Cross-Runtime Design Checkpoint")]
+    [InlineData("permanent-regression-test-boundary", "Permanent regression test boundary")]
     [InlineData("creating-e2e-tests", "Creating E2E Tests")]
     public async Task IncludesPoliciesLinkedByDifferentlyNamedRoutedGuide(string anchor, string heading)
     {
@@ -1152,6 +1209,9 @@ public class PrepareReviewTests
             skill, StringComparison.Ordinal);
         Assert.Contains(
             "After the `task` calls return, stay in your turn and collect each worker's actual report with `read_agent` using `wait: true`",
+            skill, StringComparison.Ordinal);
+        Assert.Contains(
+            "When packaging each provisional finding for the verifier, preserve the worker's source-backed trigger, mechanism, and material effect without adding or escalating untraced downstream consequences.",
             skill, StringComparison.Ordinal);
         var workerContractStart = skill.IndexOf("PATH: per-guide-worker", StringComparison.Ordinal);
         Assert.True(workerContractStart >= 0);

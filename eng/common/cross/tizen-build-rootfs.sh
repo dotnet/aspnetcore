@@ -15,9 +15,6 @@ case "$ARCH" in
     arm64)
         TIZEN_ARCH="aarch64"
         ;;
-    x86)
-        TIZEN_ARCH="i686"
-        ;;
     x64)
         TIZEN_ARCH="x86_64"
         LINK_ARCH="x86"

@@ -16,7 +16,7 @@ import { WebAssemblyComponentDescriptor, WebAssemblyServerOptions, discoverWebAs
 import { receiveDotNetDataStream } from './StreamingInterop';
 import { WebAssemblyComponentAttacher } from './Platform/WebAssemblyComponentAttacher';
 import * as DotNet from './JSInterop/Microsoft.JSInterop';
-import { MonoConfig } from '@microsoft/dotnet-runtime';
+import { LoaderConfig } from '@microsoft/dotnet-runtime';
 import { RootComponentManager } from './Services/RootComponentManager';
 import { WebRendererId } from './Rendering/WebRendererId';
 
@@ -28,8 +28,8 @@ let firstUpdate = true;
 let waitForRootComponents = false;
 let startPromise: Promise<void> | undefined;
 
-let resolveBootConfigPromise: (value: MonoConfig) => void;
-const bootConfigPromise = new Promise<MonoConfig>(resolve => {
+let resolveBootConfigPromise: (value: LoaderConfig) => void;
+const bootConfigPromise = new Promise<LoaderConfig>(resolve => {
   resolveBootConfigPromise = resolve;
 });
 
@@ -201,7 +201,7 @@ export function hasStartedWebAssembly(): boolean {
   return startPromise !== undefined;
 }
 
-export function waitForBootConfigLoaded(): Promise<MonoConfig> {
+export function waitForBootConfigLoaded(): Promise<LoaderConfig> {
   return bootConfigPromise;
 }
 
