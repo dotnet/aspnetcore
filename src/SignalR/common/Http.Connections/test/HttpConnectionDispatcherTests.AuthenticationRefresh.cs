@@ -300,10 +300,7 @@ public partial class HttpConnectionDispatcherTests
             context.Request.Path = "/foo/refresh";
             context.Request.Method = HttpMethods.Post;
             context.Response.Body = new MemoryStream();
-            context.Request.Query = new QueryCollection(new Dictionary<string, StringValues>
-            {
-                ["id"] = connection.ConnectionToken,
-            });
+            context.Request.Headers[ConnectionTokenHeaderName] = connection.ConnectionToken;
             context.Features.Set<IAuthenticateResultFeature>(new TestAuthenticateResultFeature(AuthenticateResult.Success(ticket)));
 
             await dispatcher.ExecuteRefreshAsync(context, options);
@@ -343,10 +340,7 @@ public partial class HttpConnectionDispatcherTests
             refreshContext.Request.Path = "/foo/refresh";
             refreshContext.Request.Method = HttpMethods.Post;
             refreshContext.Response.Body = new MemoryStream();
-            refreshContext.Request.Query = new QueryCollection(new Dictionary<string, StringValues>
-            {
-                ["id"] = connection.ConnectionToken,
-            });
+            refreshContext.Request.Headers[ConnectionTokenHeaderName] = connection.ConnectionToken;
             refreshContext.Features.Set<IAuthenticateResultFeature>(
                 new TestAuthenticateResultFeature(AuthenticateResult.Success(refreshTicket)));
 
@@ -574,10 +568,7 @@ public partial class HttpConnectionDispatcherTests
             context.Request.Path = "/foo/refresh";
             context.Request.Method = HttpMethods.Post;
             context.Response.Body = new MemoryStream();
-            context.Request.Query = new QueryCollection(new Dictionary<string, StringValues>
-            {
-                ["id"] = connection.ConnectionToken,
-            });
+            context.Request.Headers[ConnectionTokenHeaderName] = connection.ConnectionToken;
 
             await dispatcher.ExecuteRefreshAsync(context, options);
 
@@ -2030,32 +2021,32 @@ public partial class HttpConnectionDispatcherTests
         using (StartVerifiableLog(write => write.EventId.Name == "UserNameChangedRejected"))
         {
             var manager = CreateConnectionManager(LoggerFactory);
-            var connection = manager.CreateConnection();
+            var connection = manager.CreateConnection(new HttpConnectionDispatcherOptions(), negotiateVersion: 1);
             connection.TransportType = HttpTransportType.LongPolling;
             var dispatcher = CreateDispatcher(manager, LoggerFactory);
 
             var app = BuildTestConnectionHandlerApp(out var sp);
             var options = new HttpConnectionDispatcherOptions { EnableAuthenticationRefresh = true };
+            var refreshEntered = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+            var releaseRefresh = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
 
-            var userA = new ClaimsPrincipal(new ClaimsIdentity(
-                new[] { new Claim(ClaimTypes.NameIdentifier, "user-a") }, "Test"));
+            var userB = new ClaimsPrincipal(new ClaimsIdentity(
+                [new Claim(ClaimTypes.NameIdentifier, "user-b")],
+                "Test"));
             var initialExpiration = DateTimeOffset.UtcNow.AddMinutes(5);
-            connection.User = userA;
+
+            connection.User = userB;
             connection.AuthenticationExpiration = initialExpiration;
 
-            var context1 = BuildAuthPollContext(connection, sp, userA, initialExpiration);
+            var context1 = BuildAuthPollContext(connection, sp, userB, initialExpiration);
             await dispatcher.ExecuteAsync(context1, options, app).DefaultTimeout();
             Assert.Equal(StatusCodes.Status200OK, context1.Response.StatusCode);
 
-            // The application replaces the built-in identity check with its own policy: it accepts user-a's
-            // own refreshes and rejects anyone else.
-            var refreshedUserA = new ClaimsPrincipal(new ClaimsIdentity(
-                new[]
-                {
-                    new Claim(ClaimTypes.NameIdentifier, "user-a"),
-                    new Claim(ClaimTypes.Name, "refreshed"),
-                }, "Test"));
-            var laterExpiration = DateTimeOffset.UtcNow.AddMinutes(30);
+            var userA = new ClaimsPrincipal(new ClaimsIdentity(
+                [new Claim(ClaimTypes.NameIdentifier, "user-a")],
+                "Test"));
+            var refreshedExpiration = DateTimeOffset.UtcNow.AddMinutes(30);
+
             var feature = connection.Features.Get<IConnectionAuthenticationRefreshFeature>();
             Assert.NotNull(feature);
             feature.OnAuthenticationRefresh = async ctx =>
@@ -2065,26 +2056,40 @@ public partial class HttpConnectionDispatcherTests
                     return true;
                 }
 
-                // user-a's own /refresh lands while this policy is running, so the connection's user
-                // reference advances past the snapshot this decision was made against.
-                var concurrentUpdate = await connection.UpdateUserAsync(refreshedUserA, laterExpiration, ctx.HttpContext);
-                Assert.Equal(HttpConnectionContext.UserUpdateResult.Updated, concurrentUpdate);
+                refreshEntered.TrySetResult();
+                await releaseRefresh.Task;
                 return false;
             };
 
-            // A different user polls with a token that expires no sooner than the connection's, so the
-            // stale-token shortcut does not apply and the policy above is what rejects it.
-            var userB = new ClaimsPrincipal(new ClaimsIdentity(
-                new[] { new Claim(ClaimTypes.NameIdentifier, "user-b") }, "Test"));
-            var context2 = BuildAuthPollContext(connection, sp, userB, laterExpiration);
-            var pollTask = dispatcher.ExecuteAsync(context2, options, app);
+            // B's identity still matches the connection, so this poll reaches the callback.
+            var pollContext = BuildAuthPollContext(connection, sp, userB, DateTimeOffset.UtcNow.AddMinutes(10));
+            var pollTask = dispatcher.ExecuteAsync(pollContext, options, app);
+
+            await refreshEntered.Task.DefaultTimeout();
+
+            // A's refresh advances the connection while B's poll policy is waiting.
+            var ticket = new AuthenticationTicket(
+                userA,
+                new AuthenticationProperties { ExpiresUtc = refreshedExpiration },
+                "Test");
+            var refreshContext = BuildRefreshContext(connection, ticket);
+
+            try
+            {
+                await dispatcher.ExecuteRefreshAsync(refreshContext, options);
+            }
+            finally
+            {
+                releaseRefresh.TrySetResult();
+            }
+
             await connection.Transport.Output.WriteAsync(Encoding.UTF8.GetBytes("Unblock")).AsTask().DefaultTimeout();
             await pollTask.DefaultTimeout();
 
-            Assert.Equal(StatusCodes.Status403Forbidden, context2.Response.StatusCode);
-            // The rejected poll leaves the connection intact and owned by user-a.
-            Assert.Same(refreshedUserA, connection.User);
-            Assert.Equal(laterExpiration, connection.AuthenticationExpiration, TimeSpan.FromSeconds(1));
+            Assert.Equal(StatusCodes.Status200OK, refreshContext.Response.StatusCode);
+            Assert.Equal(StatusCodes.Status403Forbidden, pollContext.Response.StatusCode);
+            Assert.Same(userA, connection.User);
+            Assert.Equal(refreshedExpiration, connection.AuthenticationExpiration, TimeSpan.FromSeconds(1));
             Assert.Null(connection.DisposeAndRemoveTask);
             Assert.True(manager.TryGetConnection(connection.ConnectionToken, out _));
         }
@@ -2219,10 +2224,7 @@ public partial class HttpConnectionDispatcherTests
         context.Request.Path = "/foo/refresh";
         context.Request.Method = "POST";
         context.Response.Body = new MemoryStream();
-        context.Request.Query = new QueryCollection(new Dictionary<string, StringValues>
-        {
-            ["id"] = connection.ConnectionToken,
-        });
+        context.Request.Headers[ConnectionTokenHeaderName] = connection.ConnectionToken;
         context.User = ticket.Principal;
         context.Features.Set<IAuthenticateResultFeature>(
             new TestAuthenticateResultFeature(AuthenticateResult.Success(ticket)));
