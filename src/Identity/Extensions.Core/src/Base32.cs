@@ -81,6 +81,33 @@ internal static class Base32
         }
 
         var output = new byte[trimmedInput.Length * 5 / 8];
+        if (!TryFromBase32(trimmedInput, output, out _))
+        {
+            throw new FormatException();
+        }
+        return output;
+    }
+
+    /// <summary>
+    /// Decodes Base32 <paramref name="input"/> into <paramref name="destination"/> without throwing.
+    /// Trailing '=' padding is ignored and decoding stops once all complete bytes have been produced,
+    /// matching <see cref="FromBase32(string)"/>.
+    /// </summary>
+    /// <returns>
+    /// <see langword="false"/> if <paramref name="input"/> contains an invalid character or
+    /// <paramref name="destination"/> is too small; otherwise, <see langword="true"/>.
+    /// </returns>
+    internal static bool TryFromBase32(ReadOnlySpan<char> input, Span<byte> destination, out int bytesWritten)
+    {
+        var trimmedInput = input.TrimEnd('=');
+        var outputLength = (int)((long)trimmedInput.Length * 5 / 8);
+        if (outputLength > destination.Length)
+        {
+            bytesWritten = 0;
+            return false;
+        }
+
+        var output = destination.Slice(0, outputLength);
         var buffer = 0;
         var bufferBits = 0;
         var inputIndex = 0;
@@ -90,7 +117,9 @@ internal static class Base32
             var value = GetBase32Value(trimmedInput[inputIndex++]);
             if (value < 0)
             {
-                throw new FormatException();
+                output.Slice(0, outputIndex).Clear();
+                bytesWritten = 0;
+                return false;
             }
 
             // Accumulate 5 bits per character and emit a byte whenever at least 8 bits are available.
@@ -102,7 +131,9 @@ internal static class Base32
                 output[outputIndex++] = (byte)(buffer >> bufferBits);
             }
         }
-        return output;
+
+        bytesWritten = outputLength;
+        return true;
     }
 
     private static int GetBase32Value(char c)
