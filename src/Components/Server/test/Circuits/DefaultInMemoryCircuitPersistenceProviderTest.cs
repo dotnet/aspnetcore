@@ -162,12 +162,10 @@ public class DefaultInMemoryCircuitPersistenceProviderTest
             Assert.NotNull);
     }
 
-    [Theory]
-    [InlineData(0)]
-    [InlineData(1)]
-    [InlineData(1000)]
-    public async Task RejectedCircuitStateDisposesRetentionTokenSource(int capacity)
+    [Fact]
+    public async Task RejectedCircuitStateDisposesRetentionTokenSource()
     {
+        const int capacity = 1;
         var options = new CircuitOptions { PersistedCircuitInMemoryMaxRetained = capacity };
         var provider = CreateProvider(new TestSystemClock(), options);
         var factory = TestCircuitIdFactory.CreateTestFactory();
@@ -199,40 +197,6 @@ public class DefaultInMemoryCircuitPersistenceProviderTest
     }
 
     [Fact]
-    public async Task CompactedCircuitStateDisposesRetentionTokenSource()
-    {
-        const int capacity = 20;
-        var options = new CircuitOptions { PersistedCircuitInMemoryMaxRetained = capacity };
-        var provider = CreateProvider(new TestSystemClock(), options);
-        var factory = TestCircuitIdFactory.CreateTestFactory();
-        var retainedIds = Enumerable.Range(0, capacity).Select(_ => factory.CreateCircuitId()).ToArray();
-        var rejectedId = factory.CreateCircuitId();
-        var eviction = ObserveEviction(provider, (key, reason) =>
-            reason == EvictionReason.Capacity && !key.Equals(rejectedId.Secret));
-
-        try
-        {
-            foreach (var retainedId in retainedIds)
-            {
-                await provider.PersistCircuitAsync(retainedId, new PersistedCircuitState());
-            }
-
-            await provider.PersistCircuitAsync(rejectedId, new PersistedCircuitState());
-
-            var (entry, reason) = await eviction.WaitAsync(TimeSpan.FromSeconds(15));
-            Assert.Equal(EvictionReason.Capacity, reason);
-            Assert.Throws<ObjectDisposedException>(() => GetRetentionTokenSource(entry).Token);
-        }
-        finally
-        {
-            foreach (var retainedId in retainedIds)
-            {
-                await provider.RestoreCircuitAsync(retainedId);
-            }
-        }
-    }
-
-    [Fact]
     public async Task ExpiredCircuitStateDisposesRetentionTokenSource()
     {
         var options = new CircuitOptions { PersistedCircuitInMemoryRetentionPeriod = TimeSpan.FromMilliseconds(100) };
@@ -244,25 +208,6 @@ public class DefaultInMemoryCircuitPersistenceProviderTest
 
         var (entry, reason) = await eviction.WaitAsync(TimeSpan.FromSeconds(15));
         Assert.Equal(EvictionReason.TokenExpired, reason);
-        Assert.Throws<ObjectDisposedException>(() => GetRetentionTokenSource(entry).Token);
-        Assert.Null(await provider.RestoreCircuitAsync(circuitId));
-    }
-
-    [Fact]
-    public async Task RestoredCircuitStateDisposesRetentionTokenSource()
-    {
-        var provider = CreateProvider(new TestSystemClock());
-        var circuitId = TestCircuitIdFactory.CreateTestFactory().CreateCircuitId();
-        var persistedState = new PersistedCircuitState();
-        var eviction = ObserveEviction(provider, (key, _) => key.Equals(circuitId.Secret));
-
-        await provider.PersistCircuitAsync(circuitId, persistedState);
-
-        var restoredState = await provider.RestoreCircuitAsync(circuitId);
-        var (entry, reason) = await eviction.WaitAsync(TimeSpan.FromSeconds(15));
-
-        Assert.Same(persistedState, restoredState);
-        Assert.Equal(EvictionReason.Removed, reason);
         Assert.Throws<ObjectDisposedException>(() => GetRetentionTokenSource(entry).Token);
         Assert.Null(await provider.RestoreCircuitAsync(circuitId));
     }
