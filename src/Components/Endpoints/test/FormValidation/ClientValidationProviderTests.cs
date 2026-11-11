@@ -4,6 +4,7 @@
 #nullable enable
 
 using System.ComponentModel.DataAnnotations;
+using System.Reflection;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 using Microsoft.AspNetCore.Components.Endpoints.Forms;
@@ -121,6 +122,30 @@ public class ClientValidationProviderTests
         var form = Serialize(provider, new EditContext(model), new Dictionary<FieldIdentifier, string>());
 
         Assert.Null(form);
+    }
+
+    [Fact]
+    public void UnknownFieldNames_AreNotCached()
+    {
+        var cache = new ClientValidationCache(Options.Create(new ValidationOptions()));
+        var model = new Dictionary<string, string>();
+
+        for (var i = 0; i < 100; i++)
+        {
+            var fields = new Dictionary<FieldIdentifier, string>
+            {
+                [new FieldIdentifier(model, $"attacker-key-{i}")] = $"attacker-key-{i}",
+            };
+
+            Assert.Empty(cache.GetValidatableFieldMetadata(fields, model));
+        }
+
+        var metadataCache = Assert.IsAssignableFrom<
+            IReadOnlyCollection<KeyValuePair<(Type, string), ClientValidationFieldMetadata?>>>(
+                typeof(ClientValidationCache)
+                    .GetField("_metadataCache", BindingFlags.Instance | BindingFlags.NonPublic)!
+                    .GetValue(cache));
+        Assert.Empty(metadataCache);
     }
 
     [Fact]
