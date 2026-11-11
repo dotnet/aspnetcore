@@ -11,6 +11,8 @@ Microsoft.AspNetCore.Mvc.ApiExplorer.ApiDescription.ParameterDescriptions.get ->
 Microsoft.AspNetCore.Mvc.ApiExplorer.ApiDescription.Properties.get -> System.Collections.Generic.IDictionary<object!, object!>! (forwarded, contained in Microsoft.AspNetCore.Mvc.Abstractions)
 Microsoft.AspNetCore.Mvc.ApiExplorer.ApiDescription.RelativePath.get -> string? (forwarded, contained in Microsoft.AspNetCore.Mvc.Abstractions)
 Microsoft.AspNetCore.Mvc.ApiExplorer.ApiDescription.RelativePath.set -> void (forwarded, contained in Microsoft.AspNetCore.Mvc.Abstractions)
+Microsoft.AspNetCore.Mvc.ApiExplorer.ApiDescription.RoutePattern.get -> Microsoft.AspNetCore.Routing.Patterns.RoutePattern? (forwarded, contained in Microsoft.AspNetCore.Mvc.Abstractions)
+Microsoft.AspNetCore.Mvc.ApiExplorer.ApiDescription.RoutePattern.set -> void (forwarded, contained in Microsoft.AspNetCore.Mvc.Abstractions)
 Microsoft.AspNetCore.Mvc.ApiExplorer.ApiDescription.SupportedRequestFormats.get -> System.Collections.Generic.IList<Microsoft.AspNetCore.Mvc.ApiExplorer.ApiRequestFormat!>! (forwarded, contained in Microsoft.AspNetCore.Mvc.Abstractions)
 Microsoft.AspNetCore.Mvc.ApiExplorer.ApiDescription.SupportedResponseTypes.get -> System.Collections.Generic.IList<Microsoft.AspNetCore.Mvc.ApiExplorer.ApiResponseType!>! (forwarded, contained in Microsoft.AspNetCore.Mvc.Abstractions)
 Microsoft.AspNetCore.Mvc.ApiExplorer.ApiDescriptionExtensions
