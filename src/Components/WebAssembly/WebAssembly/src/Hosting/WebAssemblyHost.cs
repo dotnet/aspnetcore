@@ -179,9 +179,13 @@ public sealed class WebAssemblyHost : IAsyncDisposable
             var uri = jsMethods.NavigationManager_GetLocationHref();
             var state = jsMethods.NavigationManager_GetHistoryEntryState();
             var navigationManager = WebAssemblyNavigationManager.Instance;
-            if (navigationManager.Uri != uri || navigationManager.HistoryEntryState != state)
+            if (navigationManager.Uri != uri)
             {
-                navigationManager.SetLocation(uri, state, isInterceptedLink: false);
+                navigationManager.SetLocation(uri, state, isInterceptedLink: jsMethods.NavigationManager_GetLastNavigationWasIntercepted());
+            }
+            else
+            {
+                navigationManager.SetHistoryEntryState(state);
             }
 
             RootComponentOperationBatch? initialOperationBatch = null;

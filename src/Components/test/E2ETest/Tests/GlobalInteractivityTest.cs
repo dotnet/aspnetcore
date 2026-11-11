@@ -66,6 +66,9 @@ public class GlobalInteractivityTest(
         Browser.Equal(expectedHeading, () => Browser.Exists(By.TagName("h1")).Text);
         Browser.Equal(expectedUri, () => Browser.Exists(By.Id("navigation-uri")).Text);
         Browser.Equal(navigationCount == 3 ? "startup-state" : "", () => Browser.Exists(By.Id("history-entry-state")).Text);
+        Browser.Equal(navigationCount == 0 ? "0" : "1", () => Browser.Exists(By.Id("startup-notification-count")).Text);
+        Browser.Equal(navigationCount == 0 ? "" : expectedUri, () => Browser.Exists(By.Id("startup-notification-uri")).Text);
+        Browser.Equal(navigationCount is 1 or 2 ? "True" : "False", () => Browser.Exists(By.Id("startup-notification-intercepted")).Text);
 
         Browser.Click(By.Id("increment"));
         Browser.Equal("1", () => Browser.Exists(By.Id("count")).Text);
@@ -95,6 +98,7 @@ public class GlobalInteractivityTest(
         Browser.Equal("Home", () => Browser.Exists(By.TagName("h1")).Text);
         Browser.Equal(expectedUri, () => Browser.Exists(By.Id("navigation-uri")).Text);
         Browser.Equal("startup-state", () => Browser.Exists(By.Id("history-entry-state")).Text);
+        Browser.Equal("0", () => Browser.Exists(By.Id("startup-notification-count")).Text);
 
         Browser.Click(By.Id("increment"));
         Browser.Equal("1", () => Browser.Exists(By.Id("count")).Text);
@@ -102,6 +106,27 @@ public class GlobalInteractivityTest(
         Browser.Click(By.Id("next-page"));
         Browser.Equal("Counter", () => Browser.Exists(By.TagName("h1")).Text);
         Browser.Equal(Browser.Url, () => Browser.Exists(By.Id("navigation-uri")).Text);
+    }
+
+    [Theory]
+    [InlineData("({ value: 42 })")]
+    [InlineData("42")]
+    [InlineData("null")]
+    [InlineData("undefined")]
+    public void IgnoresNonStringHistoryEntryStateAfterWebAssemblyStartup(string stateExpression)
+    {
+        Navigate($"{ServerPathBase}/globally-interactive/startup/Home?delay-webassembly-startup");
+
+        var js = (IJavaScriptExecutor)Browser;
+        Browser.True(() => (bool)js.ExecuteScript("return window.webAssemblyStartup?.waiting === true"));
+        js.ExecuteScript($"history.replaceState({{ ...history.state, userState: {stateExpression} }}, '', location.href)");
+        js.ExecuteScript("window.webAssemblyStartup.release()");
+
+        Browser.Equal("interactive webassembly", () => Browser.Exists(By.Id("execution-mode")).Text);
+        Browser.Equal("", () => Browser.Exists(By.Id("history-entry-state")).Text);
+        Browser.Equal("0", () => Browser.Exists(By.Id("startup-notification-count")).Text);
+        Browser.Click(By.Id("increment"));
+        Browser.Equal("1", () => Browser.Exists(By.Id("count")).Text);
     }
 
     [Theory]
