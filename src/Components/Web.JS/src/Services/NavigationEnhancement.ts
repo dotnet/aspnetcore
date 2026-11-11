@@ -394,6 +394,8 @@ function handleEnhancedNavigationFailure(ex: unknown, internalDestinationHref: s
   }
 
   if (isResponseReadFailure && isGetRequest && currentEnhancedNavigationAbortController === abortController) {
+    performingEnhancedPageLoad = false;
+    navigationEnhancementCallbacks.enhancedNavigationCompleted();
     retryEnhancedNavAsFullPageLoad(internalDestinationHref);
     return;
   }
