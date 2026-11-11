@@ -6262,7 +6262,6 @@ public class VirtualizationTest : ServerTestBase<ToggleExecutionModeServerFixtur
     }
 
     [Fact]
-    [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/69093")]
     public void InitialIndex_PendingGrowth_TallItemsBeforeTarget_KeepsTargetAligned()
     {
         const int initialItemIndex = 100;
