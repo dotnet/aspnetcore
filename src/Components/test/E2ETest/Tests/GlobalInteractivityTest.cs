@@ -79,6 +79,50 @@ public class GlobalInteractivityTest(
     }
 
     [Fact]
+    public void UsesRedirectedLocationAfterWebAssemblyStartup()
+    {
+        Navigate($"{ServerPathBase}/globally-interactive/startup/Home?delay-webassembly-startup");
+
+        var js = (IJavaScriptExecutor)Browser;
+        Browser.True(() => (bool)js.ExecuteScript("return window.webAssemblyStartup?.waiting === true"));
+        // Hold the real fetch until .NET is waiting for the initial component update.
+        js.ExecuteScript("""
+            const originalFetch = window.fetch;
+            const redirectGate = new Promise(resolve => window.webAssemblyStartup.releaseRedirect = resolve);
+            window.fetch = async (...args) => {
+                if (String(args[0]).endsWith('/globally-interactive/startup-redirect')) {
+                    window.fetch = originalFetch;
+                    window.webAssemblyStartup.redirectWaiting = true;
+                    await redirectGate;
+                }
+                return originalFetch(...args);
+            };
+            const getInitialUpdate = Blazor._internal.getInitialComponentsUpdate;
+            Blazor._internal.getInitialComponentsUpdate = () => {
+                window.webAssemblyStartup.waitingForInitialUpdate = true;
+                return getInitialUpdate();
+            };
+            """);
+
+        Browser.Click(By.Id("redirect-page"));
+        Browser.True(() => (bool)js.ExecuteScript("return window.webAssemblyStartup.redirectWaiting === true"));
+        Assert.EndsWith("/globally-interactive/startup-redirect", Browser.Url);
+        js.ExecuteScript("window.webAssemblyStartup.release()");
+        Browser.True(() => (bool)js.ExecuteScript("return window.webAssemblyStartup.waitingForInitialUpdate === true"));
+        js.ExecuteScript("window.webAssemblyStartup.releaseRedirect()");
+
+        Browser.Equal("interactive webassembly", () => Browser.Exists(By.Id("execution-mode")).Text);
+        Browser.Equal("Counter", () => Browser.Exists(By.TagName("h1")).Text);
+        Browser.Equal(Browser.Url, () => Browser.Exists(By.Id("navigation-uri")).Text);
+        Assert.EndsWith("/globally-interactive/startup/Counter", Browser.Url);
+        Browser.Click(By.Id("increment"));
+        Browser.Equal("1", () => Browser.Exists(By.Id("count")).Text);
+        Browser.Click(By.Id("next-page"));
+        Browser.Equal("Final", () => Browser.Exists(By.TagName("h1")).Text);
+        Browser.Equal(Browser.Url, () => Browser.Exists(By.Id("navigation-uri")).Text);
+    }
+
+    [Fact]
     public void UsesCurrentHistoryEntryStateAfterWebAssemblyStartupWithoutLocationChange()
     {
         Navigate($"{ServerPathBase}/globally-interactive/startup/Home?delay-webassembly-startup");
