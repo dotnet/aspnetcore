@@ -263,7 +263,14 @@ public abstract class WebViewManager : IAsyncDisposable
 
             if (_currentPageContext != null)
             {
-                await _currentPageContext.DisposeAsync();
+                try
+                {
+                    await _currentPageContext.DisposeAsync();
+                }
+                finally
+                {
+                    _currentPageContext = null;
+                }
             }
         }
     }

@@ -230,6 +230,80 @@ public class WebViewManagerTests
             m => AssertHelpers.IsRenderBatch(m));
     }
 
+    [Fact]
+    public async Task DisposingWebViewManager_ReleasesCurrentPageContext()
+    {
+        await using var services = RegisterTestServices()
+            .AddTestBlazorWebView()
+            .BuildServiceProvider();
+
+        await using var webViewManager = new TestWebViewManager(
+            services,
+            new TestFileProvider());
+
+        await webViewManager.AddRootComponentAsync(
+            typeof(MyComponent),
+            "#app",
+            ParameterView.Empty);
+
+        webViewManager.ReceiveAttachPageMessage();
+
+        Assert.NotNull(webViewManager.CurrentPageContext);
+
+        var scopedService = Assert.Single(
+            services.GetRequiredService<SingletonService>().Services);
+
+        Assert.False(scopedService.Disposed);
+
+        await webViewManager.DisposeAsync();
+
+        Assert.True(scopedService.Disposed);
+        Assert.Null(webViewManager.CurrentPageContext);
+    }
+
+    [Fact]
+    public async Task DisposingWebViewManager_ReleasesCurrentPageContextWhenScopeDisposalThrows()
+    {
+        var expectedException = new InvalidOperationException("Scope disposal failed.");
+        var scopedService = new ThrowingAsyncDisposableService(expectedException);
+        await using var services = RegisterTestServices()
+            .AddTestBlazorWebView()
+            .AddScoped(_ => scopedService)
+            .BuildServiceProvider();
+        await using var webViewManager = new TestWebViewManager(services, new TestFileProvider());
+        await webViewManager.AddRootComponentAsync(
+            typeof(ComponentWithThrowingAsyncDisposableService),
+            "#app",
+            ParameterView.Empty);
+        webViewManager.ReceiveAttachPageMessage();
+        Assert.NotNull(webViewManager.CurrentPageContext);
+        Assert.False(scopedService.Disposed);
+
+        var exception = await Assert.ThrowsAsync<InvalidOperationException>(
+            () => webViewManager.DisposeAsync().AsTask());
+
+        Assert.Same(expectedException, exception);
+        Assert.True(scopedService.Disposed);
+        Assert.Null(webViewManager.CurrentPageContext);
+    }
+
+    private sealed class ComponentWithThrowingAsyncDisposableService : ComponentBase
+    {
+        [Inject]
+        public ThrowingAsyncDisposableService Service { get; set; }
+    }
+
+    private sealed class ThrowingAsyncDisposableService(InvalidOperationException exception) : IAsyncDisposable
+    {
+        public bool Disposed { get; private set; }
+
+        public ValueTask DisposeAsync()
+        {
+            Disposed = true;
+            return ValueTask.FromException(exception);
+        }
+    }
+
     private static IServiceCollection RegisterTestServices()
     {
         return new ServiceCollection().AddSingleton<SingletonService>().AddScoped<ScopedService>();

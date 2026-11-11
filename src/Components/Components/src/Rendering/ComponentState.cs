@@ -334,6 +334,12 @@ public class ComponentState : IAsyncDisposable
     public virtual ValueTask DisposeAsync()
     {
         _componentWasDisposed = true;
+
+        if (_hasAnyCascadingParameterSubscriptions)
+        {
+            RemoveCascadingParameterSubscriptions();
+        }
+
         DisposeBuffers();
 
         // Components shouldn't need to implement IAsyncDisposable and IDisposable simultaneously,
@@ -363,11 +369,6 @@ public class ComponentState : IAsyncDisposable
     {
         // We don't expect these things to throw.
         RenderTreeDiffBuilder.DisposeFrames(batchBuilder, ComponentId, CurrentRenderTree.GetFrames());
-
-        if (_hasAnyCascadingParameterSubscriptions)
-        {
-            RemoveCascadingParameterSubscriptions();
-        }
 
         return DisposeAsync();
     }
