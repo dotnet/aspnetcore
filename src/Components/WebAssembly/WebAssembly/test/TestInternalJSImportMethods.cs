@@ -48,6 +48,9 @@ internal sealed class TestInternalJSImportMethods : IInternalJSImportMethods
     public string NavigationManager_GetHistoryEntryState()
         => null;
 
+    public bool NavigationManager_GetLastNavigationWasIntercepted()
+        => false;
+
     public void NavigationManager_SetHasLocationChangingListeners(int rendererId, bool value) { }
 
     public string RegisteredComponents_GetAssembly(int index)
