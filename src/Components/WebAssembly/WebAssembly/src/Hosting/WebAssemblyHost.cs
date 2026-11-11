@@ -173,8 +173,20 @@ public sealed class WebAssemblyHost : IAsyncDisposable
 
             WebAssemblyNavigationManager.Instance.CreateLogger(loggerFactory);
 
+            RootComponentOperationBatch? initialOperationBatch = null;
+            if (Environment.GetEnvironmentVariable("__BLAZOR_WEBASSEMBLY_WAIT_FOR_ROOT_COMPONENTS") == "true")
+            {
+                // In Blazor web, we wait for the JS side to tell us about the components available
+                // before we render the initial set of components. Any additional update goes through
+                // UpdateRootComponents.
+                // We do it this way to ensure that the persistent component state is only used the first time
+                // the wasm runtime is initialized and is done in the same way for both webassembly and blazor
+                // web.
+                initialOperationBatch = await InternalJSImportMethods.GetInitialComponentUpdate();
+            }
+
             // Location changes before renderer attachment are not delivered to .NET.
-            // Reconcile synchronously after attachment, before rendering the initial components.
+            // Reconcile after the initial update wait so in-flight redirects have settled.
             var jsMethods = Services.GetRequiredService<IInternalJSImportMethods>();
             var uri = jsMethods.NavigationManager_GetLocationHref();
             var state = jsMethods.NavigationManager_GetHistoryEntryState();
@@ -186,18 +198,6 @@ public sealed class WebAssemblyHost : IAsyncDisposable
             else
             {
                 navigationManager.SetHistoryEntryState(state);
-            }
-
-            RootComponentOperationBatch? initialOperationBatch = null;
-            if (Environment.GetEnvironmentVariable("__BLAZOR_WEBASSEMBLY_WAIT_FOR_ROOT_COMPONENTS") == "true")
-            {
-                // In Blazor web, we wait for the JS side to tell us about the components available
-                // before we render the initial set of components. Any additional update goes through
-                // UpdateRootComponents.
-                // We do it this way to ensure that the persistent component state is only used the first time
-                // the wasm runtime is initialized and is done in the same way for both webassembly and blazor
-                // web.
-                initialOperationBatch = await InternalJSImportMethods.GetInitialComponentUpdate();
             }
 
             var initializationTcs = new TaskCompletionSource();
