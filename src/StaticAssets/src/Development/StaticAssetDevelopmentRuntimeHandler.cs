@@ -78,7 +78,10 @@ internal sealed partial class StaticAssetDevelopmentRuntimeHandler
                 var lastModified = TruncateToSeconds(fileInfo.LastModified);
                 var notModified = ifNoneMatch?.Any(etag => etag.Equals(EntityTagHeaderValue.Any)) == true;
                 if (!context.Request.Headers.ContainsKey(HeaderNames.IfNoneMatch) &&
-                    ifModifiedSince.HasValue && ifModifiedSince <= DateTimeOffset.UtcNow && ifModifiedSince >= lastModified)
+                    ifModifiedSince.HasValue &&
+                    ifModifiedSince <= DateTimeOffset.UtcNow &&
+                    lastModified > asset.GetLastModified() &&
+                    ifModifiedSince >= lastModified)
                 {
                     notModified = true;
                 }
@@ -99,6 +102,12 @@ internal sealed partial class StaticAssetDevelopmentRuntimeHandler
                 {
                     context.Response.Headers.ETag = GetETag(fileInfo, selectedAsset.AssetPath != asset.AssetPath);
                     context.Response.Headers.LastModified = HeaderUtilities.FormatDate(lastModified);
+                }
+                else if (HttpMethods.IsHead(context.Request.Method) && context.Response.StatusCode == StatusCodes.Status200OK)
+                {
+                    context.Response.Headers.ETag = GetETag(fileInfo, selectedAsset.AssetPath != asset.AssetPath);
+                    context.Response.Headers.LastModified = HeaderUtilities.FormatDate(lastModified);
+                    context.Response.Headers.ContentLength = selectedAsset.AssetPath != asset.AssetPath ? Compress(fileInfo).Length : fileInfo.Length;
                 }
                 context.Features.Set(originalFeature);
                 return;

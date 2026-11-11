@@ -751,15 +751,16 @@ public class StaticAssetsIntegrationTests
     {
         var appName = nameof(ModifiedAssetsIgnoreBuildTimeIfModifiedSinceInDevelopment);
         var (contentRoot, webRoot) = ConfigureAppPaths(appName);
+        var buildTime = new DateTimeOffset(2026, 11, 10, 12, 0, 0, TimeSpan.Zero);
 
         CreateTestManifest(
             appName,
             webRoot,
+            buildTime,
             [
                 new TestResource("sample.txt", "Hello, World!", false),
             ]);
         var filePath = Path.Combine(webRoot, "sample.txt");
-        File.SetLastWriteTimeUtc(filePath, DateTime.UtcNow.AddSeconds(-10));
 
         var builder = WebApplication.CreateEmptyBuilder(new WebApplicationOptions
         {
@@ -788,9 +789,10 @@ public class StaticAssetsIntegrationTests
         var initialResponse = await client.GetAsync("/sample.txt");
         Assert.True(initialResponse.Content.Headers.LastModified.HasValue);
         var initialLastModified = initialResponse.Content.Headers.LastModified.Value;
+        Assert.Equal(buildTime, initialLastModified);
 
         File.WriteAllText(filePath, "Hello, World! Modified");
-        File.SetLastWriteTimeUtc(filePath, DateTime.UtcNow.AddSeconds(-5));
+        File.SetLastWriteTimeUtc(filePath, buildTime.AddSeconds(5).UtcDateTime);
 
         var request = new HttpRequestMessage(HttpMethod.Get, "/sample.txt");
         request.Headers.IfModifiedSince = initialLastModified;
@@ -808,6 +810,120 @@ public class StaticAssetsIntegrationTests
         Assert.Equal(HttpStatusCode.NotModified, currentResponse.StatusCode);
         Assert.Equal(response.Headers.ETag, currentResponse.Headers.ETag);
         Assert.Equal(updatedLastModified, currentResponse.Content.Headers.LastModified);
+
+        Directory.Delete(webRoot, true);
+    }
+
+    [Fact]
+    public async Task ModifiedAssetsIgnoreBuildTimeIfModifiedSinceInDevelopmentForSameSecondEdits()
+    {
+        var appName = nameof(ModifiedAssetsIgnoreBuildTimeIfModifiedSinceInDevelopmentForSameSecondEdits);
+        var (contentRoot, webRoot) = ConfigureAppPaths(appName);
+        var buildTime = new DateTimeOffset(2026, 11, 10, 12, 0, 0, TimeSpan.Zero);
+
+        CreateTestManifest(
+            appName,
+            webRoot,
+            buildTime,
+            [
+                new TestResource("sample.txt", "Hello", false),
+            ]);
+        var filePath = Path.Combine(webRoot, "sample.txt");
+
+        var builder = WebApplication.CreateEmptyBuilder(new WebApplicationOptions
+        {
+            ApplicationName = appName,
+            ContentRootPath = contentRoot,
+            EnvironmentName = "Development",
+            WebRootPath = webRoot
+        });
+        builder.WebHost.UseSetting(StaticAssetDevelopmentRuntimeHandler.ReloadStaticAssetsAtRuntimeKey, "true");
+        builder.WebHost.ConfigureServices(services =>
+        {
+            services.AddRouting();
+        });
+        builder.WebHost.UseTestServer();
+
+        var app = builder.Build();
+        app.UseRouting();
+        app.UseEndpoints(endpoints =>
+        {
+            endpoints.MapStaticAssets();
+        });
+
+        await app.StartAsync();
+
+        var client = app.GetTestClient();
+        var initialResponse = await client.GetAsync("/sample.txt");
+        Assert.True(initialResponse.Content.Headers.LastModified.HasValue);
+
+        File.WriteAllText(filePath, "Hello, World! Modified");
+        File.SetLastWriteTimeUtc(filePath, buildTime.UtcDateTime);
+
+        var request = new HttpRequestMessage(HttpMethod.Get, "/sample.txt");
+        request.Headers.IfModifiedSince = initialResponse.Content.Headers.LastModified.Value;
+        var response = await client.SendAsync(request);
+
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        Assert.Equal("Hello, World! Modified", await response.Content.ReadAsStringAsync());
+
+        Directory.Delete(webRoot, true);
+    }
+
+    [Fact]
+    public async Task ModifiedHeadRequestsRefreshRuntimeValidatorsInDevelopment()
+    {
+        var appName = nameof(ModifiedHeadRequestsRefreshRuntimeValidatorsInDevelopment);
+        var (contentRoot, webRoot) = ConfigureAppPaths(appName);
+        var buildTime = new DateTimeOffset(2026, 11, 10, 12, 0, 0, TimeSpan.Zero);
+
+        CreateTestManifest(
+            appName,
+            webRoot,
+            buildTime,
+            [
+                new TestResource("sample.txt", "Hello", false),
+            ]);
+        var filePath = Path.Combine(webRoot, "sample.txt");
+
+        var builder = WebApplication.CreateEmptyBuilder(new WebApplicationOptions
+        {
+            ApplicationName = appName,
+            ContentRootPath = contentRoot,
+            EnvironmentName = "Development",
+            WebRootPath = webRoot
+        });
+        builder.WebHost.UseSetting(StaticAssetDevelopmentRuntimeHandler.ReloadStaticAssetsAtRuntimeKey, "true");
+        builder.WebHost.ConfigureServices(services =>
+        {
+            services.AddRouting();
+        });
+        builder.WebHost.UseTestServer();
+
+        var app = builder.Build();
+        app.UseRouting();
+        app.UseEndpoints(endpoints =>
+        {
+            endpoints.MapStaticAssets();
+        });
+
+        await app.StartAsync();
+
+        var client = app.GetTestClient();
+        var initialResponse = await client.GetAsync("/sample.txt");
+        var initialETag = Assert.IsType<EntityTagHeaderValue>(initialResponse.Headers.ETag);
+
+        File.WriteAllText(filePath, "Hello, World! Modified");
+        File.SetLastWriteTimeUtc(filePath, buildTime.AddSeconds(5).UtcDateTime);
+
+        var request = new HttpRequestMessage(HttpMethod.Head, "/sample.txt");
+        request.Headers.IfNoneMatch.Add(initialETag);
+        var response = await client.SendAsync(request);
+
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        Assert.NotEqual(initialETag, response.Headers.ETag);
+        Assert.Equal(buildTime.AddSeconds(5), response.Content.Headers.LastModified);
+        Assert.Equal("Hello, World! Modified".Length, response.Content.Headers.ContentLength);
 
         Directory.Delete(webRoot, true);
     }
@@ -1227,6 +1343,11 @@ public class StaticAssetsIntegrationTests
 
     private static void CreateTestManifest(string appName, string webRoot, params Span<TestResource> resources)
     {
+        CreateTestManifest(appName, webRoot, lastModified: null, resources);
+    }
+
+    private static void CreateTestManifest(string appName, string webRoot, DateTimeOffset? lastModified, params Span<TestResource> resources)
+    {
         Directory.CreateDirectory(webRoot);
         var manifestPath = Path.Combine(AppContext.BaseDirectory, $"{appName}.staticwebassets.endpoints.json");
         var manifest = new StaticAssetsManifest()
@@ -1238,8 +1359,9 @@ public class StaticAssetsIntegrationTests
         {
             var resource = resources[i];
             var filePath = Path.Combine(webRoot, resource.Path);
-            var lastModified = DateTimeOffset.UtcNow;
+            var resourceLastModified = lastModified ?? DateTimeOffset.UtcNow;
             File.WriteAllText(filePath, resource.Content);
+            File.SetLastWriteTimeUtc(filePath, resourceLastModified.UtcDateTime);
             var hash = GetEtag(resource.Content);
             manifest.ManifestType = "Build";
             manifest.Endpoints.Add(new StaticAssetDescriptor
@@ -1253,7 +1375,7 @@ public class StaticAssetsIntegrationTests
                     new("Content-Length", resource.Content.Length.ToString(CultureInfo.InvariantCulture)),
                     new("Content-Type", GetContentType(filePath)),
                     new ("ETag", $"\"{hash}\""),
-                    new("Last-Modified", lastModified.ToString("ddd, dd MMM yyyy HH:mm:ss 'GMT'", CultureInfo.InvariantCulture)),
+                    new("Last-Modified", resourceLastModified.ToString("ddd, dd MMM yyyy HH:mm:ss 'GMT'", CultureInfo.InvariantCulture)),
                     ..(resource.AdditionalHeaders ?? [])
                 ]
             });
@@ -1262,6 +1384,7 @@ public class StaticAssetsIntegrationTests
             {
                 var compressedFilePath = Path.Combine(webRoot, resource.Path + ".gz");
                 var length = CreateCompressedFile(compressedFilePath, resource);
+                File.SetLastWriteTimeUtc(compressedFilePath, resourceLastModified.UtcDateTime);
 
                 manifest.Endpoints.Add(new StaticAssetDescriptor
                 {
@@ -1275,7 +1398,7 @@ public class StaticAssetsIntegrationTests
 
                         new ("Content-Length", length.ToString(CultureInfo.InvariantCulture)),
                         new ("ETag", $"\"{GetEtagForFile(compressedFilePath)}\""),
-                        new ("Last-Modified", lastModified.ToString("ddd, dd MMM yyyy HH:mm:ss 'GMT'", CultureInfo.InvariantCulture)),
+                        new ("Last-Modified", resourceLastModified.ToString("ddd, dd MMM yyyy HH:mm:ss 'GMT'", CultureInfo.InvariantCulture)),
 
                         new ("Content-Encoding", "gzip"),
                         new ("Vary", "Accept-Encoding"),
