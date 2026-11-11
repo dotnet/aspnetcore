@@ -23,6 +23,10 @@ internal sealed class HttpLoggingMiddleware
     private readonly IHttpLoggingInterceptor[] _interceptors;
     private readonly IOptionsMonitor<HttpLoggingOptions> _options;
     private const string Redacted = "[Redacted]";
+    // Protocol, Method, Scheme, PathBase, Path and QueryString.
+    private const int RequestParameterCount = 6;
+    // StatusCode.
+    private const int ResponseParameterCount = 1;
 
     public HttpLoggingMiddleware(RequestDelegate next, IOptionsMonitor<HttpLoggingOptions> options, ILogger<HttpLoggingMiddleware> logger,
         IEnumerable<IHttpLoggingInterceptor> interceptors, ObjectPool<HttpLoggingInterceptorContext> contextPool,
@@ -113,6 +117,11 @@ internal sealed class HttpLoggingMiddleware
         var request = context.Request;
         if (logContext.IsAnyEnabled(HttpLoggingFields.RequestPropertiesAndHeaders | HttpLoggingFields.RequestQuery))
         {
+            // Reserve space up front to avoid repeated growth while adding properties and headers.
+            var parameters = logContext.InternalParameters;
+            parameters.EnsureCapacity(parameters.Count + RequestParameterCount
+                + (loggingFields.HasFlag(HttpLoggingFields.RequestHeaders) ? request.Headers.Count : 0));
+
             if (loggingFields.HasFlag(HttpLoggingFields.RequestProtocol))
             {
                 logContext.AddParameter(nameof(request.Protocol), request.Protocol);
@@ -335,6 +344,14 @@ internal sealed class HttpLoggingMiddleware
     {
         var loggingFields = logContext.LoggingFields;
         var response = logContext.HttpContext.Response;
+
+        if (logContext.IsAnyEnabled(HttpLoggingFields.ResponsePropertiesAndHeaders))
+        {
+            // Reserve space up front to avoid repeated growth while adding the status code and headers.
+            var parameters = logContext.InternalParameters;
+            parameters.EnsureCapacity(parameters.Count + ResponseParameterCount
+                + (loggingFields.HasFlag(HttpLoggingFields.ResponseHeaders) ? response.Headers.Count : 0));
+        }
 
         if (loggingFields.HasFlag(HttpLoggingFields.ResponseStatusCode))
         {

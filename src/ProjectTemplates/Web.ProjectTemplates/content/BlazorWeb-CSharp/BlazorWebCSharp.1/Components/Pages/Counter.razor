@@ -1,12 +1,12 @@
 ﻿@page "/counter"
-@*#if (!InteractiveAtRoot) -->
-@rendermode InteractiveServer
-##endif*@
 
 <PageTitle>Counter</PageTitle>
 
 <h1>Counter</h1>
 
+@*#if (!InteractiveAtRoot)
+<CounterContent />
+##else
 <p role="status">Current count: @currentCount</p>
 
 <button class="btn btn-primary" @onclick="IncrementCount">Click me</button>
@@ -19,3 +19,4 @@
         currentCount++;
     }
 }
+##endif*@
