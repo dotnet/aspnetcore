@@ -11,6 +11,7 @@
 <p id="startup-notification-uri">@StartupState?.Location</p>
 <p id="startup-notification-intercepted">@StartupState?.IsNavigationIntercepted</p>
 <a id="next-page" href="globally-interactive/startup/@(PageName == "Home" ? "Counter" : "Final")">Next page</a>
+<a id="redirect-page" href="globally-interactive/startup-redirect">Redirect to Counter</a>
 <button id="increment" @onclick="() => count++">Increment</button>
 <p id="count">@count</p>
 
