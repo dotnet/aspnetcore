@@ -5,13 +5,9 @@ async function initialize(dotnetJsUrl, assemblyName) {
     try {
         const { dotnet } = await import(dotnetJsUrl);
         const { getAssemblyExports, getConfig } = await dotnet.create();
-        const mainAssemblyName = getConfig().mainAssemblyName;
-
-        workerExports = { ...await getAssemblyExports(mainAssemblyName) };
-
-        if (assemblyName && assemblyName !== mainAssemblyName) {
-            workerExports = { ...workerExports, ...await getAssemblyExports(assemblyName) };
-        }
+        // Only bind the assembly that contains the [JSExport] methods. On CoreCLR, getAssemblyExports
+        // throws for assemblies without [JSExport] methods, which is typically the case for the host app.
+        workerExports = { ...await getAssemblyExports(assemblyName || getConfig().mainAssemblyName) };
 
         self.postMessage({ type: "ready" });
     } catch (err) {
