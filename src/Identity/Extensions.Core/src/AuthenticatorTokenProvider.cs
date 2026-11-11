@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
+using System.Buffers;
 using System.Security.Cryptography;
 using System.Threading.Tasks;
 
@@ -55,11 +56,11 @@ public class AuthenticatorTokenProvider<TUser> : IUserTwoFactorTokenProvider<TUs
         }
 
 #if NET6_0_OR_GREATER
-        const int StackallocKeyByteThreshold = 128;
         var maxKeyByteCount = (int)((long)key.Length * 5 / 8);
-        Span<byte> keyBuffer = maxKeyByteCount <= StackallocKeyByteThreshold
-            ? stackalloc byte[StackallocKeyByteThreshold]
-            : new byte[maxKeyByteCount];
+        byte[]? rentedKeyBuffer = null;
+        Span<byte> keyBuffer = maxKeyByteCount <= 128
+            ? stackalloc byte[128]
+            : (rentedKeyBuffer = ArrayPool<byte>.Shared.Rent(maxKeyByteCount));
         if (!Base32.TryFromBase32(key, keyBuffer, out var keyByteCount))
         {
             throw new FormatException();
@@ -97,6 +98,10 @@ public class AuthenticatorTokenProvider<TUser> : IUserTwoFactorTokenProvider<TUs
         {
 #if NET6_0_OR_GREATER
             CryptographicOperations.ZeroMemory(keyBuffer);
+            if (rentedKeyBuffer is not null)
+            {
+                ArrayPool<byte>.Shared.Return(rentedKeyBuffer);
+            }
 #else
             Array.Clear(keyBytes, 0, keyBytes.Length);
 #endif
