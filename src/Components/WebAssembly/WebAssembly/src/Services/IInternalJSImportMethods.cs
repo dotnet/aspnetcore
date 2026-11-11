@@ -27,6 +27,8 @@ internal interface IInternalJSImportMethods
 
     string? NavigationManager_GetHistoryEntryState();
 
+    bool NavigationManager_GetLastNavigationWasIntercepted();
+
     string NavigationManager_GetBaseUri();
 
     void NavigationManager_SetHasLocationChangingListeners(int rendererId, bool value);

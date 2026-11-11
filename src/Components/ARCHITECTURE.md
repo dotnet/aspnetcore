@@ -166,6 +166,8 @@ A standalone Blazor WebAssembly application starts directly in this composition.
 
 The WebAssembly host reconciles `NavigationManager` with the browser's current URL and history entry state after attaching the renderer and before rendering the initial components. Enhanced navigations can update the browser location during startup, while location-change delivery to the interactive runtime is not yet available.
 
+Startup reconciliation notifies subscribers only when the URL has changed, preserving the intercepted-link flag from the latest JavaScript location-change notification. A state-only update does not raise `LocationChanged`. Only string-valued history user state is restored; other native history values are treated as absent rather than passed to the synchronous string interop import.
+
 ```mermaid
 sequenceDiagram
     participant Browser
