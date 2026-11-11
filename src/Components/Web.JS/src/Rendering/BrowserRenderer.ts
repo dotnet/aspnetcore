@@ -7,6 +7,7 @@ import { LogicalElement, PermutationListEntry, toLogicalElement, insertLogicalCh
 import { applyCaptureIdToElement } from './ElementReferenceCapture';
 import { attachToEventDelegator as attachNavigationManagerToEventDelegator } from '../Services/NavigationManager';
 import { applyAnyDeferredValue, tryApplySpecialProperty } from './DomSpecialPropertyUtil';
+import { captureNavigationFocus, PendingNavigationFocus } from './FocusOnNavigate';
 const sharedTemplateElemForParsing = document.createElement('template');
 const sharedSvgElemForParsing = document.createElementNS('http://www.w3.org/2000/svg', 'g');
 const sharedMathMLElemForParsing = document.createElementNS('http://www.w3.org/1998/Math/MathML', 'mrow');
@@ -56,19 +57,17 @@ export class BrowserRenderer {
     elementsToClearOnRootComponentRender.add(element);
   }
 
-  public updateComponent(batch: RenderBatch, componentId: number, edits: ArrayBuilderSegment<RenderTreeEdit>, referenceFrames: ArrayValues<RenderTreeFrame>): Element | null {
+  public updateComponent(batch: RenderBatch, componentId: number, edits: ArrayBuilderSegment<RenderTreeEdit>, referenceFrames: ArrayValues<RenderTreeFrame>): PendingNavigationFocus | null {
     const element = this.childComponentLocations[componentId];
     if (!element) {
       throw new Error(`No element is currently associated with component ${componentId}`);
     }
 
-    // On the first render for each root component, clear any existing content (e.g., prerendered)
-    let focusedElementBeforePrerenderClear: Element | null = null;
-    if (elementsToClearOnRootComponentRender.delete(element)) {
-      if (document.activeElement instanceof Element) {
-        focusedElementBeforePrerenderClear = document.activeElement;
-      }
+    let pendingFocus: PendingNavigationFocus | null = null;
 
+    // On the first render for each root component, clear any existing content (e.g., prerendered)
+    if (elementsToClearOnRootComponentRender.delete(element)) {
+      pendingFocus = captureNavigationFocus(element);
       this.detachEventHandlersFromElement(element);
       emptyLogicalElement(element);
 
@@ -89,7 +88,7 @@ export class BrowserRenderer {
       activeElementBefore.focus();
     }
 
-    return focusedElementBeforePrerenderClear;
+    return pendingFocus;
   }
 
   public disposeComponent(componentId: number): void {
