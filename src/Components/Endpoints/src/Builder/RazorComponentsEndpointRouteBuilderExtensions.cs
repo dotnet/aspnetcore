@@ -22,6 +22,10 @@ public static class RazorComponentsEndpointRouteBuilderExtensions
     /// </summary>
     /// <param name="endpoints">The <see cref="IEndpointRouteBuilder"/>.</param>
     /// <returns>An <see cref="RazorComponentsEndpointConventionBuilder"/> that can be used to further configure the API.</returns>
+    /// <remarks>
+    /// The opaque redirection and browser tools settings endpoints are mapped once per endpoint route builder
+    /// and use the conventions of the first mapped root component.
+    /// </remarks>
     public static RazorComponentsEndpointConventionBuilder MapRazorComponents<[DynamicallyAccessedMembers(Component)] TRootComponent>(this IEndpointRouteBuilder endpoints)
     {
         ArgumentNullException.ThrowIfNull(endpoints);
