@@ -17,6 +17,7 @@ public class QueryCollectionBenchmarks
     private const string _singleValue = "?key1=value1";
     private const string _singleValueWithPlus = "?key1=value1+value2+value3";
     private const string _encoded = "?key1=value%231";
+    private const string _duplicateKeys = "?key1=value1&key1=value2&key1=value3&key2=value1&key2=value2";
 
     [Benchmark(Description = "ParseNew")]
     [BenchmarkCategory("QueryString")]
@@ -44,6 +45,20 @@ public class QueryCollectionBenchmarks
     public void ParseNewEncoded()
     {
         _ = QueryFeature.ParseNullableQueryInternal(_encoded);
+    }
+
+    [Benchmark(Description = "ParseNew")]
+    [BenchmarkCategory("DuplicateKeys")]
+    public void ParseNewDuplicateKeys()
+    {
+        _ = QueryFeature.ParseNullableQueryInternal(_duplicateKeys);
+    }
+
+    [Benchmark(Description = "QueryHelpersParse")]
+    [BenchmarkCategory("DuplicateKeys")]
+    public void QueryHelpersParseDuplicateKeys()
+    {
+        _ = QueryHelpers.ParseNullableQuery(_duplicateKeys);
     }
 
     [Benchmark(Description = "QueryHelpersParse")]
