@@ -3,7 +3,6 @@
 
 using System;
 using System.Buffers;
-using System.Diagnostics;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 #if NET
@@ -100,9 +99,7 @@ internal
                 return chars;
             }
             var buffer = new char[source.Length];
-            source.Replace(buffer, '+', ' ');
-            var success = Uri.TryUnescapeDataString(buffer, buffer, out var unescapedLength);
-            Debug.Assert(success);
+            var unescapedLength = Microsoft.AspNetCore.Internal.QueryStringDecoder.Decode(source, buffer);
             return buffer.AsMemory(0, unescapedLength);
 #else
             if (source.IndexOf('%') < 0 && source.IndexOf('+') < 0)

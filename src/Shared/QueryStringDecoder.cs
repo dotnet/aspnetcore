@@ -2,11 +2,15 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
+using System.Buffers;
+using System.Diagnostics;
 
 namespace Microsoft.AspNetCore.Internal;
 
 internal static class QueryStringDecoder
 {
+    private const int StackAllocThreshold = 256;
+
     /// <summary>
     /// Decodes an encoded query string name or value ('+' as space, then percent-decoding) directly into a string.
     /// </summary>
@@ -18,13 +22,34 @@ internal static class QueryStringDecoder
             return chars.ToString();
         }
 
-        if (!source.Contains('+'))
+        char[]? rented = null;
+        var buffer = source.Length <= StackAllocThreshold
+            ? stackalloc char[StackAllocThreshold]
+            : (rented = ArrayPool<char>.Shared.Rent(source.Length));
+
+        var written = Decode(source, buffer);
+        var result = new string(buffer[..written]);
+
+        if (rented is not null)
         {
-            return Uri.UnescapeDataString(source);
+            ArrayPool<char>.Shared.Return(rented);
         }
 
-        // Uri.UnescapeDataString returns the same instance when there is nothing to unescape.
-        var replaced = string.Create(source.Length, chars, static (destination, chars) => chars.Span.Replace(destination, '+', ' '));
-        return Uri.UnescapeDataString(replaced);
+        return result;
+    }
+
+    /// <summary>
+    /// Decodes <paramref name="source"/> ('+' as space, then percent-decoding) into <paramref name="destination"/>,
+    /// which must be at least as long as <paramref name="source"/>.
+    /// </summary>
+    /// <returns>The number of characters written to <paramref name="destination"/>.</returns>
+    public static int Decode(ReadOnlySpan<char> source, Span<char> destination)
+    {
+        Debug.Assert(destination.Length >= source.Length);
+
+        source.Replace(destination, '+', ' ');
+        var success = Uri.TryUnescapeDataString(destination[..source.Length], destination, out var written);
+        Debug.Assert(success);
+        return written;
     }
 }

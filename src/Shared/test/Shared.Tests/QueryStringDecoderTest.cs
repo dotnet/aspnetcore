@@ -51,14 +51,16 @@ public class QueryStringDecoderTest
     }
 
     [Theory]
+    [InlineData(255)]
     [InlineData(256)]
     [InlineData(257)]
-    [InlineData(1000)]
-    public void DecodeToStringDecodesLongValues(int repeat)
+    [InlineData(5000)]
+    public void DecodeToStringDecodesLongValues(int length)
     {
-        var encoded = string.Concat(System.Linq.Enumerable.Repeat("a+%2B", repeat));
-        var expected = string.Concat(System.Linq.Enumerable.Repeat("a +", repeat));
+        var encoded = "%2B" + new string('+', length - 7) + "a%20";
+        var expected = "+" + new string(' ', length - 7) + "a ";
 
+        Assert.Equal(length, encoded.Length);
         Assert.Equal(expected, QueryStringDecoder.DecodeToString(encoded.AsMemory()));
     }
 
