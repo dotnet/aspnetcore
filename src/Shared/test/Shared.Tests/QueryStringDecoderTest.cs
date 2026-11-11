@@ -71,4 +71,26 @@ public class QueryStringDecoderTest
 
         Assert.Equal("a b c", QueryStringDecoder.DecodeToString(query.AsMemory(2, 7)));
     }
+
+    [Fact]
+    public void DecodeToMemoryReturnsInputWhenNothingToDecode()
+    {
+        var query = "x=value&y=1";
+        var encoded = query.AsMemory(2, 5);
+
+        var decoded = QueryStringDecoder.DecodeToMemory(encoded);
+
+        Assert.True(decoded.Equals(encoded));
+    }
+
+    [Theory]
+    [InlineData("a+b", "a b")]
+    [InlineData("a%20b", "a b")]
+    [InlineData("a+%2B+b", "a + b")]
+    [InlineData("%C3%BC+%F0%9F%98%80", "\u00FC \U0001F600")]
+    [InlineData("%zz+x", "%zz x")]
+    public void DecodeToMemoryDecodesPlusAndPercentEncoding(string encoded, string expected)
+    {
+        Assert.Equal(expected, QueryStringDecoder.DecodeToMemory(encoded.AsMemory()).ToString());
+    }
 }

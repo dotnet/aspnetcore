@@ -2,13 +2,42 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
+#if NET
 using System.Buffers;
 using System.Diagnostics;
+#endif
 
 namespace Microsoft.AspNetCore.Internal;
 
 internal static class QueryStringDecoder
 {
+    /// <summary>
+    /// Decodes an encoded query string name or value ('+' as space, then percent-decoding).
+    /// Returns <paramref name="chars"/> unchanged when there is nothing to decode.
+    /// </summary>
+    public static ReadOnlyMemory<char> DecodeToMemory(ReadOnlyMemory<char> chars)
+    {
+        var source = chars.Span;
+#if NET
+        if (!source.ContainsAny('%', '+'))
+        {
+            return chars;
+        }
+
+        var buffer = new char[source.Length];
+        var written = Decode(source, buffer);
+        return buffer.AsMemory(0, written);
+#else
+        if (source.IndexOf('%') < 0 && source.IndexOf('+') < 0)
+        {
+            return chars;
+        }
+
+        return Uri.UnescapeDataString(chars.ToString().Replace('+', ' ')).AsMemory();
+#endif
+    }
+
+#if NET
     private const int StackAllocThreshold = 256;
 
     /// <summary>
@@ -52,4 +81,5 @@ internal static class QueryStringDecoder
         Debug.Assert(success);
         return written;
     }
+#endif
 }
