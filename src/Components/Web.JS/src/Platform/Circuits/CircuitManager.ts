@@ -540,7 +540,7 @@ export class CircuitManager implements DotNet.DotNetCallDispatcher {
     this._startCircuitUri = undefined;
     const uri = navigationManagerFunctions.getLocationHref();
     if (startCircuitUri !== undefined && uri !== startCircuitUri) {
-      this.sendLocationChanged(uri, history.state?.userState, false);
+      this.sendLocationChanged(uri, history.state?.userState, false).catch(error => this.unhandledError(error));
     }
   }
 
