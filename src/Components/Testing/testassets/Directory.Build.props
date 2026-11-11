@@ -1,5 +1,6 @@
 <Project>
   <Import Project="$([MSBuild]::GetPathOfFileAbove('Directory.Build.props', '$(MSBuildThisFileDirectory)../'))" />
+  <Import Project="$(RepositoryEngineeringDir)common\native\NativeAotSupported.props" />
 
   <PropertyGroup Condition=" $(IsTestProject) ">
     <GenerateLoggingTestingAssemblyAttributes>false</GenerateLoggingTestingAssemblyAttributes>
