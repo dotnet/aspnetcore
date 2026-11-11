@@ -810,7 +810,7 @@ jobs:
 
 pre-agent-steps:
   - name: Set up .NET SDK
-    uses: actions/setup-dotnet@v6.0.0
+    uses: actions/setup-dotnet@v6.1.0
     with:
       dotnet-version: 11.0.100-rc.1.26420.103
   - name: Prepare trusted frozen review bundle

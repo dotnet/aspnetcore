@@ -70,10 +70,15 @@ contract, not an actual public API guarantee. Case c uses a synthetic JavaScript
 component and an immutable observation artifact. Component attributes preserve the exact supplied
 bytes, including existing line endings. Provenance records hashes and case kinds.
 
-Cases a, b, and c were measured at 4/5, 5/5, and 5/5 on the predecessor verifier
-text. They have not yet been re-run against the merged guard clauses.
-Case d uses a scenario close to the one @maraf reported at 3/10 DROP and 7/10
-DOWNGRADE(intent). It has not been measured, so it is not gated.
+Cases a, b, and c scored 5/5, 5/5, and 5/5 (15/15 disposition and 15/15
+`evidence-reads`) on the verifier text in this PR, including the merged #70319
+guard clauses and the tightened secondary-failure `contract` rule. A fourth
+policy-only head-test scenario (close to @maraf's 3/10 `DROP(unestablished)` /
+7/10 `DOWNGRADE(intent)` synthetic fixture) was omitted from the component gate;
+`SKILL.md` retains the coordinator backstop mapping `DOWNGRADE(intent)` with
+`contract: "n/a"` to `UNRESOLVED`, which has not been measured end to end, and
+the 30-trial-per-arm L1 `review-pull-request` model suite was not rerun on the
+final patch.
 
 Model-free validation checks layout, schema, source hashes, read-guard coverage,
 and experiment selection. It does not establish adjudication quality. A
