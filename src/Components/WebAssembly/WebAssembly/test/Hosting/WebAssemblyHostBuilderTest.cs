@@ -15,6 +15,54 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Hosting;
 
 public class WebAssemblyHostBuilderTest
 {
+    [Theory]
+    [InlineData(false, false)]
+    [InlineData(true, false)]
+    [InlineData(false, true)]
+    [InlineData(true, true)]
+    public void Builder_LoadsRuntimeAppSettingsInOrder(bool includeBase, bool includeEnvironment)
+    {
+        var appSettings = new Dictionary<string, byte[]>();
+        if (includeBase)
+        {
+            appSettings.Add("appsettings.json", Encoding.UTF8.GetBytes("""{"Key":"Base","BaseOnly":"base"}"""));
+        }
+        if (includeEnvironment)
+        {
+            appSettings.Add("appsettings.Development.json", Encoding.UTF8.GetBytes("""{"Key":"Development","EnvironmentOnly":"environment"}"""));
+        }
+
+        var builder = new WebAssemblyHostBuilder(new TestInternalJSImportMethods(environment: "Development", appSettings: appSettings));
+        var host = builder.Build();
+
+        Assert.Equal(includeEnvironment ? "Development" : includeBase ? "Base" : null, host.Configuration["Key"]);
+        Assert.Equal(includeBase ? "base" : null, host.Configuration["BaseOnly"]);
+        Assert.Equal(includeEnvironment ? "environment" : null, host.Configuration["EnvironmentOnly"]);
+    }
+
+    [Fact]
+    public void Builder_UsesRuntimeSelectedFileNames()
+    {
+        var appSettings = new Dictionary<string, byte[]>
+        {
+            ["runtime-selected.json"] = Encoding.UTF8.GetBytes("""{"Key":"RuntimeSelected"}"""),
+        };
+        var builder = new WebAssemblyHostBuilder(new TestInternalJSImportMethods(appSettings: appSettings));
+
+        Assert.Equal("RuntimeSelected", builder.Configuration["Key"]);
+    }
+
+    [Fact]
+    public void Builder_PropagatesInvalidRuntimeConfiguration()
+    {
+        var appSettings = new Dictionary<string, byte[]>
+        {
+            ["appsettings.json"] = Encoding.UTF8.GetBytes("invalid json"),
+        };
+
+        Assert.ThrowsAny<JsonException>(() => new WebAssemblyHostBuilder(new TestInternalJSImportMethods(appSettings: appSettings)));
+    }
+
     [Fact]
     public void Build_AllowsConfiguringConfiguration()
     {

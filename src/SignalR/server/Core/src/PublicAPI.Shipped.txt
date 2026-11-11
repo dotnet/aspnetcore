@@ -293,6 +293,7 @@ static Microsoft.AspNetCore.SignalR.SignalRConnectionBuilderExtensions.UseHub<TH
 static Microsoft.Extensions.DependencyInjection.SignalRDependencyInjectionExtensions.AddSignalRCore(this Microsoft.Extensions.DependencyInjection.IServiceCollection! services) -> Microsoft.AspNetCore.SignalR.ISignalRServerBuilder!
 virtual Microsoft.AspNetCore.SignalR.DefaultUserIdProvider.GetUserId(Microsoft.AspNetCore.SignalR.HubConnectionContext! connection) -> string?
 virtual Microsoft.AspNetCore.SignalR.Hub.Dispose(bool disposing) -> void
+virtual Microsoft.AspNetCore.SignalR.Hub.OnAuthenticationRefreshedAsync() -> System.Threading.Tasks.Task!
 virtual Microsoft.AspNetCore.SignalR.Hub.OnConnectedAsync() -> System.Threading.Tasks.Task!
 virtual Microsoft.AspNetCore.SignalR.Hub.OnDisconnectedAsync(System.Exception? exception) -> System.Threading.Tasks.Task!
 virtual Microsoft.AspNetCore.SignalR.HubConnectionContext.Abort() -> void
