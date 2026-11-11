@@ -27,10 +27,6 @@
       $(DefaultNetCoreTargetFramework), add previous SiteExtension packages to the list below. Remove
       entries when packages aren't needed in the bundle anymore.
       -->
-    <PackageReference Include="Microsoft.AspNetCore.AzureAppServices.SiteExtension.8.0.x64" PrivateAssets="All" />
-    <PackageReference Include="Microsoft.AspNetCore.AzureAppServices.SiteExtension.8.0.x86" PrivateAssets="All" />
-    <PackageReference Include="Microsoft.AspNetCore.AzureAppServices.SiteExtension.9.0.x64" PrivateAssets="All" />
-    <PackageReference Include="Microsoft.AspNetCore.AzureAppServices.SiteExtension.9.0.x86" PrivateAssets="All" />
     <PackageReference Include="Microsoft.AspNetCore.AzureAppServices.SiteExtension.10.0.x64" PrivateAssets="All" />
     <PackageReference Include="Microsoft.AspNetCore.AzureAppServices.SiteExtension.10.0.x86" PrivateAssets="All" />
     <PackageReference Include="Microsoft.AspNetCore.AzureAppServices.SiteExtension.11.0.x64" PrivateAssets="All" />
