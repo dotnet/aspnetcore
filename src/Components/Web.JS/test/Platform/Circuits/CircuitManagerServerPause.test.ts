@@ -117,6 +117,86 @@ describe('CircuitManager pause deferral', () => {
       expect(initialCircuitEvents).toBeInstanceOf(EventTarget);
     });
 
+    test('does not show pause UI or request a pause once disposal starts', async () => {
+      const { display } = configureHandler('default');
+      await circuit.start();
+      jest.mocked(connection.invoke).mockClear();
+
+      const disposal = circuit.dispose();
+      const pausing = circuit.pause();
+      await disposal;
+      const paused = await pausing;
+
+      expect(display.show).not.toHaveBeenCalled();
+      expect(connection.invoke).not.toHaveBeenCalled();
+      expect(paused).toBe(false);
+      expect(await circuit.pause()).toBe(false);
+      expect(display.show).not.toHaveBeenCalled();
+      expect(connection.invoke).not.toHaveBeenCalled();
+    });
+
+    test('does not request a resume or reopen the circuit once disposal starts', async () => {
+      configureHandler('default');
+      await circuit.start();
+      expect(await circuit.pauseCircuit()).toBe(true);
+      jest.mocked(connection.invoke).mockClear();
+      const onCircuitOpened = jest.fn();
+      options.circuitHandlers.push({ onCircuitOpened });
+
+      const disposal = circuit.dispose();
+      const resuming = circuit.resume();
+      await disposal;
+      const resumed = await resuming;
+
+      expect(connection.invoke).not.toHaveBeenCalled();
+      expect(onCircuitOpened).not.toHaveBeenCalled();
+      expect(resumed).toBe(false);
+      expect(await circuit.resume()).toBe(false);
+      expect(connection.invoke).not.toHaveBeenCalled();
+      expect(onCircuitOpened).not.toHaveBeenCalled();
+    });
+
+    test('connection closure does not show reconnect UI while disposal awaits startup', async () => {
+      const { display } = configureHandler('default');
+      const startup = Promise.withResolvers<void>();
+      jest.mocked(connection.start).mockReturnValue(startup.promise);
+      const starting = circuit.start();
+      const disposal = circuit.dispose();
+      try {
+        expect(circuit.isDisposedOrDisposing()).toBe(true);
+        connectionClosed!(new Error('Connection closed during startup'));
+
+        expect(display.show).not.toHaveBeenCalled();
+        expect(display.failed).not.toHaveBeenCalled();
+      } finally {
+        startup.resolve();
+        await starting;
+        await disposal;
+      }
+    });
+
+    test('connection closure after a successful disconnect beacon does not show reconnect UI', async () => {
+      const { display } = configureHandler('default');
+      await circuit.start();
+      const descriptor = Object.getOwnPropertyDescriptor(navigator, 'sendBeacon');
+      const sendBeacon = jest.fn(() => true);
+      Object.defineProperty(navigator, 'sendBeacon', { configurable: true, value: sendBeacon });
+      try {
+        circuit.sendDisconnectBeacon();
+        expect(sendBeacon).toHaveBeenCalledWith('_blazor/disconnect', expect.any(FormData));
+        expect(circuit.isDisposedOrDisposing()).toBe(false);
+        connectionClosed!();
+
+        expect(display.show).not.toHaveBeenCalled();
+      } finally {
+        if (descriptor) {
+          Object.defineProperty(navigator, 'sendBeacon', descriptor);
+        } else {
+          Reflect.deleteProperty(navigator, 'sendBeacon');
+        }
+      }
+    });
+
     test.each(['default', 'custom'])('ordinary connection loss does not trigger pause UI cleanup (%s)', async kind => {
       const { display, onConnectionUp } = configureHandler(kind);
       await circuit.start();
@@ -126,6 +206,9 @@ describe('CircuitManager pause deferral', () => {
 
       expect(onConnectionUp).not.toHaveBeenCalled();
       expect(display.hide).not.toHaveBeenCalled();
+      if (kind === 'default') {
+        expect(display.show).toHaveBeenCalledWith({ type: 'reconnect', remote: false, currentAttempt: 0, secondsToNextAttempt: 0 });
+      }
     });
 
     test.each(['default', 'custom'])('disposal clears an outstanding pause display once (%s)', async kind => {

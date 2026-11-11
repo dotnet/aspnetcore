@@ -220,7 +220,7 @@ export class CircuitManager implements DotNet.DotNetCallDispatcher {
         this._pausingState.transitionTo(true);
       }
 
-      if (!this._disposed && !this._renderingFailed && !pausingWasInProgress) {
+      if (!this._disposed && !this.isDisposedOrDisposing() && !this._renderingFailed && !pausingWasInProgress) {
         this._options.reconnectionHandler!.onConnectionDown(this._options.reconnectionOptions, error);
       }
     });
@@ -369,6 +369,10 @@ export class CircuitManager implements DotNet.DotNetCallDispatcher {
   }
 
   public async pause(remote?: boolean): Promise<boolean> {
+    if (this.isDisposedOrDisposing()) {
+      return false;
+    }
+
     if (!this._circuitId) {
       this._logger.log(LogLevel.Error, 'Circuit host not initialized.');
       return false;
@@ -421,6 +425,10 @@ export class CircuitManager implements DotNet.DotNetCallDispatcher {
   }
 
   public async resume(): Promise<boolean> {
+    if (this.isDisposedOrDisposing()) {
+      return false;
+    }
+
     if (!this._circuitId) {
       this._logger.log(LogLevel.Error, 'Circuit host not initialized.');
       throw new Error('Circuit host not initialized.');
