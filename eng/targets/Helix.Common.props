@@ -1,11 +1,12 @@
 <Project>
   <!-- This file is shared between Helix.proj and .csproj files. -->
   <PropertyGroup>
-    <HelixQueueAlmaLinux>(AlmaLinux.10.Amd64.Open)azurelinux.3.Amd64.Open@mcr.microsoft.com/dotnet-buildtools/prereqs:almalinux-10-helix-amd64</HelixQueueAlmaLinux>
-    <HelixQueueAlpine>(Alpine.323.Amd64.Open)azurelinux.3.Amd64.Open@mcr.microsoft.com/dotnet-buildtools/prereqs:alpine-3.23-helix-amd64</HelixQueueAlpine>
-    <HelixQueueAzureLinux>(AzureLinux.30.Amd64.Open)azurelinux.3.Amd64.Open@mcr.microsoft.com/dotnet-buildtools/prereqs:azurelinux-3.0-helix-amd64</HelixQueueAzureLinux>
-    <HelixQueueDebian>(Debian.13.Amd64.Open)azurelinux.3.Amd64.Open@mcr.microsoft.com/dotnet-buildtools/prereqs:debian-13-helix-amd64</HelixQueueDebian>
-    <HelixQueueFedora>(Fedora.44.Amd64.Open)azurelinux.3.Amd64.Open@mcr.microsoft.com/dotnet-buildtools/prereqs:fedora-44-helix-amd64</HelixQueueFedora>
+    <HelixQueueAlmaLinux>(AlmaLinux.10.Amd64.Open)azurelinux.4.Amd64.Open@mcr.microsoft.com/dotnet-buildtools/prereqs:almalinux-10-helix-amd64</HelixQueueAlmaLinux>
+    <HelixQueueAlpine>(Alpine.323.Amd64.Open)azurelinux.4.Amd64.Open@mcr.microsoft.com/dotnet-buildtools/prereqs:alpine-3.23-helix-amd64</HelixQueueAlpine>
+    <HelixQueueAzureLinux>(AzureLinux.40.Amd64.Open)azurelinux.4.Amd64.Open@mcr.microsoft.com/dotnet-buildtools/prereqs:azurelinux-4.0-helix-amd64</HelixQueueAzureLinux>
+    <HelixQueueAzureLinux3>(AzureLinux.30.Amd64.Open)azurelinux.4.Amd64.Open@mcr.microsoft.com/dotnet-buildtools/prereqs:azurelinux-3.0-helix-amd64</HelixQueueAzureLinux3>
+    <HelixQueueDebian>(Debian.13.Amd64.Open)azurelinux.4.Amd64.Open@mcr.microsoft.com/dotnet-buildtools/prereqs:debian-13-helix-amd64</HelixQueueDebian>
+    <HelixQueueFedora>(Fedora.44.Amd64.Open)azurelinux.4.Amd64.Open@mcr.microsoft.com/dotnet-buildtools/prereqs:fedora-44-helix-amd64</HelixQueueFedora>
     <!-- Arm64 -->
     <HelixQueueArmDebian>(Debian.13.Arm64.Open)ubuntu.2404.armarch.open@mcr.microsoft.com/dotnet-buildtools/prereqs:debian-13-helix-arm64v8</HelixQueueArmDebian>
 
@@ -44,6 +45,7 @@
         <!-- Containers -->
         <HelixAvailableTargetQueue Include="$(HelixQueueAlpine)" Platform="Linux" />
         <HelixAvailableTargetQueue Include="$(HelixQueueAzureLinux)" Platform="Linux" />
+        <HelixAvailableTargetQueue Include="$(HelixQueueAzureLinux3)" Platform="Linux" />
         <HelixAvailableTargetQueue Include="$(HelixQueueDebian)" Platform="Linux" />
         <HelixAvailableTargetQueue Include="$(HelixQueueFedora)" Platform="Linux" />
         <!-- Arm64 -->
