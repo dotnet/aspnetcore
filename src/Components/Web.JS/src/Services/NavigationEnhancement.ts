@@ -275,6 +275,9 @@ export async function performEnhancedPageLoad(internalDestinationHref: string, i
             history.pushState(null, '', response.url);
           }
         }
+        if (response.url !== internalDestinationHref) {
+          notifyEnhancedNavigationListeners(response.url, interceptedLink);
+        }
         internalDestinationHref = response.url;
       }
 
