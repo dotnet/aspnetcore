@@ -1213,36 +1213,30 @@ public abstract partial class Renderer : IDisposable, IAsyncDisposable
                 if (GetOptionalComponentState(candidate.ComponentId) is not null)
                 {
                     var renderQueue = _batchBuilder.ComponentRenderQueue;
-                    List<RenderQueueEntry> pendingBoundaryRenders = null;
+                    var clearEntry = new RenderQueueEntry(candidate, builder => { });
+                    var hasPendingBoundaryRender = false;
                     var pendingRenderCount = renderQueue.Count;
                     for (var i = 0; i < pendingRenderCount; i++)
                     {
                         var entry = renderQueue.Dequeue();
-                        if (entry.ComponentState == candidate)
+                        if (!hasPendingBoundaryRender && entry.ComponentState == candidate)
                         {
-                            pendingBoundaryRenders ??= new();
-                            pendingBoundaryRenders.Add(entry);
+                            // Clear before the first boundary render without reordering existing renders.
+                            renderQueue.Enqueue(clearEntry);
+                            hasPendingBoundaryRender = true;
                         }
-                        else
-                        {
-                            renderQueue.Enqueue(entry);
-                        }
+
+                        renderQueue.Enqueue(entry);
                     }
 
-                    // Pending boundary renders must run after the clear, without initializing
-                    // error content that would immediately be discarded by the clear.
-                    renderQueue.Enqueue(new RenderQueueEntry(candidate, builder => { }));
-                    if (pendingBoundaryRenders is not null)
+                    if (!hasPendingBoundaryRender)
                     {
-                        foreach (var entry in pendingBoundaryRenders)
-                        {
-                            renderQueue.Enqueue(entry);
-                        }
+                        renderQueue.Enqueue(clearEntry);
                     }
 
                     // When there is no pending boundary render to defer, preserve clearing
                     // the failed subtree before notifying user code outside a render batch.
-                    if (!_isBatchInProgress && pendingBoundaryRenders is null)
+                    if (!_isBatchInProgress && !hasPendingBoundaryRender)
                     {
                         ProcessPendingRender();
                     }
