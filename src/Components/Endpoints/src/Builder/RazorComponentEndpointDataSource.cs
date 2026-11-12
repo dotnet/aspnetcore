@@ -15,7 +15,7 @@ using static Microsoft.AspNetCore.Internal.LinkerFlags;
 
 namespace Microsoft.AspNetCore.Components.Endpoints;
 
-internal class RazorComponentEndpointDataSource<[DynamicallyAccessedMembers(Component)] TRootComponent> : EndpointDataSource, IRazorComponentEndpointDataSource
+internal class RazorComponentEndpointDataSource<[DynamicallyAccessedMembers(Component)] TRootComponent> : EndpointDataSource
 {
     private readonly object _lock = new();
     private readonly List<Action<EndpointBuilder>> _conventions = [];
@@ -23,7 +23,6 @@ internal class RazorComponentEndpointDataSource<[DynamicallyAccessedMembers(Comp
     private readonly List<Action<ComponentApplicationBuilder>> _componentApplicationBuilderActions = [];
     private readonly RazorComponentDataSourceOptions _options = new();
     private readonly IEndpointRouteBuilder _endpointRouteBuilder;
-    private readonly bool _ownsFrameworkEndpoints;
     private readonly ResourceCollectionResolver _resourceCollectionResolver;
     private readonly RenderModeEndpointProvider[] _renderModeEndpointProviders;
     private readonly RazorComponentEndpointFactory _factory;
@@ -45,8 +44,6 @@ internal class RazorComponentEndpointDataSource<[DynamicallyAccessedMembers(Comp
         HotReloadService? hotReloadService = null)
     {
         _endpointRouteBuilder = endpointRouteBuilder;
-        // Keep ownership independent of lazy initialization order and Hot Reload rebuilds.
-        _ownsFrameworkEndpoints = !endpointRouteBuilder.DataSources.OfType<IRazorComponentEndpointDataSource>().Any();
         _resourceCollectionResolver = new ResourceCollectionResolver(endpointRouteBuilder);
         _renderModeEndpointProviders = renderModeEndpointProviders.ToArray();
         _factory = factory;
@@ -126,10 +123,7 @@ internal class RazorComponentEndpointDataSource<[DynamicallyAccessedMembers(Comp
 
             DefaultBuilder.OnBeforeCreateEndpoints(endpointContext);
 
-            if (_ownsFrameworkEndpoints)
-            {
-                AddBlazorWebEndpoints(endpoints);
-            }
+            AddBlazorWebEndpoints(endpoints);
 
             foreach (var definition in context.Pages)
             {
@@ -199,6 +193,8 @@ internal class RazorComponentEndpointDataSource<[DynamicallyAccessedMembers(Comp
 
         foreach (var endpoint in blazorWebEndpoints)
         {
+            endpoint.Metadata.Add(BlazorWebEndpointMetadata.Instance);
+
             foreach (var convention in _conventions)
             {
                 convention(endpoint);
@@ -220,8 +216,4 @@ internal class RazorComponentEndpointDataSource<[DynamicallyAccessedMembers(Comp
         Debug.Assert(_endpoints != null);
         return _changeToken;
     }
-}
-
-internal interface IRazorComponentEndpointDataSource
-{
 }
