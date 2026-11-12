@@ -162,7 +162,7 @@ public class ClientCertificateAuthenticationTests
     }
 
     [ConditionalFact]
-    [SkipOnHelix("https://github.com/dotnet/aspnetcore/issues/32813", Queues = $"All.Ubuntu;{HelixConstants.AlmaLinuxAmd64}")]
+    [SkipOnHelix("https://github.com/dotnet/aspnetcore/issues/32813", Queues = "All.Ubuntu")]
     public async Task VerifyExpiredSelfSignedFails()
     {
         using var host = await CreateHost(
@@ -197,7 +197,7 @@ public class ClientCertificateAuthenticationTests
     }
 
     [ConditionalFact]
-    [SkipOnHelix("https://github.com/dotnet/aspnetcore/issues/32813", Queues = $"All.Ubuntu;{HelixConstants.AlmaLinuxAmd64}")]
+    [SkipOnHelix("https://github.com/dotnet/aspnetcore/issues/32813", Queues = "All.Ubuntu")]
     public async Task VerifyNotYetValidSelfSignedFails()
     {
         using var host = await CreateHost(
