@@ -581,6 +581,83 @@ public abstract class ComponentRenderingTestBase : ServerTestBase<ToggleExecutio
     }
 
     [Fact]
+    public void CanRenderManyTopLevelMarkupNodesWithoutRepeatedSiblingScans()
+    {
+        AssertLargeMarkupRendering(wrapped: false);
+    }
+
+    [Fact]
+    public void CanRenderManyWrappedMarkupNodesWithoutRepeatedSiblingScans()
+    {
+        AssertLargeMarkupRendering(wrapped: true);
+    }
+
+    [Fact]
+    public void CanClearMarkupAfterScriptsRemoveAndMoveNodes()
+    {
+        var appElement = Browser.MountTestComponent<MarkupBlockComponent>();
+
+        appElement.FindElement(By.Id("large-markup-orphans")).Click();
+        Browser.Equal("mutated", () => appElement.FindElement(By.Id("large-markup-state")).Text);
+
+        Assert.Equal(
+            new[] { "middle", "last" },
+            appElement.FindElements(By.CssSelector("#large-markup > p")).Select(element => element.Text));
+        Assert.Equal(64, appElement.FindElements(By.CssSelector("#large-markup > span")).Count);
+        Assert.Empty(appElement.FindElements(By.CssSelector("#markup-relocation-target > *")));
+
+        appElement.FindElement(By.Id("large-markup-clear")).Click();
+        Browser.Equal("empty", () => appElement.FindElement(By.Id("large-markup-state")).Text);
+        Assert.Empty(appElement.FindElements(By.CssSelector("#large-markup > *")));
+    }
+
+    private void AssertLargeMarkupRendering(bool wrapped)
+    {
+        const int nodeCount = 1000;
+        var appElement = Browser.MountTestComponent<MarkupBlockComponent>();
+        var script = (IJavaScriptExecutor)Browser;
+
+        // Count synchronous DOM reads rather than relying on a timing threshold.
+        script.ExecuteScript("""
+            const descriptor = Object.getOwnPropertyDescriptor(Node.prototype, 'parentNode');
+            window.__markupParentNodeDescriptor = descriptor;
+            window.__markupParentNodeReads = 0;
+            Object.defineProperty(Node.prototype, 'parentNode', {
+                ...descriptor,
+                get() {
+                    if (this.nodeName === 'P' && this.hasAttribute('data-markup-item')) {
+                        window.__markupParentNodeReads++;
+                    }
+                    return descriptor.get.call(this);
+                }
+            });
+            """);
+
+        try
+        {
+            appElement.FindElement(By.Id(wrapped ? "large-markup-wrapped" : "large-markup-flat")).Click();
+            Browser.Equal(wrapped ? "wrapped" : "flat", () => appElement.FindElement(By.Id("large-markup-state")).Text);
+
+            var parentNodeReads = (long)script.ExecuteScript("return window.__markupParentNodeReads;");
+            Assert.InRange(parentNodeReads, 0, 10L * nodeCount);
+
+            var paragraphSelector = wrapped ? "#large-markup > div > p" : "#large-markup > p";
+            Assert.Equal(nodeCount, appElement.FindElements(By.CssSelector(paragraphSelector)).Count);
+            Assert.Equal(
+                string.Concat(Enumerable.Range(0, nodeCount).Select(index => $"{index};")),
+                appElement.FindElement(By.Id("large-markup")).GetDomProperty("textContent"));
+        }
+        finally
+        {
+            script.ExecuteScript("""
+                Object.defineProperty(Node.prototype, 'parentNode', window.__markupParentNodeDescriptor);
+                delete window.__markupParentNodeDescriptor;
+                delete window.__markupParentNodeReads;
+                """);
+        }
+    }
+
+    [Fact]
     public void CanRenderRazorTemplates()
     {
         var appElement = Browser.MountTestComponent<RazorTemplates>();
