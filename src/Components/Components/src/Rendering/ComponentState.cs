@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Diagnostics;
+using System.Runtime.ExceptionServices;
 using Microsoft.AspNetCore.Components.RenderTree;
 using Microsoft.AspNetCore.Components.Sections;
 
@@ -337,9 +338,35 @@ public class ComponentState : IAsyncDisposable
 
         if (_hasAnyCascadingParameterSubscriptions)
         {
-            RemoveCascadingParameterSubscriptions();
+            try
+            {
+                RemoveCascadingParameterSubscriptions();
+            }
+            catch (Exception exception)
+            {
+                return DisposeAfterSubscriptionFailureAsync(exception);
+            }
         }
 
+        return DisposeComponentAsync();
+    }
+
+    private async ValueTask DisposeAfterSubscriptionFailureAsync(Exception subscriptionException)
+    {
+        try
+        {
+            await DisposeComponentAsync();
+        }
+        catch (Exception componentException)
+        {
+            throw new AggregateException(subscriptionException, componentException);
+        }
+
+        ExceptionDispatchInfo.Throw(subscriptionException);
+    }
+
+    private ValueTask DisposeComponentAsync()
+    {
         DisposeBuffers();
 
         // Components shouldn't need to implement IAsyncDisposable and IDisposable simultaneously,

@@ -37,6 +37,56 @@ public class RendererDisposalTest
     }
 
     [Fact]
+    public void DisposedRenderer_DisposesComponentWhenCascadingSubscriptionDisposalThrows()
+    {
+        var expectedException = new InvalidOperationException("Subscription disposal failed.");
+        var subscription = new ThrowingCascadingSubscription(expectedException);
+        var services = new ServiceCollection();
+        services.TryAddCascadingValueSupplier<TestCascadingParameterAttribute>(
+            _ => (_, _, _) => subscription);
+        using var provider = services.BuildServiceProvider();
+        using var renderer = new TestRenderer(provider) { ShouldHandleExceptions = true };
+        var component = new ComponentWithCustomCascadingSubscription();
+        var componentId = renderer.AssignRootComponentId(component);
+        renderer.RenderRootComponent(componentId);
+        Assert.Equal("initial", component.Value);
+        Assert.False(subscription.Disposed);
+        Assert.False(component.Disposed);
+
+        renderer.Dispose();
+
+        Assert.True(subscription.Disposed);
+        Assert.Same(expectedException, Assert.Single(renderer.HandledExceptions));
+        Assert.True(component.Disposed);
+    }
+
+    [Fact]
+    public async Task DisposedRenderer_ReportsSubscriptionAndAsyncComponentDisposalExceptions()
+    {
+        var subscriptionException = new InvalidOperationException("Subscription disposal failed.");
+        var componentException = new InvalidOperationException("Component disposal failed.");
+        var subscription = new ThrowingCascadingSubscription(subscriptionException);
+        var services = new ServiceCollection();
+        services.TryAddCascadingValueSupplier<TestCascadingParameterAttribute>(
+            _ => (_, _, _) => subscription);
+        using var provider = services.BuildServiceProvider();
+        await using var renderer = new TestRenderer(provider) { ShouldHandleExceptions = true };
+        var component = new AsyncDisposableComponentWithCustomCascadingSubscription(componentException);
+        var componentId = renderer.AssignRootComponentId(component);
+        renderer.RenderRootComponent(componentId);
+        Assert.Equal("initial", component.Value);
+
+        await renderer.DisposeAsync();
+
+        Assert.True(subscription.Disposed);
+        Assert.True(component.Disposed);
+        var exception = Assert.IsType<AggregateException>(Assert.Single(renderer.HandledExceptions));
+        Assert.Collection(exception.InnerExceptions,
+            exception => Assert.Same(subscriptionException, exception),
+            exception => Assert.Same(componentException, exception));
+    }
+
+    [Fact]
     public async Task DisposedRenderer_ClearsEventHandlerReplacementsBeforeDisplayCompletes()
     {
         using var renderer = new TestRenderer();
@@ -183,6 +233,45 @@ public class RendererDisposalTest
         renderer.Batches.Clear();
 
         return (renderer, componentReference);
+    }
+
+    private sealed class TestCascadingParameterAttribute : CascadingParameterAttributeBase;
+
+    private sealed class ThrowingCascadingSubscription(Exception exception) : CascadingParameterSubscription
+    {
+        public bool Disposed { get; private set; }
+
+        public override object GetCurrentValue() => "initial";
+
+        public override void Dispose()
+        {
+            Disposed = true;
+            throw exception;
+        }
+    }
+
+    private class ComponentWithCustomCascadingSubscription : ComponentBase, IDisposable
+    {
+        [TestCascadingParameter]
+        public string Value { get; set; } = string.Empty;
+
+        public bool Disposed { get; private set; }
+
+        public void Dispose()
+        {
+            Disposed = true;
+        }
+    }
+
+    private sealed class AsyncDisposableComponentWithCustomCascadingSubscription(Exception exception)
+        : ComponentWithCustomCascadingSubscription, IAsyncDisposable
+    {
+        public async ValueTask DisposeAsync()
+        {
+            await Task.Yield();
+            Dispose();
+            throw exception;
+        }
     }
 
     private sealed class ReplacingEventHandlerComponent : ComponentBase

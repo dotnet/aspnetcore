@@ -287,6 +287,91 @@ public class WebViewManagerTests
         Assert.Null(webViewManager.CurrentPageContext);
     }
 
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task DisposingWebViewManager_DoesNotAttachAnotherPage(bool attachmentStartedFirst)
+    {
+        var disposalEntered = new TaskCompletionSource();
+        var releaseDisposal = new TaskCompletionSource();
+        var createdServices = new List<GatedAsyncDisposableService>();
+        await using var services = RegisterTestServices()
+            .AddTestBlazorWebView()
+            .AddScoped(_ =>
+            {
+                var service = new GatedAsyncDisposableService(disposalEntered, releaseDisposal.Task);
+                createdServices.Add(service);
+                return service;
+            })
+            .BuildServiceProvider();
+        await using var webViewManager = new TestWebViewManager(services, new TestFileProvider());
+        await webViewManager.AddRootComponentAsync(
+            typeof(ComponentWithGatedAsyncDisposableService),
+            "#app",
+            ParameterView.Empty);
+        webViewManager.ReceiveAttachPageMessage();
+        var originalContext = webViewManager.CurrentPageContext;
+        Assert.NotNull(originalContext);
+        Assert.Single(createdServices);
+
+        Task attachmentTask = Task.CompletedTask;
+        Task disposalTask = Task.CompletedTask;
+        try
+        {
+            if (attachmentStartedFirst)
+            {
+                attachmentTask = originalContext.Renderer.Dispatcher.InvokeAsync(
+                    () => webViewManager.AttachToPageAsync("http://example/", "http://example/reloaded"));
+            }
+            else
+            {
+                disposalTask = webViewManager.DisposeAsync().AsTask();
+            }
+
+            Assert.True(disposalEntered.Task.IsCompletedSuccessfully);
+
+            if (attachmentStartedFirst)
+            {
+                disposalTask = webViewManager.DisposeAsync().AsTask();
+            }
+            else
+            {
+                // Use the same incoming IPC path as a browser reload.
+                webViewManager.ReceiveAttachPageMessage();
+            }
+        }
+        finally
+        {
+            releaseDisposal.TrySetResult();
+            await attachmentTask;
+            await disposalTask;
+        }
+
+        Assert.Single(createdServices);
+        Assert.True(createdServices[0].Disposed);
+        Assert.Null(webViewManager.CurrentPageContext);
+    }
+
+    private sealed class ComponentWithGatedAsyncDisposableService : ComponentBase
+    {
+        [Inject]
+        public GatedAsyncDisposableService Service { get; set; }
+    }
+
+    private sealed class GatedAsyncDisposableService(
+        TaskCompletionSource disposalEntered,
+        Task releaseDisposal) : IAsyncDisposable
+    {
+        public bool Disposed { get; private set; }
+
+        public async ValueTask DisposeAsync()
+        {
+            disposalEntered.TrySetResult();
+            await releaseDisposal;
+            Disposed = true;
+        }
+    }
+
     private sealed class ComponentWithThrowingAsyncDisposableService : ComponentBase
     {
         [Inject]
