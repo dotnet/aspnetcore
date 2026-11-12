@@ -11,7 +11,42 @@ import {
   getLogicalParent,
   permuteLogicalChildren,
   LogicalElement,
+  isSvgElement,
+  isMathMLElement,
 } from '../src/Rendering/LogicalElements';
+
+describe('namespace classification', () => {
+  test.each([
+    { namespace: 'http://www.w3.org/1999/xhtml', tagName: 'div', svg: false, mathML: false },
+    { namespace: 'http://www.w3.org/2000/svg', tagName: 'svg', svg: true, mathML: false },
+    { namespace: 'http://www.w3.org/2000/svg', tagName: 'g', svg: true, mathML: false },
+    { namespace: 'http://www.w3.org/2000/svg', tagName: 'foreignObject', svg: false, mathML: false },
+    { namespace: 'http://www.w3.org/2000/svg', tagName: 'foreignobject', svg: true, mathML: false },
+    { namespace: 'http://www.w3.org/1998/Math/MathML', tagName: 'math', svg: false, mathML: true },
+    { namespace: 'http://www.w3.org/1998/Math/MathML', tagName: 'mi', svg: false, mathML: true },
+  ])('classifies $namespace $tagName without logical promotion', ({ namespace, tagName, svg, mathML }) => {
+    const element = document.createElementNS(namespace, tagName);
+    const symbols = Object.getOwnPropertySymbols(element);
+
+    expect(isSvgElement(element)).toBe(svg);
+    expect(isMathMLElement(element)).toBe(mathML);
+    expect(Object.getOwnPropertySymbols(element)).toEqual(symbols);
+
+    const comment = document.createComment('!');
+    element.appendChild(comment);
+    const logical = toLogicalElement(comment);
+
+    expect(isSvgElement(logical)).toBe(svg);
+    expect(isMathMLElement(logical)).toBe(mathML);
+  });
+
+  test('does not classify a logical document fragment as SVG or MathML', () => {
+    const fragment = toLogicalElement(document.createDocumentFragment());
+
+    expect(isSvgElement(fragment)).toBe(false);
+    expect(isMathMLElement(fragment)).toBe(false);
+  });
+});
 
 describe('insertLogicalChild', () => {
   test('should insert child at the correct position when no orphans exist', () => {

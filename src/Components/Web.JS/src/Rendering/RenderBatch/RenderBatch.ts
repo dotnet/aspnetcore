@@ -90,3 +90,18 @@ export enum FrameType {
   markup = 8,
   namedEvent = 10,
 }
+
+export function countDescendantFrames(batch: RenderBatch, frame: RenderTreeFrame): number {
+  const frameReader = batch.frameReader;
+  switch (frameReader.frameType(frame)) {
+    // The following frame types have a subtree length. Other frames may use that memory slot
+    // to mean something else, so we must not read it. We should consider having nominal subtypes
+    // of RenderTreeFramePointer that prevent access to non-applicable fields.
+    case FrameType.component:
+    case FrameType.element:
+    case FrameType.region:
+      return frameReader.subtreeLength(frame) - 1;
+    default:
+      return 0;
+  }
+}
