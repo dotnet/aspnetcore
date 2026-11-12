@@ -291,7 +291,13 @@ internal sealed class Http1ChunkedEncodingMessageBody : Http1MessageBody
         if (_mode == Mode.TrailerHeaders)
         {
             var reader = new SequenceReader<byte>(readableBuffer);
-            if (_context.TakeMessageHeaders(ref reader, trailers: true))
+            var parseResult = _context.TryTakeMessageHeadersCore(ref reader, trailers: true);
+            if (parseResult.HasError)
+            {
+                throw _context.CreateBadRequestException(parseResult, readableBuffer);
+            }
+
+            if (parseResult.IsComplete)
             {
                 examined = reader.Position;
                 _mode = Mode.Complete;

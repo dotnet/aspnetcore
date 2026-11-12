@@ -151,12 +151,12 @@ public class RequestParsingBenchmark
         {
             Http1Connection.Reset();
 
-            if (!Http1Connection.TakeStartLine(ref reader))
+            if (!Http1Connection.TryTakeStartLineCore(ref reader).IsComplete)
             {
                 ErrorUtilities.ThrowInvalidRequestLine();
             }
 
-            if (!Http1Connection.TakeMessageHeaders(ref reader, trailers: false))
+            if (!Http1Connection.TryTakeMessageHeadersCore(ref reader, trailers: false).IsComplete)
             {
                 ErrorUtilities.ThrowInvalidRequestHeaders();
             }
@@ -183,7 +183,7 @@ public class RequestParsingBenchmark
 
             Http1Connection.Reset();
 
-            if (!Http1Connection.TakeStartLine(ref reader))
+            if (!Http1Connection.TryTakeStartLineCore(ref reader).IsComplete)
             {
                 ErrorUtilities.ThrowInvalidRequestLine();
             }
@@ -193,7 +193,7 @@ public class RequestParsingBenchmark
             readableBuffer = result.Buffer;
             reader = new SequenceReader<byte>(readableBuffer);
 
-            if (!Http1Connection.TakeMessageHeaders(ref reader, trailers: false))
+            if (!Http1Connection.TryTakeMessageHeadersCore(ref reader, trailers: false).IsComplete)
             {
                 ErrorUtilities.ThrowInvalidRequestHeaders();
             }

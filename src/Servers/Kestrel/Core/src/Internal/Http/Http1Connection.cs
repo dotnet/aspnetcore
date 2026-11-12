@@ -195,84 +195,6 @@ internal partial class Http1Connection : HttpProtocol, IRequestProcessor, IHttpO
         SendTimeoutResponse();
     }
 
-    public bool TakeStartLine(ref SequenceReader<byte> reader)
-    {
-        // Make sure the buffer is limited
-        if (reader.Remaining >= ServerOptions.Limits.MaxRequestLineSize)
-        {
-            // Input oversize, cap amount checked
-            return TrimAndTakeStartLine(ref reader);
-        }
-
-        return _parser.ParseRequestLine(new Http1ParsingHandler(this), ref reader);
-
-        bool TrimAndTakeStartLine(ref SequenceReader<byte> reader)
-        {
-            var trimmedBuffer = reader.Sequence.Slice(reader.Position, ServerOptions.Limits.MaxRequestLineSize);
-            var trimmedReader = new SequenceReader<byte>(trimmedBuffer);
-
-            if (!_parser.ParseRequestLine(new Http1ParsingHandler(this), ref trimmedReader))
-            {
-                // We read the maximum allowed but didn't complete the start line.
-                KestrelBadHttpRequestException.Throw(RequestRejectionReason.RequestLineTooLong);
-            }
-
-            reader.Advance(trimmedReader.Consumed);
-            return true;
-        }
-    }
-
-    public bool TakeMessageHeaders(ref SequenceReader<byte> reader, bool trailers)
-    {
-        // Make sure the buffer is limited
-        if (reader.Remaining > _remainingRequestHeadersBytesAllowed)
-        {
-            // Input oversize, cap amount checked
-            return TrimAndTakeMessageHeaders(ref reader, trailers);
-        }
-
-        var alreadyConsumed = reader.Consumed;
-
-        try
-        {
-            var result = _parser.ParseHeaders(new Http1ParsingHandler(this, trailers), ref reader);
-            if (result)
-            {
-                TimeoutControl.CancelTimeout();
-            }
-
-            return result;
-        }
-        finally
-        {
-            _remainingRequestHeadersBytesAllowed -= reader.Consumed - alreadyConsumed;
-        }
-
-        bool TrimAndTakeMessageHeaders(ref SequenceReader<byte> reader, bool trailers)
-        {
-            var trimmedBuffer = reader.Sequence.Slice(reader.Position, _remainingRequestHeadersBytesAllowed);
-            var trimmedReader = new SequenceReader<byte>(trimmedBuffer);
-            try
-            {
-                if (!_parser.ParseHeaders(new Http1ParsingHandler(this, trailers), ref trimmedReader))
-                {
-                    // We read the maximum allowed but didn't complete the headers.
-                    KestrelBadHttpRequestException.Throw(RequestRejectionReason.HeadersExceedMaxTotalSize);
-                }
-
-                TimeoutControl.CancelTimeout();
-
-                reader.Advance(trimmedReader.Consumed);
-
-                return true;
-            }
-            finally
-            {
-                _remainingRequestHeadersBytesAllowed -= trimmedReader.Consumed;
-            }
-        }
-    }
-
     /// <summary>
     /// Non-throwing version of ParseRequest. Returns HttpParseResult instead of throwing.
     /// </summary>
@@ -327,7 +249,7 @@ internal partial class Http1Connection : HttpProtocol, IRequestProcessor, IHttpO
         return HttpParseResult.Incomplete;
     }
 
-    private HttpParseResult TryTakeStartLineCore(ref SequenceReader<byte> reader)
+    internal HttpParseResult TryTakeStartLineCore(ref SequenceReader<byte> reader)
     {
         if (reader.Remaining >= ServerOptions.Limits.MaxRequestLineSize)
         {
@@ -356,7 +278,7 @@ internal partial class Http1Connection : HttpProtocol, IRequestProcessor, IHttpO
         }
     }
 
-    private HttpParseResult TryTakeMessageHeadersCore(ref SequenceReader<byte> reader, bool trailers)
+    internal HttpParseResult TryTakeMessageHeadersCore(ref SequenceReader<byte> reader, bool trailers)
     {
         if (reader.Remaining > _remainingRequestHeadersBytesAllowed)
         {
@@ -1058,7 +980,7 @@ internal partial class Http1Connection : HttpProtocol, IRequestProcessor, IHttpO
     /// <summary>
     /// Creates a BadHttpRequestException with error detail extracted from the buffer.
     /// </summary>
-    private BadHttpRequestException CreateBadRequestException(HttpParseResult parseResult, ReadOnlySequence<byte> buffer)
+    internal BadHttpRequestException CreateBadRequestException(HttpParseResult parseResult, ReadOnlySequence<byte> buffer)
     {
         // Some error reasons don't use detail
         if (parseResult.ErrorReason == RequestRejectionReason.InvalidRequestHeadersNoCRLF)
