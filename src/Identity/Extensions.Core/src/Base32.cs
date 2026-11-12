@@ -81,37 +81,80 @@ internal static class Base32
         }
 
         var output = new byte[trimmedInput.Length * 5 / 8];
-        var bitIndex = 0;
+        if (!TryFromBase32(trimmedInput, output, out _))
+        {
+            throw new FormatException();
+        }
+        return output;
+    }
+
+    /// <summary>
+    /// Decodes Base32 <paramref name="input"/> into <paramref name="destination"/> without throwing.
+    /// Trailing '=' padding is ignored and decoding stops once all complete bytes have been produced,
+    /// matching <see cref="FromBase32(string)"/>.
+    /// </summary>
+    /// <returns>
+    /// <see langword="false"/> if <paramref name="input"/> contains an invalid character or
+    /// <paramref name="destination"/> is too small; otherwise, <see langword="true"/>.
+    /// </returns>
+    internal static bool TryFromBase32(ReadOnlySpan<char> input, Span<byte> destination, out int bytesWritten)
+    {
+        var trimmedInput = input.TrimEnd('=');
+        var outputLength = (int)((long)trimmedInput.Length * 5 / 8);
+        if (outputLength > destination.Length)
+        {
+            bytesWritten = 0;
+            return false;
+        }
+
+        var output = destination.Slice(0, outputLength);
+        var buffer = 0;
+        var bufferBits = 0;
         var inputIndex = 0;
-        var outputBits = 0;
         var outputIndex = 0;
         while (outputIndex < output.Length)
         {
-            var byteIndex = _base32Chars.IndexOf(char.ToUpperInvariant(trimmedInput[inputIndex]));
-            if (byteIndex < 0)
+            var value = GetBase32Value(trimmedInput[inputIndex++]);
+            if (value < 0)
             {
-                throw new FormatException();
+                output.Slice(0, outputIndex).Clear();
+                bytesWritten = 0;
+                return false;
             }
 
-            var bits = Math.Min(5 - bitIndex, 8 - outputBits);
-            output[outputIndex] <<= bits;
-            output[outputIndex] |= (byte)(byteIndex >> (5 - (bitIndex + bits)));
-
-            bitIndex += bits;
-            if (bitIndex >= 5)
+            // Accumulate 5 bits per character and emit a byte whenever at least 8 bits are available.
+            buffer = (buffer << 5) | value;
+            bufferBits += 5;
+            if (bufferBits >= 8)
             {
-                inputIndex++;
-                bitIndex = 0;
-            }
-
-            outputBits += bits;
-            if (outputBits >= 8)
-            {
-                outputIndex++;
-                outputBits = 0;
+                bufferBits -= 8;
+                output[outputIndex++] = (byte)(buffer >> bufferBits);
             }
         }
-        return output;
+
+        bytesWritten = outputLength;
+        return true;
+    }
+
+    private static int GetBase32Value(char c)
+    {
+        if ((uint)(c - 'A') <= 'Z' - 'A')
+        {
+            return c - 'A';
+        }
+
+        if ((uint)(c - 'a') <= 'z' - 'a')
+        {
+            return c - 'a';
+        }
+
+        if ((uint)(c - '2') <= '7' - '2')
+        {
+            return c - '2' + 26;
+        }
+
+        // Non-ASCII characters keep the original culture-invariant upper-casing lookup.
+        return c < 128 ? -1 : _base32Chars.IndexOf(char.ToUpperInvariant(c));
     }
 
     // returns the number of bytes that were output

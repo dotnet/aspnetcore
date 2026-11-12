@@ -114,6 +114,11 @@
     <NpmBuildOutputFiles Include="$(NpmWorkspaceRoot)\src\Components\CustomElements\src\js\dist\Debug\Microsoft.AspNetCore.Components.CustomElements.lib.module.js.map" />
     <NpmBuildOutputFiles Include="$(NpmWorkspaceRoot)\src\Components\CustomElements\src\js\dist\Release\Microsoft.AspNetCore.Components.CustomElements.lib.module.js" />
 
+    <!-- Components Platform outputs -->
+    <NpmBuildOutputFiles Include="$(NpmWorkspaceRoot)\src\Components\Platform\src\js\dist\Debug\Microsoft.AspNetCore.Components.Platform.js" />
+    <NpmBuildOutputFiles Include="$(NpmWorkspaceRoot)\src\Components\Platform\src\js\dist\Debug\Microsoft.AspNetCore.Components.Platform.js.map" />
+    <NpmBuildOutputFiles Include="$(NpmWorkspaceRoot)\src\Components\Platform\src\js\dist\Release\Microsoft.AspNetCore.Components.Platform.js" />
+
     <!-- FunctionalTests outputs -->
     <NpmBuildOutputFiles Include="$(NpmWorkspaceRoot)\src\SignalR\clients\ts\FunctionalTests\wwwroot\dist\signalr-functional-tests.js" />
     <NpmBuildOutputFiles Include="$(NpmWorkspaceRoot)\src\SignalR\clients\ts\FunctionalTests\wwwroot\dist\signalr-functional-tests.js.map" />

@@ -2736,7 +2736,7 @@ public class UserManager<TUser> : IDisposable where TUser : class
     }
 
     /// <summary>
-    /// Releases the unmanaged resources used by the role manager and optionally releases the managed resources.
+    /// Releases the unmanaged resources used by the user manager and optionally releases the managed resources.
     /// </summary>
     /// <param name="disposing">true to release both managed and unmanaged resources; false to release only unmanaged resources.</param>
     protected virtual void Dispose(bool disposing)
