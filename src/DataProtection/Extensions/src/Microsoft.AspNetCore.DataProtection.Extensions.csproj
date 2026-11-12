@@ -1,4 +1,4 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <Description>Additional APIs for ASP.NET Core data protection.</Description>
@@ -16,6 +16,7 @@
     <Compile Include="$(SharedSourceRoot)ThrowHelpers\ArgumentThrowHelper.cs" LinkBase="Shared" />
     <Compile Include="$(SharedSourceRoot)ThrowHelpers\ArgumentNullThrowHelper.cs" LinkBase="Shared" />
     <Compile Include="$(SharedSourceRoot)CallerArgument\CallerArgumentExpressionAttribute.cs" LinkBase="Shared" />
+    <Compile Include="$(SharedSourceRoot)Buffers\RefPooledArrayBufferWriter.cs" LinkBase="Shared" Condition="'$(TargetFramework)' == '$(DefaultNetCoreTargetFramework)'" />
   </ItemGroup>
 
   <ItemGroup>

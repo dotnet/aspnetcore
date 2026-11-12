@@ -24,7 +24,12 @@ issue. These correspond to Case A and Case B in
    history cutoff commit, exact evidence identity, and the `origin/main`
    history commit used for the decision. The receipt also identifies Case B
    tests with at least one post-cutoff failure whose source snapshot contains
-   the unquarantine commit. Assembly history is
+   the unquarantine commit. An authenticated, cached lookup verifies that the
+   original Case B tracking number is an issue (open or closed), not a PR.
+   `case_b_issue_verified` is required at the safe-output boundary; the agent
+   need not repeat the lookup through integrity-filtered tools. Lookup errors
+   abort collection, while a definitive missing issue is ineligible.
+   Assembly history is
    reconstructed across the resolved test project, including deleted
    quarantine files. Same-project partial declarations are also evaluated as a
    logical type for type-level quarantine history, so sibling declaration
@@ -39,8 +44,8 @@ issue. These correspond to Case A and Case B in
    either direct or inherited method matching. That logical type-history check
    remains separate from the exact
    method freshness cutoff and Source B pull-request file checks, which still
-   key off the resolved declaring method and inherited runner files rather than
-   every partial sibling declaration.
+   include the resolved declaring method, setup and state in same-project base
+   types, and every partial declaration of those types.
 3. `collect_requarantine_history.py` enumerates every current data-row-,
    method-, type-, and assembly-level quarantine target from trusted source. It
    classifies the exact first-parent history from project-wide commit/parent
@@ -48,8 +53,24 @@ issue. These correspond to Case A and Case B in
    method and partial
    type moves between files preserve their logical history, and issue-URL-only
    replacements are not remove/add transitions. Automated unquarantine requires an exact
-   `first-quarantine` match and fails closed otherwise.
-4. The pre-activation job uploads all three files as the one-day
+   `first-quarantine` match and fails closed otherwise. `introduced_utc` records
+   the exact target's introduction, rather than a later issue-URL replacement.
+4. `collect_unquarantine_eligibility.py` fully paginates 30 days of main builds
+   and results for pipelines 84 and 87 before activation. It preserves exact
+   result names and per-pipeline denominators, maps rows through the shared
+   source resolver, and requires zero failures, real passes, 66% build
+   appearance, 60-day age, first-quarantine history, and no human suppression or
+   re-quarantine blocklist match. Unresolved rows fail closed. Ambiguous
+   re-quarantine PR ownership conservatively excludes targets sharing the issue
+   in that file; a truncated diff excludes the whole file.
+   Class/assembly coverage uses effective resolved overrides, including inherited
+   test attributes; abstract types are not independent assembly runners.
+   Suppressions recognize runtime and declaring method identities, and method-wide
+   references block data rows without matching a different argument row.
+   The compact receipt records complete collection, pipeline counts, eligible
+   source targets, and the history receipt's SHA-256. Missing pages or malformed
+   responses abort pre-activation; they never become an empty candidate list.
+   The pre-activation job uploads all four files as the one-day
    `test-quarantine-evidence-<run-id>` artifact.
 5. The agent may choose a new-quarantine or re-quarantine candidate only from
    the corresponding deterministic eligible-test list injected into its
@@ -72,7 +93,10 @@ issue. These correspond to Case A and Case B in
    target changes. It rejects unrelated edits, mixed additions/removals,
    duplicate targets, stale project source, additions that do not match an
    eligible Case A or Case B receipt, and removals whose exact current history
-   is not `first-quarantine`.
+   is not `first-quarantine` or lacks bound deterministic Part 2 eligibility.
+   Freshness includes linked targets and literal shared-source scopes from both
+   the receipt snapshot and current main, not just consuming project directories.
+   Project-file changes that introduce another consumer also invalidate evidence.
 
 Agent-provided log excerpts and URLs are for human display only. They are not
 accepted as validation evidence.
@@ -99,8 +123,61 @@ conditions derive directly from `Attribute`, not `DataAttribute`; implementing
 be non-data metadata.
 Matching inline and quarantined rows with identical arguments are ambiguous too.
 Renamed row owners receive the same conservative history checks as method targets.
+Those checks compare declaration snapshots within the owning type, so formatting,
+namespace-style, signature, and overload rewrites that preserve the target identity
+do not look like renames. A disappearing method or type that can map to the current
+target remains ambiguous.
 Unresolved historical inheritance is unproven, not evidence that a test was
 never inherited.
+
+Project history follows proven project-file renames across directory moves and
+stops at a copy or initial addition. Historical source and assembly ownership use
+the project's location at each commit, preserving earlier re-quarantines without
+borrowing a copied project's history. A verified predecessor hint covers the
+heavily rewritten E2E project move; other weak rename matches remain unproven.
+Method identity checks ignore namespace and
+type changes that predate the method, but still reject possible renames of an
+existing target. Freshness follows changes to the exact method and its declaring
+type header and attributes, constructor/setup helpers, lifecycle entry points,
+and explicitly delegated base implementations. Fields, initializers, properties,
+and unsupported members are conservatively retained, including in partial and
+same-project base types. Referenced helpers and method groups are followed across
+that type chain; ambiguous member extraction falls back to the whole file.
+Supplemental setup/state freshness locations remain separate from the target's
+identity history, so pre-introduction renames do not poison new methods.
+Proven inherited test attributes keep unreferenced sibling overrides out of
+setup dependencies. Unreferenced sibling test methods and pure file moves do not
+discard otherwise fresh failures.
+Historical runner absence is proven from type declarations, not missing method
+names. Existing runners with unresolved bases or source ownership remain
+unproven, including during type-only history scans.
+Proven sibling inheritance branches do not contribute unrelated type quarantines
+through an unresolved external base.
+For a verified latest method/data unquarantine, type history checks that commit
+and newer first-parent commits; older ambiguity cannot replace that proven
+removal. New-quarantine and first-quarantine checks still use complete histories.
+
+Shared sources with conditional namespaces or quarantine attributes
+are resolved separately for each consuming project using literal
+`DefineConstants` and `Compile` item paths,
+including exclusions and removals. Inactive branches are masked without moving
+source lines. Literal `Compile` items are evaluated in document order, so a later
+include can restore a removed file; unresolved membership remains unproven.
+For local sources without C# preprocessor conditions or assembly quarantines,
+literal comparisons against one MSBuild property are evaluated across all
+possible comparison outcomes. A file included in a proven configuration can
+contribute its unchanged identity, including inherited server runners selected by
+`UseMonoRuntime`. Linked sources and context-sensitive annotations still require
+exact ownership; complementary removals that exclude every configuration do not
+make a source candidate.
+Historical scans use the same project context at each commit and
+include project-only symbol/item changes when identifying quarantine transitions.
+Unsupported dynamic or conditional ownership is not treated as exact; this is
+not a full MSBuild evaluator, and existing rename/history safeguards still apply.
+Unresolved consumers remain attached to their source paths and block automatic
+edits to those paths. Shared assembly quarantines and identical logical targets
+in multiple projects also remain unproven: receipts do not distinguish those
+consumers, so they cannot authorize removing their common annotation.
 
 ## Build Insights behavior
 
@@ -133,6 +210,9 @@ into a KBE.
 ## Safety properties
 
 - One exact fully qualified test per new-quarantine issue and PR.
+  Additions affecting multiple shared-source identities are rejected rather than
+  silently broadening that policy. Shared-attribute removals are counted once
+  per physical edit, but still require eligibility for every affected identity.
 - Row-level quarantine changes preserve the original inline data arguments and
   are accepted only when the deterministic receipt resolves that exact row.
 - An exact `InlineData` candidate on a `ConditionalTheory` is always row-scoped;
@@ -206,6 +286,7 @@ Run the deterministic collector fixtures:
 
 ```bash
 python3 -B .github/workflows/scripts/test-quarantine/test_collect_case_a_eligibility.py
+python3 -B .github/workflows/scripts/test-quarantine/test_collect_unquarantine_eligibility.py
 ```
 
 Run the pull-request action-boundary fixtures:

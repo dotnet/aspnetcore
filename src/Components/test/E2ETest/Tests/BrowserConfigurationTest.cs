@@ -18,6 +18,12 @@ public class BrowserConfigurationTest(
     ITestOutputHelper output)
     : ServerTestBase<BasicTestAppServerSiteFixture<RazorComponentEndpointsStartup<GlobalInteractivityApp>>>(browserFixture, serverFixture, output)
 {
+    protected override void InitializeAsyncCore()
+    {
+        _serverFixture.AdditionalArguments.Add("--BrowserConfigurationEnvironmentName=BrowserConfigurationTestEnvironment");
+        base.InitializeAsyncCore();
+    }
+
     [Fact]
     public void CanReceiveEnvironmentVariablesFromBrowserConfiguration()
     {
@@ -29,6 +35,7 @@ public class BrowserConfigurationTest(
         // Verify environment variables set via WithBrowserConfiguration are available
         Browser.Equal("test-value-from-server", () => Browser.Exists(By.Id("my-test-var")).Text);
         Browser.Equal("another-test-value", () => Browser.Exists(By.Id("another-test-var")).Text);
+        Browser.Equal("BrowserConfigurationTestEnvironment", () => Browser.Exists(By.Id("environment-name")).Text);
     }
 
     [Fact]
@@ -53,5 +60,6 @@ public class BrowserConfigurationTest(
         // Verify environment variables are available even though WASM started via enhanced navigation
         Browser.Equal("test-value-from-server", () => Browser.Exists(By.Id("my-test-var")).Text);
         Browser.Equal("another-test-value", () => Browser.Exists(By.Id("another-test-var")).Text);
+        Browser.Equal("BrowserConfigurationTestEnvironment", () => Browser.Exists(By.Id("environment-name")).Text);
     }
 }

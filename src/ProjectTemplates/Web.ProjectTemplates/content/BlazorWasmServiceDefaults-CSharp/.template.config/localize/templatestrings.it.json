@@ -1,4 +1,4 @@
-﻿{
+{
   "author": "Microsoft",
   "name": "Impostazioni predefinite del servizio Blazor WebAssembly",
   "description": "Modello di progetto per la creazione di una libreria delle impostazioni predefinite del servizio per le applicazioni Blazor WebAssembly. Include il supporto per OpenTelemetry, individuazione dei servizi e resilienza per l'integrazione di Aspire.",

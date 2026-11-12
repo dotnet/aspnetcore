@@ -69,13 +69,32 @@ def _nonnegative_int(value: Any, field_name: str) -> int:
 
 
 def _validate_update_targets(payload: Any, expected_number: int) -> None:
-    for item_type in ("push_to_pull_request_branch", "update_pull_request"):
-        item = _one_item(payload, item_type)
-        actual_number = _positive_int(item.get("pull_request_number"), f"{item_type} pull_request_number")
-        if actual_number != expected_number:
-            raise OutcomeValidationError(f"{item_type} targeted {actual_number}; expected {expected_number}.")
-        if item_type == "update_pull_request" and "body" in item:
-            raise OutcomeValidationError("Docs PR updates must preserve the existing body; omit body.")
+    item_type = "push_to_pull_request_branch"
+    item = _one_item(payload, item_type)
+    actual_number = _positive_int(item.get("pull_request_number"), f"{item_type} pull_request_number")
+    if actual_number != expected_number:
+        raise OutcomeValidationError(f"{item_type} targeted {actual_number}; expected {expected_number}.")
+
+
+def validate_live_draft(
+    expected: Any, pulls: Any, source_repository: str, source_pr_number: int, author: str,
+) -> None:
+    from find_existing_draft import find_existing_draft
+
+    live = find_existing_draft(
+        pulls, source_repository, source_pr_number, DOCS_REPOSITORY, DOCS_HEAD_REPOSITORY, author,
+    )
+    if live["blocked"]:
+        raise OutcomeValidationError("A matching docs PR must not be modified or replaced.")
+    if not isinstance(expected, dict) or live["found"] != expected.get("found"):
+        raise OutcomeValidationError("Existing docs PR identity changed before publication.")
+    if live["found"]:
+        selected = expected.get("selected")
+        if not isinstance(selected, dict) or any(
+            live["selected"].get(field) != selected.get(field)
+            for field in ("number", "head_ref", "head_sha", "base_ref")
+        ):
+            raise OutcomeValidationError("Existing docs draft identity or head changed before publication.")
 
 
 def _validate_unchanged(payload: Any, draft: Any, evidence: Any) -> None:
@@ -131,12 +150,11 @@ def _validate_source_preflight(payload: Any, source_pr_number: int, preflight: A
         raise OutcomeValidationError(f"Source preflight requires the {expected_result} no-documentation outcome.")
 
 
-def _validate_docs_pr(
+def _validate_docs_pr_topology(
     metadata: Any,
     expected_number: int,
     source_repository: str,
     source_pr_number: int,
-    docs_pr_author: str,
 ) -> str:
     if not isinstance(metadata, dict):
         raise OutcomeValidationError("Docs PR metadata must be a JSON object.")
@@ -146,8 +164,8 @@ def _validate_docs_pr(
     expected_url = f"https://github.com/{DOCS_REPOSITORY}/pull/{expected_number}"
     if metadata.get("html_url") != expected_url:
         raise OutcomeValidationError(f"Unexpected docs PR URL: {metadata.get('html_url')!r}.")
-    if metadata.get("state") != "open" or metadata.get("draft") is not True:
-        raise OutcomeValidationError("The documentation pull request must be open and draft.")
+    if metadata.get("state") != "open":
+        raise OutcomeValidationError("The documentation pull request must be open.")
     base = metadata.get("base")
     base_repo = base.get("repo") if isinstance(base, dict) else None
     if (
@@ -166,26 +184,24 @@ def _validate_docs_pr(
         head["ref"],
     ) is None:
         raise OutcomeValidationError(f"Unexpected documentation branch: {head.get('ref')!r}.")
+    return expected_url
+
+
+def _validate_docs_pr(
+    metadata: Any,
+    expected_number: int,
+    source_repository: str,
+    source_pr_number: int,
+    docs_pr_author: str,
+) -> str:
+    expected_url = _validate_docs_pr_topology(metadata, expected_number, source_repository, source_pr_number)
+    if metadata.get("draft") is not True:
+        raise OutcomeValidationError("The documentation pull request must be draft.")
     author = metadata.get("user")
     if not docs_pr_author:
         raise OutcomeValidationError("The configured documentation pull request author is missing.")
     if not isinstance(author, dict) or author.get("login") != docs_pr_author:
         raise OutcomeValidationError("The documentation pull request must be owned by the configured automation identity.")
-    title = metadata.get("title")
-    if not isinstance(title, str) or not title.startswith("[docs] "):
-        raise OutcomeValidationError("The documentation pull request title must start with '[docs] '.")
-    labels = metadata.get("labels")
-    label_names = {
-        label.get("name")
-        for label in labels
-        if isinstance(label, dict) and isinstance(label.get("name"), str)
-    } if isinstance(labels, list) else set()
-    if "documentation" not in label_names:
-        raise OutcomeValidationError("The documentation pull request must have the documentation label.")
-    body = metadata.get("body")
-    marker = f"Source: {source_repository}#{source_pr_number}"
-    if not isinstance(body, str) or marker not in body.splitlines():
-        raise OutcomeValidationError(f"The documentation pull request body is missing {marker!r}.")
     return expected_url
 
 
@@ -296,9 +312,9 @@ def build_outcome(
     elif action in {"updated", "unchanged"}:
         if action == "unchanged":
             _validate_unchanged(payload, expected_existing_draft, workspace_evidence)
-        elif create_count != 0 or push_count != 1 or update_count != 1:
+        elif create_count != 0 or push_count != 1 or update_count != 0:
             raise OutcomeValidationError(
-                "Updating a draft requires one push_to_pull_request_branch, one update_pull_request, and no create output."
+                "Updating a draft requires exactly one push_to_pull_request_branch and no metadata or create output."
             )
         number = _positive_int(notification.get("existing_docs_pr_number"), "existing_docs_pr_number")
         if action == "updated":
@@ -338,6 +354,16 @@ def build_outcome(
         source_pr_number,
         docs_pr_author,
     )
+    if action == "updated":
+        selected = expected_existing_draft.get("selected") if isinstance(expected_existing_draft, dict) else None
+        before = selected.get("head_sha") if isinstance(selected, dict) else None
+        after = docs_pr_metadata["head"].get("sha")
+        if (
+            not isinstance(before, str) or re.fullmatch(r"[a-f0-9]{40}", before) is None
+            or not isinstance(after, str) or re.fullmatch(r"[a-f0-9]{40}", after) is None
+            or before == after
+        ):
+            raise OutcomeValidationError("Updated outcomes require a real push changing the trusted draft head.")
     if action == "unchanged" and docs_pr_metadata["head"].get("sha") != workspace_evidence["base_sha"]:
         raise OutcomeValidationError("The docs draft head changed after workspace validation.")
     return canonical
@@ -450,10 +476,15 @@ def validate_preflight(
     elif action == "created":
         if (create_count, push_count, update_count) != (1, 0, 0):
             raise OutcomeValidationError("Creating a draft requires exactly one create_pull_request output.")
+        branch = _one_item(payload, "create_pull_request").get("branch")
+        if not isinstance(branch, str) or re.fullmatch(
+            rf"docs/aspnetcore-pr-{source_pr_number}(?:-[a-f0-9]+)?", branch,
+        ) is None:
+            raise OutcomeValidationError("New docs PRs require the exact source-specific automation branch.")
     elif action == "updated":
-        if (create_count, push_count, update_count) != (0, 1, 1):
+        if (create_count, push_count, update_count) != (0, 1, 0):
             raise OutcomeValidationError(
-                "Updating a draft requires exactly one push_to_pull_request_branch and one update_pull_request output."
+                "Updating a draft requires exactly one push_to_pull_request_branch and no metadata or create output."
             )
         if expected_draft_number is None:
             raise OutcomeValidationError("The agent attempted to update a docs PR when no trusted draft was found.")
@@ -478,6 +509,7 @@ def main(argv: Sequence[str] | None = None) -> int:
     parser.add_argument("--source-preflight", type=Path)
     parser.add_argument("--workspace-evidence", type=Path)
     parser.add_argument("--preflight", action="store_true")
+    parser.add_argument("--validate-live", action="store_true")
     parser.add_argument("--output", type=Path)
     args = parser.parse_args(argv)
 
@@ -513,6 +545,16 @@ def main(argv: Sequence[str] | None = None) -> int:
             validate_preflight(
                 payload, source_pr_number, expected_existing_draft, source_preflight, workspace_evidence,
             )
+            if args.validate_live and any(_count(payload, item_type) for item_type in (
+                "create_pull_request", "push_to_pull_request_branch",
+            )):
+                from prepare_context import github_api
+
+                validate_live_draft(
+                    expected_existing_draft,
+                    github_api(f"/repos/{DOCS_REPOSITORY}/pulls?state=open&per_page=100"),
+                    args.source_repository, source_pr_number, args.docs_pr_author,
+                )
             return 0
         if args.output is None:
             raise OutcomeValidationError("--output is required unless --preflight is used.")

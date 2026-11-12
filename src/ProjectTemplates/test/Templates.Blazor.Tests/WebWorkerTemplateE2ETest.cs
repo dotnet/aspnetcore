@@ -40,7 +40,7 @@ public class WebWorkerTemplateE2ETest(ProjectFactoryFixture projectFactory) : Bl
         }
     }
 
-    [Theory]
+    [Theory(Skip = "CoreCLR getAssemblyExports throws for assemblies without JS exports. Re-enable when the runtime issue is fixed.")]
     [InlineData(BrowserKind.Chromium)]
     public async Task WebWorkerTemplate_CanInvokeMethods(BrowserKind browserKind)
     {
@@ -55,7 +55,7 @@ public class WebWorkerTemplateE2ETest(ProjectFactoryFixture projectFactory) : Bl
         await TestWebWorkerInteraction(browserKind, aspNetProcess.ListeningUri.AbsoluteUri + "webworker-test");
     }
 
-    [Theory]
+    [Theory(Skip = "CoreCLR getAssemblyExports throws for assemblies without JS exports. Re-enable when the runtime issue is fixed.")]
     [InlineData(BrowserKind.Chromium)]
     public async Task WebWorkerTemplate_HandlesErrors(BrowserKind browserKind)
     {
@@ -70,7 +70,7 @@ public class WebWorkerTemplateE2ETest(ProjectFactoryFixture projectFactory) : Bl
         await TestWebWorkerErrorHandling(browserKind, aspNetProcess.ListeningUri.AbsoluteUri + "webworker-test");
     }
 
-    [Theory]
+    [Theory(Skip = "CoreCLR getAssemblyExports throws for assemblies without JS exports. Re-enable when the runtime issue is fixed.")]
     [InlineData(BrowserKind.Chromium)]
     public async Task WebWorkerTemplate_CanDisposeWorker(BrowserKind browserKind)
     {
@@ -85,7 +85,7 @@ public class WebWorkerTemplateE2ETest(ProjectFactoryFixture projectFactory) : Bl
         await TestWebWorkerDisposal(browserKind, aspNetProcess.ListeningUri.AbsoluteUri + "webworker-test");
     }
 
-    [Theory]
+    [Theory(Skip = "CoreCLR getAssemblyExports throws for assemblies without JS exports. Re-enable when the runtime issue is fixed.")]
     [InlineData(BrowserKind.Chromium)]
     public async Task WebWorkerTemplate_CanInvokeMethodsAfterPublish(BrowserKind browserKind)
     {
@@ -146,7 +146,8 @@ public class WebWorkerTemplateE2ETest(ProjectFactoryFixture projectFactory) : Bl
                 output,
                 hostProject.TemplateOutputDir,
                 DotNetMuxer.MuxerPathOrDefault(),
-                "remove reference ../WorkerLib/WorkerLib.csproj");
+                "remove reference ../WorkerLib/WorkerLib.csproj",
+                envVarToRemove: "MSBuildSDKsPath");
             await result.Exited;
 
             if (Directory.Exists(workerLibDir))
@@ -162,13 +163,23 @@ public class WebWorkerTemplateE2ETest(ProjectFactoryFixture projectFactory) : Bl
         var hiveArg = $"--debug:disable-sdk-templates --debug:custom-hive \"{TemplatePackageInstaller.CustomHivePath}\"";
         var args = $"new blazorwebworker {hiveArg} -n WorkerLib -o \"{workerLibDir}\"";
 
-        using var result = ProcessEx.Run(Output, AppContext.BaseDirectory, DotNetMuxer.MuxerPathOrDefault(), args);
+        using var result = ProcessEx.Run(
+            Output,
+            AppContext.BaseDirectory,
+            DotNetMuxer.MuxerPathOrDefault(),
+            args,
+            envVarToRemove: "MSBuildSDKsPath");
         await result.Exited;
         Assert.True(result.ExitCode == 0, $"Failed to create blazorwebworker template: {result.Output}\n{result.Error}");
 
         CopyWorkerMethods(workerLibDir);
 
-        using var restoreResult= ProcessEx.Run(Output, workerLibDir, DotNetMuxer.MuxerPathOrDefault(), "restore");
+        using var restoreResult= ProcessEx.Run(
+            Output,
+            workerLibDir,
+            DotNetMuxer.MuxerPathOrDefault(),
+            "restore",
+            envVarToRemove: "MSBuildSDKsPath");
         await restoreResult.Exited;
         Assert.True(restoreResult.ExitCode == 0, $"Failed to restore blazorwebworker library: {restoreResult.Output}\n{restoreResult.Error}");
     }
@@ -193,7 +204,8 @@ public class WebWorkerTemplateE2ETest(ProjectFactoryFixture projectFactory) : Bl
             Output,
             hostProject.TemplateOutputDir,
             DotNetMuxer.MuxerPathOrDefault(),
-            "add reference ../WorkerLib/WorkerLib.csproj");
+            "add reference ../WorkerLib/WorkerLib.csproj",
+            envVarToRemove: "MSBuildSDKsPath");
         await result.Exited;
         Assert.True(result.ExitCode == 0, $"Failed to add WorkerLib reference: {result.Output}\n{result.Error}");
     }
