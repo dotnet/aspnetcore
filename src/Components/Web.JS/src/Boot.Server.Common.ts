@@ -102,7 +102,8 @@ async function startServerCore(components: RootComponentManager<ServerComponentD
   });
 
   Blazor._internal.forceCloseConnection = () => circuit.disconnect();
-  Blazor._internal.sendJSDataStream = (data: ArrayBufferView | Blob, streamId: number, chunkSize: number) => circuit.sendJsDataStream(data, streamId, chunkSize);
+  Blazor._internal.sendJSDataStream = (data: ArrayBufferView | Blob, streamId: number, chunkSize: number, jsInteropCallTimeoutMilliseconds: number) =>
+    circuit.sendJsDataStream(data, streamId, chunkSize, jsInteropCallTimeoutMilliseconds);
 
   const circuitStarted = await circuit.start();
   if (!circuitStarted) {
