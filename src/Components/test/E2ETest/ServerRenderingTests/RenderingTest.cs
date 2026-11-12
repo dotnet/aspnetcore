@@ -151,6 +151,10 @@ public class RenderingTest : ServerTestBase<BasicTestAppServerSiteFixture<RazorC
     {
         Navigate($"{ServerPathBase}/hydration-valid-self-closing-server");
 
+        Browser.Equal("True", () => Browser.FindElement(By.Id("is-interactive-server")).Text);
+        Browser.Click(By.Id("increment-server"));
+        Browser.Equal("1", () => Browser.FindElement(By.Id("count-server")).Text);
+
         var errors = (ReadOnlyCollection<object>)((IJavaScriptExecutor)Browser)
             .ExecuteScript("return window.__e2eErrors || []");
 
