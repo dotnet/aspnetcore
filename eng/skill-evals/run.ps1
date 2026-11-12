@@ -356,11 +356,16 @@ switch ($Action) {
         if (-not $resolvedEval -and -not $hasExplicitExperiment) {
             foreach ($directory in Get-ChildItem $evalRoot -Directory) {
                 if (Test-Path (Join-Path $directory.FullName 'eval.vally.yaml')) {
+                    $suiteOutput = Join-Path $output $directory.Name
                     & $PSCommandPath Run -Root $repoRoot -Suite $directory.Name `
-                        -OutputDirectory (Join-Path $output $directory.Name) `
+                        -OutputDirectory $suiteOutput `
                         -Vally $Vally -VallyPrefix $VallyPrefix @Arguments
                     if (-not $? -or $LASTEXITCODE -ne 0) {
-                        throw "The '$($directory.Name)' suite run failed."
+                        if ($LASTEXITCODE -ne 1) {
+                            throw "The '$($directory.Name)' suite run failed."
+                        }
+                        & (Join-Path $PSScriptRoot 'assert_results.ps1') -OutputDirectory $suiteOutput
+                        Write-Warning "Vally exited with code 1 for '$($directory.Name)'. Complete primary trials passed the applicable result-set checks."
                     }
                 }
             }
@@ -379,7 +384,53 @@ switch ($Action) {
             }
         }
         if ($selectedSuite -eq 'review-candidate-verifier') {
-            $runs = if ($selectedExperiment -in @($smokeExperiment, $reviewSmokeExperiment)) { 1 } else { 5 }
+            $componentJson = Get-Content $resolvedEval -Raw | & npx `
+                --yes --registry=https://packagefeedproxy.microsoft.io/npm/ `
+                yaml@2.9.1 --json --single --strict
+            if ($LASTEXITCODE -ne 0) {
+                throw "Could not parse '$resolvedEval' as a single, strict YAML document."
+            }
+            $componentSpec = $componentJson | ConvertFrom-Json -AsHashtable -Depth 100
+            $componentDefaults = $componentSpec['defaults']
+            $componentScoring = $componentSpec['scoring']
+            $runs = if ($selectedExperiment -in @($smokeExperiment, $reviewSmokeExperiment)) {
+                1
+            } elseif ($componentDefaults -is [Collections.IDictionary] -and $null -ne $componentDefaults['runs']) {
+                [int]$componentDefaults['runs']
+            } else {
+                1
+            }
+            $threshold = if ($componentScoring -is [Collections.IDictionary] -and $null -ne $componentScoring['threshold']) {
+                [double]$componentScoring['threshold']
+            } else {
+                1
+            }
+            for ($index = 0; $Arguments -and $index -lt $Arguments.Count; $index++) {
+                if ($Arguments[$index] -match '^--(runs|threshold)(?:=(.*))?$') {
+                    $option = $Matches[1]
+                    $value = if ($Arguments[$index].Contains('=')) {
+                        $Matches[2]
+                    } else {
+                        if (++$index -ge $Arguments.Count) {
+                            throw "Missing value for --$option."
+                        }
+                        $Arguments[$index]
+                    }
+                    if ($option -eq 'runs') {
+                        $parsedRuns = 0
+                        if (-not [int]::TryParse($value, [ref]$parsedRuns) -or $parsedRuns -lt 1) {
+                            throw '--runs must be a positive integer.'
+                        }
+                        $runs = $parsedRuns
+                    } else {
+                        $threshold = [double]$value
+                        if (-not [double]::IsFinite($threshold) -or $threshold -lt 0 -or $threshold -gt 1) {
+                            throw '--threshold must be between 0 and 1.'
+                        }
+                    }
+                }
+            }
+            $plannedStimulusNames = @($componentSpec['stimuli'] | ForEach-Object { $_['name'] })
             $vallyArguments = @(
                 'eval', '--eval-spec', $resolvedEval,
                 '--runs', $runs.ToString(),
@@ -429,10 +480,10 @@ switch ($Action) {
                     @{
                         evals = @(@{
                             variant = 'current'
-                            plannedStimulusNames = @('a', 'b', 'c')
-                            plannedStimulusCount = 3
+                            plannedStimulusNames = $plannedStimulusNames
+                            plannedStimulusCount = $plannedStimulusNames.Count
                             runs = $runs
-                            threshold = 0.8
+                            threshold = $threshold
                         })
                     } | ConvertTo-Json -Depth 10 | Set-Content (Join-Path $runDirectories[0].FullName 'plan-snapshot.json')
                 } elseif ($invocationCompleted) {

@@ -12,7 +12,7 @@ auto-discovered by this repository's experiment and runner.
 `skills-vs-baseline.experiment.yaml` runs the generic skill specs twice with the
 same stimuli: once without a skill and once with exactly
 `.github/skills/<skill>` loaded. The experiment owns `environment.skills`;
-standard specs must not set it themselves. Reviewer comparison uses
+standard specs must not set it themselves. Reviewer diagnostic-control runs use
 `review-vs-baseline.experiment.yaml` and `review-smoke.experiment.yaml` instead.
 The verifier component suite has no skill arm and runs directly.
 
@@ -25,8 +25,8 @@ directories. A runtime skill may use a `fixtures` directory for non-eval assets.
 The standard `review-pull-request` suite uses frozen source and diff excerpts from
 ASP.NET Core PRs #70106, #69782, #70304, #69721, and #70299. These cover exact-input
 old/head comparison, constructor mapping versus a lower-layer head test, renderer
-disposal and issue intent, a browser-test wrapper ordering that contradicts a
-claimed token-exchange dependency, and existing feedback on render-mode-dependent
+disposal and issue intent, browser-test wrapper ordering in a disputed
+token-exchange dependency claim, and existing feedback on render-mode-dependent
 navigation. Each case carries its source roles,
 Git blob identities, original line ranges, and fixture SHA-256 hashes in
 `provenance.json`. Issue and feedback excerpts identify their captured public
@@ -40,6 +40,15 @@ the frozen hashes on Windows and Unix.
 
 These are offline single-context candidate exercises, not full bundle preparation,
 guide-worker dispatch, verifier integration, live PR review, or browser tests.
+L1 is frozen-evidence adjudication regression, not a measurement of skill lift.
+Its baseline is a diagnostic control, not a competitor. Skill lift requires
+end-to-end evidence.
+All six L1 oracles (`case-01`, `case-02`, `case-03`, `case-04`, `case-05`, and
+`case-06`) are provisional pending an independent two-reviewer audit.
+The agent-relabelled `DISCARDED` oracle for `case-04` remains disputed, not
+independently proven. The `case-06` notification-order confound is corrected,
+its `UNRESOLVED` oracle is retained, and cold GPT-5.6 and Opus-5.5 adjudications
+agree. That model agreement is not a human audit.
 Both arms share frozen source and both guidance documents. Only the skilled arm
 receives the skill and verifier/worker instructions. Baseline does not receive
 `SKILL.md` or either agent profile. `tool-calls.required` matches both read arguments and
@@ -77,9 +86,11 @@ guard clauses and the tightened secondary-failure `contract` rule. A fourth
 policy-only head-test scenario (close to @maraf's 3/10 `DROP(unestablished)` /
 7/10 `DOWNGRADE(intent)` synthetic fixture) was omitted from the component gate;
 `SKILL.md` retains the coordinator backstop mapping `DOWNGRADE(intent)` with
-`contract: "n/a"` to `UNRESOLVED`, which has not been measured end to end, and
-the 30-trial-per-arm L1 `review-pull-request` model suite was not rerun on the
-final patch.
+`contract: "n/a"` to `UNRESOLVED`, which has not been measured end to end.
+The fresh 30-trial-per-arm L1 regression scored 27/30 for the diagnostic baseline
+and 29/30 for skilled. Skilled `case-04` scored 4/5, below its configured 5/5
+gate. Every other skilled case scored 5/5. These results are against the
+provisional oracles and do not establish skill lift.
 
 Model-free validation checks layout, schema, source hashes, read-guard coverage,
 and experiment selection. It does not establish adjudication quality. A
@@ -123,10 +134,12 @@ Run these commands from any directory:
 ```
 
 Without a suite or explicit experiment, `Run` dispatches each standard suite into
-its own output subdirectory. This includes reviewer comparison and the direct
+its own output subdirectory. This includes the reviewer diagnostic control and the direct
 verifier component suite. `assert_results.ps1` checks that combined output
-recursively. A direct component run writes a plan beside Vally's timestamped
-`results.jsonl`; it does not invent an experiment variant directory. For the
+recursively. An exit code of 1 does not stop dispatch when the complete primary
+results pass those checks. A direct component run writes a plan beside Vally's
+timestamped `results.jsonl`; it does not invent an experiment variant directory.
+That plan reflects the selected YAML and CLI runs/threshold overrides. For the
 reviewer and verifier suites, smoke selects one repeat per case and checks trial
 completion, grader scores, and read-integrity receipts without enforcing the
 multi-trial per-stimulus disposition threshold.

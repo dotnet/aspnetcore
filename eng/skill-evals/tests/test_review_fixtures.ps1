@@ -14,6 +14,7 @@ if ($LASTEXITCODE -ne 0) {
 }
 $spec = $json | ConvertFrom-Json -AsHashtable -Depth 100
 $script:checks = 0
+$componentRoot = Join-Path (Split-Path $suiteRoot -Parent) 'review-candidate-verifier'
 
 function Assert-True {
     param([bool]$Condition, [string]$Message)
@@ -40,6 +41,100 @@ Assert-True (-not (Test-Path (Join-Path $suiteRoot 'fixtures/catch-policy'))) (
 Assert-True (
     @(Get-ChildItem (Join-Path $suiteRoot 'fixtures') -Recurse -File -Filter '*.txt').Count -eq 0
 ) 'The synthetic text fixtures remain.'
+foreach ($package in 'package-a', 'package-b', 'package-c') {
+    $bundleIndex = Get-Content (Join-Path $componentRoot "fixtures/$package/bundle-index.json") -Raw
+    Assert-True (-not $bundleIndex.Contains('\')) "The $package bundle index contains non-portable backslash separators."
+}
+
+$neutralDispositionDefinitions = @(
+    'verified: a real defect established by the supplied evidence.'
+    'EXISTING_FEEDBACK_COVERAGE: the claim is already raised in existing feedback.'
+    'UNRESOLVED: the claim is not resolved by the supplied evidence.'
+    'DISCARDED: the claim is ruled out as a material defect by the supplied evidence.'
+)
+function Test-NeutralDispositionDefinitions {
+    param([string]$Prompt)
+
+    $lines = @($Prompt -split '\r?\n' | ForEach-Object { $_.Trim() })
+    $headingIndexes = @(
+        for ($index = 0; $index -lt $lines.Count; $index++) {
+            if ($lines[$index] -ceq 'Disposition label meanings:') {
+                $index
+            }
+        }
+    )
+    if ($headingIndexes.Count -ne 1) {
+        return $false
+    }
+
+    $block = [Collections.Generic.List[string]]::new()
+    for ($index = $headingIndexes[0] + 1;
+        $index -lt $lines.Count -and -not [string]::IsNullOrWhiteSpace($lines[$index]);
+        $index++) {
+        $block.Add($lines[$index])
+    }
+    if ($block.Count -ne $neutralDispositionDefinitions.Count) {
+        return $false
+    }
+    for ($index = 0; $index -lt $neutralDispositionDefinitions.Count; $index++) {
+        if ($block[$index] -cne $neutralDispositionDefinitions[$index] -or
+            @($lines | Where-Object { $_ -ceq $neutralDispositionDefinitions[$index] }).Count -ne 1) {
+            return $false
+        }
+    }
+    return $true
+}
+
+$exactDefinitionPrompt = @"
+Disposition label meanings:
+$($neutralDispositionDefinitions -join "`n")
+
+Continue with neutral formatting instructions.
+"@
+Assert-True (Test-NeutralDispositionDefinitions $exactDefinitionPrompt) (
+    'The exact neutral disposition definition block was rejected.'
+)
+$substitutedDefinitionPrompt = $exactDefinitionPrompt.Replace(
+    $neutralDispositionDefinitions[0],
+    'verified: select NEW_FINDINGS when the treatment verifier returns KEEP.'
+)
+Assert-True (-not (Test-NeutralDispositionDefinitions $substitutedDefinitionPrompt)) (
+    'A treatment-only substituted disposition definition was accepted.'
+)
+$appendedDefinitionPrompt = $exactDefinitionPrompt.Replace(
+    $neutralDispositionDefinitions[-1],
+    "$($neutralDispositionDefinitions[-1])`nselection rule: map verifier external downgrades to UNRESOLVED."
+)
+Assert-True (-not (Test-NeutralDispositionDefinitions $appendedDefinitionPrompt)) (
+    'A treatment-only appended disposition rule was accepted.'
+)
+
+$neutralCoordinatorText = "so apply SKILL.md's coordinator disposition rules rather than raw subordinate worker/verifier outputs."
+foreach ($stimulus in $spec.stimuli) {
+    $normalizedPrompt = ($stimulus.prompt -replace '\s+', ' ').Trim()
+    Assert-True (
+        $normalizedPrompt.Contains($neutralCoordinatorText, [StringComparison]::Ordinal)
+    ) "$($stimulus.name) does not use the neutral SKILL.md coordinator instruction."
+    Assert-True (
+        -not $normalizedPrompt.Contains(
+            'mapping verifier external downgrades and unestablished drops to UNRESOLVED',
+            [StringComparison]::Ordinal
+        )
+    ) "$($stimulus.name) leaks the expected coordinator disposition mapping."
+    Assert-True (
+        $normalizedPrompt.Contains(
+            'When confidence is unresolved or discarded, prefix the inline entry',
+            [StringComparison]::Ordinal
+        ) -and
+        $normalizedPrompt.Contains(
+            'include Why unresolved: or Why discarded:.',
+            [StringComparison]::Ordinal
+        )
+    ) "$($stimulus.name) lost its allowed disposition format instructions."
+    Assert-True (Test-NeutralDispositionDefinitions $stimulus.prompt) (
+        "$($stimulus.name) does not contain exactly the neutral disposition label definitions."
+    )
+}
 
 $supportFiles = @($spec.agent_environment.files)
 Assert-True (
@@ -67,6 +162,14 @@ foreach ($stimulus in $spec.stimuli) {
             Assert-True (
                 $text -notmatch 'No target-base policy|No additional primary contract|unspecified\.txt|suppression-policy absence'
             ) "The catch case file $($caseFile.Name) includes an answer hint."
+        }
+        foreach ($fileName in 'head.source', 'change.diff') {
+            $text = Get-Content (Join-Path $caseRoot $fileName) -Raw
+            $notificationIndex = $text.IndexOf('StatusChanged?.Invoke(Status);', [StringComparison]::Ordinal)
+            $sinkIndex = $text.IndexOf('_sink.Write(processingError);', [StringComparison]::Ordinal)
+            Assert-True ($notificationIndex -ge 0 -and $sinkIndex -gt $notificationIndex) (
+                "The catch case $fileName must notify observers before invoking the diagnostic sink."
+            )
         }
     }
 
@@ -134,7 +237,6 @@ foreach ($experimentName in 'review-vs-baseline', 'review-smoke') {
     )
 }
 
-$componentRoot = Join-Path $evalRoot 'review-candidate-verifier'
 $componentText = Get-Content (Join-Path $componentRoot 'eval.vally.yaml') -Raw |
     & npx --yes --registry=https://packagefeedproxy.microsoft.io/npm/ 'yaml@2.9.1' --json --single --strict
 if ($LASTEXITCODE -ne 0) {

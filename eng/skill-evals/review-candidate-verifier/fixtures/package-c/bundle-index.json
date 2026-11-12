@@ -3,9 +3,9 @@
   "diff": "changes.diff",
   "changedFiles": "changed-files.json",
   "sourceRoots": {
-    "head": "source\\head",
-    "mergeBase": "source\\mergeBase",
-    "baseTip": "source\\baseTip"
+    "head": "source/head",
+    "mergeBase": "source/mergeBase",
+    "baseTip": "source/baseTip"
   },
   "sourceContentHashes": {
     "head": "13e383993dd60d8548089196ada34afcf791c7995ffda48104bbe23bf15cff11",
@@ -14,9 +14,9 @@
   "sourceRevisions": {
     "baseTip": "2e792d799058bf25990ce0c8e2b416c736431ca3"
   },
-  "primarySource": "src\\Engine\\Conversation.mjs",
+  "primarySource": "src/Engine/Conversation.mjs",
   "contractPaths": [
-    "source\\baseTip\\docs\\CrossCuttingGuidance.md"
+    "source/baseTip/docs/CrossCuttingGuidance.md"
   ],
   "validationArtifacts": [
     {

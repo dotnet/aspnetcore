@@ -69,6 +69,20 @@ function Assert-Throws {
     }
 }
 
+function Assert-SmokeCompletionMessage {
+    param(
+        [string]$Messages,
+        [string]$Scenario
+    )
+
+    if ($Messages -match '(?i)(thresholds?\s+(?:were\s+)?met|met\s+(?:its|their|the)\s+(?:own\s+)?threshold)') {
+        throw "$Scenario falsely claims an accuracy threshold was met."
+    }
+    if ($Messages -notmatch '(?is)(?:complet(?:e|ed|ion).*(?:read[- ]integrity|read receipts?)|(?:read[- ]integrity|read receipts?).*complet(?:e|ed|ion))') {
+        throw "$Scenario does not identify its completion/read-integrity-only evidence."
+    }
+}
+
 New-Item -ItemType Directory -Path $run -Force | Out-Null
 try {
     @{
@@ -93,7 +107,10 @@ try {
 
     Write-Results -Variant baseline -Score 0.1
     Write-Results -Variant skilled -Score 0.8
-    & $assertResults -OutputDirectory $output
+    $genericMessages = (& $assertResults -OutputDirectory $output 6>&1 | Out-String)
+    if ($genericMessages -notmatch '(?i)threshold') {
+        throw 'A passing generic LLM suite no longer reports its aggregate threshold gate.'
+    }
 
     Reset-Results
     Write-Results -Variant skilled -Score 0.8
@@ -467,7 +484,8 @@ try {
         @{ configuredName = 'treatment-reads-case-01'; passed = $true; score = 1 },
         @{ configuredName = 'disposition-case-01'; passed = $false; score = 0 }
     )
-    & $assertResults -OutputDirectory $output
+    $smokeMessages = (& $assertResults -OutputDirectory $output 6>&1 | Out-String)
+    Assert-SmokeCompletionMessage $smokeMessages 'Low-scoring one-run review smoke'
 
     # Multi-run review enforces per-stimulus threshold independently
     @{
@@ -554,7 +572,8 @@ try {
     })
     $smokeComponentRows | ForEach-Object { $_ | ConvertTo-Json -Depth 10 -Compress } |
         Set-Content (Join-Path $run 'results.jsonl')
-    & $assertResults -OutputDirectory $output
+    $componentSmokeMessages = (& $assertResults -OutputDirectory $output 6>&1 | Out-String)
+    Assert-SmokeCompletionMessage $componentSmokeMessages 'Low-scoring one-run verifier smoke'
 
     Write-ReviewResults
     $combinedOutput = Join-Path $testRoot 'combined'

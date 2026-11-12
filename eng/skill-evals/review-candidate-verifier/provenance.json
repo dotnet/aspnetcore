@@ -34,15 +34,15 @@
     },
     {
       "file": "package-a/bundle-index.json",
-      "sha256": "9cb786e9081ce6f947c9feeb19aeb5e6af65ac5f257e41285eca7e0bca52fd4c"
+      "sha256": "11d98c866d0664a0d8290481dc19a2931fb09f589a06b4ca84c2d3241735fdc3"
     },
     {
       "file": "package-b/bundle-index.json",
-      "sha256": "df2da085e58bf669cd1a186d4d3e9ccf2889dd75e1d3f6444eaccbbf96936468"
+      "sha256": "09e6f4e6679e5a4b566cc096832144d13d2bad099fbf82fe391be2567e26df55"
     },
     {
       "file": "package-c/bundle-index.json",
-      "sha256": "7426ed3e0e1d0b5698bc226f47988ba971ec7c3f345aa8b6e8ffb63d5096aca6"
+      "sha256": "91d337316cf75897daf7a5873771fe77048bd42c1450d60acdf1bc12028a0631"
     },
     {
       "file": "package-c/candidate.json",

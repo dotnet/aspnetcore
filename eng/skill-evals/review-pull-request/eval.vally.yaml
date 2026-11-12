@@ -34,8 +34,8 @@ stimuli:
       and also read .github/agents/review-guide-worker.agent.md,
       .github/agents/review-candidate-verifier.agent.md, and the installed review-pull-request
       SKILL.md path with view in full; those .agent.md files define subordinate worker/verifier
-      contracts, so adjudicate as the SKILL.md coordinator (mapping verifier external downgrades
-      and unestablished drops to UNRESOLVED and only source-contradicted drops to DISCARDED).
+      contracts, so apply SKILL.md's coordinator disposition rules rather than raw subordinate
+      worker/verifier outputs.
       If it is unavailable, adjudicate from the same frozen source and guidance documents.
       Page truncated input reads through EOF.
 
@@ -46,6 +46,12 @@ stimuli:
       Do not fetch, execute target code, modify files, publish, or mutate feedback.
       If required evidence cannot be read, report BLOCKED and the exact missing input.
       Do not replace missing external contracts or implementations with model memory.
+
+      Disposition label meanings:
+      verified: a real defect established by the supplied evidence.
+      EXISTING_FEEDBACK_COVERAGE: the claim is already raised in existing feedback.
+      UNRESOLVED: the claim is not resolved by the supplied evidence.
+      DISCARDED: the claim is ruled out as a material defect by the supplied evidence.
 
       Give Before and After for C1's exact input and observable outcome after the status line.
       The first line must be STATUS: FINDINGS or STATUS: NO_FINDINGS.
@@ -177,8 +183,8 @@ stimuli:
       and also read .github/agents/review-guide-worker.agent.md,
       .github/agents/review-candidate-verifier.agent.md, and the installed review-pull-request
       SKILL.md path with view in full; those .agent.md files define subordinate worker/verifier
-      contracts, so adjudicate as the SKILL.md coordinator (mapping verifier external downgrades
-      and unestablished drops to UNRESOLVED and only source-contradicted drops to DISCARDED).
+      contracts, so apply SKILL.md's coordinator disposition rules rather than raw subordinate
+      worker/verifier outputs.
       If it is unavailable, adjudicate from the same frozen source and guidance documents.
       Page truncated input reads through EOF.
 
@@ -189,6 +195,12 @@ stimuli:
       Do not fetch, execute target code, modify files, publish, or mutate feedback.
       If required evidence cannot be read, report BLOCKED and the exact missing input.
       Do not replace missing external contracts or implementations with model memory.
+
+      Disposition label meanings:
+      verified: a real defect established by the supplied evidence.
+      EXISTING_FEEDBACK_COVERAGE: the claim is already raised in existing feedback.
+      UNRESOLVED: the claim is not resolved by the supplied evidence.
+      DISCARDED: the claim is ruled out as a material defect by the supplied evidence.
 
       Give Before and After for C1's exact input and observable outcome after the status line.
       The first line must be STATUS: FINDINGS or STATUS: NO_FINDINGS.
@@ -309,8 +321,8 @@ stimuli:
       and also read .github/agents/review-guide-worker.agent.md,
       .github/agents/review-candidate-verifier.agent.md, and the installed review-pull-request
       SKILL.md path with view in full; those .agent.md files define subordinate worker/verifier
-      contracts, so adjudicate as the SKILL.md coordinator (mapping verifier external downgrades
-      and unestablished drops to UNRESOLVED and only source-contradicted drops to DISCARDED).
+      contracts, so apply SKILL.md's coordinator disposition rules rather than raw subordinate
+      worker/verifier outputs.
       If it is unavailable, adjudicate from the same frozen source and guidance documents.
       Page truncated input reads through EOF.
 
@@ -321,6 +333,12 @@ stimuli:
       Do not fetch, execute target code, modify files, publish, or mutate feedback.
       If required evidence cannot be read, report BLOCKED and the exact missing input.
       Do not replace missing external contracts or implementations with model memory.
+
+      Disposition label meanings:
+      verified: a real defect established by the supplied evidence.
+      EXISTING_FEEDBACK_COVERAGE: the claim is already raised in existing feedback.
+      UNRESOLVED: the claim is not resolved by the supplied evidence.
+      DISCARDED: the claim is ruled out as a material defect by the supplied evidence.
 
       Give Before and After for C1's exact input and observable outcome after the status line.
       The first line must be STATUS: FINDINGS or STATUS: NO_FINDINGS.
@@ -440,8 +458,8 @@ stimuli:
       and also read .github/agents/review-guide-worker.agent.md,
       .github/agents/review-candidate-verifier.agent.md, and the installed review-pull-request
       SKILL.md path with view in full; those .agent.md files define subordinate worker/verifier
-      contracts, so adjudicate as the SKILL.md coordinator (mapping verifier external downgrades
-      and unestablished drops to UNRESOLVED and only source-contradicted drops to DISCARDED).
+      contracts, so apply SKILL.md's coordinator disposition rules rather than raw subordinate
+      worker/verifier outputs.
       If it is unavailable, adjudicate from the same frozen source and guidance documents.
       Page truncated input reads through EOF.
 
@@ -452,6 +470,12 @@ stimuli:
       Do not fetch, execute target code, modify files, publish, or mutate feedback.
       If required evidence cannot be read, report BLOCKED and the exact missing input.
       Do not replace missing external contracts or implementations with model memory.
+
+      Disposition label meanings:
+      verified: a real defect established by the supplied evidence.
+      EXISTING_FEEDBACK_COVERAGE: the claim is already raised in existing feedback.
+      UNRESOLVED: the claim is not resolved by the supplied evidence.
+      DISCARDED: the claim is ruled out as a material defect by the supplied evidence.
 
       Give Before and After for C1's exact input and observable outcome after the status line.
       The first line must be STATUS: FINDINGS or STATUS: NO_FINDINGS.
@@ -574,8 +598,8 @@ stimuli:
       and also read .github/agents/review-guide-worker.agent.md,
       .github/agents/review-candidate-verifier.agent.md, and the installed review-pull-request
       SKILL.md path with view in full; those .agent.md files define subordinate worker/verifier
-      contracts, so adjudicate as the SKILL.md coordinator (mapping verifier external downgrades
-      and unestablished drops to UNRESOLVED and only source-contradicted drops to DISCARDED).
+      contracts, so apply SKILL.md's coordinator disposition rules rather than raw subordinate
+      worker/verifier outputs.
       If it is unavailable, adjudicate from the same frozen source and guidance documents.
       Page truncated input reads through EOF.
 
@@ -586,6 +610,12 @@ stimuli:
       Do not fetch, execute target code, modify files, publish, or mutate feedback.
       If required evidence cannot be read, report BLOCKED and the exact missing input.
       Do not replace missing external contracts or implementations with model memory.
+
+      Disposition label meanings:
+      verified: a real defect established by the supplied evidence.
+      EXISTING_FEEDBACK_COVERAGE: the claim is already raised in existing feedback.
+      UNRESOLVED: the claim is not resolved by the supplied evidence.
+      DISCARDED: the claim is ruled out as a material defect by the supplied evidence.
 
       Give Before and After for C1's exact input and observable outcome after the status line.
       The first line must be STATUS: FINDINGS or STATUS: NO_FINDINGS.
@@ -707,8 +737,8 @@ stimuli:
       and also read .github/agents/review-guide-worker.agent.md,
       .github/agents/review-candidate-verifier.agent.md, and the installed review-pull-request
       SKILL.md path with view in full; those .agent.md files define subordinate worker/verifier
-      contracts, so adjudicate as the SKILL.md coordinator (mapping verifier external downgrades
-      and unestablished drops to UNRESOLVED and only source-contradicted drops to DISCARDED).
+      contracts, so apply SKILL.md's coordinator disposition rules rather than raw subordinate
+      worker/verifier outputs.
       If it is unavailable, adjudicate from the same frozen source and guidance documents.
       Page truncated input reads through EOF.
 
@@ -719,6 +749,12 @@ stimuli:
       Do not fetch, execute target code, modify files, publish, or mutate feedback.
       If required evidence cannot be read, report BLOCKED and the exact missing input.
       Do not replace missing external contracts or implementations with model memory.
+
+      Disposition label meanings:
+      verified: a real defect established by the supplied evidence.
+      EXISTING_FEEDBACK_COVERAGE: the claim is already raised in existing feedback.
+      UNRESOLVED: the claim is not resolved by the supplied evidence.
+      DISCARDED: the claim is ruled out as a material defect by the supplied evidence.
 
       Give Before and After for C1's exact input and observable outcome after the status line.
       The first line must be STATUS: FINDINGS or STATUS: NO_FINDINGS.

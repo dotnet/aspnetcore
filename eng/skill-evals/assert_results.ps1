@@ -181,4 +181,12 @@ foreach ($variant in $variants) {
     }
 }
 
-Write-Host 'All planned trials completed. Every gated stimulus met its own threshold.'
+Write-Host 'All planned trials completed and applicable result-set checks passed.'
+if (@($plansByVariant.Values | Where-Object {
+    [int]$_.runs -eq 1 -and ($_.variant -eq 'current' -or
+        ($_.PSObject.Properties['evalName'] -and $_.evalName -eq 'review-pull-request'))
+}).Count -gt 0) {
+    Write-Host 'Single-run review/verifier checks validate completion, grader scores, and read integrity, not disposition accuracy thresholds.'
+} else {
+    Write-Host 'Configured score thresholds passed.'
+}

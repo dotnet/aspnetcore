@@ -647,7 +647,7 @@ jobs:
               }
 
               if ($vallyExitCode -eq 1) {
-                  Write-Warning "Vally exited with code 1 for '$evalName'; both variants produced complete successful results and the skilled score met its threshold."
+                  Write-Warning "Vally exited with code 1 for '$evalName'. Complete primary trials passed the applicable result-set checks."
               }
           }
 
@@ -700,7 +700,9 @@ jobs:
               DESCRIPTION="$RUN_TYPE skill evaluation passed"
               BODY="✅ **$RUN_TYPE skill evaluation passed** for \`$EVAL_NAMES\` at \`${HEAD_SHA:0:7}\`."
               if [[ "$RUN_TYPE" == 'Smoke' ]]; then
-                BODY+=" Smoke validates the pipeline and skilled thresholds; use a Full run for persuasive quality evidence."
+                DESCRIPTION="Smoke pipeline checks passed"
+                BODY="✅ **Smoke pipeline checks passed** for \`$EVAL_NAMES\` at \`${HEAD_SHA:0:7}\`."
+                BODY+=" Smoke checks trial completion and read receipts. Review/verifier smoke does not gate disposition accuracy. Use a Full run for accuracy measurements."
               fi
               ;;
             failure)

@@ -115,6 +115,78 @@ test('ReviewDispositionRejectsWrongStatusSectionConfidenceAndOmission', () =>
   }
 });
 
+test('ReviewDispositionPreservesIndentedCandidateMetadata', async context =>
+{
+  for (const field of ['PR', 'PATH', 'LIMITATIONS'])
+  {
+    await context.test(field, () =>
+    {
+      const output = review('NEW_FINDINGS', 'verified')
+        .replace('C1 confidence:', `C1 source-backed finding.\n  - ${field}: candidate metadata.\n  - confidence:`);
+      assert.equal(score('case-02', output), 1);
+    });
+  }
+});
+
+test('ReviewDispositionResetsAtUnindentedTopLevelMetadata', async context =>
+{
+  for (const field of ['PR', 'PATH', 'LIMITATIONS'])
+  {
+    await context.test(field, () =>
+    {
+      const output = review('NEW_FINDINGS', 'verified')
+        .replace('C1 confidence:', `${field}: top-level run metadata.\nC1 confidence:`);
+      assert.equal(score('case-02', output), 0);
+    });
+  }
+});
+
+test('ReviewDispositionToleratesSingleUnderscoreEmphasis', async context =>
+{
+  for (const [name, caseName, section, confidence, oldText, newText] of [
+    ['confidence-label', 'case-02', 'NEW_FINDINGS', 'verified', 'confidence: verified', '_Confidence:_ verified'],
+    ['confidence-value', 'case-02', 'NEW_FINDINGS', 'verified', 'confidence: verified', 'confidence: _verified_'],
+    ['unresolved-reason', 'case-06', 'UNRESOLVED', 'unresolved', 'Why unresolved:', '_Why unresolved:_'],
+    ['discarded-reason', 'case-01', 'DISCARDED', 'discarded', 'Why discarded:', '_Why discarded:_'],
+  ])
+  {
+    await context.test(name, () =>
+    {
+      const output = review(section, confidence)
+        .replace(oldText, newText);
+      assert.equal(score(caseName, output), 1);
+    });
+  }
+});
+
+test('ReviewDispositionDistinguishesNoProseFromSectionAbsence', async context =>
+{
+  for (const [name, caseName, output, expected] of [
+    ['unresolved-policy', 'case-06', review('UNRESOLVED', 'unresolved')
+      .replace('C1 missing target-base contract.', '- C1: No binding target-base contract specifies diagnostic sink failure propagation.'), 1],
+    ['discarded-behavior', 'case-01', review('DISCARDED', 'discarded')
+      .replace('C1 old and head match.', '- C1: No behavior change on the pending request between mergeBase and head.'), 1],
+    ['contradictory-unresolved', 'case-02', review('NEW_FINDINGS', 'verified')
+      .replace('UNRESOLVED\nNone.', 'UNRESOLVED\n- C1: No binding target-base contract specifies diagnostic sink failure propagation.'), 0],
+    ['contradictory-discarded', 'case-06', review('UNRESOLVED', 'unresolved')
+      .replace('DISCARDED\nNone.', 'DISCARDED\n- C1: No behavior change on the pending request between mergeBase and head.'), 0],
+    ['not-covered', 'case-06', review('UNRESOLVED', 'unresolved')
+      .replace('EXISTING_FEEDBACK_COVERAGE\nNone.', 'EXISTING_FEEDBACK_COVERAGE\nC1 is not covered by existing feedback.'), 1],
+    ['colon-none', 'case-06', review('UNRESOLVED', 'unresolved')
+      .replace('EXISTING_FEEDBACK_COVERAGE\nNone.', 'EXISTING_FEEDBACK_COVERAGE\nC1: None.'), 1],
+    ['not-covered-short', 'case-06', review('UNRESOLVED', 'unresolved')
+      .replace('EXISTING_FEEDBACK_COVERAGE\nNone.', 'EXISTING_FEEDBACK_COVERAGE\nC1 not covered by feedback.'), 1],
+    ['omitted', 'case-06', review('UNRESOLVED', 'unresolved')
+      .replace('EXISTING_FEEDBACK_COVERAGE\nNone.', 'EXISTING_FEEDBACK_COVERAGE\nC1 omitted.'), 1],
+  ])
+  {
+    await context.test(name, () =>
+    {
+      assert.equal(score(caseName, output), expected);
+    });
+  }
+});
+
 test('ExistingFeedbackRequiresThreadAndRejectsDuplicateInline', () =>
 {
   const good = `STATUS: NO_FINDINGS

@@ -81,7 +81,8 @@ const topLevelFields = [
 
 function stripMarkdown(text)
 {
-  return text.replace(/(?:\*\*|__|`|\*)/g, '');
+  return text.replace(/(?:\*\*|__|`|\*)/g, '')
+    .replace(/(?<!\w)_([^_\r\n]+)_(?!\w)/g, '$1');
 }
 
 function normalizeHeading(line)
@@ -100,13 +101,14 @@ function isNegativeC1Line(line)
     .trim()
     .replace(/^(?:[-*+]|\d+[.)])\s+/, '')
     .trim();
-  if (!clean || /^(?:none|no|n\/a)\b/i.test(clean))
+  const explicitAbsence = /^(?:none|n\/a)\b|^no(?:\s+(?:findings|items|candidates|entries|unresolved|discarded|existing\s+feedback)\b|\s+C1[.!]?\s*$|[.!]?\s*$)/i;
+  if (!clean || explicitAbsence.test(clean))
   {
     return true;
   }
   const afterC1 = clean.replace(/^C1\b\s*(?:[-:—–]|\s)*/i, '');
-  return afterC1 !== clean &&
-    /^(?:none|no|n\/a|not\s+(?:covered|unresolved|discarded|applicable)|omitted)\b/i.test(afterC1);
+  return afterC1 !== clean && (explicitAbsence.test(afterC1) ||
+    /^(?:(?:is\s+|was\s+)?not\s+(?:covered|unresolved|discarded|applicable)|has\s+no\s+existing\s+feedback|(?:is\s+|was\s+)?omitted)\b/i.test(afterC1));
 }
 
 function hasPositiveC1(sectionText)
@@ -144,7 +146,7 @@ function gradeReview(name, output)
       section = heading;
       sections.set(section, '');
     }
-    else if (topLevelFields.includes(fieldName) || (/^#{1,6}\s+/.test(line.trim()) && !/\bC1\b/.test(heading)))
+    else if ((!/^\s/.test(line) && topLevelFields.includes(fieldName)) || (/^#{1,6}\s+/.test(line.trim()) && !/\bC1\b/.test(heading)))
     {
       section = undefined;
     }

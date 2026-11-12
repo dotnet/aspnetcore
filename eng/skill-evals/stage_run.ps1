@@ -112,10 +112,13 @@ function ConvertFrom-EvalSpecYaml {
 }
 
 function Find-ForbiddenEvalField {
-    param($Node)
+    param(
+        $Node,
+        [string]$DispositionMode
+    )
 
     if ($Node -is [System.Collections.IDictionary]) {
-        foreach ($environmentKey in 'environment', 'agent_environment') {
+        foreach ($environmentKey in 'environment', 'agent_environment', 'grading_environment') {
             $environmentBlock = $Node[$environmentKey]
             if ($environmentBlock -is [System.Collections.IDictionary]) {
                 if ($environmentBlock.Contains('commands')) {
@@ -124,6 +127,27 @@ function Find-ForbiddenEvalField {
                 if ($environmentBlock.Contains('mcpServers')) {
                     return "declares a forbidden '$environmentKey.mcpServers' field; per-eval MCP servers are not allowed."
                 }
+                if ($DispositionMode -and $environmentKey -eq 'grading_environment' -and
+                    $environmentBlock.Contains('files')) {
+                    $files = @($environmentBlock['files'])
+                    if ($files.Count -ne 1 -or $files[0] -isnot [Collections.IDictionary] -or
+                        $files[0]['src'] -cne '../grade_disposition.mjs' -or
+                        $files[0]['dest'] -cne 'grade_disposition.mjs') {
+                        return "declares forbidden grading_environment.files; only '../grade_disposition.mjs' to 'grade_disposition.mjs' is allowed."
+                    }
+                }
+            }
+        }
+
+        if ($DispositionMode -and $Node['type'] -ceq 'program') {
+            $config = $Node['config']
+            if ($config -isnot [Collections.IDictionary] -or $config.Count -ne 3 -or
+                $config['program'] -cne 'node' -or
+                $config['args'] -isnot [Collections.IEnumerable] -or $config['args'] -is [string] -or
+                @($config['args']).Count -ne 1 -or $config['args'][0] -cne 'grade_disposition.mjs' -or
+                $config['env'] -isnot [Collections.IDictionary] -or $config['env'].Count -ne 1 -or
+                $config['env']['DISPOSITION_MODE'] -cne $DispositionMode) {
+                return "declares a forbidden program grader; use only node grade_disposition.mjs with DISPOSITION_MODE=$DispositionMode."
             }
         }
 
@@ -137,14 +161,14 @@ function Find-ForbiddenEvalField {
         }
 
         foreach ($value in $Node.Values) {
-            $found = Find-ForbiddenEvalField $value
+            $found = Find-ForbiddenEvalField $value $DispositionMode
             if ($found) {
                 return $found
             }
         }
     } elseif ($Node -is [System.Collections.IEnumerable] -and $Node -isnot [string]) {
         foreach ($item in $Node) {
-            $found = Find-ForbiddenEvalField $item
+            $found = Find-ForbiddenEvalField $item $DispositionMode
             if ($found) {
                 return $found
             }
@@ -161,9 +185,29 @@ function Assert-EvalSpecIsRestricted {
     )
 
     $parsed = ConvertFrom-EvalSpecYaml $Path
-    $violation = Find-ForbiddenEvalField $parsed
+    $dispositionMode = switch ($EvalName) {
+        'review-pull-request' { 'review' }
+        'review-candidate-verifier' { 'component' }
+    }
+    $violation = Find-ForbiddenEvalField $parsed $dispositionMode
     if ($violation) {
         throw "$Description $violation"
+    }
+    if ($dispositionMode) {
+        if ($parsed -isnot [Collections.IDictionary] -or
+            $parsed['grading_environment'] -isnot [Collections.IDictionary] -or
+            -not $parsed['grading_environment'].Contains('files')) {
+            throw "$Description must declare the trusted grading_environment.files mapping."
+        }
+        foreach ($stimulus in @($parsed['stimuli'])) {
+            $primary = @($stimulus['graders'] | Where-Object {
+                $_ -is [Collections.IDictionary] -and
+                $_['name'] -ceq "disposition-$($stimulus['name'])"
+            })
+            if ($primary.Count -ne 1 -or $primary[0]['type'] -cne 'program') {
+                throw "$Description must declare exactly one primary disposition program grader for '$($stimulus['name'])'."
+            }
+        }
     }
 }
 
