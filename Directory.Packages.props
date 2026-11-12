@@ -126,6 +126,8 @@ are expressed as central `<PackageVersion>` items.
         <_RuntimePackageVersion Include="Microsoft.NETCore.App.Runtime.linux-musl-x64" />
         <_RuntimePackageVersion Include="Microsoft.NETCore.App.Runtime.linux-musl-arm" />
         <_RuntimePackageVersion Include="Microsoft.NETCore.App.Runtime.linux-musl-arm64" />
+        <_RuntimePackageVersion Include="Microsoft.NETCore.App.Runtime.openharmony-x64" />
+        <_RuntimePackageVersion Include="Microsoft.NETCore.App.Runtime.openharmony-arm64" />
         <_RuntimePackageVersion Include="Microsoft.NETCore.App.Runtime.freebsd-x64" />
         <_RuntimePackageVersion Include="Microsoft.NETCore.App.Runtime.freebsd-arm64" />
         <_RuntimePackageVersion Include="Microsoft.NETCore.App.Runtime.openbsd-x64" />
@@ -148,6 +150,8 @@ are expressed as central `<PackageVersion>` items.
         <_RuntimePackageVersion Include="Microsoft.NETCore.App.Crossgen2.linux-musl-x64" />
         <_RuntimePackageVersion Include="Microsoft.NETCore.App.Crossgen2.linux-musl-arm" />
         <_RuntimePackageVersion Include="Microsoft.NETCore.App.Crossgen2.linux-musl-arm64" />
+        <_RuntimePackageVersion Include="Microsoft.NETCore.App.Crossgen2.openharmony-x64" />
+        <_RuntimePackageVersion Include="Microsoft.NETCore.App.Crossgen2.openharmony-arm64" />
         <_RuntimePackageVersion Include="Microsoft.NETCore.App.Crossgen2.freebsd-x64" />
         <_RuntimePackageVersion Include="Microsoft.NETCore.App.Crossgen2.freebsd-arm64" />
         <_RuntimePackageVersion Include="Microsoft.NETCore.App.Crossgen2.openbsd-x64" />
@@ -165,10 +169,8 @@ are expressed as central `<PackageVersion>` items.
         <PackageVersion Include="Microsoft.AspNet.WebApi.Client" Version="$(MicrosoftAspNetWebApiClientVersion)" />
         <PackageVersion Include="Microsoft.AspNetCore.AzureAppServices.SiteExtension.10.0.x64" Version="$(MicrosoftAspNetCoreAzureAppServicesSiteExtension100x64Version)" />
         <PackageVersion Include="Microsoft.AspNetCore.AzureAppServices.SiteExtension.10.0.x86" Version="$(MicrosoftAspNetCoreAzureAppServicesSiteExtension100x86Version)" />
-        <PackageVersion Include="Microsoft.AspNetCore.AzureAppServices.SiteExtension.8.0.x64" Version="$(MicrosoftAspNetCoreAzureAppServicesSiteExtension80x64Version)" />
-        <PackageVersion Include="Microsoft.AspNetCore.AzureAppServices.SiteExtension.8.0.x86" Version="$(MicrosoftAspNetCoreAzureAppServicesSiteExtension80x86Version)" />
-        <PackageVersion Include="Microsoft.AspNetCore.AzureAppServices.SiteExtension.9.0.x64" Version="$(MicrosoftAspNetCoreAzureAppServicesSiteExtension90x64Version)" />
-        <PackageVersion Include="Microsoft.AspNetCore.AzureAppServices.SiteExtension.9.0.x86" Version="$(MicrosoftAspNetCoreAzureAppServicesSiteExtension90x86Version)" />
+        <PackageVersion Include="Microsoft.AspNetCore.AzureAppServices.SiteExtension.11.0.x64" Version="$(MicrosoftAspNetCoreAzureAppServicesSiteExtension110x64Version)" />
+        <PackageVersion Include="Microsoft.AspNetCore.AzureAppServices.SiteExtension.11.0.x86" Version="$(MicrosoftAspNetCoreAzureAppServicesSiteExtension110x86Version)" />
         <PackageVersion Include="Microsoft.Bcl.AsyncInterfaces" Version="$(MicrosoftBclAsyncInterfacesVersion)" />
         <PackageVersion Include="Microsoft.DotNet.RemoteExecutor" Version="$(MicrosoftDotNetRemoteExecutorVersion)" />
         <PackageVersion Include="Microsoft.EntityFrameworkCore" Version="$(MicrosoftEntityFrameworkCoreVersion)" />

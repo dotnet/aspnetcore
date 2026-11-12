@@ -10,8 +10,8 @@
     "generatedAt": "2026-09-23T19:30:00.0000000Z",
     "description": "Synthetic trusted Actions context, not a new hosted publication. Each appended snapshot hashes the exact UTF-8, no-BOM, LF fixture JSON written by Write-JsonFile, including its final newline. Historical input hashes below still identify the untouched source artifact, not these test serializations."
   },
-  "normalizer": "gh-aw v0.88.7 actions/setup/js/sanitize_content.cjs",
-  "sanitizerBlob": "871e59cd7d135ffe782b0df5a286b3188d9b9635",
+  "normalizer": "gh-aw v0.92.0 actions/setup/js/sanitize_content.cjs",
+  "sanitizerBlob": "ddf832a66f6ebb02dcee0644c9857f0333229914",
   "fixtures": {
     "normal-legacy": {
       "source": "../normal-legacy.json",

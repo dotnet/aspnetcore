@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Internal;
 
 namespace Microsoft.AspNetCore.Authentication;
 
@@ -26,7 +27,7 @@ public class RequestPathBaseCookieBuilder : CookieBuilder
         if (path == null)
         {
             var originalPathBase = context.Features.Get<IAuthenticationFeature>()?.OriginalPathBase ?? context.Request.PathBase;
-            path = originalPathBase + AdditionalPath;
+            path = CookiePathEscaper.Escape(originalPathBase + AdditionalPath);
         }
 
         var options = base.Build(context, expiresFrom);
