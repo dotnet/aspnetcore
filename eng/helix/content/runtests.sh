@@ -13,6 +13,11 @@ DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 export DOTNET_MULTILEVEL_LOOKUP=0
 export DOTNET_SKIP_FIRST_TIME_EXPERIENCE=1
 
+if [[ "$helixQueue" == *"OSX"* ]]; then
+    # Avoid first-run certificate/keychain initialization before Helix SDK commands.
+    export DOTNET_GENERATE_ASPNET_CERTIFICATE=false
+fi
+
 # Avoid https://github.com/dotnet/aspnetcore/issues/41937 in current session.
 unset ASPNETCORE_ENVIRONMENT
 
