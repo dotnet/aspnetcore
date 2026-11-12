@@ -167,6 +167,69 @@ public class ComponentBindingTest
         Assert.Equal(1, receiver.Count);
     }
 
+    [Theory]
+    [InlineData("TryGetValue", false)]
+    [InlineData("TryGetValue", true)]
+    [InlineData("Enumeration", false)]
+    [InlineData("Enumeration", true)]
+    [InlineData("GetValueOrDefault", false)]
+    [InlineData("GetValueOrDefault", true)]
+    [InlineData("ToDictionary", false)]
+    [InlineData("ToDictionary", true)]
+    public async Task ManuallyReadBindingCallback_CanBeForwardedWithoutChangingOriginalView(string readMethod, bool untyped)
+    {
+        var receiver = new EventReceiver();
+        var parentValue = false;
+        var binding = CompilerServices.RuntimeHelpers.CreateInferredEventCallback(receiver, (bool value) => parentValue = value, parentValue);
+        object originalCallback = untyped ? binding.AsUntyped() : binding;
+        var parameters = ParameterView.FromDictionary(new Dictionary<string, object>
+        {
+            [nameof(DeclaredCallbackComponent.ValueChanged)] = originalCallback,
+        });
+        object callback;
+        switch (readMethod)
+        {
+            case "TryGetValue":
+                Assert.True(parameters.TryGetValue<object>(nameof(DeclaredCallbackComponent.ValueChanged), out callback));
+                break;
+            case "Enumeration":
+                var enumerator = parameters.GetEnumerator();
+                Assert.True(enumerator.MoveNext());
+                callback = enumerator.Current.Value;
+                break;
+            case "GetValueOrDefault":
+                callback = parameters.GetValueOrDefault<object>(nameof(DeclaredCallbackComponent.ValueChanged));
+                break;
+            case "ToDictionary":
+                callback = parameters.ToDictionary()[nameof(DeclaredCallbackComponent.ValueChanged)];
+                break;
+            default:
+                throw new ArgumentOutOfRangeException(nameof(readMethod));
+        }
+
+        var forwardedParameters = ParameterView.FromDictionary(new Dictionary<string, object>
+        {
+            [nameof(DeclaredCallbackComponent.ValueChanged)] = callback,
+        });
+        var target = new CaptureComponent();
+        forwardedParameters.SetParameterProperties(target);
+        if (untyped)
+        {
+            await Assert.IsType<EventCallback>(target.Attributes[nameof(DeclaredCallbackComponent.ValueChanged)]).InvokeAsync(true);
+        }
+        else
+        {
+            await Assert.IsType<EventCallback<bool>>(target.Attributes[nameof(DeclaredCallbackComponent.ValueChanged)]).InvokeAsync(true);
+        }
+
+        Assert.True(parentValue);
+        Assert.Equal(1, receiver.Count);
+        Assert.Equal(originalCallback, callback);
+        var exception = Assert.Throws<InvalidOperationException>(() => parameters.SetParameterProperties(new CaptureComponent()));
+        Assert.Contains("matching the name 'ValueChanged'", exception.Message);
+        Assert.True(((IEventCallback)originalCallback).IsBinding);
+    }
+
     [Fact]
     public void ExplicitCaptureDictionary_IsNotInterpretedAsBindingParameters()
     {

@@ -91,7 +91,7 @@ internal static class ComponentProperties
                     }
                 }
 
-                SetProperty(target, writer, parameterName, parameter.Value);
+                SetProperty(target, writer, parameterName, parameter.RawValue);
             }
         }
         else
@@ -126,7 +126,7 @@ internal static class ComponentProperties
                     }
                     else if (writer.AcceptsCascadingParameters && !parameter.Cascading)
                     {
-                        if (!writer.AcceptsDirectParameters && parameter.Value is IEventCallback { IsBinding: true })
+                        if (!writer.AcceptsDirectParameters && parameter.RawValue is IEventCallback { IsBinding: true })
                         {
                             ThrowForSettingCascadingParameterWithNonCascadingValue(targetType, parameterName);
                             throw null; // Unreachable
@@ -137,11 +137,11 @@ internal static class ComponentProperties
                         // way for the user of a component to know what the names of cascading parameters
                         // are.
                         unmatched ??= new Dictionary<string, object>(StringComparer.OrdinalIgnoreCase);
-                        unmatched[parameterName] = parameter.Value;
+                        unmatched[parameterName] = parameter.RawValue;
                     }
                     else
                     {
-                        SetProperty(target, writer, parameterName, parameter.Value);
+                        SetProperty(target, writer, parameterName, parameter.RawValue);
                     }
                 }
                 else
@@ -157,7 +157,7 @@ internal static class ComponentProperties
                     }
                     else
                     {
-                        if (parameter.Value is IEventCallback { IsBinding: true })
+                        if (parameter.RawValue is IEventCallback { IsBinding: true })
                         {
                             // Suppressed with "pragma warning disable" so ILLink Roslyn Analyzer doesn't report the warning.
 #pragma warning disable IL2072 // 'targetType' argument does not satisfy 'DynamicallyAccessedMemberTypes.All' in call to 'Microsoft.AspNetCore.Components.Reflection.ComponentProperties.ThrowForUnknownIncomingParameterName(Type, String)'.
@@ -167,7 +167,7 @@ internal static class ComponentProperties
                         }
 
                         unmatched ??= new Dictionary<string, object>(StringComparer.OrdinalIgnoreCase);
-                        unmatched[parameterName] = parameter.Value;
+                        unmatched[parameterName] = parameter.RawValue;
                     }
                 }
             }

@@ -26,8 +26,14 @@
     <MissingCallbackWithCapture Value="_explicitValue" ValueChanged="@(EventCallback.Factory.Create<bool>(this, value => _explicitValue = value))" class="ordinary-attribute" />
 </div>
 
+<div id="manual-assignment">
+    <p id="manual-assignment-parent-value">@_manualValue</p>
+    <ManualAssignmentWrapper @bind-Value="_manualValue" />
+</div>
+
 @code {
     private bool _missingValue;
     private bool _boundValue;
     private bool _explicitValue;
+    private bool _manualValue;
 }

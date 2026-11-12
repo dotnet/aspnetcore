@@ -2109,6 +2109,23 @@ public class BindTest : ServerTestBase<ToggleExecutionModeServerFixture<Program>
     }
 
     [Fact]
+    public void ManuallyAssignedBindingCallback_CanBeForwardedAsUnmatchedValue()
+    {
+        Browser.MountTestComponent<BindWithUnmatchedValuesCases>();
+        var parentValue = Browser.Exists(By.Id("manual-assignment-parent-value"));
+        Browser.Equal("False", () => parentValue.Text);
+        Browser.Equal("ValueChanged,class", () => Browser.FindElement(By.CssSelector("#manual-assignment .attributes")).Text);
+
+        Browser.Exists(By.CssSelector("#manual-assignment .toggle")).Click();
+        Browser.Equal("True", () => parentValue.Text);
+        Browser.Equal("True", () => Browser.FindElement(By.CssSelector("#manual-assignment .child-value")).Text);
+
+        Browser.Exists(By.CssSelector("#manual-assignment .toggle")).Click();
+        Browser.Equal("False", () => parentValue.Text);
+        Browser.Equal("False", () => Browser.FindElement(By.CssSelector("#manual-assignment .child-value")).Text);
+    }
+
+    [Fact]
     public void ExplicitChangeCallback_CanBeCapturedAsUnmatchedValue()
     {
         Browser.MountTestComponent<BindWithUnmatchedValuesCases>();

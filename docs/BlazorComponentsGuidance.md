@@ -52,6 +52,7 @@ validation guidance rather than defining a separate architecture.
 - Component parameter names and deserialization must remain case-insensitive, including prerendered, restored, and transport payload paths.
 - Treat `ParameterView` as batch-scoped data; do not retain old views after pooled render data can be recycled, and test helper APIs as well as enumeration.
 - Measure callback construction and repeated parameter assignment separately, excluding render-tree and parameter-view setup from assignment measurements. Clear binding provenance only in the assigned value, without mutating the incoming callback or reboxing it on the typed-setter path.
+- Callbacks read through public `ParameterView` helpers or enumeration must also be forwardable after manual parameter assignment. Preserve provenance in the original view for framework validation, not in values exposed to component code.
 - Framework-supplied parameters, including form-bound values, may overwrite property initializers; defaults that must survive binding belong in lifecycle logic.
 - Required, optional, cascading, and two-way bound parameters should expose clear contracts, nullability, and validation without depending on a specific application binding framework.
 - Prefer `EventCallback` and `Value`/`ValueChanged`/`ValueExpression` patterns that preserve async callbacks, validation, and parent-child synchronization.
