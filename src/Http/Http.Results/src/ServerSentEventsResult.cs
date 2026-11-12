@@ -92,15 +92,15 @@ public sealed class ServerSentEventsResult<T> : IResult, IEndpointMetadataProvid
     }
 
     private static async IAsyncEnumerable<SseItem<T>> WrapEvents(
-    IAsyncEnumerable<T> events,
-    string? eventType = null,
-    [EnumeratorCancellation] CancellationToken cancellationToken = default)
-{
-    await foreach (var item in events.WithCancellation(cancellationToken))
+        IAsyncEnumerable<T> events,
+        string? eventType = null,
+        [EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
-        yield return new SseItem<T>(item, eventType);
+        await foreach (var item in events.WithCancellation(cancellationToken))
+        {
+            yield return new SseItem<T>(item, eventType);
+        }
     }
-}
 
     static void IEndpointMetadataProvider.PopulateMetadata(MethodInfo method, EndpointBuilder builder)
     {
