@@ -18,6 +18,8 @@ public partial class HttpConnectionTests
 {
     public class RefreshAuthentication
     {
+        private const string ConnectionTokenHeaderName = "X-SignalR-Connection-Token";
+
         private static void OnRefresh(TestHttpMessageHandler handler, Func<HttpRequestMessage, CancellationToken, Task<HttpResponseMessage>> onRefresh)
         {
             handler.OnRequest((request, next, cancellationToken) =>
@@ -135,6 +137,56 @@ public partial class HttpConnectionTests
         }
 
         [Fact]
+        public async Task LongPollingAuthenticationRefreshChallengePostsRefreshAndRetriesPoll()
+        {
+            var testHttpHandler = new TestHttpMessageHandler(autoNegotiate: false);
+            testHttpHandler.OnNegotiate((_, _) => ResponseUtils.CreateResponse(
+                HttpStatusCode.OK,
+                ResponseUtils.CreateNegotiationContent(negotiateVersion: 1)));
+            testHttpHandler.OnLongPollDelete(_ => ResponseUtils.CreateResponse(HttpStatusCode.Accepted));
+
+            var pollCount = 0;
+            testHttpHandler.OnLongPoll(_ => Interlocked.Increment(ref pollCount) switch
+            {
+                1 => ResponseUtils.CreateResponse(HttpStatusCode.OK),
+                2 => ResponseUtils.CreateResponse(
+                    HttpStatusCode.Conflict,
+                    """{"error":"authentication_refresh_required"}"""),
+                3 => ResponseUtils.CreateResponse(HttpStatusCode.NoContent),
+                _ => throw new InvalidOperationException($"Unexpected poll {pollCount}."),
+            });
+
+            var refreshCount = 0;
+            string refreshConnectionToken = null;
+            OnRefresh(testHttpHandler, (request, _) =>
+            {
+                Interlocked.Increment(ref refreshCount);
+                refreshConnectionToken = string.Join(",", request.Headers.GetValues(ConnectionTokenHeaderName));
+                return Task.FromResult(ResponseUtils.CreateResponse(
+                    HttpStatusCode.OK,
+                    """{"tokenLifetimeSeconds":60}"""));
+            });
+
+            using (var noErrorScope = new VerifyNoErrorsScope())
+            {
+                await WithConnectionAsync(
+                    CreateConnection(testHttpHandler, loggerFactory: noErrorScope.LoggerFactory),
+                    async connection =>
+                    {
+                        await connection.StartAsync().DefaultTimeout();
+                        var readResult = await connection.Transport.Input.ReadAsync().AsTask().DefaultTimeout();
+                        Assert.True(readResult.IsCompleted);
+                        Assert.True(readResult.Buffer.IsEmpty);
+                        connection.Transport.Input.AdvanceTo(readResult.Buffer.End);
+                    });
+            }
+
+            Assert.Equal(1, refreshCount);
+            Assert.Equal("connection-token", refreshConnectionToken);
+            Assert.Equal(3, pollCount);
+        }
+
+        [Fact]
         public async Task RefreshAuthenticationAsyncDoesNotUpdateCachedTokenWhenServerRejectsRefresh()
         {
             // When the server rejects a refresh (for example an OnAuthenticationRefresh policy denial returning 403), the freshly
@@ -212,11 +264,12 @@ public partial class HttpConnectionTests
         }
 
         [Theory]
-        [InlineData("http://fakeuri.org/", "http://fakeuri.org/refresh?id=connection-token")]
-        [InlineData("http://fakeuri.org", "http://fakeuri.org/refresh?id=connection-token")]
-        [InlineData("http://fakeuri.org/endpoint", "http://fakeuri.org/endpoint/refresh?id=connection-token")]
-        [InlineData("http://fakeuri.org/endpoint/", "http://fakeuri.org/endpoint/refresh?id=connection-token")]
-        public async Task RefreshAuthenticationAsyncPostsToRefreshUrlWithConnectionToken(string requestedUrl, string expectedRefreshUrl)
+        [InlineData("http://fakeuri.org/", "http://fakeuri.org/refresh")]
+        [InlineData("http://fakeuri.org", "http://fakeuri.org/refresh")]
+        [InlineData("http://fakeuri.org/endpoint", "http://fakeuri.org/endpoint/refresh")]
+        [InlineData("http://fakeuri.org/endpoint/", "http://fakeuri.org/endpoint/refresh")]
+        [InlineData("http://fakeuri.org/endpoint?existing=true", "http://fakeuri.org/endpoint/refresh?existing=true")]
+        public async Task RefreshAuthenticationAsyncPostsToRefreshUrlWithConnectionTokenHeader(string requestedUrl, string expectedRefreshUrl)
         {
             var testHttpHandler = new TestHttpMessageHandler(autoNegotiate: false);
             testHttpHandler.OnNegotiate((_, _) => ResponseUtils.CreateResponse(HttpStatusCode.OK, ResponseUtils.CreateNegotiationContent(negotiateVersion: 1)));
@@ -245,6 +298,7 @@ public partial class HttpConnectionTests
             var request = await refreshRequestTcs.Task.DefaultTimeout();
             Assert.Equal(HttpMethod.Post, request.Method);
             Assert.Equal(expectedRefreshUrl, request.RequestUri.ToString());
+            Assert.Equal("connection-token", Assert.Single(request.Headers.GetValues(ConnectionTokenHeaderName)));
         }
 
         [Fact]
@@ -292,7 +346,8 @@ public partial class HttpConnectionTests
             }
             var request = await refreshRequestTcs.Task.DefaultTimeout();
             Assert.Equal(HttpMethod.Post, request.Method);
-            Assert.Equal("http://original.example/hub/refresh?id=connection-token", request.RequestUri.ToString());
+            Assert.Equal("http://original.example/hub/refresh", request.RequestUri.ToString());
+            Assert.Equal("connection-token", Assert.Single(request.Headers.GetValues(ConnectionTokenHeaderName)));
         }
 
         [Fact]

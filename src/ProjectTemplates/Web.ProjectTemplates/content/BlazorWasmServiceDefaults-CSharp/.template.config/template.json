@@ -11,7 +11,7 @@
   "generatorVersions": "[1.0.0.0-*)",
   "description": "A project template for creating a service defaults library for Blazor WebAssembly applications. Includes OpenTelemetry, service discovery, and resilience support for Aspire integration.",
   "groupIdentity": "Microsoft.Web.Blazor.Wasm.ServiceDefaults",
-  "precedence": "10000",
+  "precedence": "12000",
   "identity": "Microsoft.Web.Blazor.Wasm.ServiceDefaults.CSharp.12.0",
   "shortName": "blazorwasm-servicedefaults",
   "thirdPartyNotices": "https://aka.ms/aspnetcore/12.0-third-party-notices",
