@@ -45,6 +45,8 @@ public class AutoValidateAntiforgeryTokenAuthorizationFilterTest
     [InlineData("HEAD")]
     [InlineData("TracE")]
     [InlineData("OPTIONs")]
+    [InlineData("QUERY")]
+    [InlineData("query")]
     public async Task Filter_SkipsAntiforgeryVerification_ForSafeMethod(string httpMethod)
     {
         // Arrange

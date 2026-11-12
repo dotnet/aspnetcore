@@ -500,7 +500,7 @@ public class SetCookieHeaderValue
         // = (no spaces)
         if (!ReadEqualsSign(input, ref offset))
         {
-            return 0;
+            return offset - startIndex;
         }
 
         // value or "quoted value"

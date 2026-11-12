@@ -118,7 +118,7 @@ public class InputDate<[DynamicallyAccessedMembers(DynamicallyAccessedMemberType
         }
         else
         {
-            validationErrorMessage = string.Format(CultureInfo.InvariantCulture, _parsingErrorMessage, DisplayName ?? FieldIdentifier.FieldName);
+            validationErrorMessage = string.Format(CultureInfo.InvariantCulture, _parsingErrorMessage, GetDisplayName());
             return false;
         }
     }

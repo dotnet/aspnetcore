@@ -632,6 +632,9 @@ internal partial class CircuitHost : IAsyncDisposable
         // This can be called before the circuit is initialized.
         AssertNotDisposed();
 
+        // Update the circuit's authentication state when the provider supports it.
+        // Existing component data is not cleared. Applications must handle user changes
+        // and check current permissions before using that data or performing an operation.
         var authenticationStateProvider = Services.GetService<AuthenticationStateProvider>() as IHostEnvironmentAuthenticationStateProvider;
         if (authenticationStateProvider != null)
         {

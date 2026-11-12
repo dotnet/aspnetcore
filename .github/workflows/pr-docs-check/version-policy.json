@@ -1,0 +1,24 @@
+{
+  "_comment": "Source-owned policy for resolving the ASP.NET Core version represented by a merged pull request. The docs repository remains independent and always receives pull requests against main.",
+  "schemaVersion": 1,
+  "mainVersion": {
+    "value": "12.0",
+    "description": "The ASP.NET Core version currently developed on the source repository's main branch. Update this once per yearly main-branch rollover."
+  },
+  "releaseBranchPattern": {
+    "value": "^release/(?P<version>[0-9]+\\.0)$",
+    "description": "Recognizes supported source release branches and extracts their ASP.NET Core version."
+  },
+  "milestoneVersionPattern": {
+    "value": "^(?P<version>[0-9]+\\.0)(?:\\b|[- ].*)",
+    "description": "Extracts a corroborating ASP.NET Core version from milestone titles such as 12.0 or 12.0-preview1."
+  },
+  "docsMonikerPrefix": {
+    "value": "aspnetcore-",
+    "description": "Builds Learn monikers such as aspnetcore-12.0 from the resolved source version."
+  },
+  "docsBaseBranch": {
+    "value": "main",
+    "description": "AspNetCore.Docs has no release branches; every generated documentation pull request targets main."
+  }
+}

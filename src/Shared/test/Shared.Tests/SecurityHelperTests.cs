@@ -89,4 +89,42 @@ public class SecurityHelperTests
         Assert.Equal(identityNoAuthTypeWithClaim, user.Identities.Skip(2).First());
         Assert.Equal(identityEmptyWithAuthType, user.Identities.Skip(3).First());
     }
+
+    [Fact]
+    public void IsAuthenticated_NullUser_ReturnsFalse()
+    {
+        Assert.False(SecurityHelper.IsAuthenticated(null));
+    }
+
+    [Fact]
+    public void IsAuthenticated_NoIdentities_ReturnsFalse()
+    {
+        Assert.False(SecurityHelper.IsAuthenticated(new ClaimsPrincipal()));
+    }
+
+    [Fact]
+    public void IsAuthenticated_UnauthenticatedIdentity_ReturnsFalse()
+    {
+        Assert.False(SecurityHelper.IsAuthenticated(new ClaimsPrincipal(new ClaimsIdentity())));
+    }
+
+    [Fact]
+    public void IsAuthenticated_AuthenticatedIdentity_ReturnsTrue()
+    {
+        Assert.True(SecurityHelper.IsAuthenticated(new ClaimsPrincipal(new ClaimsIdentity(authenticationType: "custom"))));
+    }
+
+    [Fact]
+    public void IsAuthenticated_AuthenticatedByNonPrimaryIdentity_ReturnsTrue()
+    {
+        // The primary identity is unauthenticated, but a later identity is authenticated.
+        var user = new ClaimsPrincipal(new[]
+        {
+            new ClaimsIdentity(),
+            new ClaimsIdentity(authenticationType: "custom"),
+        });
+
+        Assert.False(user.Identity.IsAuthenticated);
+        Assert.True(SecurityHelper.IsAuthenticated(user));
+    }
 }

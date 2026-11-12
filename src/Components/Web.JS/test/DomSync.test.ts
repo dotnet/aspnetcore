@@ -1,7 +1,25 @@
 import { expect, test, describe } from '@jest/globals';
 import { CommentBoundedRange, synchronizeDomContent } from '../src/Rendering/DomMerging/DomSync';
+import { toLogicalElement } from '../src/Rendering/LogicalElements';
 
 describe('DomSync', () => {
+  test('should synchronize existing content in a logical HTMLTemplateElement', () => {
+    const destination = document.createElement('template');
+    destination.innerHTML = '<span>old</span><i>remove</i>';
+    const retainedElement = destination.content.firstElementChild;
+    toLogicalElement(destination, true);
+    const newContent = makeNewContent('<span>updated</span><b>added</b>');
+
+    synchronizeDomContent(destination, newContent);
+
+    expect(destination.childNodes).toHaveLength(0);
+    expect(Array.from(destination.content.children, element => element.outerHTML)).toEqual([
+      '<span>updated</span>',
+      '<b>added</b>',
+    ]);
+    expect(destination.content.firstElementChild).toBe(retainedElement);
+  });
+
   test('should remove everything if new content is empty', () => {
     // Arrange
     const destination = makeExistingContent(`

@@ -67,6 +67,9 @@ public class FormOptions
     /// <summary>
     /// A limit on the length of individual keys. Forms containing keys that exceed this limit will
     /// throw an <see cref="InvalidDataException"/> when parsed.
+    /// This limit applies only to forms with an <c>application/x-www-form-urlencoded</c> content type.
+    /// For forms with a <c>multipart/form-data</c> content type, the length of a key is limited by
+    /// <see cref="MultipartHeadersLengthLimit"/>.
     /// Defaults to 2,048 bytes, which is approximately 2KB.
     /// </summary>
     public int KeyLengthLimit { get; set; } = FormReader.DefaultKeyLengthLimit;
@@ -74,6 +77,8 @@ public class FormOptions
     /// <summary>
     /// A limit on the length of individual form values. Forms containing values that exceed this
     /// limit will throw an <see cref="InvalidDataException"/> when parsed.
+    /// This limit applies only to forms with an <c>application/x-www-form-urlencoded</c> content type.
+    /// For forms with a <c>multipart/form-data</c> content type, use <see cref="MultipartBodyLengthLimit"/>.
     /// Defaults to 4,194,304 bytes, which is approximately 4MB.
     /// </summary>
     public int ValueLengthLimit { get; set; } = FormReader.DefaultValueLengthLimit;
@@ -86,9 +91,8 @@ public class FormOptions
     public int MultipartBoundaryLengthLimit { get; set; } = DefaultMultipartBoundaryLengthLimit;
 
     /// <summary>
-    /// A limit for the number of headers to allow in each multipart section. Headers with the same name will
-    /// be combined. Form sections that exceed this limit will throw an <see cref="InvalidDataException"/>
-    /// when parsed.
+    /// A limit for the number of header lines to allow in each multipart section. Headers with the same name
+    /// count separately. Form sections that exceed this limit will throw an <see cref="InvalidDataException"/> when parsed.
     /// Defaults to 16.
     /// </summary>
     public int MultipartHeadersCountLimit { get; set; } = MultipartReader.DefaultHeadersCountLimit;

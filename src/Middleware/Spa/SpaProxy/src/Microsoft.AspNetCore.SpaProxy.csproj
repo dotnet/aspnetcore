@@ -5,16 +5,18 @@
     <TargetFramework>$(DefaultNetCoreTargetFramework)</TargetFramework>
     <IsTrimmable>true</IsTrimmable>
     <EnableAOTAnalyzer>false</EnableAOTAnalyzer>
+    <!-- Suppress NU5129: build assets are intentionally in TFM subfolders -->
+    <NoWarn>$(NoWarn);NU5129</NoWarn>
     <!-- This is ok since this assembly is not referenced by any application but it is loaded as a hosting startup
     assembly for apps referencing this package-->
   </PropertyGroup>
 
   <ItemGroup>
-    <Reference Include="Microsoft.AspNetCore.Hosting" />
-    <Reference Include="Microsoft.AspNetCore.Hosting.Abstractions" />
-    <Reference Include="Microsoft.AspNetCore.Http.Abstractions" />
-    <Reference Include="Microsoft.AspNetCore.Http.Features" />
-    <None Update="build\Microsoft.AspNetCore.SpaProxy.targets" Pack="true" PackagePath="build\Microsoft.AspNetCore.SpaProxy.targets" />
+    <ProjectReference Include="$(RepoRoot)src\Hosting\Abstractions\src\Microsoft.AspNetCore.Hosting.Abstractions.csproj" />
+    <ProjectReference Include="$(RepoRoot)src\Hosting\Hosting\src\Microsoft.AspNetCore.Hosting.csproj" />
+    <ProjectReference Include="$(RepoRoot)src\Http\Http.Abstractions\src\Microsoft.AspNetCore.Http.Abstractions.csproj" />
+    <ProjectReference Include="$(RepoRoot)src\Http\Http.Features\src\Microsoft.AspNetCore.Http.Features.csproj" />
+    <None Update="build\Microsoft.AspNetCore.SpaProxy.targets" Pack="true" PackagePath="build\$(DefaultNetCoreTargetFramework)\Microsoft.AspNetCore.SpaProxy.targets" />
   </ItemGroup>
 
 </Project>

@@ -1,7 +1,8 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-import { HttpClient } from "./HttpClient";
+import { HttpError } from "./Errors";
+import { HttpClient, HttpResponse } from "./HttpClient";
 import { ILogger, LogLevel } from "./ILogger";
 import { NullLogger } from "./Loggers";
 import { IStreamSubscriber, ISubscription } from "./Stream";
@@ -99,6 +100,19 @@ export function isArrayBuffer(val: any): val is ArrayBuffer {
             (val.constructor && val.constructor.name === "ArrayBuffer"));
 }
 
+/** @internal */
+export function isSuccessStatusCode(statusCode: number): boolean {
+    return statusCode >= 200 && statusCode < 300;
+}
+
+/** @internal */
+export function getHttpResponseError(response: HttpResponse): HttpError {
+    const errorMessage = typeof response.content === "string" && response.content
+        ? response.content
+        : response.statusText || "";
+    return new HttpError(errorMessage, response.statusCode);
+}
+
 /** @private */
 export async function sendMessage(logger: ILogger, transportName: string, httpClient: HttpClient, url: string,
                                   content: string | ArrayBuffer, options: IHttpConnectionOptions): Promise<void> {
@@ -117,6 +131,10 @@ export async function sendMessage(logger: ILogger, transportName: string, httpCl
         timeout: options.timeout,
         withCredentials: options.withCredentials,
     });
+
+    if (!isSuccessStatusCode(response.statusCode)) {
+        throw getHttpResponseError(response);
+    }
 
     logger.log(LogLevel.Trace, `(${transportName} transport) request complete. Response status: ${response.statusCode}.`);
 }

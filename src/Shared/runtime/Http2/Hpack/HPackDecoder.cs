@@ -546,6 +546,11 @@ namespace System.Net.Http.HPack
 
         private void OnIndexedHeaderField(int index, IHttpStreamHeadersHandler handler)
         {
+            if (index == 0)
+            {
+                throw new HPackDecodingException(SR.Format(SR.net_http_hpack_invalid_index, index));
+            }
+
             if (index <= H2StaticTable.Count)
             {
                 handler.OnStaticIndexedHeader(index);

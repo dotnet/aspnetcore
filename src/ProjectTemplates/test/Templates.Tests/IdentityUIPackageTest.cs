@@ -121,7 +121,7 @@ public class IdentityUIPackageTest : LoggedTest
         await project.RunDotNetEfCreateMigrationAsync("razorpages");
         project.AssertEmptyMigration("razorpages");
 
-        var versionValidator = "Bootstrap  v5.3.3";
+        var versionValidator = "Bootstrap  v5.3.8";
         using (var aspNetProcess = project.StartBuiltProjectAsync())
         {
             Assert.False(

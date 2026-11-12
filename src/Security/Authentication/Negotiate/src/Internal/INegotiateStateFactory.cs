@@ -6,5 +6,5 @@ namespace Microsoft.AspNetCore.Authentication.Negotiate;
 // For testing
 internal interface INegotiateStateFactory
 {
-    INegotiateState CreateInstance();
+    INegotiateState CreateInstance(ReadOnlyMemory<byte> channelBindingToken);
 }

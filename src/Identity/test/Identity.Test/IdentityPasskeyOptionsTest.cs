@@ -20,5 +20,6 @@ public class IdentityPasskeyOptionsTest
         Assert.Null(options.IsAllowedAlgorithm);
         Assert.Null(options.ValidateOrigin);
         Assert.Null(options.VerifyAttestationStatement);
+        Assert.Null(options.TimeProvider);
     }
 }

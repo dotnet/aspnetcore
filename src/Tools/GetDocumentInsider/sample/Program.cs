@@ -9,8 +9,21 @@ public class Program
     {
         var builder = WebApplication.CreateBuilder(args);
 
-        builder.Services.AddOpenApi();
-        builder.Services.AddOpenApi("internal");
+        builder.Services.AddOpenApi(options =>
+        {
+            options.AddDocumentTransformer((document, context, cancellationToken) =>
+            {
+                return TransformDocument(document, builder);
+            });
+        });
+
+        builder.Services.AddOpenApi("internal", options =>
+        {
+            options.AddDocumentTransformer((document, context, cancellationToken) =>
+            {
+                return TransformDocument(document, builder);
+            });
+        });
 
         var app = builder.Build();
 
@@ -21,5 +34,17 @@ public class Program
             .WithGroupName("internal");
 
         app.Run();
+    }
+
+    private static Task TransformDocument(
+        Microsoft.OpenApi.OpenApiDocument document,
+        WebApplicationBuilder builder)
+    {
+        var env = builder.Environment.EnvironmentName;
+        if (!string.IsNullOrEmpty(env))
+        {
+            document.Info.Summary += $"Running in '{env}' environment";
+        }
+        return Task.CompletedTask;
     }
 }
