@@ -1,0 +1,9 @@
+<p id="declared-callback-child-value">@Value</p>
+<p id="declared-callback-attributes">@string.Join(",", Attributes.Keys)</p>
+<button id="declared-callback-toggle" @onclick="@(() => ValueChanged.InvokeAsync(!Value))">Toggle declared callback value</button>
+
+@code {
+    [Parameter] public bool Value { get; set; }
+    [Parameter] public EventCallback<bool> ValueChanged { get; set; }
+    [Parameter(CaptureUnmatchedValues = true)] public Dictionary<string, object> Attributes { get; set; }
+}
