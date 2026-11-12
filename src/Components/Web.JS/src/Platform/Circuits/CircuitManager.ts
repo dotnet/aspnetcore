@@ -438,6 +438,9 @@ export class CircuitManager implements DotNet.DotNetCallDispatcher {
       // The handler might run before the `onclose` handler gets a chance to run.
       this._logger.log(LogLevel.Trace, 'Circuit is disconnecting, cannot resume.');
       await this._disconnectingState.currentProgress();
+      if (this.isDisposedOrDisposing()) {
+        return false;
+      }
     }
 
     if (this._pausingState.isInprogress()) {
@@ -451,11 +454,6 @@ export class CircuitManager implements DotNet.DotNetCallDispatcher {
       return false;
     }
 
-    if (this._connection!.state !== HubConnectionState.Connected) {
-      this._logger.log(LogLevel.Trace, 'Reestablishing SignalR connection...');
-      this._connection = await this.startConnection();
-    }
-
     if (this._resumingState.isInprogress()) {
       // If we are already resuming, wait for the current resume operation to complete.
       this._logger.log(LogLevel.Trace, 'Waiting for the circuit to finish resuming...');
@@ -466,6 +464,16 @@ export class CircuitManager implements DotNet.DotNetCallDispatcher {
     const resumingPromise = this._resumingState.currentProgress();
 
     try {
+      if (this._connection!.state !== HubConnectionState.Connected) {
+        this._logger.log(LogLevel.Trace, 'Reestablishing SignalR connection...');
+        this._connection = await this.startConnection();
+      }
+
+      if (this.isDisposedOrDisposing()) {
+        this._resumingState.complete(false);
+        return resumingPromise;
+      }
+
       // When we get here we know the circuit is gone for good.
       // Signal that we are about to start a new circuit so that
       // any existing handlers can perform the necessary cleanup.
@@ -491,20 +499,32 @@ export class CircuitManager implements DotNet.DotNetCallDispatcher {
         return resumingPromise;
       }
 
-      this._pausingState.transitionTo(false);
-      this._resumingState.complete(true);
-
       this._circuitId = newCircuitId;
+      if (this.isDisposedOrDisposing()) {
+        this._resumingState.complete(false);
+        return resumingPromise;
+      }
+
+      this._pausingState.transitionTo(false);
       this._renderQueue = new RenderQueue(this._logger);
       for (const handler of this._options.circuitHandlers) {
         if (handler.onCircuitOpened) {
           handler.onCircuitOpened();
+          if (this.isDisposedOrDisposing()) {
+            this._resumingState.complete(false);
+            return resumingPromise;
+          }
         }
       }
 
       this._pauseUiVisible = false;
       this._options.reconnectionHandler!.onConnectionUp();
+      if (this.isDisposedOrDisposing()) {
+        this._resumingState.complete(false);
+        return resumingPromise;
+      }
       this._componentManager.onComponentReload?.(WebRendererId.Server);
+      this._resumingState.complete(!this.isDisposedOrDisposing());
       return resumingPromise;
     } catch (error) {
       this._logger.log(LogLevel.Error, `Failed to resume the circuit: ${error}`);
@@ -670,6 +690,12 @@ export class CircuitManager implements DotNet.DotNetCallDispatcher {
     // The circuit has started. Wait until it's fully initialized before
     // we start stop the connection.
     await this._startPromise;
+
+    // A resume can replace both the connection and the circuit ID. Drain it before teardown,
+    // even if it fails, so we dispose the resources it actually owns.
+    if (this._resumingState.isInprogress()) {
+      await Promise.allSettled([this._resumingState.currentProgress()]);
+    }
 
     this._disposed = true;
     this._connection?.stop();

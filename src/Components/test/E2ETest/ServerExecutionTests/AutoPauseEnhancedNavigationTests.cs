@@ -109,6 +109,72 @@ public class AutoPauseEnhancedNavigationTests : AutoPauseTestBase<App>
         Browser.Equal("2", () => Browser.Exists(By.Id("persistent-counter-count")).Text);
     }
 
+    [Fact]
+    public void AutoPause_PausesReplacementAfterAbortedPauseDeferralCompletes()
+    {
+        Navigate("/subdir/persistent-state/server-pause?auto-pause=true&auto-pause-delay-ms=200&suppress-autostart");
+        var htmlElement = Browser.Exists(By.TagName("html"));
+        var js = (IJavaScriptExecutor)Browser;
+        js.ExecuteScript("""
+            const gate = Promise.withResolvers();
+            window.pauseDeferral = { entered: false, aborted: false, settled: false, disposed: false, release: gate.resolve };
+            Blazor._internal.circuitEvents.addEventListener('disposed', () => pauseDeferral.disposed = true, { once: true });
+            Blazor.start({
+                ssr: { circuitInactivityTimeoutMs: 200 },
+                circuit: {
+                    circuitHandlers: [{
+                        onCircuitPausing: async signal => {
+                            if (!pauseDeferral.entered) {
+                                pauseDeferral.entered = true;
+                                signal.addEventListener('abort', () => pauseDeferral.aborted = true, { once: true });
+                                await gate.promise;
+                                pauseDeferral.settled = true;
+                            }
+                        }
+                    }]
+                }
+            });
+            """);
+        Browser.NotEqual("", () => Browser.Exists(By.Id("circuit-id")).Text);
+        var originalCircuitId = Browser.Exists(By.Id("circuit-id")).Text;
+        Browser.Exists(By.Id("increment-persistent-counter-count")).Click();
+        Browser.Equal("1", () => Browser.Exists(By.Id("persistent-counter-count")).Text);
+        Browser.GetBrowserLogs(LogLevel.Severe);
+
+        WithHiddenTab(hiddenJs =>
+        {
+            Browser.True(() => (bool)hiddenJs.ExecuteScript("return window.testWindow.pauseDeferral.entered;"));
+            hiddenJs.ExecuteScript("window.testWindow.document.getElementById('navigate-to-static-auto-pause').click();");
+            Browser.True(() => (bool)hiddenJs.ExecuteScript("return window.testWindow.pauseDeferral.disposed;"));
+            hiddenJs.ExecuteScript("window.testWindow.document.getElementById('navigate-to-auto-pause').click();");
+            Browser.True(() => (bool)hiddenJs.ExecuteScript("""
+                const id = window.testWindow.document.getElementById('circuit-id')?.textContent;
+                return !!id && id !== arguments[0];
+                """, originalCircuitId));
+        });
+
+        Browser.False(() => htmlElement.IsStale());
+        Assert.True((bool)js.ExecuteScript("return pauseDeferral.aborted && !pauseDeferral.settled;"));
+        Browser.Exists(By.Id("increment-persistent-counter-count")).Click();
+        Browser.Equal("1", () => Browser.Exists(By.Id("persistent-counter-count")).Text);
+
+        WithHiddenTab(hiddenJs =>
+        {
+            hiddenJs.ExecuteScript("window.testWindow.pauseDeferral.release();");
+            Browser.True(() => (bool)hiddenJs.ExecuteScript("return window.testWindow.pauseDeferral.settled;"));
+            Browser.True(() => (bool)hiddenJs.ExecuteScript("""
+                const modal = window.testWindow.document.getElementById('components-reconnect-modal');
+                return !!modal && window.testWindow.getComputedStyle(modal).display === 'block';
+                """));
+        });
+
+        WaitForResumedUI();
+        Browser.Equal("1", () => Browser.Exists(By.Id("persistent-counter-count")).Text);
+        Browser.Exists(By.Id("increment-persistent-counter-count")).Click();
+        Browser.Equal("2", () => Browser.Exists(By.Id("persistent-counter-count")).Text);
+        Assert.Empty(Browser.GetBrowserLogs(LogLevel.Severe));
+    }
+
     private void WithHiddenTab(Action<IJavaScriptExecutor> action)
     {
         var originalWindow = Browser.CurrentWindowHandle;

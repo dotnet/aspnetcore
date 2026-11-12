@@ -11,6 +11,7 @@ import { DefaultReconnectionHandler } from '../../../src/Platform/Circuits/Defau
 import { ConsoleLogger } from '../../../src/Platform/Logging/Loggers';
 import { LogLevel } from '../../../src/Platform/Logging/Logger';
 import * as rendererInterop from '../../../src/Rendering/WebRendererInteropMethods';
+import { WebRendererId } from '../../../src/Rendering/WebRendererId';
 
 const initialCircuitEvents = Blazor._internal.circuitEvents;
 
@@ -56,10 +57,12 @@ describe('CircuitManager pause deferral', () => {
     const componentManager = {
       initialComponents: [],
       resolveRootComponent: () => { throw new Error('No root components are registered'); },
+      onComponentReload: jest.fn(),
     };
     const fetchDescriptor = Object.getOwnPropertyDescriptor(globalThis, 'fetch');
 
     beforeEach(() => {
+      componentManager.onComponentReload.mockClear();
       previousCircuitEvents = Blazor._internal.circuitEvents;
       circuitEvents = new EventTarget();
       Blazor._internal.circuitEvents = circuitEvents;
@@ -112,6 +115,190 @@ describe('CircuitManager pause deferral', () => {
       options.reconnectionHandler = handler;
       return { display, onConnectionUp: jest.spyOn(handler, 'onConnectionUp') };
     }
+
+    function configureResumeConnection() {
+      jest.mocked(HubConnectionBuilder.prototype.build).mockRestore();
+      const resumedConnection = new HubConnectionBuilder().withUrl('http://localhost/_blazor').build();
+      jest.spyOn(resumedConnection, 'state', 'get').mockReturnValue(HubConnectionState.Connected);
+      jest.spyOn(resumedConnection, 'start').mockResolvedValue();
+      jest.spyOn(resumedConnection, 'stop').mockResolvedValue();
+      jest.spyOn(resumedConnection, 'invoke').mockImplementation(async method => {
+        if (method === 'ResumeCircuit') {
+          return 'resumed-circuit';
+        }
+        throw new Error(`Unexpected invocation: ${method}`);
+      });
+      jest.spyOn(HubConnectionBuilder.prototype, 'build').mockReturnValue(resumedConnection);
+      jest.spyOn(connection, 'state', 'get').mockReturnValue(HubConnectionState.Disconnected);
+      return resumedConnection;
+    }
+
+    test.each(['connection', 'server'])('disposal drains a resume awaiting the %s before final teardown', async boundary => {
+      const { onConnectionUp } = configureHandler('custom');
+      await circuit.start();
+      expect(await circuit.pauseCircuit()).toBe(true);
+      const resumedConnection = configureResumeConnection();
+      const entered = Promise.withResolvers<void>();
+      const release = Promise.withResolvers<void>();
+      if (boundary === 'connection') {
+        jest.mocked(resumedConnection.start).mockImplementation(async () => {
+          entered.resolve();
+          await release.promise;
+        });
+      } else {
+        jest.spyOn(resumedConnection, 'invoke').mockImplementation(async method => {
+          expect(method).toBe('ResumeCircuit');
+          entered.resolve();
+          await release.promise;
+          return 'resumed-circuit';
+        });
+      }
+      const onCircuitOpened = jest.fn();
+      options.circuitHandlers.push({ onCircuitOpened });
+
+      const resuming = circuit.resume();
+      await entered.promise;
+      const disposal = circuit.dispose();
+      onConnectionUp.mockClear();
+      release.resolve();
+      const resumed = await resuming;
+      await disposal;
+
+      expect(connection.stop).toHaveBeenCalledTimes(1);
+      expect(resumedConnection.stop).toHaveBeenCalledTimes(1);
+      expect(fetch).toHaveBeenCalledTimes(1);
+      const body = jest.mocked(fetch).mock.calls[0][1]?.body;
+      expect(body instanceof FormData && body.get('circuitId'))
+        .toBe(boundary === 'server' ? 'resumed-circuit' : 'test-circuit');
+      expect(onCircuitOpened).not.toHaveBeenCalled();
+      expect(onConnectionUp).not.toHaveBeenCalled();
+      expect(componentManager.onComponentReload).not.toHaveBeenCalled();
+      expect(resumed).toBe(false);
+      if (boundary === 'connection') {
+        expect(resumedConnection.invoke).not.toHaveBeenCalled();
+      }
+    });
+
+    test('a resume awaiting disconnection does not reopen a disposing circuit', async () => {
+      const { onConnectionUp } = configureHandler('custom');
+      await circuit.start();
+      const entered = Promise.withResolvers<void>();
+      const release = Promise.withResolvers<void>();
+      jest.mocked(connection.stop).mockImplementationOnce(async () => {
+        entered.resolve();
+        await release.promise;
+      });
+      const pausing = circuit.pauseCircuit();
+      await entered.promise;
+      const onCircuitOpened = jest.fn();
+      options.circuitHandlers.push({ onCircuitOpened });
+      jest.mocked(connection.invoke).mockClear();
+
+      const resuming = circuit.resume();
+      const disposal = circuit.dispose();
+      onConnectionUp.mockClear();
+      release.resolve();
+      await pausing;
+      const resumed = await resuming;
+      await disposal;
+
+      expect(connection.invoke).not.toHaveBeenCalled();
+      expect(onCircuitOpened).not.toHaveBeenCalled();
+      expect(onConnectionUp).not.toHaveBeenCalled();
+      expect(componentManager.onComponentReload).not.toHaveBeenCalled();
+      expect(resumed).toBe(false);
+    });
+
+    test.each(['rejected', 'throwing'])('a %s resume does not prevent pending disposal', async outcome => {
+      const { onConnectionUp } = configureHandler('custom');
+      await circuit.start();
+      expect(await circuit.pauseCircuit()).toBe(true);
+      const resumedConnection = configureResumeConnection();
+      const entered = Promise.withResolvers<void>();
+      const response = Promise.withResolvers<string>();
+      jest.spyOn(resumedConnection, 'invoke').mockImplementation(() => {
+        entered.resolve();
+        return response.promise;
+      });
+      const onCircuitOpened = jest.fn();
+      options.circuitHandlers.push({ onCircuitOpened });
+      const error = new Error('Resume failed');
+      const log = jest.spyOn(logger, 'log');
+
+      const resuming = Promise.allSettled([circuit.resume()]);
+      await entered.promise;
+      const disposal = circuit.dispose();
+      onConnectionUp.mockClear();
+      if (outcome === 'throwing') {
+        response.reject(error);
+      } else {
+        response.resolve('');
+      }
+      const result = await resuming;
+      await disposal;
+
+      expect(result).toEqual(outcome === 'throwing'
+        ? [{ status: 'rejected', reason: error }]
+        : [{ status: 'fulfilled', value: false }]);
+      expect(connection.stop).toHaveBeenCalledTimes(1);
+      expect(resumedConnection.stop).toHaveBeenCalledTimes(1);
+      expect(fetch).toHaveBeenCalledTimes(1);
+      const body = jest.mocked(fetch).mock.calls[0][1]?.body;
+      expect(body instanceof FormData && body.get('circuitId')).toBe('test-circuit');
+      expect(onCircuitOpened).not.toHaveBeenCalled();
+      expect(onConnectionUp).not.toHaveBeenCalled();
+      expect(componentManager.onComponentReload).not.toHaveBeenCalled();
+      if (outcome === 'throwing') {
+        expect(log).toHaveBeenCalledWith(LogLevel.Error, `Failed to resume the circuit: ${error}`);
+      }
+    });
+
+    test('disposal from an opened callback suppresses later resume notifications', async () => {
+      const { onConnectionUp } = configureHandler('custom');
+      await circuit.start();
+      expect(await circuit.pauseCircuit()).toBe(true);
+      const resumedConnection = configureResumeConnection();
+      let disposal: Promise<void> | undefined;
+      const laterOpened = jest.fn();
+      options.circuitHandlers.push({
+        onCircuitOpened: () => {
+          disposal = circuit.dispose();
+          onConnectionUp.mockClear();
+        },
+      }, { onCircuitOpened: laterOpened });
+
+      const resumed = await circuit.resume();
+      expect(disposal).toBeDefined();
+      await disposal;
+
+      expect(laterOpened).not.toHaveBeenCalled();
+      expect(onConnectionUp).not.toHaveBeenCalled();
+      expect(componentManager.onComponentReload).not.toHaveBeenCalled();
+      expect(resumed).toBe(false);
+      expect(resumedConnection.stop).toHaveBeenCalledTimes(1);
+      const body = jest.mocked(fetch).mock.calls[0][1]?.body;
+      expect(body instanceof FormData && body.get('circuitId')).toBe('resumed-circuit');
+    });
+
+    test('an active resume publishes its new circuit before later disposal', async () => {
+      const { onConnectionUp } = configureHandler('custom');
+      await circuit.start();
+      expect(await circuit.pauseCircuit()).toBe(true);
+      const resumedConnection = configureResumeConnection();
+      const onCircuitOpened = jest.fn();
+      options.circuitHandlers.push({ onCircuitOpened });
+
+      expect(await circuit.resume()).toBe(true);
+
+      expect(onCircuitOpened).toHaveBeenCalledTimes(1);
+      expect(onConnectionUp).toHaveBeenCalledTimes(1);
+      expect(componentManager.onComponentReload).toHaveBeenCalledWith(WebRendererId.Server);
+      await circuit.dispose();
+      expect(connection.stop).toHaveBeenCalledTimes(1);
+      expect(resumedConnection.stop).toHaveBeenCalledTimes(1);
+      const body = jest.mocked(fetch).mock.calls[0][1]?.body;
+      expect(body instanceof FormData && body.get('circuitId')).toBe('resumed-circuit');
+    });
 
     test('provides the disposal event target before the first circuit is constructed', () => {
       expect(initialCircuitEvents).toBeInstanceOf(EventTarget);

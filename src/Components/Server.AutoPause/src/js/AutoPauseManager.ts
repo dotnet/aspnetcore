@@ -39,6 +39,8 @@ export class AutoPauseManager {
 
   private _hiddenTimerId: ReturnType<typeof setTimeout> | undefined;
 
+  private _hiddenTimerPending = false;
+
   private _activeAbortController: AbortController | undefined;
 
   private _pauseInFlight = false;
@@ -155,9 +157,14 @@ export class AutoPauseManager {
   }
 
   private startHiddenTimer(): void {
-    if (this._hiddenTimerId !== undefined || this._autoPaused || this._pauseInFlight) {
+    if (this._hiddenTimerId !== undefined || this._autoPaused) {
       return;
     }
+    if (this._pauseInFlight) {
+      this._hiddenTimerPending = true;
+      return;
+    }
+    this._hiddenTimerPending = false;
     this._hiddenTimerId = setTimeout(() => {
       this._hiddenTimerId = undefined;
       this.pauseNow();
@@ -165,6 +172,7 @@ export class AutoPauseManager {
   }
 
   private clearHiddenTimer(): void {
+    this._hiddenTimerPending = false;
     if (this._hiddenTimerId !== undefined) {
       clearTimeout(this._hiddenTimerId);
       this._hiddenTimerId = undefined;
@@ -232,7 +240,7 @@ export class AutoPauseManager {
       }
       // If the tab is still hidden (e.g. it flipped visible then hidden again during an
       // aborted attempt), reschedule so we don't get stuck unpaused with no timer.
-      if (!this._disposed && circuitVersion === this._circuitVersion && !this._autoPaused && document.visibilityState === 'hidden') {
+      if (!this._disposed && (circuitVersion === this._circuitVersion || this._hiddenTimerPending) && !this._autoPaused && document.visibilityState === 'hidden') {
         this.startHiddenTimer();
       }
     }
