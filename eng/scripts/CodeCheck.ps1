@@ -164,7 +164,7 @@ try {
             $filePath = Resolve-Path "${repoRoot}/${file}"
             LogError  -filepath $filePath `
                 ("Generated code is not up to date in $file. You might need to regenerate the reference " +
-                 "assemblies or project list (see docs/ReferenceResolution.md)")
+                 "assemblies or project list (see docs/AddingNewProjects.md)")
             & git --no-pager diff --ignore-space-change $filePath
         }
     }
@@ -182,6 +182,26 @@ try {
         $changedFilesFromTarget = git --no-pager diff origin/$targetBranch --ignore-space-change --name-only --diff-filter=ar
         $changedAPIBaselines = [System.Collections.Generic.List[string]]::new()
 
+        # Use the target branch's actual PreReleaseVersionLabel instead of its name to detect an
+        # API-frozen (rtm or servicing) branch. A branch can be named like "release/11.0" long
+        # before it reaches 'rtm' or 'servicing', and API surface is still expected to change
+        # until then.
+        $targetVersionsPropsContent = git show "origin/${targetBranch}:eng/Versions.props" 2>&1
+        if ($LASTEXITCODE -ne 0) {
+            throw "Unable to read eng/Versions.props from origin/${targetBranch}: $targetVersionsPropsContent"
+        }
+        $targetVersionsProps = [xml]($targetVersionsPropsContent | Out-String)
+        $preReleaseVersionLabelNode = $targetVersionsProps.SelectSingleNode('/Project/PropertyGroup/PreReleaseVersionLabel')
+        if (!$preReleaseVersionLabelNode) {
+            throw "eng/Versions.props on origin/${targetBranch} does not define PreReleaseVersionLabel"
+        }
+        $preReleaseVersionLabel = $preReleaseVersionLabelNode.InnerText.Trim()
+        $validPreReleaseVersionLabels = @('alpha', 'preview', 'rc', 'rtm', 'servicing')
+        if ($preReleaseVersionLabel -notin $validPreReleaseVersionLabels) {
+            throw "eng/Versions.props on origin/${targetBranch} has an unrecognized PreReleaseVersionLabel: '$preReleaseVersionLabel'"
+        }
+        $isRtmOrServicing = $preReleaseVersionLabel -in @('rtm', 'servicing')
+
         if ($changedFilesFromTarget) {
             foreach ($file in $changedFilesFromTarget) {
                 # Check for changes in Shipped in all branches
@@ -190,8 +210,8 @@ try {
                         $changedAPIBaselines.Add($file)
                     }
                 }
-                # Check for changes in Unshipped in servicing branches
-                if ($targetBranch -like 'release*' -and $targetBranch -notlike '*preview*' -and $targetBranch -notlike '*rc1*' -and $targetBranch -notlike '*rc2*' -and $file -like '*PublicAPI.Unshipped.txt') {
+                # Check for changes in Unshipped once the branch has reached rtm or servicing
+                if ($isRtmOrServicing -and $file -like '*PublicAPI.Unshipped.txt') {
                     $changedAPIBaselines.Add($file)
                 }
             }
@@ -206,6 +226,108 @@ try {
             LogError "Modified API baseline files:"
             foreach ($file in $changedAPIBaselines) {
                 LogError $file
+            }
+        }
+
+        # Check that the Dependabot discovery project stays in sync with Directory.Packages.props, but
+        # only for packages that aren't excluded from DependabotDiscovery.csproj (i.e. aren't Maestro-
+        # managed, IdentityModel-managed, an in-repo shipping assembly, or one of the
+        # two hard-coded exclusions - see eng/tools/DependabotDiscovery/README.md for details on each).
+        # Renaming a Maestro-managed package (e.g. #68014) shows up as an add + remove in
+        # Directory.Packages.props but doesn't need a DependabotDiscovery.csproj update.
+        $allChangedFilesFromTarget = git --no-pager diff origin/$targetBranch --ignore-space-change --name-only
+        $dependencyDiscoveryProject = "eng/tools/DependabotDiscovery/DependabotDiscovery.csproj"
+
+        # Reads a file's content from the target branch, failing loudly (rather than silently reading
+        # an empty/missing file) if the path doesn't exist there.
+        function Get-TargetBranchFileContent([string]$relativePath) {
+            $content = git show "origin/${targetBranch}:${relativePath}" 2>&1
+            if ($LASTEXITCODE -ne 0) {
+                throw "Unable to read ${relativePath} from origin/${targetBranch}: $content"
+            }
+            return $content
+        }
+
+        # Returns unique, sorted package names as a plain string array. Joins the file content into a
+        # single string first so an Include/Version pair split across lines is still matched. Always
+        # wrap calls to this function in @(...) at the call site — PowerShell can otherwise unwrap a
+        # single-element (or empty) array result into a scalar (or $null).
+        function Get-CentralPackageNames([string[]]$fileContent) {
+            $text = $fileContent -join "`n"
+            # Accept the old catalog for branch comparisons, but ignore computed item and property expressions.
+            return [regex]::Matches($text, '<(?:PackageVersion|LatestPackageReference)\b[^<>]*?\bInclude="([^"$@]+)"') |
+                ForEach-Object { $_.Groups[1].Value } |
+                Sort-Object -Unique
+        }
+
+        # Returns the set of "FooVersion" property names defined (i.e. given a value) in an
+        # eng/Version.Details.props-like file. As above, always wrap calls in @(...) at the call site.
+        function Get-DefinedVersionProperties([string[]]$fileContent) {
+            $text = $fileContent -join "`n"
+            return [regex]::Matches($text, '<(\w+Version)\b[^<>]*>') |
+                ForEach-Object { $_.Groups[1].Value } |
+                Sort-Object -Unique
+        }
+
+        # Returns the set of "FooVersion" property names whose value is exactly $(IdentityModelVersion)
+        # in an eng/Versions.props-like file. As above, always wrap calls in @(...) at the call site.
+        function Get-IdentityModelManagedVersionProperties([string[]]$fileContent) {
+            $text = $fileContent -join "`n"
+            return [regex]::Matches($text, '<(\w+Version)>\s*\$\(IdentityModelVersion\)\s*</\1>') |
+                ForEach-Object { $_.Groups[1].Value } |
+                Sort-Object -Unique
+        }
+
+        # In-repo shipping assemblies are built from source; historical package pins are not updated here.
+        function Get-ShippingAssemblyNames([string[]]$fileContent) {
+            $text = $fileContent -join "`n"
+            return [regex]::Matches($text, '<AspNetCoreShippingAssembly\b[^<>]*?\bInclude="([^"]+)"') |
+                ForEach-Object { $_.Groups[1].Value } |
+                Sort-Object -Unique
+        }
+
+        # Packages excluded from DependabotDiscovery.csproj for reasons unrelated to Maestro or
+        # IdentityModel - see eng/tools/DependabotDiscovery/README.md for why each is hard-coded here.
+        $hardCodedDiscoveryExclusions = @('NETStandard.Library', 'Microsoft.CodeAnalysis.PublicApiAnalyzers')
+
+        if ($allChangedFilesFromTarget -contains "Directory.Packages.props" -or $allChangedFilesFromTarget -contains "eng/Dependencies.props") {
+            # The target branch may still keep its catalog in eng/Dependencies.props.
+            $targetCatalogFiles = @(git ls-tree --name-only "origin/$targetBranch" -- Directory.Packages.props eng/Dependencies.props)
+            if ($LASTEXITCODE -ne 0) {
+                throw "Unable to locate the package catalog in origin/${targetBranch}."
+            }
+            $targetCatalog = if ($targetCatalogFiles -contains "eng/Dependencies.props") { "eng/Dependencies.props" } else { "Directory.Packages.props" }
+            $oldPackageNames = @(Get-CentralPackageNames (Get-TargetBranchFileContent $targetCatalog))
+            $newPackageNames = @(Get-CentralPackageNames (Get-Content "$repoRoot/Directory.Packages.props"))
+
+            # Packages added or removed (a rename shows up as one of each) since the target branch.
+            $changedPackageNames = @(Compare-Object -ReferenceObject $oldPackageNames -DifferenceObject $newPackageNames -PassThru)
+
+            if ($changedPackageNames.Count -gt 0) {
+                # Union of both sides (target branch and current tree) of both files, so a rename
+                # into or out of a managed name is recognized regardless of which side you check.
+                $managedVersionProperties = @(Get-DefinedVersionProperties (Get-TargetBranchFileContent "eng/Version.Details.props")) +
+                    @(Get-DefinedVersionProperties (Get-Content "$repoRoot/eng/Version.Details.props")) +
+                    @(Get-IdentityModelManagedVersionProperties (Get-TargetBranchFileContent "eng/Versions.props")) +
+                    @(Get-IdentityModelManagedVersionProperties (Get-Content "$repoRoot/eng/Versions.props"))
+
+                $shippingAssemblyNames = @(Get-ShippingAssemblyNames (Get-TargetBranchFileContent "eng/ShippingAssemblies.props")) +
+                    @(Get-ShippingAssemblyNames (Get-Content "$repoRoot/eng/ShippingAssemblies.props"))
+
+                $unmanagedPackageNames = @($changedPackageNames | Where-Object {
+                    $versionProperty = "$($_.Replace('.', ''))Version"
+                    ($managedVersionProperties -notcontains $versionProperty) -and
+                        ($shippingAssemblyNames -notcontains $_) -and
+                        ($hardCodedDiscoveryExclusions -notcontains $_)
+                })
+
+                if ($unmanagedPackageNames.Count -gt 0 -and ($allChangedFilesFromTarget -notcontains $dependencyDiscoveryProject)) {
+                    LogError ("Directory.Packages.props changed but $dependencyDiscoveryProject was not updated. " +
+                        "The following added or removed packages aren't excluded from $dependencyDiscoveryProject " +
+                        "(not Maestro- or IdentityModel-managed, not an in-repo shipping assembly, not hard-coded): " +
+                        "$($unmanagedPackageNames -join ', '). Update $dependencyDiscoveryProject to match. " +
+                        "See eng/tools/DependabotDiscovery/README.md for details.")
+                }
             }
         }
 

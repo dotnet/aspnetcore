@@ -142,7 +142,7 @@ public abstract class IdentityUserContext<TUser, TKey, TUserClaim, TUserLogin, T
 
     private sealed class PersonalDataConverter : ValueConverter<string, string>
     {
-        public PersonalDataConverter(IPersonalDataProtector protector) : base(s => protector.Protect(s), s => protector.Unprotect(s), default)
+        public PersonalDataConverter(IPersonalDataProtector protector) : base(s => protector.Protect(s), s => protector.Unprotect(s))
         { }
     }
 

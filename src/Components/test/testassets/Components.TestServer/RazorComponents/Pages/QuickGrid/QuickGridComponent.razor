@@ -15,7 +15,7 @@
 </div>
 
 <div id="grid2">
-    <QuickGrid ItemsProvider="@cityProvider" Pagination="@pagination2" QueryParameterNamePrefix="QuickGrid2">
+    <QuickGrid ItemsProvider="@cityProvider" Pagination="@pagination2" QueryParameterNameOptions="@(new QueryParameterNameOptions("QuickGrid2_"))">
         <PropertyColumn Property="@(c => c.CityId)" />
         <PropertyColumn Property="@(c => c.Name)" Sortable="true" />
         <PropertyColumn Property="@(c => c.Country)" Sortable="true" />
@@ -31,7 +31,7 @@
     </div>
 </FormMappingScope>
 <div id="grid3">
-    <QuickGrid Items="@people" Pagination="@pagination3" QueryParameterNamePrefix="QuickGrid3">
+    <QuickGrid Items="@people" Pagination="@pagination3" QueryParameterNameOptions="@(new QueryParameterNameOptions("QuickGrid3_"))">
         <PropertyColumn Property="@(p => p.PersonId)" Sortable="true" />
         <PropertyColumn Property="@(p => p.FirstName)" Sortable="true" />
         <PropertyColumn Property="@(p => p.LastName)" Sortable="true" />

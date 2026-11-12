@@ -39,6 +39,15 @@ internal sealed partial class PersistentStateValueProvider(PersistentComponentSt
     }
 
     public void Subscribe(ComponentState subscriber, in CascadingParameterInfo parameterInfo)
+        => Subscribe(subscriber, parameterInfo, preserveCurrentValue: false);
+
+    void ICascadingValueSupplier.Subscribe(
+        ComponentState subscriber,
+        in CascadingParameterInfo parameterInfo,
+        CascadingParameterSubscriptionMode mode)
+        => Subscribe(subscriber, parameterInfo, preserveCurrentValue: mode is CascadingParameterSubscriptionMode.MetadataRefresh);
+
+    private void Subscribe(ComponentState subscriber, in CascadingParameterInfo parameterInfo, bool preserveCurrentValue)
     {
         var propertyName = parameterInfo.PropertyName;
 
@@ -48,6 +57,13 @@ internal sealed partial class PersistentStateValueProvider(PersistentComponentSt
             parameterInfo,
             serviceProvider,
             logger);
+
+        if (preserveCurrentValue)
+        {
+            // Registering can queue an initial restore synchronously. A retained component has already
+            // completed that phase, so initialize the replacement subscription from its current value.
+            componentSubscription.PreserveCurrentValue();
+        }
 
         _subscriptions.Add(new ComponentSubscriptionKey(subscriber, propertyName), componentSubscription);
     }

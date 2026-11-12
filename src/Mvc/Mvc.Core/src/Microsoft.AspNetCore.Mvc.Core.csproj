@@ -48,21 +48,21 @@ Microsoft.AspNetCore.Mvc.RouteAttribute</Description>
   </ItemGroup>
 
   <ItemGroup>
-    <Reference Include="Microsoft.AspNetCore.Mvc.Abstractions" />
-    <Reference Include="Microsoft.AspNetCore.Authentication.Abstractions" />
-    <Reference Include="Microsoft.AspNetCore.Authentication.Core" />
-    <Reference Include="Microsoft.AspNetCore.Authorization.Policy" />
-    <Reference Include="Microsoft.AspNetCore.Hosting.Abstractions" />
-    <Reference Include="Microsoft.AspNetCore.Http" />
-    <Reference Include="Microsoft.AspNetCore.Http.Abstractions" />
-    <Reference Include="Microsoft.AspNetCore.Http.Extensions" />
-    <Reference Include="Microsoft.AspNetCore.Http.Features" />
-    <Reference Include="Microsoft.AspNetCore.ResponseCaching.Abstractions" />
-    <Reference Include="Microsoft.AspNetCore.OutputCaching" />
-    <Reference Include="Microsoft.AspNetCore.Routing.Abstractions" />
-    <Reference Include="Microsoft.AspNetCore.Routing" />
-    <Reference Include="Microsoft.AspNetCore.Routing.Abstractions" />
-    <Reference Include="Microsoft.Extensions.DependencyInjection" />
+    <PackageReference Include="Microsoft.Extensions.DependencyInjection" />
+
+    <ProjectReference Include="$(RepoRoot)src\Hosting\Abstractions\src\Microsoft.AspNetCore.Hosting.Abstractions.csproj" />
+    <ProjectReference Include="$(RepoRoot)src\Http\Authentication.Abstractions\src\Microsoft.AspNetCore.Authentication.Abstractions.csproj" />
+    <ProjectReference Include="$(RepoRoot)src\Http\Authentication.Core\src\Microsoft.AspNetCore.Authentication.Core.csproj" />
+    <ProjectReference Include="$(RepoRoot)src\Http\Http.Abstractions\src\Microsoft.AspNetCore.Http.Abstractions.csproj" />
+    <ProjectReference Include="$(RepoRoot)src\Http\Http.Extensions\src\Microsoft.AspNetCore.Http.Extensions.csproj" />
+    <ProjectReference Include="$(RepoRoot)src\Http\Http.Features\src\Microsoft.AspNetCore.Http.Features.csproj" />
+    <ProjectReference Include="$(RepoRoot)src\Http\Http\src\Microsoft.AspNetCore.Http.csproj" />
+    <ProjectReference Include="$(RepoRoot)src\Http\Routing.Abstractions\src\Microsoft.AspNetCore.Routing.Abstractions.csproj" />
+    <ProjectReference Include="$(RepoRoot)src\Http\Routing\src\Microsoft.AspNetCore.Routing.csproj" />
+    <ProjectReference Include="$(RepoRoot)src\Middleware\OutputCaching\src\Microsoft.AspNetCore.OutputCaching.csproj" />
+    <ProjectReference Include="$(RepoRoot)src\Middleware\ResponseCaching.Abstractions\src\Microsoft.AspNetCore.ResponseCaching.Abstractions.csproj" />
+    <ProjectReference Include="$(RepoRoot)src\Mvc\Mvc.Abstractions\src\Microsoft.AspNetCore.Mvc.Abstractions.csproj" />
+    <ProjectReference Include="$(RepoRoot)src\Security\Authorization\Policy\src\Microsoft.AspNetCore.Authorization.Policy.csproj" />
   </ItemGroup>
 
   <ItemGroup Label="Sources packages">

@@ -20,6 +20,11 @@ internal sealed class HttpResponseStream : WriteOnlyStreamInternal
 
     public override void Flush()
     {
+        if (!_bodyControl.AllowSynchronousIO)
+        {
+            throw new InvalidOperationException(CoreStrings.SynchronousWritesDisallowed);
+        }
+
         FlushAsync(default).GetAwaiter().GetResult();
     }
 
@@ -42,12 +47,12 @@ internal sealed class HttpResponseStream : WriteOnlyStreamInternal
 
     public override IAsyncResult BeginWrite(byte[] buffer, int offset, int count, AsyncCallback? callback, object? state)
     {
-        return TaskToApm.Begin(WriteAsync(buffer, offset, count), callback, state);
+        return TaskToAsyncResult.Begin(WriteAsync(buffer, offset, count), callback, state);
     }
 
     public override void EndWrite(IAsyncResult asyncResult)
     {
-        TaskToApm.End(asyncResult);
+        TaskToAsyncResult.End(asyncResult);
     }
 
     public override Task WriteAsync(byte[] buffer, int offset, int count, CancellationToken cancellationToken)

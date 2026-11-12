@@ -226,6 +226,45 @@ public class Program
                 ?.Value,
         });
 
+        // Framework versions of the build under test. crank normally captures these
+        // via the Microsoft.Crank.EventSources EventSource, but that channel isn't
+        // available for container-based jobs (this benchmark builds from a Dockerfile),
+        // so the values must be emitted over stdout. The RegressionBot uses the
+        // "aspNetCoreVersion"/"netCoreAppVersion" result keys (each formatted as
+        // "<version>+<commitHash>") to attribute regressions to dependency updates,
+        // populating the "Dependencies" column of the filed regression issues.
+        output.Metadata.Add(new BenchmarkMetadata
+        {
+            Source = "BlazorWasm",
+            Name = "netCoreAppVersion",
+            ShortDescription = ".NET Runtime Version",
+        });
+
+        output.Measurements.Add(new BenchmarkMeasurement
+        {
+            Timestamp = DateTime.UtcNow,
+            Name = "netCoreAppVersion",
+            Value = typeof(object).Assembly
+                .GetCustomAttribute<AssemblyInformationalVersionAttribute>()
+                ?.InformationalVersion,
+        });
+
+        output.Metadata.Add(new BenchmarkMetadata
+        {
+            Source = "BlazorWasm",
+            Name = "aspNetCoreVersion",
+            ShortDescription = "ASP.NET Core Version",
+        });
+
+        output.Measurements.Add(new BenchmarkMeasurement
+        {
+            Timestamp = DateTime.UtcNow,
+            Name = "aspNetCoreVersion",
+            Value = typeof(WebApplication).Assembly
+                .GetCustomAttribute<AssemblyInformationalVersionAttribute>()
+                ?.InformationalVersion,
+        });
+
         foreach (var result in benchmarkResult.ScenarioResults)
         {
             var scenarioName = result.Descriptor.Name;

@@ -1,0 +1,58 @@
+@page "/human_in_the_loop"
+@rendermode InteractiveServer
+@implements IDisposable
+@inject ILoggerFactory LoggerFactory
+
+<PageTitle>Human in the Loop</PageTitle>
+
+<ChatPage Agent="_agent"
+          Placeholder="Ask for a plan..."
+          data-scenario="human_in_the_loop">
+    <Header>
+        <h1 class="dojo-scenario__title">Human in the Loop</h1>
+    </Header>
+    <WelcomeContent>
+        <p class="dojo-scenario__welcome">
+            Ask for a plan, then select which proposed steps the agent should perform.
+        </p>
+    </WelcomeContent>
+    <MessageListContent>
+        <BlockRenderer TBlock="UIActionBlock"
+                       Context="action"
+                       When="@(block => block.ToolName == "generate_task_steps")">
+            <TaskStepList Block="action" />
+        </BlockRenderer>
+    </MessageListContent>
+</ChatPage>
+
+@code {
+    private UIAgent _agent = default!;
+
+    [Inject(Key = DojoScenarios.HumanInTheLoopEndpoint)]
+    public IChatClient ChatClient { get; set; } = default!;
+
+    protected override void OnInitialized()
+    {
+        _agent = new UIAgent(ChatClient, options =>
+        {
+            options.RegisterUIAction(AIFunctionFactory.Create(
+                GenerateTaskSteps,
+                name: "generate_task_steps",
+                description: "Generate a list of task steps for the user to review and approve."));
+        }, LoggerFactory);
+    }
+
+    private static string GenerateTaskSteps(List<TaskStep> steps)
+    {
+        var selected = steps
+            .Where(step => step.Status != "disabled")
+            .Select(step => step.Description)
+            .ToList();
+
+        return selected.Count == 0
+            ? "The user rejected all proposed steps."
+            : $"The user selected the following steps: {string.Join(", ", selected)}";
+    }
+
+    public void Dispose() => _agent?.Dispose();
+}

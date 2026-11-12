@@ -234,6 +234,7 @@ public sealed class EditContext
     /// Do not call validation re-entrantly from a validation handler.
     /// </remarks>
     /// <exception cref="InvalidOperationException">A handler registered an asynchronous validation task.</exception>
+    [Obsolete("Validate is obsolete. Use ValidateAsync instead.")]
     public bool Validate()
     {
         // Sync pass: args.IsAsync is false, so AddAsyncValidator throws. A handler exception propagates.

@@ -1052,4 +1052,73 @@ public class Order
             Assert.Equal(StatusCodes.Status200OK, context.Response.StatusCode);
         });
     }
+
+    [Fact]
+    public async Task CanValidateMembersOfParsableType()
+    {
+        var source = """
+using System;
+using System.ComponentModel.DataAnnotations;
+using System.Collections.Generic;
+using System.Threading.Tasks;
+using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Http;
+using Microsoft.Extensions.Validation;
+using Microsoft.AspNetCore.Routing;
+using Microsoft.Extensions.DependencyInjection;
+
+var builder = WebApplication.CreateBuilder();
+
+builder.Services.AddValidation();
+
+var app = builder.Build();
+
+app.MapPost("/parsable-with-validatable-members", (ParentWithParsableProperty parent) => Results.Ok("Passed"!));
+
+app.Run();
+
+public class ParentWithParsableProperty
+{
+    public ParsableWithValidation Child { get; set; } = new();
+}
+
+public class ParsableWithValidation : IParsable<ParsableWithValidation>
+{
+    [Range(10, 100, ErrorMessage = "The field Value must be between 10 and 100.")]
+    public int Value { get; set; }
+
+    public static ParsableWithValidation Parse(string s, IFormatProvider? provider)
+        => new();
+
+    public static bool TryParse(string? s, IFormatProvider? provider, out ParsableWithValidation result)
+    {
+        result = new ParsableWithValidation();
+        return true;
+    }
+}
+""";
+        await Verify(source, out var compilation);
+        await VerifyEndpoint(compilation, "/parsable-with-validatable-members", async (endpoint, serviceProvider) =>
+        {
+            var payload = """
+            {
+              "Child": {
+                "Value": 5
+              }
+            }
+            """;
+            var context = CreateHttpContextWithPayload(payload, serviceProvider);
+
+            await endpoint.RequestDelegate(context);
+
+            var problemDetails = await AssertBadRequest(context);
+
+            Assert.Collection(problemDetails.Errors,
+                error =>
+                {
+                    Assert.Equal("Child.Value", error.Key);
+                    Assert.Equal("The field Value must be between 10 and 100.", error.Value.Single());
+                });
+        });
+    }
 }
