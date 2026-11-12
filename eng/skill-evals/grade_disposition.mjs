@@ -65,6 +65,57 @@ function gradeComponent(name, output)
     .every(key => actual[key] == null || ['', 'none', 'n/a'].includes(normalized(key)));
 }
 
+const targetSections = ['NEW_FINDINGS', 'EXISTING_FEEDBACK_COVERAGE', 'UNRESOLVED', 'DISCARDED'];
+const topLevelFields = [
+  'TEST_BOUNDARY',
+  'LIMITATIONS',
+  'PR',
+  'HEAD_SHA',
+  'MERGE_BASE_SHA',
+  'BASE_TIP_SHA',
+  'GUIDANCE_SOURCE',
+  'GUIDES',
+  'UNCOVERED',
+  'PATH',
+];
+
+function stripMarkdown(text)
+{
+  return text.replace(/(?:\*\*|__|`|\*)/g, '');
+}
+
+function normalizeHeading(line)
+{
+  return stripMarkdown(line.trim())
+    .replace(/^#{1,6}\s+/, '')
+    .replace(/^(?:[-*+]|\d+[.)])\s+/, '')
+    .replace(/^#{1,6}\s+/, '')
+    .replace(/^[*_]+|[*_:\s]+$/g, '')
+    .trim();
+}
+
+function isNegativeC1Line(line)
+{
+  const clean = stripMarkdown(line)
+    .trim()
+    .replace(/^(?:[-*+]|\d+[.)])\s+/, '')
+    .trim();
+  if (!clean || /^(?:none|no|n\/a)\b/i.test(clean))
+  {
+    return true;
+  }
+  const afterC1 = clean.replace(/^C1\b\s*(?:[-:—–]|\s)*/i, '');
+  return afterC1 !== clean &&
+    /^(?:none|no|n\/a|not\s+(?:covered|unresolved|discarded|applicable)|omitted)\b/i.test(afterC1);
+}
+
+function hasPositiveC1(sectionText)
+{
+  return sectionText
+    .split(/\r?\n/)
+    .some(line => /\bC1\b/.test(line) && !isNegativeC1Line(line));
+}
+
 function gradeReview(name, output)
 {
   const expected = reviewCases[name];
@@ -73,7 +124,8 @@ function gradeReview(name, output)
     throw new Error(`Unknown review case: ${name}`);
   }
   const lines = output.trim().split(/\r?\n/);
-  if (!/^STATUS: (FINDINGS|NO_FINDINGS)$/.test(lines[0]))
+  const statusLine = lines[0].trim();
+  if (!/^STATUS: (FINDINGS|NO_FINDINGS)$/.test(statusLine))
   {
     return false;
   }
@@ -81,8 +133,9 @@ function gradeReview(name, output)
   let section;
   for (const line of lines.slice(1))
   {
-    const heading = line.trim().replace(/^#{1,6}\s+/, '').replace(/^\*\*|\*\*$/g, '').replace(/:$/, '');
-    if (['NEW_FINDINGS', 'EXISTING_FEEDBACK_COVERAGE', 'UNRESOLVED', 'DISCARDED'].includes(heading))
+    const heading = normalizeHeading(line);
+    const fieldName = heading.split(':')[0].replace(/^[*_]+|[*_\s]+$/g, '').trim();
+    if (targetSections.includes(heading))
     {
       if (sections.has(heading))
       {
@@ -90,6 +143,10 @@ function gradeReview(name, output)
       }
       section = heading;
       sections.set(section, '');
+    }
+    else if (/^#{1,6}\s+/.test(line.trim()) || topLevelFields.includes(fieldName))
+    {
+      section = undefined;
     }
     else if (section)
     {
@@ -104,7 +161,7 @@ function gradeReview(name, output)
   {
     return false;
   }
-  const hasCandidate = key => /\bC1\b/.test(sections.get(key));
+  const hasCandidate = key => hasPositiveC1(sections.get(key));
   if (!hasCandidate(expected.section))
   {
     return false;
@@ -116,7 +173,7 @@ function gradeReview(name, output)
       hasCandidate('UNRESOLVED') &&
       sections.get(expected.section).includes(expected.thread) &&
       sections.get('UNRESOLVED').includes(expected.thread) &&
-      lines[0] === 'STATUS: NO_FINDINGS';
+      statusLine === 'STATUS: NO_FINDINGS';
   }
   if (expected.section !== 'UNRESOLVED' && hasCandidate('UNRESOLVED') ||
       expected.section !== 'DISCARDED' && hasCandidate('DISCARDED') ||
@@ -124,28 +181,19 @@ function gradeReview(name, output)
   {
     return false;
   }
-  const inline = sections.get('NEW_FINDINGS');
-  const hasInline = hasCandidate('NEW_FINDINGS');
-  if (!hasInline)
+  if (!hasCandidate('NEW_FINDINGS') || statusLine !== 'STATUS: FINDINGS')
   {
     return false;
   }
-  if (hasInline)
+  const inline = stripMarkdown(sections.get('NEW_FINDINGS'));
+  const confidences = [...inline.matchAll(/\bconfidence\s*:\s*([a-z]+)/gi)].map(match => match[1].toLowerCase());
+  if (confidences.length !== 1 || confidences[0] !== expected.confidence)
   {
-    const confidences = [...inline.matchAll(/\bconfidence\s*:\s*([a-z]+)/gi)].map(match => match[1].toLowerCase());
-    if (confidences.length !== 1 || confidences[0] !== expected.confidence ||
-        lines[0] !== 'STATUS: FINDINGS')
-    {
-      return false;
-    }
-    if (expected.confidence !== 'verified' &&
-        (!inline.includes(`[${expected.confidence.toUpperCase()}]`) ||
-         !new RegExp(`Why ${expected.confidence}:`, 'i').test(inline)))
-    {
-      return false;
-    }
+    return false;
   }
-  return hasInline || lines[0] === 'STATUS: NO_FINDINGS';
+  return expected.confidence === 'verified' ||
+    (inline.includes(`[${expected.confidence.toUpperCase()}]`) &&
+     new RegExp(`Why ${expected.confidence}\\s*:`, 'i').test(inline));
 }
 
 export function grade(input)

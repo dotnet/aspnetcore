@@ -30,9 +30,12 @@ stimuli:
 
       Read docs/CrossCuttingGuidance.md and docs/BlazorComponentsGuidance.md in full.
       These are reviewer criteria, not contracts on the older target branch.
-      If review-pull-request is available, acquire it and read its installed SKILL.md
-      through the native skill tool or the supplied installed skill path.
-      Use the verifier and guide-worker instructions referenced by the loaded skill.
+      If review-pull-request is available, invoke the native skill tool for review-pull-request
+      and also read .github/agents/review-guide-worker.agent.md,
+      .github/agents/review-candidate-verifier.agent.md, and the installed review-pull-request
+      SKILL.md path with view in full; those .agent.md files define subordinate worker/verifier
+      contracts, so adjudicate as the SKILL.md coordinator (mapping verifier external downgrades
+      and unestablished drops to UNRESOLVED and only source-contradicted drops to DISCARDED).
       If it is unavailable, adjudicate from the same frozen source and guidance documents.
       Page truncated input reads through EOF.
 
@@ -47,10 +50,17 @@ stimuli:
       Give Before and After for C1's exact input and observable outcome after the status line.
       The first line must be STATUS: FINDINGS or STATUS: NO_FINDINGS.
       Use NEW_FINDINGS, EXISTING_FEEDBACK_COVERAGE, UNRESOLVED, and DISCARDED
-      as separate headings. Identify C1 explicitly in each applicable section.
-      Use confidence: verified, question, unresolved, or discarded for an inline entry.
-      Prefix unresolved or discarded inline entries with [UNRESOLVED] or [DISCARDED]
-      and include Why unresolved: or Why discarded:.
+      as separate headings. Identify C1 explicitly in each applicable section, and write
+      only None. in any section that does not apply to C1.
+      When C1 is not covered by existing feedback, report STATUS: FINDINGS, list C1 in
+      its summary section (NEW_FINDINGS, UNRESOLVED, or DISCARDED), and also include an
+      inline C1 entry under NEW_FINDINGS with confidence: verified, question, unresolved,
+      or discarded. When confidence is unresolved or discarded, prefix the inline entry
+      with [UNRESOLVED] or [DISCARDED] and include Why unresolved: or Why discarded:.
+      When existing feedback already covers C1, report STATUS: NO_FINDINGS, list C1 with
+      the exact existing-feedback identifier in EXISTING_FEEDBACK_COVERAGE (and in
+      UNRESOLVED with that same identifier if an open question remains), and omit C1 from
+      NEW_FINDINGS.
       Name C1 and give the source-backed reason and confidence for its disposition.
       Preserve the claim as written. Do not substitute another effect or remedy.
       Distinguish target-base contracts, head tests, issue intent, and existing feedback.
@@ -163,9 +173,12 @@ stimuli:
 
       Read docs/CrossCuttingGuidance.md and docs/BlazorComponentsGuidance.md in full.
       These are reviewer criteria, not contracts on the older target branch.
-      If review-pull-request is available, acquire it and read its installed SKILL.md
-      through the native skill tool or the supplied installed skill path.
-      Use the verifier and guide-worker instructions referenced by the loaded skill.
+      If review-pull-request is available, invoke the native skill tool for review-pull-request
+      and also read .github/agents/review-guide-worker.agent.md,
+      .github/agents/review-candidate-verifier.agent.md, and the installed review-pull-request
+      SKILL.md path with view in full; those .agent.md files define subordinate worker/verifier
+      contracts, so adjudicate as the SKILL.md coordinator (mapping verifier external downgrades
+      and unestablished drops to UNRESOLVED and only source-contradicted drops to DISCARDED).
       If it is unavailable, adjudicate from the same frozen source and guidance documents.
       Page truncated input reads through EOF.
 
@@ -180,10 +193,17 @@ stimuli:
       Give Before and After for C1's exact input and observable outcome after the status line.
       The first line must be STATUS: FINDINGS or STATUS: NO_FINDINGS.
       Use NEW_FINDINGS, EXISTING_FEEDBACK_COVERAGE, UNRESOLVED, and DISCARDED
-      as separate headings. Identify C1 explicitly in each applicable section.
-      Use confidence: verified, question, unresolved, or discarded for an inline entry.
-      Prefix unresolved or discarded inline entries with [UNRESOLVED] or [DISCARDED]
-      and include Why unresolved: or Why discarded:.
+      as separate headings. Identify C1 explicitly in each applicable section, and write
+      only None. in any section that does not apply to C1.
+      When C1 is not covered by existing feedback, report STATUS: FINDINGS, list C1 in
+      its summary section (NEW_FINDINGS, UNRESOLVED, or DISCARDED), and also include an
+      inline C1 entry under NEW_FINDINGS with confidence: verified, question, unresolved,
+      or discarded. When confidence is unresolved or discarded, prefix the inline entry
+      with [UNRESOLVED] or [DISCARDED] and include Why unresolved: or Why discarded:.
+      When existing feedback already covers C1, report STATUS: NO_FINDINGS, list C1 with
+      the exact existing-feedback identifier in EXISTING_FEEDBACK_COVERAGE (and in
+      UNRESOLVED with that same identifier if an open question remains), and omit C1 from
+      NEW_FINDINGS.
       Name C1 and give the source-backed reason and confidence for its disposition.
       Preserve the claim as written. Do not substitute another effect or remedy.
       Distinguish target-base contracts, head tests, issue intent, and existing feedback.
@@ -285,9 +305,12 @@ stimuli:
 
       Read docs/CrossCuttingGuidance.md and docs/BlazorComponentsGuidance.md in full.
       These are reviewer criteria, not contracts on the older target branch.
-      If review-pull-request is available, acquire it and read its installed SKILL.md
-      through the native skill tool or the supplied installed skill path.
-      Use the verifier and guide-worker instructions referenced by the loaded skill.
+      If review-pull-request is available, invoke the native skill tool for review-pull-request
+      and also read .github/agents/review-guide-worker.agent.md,
+      .github/agents/review-candidate-verifier.agent.md, and the installed review-pull-request
+      SKILL.md path with view in full; those .agent.md files define subordinate worker/verifier
+      contracts, so adjudicate as the SKILL.md coordinator (mapping verifier external downgrades
+      and unestablished drops to UNRESOLVED and only source-contradicted drops to DISCARDED).
       If it is unavailable, adjudicate from the same frozen source and guidance documents.
       Page truncated input reads through EOF.
 
@@ -302,10 +325,17 @@ stimuli:
       Give Before and After for C1's exact input and observable outcome after the status line.
       The first line must be STATUS: FINDINGS or STATUS: NO_FINDINGS.
       Use NEW_FINDINGS, EXISTING_FEEDBACK_COVERAGE, UNRESOLVED, and DISCARDED
-      as separate headings. Identify C1 explicitly in each applicable section.
-      Use confidence: verified, question, unresolved, or discarded for an inline entry.
-      Prefix unresolved or discarded inline entries with [UNRESOLVED] or [DISCARDED]
-      and include Why unresolved: or Why discarded:.
+      as separate headings. Identify C1 explicitly in each applicable section, and write
+      only None. in any section that does not apply to C1.
+      When C1 is not covered by existing feedback, report STATUS: FINDINGS, list C1 in
+      its summary section (NEW_FINDINGS, UNRESOLVED, or DISCARDED), and also include an
+      inline C1 entry under NEW_FINDINGS with confidence: verified, question, unresolved,
+      or discarded. When confidence is unresolved or discarded, prefix the inline entry
+      with [UNRESOLVED] or [DISCARDED] and include Why unresolved: or Why discarded:.
+      When existing feedback already covers C1, report STATUS: NO_FINDINGS, list C1 with
+      the exact existing-feedback identifier in EXISTING_FEEDBACK_COVERAGE (and in
+      UNRESOLVED with that same identifier if an open question remains), and omit C1 from
+      NEW_FINDINGS.
       Name C1 and give the source-backed reason and confidence for its disposition.
       Preserve the claim as written. Do not substitute another effect or remedy.
       Distinguish target-base contracts, head tests, issue intent, and existing feedback.
@@ -406,9 +436,12 @@ stimuli:
 
       Read docs/CrossCuttingGuidance.md and docs/BlazorComponentsGuidance.md in full.
       These are reviewer criteria, not contracts on the older target branch.
-      If review-pull-request is available, acquire it and read its installed SKILL.md
-      through the native skill tool or the supplied installed skill path.
-      Use the verifier and guide-worker instructions referenced by the loaded skill.
+      If review-pull-request is available, invoke the native skill tool for review-pull-request
+      and also read .github/agents/review-guide-worker.agent.md,
+      .github/agents/review-candidate-verifier.agent.md, and the installed review-pull-request
+      SKILL.md path with view in full; those .agent.md files define subordinate worker/verifier
+      contracts, so adjudicate as the SKILL.md coordinator (mapping verifier external downgrades
+      and unestablished drops to UNRESOLVED and only source-contradicted drops to DISCARDED).
       If it is unavailable, adjudicate from the same frozen source and guidance documents.
       Page truncated input reads through EOF.
 
@@ -423,10 +456,17 @@ stimuli:
       Give Before and After for C1's exact input and observable outcome after the status line.
       The first line must be STATUS: FINDINGS or STATUS: NO_FINDINGS.
       Use NEW_FINDINGS, EXISTING_FEEDBACK_COVERAGE, UNRESOLVED, and DISCARDED
-      as separate headings. Identify C1 explicitly in each applicable section.
-      Use confidence: verified, question, unresolved, or discarded for an inline entry.
-      Prefix unresolved or discarded inline entries with [UNRESOLVED] or [DISCARDED]
-      and include Why unresolved: or Why discarded:.
+      as separate headings. Identify C1 explicitly in each applicable section, and write
+      only None. in any section that does not apply to C1.
+      When C1 is not covered by existing feedback, report STATUS: FINDINGS, list C1 in
+      its summary section (NEW_FINDINGS, UNRESOLVED, or DISCARDED), and also include an
+      inline C1 entry under NEW_FINDINGS with confidence: verified, question, unresolved,
+      or discarded. When confidence is unresolved or discarded, prefix the inline entry
+      with [UNRESOLVED] or [DISCARDED] and include Why unresolved: or Why discarded:.
+      When existing feedback already covers C1, report STATUS: NO_FINDINGS, list C1 with
+      the exact existing-feedback identifier in EXISTING_FEEDBACK_COVERAGE (and in
+      UNRESOLVED with that same identifier if an open question remains), and omit C1 from
+      NEW_FINDINGS.
       Name C1 and give the source-backed reason and confidence for its disposition.
       Preserve the claim as written. Do not substitute another effect or remedy.
       Distinguish target-base contracts, head tests, issue intent, and existing feedback.
@@ -529,9 +569,12 @@ stimuli:
 
       Read docs/CrossCuttingGuidance.md and docs/BlazorComponentsGuidance.md in full.
       These are reviewer criteria, not contracts on the older target branch.
-      If review-pull-request is available, acquire it and read its installed SKILL.md
-      through the native skill tool or the supplied installed skill path.
-      Use the verifier and guide-worker instructions referenced by the loaded skill.
+      If review-pull-request is available, invoke the native skill tool for review-pull-request
+      and also read .github/agents/review-guide-worker.agent.md,
+      .github/agents/review-candidate-verifier.agent.md, and the installed review-pull-request
+      SKILL.md path with view in full; those .agent.md files define subordinate worker/verifier
+      contracts, so adjudicate as the SKILL.md coordinator (mapping verifier external downgrades
+      and unestablished drops to UNRESOLVED and only source-contradicted drops to DISCARDED).
       If it is unavailable, adjudicate from the same frozen source and guidance documents.
       Page truncated input reads through EOF.
 
@@ -546,10 +589,17 @@ stimuli:
       Give Before and After for C1's exact input and observable outcome after the status line.
       The first line must be STATUS: FINDINGS or STATUS: NO_FINDINGS.
       Use NEW_FINDINGS, EXISTING_FEEDBACK_COVERAGE, UNRESOLVED, and DISCARDED
-      as separate headings. Identify C1 explicitly in each applicable section.
-      Use confidence: verified, question, unresolved, or discarded for an inline entry.
-      Prefix unresolved or discarded inline entries with [UNRESOLVED] or [DISCARDED]
-      and include Why unresolved: or Why discarded:.
+      as separate headings. Identify C1 explicitly in each applicable section, and write
+      only None. in any section that does not apply to C1.
+      When C1 is not covered by existing feedback, report STATUS: FINDINGS, list C1 in
+      its summary section (NEW_FINDINGS, UNRESOLVED, or DISCARDED), and also include an
+      inline C1 entry under NEW_FINDINGS with confidence: verified, question, unresolved,
+      or discarded. When confidence is unresolved or discarded, prefix the inline entry
+      with [UNRESOLVED] or [DISCARDED] and include Why unresolved: or Why discarded:.
+      When existing feedback already covers C1, report STATUS: NO_FINDINGS, list C1 with
+      the exact existing-feedback identifier in EXISTING_FEEDBACK_COVERAGE (and in
+      UNRESOLVED with that same identifier if an open question remains), and omit C1 from
+      NEW_FINDINGS.
       Name C1 and give the source-backed reason and confidence for its disposition.
       Preserve the claim as written. Do not substitute another effect or remedy.
       Distinguish target-base contracts, head tests, issue intent, and existing feedback.
@@ -652,9 +702,12 @@ stimuli:
 
       Read docs/CrossCuttingGuidance.md and docs/BlazorComponentsGuidance.md in full.
       These are reviewer criteria, not contracts on the older target branch.
-      If review-pull-request is available, acquire it and read its installed SKILL.md
-      through the native skill tool or the supplied installed skill path.
-      Use the verifier and guide-worker instructions referenced by the loaded skill.
+      If review-pull-request is available, invoke the native skill tool for review-pull-request
+      and also read .github/agents/review-guide-worker.agent.md,
+      .github/agents/review-candidate-verifier.agent.md, and the installed review-pull-request
+      SKILL.md path with view in full; those .agent.md files define subordinate worker/verifier
+      contracts, so adjudicate as the SKILL.md coordinator (mapping verifier external downgrades
+      and unestablished drops to UNRESOLVED and only source-contradicted drops to DISCARDED).
       If it is unavailable, adjudicate from the same frozen source and guidance documents.
       Page truncated input reads through EOF.
 
@@ -669,10 +722,17 @@ stimuli:
       Give Before and After for C1's exact input and observable outcome after the status line.
       The first line must be STATUS: FINDINGS or STATUS: NO_FINDINGS.
       Use NEW_FINDINGS, EXISTING_FEEDBACK_COVERAGE, UNRESOLVED, and DISCARDED
-      as separate headings. Identify C1 explicitly in each applicable section.
-      Use confidence: verified, question, unresolved, or discarded for an inline entry.
-      Prefix unresolved or discarded inline entries with [UNRESOLVED] or [DISCARDED]
-      and include Why unresolved: or Why discarded:.
+      as separate headings. Identify C1 explicitly in each applicable section, and write
+      only None. in any section that does not apply to C1.
+      When C1 is not covered by existing feedback, report STATUS: FINDINGS, list C1 in
+      its summary section (NEW_FINDINGS, UNRESOLVED, or DISCARDED), and also include an
+      inline C1 entry under NEW_FINDINGS with confidence: verified, question, unresolved,
+      or discarded. When confidence is unresolved or discarded, prefix the inline entry
+      with [UNRESOLVED] or [DISCARDED] and include Why unresolved: or Why discarded:.
+      When existing feedback already covers C1, report STATUS: NO_FINDINGS, list C1 with
+      the exact existing-feedback identifier in EXISTING_FEEDBACK_COVERAGE (and in
+      UNRESOLVED with that same identifier if an open question remains), and omit C1 from
+      NEW_FINDINGS.
       Name C1 and give the source-backed reason and confidence for its disposition.
       Preserve the claim as written. Do not substitute another effect or remedy.
       Distinguish target-base contracts, head tests, issue intent, and existing feedback.

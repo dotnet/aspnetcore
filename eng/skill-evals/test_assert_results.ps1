@@ -122,7 +122,96 @@ try {
     Write-Results -Variant skilled -Score 0.5
     Assert-Throws {
         & $assertResults -OutputDirectory $output
-    } "'skilled' stimulus 'case-01' score 0.5 is below" 'A below-threshold skilled result was accepted.'
+    } "'skilled' score 0.5 is below" 'A below-threshold skilled result was accepted.'
+
+    @{
+        type = 'experiment-plan-snapshot'
+        evals = @(
+            @{
+                evalName = 'port-components-platform-api'
+                variant = 'baseline'
+                plannedStimulusCount = 2
+                plannedStimulusNames = @('case-01', 'case-02')
+                runs = 1
+                threshold = 0.6
+            },
+            @{
+                evalName = 'port-components-platform-api'
+                variant = 'skilled'
+                plannedStimulusCount = 2
+                plannedStimulusNames = @('case-01', 'case-02')
+                runs = 1
+                threshold = 0.6
+            }
+        )
+    } | ConvertTo-Json -Depth 10 | Set-Content (Join-Path $run 'plan-snapshot.json')
+
+    Reset-Results
+    foreach ($variant in 'baseline', 'skilled') {
+        $variantDirectory = Join-Path $run $variant
+        New-Item -ItemType Directory -Path $variantDirectory -Force | Out-Null
+        @(
+            @{
+                type = 'trial-result'
+                variant = $variant
+                stimulus = 'case-01'
+                status = 'success'
+                gradeResult = @{ score = $(if ($variant -eq 'skilled') { 0.4 } else { 0.1 }) }
+            },
+            @{
+                type = 'trial-result'
+                variant = $variant
+                stimulus = 'case-02'
+                status = 'success'
+                gradeResult = @{ score = $(if ($variant -eq 'skilled') { 1.0 } else { 0.1 }) }
+            }
+        ) | ForEach-Object { $_ | ConvertTo-Json -Depth 10 -Compress } |
+            Set-Content (Join-Path $variantDirectory 'results.jsonl')
+    }
+    & $assertResults -OutputDirectory $output
+
+    @(
+        @{
+            type = 'trial-result'
+            variant = 'skilled'
+            stimulus = 'case-01'
+            status = 'success'
+            gradeResult = @{ score = 0.2 }
+        },
+        @{
+            type = 'trial-result'
+            variant = 'skilled'
+            stimulus = 'case-02'
+            status = 'success'
+            gradeResult = @{ score = 0.8 }
+        }
+    ) | ForEach-Object { $_ | ConvertTo-Json -Depth 10 -Compress } |
+        Set-Content (Join-Path $run 'skilled/results.jsonl')
+    Assert-Throws {
+        & $assertResults -OutputDirectory $output
+    } "'skilled' score 0.5 is below threshold 0.6" (
+        'A multi-stimulus generic suite below its aggregate threshold was accepted.'
+    )
+
+    @{
+        type = 'experiment-plan-snapshot'
+        evals = @(
+            @{
+                variant = 'baseline'
+                plannedStimulusCount = 1
+                plannedStimulusNames = @('case-01')
+                runs = 1
+                threshold = 0.6
+            },
+            @{
+                variant = 'skilled'
+                plannedStimulusCount = 1
+                plannedStimulusNames = @('case-01')
+                runs = 1
+                threshold = 0.6
+            }
+        )
+    } | ConvertTo-Json -Depth 10 | Set-Content (Join-Path $run 'plan-snapshot.json')
 
     Reset-Results
     Write-Results -Variant baseline -Score 0.1
@@ -323,6 +412,16 @@ try {
                     passed = $true
                     score = 1
                 }
+                @{
+                    graderType = 'skill-invocation'
+                    passed = $variant -eq 'skilled'
+                    score = $(if ($variant -eq 'skilled') { 1 } else { 0 })
+                }
+                @{
+                    graderType = 'prompt'
+                    passed = $true
+                    score = 1
+                }
             )
             & $Mutation $variant $receipts
             Write-Results -Variant $variant -Score 1 -Details $receipts
@@ -336,7 +435,7 @@ try {
             Write-ReviewResults {
                 param($variant, $receipts)
                 if ($variant -eq $variantToFail) {
-                    ($receipts | Where-Object configuredName -eq "$receiptToFail-case-01").passed = $false
+                    ($receipts | Where-Object { $_['configuredName'] -eq "$receiptToFail-case-01" }).passed = $false
                 }
             }
             Assert-Throws { & $assertResults -OutputDirectory $output } 'failed read integrity' (
@@ -347,12 +446,115 @@ try {
     Write-ReviewResults {
         param($variant, $receipts)
         if ($variant -eq 'skilled') {
-            ($receipts | Where-Object configuredName -eq 'treatment-reads-case-01').passed = $false
+            ($receipts | Where-Object { $_['configuredName'] -eq 'treatment-reads-case-01' }).passed = $false
         }
     }
     Assert-Throws { & $assertResults -OutputDirectory $output } 'treatment-reads-case-01' (
         'Skilled accepted missing treatment integrity.'
     )
+
+    # 1-run review smoke allows disposition 0 when read integrity passes
+    Write-ReviewResults {
+        param($variant, $receipts)
+        if ($variant -eq 'skilled') {
+            ($receipts | Where-Object { $_['configuredName'] -eq 'disposition-case-01' }).passed = $false
+            ($receipts | Where-Object { $_['configuredName'] -eq 'disposition-case-01' }).score = 0
+        }
+    }
+    Write-Results -Variant skilled -Score 0 -Details @(
+        @{ configuredName = 'evidence-reads-case-01'; passed = $true; score = 1 },
+        @{ configuredName = 'guidance-reads-case-01'; passed = $true; score = 1 },
+        @{ configuredName = 'treatment-reads-case-01'; passed = $true; score = 1 },
+        @{ configuredName = 'disposition-case-01'; passed = $false; score = 0 }
+    )
+    & $assertResults -OutputDirectory $output
+
+    # Multi-run review enforces per-stimulus threshold independently
+    @{
+        evals = @(
+            foreach ($variant in 'baseline', 'skilled') {
+                @{
+                    evalName = 'review-pull-request'
+                    variant = $variant
+                    plannedStimulusNames = @('case-01', 'case-02')
+                    plannedStimulusCount = 2
+                    runs = 2
+                    threshold = 1
+                }
+            }
+        )
+    } | ConvertTo-Json -Depth 10 | Set-Content (Join-Path $run 'plan-snapshot.json')
+    foreach ($variant in 'baseline', 'skilled') {
+        $rows = [Collections.Generic.List[object]]::new()
+        foreach ($stimulus in 'case-01', 'case-02') {
+            foreach ($trial in 0..1) {
+                $score = if ($variant -eq 'skilled' -and $stimulus -eq 'case-02' -and $trial -eq 1) { 0 } else { 1 }
+                $rows.Add(@{
+                    type = 'trial-result'
+                    variant = $variant
+                    stimulus = $stimulus
+                    trialIndex = $trial
+                    status = 'success'
+                    gradeResult = @{
+                        score = $score
+                        details = @(
+                            @{ configuredName = "evidence-reads-$stimulus"; passed = $true; score = 1 },
+                            @{ configuredName = "guidance-reads-$stimulus"; passed = $true; score = 1 },
+                            @{
+                                configuredName = "treatment-reads-$stimulus"
+                                passed = $variant -eq 'skilled'
+                                score = $(if ($variant -eq 'skilled') { 1 } else { 0 })
+                            },
+                            @{ configuredName = "disposition-$stimulus"; passed = $score -eq 1; score = $score }
+                        )
+                    }
+                })
+            }
+        }
+        $rows | ForEach-Object { $_ | ConvertTo-Json -Depth 10 -Compress } |
+            Set-Content (Join-Path $run "$variant/results.jsonl")
+    }
+    Assert-Throws { & $assertResults -OutputDirectory $output } "'skilled' stimulus 'case-02' score 0.5 is below threshold 1" (
+        'A multi-run review suite with a below-threshold stimulus was accepted.'
+    )
+
+    # 1-run verifier component smoke enforces read integrity without multi-trial 4/5 floor
+    Reset-Results
+    @{
+        evals = @(@{
+            variant = 'current'
+            plannedStimulusNames = @('a', 'b', 'c')
+            plannedStimulusCount = 3
+            runs = 1
+            threshold = 0.8
+        })
+    } | ConvertTo-Json -Depth 10 | Set-Content (Join-Path $run 'plan-snapshot.json')
+    $smokeComponentRows = [Collections.Generic.List[object]]::new()
+    foreach ($name in 'a', 'b', 'c') {
+        $score = if ($name -eq 'a') { 0 } else { 1 }
+        $smokeComponentRows.Add(@{
+            type = 'trial-result'
+            runId = 'component-smoke'
+            stimulus = $name
+            trialIndex = 0
+            status = 'success'
+            gradeResult = @{
+                score = $score
+                details = @(
+                    @{ configuredName = "evidence-reads-$name"; passed = $true; score = 1 },
+                    @{ configuredName = "disposition-$name"; passed = $score -eq 1; score = $score }
+                )
+            }
+        })
+    }
+    $smokeComponentRows.Add(@{
+        type = 'run-summary'
+        runId = 'component-smoke'
+        hadExecutionErrors = $false
+    })
+    $smokeComponentRows | ForEach-Object { $_ | ConvertTo-Json -Depth 10 -Compress } |
+        Set-Content (Join-Path $run 'results.jsonl')
+    & $assertResults -OutputDirectory $output
 
     Write-ReviewResults
     $combinedOutput = Join-Path $testRoot 'combined'

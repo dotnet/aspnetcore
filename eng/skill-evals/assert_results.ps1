@@ -85,6 +85,8 @@ foreach ($variant in $variants) {
         throw "The '$variant' variant has $($incomplete.Count) incomplete or failed trial(s)."
     }
 
+    $isReview = $plan.PSObject.Properties['evalName'] -and $plan.evalName -eq 'review-pull-request'
+    $isPerStimulusSuite = ($variant -eq 'current') -or $isReview
     $scores = [Collections.Generic.List[double]]::new()
     $scoresByStimulus = @{}
     $identities = [Collections.Generic.HashSet[string]]::new()
@@ -132,8 +134,7 @@ foreach ($variant in $variants) {
             $scoresByStimulus[$result.stimulus] = [Collections.Generic.List[double]]::new()
         }
         $scoresByStimulus[$result.stimulus].Add($score)
-        $isReview = $plan.PSObject.Properties['evalName'] -and $plan.evalName -eq 'review-pull-request'
-        if ($variant -eq 'current' -or $isReview) {
+        if ($isPerStimulusSuite) {
             $requiredReceipts = @("evidence-reads-$($result.stimulus)")
             if ($isReview) {
                 $requiredReceipts += "guidance-reads-$($result.stimulus)"
@@ -145,13 +146,14 @@ foreach ($variant in $variants) {
                 throw "The '$variant' trial lacks read-integrity results."
             }
             $dispositions = @($gradeResultProperty.Value.details |
-                Where-Object configuredName -eq "disposition-$($result.stimulus)")
+                Where-Object { $_.PSObject.Properties['configuredName'] -and $_.configuredName -eq "disposition-$($result.stimulus)" })
             if ($dispositions.Count -ne 1 -or $dispositions[0].score -ne $score -or
                 ($dispositions[0].PSObject.Properties['status'] -and $dispositions[0].status -eq 'error')) {
                 throw "The '$variant' trial lacks a valid primary disposition result."
             }
             foreach ($receipt in $requiredReceipts) {
-                $details = @($gradeResultProperty.Value.details | Where-Object configuredName -eq $receipt)
+                $details = @($gradeResultProperty.Value.details |
+                    Where-Object { $_.PSObject.Properties['configuredName'] -and $_.configuredName -eq $receipt })
                 if ($details.Count -ne 1 -or $details[0].passed -isnot [bool] -or
                     -not $details[0].passed -or $details[0].score -is [string] -or $details[0].score -ne 1) {
                     throw "The '$variant' trial '$($result.stimulus):$trialIndex' failed read integrity: $receipt."
@@ -167,10 +169,15 @@ foreach ($variant in $variants) {
             throw "The '$variant' stimulus '$name' has incomplete trial coverage."
         }
         $caseScore = ($scoresByStimulus[$name] | Measure-Object -Average).Average
-        if ($variant -ne 'baseline' -and $caseScore -lt [double]$plan.threshold) {
+        if ($isPerStimulusSuite -and [int]$plan.runs -gt 1 -and
+            $variant -ne 'baseline' -and $caseScore -lt [double]$plan.threshold) {
             throw "The '$variant' stimulus '$name' score $caseScore is below threshold $($plan.threshold)."
         }
         Write-Host "$variant/$name score: $caseScore ($($plan.runs) complete trials)."
+    }
+    if (-not $isPerStimulusSuite -and $variant -ne 'baseline' -and
+        $scoresByVariant[$variant] -lt [double]$plan.threshold) {
+        throw "The '$variant' score $($scoresByVariant[$variant]) is below threshold $($plan.threshold)."
     }
 }
 

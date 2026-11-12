@@ -112,10 +112,10 @@ jobs:
           SKILL_EVAL_VALLY: ${{ runner.temp }}/evaluation-tools/node_modules/.bin/vally
         run: ./eng/skill-evals/run.ps1 -Action $env:ACTION
 
-      - name: Test trusted staging boundary
+      - name: Run skill eval self-tests
         if: github.event_name != 'workflow_dispatch' || inputs.action == 'Validate'
         shell: pwsh
-        run: ./eng/skill-evals/test_stage_run.ps1
+        run: ./eng/skill-evals/run.ps1 -Action Test
 
   gate:
     name: Resolve PR evaluation

@@ -62,10 +62,12 @@ foreach ($stimulus in $spec.stimuli) {
         ) 'A frozen source role is missing.'
     } else {
         Assert-True ($provenance.fixtureKind -like 'synthetic public*') 'The catch example is misrepresented as production source.'
-        $context = Get-Content (Join-Path $caseRoot 'context.source') -Raw
-        Assert-True ($context -notmatch 'No target-base policy|No additional primary contract|unspecified\.txt') (
-            'The catch case includes an answer hint.'
-        )
+        foreach ($caseFile in Get-ChildItem $caseRoot -File) {
+            $text = Get-Content $caseFile.FullName -Raw
+            Assert-True (
+                $text -notmatch 'No target-base policy|No additional primary contract|unspecified\.txt|suppression-policy absence'
+            ) "The catch case file $($caseFile.Name) includes an answer hint."
+        }
     }
 
     foreach ($file in $provenance.files) {

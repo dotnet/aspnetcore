@@ -125,8 +125,10 @@ Without a suite or explicit experiment, `Run` dispatches each standard suite int
 its own output subdirectory. This includes reviewer comparison and the direct
 verifier component suite. `assert_results.ps1` checks that combined output
 recursively. A direct component run writes a plan beside Vally's timestamped
-`results.jsonl`; it does not invent an experiment variant directory. Smoke selects
-one repeat per case and cannot establish the full component 4/5 gate.
+`results.jsonl`; it does not invent an experiment variant directory. For the
+reviewer and verifier suites, smoke selects one repeat per case and checks trial
+completion, grader scores, and read-integrity receipts without enforcing the
+multi-trial per-stimulus disposition threshold.
 
 ## Hosted entry point
 
@@ -194,8 +196,10 @@ execute from that staged tree, so candidate changes to `run.ps1`,
 execution in the PAT-backed step. Both baseline and skilled variants must
 produce the exact planned result count, successful trial statuses, and grader
 scores; only the skilled score is threshold-gated. The final status and PR
-comment link to the retained artifacts. Smoke results validate execution and
-the skilled threshold, but Full runs remain the quality-evidence path.
+comment link to the retained artifacts. Smoke results validate execution,
+read-integrity receipts, and generic aggregate thresholds, while Full runs
+enforce per-stimulus review and verifier thresholds and remain the
+quality-evidence path.
 
 Vally and Copilot still interpret the staged candidate skill and eval stimuli as
 agent instructions inside the token-bearing execution step. The staging boundary

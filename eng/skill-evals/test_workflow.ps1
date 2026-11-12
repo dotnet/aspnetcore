@@ -73,6 +73,21 @@ if ($workflow -notmatch [regex]::Escape(
     throw 'The credentialed job does not install the trusted evaluation tool manifest.'
 }
 
+$validateJob = [regex]::Match(
+    $workflow,
+    '(?ms)^  validate:\r?\n(?<job>.*?)(?=^  \S|\z)'
+)
+if (-not $validateJob.Success) {
+    throw 'The workflow does not contain the validate job.'
+}
+$validateJobText = $validateJob.Groups['job'].Value
+if ($validateJobText -notmatch '(?ms)if:\s*github\.event_name != ''workflow_dispatch'' \|\| inputs\.action == ''Validate''\r?\n\s*shell:\s*pwsh\r?\n\s*run:\s*\./eng/skill-evals/run\.ps1 -Action Test') {
+    throw 'The validate job does not run ./eng/skill-evals/run.ps1 -Action Test under the Validate condition.'
+}
+if ($workflow -match 'test_stage_run\.ps1') {
+    throw 'The workflow still contains a standalone test_stage_run.ps1 step.'
+}
+
 $evaluationToolsRoot = Join-Path $PSScriptRoot 'evaluation-tools'
 $evaluationToolsManifest = Get-Content (
     Join-Path $evaluationToolsRoot 'package.json'

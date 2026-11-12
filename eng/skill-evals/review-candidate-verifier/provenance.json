@@ -50,7 +50,7 @@
     },
     {
       "file": "package-c/changed-files.json",
-      "sha256": "1e1c3cda2d4c9ece470ce955cb9f296799b7f83754bf20f5fbfcc98c6316a165"
+      "sha256": "93dd39cc3699523242cc571bd40bd96727e15a071dfb64e5fd8f92b1cf25deea"
     },
     {
       "file": "package-c/changes.diff",

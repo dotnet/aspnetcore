@@ -39,6 +39,50 @@ test('ReviewDispositionAcceptsExpectedSections', () =>
   }
 });
 
+test('ReviewDispositionToleratesMarkdownFormattingAndTrailingTopLevelFields', () =>
+{
+  assert.equal(score('case-02', `STATUS: FINDINGS
+__NEW_FINDINGS__
+- C1 confidence: \`verified\`
+1. **EXISTING_FEEDBACK_COVERAGE**:
+None.
+2) \`UNRESOLVED\`:
+None.
+### __DISCARDED__:
+None.
+TEST_BOUNDARY: Single-reviewer offline source-only evaluation of C1.
+**LIMITATIONS:** C1 was evaluated against frozen excerpts only.`), 1);
+
+  assert.equal(score('case-02', `STATUS: FINDINGS
+## **NEW_FINDINGS**
+C1 **confidence:** verified
+## EXISTING_FEEDBACK_COVERAGE
+None.
+## UNRESOLVED
+None.
+## DISCARDED
+None.
+## TEST_BOUNDARY
+C1 was evaluated without running target tests.
+## LIMITATIONS
+C1 uses frozen excerpts.`), 1);
+
+  assert.equal(score('case-06', 'STATUS: FINDINGS  \n' + `- __NEW_FINDINGS__:
+- **C1 — [UNRESOLVED] Suppressing the diagnostic sink exception changes caller propagation.**
+  - **Confidence:** unresolved
+  - **Why unresolved:** missing target-base policy contract.
+- **EXISTING_FEEDBACK_COVERAGE**:
+- **C1:** Not covered by any existing feedback in the supplied frozen evidence.
+- \`UNRESOLVED\`:
+**C1:** Missing target-base policy contract.
+- __DISCARDED__:
+None. **C1 is unresolved rather than discarded.**
+TEST_BOUNDARY
+Offline review of C1 only.
+LIMITATIONS
+C1 has no runtime repro.`), 1);
+});
+
 test('ReviewDispositionRejectsWrongStatusSectionConfidenceAndOmission', () =>
 {
   const good = review('UNRESOLVED', 'unresolved');

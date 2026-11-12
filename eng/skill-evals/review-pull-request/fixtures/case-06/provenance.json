@@ -4,7 +4,7 @@
   "fixtureKind": "synthetic public catch-policy example, not framework production source",
   "revision": "4bb1a49fbbf7c217286f289cf975019491c83f16",
   "transformations": [
-    "Remove explicit suppression-policy absence hints.",
+    "Normalize scenario prompt to the single-candidate format.",
     "Combine scenario and head test as context."
   ],
   "files": [
