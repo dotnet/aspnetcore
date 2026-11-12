@@ -179,6 +179,9 @@ public class HubConnectionHandler<[DynamicallyAccessedMembers(Hub.DynamicallyAcc
         }
         finally
         {
+            // Ensure the connection is aborted before firing disconnect
+            await connectionContext.AbortAsync();
+
             if (authenticationRefreshFeature is not null
                 && ReferenceEquals(authenticationRefreshFeature.OnAuthenticationRefresh, authenticationRefreshCallback))
             {
