@@ -42,7 +42,6 @@ on:
           - port-components-platform-api
           - pr-attention-queue
           - review-public-api
-          - review-pull-request
           - review-candidate-verifier
           - validate-blazor-feature
       run_type:

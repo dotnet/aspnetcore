@@ -160,8 +160,8 @@ stimuli:
         Read-Invocations |
             Where-Object { $_.Arguments[0] -eq 'experiment' }
     )
-    Assert-True ($validateInvocations.Count -eq 4) (
-        'Default validation did not resolve generic and reviewer experiments.'
+    Assert-True ($validateInvocations.Count -eq 2) (
+        'Default validation did not resolve generic experiments.'
     )
     foreach ($invocation in $validateInvocations) {
         Assert-True ($invocation.Arguments[1] -eq 'run') (
@@ -180,12 +180,6 @@ stimuli:
     Assert-True ($validateInvocations.Arguments -contains (
         Join-Path $repoRoot 'eng/skill-evals/skills-smoke.experiment.yaml'
     )) 'Default validation did not resolve the smoke experiment.'
-    Assert-True ($validateInvocations.Arguments -contains (
-        Join-Path $repoRoot 'eng/skill-evals/review-vs-baseline.experiment.yaml'
-    )) 'Default validation did not resolve the reviewer experiment.'
-    Assert-True ($validateInvocations.Arguments -contains (
-        Join-Path $repoRoot 'eng/skill-evals/review-smoke.experiment.yaml'
-    )) 'Default validation did not resolve the reviewer smoke experiment.'
 
     Remove-Item $record
     & $runner Validate `
@@ -246,43 +240,6 @@ stimuli:
     Assert-True ($specializedInvocation[0] -eq 'eval') 'Specialized run did not use Vally eval.'
     Assert-True ($specializedInvocation -contains '--eval-spec') 'Specialized run omitted --eval-spec.'
 
-    Remove-Item $record
-    & $runner Validate `
-        -Suite review-pull-request `
-        -Vally $fakeVally `
-        -VallyPrefix @()
-    $suiteInvocations = @(Read-Invocations)
-    $suiteLint = @($suiteInvocations | Where-Object { $_.Arguments[0] -eq 'lint' })
-    Assert-True ($suiteLint.Count -eq 1) 'Suite validation linted unrelated specifications.'
-    Assert-True ($suiteLint[0].Arguments -contains (
-        Join-Path $repoRoot 'eng/skill-evals/review-pull-request/eval.vally.yaml'
-    )) 'Suite validation did not lint the selected specification.'
-    $suitePlans = @($suiteInvocations | Where-Object { $_.Arguments[0] -eq 'experiment' })
-    Assert-True ($suitePlans.Count -eq 2) 'Suite validation did not resolve both experiments.'
-    foreach ($invocation in $suitePlans) {
-        Assert-True ($invocation.Arguments -contains '--dry-run') 'Suite validation could invoke models.'
-        Assert-True ($invocation.Arguments -contains '--eval-filter') 'Suite validation omitted its filter.'
-        Assert-True ($invocation.Arguments -contains 'review-pull-request/eval.vally.yaml') 'Suite validation selected the wrong eval.'
-    }
-
-    & $runner Run `
-        -Suite review-pull-request `
-        -Vally $fakeVally `
-        -VallyPrefix @() `
-        -OutputDirectory $output
-    $suiteRun = Read-Invocation
-    Assert-True ($suiteRun[0] -eq 'experiment') 'Suite run bypassed experiment skill ownership.'
-    Assert-True ($suiteRun -contains 'review-pull-request/eval.vally.yaml') 'Suite run selected the wrong eval.'
-    Assert-True ($suiteRun -contains (Join-Path $repoRoot 'eng/skill-evals/review-vs-baseline.experiment.yaml')) (
-        'Reviewer run used the generic treatment.'
-    )
-    & $runner Run -Suite review-pull-request `
-        -Experiment eng/skill-evals/skills-smoke.experiment.yaml `
-        -Vally $fakeVally -VallyPrefix @() -OutputDirectory $output
-    Assert-True ((Read-Invocation) -contains (Join-Path $repoRoot 'eng/skill-evals/review-smoke.experiment.yaml')) (
-        'Reviewer smoke run used the generic treatment.'
-    )
-
     foreach ($smoke in @($false, $true)) {
         $componentOutput = Join-Path $testRoot "component-$smoke"
         New-Item -ItemType Directory -Path (Join-Path $componentOutput '2025-12-31T00-00-00') -Force | Out-Null
@@ -301,15 +258,6 @@ stimuli:
             'Component plan lost its per-case 4/5 disposition gate.'
         )
     }
-    $componentOutput = Join-Path $testRoot 'component-review-smoke'
-    & $runner Run -Suite review-candidate-verifier `
-        -Experiment eng/skill-evals/review-smoke.experiment.yaml `
-        -Vally $fakeVally -VallyPrefix @() -OutputDirectory $componentOutput
-    $componentRun = Read-Invocation
-    Assert-True ($componentRun[([array]::IndexOf($componentRun, '--runs') + 1)] -eq '1') (
-        'Reviewer smoke selection unexpectedly ran the full component suite.'
-    )
-
     function Assert-CustomComponentPlan {
         param(
             [string]$Scenario,
@@ -430,9 +378,6 @@ stimuli:
         Where-Object { Test-Path (Join-Path $_.FullName 'eval.vally.yaml') }).Count
     Assert-True ($allRuns.Count -eq $suiteCount) 'Default run omitted a standard suite.'
     Assert-True (($allRuns.Arguments -join ' ') -like '*review-candidate-verifier*') 'Default run omitted the component suite.'
-    Assert-True ($allRuns.Arguments -contains (Join-Path $repoRoot 'eng/skill-evals/review-vs-baseline.experiment.yaml')) (
-        'Default run omitted the reviewer comparison.'
-    )
 
     foreach ($invalidSuite in @('../outside', '..', 'missing-suite')) {
         $rejected = $false

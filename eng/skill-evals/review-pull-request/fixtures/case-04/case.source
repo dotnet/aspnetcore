@@ -1,8 +1,0 @@
-Repository: dotnet/aspnetcore
-Pull request: https://github.com/dotnet/aspnetcore/pull/69721
-Head: 153f8ef684a760e30b43609e54a9d22027dc6b62
-Merge base: 66e2adb4e0297e445686cb7a70d6c9aa84dcf3af
-Base tip: 66e2adb4e0297e445686cb7a70d6c9aa84dcf3af
-The source files are excerpts, not a complete ready version-2 review bundle.
-provenance.json maps every excerpt to its original source path and lines.
-C1: The new RemoteMsalAuthenticationStartup token endpoint changes the observed result of NavigateDirectlyToLoginCallbackRestartsLoginWithoutInteropFailure because that browser scenario completes an exchange through this endpoint before its assertions. The concern is the asserted browser-test effect, not an independent endpoint policy claim.

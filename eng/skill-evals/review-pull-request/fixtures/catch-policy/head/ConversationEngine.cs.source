@@ -26,7 +26,6 @@ public sealed class ConversationEngine
         {
             Error = processingError;
             Status = "Error";
-            StatusChanged?.Invoke(Status);
             try
             {
                 _sink.Write(processingError);
@@ -34,6 +33,7 @@ public sealed class ConversationEngine
             catch (Exception)
             {
             }
+            StatusChanged?.Invoke(Status);
             return;
         }
     }
