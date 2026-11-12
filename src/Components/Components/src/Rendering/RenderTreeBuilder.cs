@@ -204,7 +204,7 @@ public sealed class RenderTreeBuilder : IDisposable
         {
             _entries.AppendAttribute(sequence, name, value ? BoxedTrue : BoxedFalse);
         }
-        else if (IsEnumeratedBoolAttribute(name))
+        else if (EnumeratedBoolAttributes.Contains(name))
         {
             _entries.AppendAttribute(sequence, name, value ? "true" : "false");
         }
@@ -381,7 +381,7 @@ public sealed class RenderTreeBuilder : IDisposable
             }
             else if (value is bool boolValue)
             {
-                if (IsEnumeratedBoolAttribute(name))
+                if (EnumeratedBoolAttributes.Contains(name))
                 {
                     _entries.AppendAttribute(sequence, name, boolValue ? "true" : "false");
                 }
@@ -930,13 +930,6 @@ public sealed class RenderTreeBuilder : IDisposable
 
         var seenAttributeNames = (_seenAttributeNames ??= new Dictionary<string, int>(SimplifiedStringHashComparer.Instance));
         seenAttributeNames[name] = _entries.Count; // See comment in ProcessAttributes for why this is OK.
-    }
-
-    private static bool IsEnumeratedBoolAttribute(string name)
-    {
-        // Enumerated attributes (draggable, spellcheck, contenteditable) are not subject to the
-        // standard HTML boolean attribute rules. They require explicit "true"/"false" string values.
-        return EnumeratedBoolAttributes.Contains(name);
     }
 
     /// <inheritdoc />
