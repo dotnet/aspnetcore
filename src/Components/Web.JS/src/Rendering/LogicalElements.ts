@@ -214,6 +214,18 @@ export function insertLogicalChild(child: Node, parent: LogicalElement, childInd
   }
 }
 
+export function removeOrphanedLogicalChildren(parent: LogicalElement): void {
+  const childrenArray = getLogicalChildrenArray(parent);
+  let connectedCount = 0;
+  for (let i = 0; i < childrenArray.length; i++) {
+    const child = childrenArray[i];
+    if ((child as any as Node).parentNode) {
+      childrenArray[connectedCount++] = child;
+    }
+  }
+  childrenArray.length = connectedCount;
+}
+
 export function removeLogicalChild(parent: LogicalElement, childIndex: number): void {
   const childrenArray = getLogicalChildrenArray(parent);
   const childToRemove = childrenArray.splice(childIndex, 1)[0];

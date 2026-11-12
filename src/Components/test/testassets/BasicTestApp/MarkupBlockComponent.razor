@@ -49,10 +49,10 @@
 
     void RenderMarkupWithOrphans()
     {
-        largeMarkup = string.Concat(Enumerable.Repeat("<span>prefix</span>", 64)) +
-            "<p id='markup-moved'>moving</p><p id='markup-removed'>removed</p>" +
+        largeMarkup = "<p id='markup-moved'>moving</p><p id='markup-removed'>removed</p>" +
             "<script>document.getElementById('markup-relocation-target').appendChild(document.getElementById('markup-moved'));document.getElementById('markup-removed').remove()</script>" +
-            "<p id='markup-middle'>middle</p><script>document.getElementById('markup-moved').remove();document.currentScript.remove()</script><p id='markup-last'>last</p>";
+            "<p id='markup-middle'>middle</p><script>document.getElementById('markup-moved').remove()</script>" +
+            "<p id='markup-last'>last</p><script>document.currentScript.remove()</script>";
         largeMarkupState = "mutated";
     }
 

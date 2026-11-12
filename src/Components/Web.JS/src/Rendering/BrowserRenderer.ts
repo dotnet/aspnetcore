@@ -3,7 +3,7 @@
 
 import { RenderBatch, ArrayBuilderSegment, RenderTreeEdit, RenderTreeFrame, EditType, FrameType, ArrayValues } from './RenderBatch/RenderBatch';
 import { EventDelegator } from './Events/EventDelegator';
-import { LogicalElement, PermutationListEntry, toLogicalElement, insertLogicalChild, removeLogicalChild, getLogicalParent, getLogicalChild, createAndInsertLogicalContainer, isSvgElement, isMathMLElement, permuteLogicalChildren, getClosestDomElement, emptyLogicalElement, getLogicalChildrenArray, depthFirstNodeTreeTraversal } from './LogicalElements';
+import { LogicalElement, PermutationListEntry, toLogicalElement, insertLogicalChild, removeLogicalChild, getLogicalParent, getLogicalChild, createAndInsertLogicalContainer, isSvgElement, isMathMLElement, permuteLogicalChildren, getClosestDomElement, emptyLogicalElement, getLogicalChildrenArray, depthFirstNodeTreeTraversal, removeOrphanedLogicalChildren } from './LogicalElements';
 import { applyCaptureIdToElement } from './ElementReferenceCapture';
 import { attachToEventDelegator as attachNavigationManagerToEventDelegator } from '../Services/NavigationManager';
 import { applyAnyDeferredValue, deferredValuePropname, tryApplySpecialProperty } from './DomSpecialPropertyUtil';
@@ -351,56 +351,13 @@ export class BrowserRenderer {
     const markupContent = batch.frameReader.markupContent(markupFrame);
     const parsedMarkup = parseMarkup(markupContent, isSvgElement(parent), isMathMLElement(parent));
     let logicalSiblingIndex = 0;
-    // A bounded scan is cheaper than tracking mutations for small fragments.
-    if (parsedMarkup.childNodes.length < 64) {
-      while (parsedMarkup.firstChild) {
-        insertLogicalChild(parsedMarkup.firstChild, markupContainer, logicalSiblingIndex++);
-      }
-      return;
+    // The container is new, so each node is appended after the container's existing DOM content
+    // without consulting earlier siblings. Scripts and custom elements can detach earlier siblings
+    // synchronously; remove those once at the end instead of rescanning before every insertion.
+    while (parsedMarkup.firstChild) {
+      insertLogicalChild(parsedMarkup.firstChild, markupContainer, logicalSiblingIndex++, false);
     }
-
-    // Scripts and custom elements can remove previously inserted siblings synchronously.
-    // Drain mutation records before each insertion because observer callbacks run asynchronously.
-    let siblingsMayBeOrphaned = false;
-    const observer = new MutationObserver(records => {
-      if (records.some(record => record.removedNodes.length > 0)) {
-        siblingsMayBeOrphaned = true;
-      }
-    });
-    const observedParents = new Set<Node>();
-    const observeParent = (node: Node): boolean => {
-      const domParent = node.parentNode;
-      if (!domParent) {
-        return false;
-      }
-      if (!observedParents.has(domParent)) {
-        observer.observe(domParent, { childList: true });
-        observedParents.add(domParent);
-      }
-      return true;
-    };
-    observeParent(markupContainer as unknown as Node);
-
-    try {
-      while (parsedMarkup.firstChild) {
-        if (observer.takeRecords().some(record => record.removedNodes.length > 0)) {
-          siblingsMayBeOrphaned = true;
-        }
-        const checkForOrphans = siblingsMayBeOrphaned;
-        siblingsMayBeOrphaned = false;
-        if (checkForOrphans) {
-          getLogicalChildrenArray(markupContainer).forEach(sibling => observeParent(sibling as unknown as Node));
-        }
-
-        const child = parsedMarkup.firstChild;
-        insertLogicalChild(child, markupContainer, logicalSiblingIndex++, checkForOrphans);
-        if (!observeParent(child)) {
-          siblingsMayBeOrphaned = true;
-        }
-      }
-    } finally {
-      observer.disconnect();
-    }
+    removeOrphanedLogicalChildren(markupContainer);
   }
 
   private applyAttribute(batch: RenderBatch, componentId: number, toDomElement: Element, attributeFrame: RenderTreeFrame) {

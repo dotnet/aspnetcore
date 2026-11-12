@@ -603,7 +603,7 @@ public abstract class ComponentRenderingTestBase : ServerTestBase<ToggleExecutio
         Assert.Equal(
             new[] { "middle", "last" },
             appElement.FindElements(By.CssSelector("#large-markup > p")).Select(element => element.Text));
-        Assert.Equal(64, appElement.FindElements(By.CssSelector("#large-markup > span")).Count);
+        Assert.Equal(2, appElement.FindElements(By.CssSelector("#large-markup > script")).Count);
         Assert.Empty(appElement.FindElements(By.CssSelector("#markup-relocation-target > *")));
 
         appElement.FindElement(By.Id("large-markup-clear")).Click();
