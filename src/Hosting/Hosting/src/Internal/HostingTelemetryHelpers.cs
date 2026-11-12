@@ -17,6 +17,10 @@ namespace Microsoft.AspNetCore.Hosting;
 /// </summary>
 internal static class HostingTelemetryHelpers
 {
+    public const string SchemaUrl = "https://opentelemetry.io/schemas/1.45.0";
+
+    public const string ActivitySourceName = "Microsoft.AspNetCore";
+
     public const string AttributeHttpRequestMethod = "http.request.method";
     public const string AttributeHttpRequestMethodOriginal = "http.request.method_original";
     public const string AttributeHttpResponseStatusCode = "http.response.status_code";
@@ -32,6 +36,9 @@ internal static class HostingTelemetryHelpers
     public const string AttributeUserAgentOriginal = "user_agent.original";
     public const string AttributeNetworkProtocolVersion = "network.protocol.version";
     public const string AttributeErrorType = "error.type";
+
+    public static ActivitySource CreateActivitySource()
+        => new(new ActivitySourceOptions(ActivitySourceName) { TelemetrySchemaUrl = SchemaUrl });
 
     // The value "_OTHER" is used for non-standard HTTP methods.
     private const string OtherHttpMethod = "_OTHER";

@@ -19,7 +19,7 @@ internal sealed class HostingMetrics : IDisposable
 
     public HostingMetrics(IMeterFactory meterFactory)
     {
-        _meter = meterFactory.Create(MeterName);
+        _meter = meterFactory.Create(new MeterOptions(MeterName) { TelemetrySchemaUrl = HostingTelemetryHelpers.SchemaUrl });
 
         _activeRequestsCounter = _meter.CreateUpDownCounter<long>(
             "http.server.active_requests",

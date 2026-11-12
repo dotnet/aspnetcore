@@ -63,6 +63,7 @@ public class KestrelMetricsTests : TestApplicationErrorLoggerLoggedTest
         using var queuedConnections = new MetricCollector<long>(testMeterFactory, "Microsoft.AspNetCore.Server.Kestrel", "kestrel.queued_connections");
 
         var serviceContext = new TestServiceContext(LoggerFactory, metrics: new KestrelMetrics(testMeterFactory));
+        Assert.Equal("https://opentelemetry.io/schemas/1.45.0", Assert.Single(testMeterFactory.Meters).TelemetrySchemaUrl);
 
         var sendString = "POST / HTTP/1.0\r\nContent-Length: 12\r\n\r\nHello World?";
 
