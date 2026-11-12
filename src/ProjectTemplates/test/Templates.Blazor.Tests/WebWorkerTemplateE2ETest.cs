@@ -40,7 +40,7 @@ public class WebWorkerTemplateE2ETest(ProjectFactoryFixture projectFactory) : Bl
         }
     }
 
-    [Theory(Skip = "CoreCLR getAssemblyExports throws for assemblies without JS exports. Re-enable when the runtime issue is fixed.")]
+    [Theory]
     [InlineData(BrowserKind.Chromium)]
     public async Task WebWorkerTemplate_CanInvokeMethods(BrowserKind browserKind)
     {
@@ -55,7 +55,7 @@ public class WebWorkerTemplateE2ETest(ProjectFactoryFixture projectFactory) : Bl
         await TestWebWorkerInteraction(browserKind, aspNetProcess.ListeningUri.AbsoluteUri + "webworker-test");
     }
 
-    [Theory(Skip = "CoreCLR getAssemblyExports throws for assemblies without JS exports. Re-enable when the runtime issue is fixed.")]
+    [Theory]
     [InlineData(BrowserKind.Chromium)]
     public async Task WebWorkerTemplate_HandlesErrors(BrowserKind browserKind)
     {
@@ -70,7 +70,7 @@ public class WebWorkerTemplateE2ETest(ProjectFactoryFixture projectFactory) : Bl
         await TestWebWorkerErrorHandling(browserKind, aspNetProcess.ListeningUri.AbsoluteUri + "webworker-test");
     }
 
-    [Theory(Skip = "CoreCLR getAssemblyExports throws for assemblies without JS exports. Re-enable when the runtime issue is fixed.")]
+    [Theory]
     [InlineData(BrowserKind.Chromium)]
     public async Task WebWorkerTemplate_CanDisposeWorker(BrowserKind browserKind)
     {
@@ -85,7 +85,7 @@ public class WebWorkerTemplateE2ETest(ProjectFactoryFixture projectFactory) : Bl
         await TestWebWorkerDisposal(browserKind, aspNetProcess.ListeningUri.AbsoluteUri + "webworker-test");
     }
 
-    [Theory(Skip = "CoreCLR getAssemblyExports throws for assemblies without JS exports. Re-enable when the runtime issue is fixed.")]
+    [Theory]
     [InlineData(BrowserKind.Chromium)]
     public async Task WebWorkerTemplate_CanInvokeMethodsAfterPublish(BrowserKind browserKind)
     {

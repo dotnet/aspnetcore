@@ -4,14 +4,8 @@ let startupError = null;
 async function initialize(dotnetJsUrl, assemblyName) {
     try {
         const { dotnet } = await import(dotnetJsUrl);
-        const { getAssemblyExports, getConfig } = await dotnet.create();
-        const mainAssemblyName = getConfig().mainAssemblyName;
-
-        workerExports = { ...await getAssemblyExports(mainAssemblyName) };
-
-        if (assemblyName && assemblyName !== mainAssemblyName) {
-            workerExports = { ...workerExports, ...await getAssemblyExports(assemblyName) };
-        }
+        const { getAssemblyExports } = await dotnet.create();
+        workerExports = { ...await getAssemblyExports(assemblyName) };
 
         self.postMessage({ type: "ready" });
     } catch (err) {
