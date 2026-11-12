@@ -27,13 +27,13 @@ test('ReviewDispositionAcceptsExpectedSections', () =>
     ['case-01', 'DISCARDED', 'discarded'],
     ['case-02', 'NEW_FINDINGS', 'verified'],
     ['case-03', 'DISCARDED', 'discarded'],
-    ['case-04', 'UNRESOLVED', 'unresolved'],
+    ['case-04', 'DISCARDED', 'discarded'],
     ['case-06', 'UNRESOLVED', 'unresolved'],
   ])
   {
     assert.equal(score(name, review(section, confidence)), 1, name);
   }
-  for (const name of ['case-01', 'case-03'])
+  for (const name of ['case-01', 'case-03', 'case-04'])
   {
     assert.equal(score(name, review('DISCARDED', 'discarded', false)), 0, name);
   }
@@ -66,6 +66,17 @@ None.
 C1 was evaluated without running target tests.
 ## LIMITATIONS
 C1 uses frozen excerpts.`), 1);
+
+  assert.equal(score('case-02', `STATUS: FINDINGS
+## NEW_FINDINGS
+### C1: Request body is read without cancellation
+confidence: verified
+## EXISTING_FEEDBACK_COVERAGE
+None.
+## UNRESOLVED
+None.
+## DISCARDED
+None.`), 1);
 
   assert.equal(score('case-06', 'STATUS: FINDINGS  \n' + `- __NEW_FINDINGS__:
 - **C1 — [UNRESOLVED] Suppressing the diagnostic sink exception changes caller propagation.**

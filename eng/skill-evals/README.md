@@ -25,8 +25,9 @@ directories. A runtime skill may use a `fixtures` directory for non-eval assets.
 The standard `review-pull-request` suite uses frozen source and diff excerpts from
 ASP.NET Core PRs #70106, #69782, #70304, #69721, and #70299. These cover exact-input
 old/head comparison, constructor mapping versus a lower-layer head test, renderer
-disposal and issue intent, an unproven external browser-test path, and existing
-feedback on render-mode-dependent navigation. Each case carries its source roles,
+disposal and issue intent, a browser-test wrapper ordering that contradicts a
+claimed token-exchange dependency, and existing feedback on render-mode-dependent
+navigation. Each case carries its source roles,
 Git blob identities, original line ranges, and fixture SHA-256 hashes in
 `provenance.json`. Issue and feedback excerpts identify their captured public
 revision metadata. Neutral stimulus names and destination paths do not encode

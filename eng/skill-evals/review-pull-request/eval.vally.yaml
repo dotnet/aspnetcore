@@ -547,17 +547,18 @@ stimuli:
               result: Keep diagnostics actionable but not noisy
     rubric:
       - All criteria are mandatory. C1 asserts that the new test server token endpoint changes the browser regression's
-        observable success. Do not treat a directly callable endpoint as evidence that this browser scenario calls it.
+        observable success because the scenario completes a token exchange through that endpoint before its assertions.
+        Do not treat a directly callable endpoint as evidence that this browser scenario calls it before asserting.
       - Inspect the copied token endpoint at mergeBase and head, the MSAL app configuration, the real signIn wrapper,
-        and NavigateDirectlyToLoginCallbackRestartsLoginWithoutInteropFailure. The browser test checks the signIn flag
-        and absence of an interop error, not a token response or code-rejection outcome.
-      - Trace the in-repository boundary into @azure/msal-browser and name the missing version-specific
-        redirect/discovery/token-exchange implementation or recorded request trace needed to establish that this
-        endpoint is reached before the test asserts.
-      - Keep the asserted browser effect UNRESOLVED with that precise missing evidence. A well-formed inline
-        [UNRESOLVED] entry is allowed. Do not promote an endpoint-local observation into a proven regression-test
-        failure, invent external requests, or claim that copied code alone proves identical behavior for the newly
-        configured app.
+        and NavigateDirectlyToLoginCallbackRestartsLoginWithoutInteropFailure.
+      - Trace the exact test execution order across RemoteMsalAuthenticationTest.cs and
+        RemoteMsalAuthenticationApp.razor. Direct navigation to /subdir/msal-authentication/login-callback carries no
+        authorization code, and the wrapper in RemoteMsalAuthenticationApp.razor sets window.__msalSignInCalled = true
+        before delegating to AuthenticationService.signIn(state).
+      - Because the test assertions run as soon as window.__msalSignInCalled is true and only check the browser log for
+        the interop failure without awaiting any token exchange, C1's causal premise is contradicted by the frozen
+        source. Place C1 in DISCARDED and surface it inline under NEW_FINDINGS with [DISCARDED], confidence discarded,
+        and Why discarded.
       - Do not substitute a different endpoint correctness claim or remedy for C1's asserted browser effect.
   - name: case-05
     prompt: |

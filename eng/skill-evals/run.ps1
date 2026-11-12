@@ -408,13 +408,22 @@ switch ($Action) {
         }
 
         $vallyArguments += $Arguments
+        $existingRunDirectoryNames = [Collections.Generic.HashSet[string]]::new([StringComparer]::Ordinal)
+        if ($selectedSuite -eq 'review-candidate-verifier' -and (Test-Path $output -PathType Container)) {
+            foreach ($directory in Get-ChildItem $output -Directory -ErrorAction SilentlyContinue) {
+                [void]$existingRunDirectoryNames.Add($directory.Name)
+            }
+        }
         $invocationCompleted = $false
         try {
             Invoke-VallyIsolated $vallyArguments
             $invocationCompleted = $true
         } finally {
             if ($selectedSuite -eq 'review-candidate-verifier') {
-                $runDirectories = @(Get-ChildItem $output -Directory -ErrorAction SilentlyContinue)
+                $runDirectories = @(
+                    Get-ChildItem $output -Directory -ErrorAction SilentlyContinue |
+                        Where-Object { -not $existingRunDirectoryNames.Contains($_.Name) }
+                )
                 if ($runDirectories.Count -eq 1 -and
                     (Test-Path (Join-Path $runDirectories[0].FullName 'results.jsonl'))) {
                     @{

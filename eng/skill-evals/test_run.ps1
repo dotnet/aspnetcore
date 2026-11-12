@@ -216,6 +216,7 @@ if ($args[0] -eq 'eval' -and ($args -join ' ') -like '*review-candidate-verifier
 
     foreach ($smoke in @($false, $true)) {
         $componentOutput = Join-Path $testRoot "component-$smoke"
+        New-Item -ItemType Directory -Path (Join-Path $componentOutput '2025-12-31T00-00-00') -Force | Out-Null
         $options = @{ Suite = 'review-candidate-verifier'; Vally = $fakeVally; VallyPrefix = @(); OutputDirectory = $componentOutput }
         if ($smoke) {
             $options.Experiment = 'eng/skill-evals/skills-smoke.experiment.yaml'

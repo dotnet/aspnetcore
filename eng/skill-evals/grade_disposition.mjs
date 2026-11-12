@@ -8,7 +8,7 @@ const reviewCases = {
   'case-01': { section: 'DISCARDED', confidence: 'discarded' },
   'case-02': { section: 'NEW_FINDINGS', confidence: 'verified' },
   'case-03': { section: 'DISCARDED', confidence: 'discarded' },
-  'case-04': { section: 'UNRESOLVED', confidence: 'unresolved' },
+  'case-04': { section: 'DISCARDED', confidence: 'discarded' },
   'case-05': { section: 'EXISTING_FEEDBACK_COVERAGE', thread: 'discussion_r4487936812' },
   'case-06': { section: 'UNRESOLVED', confidence: 'unresolved' },
 };
@@ -144,7 +144,7 @@ function gradeReview(name, output)
       section = heading;
       sections.set(section, '');
     }
-    else if (/^#{1,6}\s+/.test(line.trim()) || topLevelFields.includes(fieldName))
+    else if (topLevelFields.includes(fieldName) || (/^#{1,6}\s+/.test(line.trim()) && !/\bC1\b/.test(heading)))
     {
       section = undefined;
     }
