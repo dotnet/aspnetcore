@@ -1,0 +1,5 @@
+# Keep frozen hashes stable across platforms without rewriting upstream source
+# whitespace or the space-only context lines in unified diffs.
+*.source text eol=lf whitespace=-blank-at-eol,-blank-at-eof
+*.diff text eol=lf whitespace=-blank-at-eol,-blank-at-eof
+*.json text eol=lf

@@ -40,6 +40,7 @@ on:
         default: review-public-api
         options:
           - review-public-api
+          - review-pull-request
           - review-candidate-verifier
           - validate-blazor-feature
       run_type:
