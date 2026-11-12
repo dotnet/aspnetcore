@@ -97,7 +97,7 @@ export function captureNavigationFocus(root: LogicalElement): PendingNavigationF
     return null;
   }
 
-  if (!findElementInLogicalRoot(root, element => element === focus.element)) {
+  if (!isInLogicalRoot(getElementsInLogicalRoot(root), focus.element)) {
     return null;
   }
 
@@ -110,8 +110,10 @@ export function restoreNavigationFocus(focus: PendingNavigationFocus): void {
     return;
   }
 
-  const replacement = findElementInLogicalRoot(focus.root, element => element.matches(focus.selector));
-  if (!replacement || !replacement.isConnected) {
+  // Match FocusOnNavigate's document.querySelector order, limited to the replaced root.
+  const rootElements = getElementsInLogicalRoot(focus.root);
+  const replacement = Array.from(document.querySelectorAll(focus.selector)).find(element => isInLogicalRoot(rootElements, element));
+  if (!replacement) {
     return;
   }
 
@@ -135,14 +137,26 @@ function canRestoreFocus(focus: PendingNavigationFocus): boolean {
     && focus.owner.getAttribute('selector') === focus.selector;
 }
 
-function findElementInLogicalRoot(root: LogicalElement, predicate: (element: Element) => boolean): Element | null {
+function getElementsInLogicalRoot(root: LogicalElement): Set<Element> {
+  const elements = new Set<Element>();
   for (const child of depthFirstNodeTreeTraversal(root)) {
-    if (child !== root && child instanceof Element && predicate(child)) {
-      return child;
+    if (child !== root && child instanceof Element) {
+      elements.add(child);
     }
   }
 
-  return null;
+  return elements;
+}
+
+// Elements inserted from static markup are not part of the logical tree, so check DOM ancestry.
+function isInLogicalRoot(rootElements: Set<Element>, element: Element): boolean {
+  for (let current: Element | null = element; current; current = current.parentElement) {
+    if (rootElements.has(current)) {
+      return true;
+    }
+  }
+
+  return false;
 }
 
 class FocusOnNavigateElement extends HTMLElement {
