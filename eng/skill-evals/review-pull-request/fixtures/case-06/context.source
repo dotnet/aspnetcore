@@ -1,0 +1,40 @@
+Selected scenario
+Construct ConversationEngine with FailingClient and ThrowingDiagnosticSink.
+Register StatusObserver.OnStatusChanged, then await SendMessageAsync.
+These are the only implementations in scope for this bounded scenario.
+
+Originating issue
+Report conversation-processing failures through the configured diagnostic sink.
+
+Target-base contract
+Processing failures are exposed in Error and the Error status; notify status observers.
+
+PR rationale and test
+The author says the nested catch preserves successful task completion.
+A new test awaits SendMessageAsync and asserts that Error is the client's Failure.
+Its complete implementation follows below.
+
+Existing feedback
+None.
+
+using System.Threading.Tasks;
+using Xunit;
+
+public class ConversationEngineTests
+{
+    [Fact]
+    public async Task ProcessingFailureIsExposed()
+    {
+        var client = new FailingClient();
+        var sink = new ThrowingDiagnosticSink();
+        var observer = new StatusObserver();
+        var engine = new ConversationEngine(client, sink);
+        engine.StatusChanged += observer.OnStatusChanged;
+
+        await engine.SendMessageAsync();
+
+        Assert.Same(client.Failure, engine.Error);
+        Assert.Equal("Error", engine.Status);
+        Assert.Equal(1, observer.NotificationCount);
+    }
+}
