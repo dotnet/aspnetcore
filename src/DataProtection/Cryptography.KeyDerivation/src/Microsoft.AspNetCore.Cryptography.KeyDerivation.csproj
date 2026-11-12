@@ -13,7 +13,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <Reference Include="Microsoft.AspNetCore.Cryptography.Internal" />
+    <ProjectReference Include="$(RepoRoot)src\DataProtection\Cryptography.Internal\src\Microsoft.AspNetCore.Cryptography.Internal.csproj" />
   </ItemGroup>
 
   <ItemGroup>

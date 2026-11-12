@@ -37,12 +37,13 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Reference Include="Microsoft.AspNetCore.Components.Web" />
-    <Reference Include="Microsoft.Extensions.Configuration.Json" />
-    <Reference Include="Microsoft.Extensions.Configuration.Binder" />
-    <Reference Include="Microsoft.Extensions.FileProviders.Embedded" />
-    <Reference Include="Microsoft.Extensions.FileProviders.Composite" />
-    <Reference Include="Microsoft.Extensions.Logging" />
+    <PackageReference Include="Microsoft.Extensions.Configuration.Binder" />
+    <PackageReference Include="Microsoft.Extensions.Configuration.Json" />
+    <PackageReference Include="Microsoft.Extensions.FileProviders.Composite" />
+    <PackageReference Include="Microsoft.Extensions.Logging" />
+
+    <ProjectReference Include="$(RepoRoot)src\Components\Web\src\Microsoft.AspNetCore.Components.Web.csproj" />
+    <ProjectReference Include="$(RepoRoot)src\FileProviders\Embedded\src\Microsoft.Extensions.FileProviders.Embedded.csproj" />
   </ItemGroup>
 
   <!-- This workaround is required when referencing FileProviders.Embedded as a project -->

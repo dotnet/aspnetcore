@@ -31,9 +31,9 @@
     <Compile Include="..\Shared\Legacy.cs" Link="Internal\Shared\Legacy.cs" />
     <Compile Include="$(SharedSourceRoot)ValueTaskExtensions\**\*.cs" LinkBase="Internal\Shared" />
 
-    <Reference Include="Google.Api.CommonProtos" />
-    <Reference Include="Google.Protobuf" />
-    <Reference Include="Grpc.AspNetCore.Server" />
+    <PackageReference Include="Google.Api.CommonProtos" />
+    <PackageReference Include="Google.Protobuf" />
+    <PackageReference Include="Grpc.AspNetCore.Server" />
 
     <!-- Enforce build order. -->
     <ProjectReference Include="$(RepoRoot)\src\Framework\App.Ref\src\Microsoft.AspNetCore.App.Ref.sfxproj"

@@ -14,7 +14,7 @@ public class HostFilteringOptions
     /// <remarks>
     /// <list type="bullet">
     /// <item><description>Port numbers must be excluded.</description></item>
-    /// <item><description>A top level wildcard "*" allows all non-empty hosts.</description></item>
+    /// <item><description>A top level wildcard "*" allows all non-empty hosts. The "Any" address literals "0.0.0.0" (IPv4) and "[::]" (IPv6) are treated the same as "*".</description></item>
     /// <item><description>Subdomain wildcards are permitted. E.g. "*.example.com" matches subdomains like foo.example.com,
     ///    but not the parent domain example.com.</description></item>
     /// <item><description>Unicode host names are allowed but will be converted to punycode for matching.</description></item>

@@ -26,6 +26,8 @@ internal sealed class DefaultPolicy : IOutputCachePolicy
         context.AllowCacheLookup = attemptOutputCaching;
         context.AllowCacheStorage = attemptOutputCaching;
         context.AllowLocking = true;
+        // Snapshot for ServeResponseAsync, which must only block users authenticated after this point (e.g. auth middleware after output caching).
+        context.IsAuthenticatedOnRequest = SecurityHelper.IsAuthenticated(context.HttpContext.User);
 
         // Vary by any query by default
         context.CacheVaryByRules.QueryKeys = "*";
@@ -51,7 +53,8 @@ internal sealed class DefaultPolicy : IOutputCachePolicy
             return ValueTask.CompletedTask;
         }
 
-        if (SecurityHelper.IsAuthenticated(context.HttpContext.User))
+        // Users already authenticated on request were handled in CacheRequestAsync and may have been explicitly allowed by later policies.
+        if (!context.IsAuthenticatedOnRequest && SecurityHelper.IsAuthenticated(context.HttpContext.User))
         {
             context.AllowCacheStorage = false;
             return ValueTask.CompletedTask;

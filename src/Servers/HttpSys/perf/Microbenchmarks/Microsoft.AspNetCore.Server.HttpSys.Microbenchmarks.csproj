@@ -11,8 +11,9 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <Reference Include="BenchmarkDotNet" />
-    <Reference Include="Microsoft.AspNetCore.Server.HttpSys" />
+    <PackageReference Include="BenchmarkDotNet" />
+
+    <ProjectReference Include="$(RepoRoot)src\Servers\HttpSys\src\Microsoft.AspNetCore.Server.HttpSys.csproj" />
   </ItemGroup>
   
   <ItemGroup>

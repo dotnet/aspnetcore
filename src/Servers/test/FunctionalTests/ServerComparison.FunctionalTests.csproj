@@ -21,10 +21,11 @@
       ReferenceOutputAssembly="false"
       SkipGetTargetFrameworkProperties="true" />
 
-    <Reference Include="Microsoft.Extensions.Logging" />
-    <Reference Include="Microsoft.Net.Http.Headers" />
-    <Reference Include="Serilog.Extensions.Logging" />
-    <Reference Include="Serilog.Sinks.File" />
+    <PackageReference Include="Microsoft.Extensions.Logging" />
+    <PackageReference Include="Serilog.Extensions.Logging" />
+    <PackageReference Include="Serilog.Sinks.File" />
+
+    <ProjectReference Include="$(RepoRoot)src\Http\Headers\src\Microsoft.Net.Http.Headers.csproj" />
   </ItemGroup>
 
 </Project>

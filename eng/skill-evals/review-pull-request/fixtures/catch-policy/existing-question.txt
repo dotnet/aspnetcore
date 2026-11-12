@@ -1,0 +1,23 @@
+Selected scenario
+Construct ConversationEngine with FailingClient and ThrowingDiagnosticSink.
+Register StatusObserver.OnStatusChanged, then await SendMessageAsync.
+These are the only implementations in scope for this bounded scenario.
+
+Originating issue
+Report conversation-processing failures through the configured diagnostic sink.
+
+Target-base contract
+Processing failures are exposed in Error and the Error status; notify status observers.
+No target-base policy specifies whether diagnostic sink failures must propagate or
+be suppressed. No additional primary contract evidence is available.
+
+PR rationale and test
+The author says the nested catch preserves successful task completion.
+A new test awaits SendMessageAsync and asserts that Error is the client's Failure.
+Its complete implementation is in ConversationEngineTests.cs.source.
+
+Existing feedback
+Thread feedback-17, on the newly added inner catch in ConversationEngine.cs:
+"This empty handler swallows any exception thrown by the diagnostic sink, so the
+caller never observes a sink failure. Should sink failures propagate instead?"
+No reply or resolution is available.
