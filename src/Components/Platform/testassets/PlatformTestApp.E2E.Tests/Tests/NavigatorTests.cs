@@ -93,7 +93,7 @@ public partial class NavigatorTests : BrowserTest
     [TestMethod]
     public async Task Window_ReportsNetworkChanges()
     {
-        // Going offline would also cut the Interactive Server circuit, so this runs in WebAssembly only.
+        // Going offline also stalls the Interactive Server circuit, and the events would reach .NET only after it resumes.
         await NavigateAsync("/navigator-wasm", "#watch-online-state");
         var onlineStateEvent = _page.Locator("#online-state-event");
         await RunAsync("#watch-online-state", "Watch online and offline: added");

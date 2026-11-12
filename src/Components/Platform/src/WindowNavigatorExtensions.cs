@@ -17,12 +17,22 @@ public static class WindowNavigatorExtensions
         /// Gets the event that fires when the browser gains access to the network,
         /// so that <see cref="Navigator.GetOnLineAsync"/> returns <see langword="true"/>.
         /// </summary>
+        /// <remarks>
+        /// In the interactive server render mode, the listener runs on the server. If the connection to the server
+        /// was lost while the browser was offline, the event fires before that connection is restored, and the
+        /// listener does not receive it.
+        /// </remarks>
         public static EventType<Window, Event> OnlineEvent => _onlineEvent;
 
         /// <summary>
         /// Gets the event that fires when the browser loses access to the network,
         /// so that <see cref="Navigator.GetOnLineAsync"/> returns <see langword="false"/>.
         /// </summary>
+        /// <remarks>
+        /// In the interactive server render mode, the listener runs on the server, which the browser cannot reach
+        /// while it is offline. The listener receives the event only after the network comes back, or not at all
+        /// if the connection to the server was lost.
+        /// </remarks>
         public static EventType<Window, Event> OfflineEvent => _offlineEvent;
     }
 
