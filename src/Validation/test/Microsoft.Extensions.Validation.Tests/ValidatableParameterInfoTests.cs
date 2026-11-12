@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.ComponentModel.DataAnnotations;
+using System.Diagnostics;
 using System.Reflection;
 
 namespace Microsoft.Extensions.Validation.Tests;
@@ -111,6 +112,29 @@ public class ValidatableParameterInfoTests : ValidationTestBase
     [Theory]
     [InlineData(true)]
     [InlineData(false)]
+    public async Task Validate_WithEnumerableOfValidatableType_ValidatesEachItem_AccessingValidationErrorsDoesNotCopy(bool useAsync)
+    {
+        var (provider, options) = GeneratedValidationTestHelpers.CreateValidationServices();
+        var parameterInfo = GetParameter(nameof(ParameterActions.PeopleParameter));
+        Assert.True(options.TryGetValidatableParameterInfo(parameterInfo, out var paramInfo));
+        var context = GeneratedValidationTestHelpers.CreateContext(provider, options);
+
+        var array = new ParameterPerson[10000];
+        for (var i = 0; i < array.Length; i++)
+        {
+            array[i] = new ParameterPerson();
+        }
+
+        await ValidateAsync(paramInfo, array, context, useAsync, default);
+
+        Assert.NotNull(context.ValidationErrors);
+        Assert.True(ReferenceEquals(context.ValidationErrors, context.ValidationErrors));
+        Assert.Equal(array.Length, context.ValidationErrors.Count);
+    }
+
+    [Theory]
+    [InlineData(true)]
+    [InlineData(false)]
     public async Task Validate_MultipleErrorsOnSameParameter_CollectsAllErrors(bool useAsync)
     {
         var (provider, options) = GeneratedValidationTestHelpers.CreateValidationServices();
@@ -156,37 +180,6 @@ public class ValidatableParameterInfoTests : ValidationTestBase
 
         Assert.Equal("Test exception", ex.Message);
         Assert.True(context.ValidationErrors is null || context.ValidationErrors.Count == 0);
-    }
-
-    [Theory]
-    [InlineData(true)]
-    [InlineData(false)]
-    public async Task ValidationErrors_ReturnsImmutableCollections(bool useAsync)
-    {
-        var (provider, options) = GeneratedValidationTestHelpers.CreateValidationServices();
-        var parameterInfo = GetParameter(nameof(ParameterActions.RequiredParameter));
-        Assert.True(options.TryGetValidatableParameterInfo(parameterInfo, out var paramInfo));
-        var context = GeneratedValidationTestHelpers.CreateContext(provider, options);
-
-        await ValidateAsync(paramInfo, null, context, useAsync, default);
-
-        var errors = context.ValidationErrors;
-        Assert.NotNull(errors);
-
-        // The outer dictionary must not be castable to a mutable Dictionary
-        Assert.False(errors is Dictionary<string, IReadOnlyList<ValidationError>>);
-
-        // The value lists must not be castable to a mutable List<ValidationError>
-        var value = Assert.Single(errors).Value;
-        Assert.False(value is List<ValidationError>);
-
-        // Attempting to mutate the outer dictionary must throw
-        Assert.Throws<NotSupportedException>(() =>
-            ((IDictionary<string, IReadOnlyList<ValidationError>>)errors)["newKey"] = []);
-
-        // Attempting to mutate a value list must throw
-        Assert.Throws<NotSupportedException>(() =>
-            ((IList<ValidationError>)value).Add(new ValidationError { Name = "x", Path = "x", ErrorMessage = "x", Container = null }));
     }
 
     private static ParameterInfo GetParameter(string methodName)

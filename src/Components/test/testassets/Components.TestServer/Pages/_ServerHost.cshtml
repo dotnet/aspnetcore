@@ -75,6 +75,12 @@
                 onConnectionUp: () => { window.navigationReconnectionDisconnected = false; },
             } : undefined,
             configureSignalR: builder => {
+                if (query.has('longPollingAuthenticationRefresh')) {
+                    builder
+                        .withUrl('_blazor-long-polling-auth-refresh', 4)
+                        .withAuthenticationRefresh({ enableAutoRefresh: false });
+                }
+
                 if (query.has('captureAuthenticationRefresh')) {
                     const build = builder.build.bind(builder);
                     builder.build = () => {

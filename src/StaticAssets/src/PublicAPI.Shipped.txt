@@ -4,6 +4,8 @@ Microsoft.AspNetCore.StaticAssets.Infrastructure.StaticAssetsEndpointDataSourceH
 Microsoft.AspNetCore.StaticAssets.StaticAssetDescriptor
 Microsoft.AspNetCore.StaticAssets.StaticAssetDescriptor.AssetPath.get -> string!
 Microsoft.AspNetCore.StaticAssets.StaticAssetDescriptor.AssetPath.set -> void
+Microsoft.AspNetCore.StaticAssets.StaticAssetDescriptor.Order.get -> string?
+Microsoft.AspNetCore.StaticAssets.StaticAssetDescriptor.Order.set -> void
 Microsoft.AspNetCore.StaticAssets.StaticAssetDescriptor.Properties.get -> System.Collections.Generic.IReadOnlyList<Microsoft.AspNetCore.StaticAssets.StaticAssetProperty!>!
 Microsoft.AspNetCore.StaticAssets.StaticAssetDescriptor.Properties.set -> void
 Microsoft.AspNetCore.StaticAssets.StaticAssetDescriptor.ResponseHeaders.get -> System.Collections.Generic.IReadOnlyList<Microsoft.AspNetCore.StaticAssets.StaticAssetResponseHeader!>!

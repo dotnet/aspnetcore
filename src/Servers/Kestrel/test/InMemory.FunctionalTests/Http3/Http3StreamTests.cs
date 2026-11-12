@@ -123,6 +123,31 @@ public class Http3StreamTests : Http3TestBase
         Assert.Equal("0", responseHeaders["content-length"]);
     }
 
+    [Theory]
+    [InlineData(3)]
+    [InlineData(7)]
+    public async Task NonAsciiMethodStart_Reset(int length)
+    {
+        var method = "\u0100" + new string('A', length - 1);
+        var headers = new[]
+        {
+            new KeyValuePair<string, string>(InternalHeaderNames.Method, method),
+            new KeyValuePair<string, string>(InternalHeaderNames.Path, "/"),
+            new KeyValuePair<string, string>(InternalHeaderNames.Scheme, "http"),
+            new KeyValuePair<string, string>(InternalHeaderNames.Authority, "localhost:80"),
+        };
+
+        var requestStream = await Http3Api.InitializeConnectionAndStreamsAsync(_echoApplication, headers: null);
+        var headersEnumerator = requestStream.GetHeadersEnumerator(headers);
+        headersEnumerator.EncodingSelector = _ => Encoding.UTF8;
+        await requestStream.SendHeadersAsync(headersEnumerator, endStream: true);
+
+        await requestStream.WaitForStreamErrorAsync(
+            Http3ErrorCode.ProtocolError,
+            AssertExpectedErrorMessages,
+            CoreStrings.FormatHttp3ErrorMethodInvalid(method));
+    }
+
     [Fact]
     public async Task RequestHeadersMaxRequestHeaderFieldSize_EndsStream()
     {
