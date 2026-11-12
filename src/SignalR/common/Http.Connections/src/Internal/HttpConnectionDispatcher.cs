@@ -47,6 +47,8 @@ internal sealed partial class HttpConnectionDispatcher
     private readonly HttpConnectionsMetrics _metrics;
     private readonly ILogger _logger;
     private const int _protocolVersion = 1;
+    private const string AuthenticationRefreshRequiredError = "authentication_refresh_required";
+    private const string ConnectionTokenHeaderName = "X-SignalR-Connection-Token";
 
     // This should be kept in sync with CookieAuthenticationHandler
     private const string HeaderValueNoCache = "no-cache";
@@ -157,8 +159,9 @@ internal sealed partial class HttpConnectionDispatcher
             return;
         }
 
-        // Get connection token from query string (same pattern as send/poll/delete)
-        var connectionToken = GetConnectionToken(context);
+        // Unlike transport requests, /refresh requires the private connection token in a non-safelisted
+        // header so a cross-origin browser request must successfully complete a CORS preflight.
+        var connectionToken = context.Request.Headers[ConnectionTokenHeaderName];
         if (StringValues.IsNullOrEmpty(connectionToken))
         {
             await WriteRefreshErrorAsync(context, StatusCodes.Status400BadRequest, "missing_connection_token");
@@ -190,9 +193,20 @@ internal sealed partial class HttpConnectionDispatcher
         // the transition is valid.
         var authResult = context.Features.Get<IAuthenticateResultFeature>()?.AuthenticateResult;
         var newPrincipal = authResult?.Principal ?? context.User;
-        if (HasWindowsIdentity(connection.User) || HasWindowsIdentity(newPrincipal))
+        if (connection.HasWindowsIdentityUser || HasWindowsIdentity(newPrincipal))
         {
             await WriteRefreshErrorAsync(context, StatusCodes.Status400BadRequest, "windows_identity_not_supported");
+            return;
+        }
+
+        // Before the first transport request establishes connection.User, the negotiate principal is the
+        // connection identity. Authentication refresh policies must not bypass that initial binding.
+        if (connection.User is null
+            && connection.HasNegotiatedUser
+            && !connection.IsUserAssociatedWithConnection(newPrincipal))
+        {
+            LogUserChanged(connection.User, newPrincipal);
+            await WriteRefreshErrorAsync(context, StatusCodes.Status403Forbidden, "user_changed");
             return;
         }
 
@@ -216,6 +230,18 @@ internal sealed partial class HttpConnectionDispatcher
         {
             Log.AuthenticationRefreshRejectedByCallback(_logger, connection.ConnectionId);
             await WriteRefreshErrorAsync(context, StatusCodes.Status403Forbidden, "permission_change_rejected");
+            return;
+        }
+
+        // A token that never replaced the connection's principal - because it was idempotent, stale, or
+        // superseded while the refresh policies were awaited - was never accepted by those policies, so it
+        // can't stand in for the connection's identity check. A same-user refresh still passes; only a
+        // caller who isn't the connection's user is rejected.
+        if (updateResult != HttpConnectionContext.UserUpdateResult.Updated
+            && !connection.IsUserAssociatedWithConnection(newPrincipal))
+        {
+            LogUserChanged(connection.User, newPrincipal);
+            await WriteRefreshErrorAsync(context, StatusCodes.Status403Forbidden, "user_changed");
             return;
         }
 
@@ -542,7 +568,7 @@ internal sealed partial class HttpConnectionDispatcher
         HttpConnectionContext? connection = null;
         if (error == null)
         {
-            connection = CreateConnection(options, clientProtocolVersion, useStatefulReconnect, endpointMetadata);
+            connection = CreateConnection(options, clientProtocolVersion, useStatefulReconnect, endpointMetadata, context.User);
         }
 
         // Set the Connection ID on the logging scope so that logs from now on will have the
@@ -656,6 +682,13 @@ internal sealed partial class HttpConnectionDispatcher
         if (connection == null)
         {
             // No such connection, GetConnection already set the response status code
+            return;
+        }
+
+        // Client should send the Poll or EventSource before sending
+        if (connection.TransportType is HttpTransportType.None)
+        {
+            context.Response.StatusCode = StatusCodes.Status400BadRequest;
             return;
         }
 
@@ -792,6 +825,13 @@ internal sealed partial class HttpConnectionDispatcher
             return false;
         }
 
+        if (connection.HasNegotiatedUser
+            && (connection.User is null || connection.TransportType is HttpTransportType.None)
+            && await RejectIfConnectionUserChangedAsync(connection, context))
+        {
+            return false;
+        }
+
         switch (connection.TrySetTransport(transportType, _metrics))
         {
             case HttpConnectionContext.SetTransportState.Success:
@@ -847,8 +887,17 @@ internal sealed partial class HttpConnectionDispatcher
                 // Only a genuinely changed, non-stale token runs the policies; an idempotent or stale token
                 // keeps the connection's current principal and expiration.
                 userRefreshHandled = true;
+                var userRefreshApplied = false;
                 if (principalChanged && !stale)
                 {
+                    if (transportType == HttpTransportType.LongPolling
+                        && !options.UseLegacyLongPollingAuthenticationRefresh
+                        && !connection.IsUserAssociatedWithConnection(newPrincipal))
+                    {
+                        await WriteRefreshErrorAsync(context, StatusCodes.Status409Conflict, AuthenticationRefreshRequiredError);
+                        return false;
+                    }
+
                     var updateResult = await connection.UpdateUserAsync(
                         newPrincipal,
                         newExpiration,
@@ -867,6 +916,20 @@ internal sealed partial class HttpConnectionDispatcher
                         connection.DisposeAndRemoveTask = _manager.DisposeAndRemoveAsync(connection, closeGracefully: false, HttpConnectionStopStatus.NormalClosure);
                         return false;
                     }
+
+                    userRefreshApplied = updateResult == HttpConnectionContext.UserUpdateResult.Updated;
+                }
+
+                // A token that never replaced the connection's principal - because it was idempotent, stale,
+                // or superseded while the refresh policies were awaited - was never accepted by those
+                // policies, so it can't stand in for the connection's identity check. Without this, any
+                // authenticated caller holding the connection token could attach to another user's
+                // connection just by presenting a shorter-lived credential, and could even activate a
+                // different endpoint's application while the real owner's first request is still awaiting
+                // its refresh policy.
+                if (!userRefreshApplied && await RejectIfConnectionUserChangedAsync(connection, context))
+                {
+                    return false;
                 }
             }
         }
@@ -923,7 +986,7 @@ internal sealed partial class HttpConnectionDispatcher
             }
 
             // Setup the connection state from the http context
-            connection.User = connection.HttpContext?.User;
+            connection.SetUserAndReleaseNegotiatedUser(connection.HttpContext?.User);
 
             if (transportType == HttpTransportType.LongPolling && connection.User?.Identity is WindowsIdentity)
             {
@@ -1003,38 +1066,7 @@ internal sealed partial class HttpConnectionDispatcher
 
     private static void CloneUser(HttpContext newContext, HttpContext oldContext)
     {
-        // If the identity is a WindowsIdentity we need to clone the User.
-        // This is because the WindowsIdentity uses SafeHandle's which are disposed at the end of the request
-        // and accessing the identity can happen outside of the request scope.
-        if (oldContext.User.Identity is WindowsIdentity windowsIdentity)
-        {
-            var skipFirstIdentity = false;
-            if (OperatingSystem.IsWindows() && oldContext.User is WindowsPrincipal)
-            {
-                // We want to explicitly create a WindowsPrincipal instead of a ClaimsPrincipal
-                // so methods that WindowsPrincipal overrides like 'IsInRole', work as expected.
-                newContext.User = new WindowsPrincipal((WindowsIdentity)(windowsIdentity.Clone()));
-                skipFirstIdentity = true;
-            }
-            else
-            {
-                newContext.User = new ClaimsPrincipal();
-            }
-
-            foreach (var identity in oldContext.User.Identities)
-            {
-                if (skipFirstIdentity)
-                {
-                    skipFirstIdentity = false;
-                    continue;
-                }
-                newContext.User.AddIdentity(identity.Clone());
-            }
-        }
-        else
-        {
-            newContext.User = oldContext.User;
-        }
+        newContext.User = HttpConnectionContext.CloneUserIfNeeded(oldContext.User, out _);
     }
 
     private static void CloneHttpContext(HttpContext context, HttpConnectionContext connection)
@@ -1124,8 +1156,8 @@ internal sealed partial class HttpConnectionDispatcher
 
     private void LogUserChanged(ClaimsPrincipal? originalUser, ClaimsPrincipal newUser)
     {
-        var originalIdentity = originalUser is null ? null : HttpConnectionContext.GetUserIdentityKey(originalUser);
-        var newIdentity = HttpConnectionContext.GetUserIdentityKey(newUser);
+        var originalIdentity = originalUser is null ? null : UserIdentitySnapshot.GetUserIdentityKey(originalUser);
+        var newIdentity = UserIdentitySnapshot.GetUserIdentityKey(newUser);
         Log.UserNameChangedRejected(_logger, originalIdentity?.Value, newIdentity?.Value);
     }
 
@@ -1188,6 +1220,16 @@ internal sealed partial class HttpConnectionDispatcher
         HttpConnectionEndpointMetadata? endpointMetadata = null)
     {
         return _manager.CreateConnection(options, clientProtocolVersion, useStatefulReconnect, endpointMetadata);
+    }
+
+    private HttpConnectionContext CreateConnection(
+        HttpConnectionDispatcherOptions options,
+        int clientProtocolVersion,
+        bool useStatefulReconnect,
+        HttpConnectionEndpointMetadata? endpointMetadata,
+        ClaimsPrincipal? negotiatedUser)
+    {
+        return _manager.CreateConnection(options, clientProtocolVersion, useStatefulReconnect, endpointMetadata, negotiatedUser);
     }
 
     private static void AddNoCacheHeaders(HttpResponse response)

@@ -1097,6 +1097,27 @@ public class HttpLoggingMiddlewareTests : LoggedTest
     }
 
     [Fact]
+    public async Task ResponseBodyWritingWorksWhenStreamIsReused()
+    {
+        var options = CreateOptionsAccessor();
+        options.CurrentValue.LoggingFields = HttpLoggingFields.ResponseBody;
+        var responseNumber = 0;
+        var middleware = CreateMiddleware(
+            c =>
+            {
+                c.Response.ContentType = "text/plain";
+                return c.Response.WriteAsync($"Response {++responseNumber}");
+            },
+            options);
+
+        await middleware.Invoke(new DefaultHttpContext());
+        await middleware.Invoke(new DefaultHttpContext());
+
+        Assert.Contains(TestSink.Writes, w => w.Message.Contains("Response 1"));
+        Assert.Contains(TestSink.Writes, w => w.Message.Contains("Response 2"));
+    }
+
+    [Fact]
     public async Task ResponseBodyNotLoggedIfEmpty()
     {
         var options = CreateOptionsAccessor();
