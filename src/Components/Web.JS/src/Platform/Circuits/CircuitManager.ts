@@ -1,7 +1,7 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-import { internalFunctions as navigationManagerFunctions } from '../../Services/NavigationManager';
+import { internalFunctions as navigationManagerFunctions, resetLastLocationChange, wasLastLocationChangeIntercepted } from '../../Services/NavigationManager';
 import { toLogicalRootCommentElement, LogicalElement, toLogicalElement } from '../../Rendering/LogicalElements';
 import { ServerComponentDescriptor, descriptorToMarker, discoverServerPersistedState } from '../../Services/ComponentDescriptorDiscovery';
 import { HttpTransportType, HubConnection, HubConnectionBuilder, HubConnectionState, LogLevel } from '@microsoft/signalr';
@@ -115,6 +115,7 @@ export class CircuitManager implements DotNet.DotNetCallDispatcher {
 
     const componentsJson = JSON.stringify(this._componentManager.initialComponents.map(c => descriptorToMarker(c)));
     this._startCircuitUri = navigationManagerFunctions.getLocationHref();
+    resetLastLocationChange();
     this._circuitId = await this._connection.invoke<string>(
       'StartCircuit',
       navigationManagerFunctions.getBaseURI(),
@@ -540,7 +541,7 @@ export class CircuitManager implements DotNet.DotNetCallDispatcher {
     this._startCircuitUri = undefined;
     const uri = navigationManagerFunctions.getLocationHref();
     if (startCircuitUri !== undefined && uri !== startCircuitUri) {
-      this.sendLocationChanged(uri, history.state?.userState, false).catch(error => this.unhandledError(error));
+      this.sendLocationChanged(uri, history.state?.userState, wasLastLocationChangeIntercepted(uri)).catch(error => this.unhandledError(error));
     }
   }
 

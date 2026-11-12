@@ -12,6 +12,7 @@ import { IBlazor } from '../GlobalExports';
 let hasRegisteredNavigationEventListeners = false;
 let currentHistoryIndex = 0;
 let currentLocationChangingCallId = 0;
+let lastLocationChange: { uri: string; intercepted: boolean } | undefined;
 
 type NavigationCallbacks = {
   rendererId: WebRendererId;
@@ -37,6 +38,14 @@ export const internalFunctions = {
   getLocationHref: (): string => location.href,
   scrollToElement,
 };
+
+export function resetLastLocationChange(): void {
+  lastLocationChange = undefined;
+}
+
+export function wasLastLocationChangeIntercepted(uri: string): boolean {
+  return lastLocationChange?.uri === uri && lastLocationChange.intercepted;
+}
 
 function listenForNavigationEvents(
   rendererId: WebRendererId,
@@ -261,6 +270,10 @@ async function onBrowserInitiatedPopState(state: PopStateEvent) {
 
 async function notifyLocationChanged(interceptedLink: boolean, internalDestinationHref?: string) {
   const uri = internalDestinationHref ?? location.href;
+
+  if (uri === location.href) {
+    lastLocationChange = { uri, intercepted: interceptedLink };
+  }
 
   await Promise.all(Array.from(navigationCallbacks, async ([rendererId, callbacks]) => {
     if (isRendererAttached(rendererId)) {
