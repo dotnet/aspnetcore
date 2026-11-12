@@ -17,9 +17,12 @@ public class HttpConnectionDispatcherOptions
     // Selected because this is the default value of PipeWriter.PauseWriterThreshold.
     // There maybe the opportunity for performance gains by tuning this default.
     private const int DefaultBufferSize = 65536;
+    private const string UseLegacyLongPollingAuthenticationRefreshSwitch =
+        "Microsoft.AspNetCore.Http.Connections.UseLegacyLongPollingAuthenticationRefresh";
 
     private PipeOptions? _transportPipeOptions;
     private PipeOptions? _appPipeOptions;
+    private bool? _useLegacyLongPollingAuthenticationRefresh;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="HttpConnectionDispatcherOptions"/> class.
@@ -182,6 +185,16 @@ public class HttpConnectionDispatcherOptions
     }
 
     internal bool TransportSendTimeoutEnabled => TransportSendTimeout != Timeout.InfiniteTimeSpan;
+
+    internal bool UseLegacyLongPollingAuthenticationRefresh
+    {
+        get
+        {
+            return _useLegacyLongPollingAuthenticationRefresh ??=
+                AppContext.TryGetSwitch(UseLegacyLongPollingAuthenticationRefreshSwitch, out var enabled) && enabled;
+        }
+        set => _useLegacyLongPollingAuthenticationRefresh = value;
+    }
 
     // We initialize these lazily based on the state of the options specified here.
     // Though these are mutable it's extremely rare that they would be mutated past the

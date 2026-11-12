@@ -105,7 +105,7 @@ public class QueryFeature : IQueryFeature
         var enumerable = new QueryStringEnumerable(queryString);
         foreach (var pair in enumerable)
         {
-            accumulator.Append(pair.DecodeName().Span, pair.DecodeValue().Span);
+            accumulator.Append(QueryStringDecoder.DecodeToString(pair.EncodedName), QueryStringDecoder.DecodeToString(pair.EncodedValue));
         }
 
         return accumulator.HasValues
