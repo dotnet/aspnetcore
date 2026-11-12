@@ -103,6 +103,99 @@ The component suite has 15 trials. The dotnet/skills quality gate uses five tria
 which a clean sweep can support a one-sided sign test at 5%; enforcing a
 trial-count policy here remains a documented follow-up.
 
+## Fixture purpose and file scope
+
+These fixtures are curated slices, not output from the production bundle builder.
+Production supplies full SHA-keyed source trees and the complete PR diff.
+Verifier cases a and b supply nine C# files at each of head and merge base,
+plus base-tip docs, rather than full trees.
+Their diff covers only `AgentContext.cs`, although the snapshots also contain
+changes to `UIAgent.cs` and `UIAgentLog.cs`.
+L1 `case-02` supplies the `FileConverter.cs` diff from a six-file PR.
+The results provide regression evidence for these supplied slices.
+They do not establish production-bundle fidelity or end-to-end review quality.
+
+### Verifier cases
+
+Paths in this table are relative to
+`review-candidate-verifier\fixtures`. Cases a and b share the C# slice.
+Case b adds one synthetic contract. Case c uses separate JavaScript evidence.
+The eval stages each case's index, candidate, diff, and changed-file list under
+the same destination names. A file at the fixture root is not necessarily shared.
+
+| Case | Purpose | Expected answer |
+|---|---|---|
+| `a` | Catch-policy claim without an established secondary-failure propagation rule. | `DROP(unestablished)`, `links.contract: null` |
+| `b` | Same claim with an assigned synthetic propagation rule. | `KEEP` |
+| `c` | Swallowed callback failure leaves status in `Running` and skips notification. | `KEEP` |
+
+| Fixture file or path | Cases | Purpose |
+|---|---|---|
+| `.gitattributes` | a, b, c (checkout only) | Preserve frozen bytes and line endings. |
+| `candidate.json` | a, b | Shared catch-policy candidate. |
+| `changes.diff` | a, b | Shared `AgentContext.cs` change. |
+| `changed-files.json` | a, b | Metadata for that one-file diff. |
+| `package-a\bundle-index.json` | a | Source roots, revision IDs, and assigned evidence paths. |
+| `package-b\bundle-index.json` | b | Same index scope, plus the synthetic propagation contract. |
+| `contracts\api-behavior.txt` | b only | Synthetic rule requiring secondary failures to propagate. |
+| `package-c\bundle-index.json` | c | Synthetic source hashes, evidence paths, and observation hash. |
+| `package-c\candidate.json` | c | Callback-failure candidate. |
+| `package-c\changes.diff` | c | Synthetic JavaScript change. |
+| `package-c\changed-files.json` | c | Metadata for that JavaScript diff. |
+| `observations.json` | c only | Immutable callback-failure observation. |
+| `source\baseTip\docs\CrossCuttingGuidance.md` | a, b, c | Frozen base-tip catch guidance. |
+| `source\head\src\Engine\Conversation.mjs` | c | Synthetic head implementation. |
+| `source\mergeBase\src\Engine\Conversation.mjs` | c | Synthetic earlier implementation. |
+
+The following nine files appear under
+`source\head\src\Components\AI\src` and
+`source\mergeBase\src\Components\AI\src`.
+Both cases a and b receive all nine files at both revisions.
+
+| C# file relative to either source directory | Cases | Purpose |
+|---|---|---|
+| `Engine\AgentContext.cs` | a, b | Primary catch site, streaming, and status callbacks. |
+| `Engine\UIAgent.cs` | a, b | Message producer and logging call forwarded by the catch site. |
+| `Engine\UIAgentLog.cs` | a, b | Logger-generated method declarations. |
+| `Pipeline\BlockMappingPipeline.cs` | a, b | Streaming block processing and finalization. |
+| `Blocks\ContentBlock.cs` | a, b | Block base type and change subscriptions. |
+| `Blocks\IInteractiveBlock.cs` | a, b | Interactive-block contract. |
+| `Components\MessageInput.cs` | a, b | UI submission caller context. |
+| `Engine\ConversationStatus.cs` | a, b | Status values used by the stream and callbacks. |
+| `Engine\ConversationTurn.cs` | a, b | Request and response block storage. |
+
+### Reviewer cases
+
+Each folder under `review-pull-request\fixtures` contains the same seven filenames.
+The eval stages only the selected folder for each trial.
+All expected answers below remain provisional, pending an independent two-reviewer audit.
+
+| Folder and stimulus | Purpose | Provisional expected answer |
+|---|---|---|
+| `case-01` | Stale-token claim during an authentication-state change. | `DISCARDED` |
+| `case-02` | Unmatched constructor file parameter compared with a lower-layer head test. | Verified finding |
+| `case-03` | ErrorBoundary delivery after renderer disposal, with issue intent. | `DISCARDED` |
+| `case-04` | Browser-test dependency on token exchange before assertions. | `DISCARDED` (disputed) |
+| `case-05` | Navigation-ordering question already raised in existing feedback. | `EXISTING_FEEDBACK_COVERAGE` with an unresolved thread reference |
+| `case-06` | Unestablished secondary-failure policy after status notification. | `UNRESOLVED` (fixture-confound corrected) |
+
+| File relative to each case folder | Cases | Purpose |
+|---|---|---|
+| `case.source` | case-01 through case-06 | Candidate claim and saved PR rationale. |
+| `change.diff` | case-01 through case-06 | Selected change to adjudicate. |
+| `mergeBase.source` | case-01 through case-06 | Earlier source for comparison. |
+| `head.source` | case-01 through case-06 | Proposed source. |
+| `baseTip.source` | case-01 through case-06 | Base-tip source context. |
+| `context.source` | case-01 through case-06 | Supporting head tests, issue intent, or feedback for that case. |
+| `provenance.json` | case-01 through case-06 | Source roles, revisions, line ranges, and fixture hashes. |
+
+The reviewer fixture root's `.gitattributes` preserves frozen bytes for all six cases.
+The `.source` extension marks inert, role-tagged excerpts, which can concatenate
+non-compilable snippets. The production exporter also uses `.source` for frozen files.
+Both reviewer arms receive the repository's two guidance documents.
+Only the skilled arm receives the skill and worker/verifier profiles.
+These shared instructions sit outside the per-case fixture folders.
+
 ## Local entry point
 
 Run these commands from any directory:
