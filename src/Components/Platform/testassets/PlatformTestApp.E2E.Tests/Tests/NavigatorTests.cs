@@ -67,6 +67,44 @@ public partial class NavigatorTests : BrowserTest
         await RunAsync("#get-online", "Online: True");
     }
 
+    [TestMethod]
+    public async Task Window_ReportsOnlineAndOfflineEventsInBothRenderModes()
+    {
+        foreach (var path in NavigatorPaths)
+        {
+            await NavigateAsync(path, "#watch-online-state");
+            var onlineStateEvent = _page.Locator("#online-state-event");
+
+            await RunAsync("#watch-online-state", "Watch online and offline: added");
+            // Events that the page's own JavaScript dispatches reach the listeners too.
+            await EvaluateAsync<bool>("window.dispatchEvent(new Event('offline'))");
+            await Expect(onlineStateEvent).ToHaveTextAsync("offline (1)");
+            await EvaluateAsync<bool>("window.dispatchEvent(new Event('online'))");
+            await Expect(onlineStateEvent).ToHaveTextAsync("online (2)");
+
+            await RunAsync("#unwatch-online-state", "Stop watching online and offline: removed");
+            await EvaluateAsync<bool>("window.dispatchEvent(new Event('offline'))");
+            // A round trip after the browser event lets a late notification arrive before the check.
+            await RunAsync("#get-online", "Online: True");
+            await Expect(onlineStateEvent).ToHaveTextAsync("online (2)");
+        }
+    }
+
+    [TestMethod]
+    public async Task Window_ReportsNetworkChanges()
+    {
+        // Going offline would also cut the Interactive Server circuit, so this runs in WebAssembly only.
+        await NavigateAsync("/navigator-wasm", "#watch-online-state");
+        var onlineStateEvent = _page.Locator("#online-state-event");
+        await RunAsync("#watch-online-state", "Watch online and offline: added");
+
+        await _context.SetOfflineAsync(true);
+        await Expect(onlineStateEvent).ToHaveTextAsync("offline (1)");
+
+        await _context.SetOfflineAsync(false);
+        await Expect(onlineStateEvent).ToHaveTextAsync("online (2)");
+    }
+
     private async Task NavigateAsync(string path, string interactiveSelector)
     {
         await _page.GotoAsync($"{_server.TestUrl}{path}");

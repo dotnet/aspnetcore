@@ -62,6 +62,8 @@ Microsoft.AspNetCore.Components.Platform.CookieStoreGetOptions.Name.get -> strin
 Microsoft.AspNetCore.Components.Platform.CookieStoreGetOptions.Name.set -> void
 Microsoft.AspNetCore.Components.Platform.CookieStoreGetOptions.Url.get -> string?
 Microsoft.AspNetCore.Components.Platform.CookieStoreGetOptions.Url.set -> void
+Microsoft.AspNetCore.Components.Platform.Event
+Microsoft.AspNetCore.Components.Platform.Event.Event() -> void
 Microsoft.AspNetCore.Components.Platform.EventType<TTarget, TEvent>
 Microsoft.AspNetCore.Components.Platform.EventType<TTarget, TEvent>.Name.get -> string!
 Microsoft.AspNetCore.Components.Platform.IBrowserPlatform
@@ -186,3 +188,5 @@ static Microsoft.AspNetCore.Components.Platform.CookieSameSite.Strict.get -> Mic
 static Microsoft.Extensions.DependencyInjection.BrowserPlatformServiceCollectionExtensions.AddBrowserPlatform(this Microsoft.Extensions.DependencyInjection.IServiceCollection! services) -> Microsoft.Extensions.DependencyInjection.IServiceCollection!
 static Microsoft.AspNetCore.Components.Platform.CookieStore.ChangeEvent.get -> Microsoft.AspNetCore.Components.Platform.EventType<Microsoft.AspNetCore.Components.Platform.CookieStore!, Microsoft.AspNetCore.Components.Platform.CookieChangeEvent!>!
 static Microsoft.AspNetCore.Components.Platform.WindowWebStorageExtensions.extension(Microsoft.AspNetCore.Components.Platform.Window!).StorageEvent.get -> Microsoft.AspNetCore.Components.Platform.EventType<Microsoft.AspNetCore.Components.Platform.Window!, Microsoft.AspNetCore.Components.Platform.StorageEvent!>!
+static Microsoft.AspNetCore.Components.Platform.WindowNavigatorExtensions.extension(Microsoft.AspNetCore.Components.Platform.Window!).OfflineEvent.get -> Microsoft.AspNetCore.Components.Platform.EventType<Microsoft.AspNetCore.Components.Platform.Window!, Microsoft.AspNetCore.Components.Platform.Event!>!
+static Microsoft.AspNetCore.Components.Platform.WindowNavigatorExtensions.extension(Microsoft.AspNetCore.Components.Platform.Window!).OnlineEvent.get -> Microsoft.AspNetCore.Components.Platform.EventType<Microsoft.AspNetCore.Components.Platform.Window!, Microsoft.AspNetCore.Components.Platform.Event!>!

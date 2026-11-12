@@ -1,4 +1,5 @@
 @using System.Globalization
+@implements IAsyncDisposable
 @inject Microsoft.AspNetCore.Components.Platform.IBrowserPlatform Browser
 
 <h2>Navigator</h2>
@@ -12,11 +13,20 @@
     <button id="get-hardware-concurrency" @onclick="GetHardwareConcurrencyAsync">Hardware concurrency</button>
     <button id="get-max-touch-points" @onclick="GetMaxTouchPointsAsync">Max touch points</button>
 </div>
+<div>
+    <button id="watch-online-state" @onclick="WatchOnlineStateAsync">Watch online and offline</button>
+    <button id="unwatch-online-state" @onclick="UnwatchOnlineStateAsync">Stop watching online and offline</button>
+</div>
 <p id="navigator-result" role="status" data-run="@runCount">@result</p>
+<p id="online-state-event" role="status">@onlineStateEvent</p>
 
 @code {
     private string result = "No operation has run.";
     private int runCount;
+    private string onlineStateEvent = "No event has been reported.";
+    private int onlineStateEventCount;
+    private IAsyncDisposable? onlineListener;
+    private IAsyncDisposable? offlineListener;
 
     private Task GetLanguageAsync() => RunAsync("Language", async () =>
         await Browser.Window.Navigator.GetLanguageAsync());
@@ -39,10 +49,47 @@
     private Task GetMaxTouchPointsAsync() => RunAsync("Max touch points", async () =>
         (await Browser.Window.Navigator.GetMaxTouchPointsAsync()).ToString(CultureInfo.InvariantCulture));
 
+    private Task WatchOnlineStateAsync() => RunAsync("Watch online and offline", async () =>
+    {
+        onlineListener = await Browser.Window.AddEventListenerAsync(Window.OnlineEvent, _ => ReportOnlineStateEvent("online"));
+        offlineListener = await Browser.Window.AddEventListenerAsync(Window.OfflineEvent, _ => ReportOnlineStateEvent("offline"));
+        return "added";
+    });
+
+    private Task UnwatchOnlineStateAsync() => RunAsync("Stop watching online and offline", async () =>
+    {
+        await DisposeListenersAsync();
+        return "removed";
+    });
+
+    // The count tells two events of the same name apart. The listener runs on the renderer's dispatcher.
+    private Task ReportOnlineStateEvent(string name)
+    {
+        onlineStateEventCount++;
+        onlineStateEvent = $"{name} ({onlineStateEventCount.ToString(CultureInfo.InvariantCulture)})";
+        StateHasChanged();
+        return Task.CompletedTask;
+    }
+
+    private async Task DisposeListenersAsync()
+    {
+        if (onlineListener is not null)
+        {
+            await onlineListener.DisposeAsync();
+        }
+
+        if (offlineListener is not null)
+        {
+            await offlineListener.DisposeAsync();
+        }
+    }
+
     private async Task RunAsync(string operation, Func<Task<string>> run)
     {
         result = $"{operation}: {await run()}";
         // Counts only completed runs, so a test waits for its own click and an exception fails at its step.
         runCount++;
     }
+
+    public async ValueTask DisposeAsync() => await DisposeListenersAsync();
 }
