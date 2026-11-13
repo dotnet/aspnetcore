@@ -1,6 +1,7 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Runtime.CompilerServices;
 using System.Security.Claims;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.Cookies;
@@ -32,7 +33,7 @@ public class SecurityStampValidator<TUser> : ISecurityStampValidator where TUser
         Options = options.Value;
         TimeProvider = Options.TimeProvider ?? TimeProvider.System;
         Clock = new TimeProviderClock(TimeProvider);
-        Logger = logger.CreateLogger(GetType());
+        Logger = CreateLogger(logger);
     }
 
     /// <summary>
@@ -51,7 +52,22 @@ public class SecurityStampValidator<TUser> : ISecurityStampValidator where TUser
 #pragma warning disable CS0618 // Type or member is obsolete
         Clock = new TimeProviderClock(TimeProvider);
 #pragma warning restore CS0618 // Type or member is obsolete
-        Logger = logger.CreateLogger(GetType());
+        Logger = CreateLogger(logger);
+    }
+
+    // The validator is scoped and resolved on every cookie-authenticated request. ILoggerFactory already returns the
+    // same logger for the same category, so cache it per factory to avoid rebuilding the category name and taking
+    // the factory lock for each request. Derived types keep the original behavior.
+    private static readonly ConditionalWeakTable<ILoggerFactory, ILogger> s_loggers = new();
+
+    private ILogger CreateLogger(ILoggerFactory loggerFactory)
+    {
+        if (loggerFactory is null || GetType() != typeof(SecurityStampValidator<TUser>))
+        {
+            return loggerFactory!.CreateLogger(GetType());
+        }
+
+        return s_loggers.GetValue(loggerFactory, static factory => factory.CreateLogger(typeof(SecurityStampValidator<TUser>)));
     }
 
     /// <summary>
