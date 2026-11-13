@@ -28,6 +28,20 @@ public class InteropTest : ServerTestBase<ToggleExecutionModeServerFixture<Progr
     }
 
     [Fact]
+    public void CanCatchNamedAsyncJavaScriptErrors()
+    {
+        Browser.Exists(By.Id("btn-named-errors")).Click();
+
+        Browser.Equal("TypeError", () => Browser.Exists(By.Id("sync-error-name")).Text);
+        Browser.Equal("Microsoft.JSInterop.JSException", () => Browser.Exists(By.Id("sync-error-type")).Text);
+        Browser.Contains("Typed failure", () => Browser.Exists(By.Id("sync-error-message")).Text);
+        Browser.Contains("TypeError: Typed failure", () => Browser.Exists(By.Id("sync-error-message")).Text);
+        Browser.Equal("AbortError", () => Browser.Exists(By.Id("abort-error-name")).Text);
+        Browser.Equal("Microsoft.JSInterop.JSException", () => Browser.Exists(By.Id("abort-error-type")).Text);
+        Browser.Contains("Aborted operation", () => Browser.Exists(By.Id("abort-error-message")).Text);
+    }
+
+    [Fact]
     public void CanInvokeInteropMethods()
     {
         // Arrange

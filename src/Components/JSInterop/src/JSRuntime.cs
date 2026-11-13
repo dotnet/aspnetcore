@@ -301,8 +301,7 @@ public abstract partial class JSRuntime : IJSRuntime, IDisposable
             }
             else
             {
-                var exceptionText = jsonReader.GetString() ?? string.Empty;
-                pendingCall.Fail(new JSException(exceptionText));
+                pendingCall.Fail(ReadJSException(ref jsonReader));
             }
 
             return true;
@@ -313,6 +312,25 @@ public abstract partial class JSRuntime : IJSRuntime, IDisposable
             pendingCall.Fail(new JSException(message, exception));
             return false;
         }
+    }
+
+    private static JSException ReadJSException(ref Utf8JsonReader jsonReader)
+    {
+        if (jsonReader.TokenType != JsonTokenType.StartObject)
+        {
+            var exceptionText = jsonReader.GetString() ?? string.Empty;
+            return new JSException(exceptionText);
+        }
+
+        using var error = JsonDocument.ParseValue(ref jsonReader);
+        var value = error.RootElement;
+        if (!value.TryGetProperty("formattedMessage", out var formattedMessage) || formattedMessage.ValueKind != JsonValueKind.String)
+        {
+            throw new JsonException("The JavaScript error must contain a string 'formattedMessage'.");
+        }
+
+        var name = value.TryGetProperty("name", out var errorName) ? errorName.GetString() : null;
+        return new JSException(formattedMessage.GetString()!, name, innerException: null);
     }
 
     /// <summary>
