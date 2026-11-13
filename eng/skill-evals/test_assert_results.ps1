@@ -305,9 +305,11 @@ try {
             param($rows)
             $rows[3].gradeResult.score = 0
             $rows[3].gradeResult.details[1].score = 0
+            $rows[3].gradeResult.details[1].passed = $false
             foreach ($row in $rows | Where-Object stimulus -ne 'a') {
                 $row.gradeResult.score = 1
                 $row.gradeResult.details[1].score = 1
+                $row.gradeResult.details[1].passed = $true
             }
         } }
         @{ Name = 'DuplicateTrial'; Expected = 'duplicate trial identity'; Mutation = {
@@ -338,6 +340,18 @@ try {
             param($rows)
             $rows[0].gradeResult.score = 0.9
         } }
+        @{ Name = 'PrimaryPassedMustMatchScore'; Expected = 'valid primary disposition'; Mutation = {
+            param($rows)
+            $rows[0].gradeResult.details[1].passed = $false
+        } }
+        @{ Name = 'PrimaryPassedMustBeBoolean'; Expected = 'valid primary disposition'; Mutation = {
+            param($rows)
+            $rows[0].gradeResult.details[1].passed = 'true'
+        } }
+        @{ Name = 'PrimaryScoreMustBeNumeric'; Expected = 'valid primary disposition'; Mutation = {
+            param($rows)
+            $rows[0].gradeResult.details[1].score = '1'
+        } }
         @{ Name = 'MissingReadIntegrity'; Expected = 'lacks read-integrity'; Mutation = {
             param($rows)
             $rows[0].gradeResult.Remove('details')
@@ -367,6 +381,29 @@ try {
         Write-ComponentResults $control.Mutation
         Assert-Throws { & $assertResults -OutputDirectory $output } $control.Expected $control.Name
     }
+    foreach ($threshold in @($null, '', 'NaN', -0.01, 1.01)) {
+        Write-ComponentResults
+        $plan = Get-Content (Join-Path $run 'plan-snapshot.json') -Raw | ConvertFrom-Json
+        $plan.evals[0].threshold = $threshold
+        $plan | ConvertTo-Json -Depth 10 | Set-Content (Join-Path $run 'plan-snapshot.json')
+        Assert-Throws { & $assertResults -OutputDirectory $output } 'invalid threshold' (
+            "Invalid threshold '$threshold' was accepted."
+        )
+    }
+    foreach ($threshold in @(0, 1)) {
+        Write-ComponentResults {
+            param($rows)
+            foreach ($row in $rows) {
+                $row.gradeResult.score = 1
+                $row.gradeResult.details[1].score = 1
+                $row.gradeResult.details[1].passed = $true
+            }
+        }
+        $plan = Get-Content (Join-Path $run 'plan-snapshot.json') -Raw | ConvertFrom-Json
+        $plan.evals[0].threshold = $threshold
+        $plan | ConvertTo-Json -Depth 10 | Set-Content (Join-Path $run 'plan-snapshot.json')
+        & $assertResults -OutputDirectory $output
+    }
     Write-ComponentResults -CompletionMutation {
         param($completion)
         $completion.hadExecutionErrors = $true
@@ -383,6 +420,18 @@ try {
     )
     Write-ComponentResults
     $componentLines = @(Get-Content (Join-Path $run 'results.jsonl'))
+    $componentArray = @($componentLines | ForEach-Object { $_ | ConvertFrom-Json })
+    ConvertTo-Json -InputObject $componentArray -Depth 10 -Compress |
+        Set-Content (Join-Path $run 'results.jsonl')
+    Assert-Throws { & $assertResults -OutputDirectory $output } 'JSONL line must be an object' (
+        'A JSON array was accepted as a JSONL record.'
+    )
+    foreach ($nonObject in @('null', 'true', '1', '"text"')) {
+        @($componentLines) + $nonObject | Set-Content (Join-Path $run 'results.jsonl')
+        Assert-Throws { & $assertResults -OutputDirectory $output } 'JSONL line must be an object' (
+            "The JSONL scalar '$nonObject' was accepted."
+        )
+    }
     $componentLines[0..13] + $componentLines[-1] |
         Set-Content (Join-Path $run 'results.jsonl')
     Assert-Throws { & $assertResults -OutputDirectory $output } "15 'current' trial results; found 14" (

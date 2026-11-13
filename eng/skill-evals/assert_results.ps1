@@ -41,6 +41,13 @@ foreach ($variant in $variants) {
     }
 
     $plan = $plans[0]
+    if (-not $plan.PSObject.Properties['threshold'] -or
+        ($plan.threshold -isnot [int] -and $plan.threshold -isnot [long] -and
+            $plan.threshold -isnot [double] -and $plan.threshold -isnot [decimal]) -or
+        -not [double]::IsFinite([double]$plan.threshold) -or
+        $plan.threshold -lt 0 -or $plan.threshold -gt 1) {
+        throw "The '$variant' plan has an invalid threshold."
+    }
     $names = @($plan.plannedStimulusNames)
     if ($names.Count -lt 1 -or $names.Count -ne [int]$plan.plannedStimulusCount -or
         @($names | Sort-Object -Unique).Count -ne $names.Count -or
@@ -56,7 +63,13 @@ foreach ($variant in $variants) {
     $results = @(
         Get-Content $resultsPath |
             Where-Object { -not [string]::IsNullOrWhiteSpace($_) } |
-            ForEach-Object { $_ | ConvertFrom-Json -Depth 100 }
+            ForEach-Object {
+                $record = ConvertFrom-Json -InputObject $_ -Depth 100 -NoEnumerate
+                if ($null -eq $record -or $record.GetType() -ne [System.Management.Automation.PSCustomObject]) {
+                    throw "Each JSONL line must be an object in '$resultsPath'."
+                }
+                $record
+            }
     )
     $completion = $null
     if ($variant -eq 'current') {
@@ -147,7 +160,13 @@ foreach ($variant in $variants) {
             }
             $dispositions = @($gradeResultProperty.Value.details |
                 Where-Object { $_.PSObject.Properties['configuredName'] -and $_.configuredName -eq "disposition-$($result.stimulus)" })
-            if ($dispositions.Count -ne 1 -or $dispositions[0].score -ne $score -or
+            if ($dispositions.Count -ne 1 -or
+                ($dispositions[0].score -isnot [int] -and $dispositions[0].score -isnot [long] -and
+                    $dispositions[0].score -isnot [double] -and $dispositions[0].score -isnot [decimal]) -or
+                $dispositions[0].score -ne $score -or
+                $dispositions[0].score -notin @(0, 1) -or
+                $dispositions[0].passed -isnot [bool] -or
+                $dispositions[0].passed -ne ($dispositions[0].score -eq 1) -or
                 ($dispositions[0].PSObject.Properties['status'] -and $dispositions[0].status -eq 'error')) {
                 throw "The '$variant' trial lacks a valid primary disposition result."
             }

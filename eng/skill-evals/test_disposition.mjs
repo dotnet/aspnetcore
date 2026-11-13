@@ -266,6 +266,16 @@ test('ComponentDispositionNormalizesOnlyApplicableFields', () =>
   }
 });
 
+test('ComponentDispositionRejectsMalformedResultsWrapper', () =>
+{
+  for (const results of [null, 'invalid', {}, 1, true])
+  {
+    assert.equal(score('b', JSON.stringify({ decision: 'KEEP', results }), 'component'), 0);
+  }
+  assert.equal(score('b', '{"decision":"KEEP"}', 'component'), 1);
+  assert.equal(score('b', '{"results":[{"decision":"KEEP"}]}', 'component'), 1);
+});
+
 test('ComponentDispositionRejectsNonStringInapplicableFields', async context =>
 {
   for (const [name, value] of [

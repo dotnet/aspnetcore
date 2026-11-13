@@ -194,6 +194,9 @@ function Assert-EvalSpecIsRestricted {
         throw "$Description $violation"
     }
     if ($dispositionMode) {
+        if ($parsed -isnot [Collections.IDictionary] -or $parsed['name'] -cne $EvalName) {
+            throw "$Description must have name '$EvalName'."
+        }
         if ($parsed -isnot [Collections.IDictionary] -or
             $parsed['grading_environment'] -isnot [Collections.IDictionary] -or
             -not $parsed['grading_environment'].Contains('files')) {

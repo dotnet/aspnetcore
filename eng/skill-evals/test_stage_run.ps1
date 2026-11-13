@@ -394,6 +394,7 @@ stimuli:
         -Destination (Join-Path $testRoot 'allowed-prompt-text')
 
     $canonicalReviewSpec = @'
+name: review-pull-request
 grading_environment:
   files:
     - src: ../grade_disposition.mjs
@@ -435,6 +436,15 @@ stimuli:
         -CandidateRoot $candidateRoot `
         -EvalName review-pull-request `
         -Destination $reviewDestination
+
+    New-RestrictedCandidate 'review-pull-request' $canonicalReviewSpec.Replace(
+        'name: review-pull-request', 'name: renamed-review'
+    )
+    Assert-Throws {
+        & $stageRun -TrustedRoot $trustedRoot -CandidateRoot $candidateRoot `
+            -EvalName review-pull-request -Destination (Join-Path $testRoot 'renamed-review')
+    } "must have name 'review-pull-request'"
+    New-RestrictedCandidate 'review-pull-request' $canonicalReviewSpec
 
     $realTrustedReviewDestination = Join-Path $testRoot 'staged-review-real-control-plane'
     & $stageRun `
@@ -496,6 +506,7 @@ stimuli:
     }
 
     $canonicalComponentSpec = @'
+name: review-candidate-verifier
 grading_environment:
   files:
     - src: ../grade_disposition.mjs

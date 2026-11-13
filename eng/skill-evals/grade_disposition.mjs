@@ -23,9 +23,9 @@ function normalizedResult(output)
 {
   const text = output.trim().replace(/^```(?:json)?\s*\n([\s\S]*?)\n```\s*$/i, '$1');
   const parsed = JSON.parse(text);
-  if (parsed && Array.isArray(parsed.results))
+  if (parsed && typeof parsed === 'object' && 'results' in parsed)
   {
-    return parsed.results.length === 1 ? parsed.results[0] : null;
+    return Array.isArray(parsed.results) && parsed.results.length === 1 ? parsed.results[0] : null;
   }
   return parsed;
 }

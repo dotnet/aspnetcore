@@ -194,6 +194,29 @@ stimuli:
         'Custom validation could invoke models.'
     )
 
+    $validationRoot = Join-Path $testRoot 'validation-root'
+    $validationEvalRoot = Join-Path $validationRoot 'eng/skill-evals'
+    New-Item -ItemType Directory -Force -Path `
+        (Join-Path $validationEvalRoot 'review-public-api'), `
+        (Join-Path $validationEvalRoot 'review-pull-request'), `
+        (Join-Path $validationRoot '.github/skills/review-public-api') | Out-Null
+    Set-Content (Join-Path $validationEvalRoot 'review-public-api/eval.vally.yaml') 'name: review-public-api'
+    Set-Content (Join-Path $validationEvalRoot 'review-pull-request/eval.vally.yaml') 'name: review-pull-request'
+    Set-Content (Join-Path $validationRoot '.github/skills/review-public-api/SKILL.md') 'skill'
+    Set-Content (Join-Path $validationEvalRoot 'skills-vs-baseline.experiment.yaml') 'standard'
+    Set-Content (Join-Path $validationEvalRoot 'skills-smoke.experiment.yaml') 'smoke'
+    & git init -q $validationRoot
+    & git -C $validationRoot add eng/skill-evals/review-public-api/eval.vally.yaml
+    if ($LASTEXITCODE -ne 0) {
+        throw 'Could not set up the validation fixture.'
+    }
+    Remove-Item $record
+    & $runner Validate -Root $validationRoot -Suite review-public-api -Vally $fakeVally -VallyPrefix @()
+    $genericValidation = @(Read-Invocations | Where-Object { $_.Arguments[0] -eq 'experiment' })
+    Assert-True ($genericValidation.Count -eq 2) (
+        'Generic suite validation planned the unrelated review experiments.'
+    )
+
     & $runner Run `
         -Eval eng/skill-evals/review-public-api/eval.vally.yaml `
         -Vally $fakeVally `
@@ -359,6 +382,25 @@ stimuli:
         -ExpectedThreshold 0 -RunArguments @('--threshold=0')
     Assert-CustomComponentPlan -Scenario 'OneThresholdBoundary' -ExpectedRuns 7 `
         -ExpectedThreshold 1 -RunArguments @('--threshold', '1')
+
+    $componentSpecPath = Join-Path $customComponentDirectory 'eval.vally.yaml'
+    $validComponentSpec = Get-Content $componentSpecPath -Raw
+    foreach ($invalidThreshold in @('null', '""', '"NaN"', '-0.1', '1.1')) {
+        Set-Content $componentSpecPath ($validComponentSpec.Replace('threshold: 0.65', "threshold: $invalidThreshold"))
+        $message = ''
+        try {
+            & $runner Run -Root $customRoot -Suite review-candidate-verifier `
+                -Vally $fakeVally -VallyPrefix @() `
+                -OutputDirectory (Join-Path $testRoot 'invalid-yaml-threshold')
+        } catch {
+            $message = $_.Exception.Message
+        } finally {
+            Set-Content $componentSpecPath $validComponentSpec
+        }
+        Assert-True ($message -like '*threshold must be between 0 and 1*') (
+            "Invalid YAML threshold '$invalidThreshold' was accepted. Error: $message"
+        )
+    }
 
     foreach ($case in @(
         @{ Name = 'EmptyThreshold'; Arguments = @('--threshold=') },

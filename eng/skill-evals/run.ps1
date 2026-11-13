@@ -317,7 +317,7 @@ switch ($Action) {
         } else {
             Invoke-VallyExperimentDryRun $standardExperiment
             Invoke-VallyExperimentDryRun $smokeExperiment
-            if (Test-Path $reviewEval) {
+            if (-not $Suite -and (Test-Path $reviewEval)) {
                 Invoke-VallyExperimentDryRun $reviewExperiment
                 Invoke-VallyExperimentDryRun $reviewSmokeExperiment
             }
@@ -402,8 +402,15 @@ switch ($Action) {
             } else {
                 1
             }
-            $threshold = if ($componentScoring -is [Collections.IDictionary] -and $null -ne $componentScoring['threshold']) {
-                [double]$componentScoring['threshold']
+            $threshold = if ($componentScoring -is [Collections.IDictionary] -and $componentScoring.Contains('threshold')) {
+                $specifiedThreshold = $componentScoring['threshold']
+                if (($specifiedThreshold -isnot [int] -and $specifiedThreshold -isnot [long] -and
+                    $specifiedThreshold -isnot [double] -and $specifiedThreshold -isnot [decimal]) -or
+                    -not [double]::IsFinite([double]$specifiedThreshold) -or
+                    $specifiedThreshold -lt 0 -or $specifiedThreshold -gt 1) {
+                    throw 'The component threshold must be between 0 and 1.'
+                }
+                [double]$specifiedThreshold
             } else {
                 1
             }
