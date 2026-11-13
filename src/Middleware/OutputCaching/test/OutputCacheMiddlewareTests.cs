@@ -974,6 +974,55 @@ public abstract class OutputCacheMiddlewareTests
     }
 
     [Fact]
+    public async Task Locking_SlowLeaderClientDoesNotDelayWaiters()
+    {
+        var responseCounter = 0;
+        var cache = GetStore();
+
+        var leaderWriteStarted = new ManualResetEventSlim(false);
+        var releaseLeaderWrite = new ManualResetEventSlim(false);
+
+        var options = new OutputCacheOptions();
+        options.AddBasePolicy(build => build.Cache());
+
+        var middleware = TestUtils.CreateTestMiddleware(options: options, cache: cache, next: c =>
+        {
+            responseCounter++;
+            c.Response.Write("Hello");
+            return Task.CompletedTask;
+        });
+
+        var leaderStream = new BlockingWriteStream(leaderWriteStarted, releaseLeaderWrite);
+
+        var context1 = TestUtils.CreateTestContext(cache: cache);
+        context1.HttpContext.Request.Method = "GET";
+        context1.HttpContext.Request.Path = "/";
+        context1.HttpContext.Response.Body = leaderStream;
+
+        var context2 = TestUtils.CreateTestContext(cache: cache);
+        context2.HttpContext.Request.Method = "GET";
+        context2.HttpContext.Request.Path = "/";
+        context2.HttpContext.Response.Body = new MemoryStream();
+
+        var task1 = Task.Run(() => middleware.Invoke(context1.HttpContext));
+
+        // The leader's body is buffered in memory and only flushed to its (slow) client after the
+        // cache entry is finalized. Wait for that flush to start, so a slow client is in play.
+        Assert.True(leaderWriteStarted.Wait(TimeSpan.FromSeconds(10)), "leader response was not flushed");
+
+        // The waiter must be served from the finalized cache entry without waiting for the slow leader client.
+        var task2 = Task.Run(() => middleware.Invoke(context2.HttpContext));
+        await task2.WaitAsync(TimeSpan.FromSeconds(10));
+
+        // Release the slow leader client so the leader can finish.
+        releaseLeaderWrite.Set();
+        await task1;
+
+        Assert.Equal(1, responseCounter);
+        Assert.Equal("Hello", Encoding.UTF8.GetString(((MemoryStream)context2.HttpContext.Response.Body).ToArray()));
+    }
+
+    [Fact]
     public async Task Locking_IgnoresNonCacheableResponses()
     {
         var responseCounter = 0;
@@ -1226,7 +1275,9 @@ public abstract class OutputCacheMiddlewareTests
         // The aborted request must not run the pipeline a second time
         Assert.Equal(1, responseCounter);
         Assert.Equal(0, cache.SetCount);
-        Assert.Equal("Hello1", Encoding.UTF8.GetString(memoryStream.ToArray()));
+        // With locking the response is buffered and only flushed to the client after it completes,
+        // so an aborted request no longer delivers a body.
+        Assert.Equal("", Encoding.UTF8.GetString(memoryStream.ToArray()));
     }
 
     [Fact]
@@ -1272,7 +1323,9 @@ public abstract class OutputCacheMiddlewareTests
 
         // The later request runs its own delegate, not the aborted response
         Assert.Equal(2, responseCounter);
-        Assert.Equal("Hello1", Encoding.UTF8.GetString(memoryStream1.ToArray()));
+        // With locking the response is buffered and only flushed to the client after it completes,
+        // so the aborted first request no longer delivers a body.
+        Assert.Equal("", Encoding.UTF8.GetString(memoryStream1.ToArray()));
         Assert.Equal("Hello2", Encoding.UTF8.GetString(memoryStream2.ToArray()));
     }
 
@@ -1369,6 +1422,25 @@ public abstract class OutputCacheMiddlewareTests
             await middleware.Invoke(requestContext.HttpContext);
             var response = Encoding.UTF8.GetString(responseStream.GetBuffer());
             return response;
+        }
+    }
+
+    private sealed class BlockingWriteStream : MemoryStream
+    {
+        private readonly ManualResetEventSlim _writeStarted;
+        private readonly ManualResetEventSlim _releaseWrite;
+
+        public BlockingWriteStream(ManualResetEventSlim writeStarted, ManualResetEventSlim releaseWrite)
+        {
+            _writeStarted = writeStarted;
+            _releaseWrite = releaseWrite;
+        }
+
+        public override async ValueTask WriteAsync(ReadOnlyMemory<byte> buffer, CancellationToken cancellationToken = default)
+        {
+            _writeStarted.Set();
+            _releaseWrite.Wait(cancellationToken);
+            await base.WriteAsync(buffer, cancellationToken);
         }
     }
 }
