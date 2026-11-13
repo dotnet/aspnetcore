@@ -1336,6 +1336,57 @@ public class EndpointHtmlRendererTest
             await new StreamReader(bodyStream).ReadToEndAsync());
     }
 
+    [Theory]
+    [InlineData(true)]
+    [InlineData(false)]
+    public async Task CacheView_CacheHit_RendersInteractiveComponent(bool useTypeRenderMode)
+    {
+        using var store = new MemoryCacheViewStore(
+            Microsoft.Extensions.Options.Options.Create(new RazorComponentsServiceOptions()),
+            NullLogger<MemoryCacheViewStore>.Instance);
+        var childContentInvocations = 0;
+        string previousContent = null;
+
+        for (var request = 0; request < 3; request++)
+        {
+            var httpContext = GetHttpContext();
+            httpContext.Request.Method = HttpMethods.Get;
+            var services = CreateDefaultServiceCollection();
+            services.AddSingleton<ICacheViewStore>(store);
+            services.AddSingleton<CacheViewService>();
+            services.AddCascadingValue(_ => httpContext);
+            using var serviceProvider = services.BuildServiceProvider();
+            await using var requestRenderer = GetEndpointHtmlRenderer(serviceProvider);
+            httpContext.RequestServices = serviceProvider;
+            var parameters = ParameterView.FromDictionary(new Dictionary<string, object>
+            {
+                [nameof(CacheView.CacheKey)] = "interactive-component",
+                [nameof(CacheView.ChildContent)] = (RenderFragment)(builder =>
+                {
+                    childContentInvocations++;
+                    builder.AddMarkupContent(0, $"<p>Cached request {request}</p>");
+                    builder.OpenComponent(1, useTypeRenderMode ? typeof(InteractiveGreetingServer) : typeof(GreetingComponent));
+                    builder.AddComponentParameter(2, nameof(GreetingComponent.Name), $"request {request}");
+                    if (!useTypeRenderMode)
+                    {
+                        builder.AddComponentRenderMode(RenderMode.InteractiveServer);
+                    }
+                    builder.CloseComponent();
+                }),
+            });
+
+            var result = await requestRenderer.PrerenderComponentAsync(httpContext, typeof(CacheView), null, parameters);
+            var content = await requestRenderer.Dispatcher.InvokeAsync(() => HtmlContentToString(result));
+
+            Assert.Equal(1, childContentInvocations);
+            Assert.Contains("<p>Cached request 0</p>", content);
+            Assert.Contains("<p>Hello request 0!</p>", content);
+            Assert.Contains("<!--Blazor:", content);
+            Assert.NotEqual(previousContent, content);
+            previousContent = content;
+        }
+    }
+
     [Fact]
     public async Task RenderMode_CanRenderInteractiveComponents()
     {
