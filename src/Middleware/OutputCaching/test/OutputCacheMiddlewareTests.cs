@@ -30,6 +30,121 @@ public abstract class OutputCacheMiddlewareTests
     public abstract ITestOutputCacheStore GetStore();
 
     [Fact]
+    public void TryGetRequestPolicies_CombinesBaseEndpointAndAttributePoliciesInOrder()
+    {
+        var basePolicy1 = new NoopPolicy();
+        var basePolicy2 = new NoopPolicy();
+        var endpointPolicy = new NoopPolicy();
+        var options = new OutputCacheOptions();
+        options.AddBasePolicy(basePolicy1);
+        options.AddBasePolicy(basePolicy2);
+        var middleware = TestUtils.CreateTestMiddleware(options: options);
+        var context = TestUtils.CreateTestContext(options: options);
+        context.HttpContext.SetEndpoint(new Endpoint(null, new EndpointMetadataCollection(endpointPolicy, new OutputCacheAttribute()), "test"));
+
+        Assert.True(middleware.TryGetRequestPolicies(context.HttpContext, out var policies));
+
+        Assert.Equal(4, policies.Count);
+        Assert.Same(basePolicy1, policies[0]);
+        Assert.Same(basePolicy2, policies[1]);
+        Assert.Same(endpointPolicy, policies[2]);
+        Assert.NotNull(policies[3]);
+    }
+
+    [Theory]
+    [InlineData(false, false, false, 0)]
+    [InlineData(true, false, false, 1)]
+    [InlineData(false, true, false, 1)]
+    [InlineData(false, false, true, 1)]
+    [InlineData(true, true, true, 3)]
+    public void TryGetRequestPolicies_ReturnsPoliciesFromAllSources(bool basePolicy, bool endpointPolicy, bool attribute, int expectedCount)
+    {
+        var options = new OutputCacheOptions();
+        if (basePolicy)
+        {
+            options.AddBasePolicy(new NoopPolicy());
+        }
+        var metadata = new List<object>();
+        if (endpointPolicy)
+        {
+            metadata.Add(new NoopPolicy());
+        }
+        if (attribute)
+        {
+            metadata.Add(new OutputCacheAttribute());
+        }
+        var middleware = TestUtils.CreateTestMiddleware(options: options);
+        var context = TestUtils.CreateTestContext(options: options);
+        context.HttpContext.SetEndpoint(new Endpoint(null, new EndpointMetadataCollection(metadata), "test"));
+
+        Assert.Equal(expectedCount > 0, middleware.TryGetRequestPolicies(context.HttpContext, out var policies));
+        Assert.Equal(expectedCount, policies.Count);
+    }
+
+    private sealed class NoopPolicy : IOutputCachePolicy
+    {
+        public ValueTask CacheRequestAsync(OutputCacheContext context, CancellationToken cancellation) => ValueTask.CompletedTask;
+        public ValueTask ServeFromCacheAsync(OutputCacheContext context, CancellationToken cancellation) => ValueTask.CompletedTask;
+        public ValueTask ServeResponseAsync(OutputCacheContext context, CancellationToken cancellation) => ValueTask.CompletedTask;
+    }
+
+    [Theory]
+    [InlineData(0)]
+    [InlineData(1)]
+    [InlineData(2)]
+    public async Task Invoke_StoresResponseWithPolicyTags(int tagCount)
+    {
+        var tags = Enumerable.Range(1, tagCount).Select(i => "tag" + i).ToArray();
+        var store = new TagsCapturingOutputCacheStore();
+        var options = new OutputCacheOptions();
+        options.AddBasePolicy(build =>
+        {
+            build.Cache();
+            if (tags.Length > 0)
+            {
+                build.Tag(tags);
+            }
+        });
+
+        var middleware = TestUtils.CreateTestMiddleware(options: options, cache: store, next: c => c.Response.WriteAsync("Hello"));
+        var context = TestUtils.CreateTestContext(cache: store, options: options);
+        context.HttpContext.Request.Method = "GET";
+        context.HttpContext.Request.Path = "/";
+
+        await middleware.Invoke(context.HttpContext);
+
+        Assert.NotNull(store.StoredTags);
+        Assert.Equal(tags, store.StoredTags);
+    }
+
+    [Fact]
+    public void Tags_IsCreatedOnceAndReturnsSameInstance()
+    {
+        var context = TestUtils.CreateTestContext();
+
+        var tags = context.Tags;
+        tags.Add("tag");
+
+        Assert.Same(tags, context.Tags);
+        Assert.Equal(new[] { "tag" }, context.Tags);
+    }
+
+    private sealed class TagsCapturingOutputCacheStore : IOutputCacheStore
+    {
+        public string[] StoredTags { get; private set; }
+
+        public ValueTask EvictByTagAsync(string tag, CancellationToken cancellationToken) => ValueTask.CompletedTask;
+
+        public ValueTask<byte[]> GetAsync(string key, CancellationToken cancellationToken) => ValueTask.FromResult<byte[]>(null);
+
+        public ValueTask SetAsync(string key, byte[] value, string[] tags, TimeSpan validFor, CancellationToken cancellationToken)
+        {
+            StoredTags = tags;
+            return ValueTask.CompletedTask;
+        }
+    }
+
+    [Fact]
     public async Task TryServeFromCacheAsync_OnlyIfCached_Serves504()
     {
         var cache = GetStore();
