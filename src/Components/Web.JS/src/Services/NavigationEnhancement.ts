@@ -2,7 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 import { synchronizeDomContent } from '../Rendering/DomMerging/DomSync';
-import { attachProgrammaticEnhancedNavigationHandler, handleClickForNavigationInterception, hasInteractiveRouter, isForSamePath, notifyEnhancedNavigationListeners, performScrollToElementOnTheSamePage, isSamePageWithHash } from './NavigationUtils';
+import { attachProgrammaticEnhancedNavigationHandler, handleClickForNavigationInterception, hasInteractiveRouter, isForSamePath, notifyEnhancedNavigationListeners, performScrollToElementOnTheSamePage, isSamePageWithHash, isWithinBaseUriSpace } from './NavigationUtils';
 import { scheduleScrollReset, ScrollResetSchedule } from '../Rendering/Renderer';
 
 /*
@@ -275,7 +275,18 @@ export async function performEnhancedPageLoad(internalDestinationHref: string, i
             history.pushState(null, '', response.url);
           }
         }
-        internalDestinationHref = response.url;
+        if (!isWithinBaseUriSpace(response.url)) {
+          // Existing interactive runtimes cannot accept a location outside their original base URI.
+          retryEnhancedNavAsFullPageLoad(response.url);
+          return;
+        }
+        if (internalDestinationHref !== response.url) {
+          internalDestinationHref = response.url;
+          // The redirect changed the URL, so re-notify listeners with the final URL to keep the interactive
+          // runtime's NavigationManager.Uri correct. This fires a second LocationChanged only when the URL
+          // actually changes, preserving whether the original navigation was intercepted.
+          notifyEnhancedNavigationListeners(internalDestinationHref, interceptedLink);
+        }
       }
 
       // For enhanced nav redirecting to an external URL, we'll get a special Blazor-specific redirection command
