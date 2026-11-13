@@ -32,6 +32,16 @@ public class PropertiesSerializer : IDataSerializer<AuthenticationProperties>
     /// <inheritdoc />
     public virtual AuthenticationProperties? Deserialize(byte[] data)
     {
+        // When this is exactly PropertiesSerializer, Read cannot have been overridden,
+        // so the payload can be read directly from the buffer without a stream and reader.
+        if (GetType() == typeof(PropertiesSerializer))
+        {
+            ArgumentNullException.ThrowIfNull(data);
+
+            var payloadReader = new BinaryPayloadReader(data);
+            return Read(ref payloadReader);
+        }
+
         using (var memory = new MemoryStream(data))
         {
             using (var reader = new BinaryReader(memory))
@@ -62,6 +72,26 @@ public class PropertiesSerializer : IDataSerializer<AuthenticationProperties>
     {
         ArgumentNullException.ThrowIfNull(reader);
 
+        if (reader.ReadInt32() != FormatVersion)
+        {
+            return null;
+        }
+
+        var count = reader.ReadInt32();
+        var extra = new Dictionary<string, string?>(count);
+
+        for (var index = 0; index != count; ++index)
+        {
+            var key = reader.ReadString();
+            var value = reader.ReadString();
+            extra.Add(key, value);
+        }
+        return new AuthenticationProperties(extra);
+    }
+
+    // Must stay in sync with Read(BinaryReader).
+    internal static AuthenticationProperties? Read(ref BinaryPayloadReader reader)
+    {
         if (reader.ReadInt32() != FormatVersion)
         {
             return null;
