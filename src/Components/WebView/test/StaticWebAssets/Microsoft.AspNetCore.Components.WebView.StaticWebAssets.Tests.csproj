@@ -5,6 +5,7 @@
     ship static web assets:
       * Microsoft.AspNetCore.Components.WebView         (primary subject of issue #67374)
       * Microsoft.AspNetCore.Components.WebAssembly
+      * Microsoft.AspNetCore.Components.Server.AutoPause
       * Microsoft.AspNetCore.App.Internal.Assets
       * Microsoft.AspNetCore.Identity.UI
 
@@ -26,6 +27,7 @@
 
   <ItemGroup>
     <ProjectReference Include="$(RepoRoot)src\Components\Analyzers\src\Microsoft.AspNetCore.Components.Analyzers.csproj" ReferenceOutputAssembly="false" />
+    <ProjectReference Include="$(RepoRoot)src\Components\Server.AutoPause\src\Microsoft.AspNetCore.Components.Server.AutoPause.csproj" ReferenceOutputAssembly="false" />
     <ProjectReference Include="$(RepoRoot)src\Components\WebAssembly\WebAssembly\src\Microsoft.AspNetCore.Components.WebAssembly.csproj" ReferenceOutputAssembly="false" />
     <ProjectReference Include="$(RepoRoot)src\Components\WebView\WebView\src\Microsoft.AspNetCore.Components.WebView.csproj" />
     <ProjectReference Include="$(RepoRoot)src\Identity\UI\src\Microsoft.AspNetCore.Identity.UI.csproj" ReferenceOutputAssembly="false" />
@@ -33,6 +35,7 @@
 
   <ItemGroup>
     <_StaticWebAssetsPackageRoot Include="$(RepoRoot)src\Components\WebView\WebView\src\Microsoft.AspNetCore.Components.WebView.csproj" />
+    <_StaticWebAssetsPackageRoot Include="$(RepoRoot)src\Components\Server.AutoPause\src\Microsoft.AspNetCore.Components.Server.AutoPause.csproj" />
     <_StaticWebAssetsPackageRoot Include="$(RepoRoot)src\Components\WebAssembly\WebAssembly\src\Microsoft.AspNetCore.Components.WebAssembly.csproj" />
     <_StaticWebAssetsPackageRoot Include="$(RepoRoot)src\Assets\Microsoft.AspNetCore.App.Internal.Assets.csproj" />
     <_StaticWebAssetsPackageRoot Include="$(RepoRoot)src\Identity\UI\src\Microsoft.AspNetCore.Identity.UI.csproj" />

@@ -4,7 +4,7 @@
 // @ts-ignore: This will be removed from built files and is here to make the types available during dev work
 import { CookieJar } from "@types/tough-cookie";
 
-import { AbortError, HttpError, TimeoutError } from "./Errors";
+import { AbortError, TimeoutError } from "./Errors";
 import { HttpClient, HttpRequest, HttpResponse } from "./HttpClient";
 import { ILogger, LogLevel } from "./ILogger";
 import { Platform, getGlobalThis, isArrayBuffer } from "./Utils";
@@ -136,11 +136,6 @@ export class FetchHttpClient extends HttpClient {
             if (request.abortSignal) {
                 request.abortSignal.onabort = null;
             }
-        }
-
-        if (!response.ok) {
-            const errorMessage = await deserializeContent(response, "text") as string;
-            throw new HttpError(errorMessage || response.statusText, response.status);
         }
 
         const content = deserializeContent(response, request.responseType);

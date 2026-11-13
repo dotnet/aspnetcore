@@ -20,6 +20,25 @@ beside the spec that consumes them, normally under a `fixtures` directory. Do
 not place eval specs, `evals` directories, or eval runners in runtime skill
 directories. A runtime skill may use a `fixtures` directory for non-eval assets.
 
+`review-pull-request/catch-policy.vally.yaml` is a specialized, offline policy
+exercise. It stages the current reviewer skill, cross-cutting guide, diff, old/head source,
+dependency implementations, and one selected scenario into each trial workspace.
+Five independent stimuli cover unspecified policy, existing feedback, propagation,
+best-effort reporting, and a nonthrowing producer control. The agent must derive the
+effect from source rather than receive the expected behavior in its prompt.
+Static tool-result checks require the relevant guidance and source to be read;
+binary judging checks the reasoning separately. These checks do not prove every
+line was read or replace the semantic judge. Five trials per stimulus must all pass.
+Platform-required native skill acquisition is allowed, but does not replace reading
+the staged guidance or authorize coordinator execution.
+The executor and judge models are both pinned to the reviewer skill's supported
+`gpt-5.6-sol`. Because they share a model identity, the judge is not independent-
+model corroboration. Overrides are separate model-compatibility results, not
+evidence that the default reviewer improved.
+This does not invoke live PR review or measure baseline-versus-skilled improvement.
+Run it explicitly with
+`./eng/skill-evals/run.ps1 Run -Eval eng/skill-evals/review-pull-request/catch-policy.vally.yaml --require-pass`.
+
 The experiment deliberately does not override `runs`. A standard spec owns its
 trial count through `defaults.runs`. The existing specs retain five runs and 25
 trials each. The dotnet/skills quality gate uses five trials as the minimum at
@@ -103,7 +122,11 @@ as a separate exact-SHA candidate. For each selected eval, it creates a clean
 temporary tree containing only the trusted runner, assertion, and central
 experiments plus the candidate's selected skill, `eval.vally.yaml`, and fixture
 tree. Symlinks, reparse points, path traversal names, source-nested staging
-destinations, and missing inputs fail closed. The trusted runner and assertion
+destinations, and missing inputs fail closed. Staging also rejects a candidate
+`eval.vally.yaml` that declares a `commands`, `mcpServers`, or
+`executor.config.provider` field, since those let an eval run arbitrary
+commands, start MCP servers, or redirect model calls; staged fixture files have
+their executable bit set automatically instead. The trusted runner and assertion
 execute from that staged tree, so candidate changes to `run.ps1`,
 `assert_results.ps1`, central experiments, or the workflow cannot gain code
 execution in the PAT-backed step. Both baseline and skilled variants must
@@ -138,7 +161,7 @@ consistently across all workflows that consume the environment rather than
 uniquely to this workflow.
 
 Hosted `Validate`, `Lint`, and `Run` operations use the toolchain pinned by
-`evaluation-tools/package-lock.json`, including `@microsoft/vally-cli@0.14.0`
+`evaluation-tools/package-lock.json`, including `@microsoft/vally-cli@0.19.0`
 and `@github/copilot@1.0.80`. The manifest also constrains transitive Copilot
 packages to that compatible version so the SDK and native platform package
 retain the same `./sdk` entry point. The workflow installs that lockfile with

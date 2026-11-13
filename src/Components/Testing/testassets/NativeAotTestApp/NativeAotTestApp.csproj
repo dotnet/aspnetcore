@@ -16,8 +16,14 @@
     <WarningsNotAsErrors>$(WarningsNotAsErrors);IL2057;IL2062;IL2065;IL2067;IL2072;IL2080;IL2101;IL2110;IL3050</WarningsNotAsErrors>
   </PropertyGroup>
 
+  <PropertyGroup>
+    <!-- The project only serves the NativeAOT E2E harness; skip it when NativeAOT is unsupported. -->
+    <ExcludeFromBuild Condition="'$(NativeAotSupported)' != 'true'">true</ExcludeFromBuild>
+  </PropertyGroup>
+
   <PropertyGroup Condition="'$(E2ECompileTestHarness)' == 'true'">
-    <PublishAot>true</PublishAot>
+    <!-- E2E NativeAOT harness follows the repo-wide NativeAOT support switch. -->
+    <PublishAot Condition="'$(NativeAotSupported)' == 'true'">true</PublishAot>
     <SelfContained>true</SelfContained>
   </PropertyGroup>
 

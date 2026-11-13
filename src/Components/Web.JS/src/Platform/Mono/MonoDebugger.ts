@@ -1,7 +1,7 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-import { MonoConfig } from '@microsoft/dotnet-runtime';
+import { LoaderConfig } from '@microsoft/dotnet-runtime';
 
 const navigatorUA = navigator as MonoNavigatorUserAgent;
 const brands = navigatorUA.userAgentData && navigatorUA.userAgentData.brands;
@@ -11,11 +11,11 @@ const currentBrowserIsChromeOrEdge = brands && brands.length > 0
   : (window as any).chrome;
 const platform = navigatorUA.userAgentData?.platform ?? navigator.platform;
 
-function hasDebuggingEnabled(config: MonoConfig): boolean {
+function hasDebuggingEnabled(config: LoaderConfig): boolean {
   return config.debugLevel !== 0 && (currentBrowserIsChromeOrEdge || navigator.userAgent.includes('Firefox'));
 }
 
-export function attachDebuggerHotkey(config: MonoConfig): void {
+export function attachDebuggerHotkey(config: LoaderConfig): void {
   // Use the combination shift+alt+D because it isn't used by the major browsers
   // for anything else by default
   const altKeyName = platform.match(/^Mac/i) ? 'Cmd' : 'Alt';
