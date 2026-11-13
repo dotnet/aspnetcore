@@ -62,6 +62,8 @@ Microsoft.AspNetCore.Components.Platform.CookieStoreGetOptions.Name.get -> strin
 Microsoft.AspNetCore.Components.Platform.CookieStoreGetOptions.Name.set -> void
 Microsoft.AspNetCore.Components.Platform.CookieStoreGetOptions.Url.get -> string?
 Microsoft.AspNetCore.Components.Platform.CookieStoreGetOptions.Url.set -> void
+Microsoft.AspNetCore.Components.Platform.Event
+Microsoft.AspNetCore.Components.Platform.Event.Event() -> void
 Microsoft.AspNetCore.Components.Platform.EventType<TTarget, TEvent>
 Microsoft.AspNetCore.Components.Platform.EventType<TTarget, TEvent>.Name.get -> string!
 Microsoft.AspNetCore.Components.Platform.IBrowserPlatform
@@ -74,6 +76,11 @@ Microsoft.AspNetCore.Components.Platform.Navigator.GetLanguagesAsync() -> System
 Microsoft.AspNetCore.Components.Platform.Navigator.GetMaxTouchPointsAsync() -> System.Threading.Tasks.ValueTask<int>
 Microsoft.AspNetCore.Components.Platform.Navigator.GetOnLineAsync() -> System.Threading.Tasks.ValueTask<bool>
 Microsoft.AspNetCore.Components.Platform.Navigator.GetUserAgentAsync() -> System.Threading.Tasks.ValueTask<string!>
+Microsoft.AspNetCore.Components.Platform.OrientationType
+Microsoft.AspNetCore.Components.Platform.OrientationType.Equals(Microsoft.AspNetCore.Components.Platform.OrientationType other) -> bool
+Microsoft.AspNetCore.Components.Platform.OrientationType.OrientationType() -> void
+Microsoft.AspNetCore.Components.Platform.OrientationType.OrientationType(string! value) -> void
+Microsoft.AspNetCore.Components.Platform.OrientationType.Value.get -> string!
 Microsoft.AspNetCore.Components.Platform.Screen
 Microsoft.AspNetCore.Components.Platform.Screen.GetAvailHeightAsync() -> System.Threading.Tasks.ValueTask<int>
 Microsoft.AspNetCore.Components.Platform.Screen.GetAvailWidthAsync() -> System.Threading.Tasks.ValueTask<int>
@@ -81,6 +88,14 @@ Microsoft.AspNetCore.Components.Platform.Screen.GetColorDepthAsync() -> System.T
 Microsoft.AspNetCore.Components.Platform.Screen.GetHeightAsync() -> System.Threading.Tasks.ValueTask<int>
 Microsoft.AspNetCore.Components.Platform.Screen.GetPixelDepthAsync() -> System.Threading.Tasks.ValueTask<uint>
 Microsoft.AspNetCore.Components.Platform.Screen.GetWidthAsync() -> System.Threading.Tasks.ValueTask<int>
+Microsoft.AspNetCore.Components.Platform.ScreenOrientation
+Microsoft.AspNetCore.Components.Platform.ScreenOrientation.AddEventListenerAsync<TEvent>(Microsoft.AspNetCore.Components.Platform.EventType<Microsoft.AspNetCore.Components.Platform.ScreenOrientation!, TEvent>! type, System.Func<TEvent, System.Threading.Tasks.Task!>! listener, System.Threading.CancellationToken cancellationToken) -> System.Threading.Tasks.ValueTask<System.IAsyncDisposable!>
+Microsoft.AspNetCore.Components.Platform.ScreenOrientation.AddEventListenerAsync<TEvent>(Microsoft.AspNetCore.Components.Platform.EventType<Microsoft.AspNetCore.Components.Platform.ScreenOrientation!, TEvent>! type, System.Func<TEvent, System.Threading.Tasks.Task!>! listener) -> System.Threading.Tasks.ValueTask<System.IAsyncDisposable!>
+Microsoft.AspNetCore.Components.Platform.ScreenOrientation.GetAngleAsync() -> System.Threading.Tasks.ValueTask<ushort>
+Microsoft.AspNetCore.Components.Platform.ScreenOrientation.GetTypeAsync() -> System.Threading.Tasks.ValueTask<Microsoft.AspNetCore.Components.Platform.OrientationType>
+Microsoft.AspNetCore.Components.Platform.ScreenScreenOrientationExtensions
+Microsoft.AspNetCore.Components.Platform.ScreenScreenOrientationExtensions.extension(Microsoft.AspNetCore.Components.Platform.Screen!)
+Microsoft.AspNetCore.Components.Platform.ScreenScreenOrientationExtensions.extension(Microsoft.AspNetCore.Components.Platform.Screen!).Orientation.get -> Microsoft.AspNetCore.Components.Platform.ScreenOrientation!
 Microsoft.AspNetCore.Components.Platform.StorageEvent
 Microsoft.AspNetCore.Components.Platform.StorageEvent.Key.get -> string?
 Microsoft.AspNetCore.Components.Platform.StorageEvent.Key.init -> void
@@ -178,11 +193,21 @@ Microsoft.Extensions.DependencyInjection.BrowserPlatformServiceCollectionExtensi
 override Microsoft.AspNetCore.Components.Platform.CookieSameSite.Equals(object? obj) -> bool
 override Microsoft.AspNetCore.Components.Platform.CookieSameSite.GetHashCode() -> int
 override Microsoft.AspNetCore.Components.Platform.CookieSameSite.ToString() -> string!
+override Microsoft.AspNetCore.Components.Platform.OrientationType.Equals(object? obj) -> bool
+override Microsoft.AspNetCore.Components.Platform.OrientationType.GetHashCode() -> int
+override Microsoft.AspNetCore.Components.Platform.OrientationType.ToString() -> string!
 static Microsoft.AspNetCore.Components.Platform.CookieSameSite.Lax.get -> Microsoft.AspNetCore.Components.Platform.CookieSameSite
 static Microsoft.AspNetCore.Components.Platform.CookieSameSite.operator !=(Microsoft.AspNetCore.Components.Platform.CookieSameSite left, Microsoft.AspNetCore.Components.Platform.CookieSameSite right) -> bool
 static Microsoft.AspNetCore.Components.Platform.CookieSameSite.operator ==(Microsoft.AspNetCore.Components.Platform.CookieSameSite left, Microsoft.AspNetCore.Components.Platform.CookieSameSite right) -> bool
 static Microsoft.AspNetCore.Components.Platform.CookieSameSite.None.get -> Microsoft.AspNetCore.Components.Platform.CookieSameSite
 static Microsoft.AspNetCore.Components.Platform.CookieSameSite.Strict.get -> Microsoft.AspNetCore.Components.Platform.CookieSameSite
+static Microsoft.AspNetCore.Components.Platform.OrientationType.LandscapePrimary.get -> Microsoft.AspNetCore.Components.Platform.OrientationType
+static Microsoft.AspNetCore.Components.Platform.OrientationType.LandscapeSecondary.get -> Microsoft.AspNetCore.Components.Platform.OrientationType
+static Microsoft.AspNetCore.Components.Platform.OrientationType.operator !=(Microsoft.AspNetCore.Components.Platform.OrientationType left, Microsoft.AspNetCore.Components.Platform.OrientationType right) -> bool
+static Microsoft.AspNetCore.Components.Platform.OrientationType.operator ==(Microsoft.AspNetCore.Components.Platform.OrientationType left, Microsoft.AspNetCore.Components.Platform.OrientationType right) -> bool
+static Microsoft.AspNetCore.Components.Platform.OrientationType.PortraitPrimary.get -> Microsoft.AspNetCore.Components.Platform.OrientationType
+static Microsoft.AspNetCore.Components.Platform.OrientationType.PortraitSecondary.get -> Microsoft.AspNetCore.Components.Platform.OrientationType
 static Microsoft.Extensions.DependencyInjection.BrowserPlatformServiceCollectionExtensions.AddBrowserPlatform(this Microsoft.Extensions.DependencyInjection.IServiceCollection! services) -> Microsoft.Extensions.DependencyInjection.IServiceCollection!
 static Microsoft.AspNetCore.Components.Platform.CookieStore.ChangeEvent.get -> Microsoft.AspNetCore.Components.Platform.EventType<Microsoft.AspNetCore.Components.Platform.CookieStore!, Microsoft.AspNetCore.Components.Platform.CookieChangeEvent!>!
+static Microsoft.AspNetCore.Components.Platform.ScreenOrientation.ChangeEvent.get -> Microsoft.AspNetCore.Components.Platform.EventType<Microsoft.AspNetCore.Components.Platform.ScreenOrientation!, Microsoft.AspNetCore.Components.Platform.Event!>!
 static Microsoft.AspNetCore.Components.Platform.WindowWebStorageExtensions.extension(Microsoft.AspNetCore.Components.Platform.Window!).StorageEvent.get -> Microsoft.AspNetCore.Components.Platform.EventType<Microsoft.AspNetCore.Components.Platform.Window!, Microsoft.AspNetCore.Components.Platform.StorageEvent!>!
