@@ -16,6 +16,8 @@ Max allowed files:
 <InputFile OnChange="LoadFiles" id="input-file" multiple />
 <br />
 
+<label><input type="checkbox" id="read-file-contents" @bind="readFileContents" /> Read file contents</label>
+<span id="change-count">@changeCount</span>
 <span id="file-count">@loadedFiles.Count</span>
 <span id="exception-message">@exceptionMessage</span>
 
@@ -62,6 +64,8 @@ Max allowed files:
 
     long maxFileSize = 1024 * 1024 * 15;
     int maxAllowedFiles = 3;
+    bool readFileContents = true;
+    int changeCount;
 
     bool isLoading;
 
@@ -71,6 +75,7 @@ Max allowed files:
 
     async Task LoadFiles(InputFileChangeEventArgs e)
     {
+        changeCount++;
         isLoading = true;
         loadedFiles.Clear();
         exceptionMessage = string.Empty;
@@ -79,6 +84,12 @@ Max allowed files:
         {
             foreach (var file in e.GetMultipleFiles(maxAllowedFiles))
             {
+                if (!readFileContents)
+                {
+                    loadedFiles.Add(file, string.Empty);
+                    continue;
+                }
+
                 StateHasChanged();
 
                 using var reader = new StreamReader(file.OpenReadStream(maxFileSize));
