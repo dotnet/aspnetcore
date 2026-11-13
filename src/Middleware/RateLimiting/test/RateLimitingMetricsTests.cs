@@ -32,6 +32,7 @@ public class RateLimitingMetricsTests
 
         var middleware = CreateTestRateLimitingMiddleware(options, meterFactory: meterFactory);
         var meter = meterFactory.Meters.Single();
+        Assert.Equal("https://opentelemetry.io/schemas/1.45.0", meter.TelemetrySchemaUrl);
 
         var context = new DefaultHttpContext();
 

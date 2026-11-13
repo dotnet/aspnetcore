@@ -30,6 +30,7 @@ public class HostingMetricsTests
 
         // Act/Assert
         Assert.Equal(HostingMetrics.MeterName, meter.Name);
+        Assert.Equal("https://opentelemetry.io/schemas/1.45.0", meter.TelemetrySchemaUrl);
         Assert.Null(meter.Version);
 
         // Request 1 (after success)

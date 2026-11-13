@@ -1,6 +1,7 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Diagnostics;
 using System.Linq;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting.Server;
@@ -16,6 +17,19 @@ namespace Microsoft.AspNetCore.Hosting;
 // Most functionality is covered by WebHostBuilderTests for compat. Only GenericHost specific functionality is covered here.
 public class GenericWebHostBuilderTests
 {
+    [Fact]
+    public void ActivitySourceHasTelemetrySchemaUrl()
+    {
+        using var host = new HostBuilder()
+            .ConfigureWebHost(_ => { })
+            .Build();
+
+        var activitySource = host.Services.GetRequiredService<ActivitySource>();
+
+        Assert.Equal("Microsoft.AspNetCore", activitySource.Name);
+        Assert.Equal("https://opentelemetry.io/schemas/1.45.0", activitySource.TelemetrySchemaUrl);
+    }
+
     [Fact]
     public void ReadsAspNetCoreEnvironmentVariables()
     {

@@ -1690,6 +1690,7 @@ public partial class HttpConnectionDispatcherTests : VerifiableLoggedTest
             using var currentConnections = new MetricCollector<long>(testMeterFactory, HttpConnectionsMetrics.MeterName, "signalr.server.active_connections");
 
             var metrics = new HttpConnectionsMetrics(testMeterFactory);
+            Assert.Equal("https://opentelemetry.io/schemas/1.45.0", Assert.Single(testMeterFactory.Meters).TelemetrySchemaUrl);
             var manager = CreateConnectionManager(LoggerFactory, metrics);
             var connection = manager.CreateConnection();
 

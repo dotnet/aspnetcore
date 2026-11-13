@@ -22,7 +22,13 @@ internal sealed class TestMeterFactory : IMeterFactory
                 return existingMeter;
             }
 
-            var meter = new Meter(options.Name, options.Version, Array.Empty<KeyValuePair<string, object>>(), scope: this);
+            var meter = new Meter(new MeterOptions(options.Name)
+            {
+                Version = options.Version,
+                Tags = options.Tags,
+                Scope = this,
+                TelemetrySchemaUrl = options.TelemetrySchemaUrl,
+            });
             Meters.Add(meter);
             return meter;
         }
