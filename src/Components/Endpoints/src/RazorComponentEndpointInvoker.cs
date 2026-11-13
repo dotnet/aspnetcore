@@ -16,6 +16,7 @@ using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.WebUtilities;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 using Microsoft.Net.Http.Headers;
 
 namespace Microsoft.AspNetCore.Components.Endpoints;
@@ -92,10 +93,16 @@ internal partial class RazorComponentEndpointInvoker : IRazorComponentEndpointIn
         bool isErrorHandlerOrReExecuted = isErrorHandler || isReExecuted;
 
         // A cross-site navigation may omit another tab's Strict cookie. Wait to determine whether this page needs one.
-        var bufferCrossSiteRequest = HttpMethods.IsGet(context.Request.Method) &&
+        var isCrossSiteRequest = HttpMethods.IsGet(context.Request.Method) &&
             string.Equals(context.Request.Headers["Sec-Fetch-Site"], "cross-site", StringComparison.OrdinalIgnoreCase) &&
             context.Items.ContainsKey(MiddlewareInvokedKeys.Antiforgery) &&
             context.RequestServices.GetService<AntiforgeryStateProvider>() is EndpointAntiforgeryStateProvider;
+        var bufferCrossSiteRequest = isCrossSiteRequest;
+        if (bufferCrossSiteRequest)
+        {
+            var cookieName = context.RequestServices.GetRequiredService<IOptions<AntiforgeryOptions>>().Value.Cookie.Name;
+            bufferCrossSiteRequest = string.IsNullOrEmpty(cookieName) || string.IsNullOrEmpty(context.Request.Cookies[cookieName]);
+        }
 
         // Note that we always use Static rendering mode for the top-level output from a RazorComponentResult,
         // because you never want to serialize the invocation of RazorComponentResultHost. Instead, that host
@@ -140,7 +147,7 @@ internal partial class RazorComponentEndpointInvoker : IRazorComponentEndpointIn
         if (bufferCrossSiteRequest && _renderer.HasInteractiveComponents)
         {
             // Interactive components may render a form after activation, so establish their cookie before headers are sent.
-            context.RequestServices.GetRequiredService<IAntiforgery>().GetAndStoreTokens(context);
+            context.RequestServices.GetRequiredService<IAntiforgery>().SetCookieTokenAndHeader(context);
         }
 
         if (!quiesceTask.IsCompleted)
@@ -161,7 +168,7 @@ internal partial class RazorComponentEndpointInvoker : IRazorComponentEndpointIn
             context.Response.Headers.ContentEncoding = "identity";
         }
         else if (endpoint.Metadata.GetMetadata<ConfiguredRenderModesMetadata>()?.ConfiguredRenderModes.Length == 0 ||
-            (bufferCrossSiteRequest && !_renderer.HasInteractiveComponents))
+            (isCrossSiteRequest && !_renderer.HasInteractiveComponents))
         {
             // Static pages without forms must not generate a cookie merely to persist component state.
             var provider = (EndpointAntiforgeryStateProvider)context.RequestServices.GetRequiredService<AntiforgeryStateProvider>();

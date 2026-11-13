@@ -23,10 +23,126 @@ using Microsoft.Extensions.FileProviders;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
+using Microsoft.Extensions.Options;
 
 namespace Microsoft.AspNetCore.Components.Endpoints.Tests;
 public class RazorComponentEndpointInvokerTest
 {
+    [Theory]
+    [InlineData(false, true)]
+    [InlineData(false, false)]
+    [InlineData(true, true)]
+    [InlineData(true, false)]
+    public async Task Invoker_CrossSiteInteractivePage_DoesNotRequireUserIdentifier(bool hasUserIdentifier, bool prerender)
+    {
+        await using var services = CreateRedirectingPageServices();
+        await using var renderer = new EndpointHtmlRenderer(services, NullLoggerFactory.Instance);
+        var invoker = new RazorComponentEndpointInvoker(renderer, NullLogger<RazorComponentEndpointInvoker>.Instance);
+        var context = CreateRedirectingPageContext(services, typeof(InteractivePage));
+        services.GetRequiredService<IHttpContextAccessor>().HttpContext = context;
+        context.SetEndpoint(new Endpoint(
+            null,
+            new EndpointMetadataCollection(
+                new ComponentTypeMetadata(typeof(InteractivePage)),
+                new RootComponentMetadata(typeof(InteractivePage)),
+                new ConfiguredRenderModesMetadata([RenderMode.InteractiveServer])),
+            "interactive-page"));
+        context.Request.Method = "GET";
+        context.Request.Headers["Sec-Fetch-Site"] = "cross-site";
+        context.Items[MiddlewareInvokedKeys.Antiforgery] = true;
+        context.Items[nameof(InteractivePage)] = prerender;
+        context.User = new ClaimsPrincipal(new ClaimsIdentity(
+            hasUserIdentifier ? [new Claim(ClaimTypes.Name, "Test user")] : [],
+            authenticationType: "test"));
+
+        await invoker.Render(context);
+
+        Assert.Equal(StatusCodes.Status200OK, context.Response.StatusCode);
+        Assert.Contains("<!--Blazor:", await ReadBody(context));
+        Assert.NotEqual(0, context.Response.Headers.SetCookie.Count);
+    }
+
+    [Theory]
+    [InlineData("missing", false)]
+    [InlineData("empty", false)]
+    [InlineData("valid", true)]
+    [InlineData("invalid", true)]
+    public async Task Invoker_CrossSiteStreamingPage_BuffersOnlyWithoutCookie(string cookie, bool streams)
+    {
+        await using var services = CreateRedirectingPageServices();
+        services.GetRequiredService<IOptions<AntiforgeryOptions>>().Value.Cookie.Name = "CustomAntiforgery";
+        await using var renderer = new EndpointHtmlRenderer(services, NullLoggerFactory.Instance);
+        var invoker = new RazorComponentEndpointInvoker(renderer, NullLogger<RazorComponentEndpointInvoker>.Instance);
+        var context = CreateRedirectingPageContext(services, typeof(StreamingPage));
+        services.GetRequiredService<IHttpContextAccessor>().HttpContext = context;
+        context.Request.Method = "GET";
+        context.Request.Headers["Sec-Fetch-Site"] = "cross-site";
+        context.Items[MiddlewareInvokedKeys.Antiforgery] = true;
+        if (cookie == "valid")
+        {
+            var cookieContext = new DefaultHttpContext { RequestServices = services };
+            cookieContext.Request.Scheme = "https";
+            services.GetRequiredService<IAntiforgery>().SetCookieTokenAndHeader(cookieContext);
+            context.Request.Headers.Cookie = cookieContext.Response.Headers.SetCookie.ToString().Split(';')[0];
+        }
+        else if (cookie != "missing")
+        {
+            context.Request.Headers.Cookie = $"CustomAntiforgery={(cookie == "empty" ? "" : "invalid")}";
+        }
+        var started = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+        var completion = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+        context.Items[nameof(StreamingPage)] = (started, completion);
+
+        var renderTask = invoker.Render(context);
+        await started.Task.WaitAsync(TimeSpan.FromSeconds(30));
+        try
+        {
+            await renderer.Dispatcher.InvokeAsync(() =>
+            {
+                Assert.False(renderTask.IsCompleted);
+                Assert.Equal(streams, context.Response.Body.Length > 0);
+            });
+        }
+        finally
+        {
+            completion.SetResult();
+            await renderTask;
+        }
+
+        Assert.Contains("Released", await ReadBody(context));
+        Assert.Equal(cookie == "invalid" ? 1 : 0, context.Response.Headers.SetCookie.Count);
+    }
+
+    private sealed class InteractivePage : ComponentBase
+    {
+        [Inject] public IHttpContextAccessor ContextAccessor { get; set; } = default!;
+
+        protected override void BuildRenderTree(RenderTreeBuilder builder)
+        {
+            builder.OpenComponent<FormFreePage>(0);
+            builder.AddComponentRenderMode(new InteractiveServerRenderMode((bool)ContextAccessor.HttpContext!.Items[nameof(InteractivePage)]!));
+            builder.CloseComponent();
+        }
+    }
+
+    [StreamRendering]
+    private sealed class StreamingPage : ComponentBase
+    {
+        [Inject] public IHttpContextAccessor ContextAccessor { get; set; } = default!;
+        private bool _ready;
+
+        protected override async Task OnInitializedAsync()
+        {
+            var (started, completion) = ((TaskCompletionSource, TaskCompletionSource))ContextAccessor.HttpContext!.Items[nameof(StreamingPage)]!;
+            started.SetResult();
+            await completion.Task;
+            _ready = true;
+        }
+
+        protected override void BuildRenderTree(RenderTreeBuilder builder)
+            => builder.AddContent(0, _ready ? "Released" : "Waiting");
+    }
+
     [Theory]
     [InlineData(false, false)]
     [InlineData(false, true)]
@@ -162,6 +278,7 @@ public class RazorComponentEndpointInvokerTest
     private static ServiceProvider CreateRedirectingPageServices()
         => new ServiceCollection().AddRazorComponents()
             .Services.AddAntiforgery()
+            .AddHttpContextAccessor()
             .AddSingleton<IConfiguration>(new ConfigurationBuilder().Build())
             .AddSingleton<IWebHostEnvironment>(new TestWebHostEnvironment())
             .AddSingleton<IHostEnvironment>(sp => sp.GetRequiredService<IWebHostEnvironment>())

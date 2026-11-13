@@ -60,6 +60,10 @@ public class AntiforgeryTests : ServerTestBase<BasicTestAppServerSiteFixture<Raz
         => VerifyExistingFormAfterStreamingNavigation(crossSite: false);
 
     [Fact]
+    public Task CrossSiteNavigationWithCookieStillStreamsAndPreservesExistingForm()
+        => VerifyExistingFormAfterStreamingNavigation(crossSite: true, includeCrossSiteCookie: true);
+
+    [Fact]
     public Task RemovedInteractiveLoadingComponentDoesNotInvalidateExistingForm()
         => VerifyExistingFormAfterStreamingNavigation(crossSite: true, interactiveLoading: true);
 
@@ -68,7 +72,7 @@ public class AntiforgeryTests : ServerTestBase<BasicTestAppServerSiteFixture<Raz
         => VerifyExistingFormAfterStreamingNavigation(crossSite: true, interactiveLoading: true, retainInteractiveComponent: true);
 
     private async Task VerifyExistingFormAfterStreamingNavigation(
-        bool crossSite, bool interactiveLoading = false, bool retainInteractiveComponent = false)
+        bool crossSite, bool interactiveLoading = false, bool retainInteractiveComponent = false, bool includeCrossSiteCookie = false)
     {
         EnhancedNavigationTestUtil.SuppressEnhancedNavigation(this, shouldSuppress: true);
         Navigate($"{ServerPathBase}/forms/default-form");
@@ -76,6 +80,11 @@ public class AntiforgeryTests : ServerTestBase<BasicTestAppServerSiteFixture<Raz
         var token = Browser.Exists(By.Name("__RequestVerificationToken")).GetDomProperty("value");
         var cookie = Assert.Single(Browser.Manage().Cookies.AllCookies,
             cookie => cookie.Name.StartsWith(".AspNetCore.Antiforgery.", StringComparison.Ordinal));
+        if (includeCrossSiteCookie)
+        {
+            Browser.Manage().Cookies.AddCookie(new Cookie(
+                cookie.Name, cookie.Value, cookie.Domain, cookie.Path, cookie.Expiry, cookie.Secure, cookie.IsHttpOnly, "Lax"));
+        }
         var operations = _serverFixture.Host.Services.GetRequiredService<AsyncOperationService>();
         var id = Guid.NewGuid().ToString("N");
         var started = operations.Start($"{id}-started");
@@ -97,14 +106,14 @@ public class AntiforgeryTests : ServerTestBase<BasicTestAppServerSiteFixture<Raz
             }
             await started.WaitAsync(TimeSpan.FromSeconds(30));
             Browser.SwitchTo().Window(streamingWindow);
-            if (!crossSite)
+            if (!crossSite || includeCrossSiteCookie)
             {
                 Browser.Equal("Waiting for release", () => Browser.Exists(By.Id("waiting")).Text);
             }
             operations.Complete(id);
             Browser.Equal("Released", () => Browser.Exists(By.Id("released")).Text);
             Browser.Equal(crossSite ? "cross-site" : "none", () => Browser.Exists(By.Id("fetch-site")).Text);
-            Browser.Equal(crossSite ? "False" : "True", () => Browser.Exists(By.Id("received-cookie")).Text);
+            Browser.Equal(crossSite && !includeCrossSiteCookie ? "False" : "True", () => Browser.Exists(By.Id("received-cookie")).Text);
             if (interactiveLoading)
             {
                 Browser.Equal("True", () => Browser.Exists(By.Id("loading-initialized")).Text);
@@ -137,6 +146,10 @@ public class AntiforgeryTests : ServerTestBase<BasicTestAppServerSiteFixture<Raz
                 Browser.Close();
             }
             Browser.SwitchTo().Window(formWindow);
+            if (includeCrossSiteCookie)
+            {
+                Browser.Manage().Cookies.AddCookie(cookie);
+            }
         }
     }
 
