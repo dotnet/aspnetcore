@@ -3,6 +3,7 @@
 
 using System.IO.Pipelines;
 using System.Text;
+using Microsoft.AspNetCore.Antiforgery;
 
 namespace Microsoft.AspNetCore.Http.Features;
 
@@ -192,6 +193,62 @@ InvalidContentDispositionValue +
     private const string MultipartFormWithInvalidContentDispositionValue =
         MultipartFormFileInvalidContentDispositionValue +
         MultipartFormEnd;
+
+    [Theory]
+    [InlineData(true)]
+    [InlineData(false)]
+    public async Task ReadFormAsync_MultipartRepeatedHeadersCountExceeded_Throws(bool bufferRequest)
+    {
+        var body = MultipartFormField.Replace("\r\n\r\n",
+            "\r\nCustom-header: first\r\ncustom-HEADER: second\r\n\r\n") + MultipartFormEnd;
+        var context = new DefaultHttpContext();
+        var responseFeature = new FakeResponseFeature();
+        context.Features.Set<IHttpResponseFeature>(responseFeature);
+        context.Request.ContentType = MultipartContentType;
+        context.Request.Body = new NonSeekableReadStream(Encoding.UTF8.GetBytes(body));
+        context.Features.Set<IFormFeature>(new FormFeature(context.Request, new FormOptions
+        {
+            BufferBody = bufferRequest,
+            MultipartHeadersCountLimit = 2,
+        }));
+        try
+        {
+            var exception = await Assert.ThrowsAsync<InvalidDataException>(() => context.Request.ReadFormAsync());
+            Assert.Equal("Multipart headers count limit 2 exceeded.", exception.Message);
+        }
+        finally
+        {
+            await responseFeature.CompleteAsync();
+        }
+    }
+    [Theory]
+    [InlineData(true)]
+    [InlineData(false)]
+    public async Task ReadFormAsync_MultipartRepeatedHeadersAtCountLimit_ReturnsParsedFormCollection(bool bufferRequest)
+    {
+        var body = MultipartFormField.Replace("\r\n\r\n",
+            "\r\nCustom-header: first\r\ncustom-HEADER: second\r\n\r\n") + MultipartFormEnd;
+        var context = new DefaultHttpContext();
+        var responseFeature = new FakeResponseFeature();
+        context.Features.Set<IHttpResponseFeature>(responseFeature);
+        context.Request.ContentType = MultipartContentType;
+        context.Request.Body = new NonSeekableReadStream(Encoding.UTF8.GetBytes(body));
+        context.Features.Set<IFormFeature>(new FormFeature(context.Request, new FormOptions
+        {
+            BufferBody = bufferRequest,
+            MultipartHeadersCountLimit = 3,
+        }));
+        try
+        {
+            var form = await context.Request.ReadFormAsync();
+            Assert.Single(form);
+            Assert.Equal("Foo", form["description"]);
+        }
+        finally
+        {
+            await responseFeature.CompleteAsync();
+        }
+    }
 
     [Theory]
     [InlineData(true)]
@@ -672,5 +729,81 @@ MultipartFormField +
             Assert.Equal(readA, readB);
             loops++;
         }
+    }
+
+    [Theory]
+    [InlineData(null, false)]
+    [InlineData("", false)]
+    [InlineData("application/json", false)]
+    [InlineData("application/json; charset=utf-8", false)]
+    [InlineData("text/plain; format=form", false)]
+    [InlineData("application/form", false)]
+    [InlineData("multipart/form-data-x", false)]
+    [InlineData("form-data", false)]
+    [InlineData("application/x-www-form-urlencoded", true)]
+    [InlineData("APPLICATION/X-WWW-FORM-URLENCODED; charset=utf-8", true)]
+    [InlineData("  application/x-www-form-urlencoded  ", true)]
+    [InlineData("multipart/form-data; boundary=----WebKitFormBoundarymx2fSWqWSd0OxQqq", true)]
+    [InlineData("Multipart/Form-Data", true)]
+    public void HasFormContentType_ReturnsExpectedValue(string contentType, bool expected)
+    {
+        var context = new DefaultHttpContext();
+        context.Request.ContentType = contentType;
+
+        Assert.Equal(expected, context.Request.HasFormContentType);
+    }
+
+    [Theory]
+    [InlineData(null)]
+    [InlineData("application/json")]
+    [InlineData("application/x-www-form-urlencoded")]
+    public void HasFormContentType_DoesNotAllocateItems(string contentType)
+    {
+        var context = new DefaultHttpContext();
+        context.Request.ContentType = contentType;
+
+        _ = context.Request.HasFormContentType;
+
+        Assert.Null(context.Features.Get<IItemsFeature>());
+    }
+
+    [Theory]
+    [InlineData("__AntiforgeryMiddlewareWithEndpointInvoked")]
+    [InlineData("__CsrfProtectionMiddlewareWithEndpointInvoked")]
+    public void HasFormContentType_InvalidAntiforgeryValidationAfterMiddleware_Throws(string middlewareInvokedKey)
+    {
+        var context = new DefaultHttpContext();
+        context.Request.ContentType = "application/x-www-form-urlencoded";
+        context.Features.Set<IAntiforgeryValidationFeature>(new TestAntiforgeryValidationFeature(isValid: false));
+        context.Items[middlewareInvokedKey] = true;
+
+        var exception = Assert.Throws<InvalidOperationException>(() => context.Request.HasFormContentType);
+        Assert.Contains("failed antiforgery validation", exception.Message);
+    }
+
+    [Theory]
+    [InlineData(false, false)]
+    [InlineData(true, true)]
+    [InlineData(null, true)]
+    public void HasFormContentType_AntiforgeryValidationNotEnforced_DoesNotThrow(bool? isValid, bool middlewareInvoked)
+    {
+        var context = new DefaultHttpContext();
+        context.Request.ContentType = "application/x-www-form-urlencoded";
+        if (isValid is { } valid)
+        {
+            context.Features.Set<IAntiforgeryValidationFeature>(new TestAntiforgeryValidationFeature(valid));
+        }
+        if (middlewareInvoked)
+        {
+            context.Items["__AntiforgeryMiddlewareWithEndpointInvoked"] = true;
+        }
+
+        Assert.True(context.Request.HasFormContentType);
+    }
+
+    private sealed class TestAntiforgeryValidationFeature(bool isValid) : IAntiforgeryValidationFeature
+    {
+        public bool IsValid { get; } = isValid;
+        public Exception Error { get; }
     }
 }

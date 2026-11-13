@@ -258,6 +258,23 @@ public class EntityTagHeaderValueTest
         Assert.Empty(result);
     }
 
+    [Theory]
+    [InlineData(",,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,")]
+    [InlineData(", , , ,\t,\t , ,,,,  ,,,,,,,,,,,,,,,,,,,,,,,,,,,,,, ,")]
+    [InlineData(",,,,\r\n ,,,,\r\n\t,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,")]
+    public void TryParseStrictList_LongRunsOfEmptyValues_Skipped(string separators)
+    {
+        var input = "\"a\"" + separators + "\"b\"" + separators;
+        Assert.True(EntityTagHeaderValue.TryParseStrictList(new[] { input }, out var results));
+        Assert.Equal(new[] { new EntityTagHeaderValue("\"a\""), new EntityTagHeaderValue("\"b\"") }, results);
+    }
+
+    [Fact]
+    public void TryParseStrictList_EmptyValuesFollowedByCRWithoutFolding_Fails()
+    {
+        Assert.False(EntityTagHeaderValue.TryParseStrictList(new[] { "\"a\",,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,\r\n\"b\"" }, out _));
+    }
+
     [Fact]
     public void TryParseList_NullOrEmptyArray_ReturnsFalse()
     {

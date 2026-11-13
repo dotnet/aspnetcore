@@ -13,6 +13,80 @@ internal sealed class DefaultPageHandlerMethodSelector : IPageHandlerMethodSelec
 
     public HandlerMethodDescriptor? Select(PageContext context)
     {
+        var handlers = context.ActionDescriptor.HandlerMethods;
+        if (handlers.Count == 0)
+        {
+            return null;
+        }
+
+        // Perf: Find the best match without allocating a candidate list. Ambiguous matches are rare, so they fall back
+        // to the list based selection which produces the exception.
+        var handlerName = GetHandlerName(context);
+        var httpMethod = context.HttpContext.Request.Method;
+        var bestMatch = FindBestMatch(handlers, httpMethod, handlerName, out var hasHttpMethodMatch, out var isAmbiguous);
+        if (!hasHttpMethodMatch)
+        {
+            var fuzzyHttpMethod = GetFuzzyMatchHttpMethod(context);
+            if (fuzzyHttpMethod != null)
+            {
+                bestMatch = FindBestMatch(handlers, fuzzyHttpMethod, handlerName, out _, out isAmbiguous);
+            }
+        }
+
+        if (!isAmbiguous)
+        {
+            return bestMatch;
+        }
+
+        return SelectAmbiguous(context);
+    }
+
+    private static HandlerMethodDescriptor? FindBestMatch(
+        IList<HandlerMethodDescriptor> handlers,
+        string httpMethod,
+        string? handlerName,
+        out bool hasHttpMethodMatch,
+        out bool isAmbiguous)
+    {
+        hasHttpMethodMatch = false;
+        isAmbiguous = false;
+        HandlerMethodDescriptor? bestMatch = null;
+        var bestScore = -1;
+
+        for (var i = 0; i < handlers.Count; i++)
+        {
+            var handler = handlers[i];
+            if (handler.HttpMethod == null ||
+                !string.Equals(handler.HttpMethod, httpMethod, StringComparison.OrdinalIgnoreCase))
+            {
+                continue;
+            }
+
+            hasHttpMethodMatch = true;
+            if (handler.Name != null &&
+                !handler.Name.Equals(handlerName, StringComparison.OrdinalIgnoreCase))
+            {
+                continue;
+            }
+
+            var score = GetScore(handler);
+            if (score > bestScore)
+            {
+                bestMatch = handler;
+                bestScore = score;
+                isAmbiguous = false;
+            }
+            else if (score == bestScore)
+            {
+                isAmbiguous = true;
+            }
+        }
+
+        return bestMatch;
+    }
+
+    private static HandlerMethodDescriptor? SelectAmbiguous(PageContext context)
+    {
         var handlers = SelectHandlers(context);
         if (handlers == null || handlers.Count == 0)
         {
