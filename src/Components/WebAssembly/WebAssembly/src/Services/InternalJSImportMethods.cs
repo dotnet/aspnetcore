@@ -51,6 +51,12 @@ internal partial class InternalJSImportMethods : IInternalJSImportMethods
     public string NavigationManager_GetLocationHref()
         => NavigationManager_GetLocationHrefCore();
 
+    public string? NavigationManager_GetHistoryEntryState()
+        => NavigationManager_GetHistoryEntryStateCore();
+
+    public bool NavigationManager_GetLastNavigationWasIntercepted()
+        => NavigationManager_GetLastNavigationWasInterceptedCore();
+
     public string NavigationManager_GetBaseUri()
         => NavigationManager_GetBaseUriCore();
 
@@ -104,6 +110,12 @@ internal partial class InternalJSImportMethods : IInternalJSImportMethods
 
     [JSImport(BrowserNavigationManagerInterop.GetLocationHref, "blazor-internal")]
     private static partial string NavigationManager_GetLocationHrefCore();
+
+    [JSImport(BrowserNavigationManagerInterop.GetHistoryEntryState, "blazor-internal")]
+    private static partial string? NavigationManager_GetHistoryEntryStateCore();
+
+    [JSImport(BrowserNavigationManagerInterop.GetLastNavigationWasIntercepted, "blazor-internal")]
+    private static partial bool NavigationManager_GetLastNavigationWasInterceptedCore();
 
     [JSImport(BrowserNavigationManagerInterop.GetBaseUri, "blazor-internal")]
     private static partial string NavigationManager_GetBaseUriCore();

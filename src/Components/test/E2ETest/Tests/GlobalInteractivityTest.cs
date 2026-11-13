@@ -22,6 +22,158 @@ public class GlobalInteractivityTest(
 {
 
     [Theory]
+    [InlineData(0)]
+    [InlineData(1)]
+    [InlineData(2)]
+    [InlineData(3)]
+    public void UsesCurrentLocationAfterWebAssemblyStartup(int navigationCount)
+    {
+        Navigate($"{ServerPathBase}/globally-interactive/startup/Home?delay-webassembly-startup");
+
+        var js = (IJavaScriptExecutor)Browser;
+        Browser.True(() => (bool)js.ExecuteScript("return window.webAssemblyStartup?.waiting === true"));
+        js.ExecuteScript("Blazor.addEventListener('enhancedload', () => window.webAssemblyStartup.enhancedLoads++)");
+
+        for (var i = 0; i < Math.Min(navigationCount, 2); i++)
+        {
+            Browser.Click(By.Id("next-page"));
+            Browser.Equal(i == 0 ? "Counter" : "Final", () => Browser.Exists(By.TagName("h1")).Text);
+            Browser.True(() => (long)js.ExecuteScript("return window.webAssemblyStartup.enhancedLoads") > i);
+            if (navigationCount == 3 && i == 0)
+            {
+                js.ExecuteScript("history.replaceState({ ...history.state, userState: 'startup-state' }, '', location.href)");
+            }
+        }
+
+        if (navigationCount == 3)
+        {
+            Browser.Navigate().Back();
+            Browser.Equal("Counter", () => Browser.Exists(By.TagName("h1")).Text);
+            Browser.True(() => (long)js.ExecuteScript("return window.webAssemblyStartup.enhancedLoads") > 2);
+        }
+
+        var expectedHeading = navigationCount switch
+        {
+            0 => "Home",
+            2 => "Final",
+            _ => "Counter",
+        };
+        var expectedUri = Browser.Url;
+
+        js.ExecuteScript("window.webAssemblyStartup.release()");
+
+        Browser.Equal("interactive webassembly", () => Browser.Exists(By.Id("execution-mode")).Text);
+        Browser.Equal(expectedHeading, () => Browser.Exists(By.TagName("h1")).Text);
+        Browser.Equal(expectedUri, () => Browser.Exists(By.Id("navigation-uri")).Text);
+        Browser.Equal(navigationCount == 3 ? "startup-state" : "", () => Browser.Exists(By.Id("history-entry-state")).Text);
+        Browser.Equal(navigationCount == 0 ? "0" : "1", () => Browser.Exists(By.Id("startup-notification-count")).Text);
+        Browser.Equal(navigationCount == 0 ? "" : expectedUri, () => Browser.Exists(By.Id("startup-notification-uri")).Text);
+        Browser.Equal(navigationCount is 1 or 2 ? "True" : "False", () => Browser.Exists(By.Id("startup-notification-intercepted")).Text);
+
+        Browser.Click(By.Id("increment"));
+        Browser.Equal("1", () => Browser.Exists(By.Id("count")).Text);
+
+        Browser.Click(By.Id("next-page"));
+        Browser.Equal(navigationCount == 0 ? "Counter" : "Final", () => Browser.Exists(By.TagName("h1")).Text);
+        Browser.Equal(Browser.Url, () => Browser.Exists(By.Id("navigation-uri")).Text);
+    }
+
+    [Fact]
+    public void UsesRedirectedLocationAfterWebAssemblyStartup()
+    {
+        Navigate($"{ServerPathBase}/globally-interactive/startup/Home?delay-webassembly-startup");
+
+        var js = (IJavaScriptExecutor)Browser;
+        Browser.True(() => (bool)js.ExecuteScript("return window.webAssemblyStartup?.waiting === true"));
+        // Hold the real fetch until .NET is waiting for the initial component update.
+        js.ExecuteScript("""
+            const originalFetch = window.fetch;
+            const redirectGate = new Promise(resolve => window.webAssemblyStartup.releaseRedirect = resolve);
+            window.fetch = async (...args) => {
+                if (String(args[0]).endsWith('/globally-interactive/startup-redirect')) {
+                    window.fetch = originalFetch;
+                    window.webAssemblyStartup.redirectWaiting = true;
+                    await redirectGate;
+                }
+                return originalFetch(...args);
+            };
+            const getInitialUpdate = Blazor._internal.getInitialComponentsUpdate;
+            Blazor._internal.getInitialComponentsUpdate = () => {
+                window.webAssemblyStartup.waitingForInitialUpdate = true;
+                return getInitialUpdate();
+            };
+            """);
+
+        Browser.Click(By.Id("redirect-page"));
+        Browser.True(() => (bool)js.ExecuteScript("return window.webAssemblyStartup.redirectWaiting === true"));
+        Assert.EndsWith("/globally-interactive/startup-redirect", Browser.Url);
+        js.ExecuteScript("window.webAssemblyStartup.release()");
+        Browser.True(() => (bool)js.ExecuteScript("return window.webAssemblyStartup.waitingForInitialUpdate === true"));
+        js.ExecuteScript("window.webAssemblyStartup.releaseRedirect()");
+
+        Browser.Equal("interactive webassembly", () => Browser.Exists(By.Id("execution-mode")).Text);
+        Browser.Equal("Counter", () => Browser.Exists(By.TagName("h1")).Text);
+        Browser.Equal(Browser.Url, () => Browser.Exists(By.Id("navigation-uri")).Text);
+        Assert.EndsWith("/globally-interactive/startup/Counter", Browser.Url);
+        Browser.Click(By.Id("increment"));
+        Browser.Equal("1", () => Browser.Exists(By.Id("count")).Text);
+        Browser.Click(By.Id("next-page"));
+        Browser.Equal("Final", () => Browser.Exists(By.TagName("h1")).Text);
+        Browser.Equal(Browser.Url, () => Browser.Exists(By.Id("navigation-uri")).Text);
+    }
+
+    [Fact]
+    public void UsesCurrentHistoryEntryStateAfterWebAssemblyStartupWithoutLocationChange()
+    {
+        Navigate($"{ServerPathBase}/globally-interactive/startup/Home?delay-webassembly-startup");
+
+        var js = (IJavaScriptExecutor)Browser;
+        Browser.True(() => (bool)js.ExecuteScript("return window.webAssemblyStartup?.waiting === true"));
+        var expectedUri = Browser.Url;
+
+        // Native history state can change without a navigation or a location-changed notification.
+        js.ExecuteScript("history.replaceState({ ...history.state, userState: 'startup-state' }, '', location.href)");
+        Assert.Equal(expectedUri, Browser.Url);
+        Assert.Equal("startup-state", js.ExecuteScript("return history.state.userState"));
+
+        js.ExecuteScript("window.webAssemblyStartup.release()");
+
+        Browser.Equal("interactive webassembly", () => Browser.Exists(By.Id("execution-mode")).Text);
+        Browser.Equal("Home", () => Browser.Exists(By.TagName("h1")).Text);
+        Browser.Equal(expectedUri, () => Browser.Exists(By.Id("navigation-uri")).Text);
+        Browser.Equal("startup-state", () => Browser.Exists(By.Id("history-entry-state")).Text);
+        Browser.Equal("0", () => Browser.Exists(By.Id("startup-notification-count")).Text);
+
+        Browser.Click(By.Id("increment"));
+        Browser.Equal("1", () => Browser.Exists(By.Id("count")).Text);
+
+        Browser.Click(By.Id("next-page"));
+        Browser.Equal("Counter", () => Browser.Exists(By.TagName("h1")).Text);
+        Browser.Equal(Browser.Url, () => Browser.Exists(By.Id("navigation-uri")).Text);
+    }
+
+    [Theory]
+    [InlineData("({ value: 42 })")]
+    [InlineData("42")]
+    [InlineData("null")]
+    [InlineData("undefined")]
+    public void IgnoresNonStringHistoryEntryStateAfterWebAssemblyStartup(string stateExpression)
+    {
+        Navigate($"{ServerPathBase}/globally-interactive/startup/Home?delay-webassembly-startup");
+
+        var js = (IJavaScriptExecutor)Browser;
+        Browser.True(() => (bool)js.ExecuteScript("return window.webAssemblyStartup?.waiting === true"));
+        js.ExecuteScript($"history.replaceState({{ ...history.state, userState: {stateExpression} }}, '', location.href)");
+        js.ExecuteScript("window.webAssemblyStartup.release()");
+
+        Browser.Equal("interactive webassembly", () => Browser.Exists(By.Id("execution-mode")).Text);
+        Browser.Equal("", () => Browser.Exists(By.Id("history-entry-state")).Text);
+        Browser.Equal("0", () => Browser.Exists(By.Id("startup-notification-count")).Text);
+        Browser.Click(By.Id("increment"));
+        Browser.Equal("1", () => Browser.Exists(By.Id("count")).Text);
+    }
+
+    [Theory]
     [InlineData("server", false)]
     [InlineData("webassembly", false)]
     [InlineData("server", true)]

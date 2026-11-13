@@ -164,6 +164,10 @@ In Interactive WebAssembly, the .NET runtime, component instances, renderer, and
 
 A standalone Blazor WebAssembly application starts directly in this composition. A Blazor Web App can first prerender the component on the server and then activate a separate WebAssembly instance after the runtime and application assets are available.
 
+The WebAssembly host reconciles `NavigationManager` with the browser's current URL and history entry state after attaching the renderer and awaiting any initial component update, before rendering the initial components. This wait lets in-flight enhanced navigations and redirects settle before the browser location is read. Enhanced navigations can update the browser location during startup, while location-change delivery to the interactive runtime is not yet available.
+
+Startup reconciliation notifies subscribers only when the URL has changed, preserving the intercepted-link flag from the latest JavaScript location-change notification. A state-only update does not raise `LocationChanged`. Only string-valued history user state is restored; other native history values are treated as absent rather than passed to the synchronous string interop import.
+
 ```mermaid
 sequenceDiagram
     participant Browser
