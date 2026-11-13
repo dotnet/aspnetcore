@@ -597,7 +597,12 @@ internal sealed class HostingApplicationDiagnostics
         {
             var resolvedRoute = RouteDiagnosticsHelpers.ResolveHttpRoute(route);
             activity.SetTag(HostingTelemetryHelpers.AttributeHttpRoute, resolvedRoute);
-            activity.DisplayName = HostingTelemetryHelpers.GetActivityDisplayName(httpContext.Request.Method, resolvedRoute);
+            // The app may have set a more specific name during the request. Only
+            // replace the name when it is still the method-only one set at start.
+            if (activity.DisplayName == HostingTelemetryHelpers.GetActivityDisplayName(httpContext.Request.Method))
+            {
+                activity.DisplayName = HostingTelemetryHelpers.GetActivityDisplayName(httpContext.Request.Method, resolvedRoute);
+            }
         }
 
         if (exception != null)

@@ -1844,6 +1844,42 @@ public class HostingApplicationDiagnosticsTests : LoggedTest
     }
 
     [Fact]
+    public void ActivityListeners_AppSetDisplayNameNotReplacedByRouteName()
+    {
+        var testSource = new ActivitySource(Path.GetRandomFileName());
+        var hostingApplication = CreateApplication(out var features, activitySource: testSource, suppressActivityOpenTelemetryData: false, configure: c =>
+        {
+            c.Request.Protocol = "HTTP/1.1";
+            c.Request.Scheme = "http";
+            c.Request.Method = "GET";
+            c.Request.Path = "/api/test";
+            c.Response.StatusCode = 200;
+        });
+
+        Activity stoppedActivity = null;
+        using var listener = new ActivityListener
+        {
+            ShouldListenTo = activitySource => ReferenceEquals(activitySource, testSource),
+            Sample = (ref ActivityCreationOptions<ActivityContext> _) => ActivitySamplingResult.AllData,
+            ActivityStopped = activity => stoppedActivity = activity
+        };
+
+        ActivitySource.AddActivityListener(listener);
+
+        var context = hostingApplication.CreateContext(features);
+        context.HttpContext.SetEndpoint(new Endpoint(
+            c => Task.CompletedTask,
+            new EndpointMetadataCollection(new TestRouteDiagnosticsMetadata()),
+            "Test endpoint"));
+        context.HttpContext.Features.Get<IHttpActivityFeature>().Activity.DisplayName = "custom-name";
+        hostingApplication.DisposeContext(context, null);
+
+        Assert.NotNull(stoppedActivity);
+        Assert.Equal("custom-name", stoppedActivity.DisplayName);
+        Assert.Equal("hello/{name}", stoppedActivity.TagObjects.Single(t => t.Key == HostingTelemetryHelpers.AttributeHttpRoute).Value);
+    }
+
+    [Fact]
     public void RequestLogs()
     {
         var testSink = new TestSink();
