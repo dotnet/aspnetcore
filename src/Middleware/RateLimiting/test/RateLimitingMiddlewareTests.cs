@@ -685,6 +685,145 @@ public class RateLimitingMiddlewareTests
         return endpointBuilder.Build();
     }
 
+    [Fact]
+    public async Task GlobalOnly_NoEndpointPolicy_HoldsAndReleasesGlobalLease()
+    {
+        var options = CreateOptionsAccessor();
+        var globalLimiter = PartitionedRateLimiter.Create<HttpContext, string>(_ =>
+            RateLimitPartition.GetConcurrencyLimiter("global", _ => new ConcurrencyLimiterOptions { PermitLimit = 1, QueueLimit = 0 }));
+        options.Value.GlobalLimiter = globalLimiter;
+        options.Value.AddPolicy<string>("unused", new TestRateLimiterPolicy("key", 404, false));
+
+        var calls = 0;
+        var middleware = new RateLimitingMiddleware(c =>
+            {
+                calls++;
+                // The global permit is held while the request runs.
+                using var lease = globalLimiter.AttemptAcquire(c);
+                Assert.False(lease.IsAcquired);
+                return Task.CompletedTask;
+            },
+            new NullLoggerFactory().CreateLogger<RateLimitingMiddleware>(),
+            options,
+            Mock.Of<IServiceProvider>(),
+            new RateLimitingMetrics(new TestMeterFactory()));
+
+        for (var i = 0; i < 3; i++)
+        {
+            var context = new DefaultHttpContext();
+            context.SetEndpoint(new Endpoint(null, new EndpointMetadataCollection(), "no policy"));
+            await middleware.Invoke(context).DefaultTimeout();
+            Assert.Equal(StatusCodes.Status200OK, context.Response.StatusCode);
+        }
+
+        Assert.Equal(3, calls);
+        using var finalLease = globalLimiter.AttemptAcquire(new DefaultHttpContext());
+        Assert.True(finalLease.IsAcquired);
+    }
+
+    [Fact]
+    public async Task GlobalOnly_NoEndpointPolicy_QueuedRequestRunsAfterRelease()
+    {
+        var options = CreateOptionsAccessor();
+        var globalLimiter = PartitionedRateLimiter.Create<HttpContext, string>(_ =>
+            RateLimitPartition.GetConcurrencyLimiter("global", _ => new ConcurrencyLimiterOptions { PermitLimit = 1, QueueLimit = 1 }));
+        options.Value.GlobalLimiter = globalLimiter;
+
+        var firstStarted = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+        var releaseFirst = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+        var calls = 0;
+        var middleware = new RateLimitingMiddleware(async c =>
+            {
+                if (Interlocked.Increment(ref calls) == 1)
+                {
+                    firstStarted.SetResult();
+                    await releaseFirst.Task;
+                }
+            },
+            new NullLoggerFactory().CreateLogger<RateLimitingMiddleware>(),
+            options,
+            Mock.Of<IServiceProvider>(),
+            new RateLimitingMetrics(new TestMeterFactory()));
+
+        var first = middleware.Invoke(new DefaultHttpContext());
+        await firstStarted.Task.DefaultTimeout();
+
+        var secondContext = new DefaultHttpContext();
+        var second = middleware.Invoke(secondContext);
+        Assert.False(second.IsCompleted);
+
+        releaseFirst.SetResult();
+        await first.DefaultTimeout();
+        await second.DefaultTimeout();
+
+        Assert.Equal(2, calls);
+        Assert.Equal(StatusCodes.Status200OK, secondContext.Response.StatusCode);
+        using var finalLease = globalLimiter.AttemptAcquire(new DefaultHttpContext());
+        Assert.True(finalLease.IsAcquired);
+    }
+
+    [Fact]
+    public async Task GlobalOnly_NoEndpointPolicy_RequestAbortedWhileQueued_ReleasesGlobalLeaseAndSkipsNext()
+    {
+        var sink = new TestSink(
+            TestSink.EnableWithTypeName<RateLimitingMiddleware>,
+            TestSink.EnableWithTypeName<RateLimitingMiddleware>);
+        var loggerFactory = new TestLoggerFactory(sink, enabled: true);
+
+        using var requestAborted = new CancellationTokenSource();
+        var globalLimiter = new CancelOnAcquireLimiter(requestAborted);
+        var options = CreateOptionsAccessor();
+        options.Value.GlobalLimiter = globalLimiter;
+
+        var nextInvoked = false;
+        var middleware = new RateLimitingMiddleware(c =>
+            {
+                nextInvoked = true;
+                return Task.CompletedTask;
+            },
+            loggerFactory.CreateLogger<RateLimitingMiddleware>(),
+            options,
+            Mock.Of<IServiceProvider>(),
+            new RateLimitingMetrics(new TestMeterFactory()));
+
+        var context = new DefaultHttpContext { RequestAborted = requestAborted.Token };
+        await middleware.Invoke(context);
+
+        Assert.False(nextInvoked);
+        Assert.True(globalLimiter.LeaseDisposed);
+        Assert.Equal(StatusCodes.Status200OK, context.Response.StatusCode);
+        var message = Assert.Single(sink.Writes);
+        Assert.Equal("The request was canceled.", message.State.ToString());
+    }
+
+    // Fails the synchronous attempt, then grants the queued request while the request is being aborted.
+    private sealed class CancelOnAcquireLimiter(CancellationTokenSource requestAborted) : PartitionedRateLimiter<HttpContext>
+    {
+        public bool LeaseDisposed { get; private set; }
+
+        public override RateLimiterStatistics GetStatistics(HttpContext resource) => null;
+
+        protected override RateLimitLease AttemptAcquireCore(HttpContext resource, int permitCount) => new TestRateLimitLease(false, null);
+
+        protected override ValueTask<RateLimitLease> AcquireAsyncCore(HttpContext resource, int permitCount, CancellationToken cancellationToken)
+        {
+            requestAborted.Cancel();
+            return new ValueTask<RateLimitLease>(new CallbackLease(() => LeaseDisposed = true));
+        }
+    }
+
+    private sealed class CallbackLease(Action onDispose) : RateLimitLease
+    {
+        public override bool IsAcquired => true;
+        public override IEnumerable<string> MetadataNames => [];
+        public override bool TryGetMetadata(string metadataName, out object metadata)
+        {
+            metadata = null;
+            return false;
+        }
+        protected override void Dispose(bool disposing) => onDispose();
+    }
+
     private Endpoint CreateEndpointWithRateLimitPolicy(string policy)
     {
         var testConventionBuilder = new TestEndpointConventionBuilder();
