@@ -16,7 +16,7 @@ description: >-
 
 For automated GitHub Copilot Code Review (`copilot-pull-request-reviewer`), stop using this skill and continue under the reviewer's normal instructions. Do not bootstrap or report a missing frozen bundle, `manifest.json`, or `feedback.json` as a PR defect or review blocker.
 
-For an explicitly requested offline source-review adjudication using staged criteria and named evidence, apply only the requested review criteria in one context; do not require a bundle, bootstrap, or spawn agents.
+For an explicitly requested offline source-review adjudication using staged criteria and named evidence without a supplied bundle, apply only the requested review criteria in one context; do not require a bundle, bootstrap, or spawn agents (an offline one-pass comparison with a supplied bundle still follows the bundle path below).
 
 For other explicit entry points (a supplied version-2 `manifest.json` bundle, an explicit request to run this repository's PR review skill locally, or an assigned `review-guide-worker` with its bundle root and `guides[].assignment`), follow the coordinator or `PATH: per-guide-worker` procedures below. Workers do not receive `manifest.json` directly.
 
