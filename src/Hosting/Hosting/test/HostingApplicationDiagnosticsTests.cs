@@ -1880,6 +1880,43 @@ public class HostingApplicationDiagnosticsTests : LoggedTest
     }
 
     [Fact]
+    public void ActivityListeners_RouteNameAppliedWhenMethodChangedAfterStart()
+    {
+        var testSource = new ActivitySource(Path.GetRandomFileName());
+        var hostingApplication = CreateApplication(out var features, activitySource: testSource, suppressActivityOpenTelemetryData: false, configure: c =>
+        {
+            c.Request.Protocol = "HTTP/1.1";
+            c.Request.Scheme = "http";
+            c.Request.Method = "POST";
+            c.Request.Path = "/api/test";
+            c.Response.StatusCode = 200;
+        });
+
+        Activity stoppedActivity = null;
+        using var listener = new ActivityListener
+        {
+            ShouldListenTo = activitySource => ReferenceEquals(activitySource, testSource),
+            Sample = (ref ActivityCreationOptions<ActivityContext> _) => ActivitySamplingResult.AllData,
+            ActivityStopped = activity => stoppedActivity = activity
+        };
+
+        ActivitySource.AddActivityListener(listener);
+
+        var context = hostingApplication.CreateContext(features);
+        // Simulates middleware like HttpMethodOverrideMiddleware changing the method after the activity started.
+        context.HttpContext.Request.Method = "GET";
+        context.HttpContext.SetEndpoint(new Endpoint(
+            c => Task.CompletedTask,
+            new EndpointMetadataCollection(new TestRouteDiagnosticsMetadata()),
+            "Test endpoint"));
+        hostingApplication.DisposeContext(context, null);
+
+        Assert.NotNull(stoppedActivity);
+        Assert.Equal("GET hello/{name}", stoppedActivity.DisplayName);
+        Assert.Equal("hello/{name}", stoppedActivity.TagObjects.Single(t => t.Key == HostingTelemetryHelpers.AttributeHttpRoute).Value);
+    }
+
+    [Fact]
     public void RequestLogs()
     {
         var testSink = new TestSink();

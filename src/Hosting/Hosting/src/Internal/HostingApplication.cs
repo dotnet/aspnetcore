@@ -158,6 +158,10 @@ internal sealed class HostingApplication : IHttpApplication<HostingApplication.C
 
         public long StartTimestamp { get; set; }
         internal bool HasDiagnosticListener { get; set; }
+
+        // Retained so request end can tell the name hosting assigned at start
+        // apart from a name the app assigned during the request.
+        internal string? InitialActivityDisplayName { get; set; }
         public bool MetricsEnabled { get; set; }
         public bool EventLogEnabled { get; set; }
 
@@ -174,6 +178,7 @@ internal sealed class HostingApplication : IHttpApplication<HostingApplication.C
 
             StartTimestamp = 0;
             HasDiagnosticListener = false;
+            InitialActivityDisplayName = null;
             MetricsEnabled = false;
             EventLogEnabled = false;
             MetricsTagsFeature?.Reset();
