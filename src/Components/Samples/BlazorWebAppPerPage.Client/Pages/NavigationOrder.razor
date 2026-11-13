@@ -1,0 +1,31 @@
+﻿@page "/navigation-order"
+@rendermode @(new InteractiveWebAssemblyRenderMode(prerender: false))
+@inject NavigationManager Navigation
+
+<h1>Navigation ordering</h1>
+
+<p>Runtime: @RendererInfo.Name</p>
+<p>Clicks: @_count</p>
+
+<button @onclick="() => _count++">Confirm interactivity</button>
+
+<p>
+    <a href="weather" @onclick="NavigateHome">
+        Without preventDefault
+    </a>
+</p>
+
+<p>
+    <a href="weather" @onclick="NavigateHome" @onclick:preventDefault>
+        With preventDefault
+    </a>
+</p>
+
+@code {
+    private int _count;
+
+    private void NavigateHome()
+    {
+        Navigation.NavigateTo(Navigation.BaseUri);
+    }
+}
