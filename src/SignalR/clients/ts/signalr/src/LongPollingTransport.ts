@@ -3,11 +3,13 @@
 
 import { AbortController } from "./AbortController";
 import { HttpError, TimeoutError } from "./Errors";
-import { HttpClient, HttpRequest } from "./HttpClient";
+import { HttpClient, HttpRequest, HttpResponse } from "./HttpClient";
 import { ILogger, LogLevel } from "./ILogger";
 import { ITransport, TransferFormat } from "./ITransport";
-import { Arg, getDataDetail, getUserAgentHeader, sendMessage } from "./Utils";
+import { Arg, getDataDetail, getHttpResponseError, getUserAgentHeader, isSuccessStatusCode, sendMessage } from "./Utils";
 import { IHttpConnectionOptions } from "./IHttpConnectionOptions";
+
+const AUTHENTICATION_REFRESH_REQUIRED = "authentication_refresh_required";
 
 // Not exported from 'index', this type is internal.
 /** @private */
@@ -16,6 +18,7 @@ export class LongPollingTransport implements ITransport {
     private readonly _logger: ILogger;
     private readonly _options: IHttpConnectionOptions;
     private readonly _pollAbort: AbortController;
+    private readonly _authenticationRefresh?: () => Promise<unknown>;
 
     private _url?: string;
     private _running: boolean;
@@ -30,11 +33,12 @@ export class LongPollingTransport implements ITransport {
         return this._pollAbort.aborted;
     }
 
-    constructor(httpClient: HttpClient, logger: ILogger, options: IHttpConnectionOptions) {
+    constructor(httpClient: HttpClient, logger: ILogger, options: IHttpConnectionOptions, authenticationRefresh?: () => Promise<unknown>) {
         this._httpClient = httpClient;
         this._logger = logger;
         this._pollAbort = new AbortController();
         this._options = options;
+        this._authenticationRefresh = authenticationRefresh;
 
         this._running = false;
 
@@ -89,13 +93,48 @@ export class LongPollingTransport implements ITransport {
         this._receiving = this._poll(this._url, pollOptions);
     }
 
+    private _isAuthenticationRefreshRequired(response: HttpResponse): boolean {
+        if (response.statusCode !== 409 || response.content === undefined) {
+            return false;
+        }
+
+        try {
+            const content = typeof response.content === "string"
+                ? response.content
+                : String.fromCharCode.apply(null, Array.prototype.slice.call(new Uint8Array(response.content)));
+            const payload = JSON.parse(content) as { error?: unknown };
+            return payload !== null
+                && typeof payload === "object"
+                && payload.error === AUTHENTICATION_REFRESH_REQUIRED;
+        } catch {
+            return false;
+        }
+    }
+
     private async _poll(url: string, pollOptions: HttpRequest): Promise<void> {
+        let authenticationRefreshAttempted = false;
+
         try {
             while (this._running) {
                 try {
                     const pollUrl = `${url}&_=${Date.now()}`;
                     this._logger.log(LogLevel.Trace, `(LongPolling transport) polling: ${pollUrl}.`);
                     const response = await this._httpClient.get(pollUrl, pollOptions);
+
+                    if (!authenticationRefreshAttempted
+                        && this._authenticationRefresh
+                        && this._isAuthenticationRefreshRequired(response)) {
+                        authenticationRefreshAttempted = true;
+                        try {
+                            await this._authenticationRefresh();
+                        } catch (e) {
+                            this._closeError = e;
+                            this._running = false;
+                        }
+                        continue;
+                    }
+
+                    authenticationRefreshAttempted = false;
 
                     if (response.statusCode === 204) {
                         this._logger.log(LogLevel.Information, "(LongPolling transport) Poll terminated by server.");
@@ -178,7 +217,10 @@ export class LongPollingTransport implements ITransport {
 
             let error;
             try {
-                await this._httpClient.delete(this._url!, deleteOptions);
+                const response = await this._httpClient.delete(this._url!, deleteOptions);
+                if (!isSuccessStatusCode(response.statusCode)) {
+                    error = getHttpResponseError(response);
+                }
             } catch (err) {
                 error = err;
             }
