@@ -12,13 +12,15 @@ internal sealed class OutputCacheStream : Stream
     private readonly int _segmentSize;
     private readonly RecyclableSequenceBuilder _segmentWriteStream;
     private readonly Action _startResponseCallback;
+    private readonly bool _bufferResponseBody;
 
-    internal OutputCacheStream(Stream innerStream, long maxBufferSize, int segmentSize, Action startResponseCallback)
+    internal OutputCacheStream(Stream innerStream, long maxBufferSize, int segmentSize, Action startResponseCallback, bool bufferResponseBody = false)
     {
         _innerStream = innerStream;
         _maxBufferSize = maxBufferSize;
         _segmentSize = segmentSize;
         _startResponseCallback = startResponseCallback;
+        _bufferResponseBody = bufferResponseBody;
         _segmentWriteStream = new(_segmentSize);
     }
 
@@ -106,7 +108,10 @@ internal sealed class OutputCacheStream : Stream
         try
         {
             _startResponseCallback();
-            _innerStream.Write(buffer, offset, count);
+            if (!_bufferResponseBody || !BufferingEnabled)
+            {
+                _innerStream.Write(buffer, offset, count);
+            }
         }
         catch
         {
@@ -132,7 +137,10 @@ internal sealed class OutputCacheStream : Stream
         try
         {
             _startResponseCallback();
-            _innerStream.Write(buffer);
+            if (!_bufferResponseBody || !BufferingEnabled)
+            {
+                _innerStream.Write(buffer);
+            }
         }
         catch
         {
@@ -161,7 +169,10 @@ internal sealed class OutputCacheStream : Stream
         try
         {
             _startResponseCallback();
-            await _innerStream.WriteAsync(buffer, cancellationToken);
+            if (!_bufferResponseBody || !BufferingEnabled)
+            {
+                await _innerStream.WriteAsync(buffer, cancellationToken);
+            }
         }
         catch
         {
@@ -186,7 +197,10 @@ internal sealed class OutputCacheStream : Stream
     {
         try
         {
-            _innerStream.WriteByte(value);
+            if (!_bufferResponseBody || !BufferingEnabled)
+            {
+                _innerStream.WriteByte(value);
+            }
         }
         catch
         {
