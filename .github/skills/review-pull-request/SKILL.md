@@ -1,11 +1,28 @@
 ---
 name: review-pull-request
 description: >-
-  Review an identified ASP.NET Core pull request against a complete, frozen, trusted
-  source-and-guidance bundle. Return source-supported findings without publishing.
+  Review an identified ASP.NET Core pull request only through an explicit entry point:
+  a coordinator supplied a version-2 manifest.json bundle (/review hosted workflow or campaign runner);
+  a native local coordinator was explicitly invoked as review-pull-request or /review-pull-request
+  to bootstrap with prepare-review.cs; an assigned review-guide-worker received its
+  bundle root and guides[].assignment; or a caller explicitly requested an offline
+  source-review adjudication using staged criteria and named evidence. Review frozen source and guidance; return
+  source-supported findings without publishing. DO NOT USE FOR automated GitHub Copilot Code Review
+  (copilot-pull-request-reviewer) or general pull-request diff review without an explicit entry point.
 ---
 
 # Source-only pull request review
+
+For automated GitHub Copilot Code Review (`copilot-pull-request-reviewer`), stop using this skill and continue under the reviewer's normal instructions. Do not bootstrap or report a missing frozen bundle, `manifest.json`, or `feedback.json` as a PR defect or review blocker.
+
+Otherwise, continue only for one of these explicit entry points:
+
+- A coordinator supplied a version-2 `manifest.json` bundle (the `/review` hosted workflow or a campaign runner).
+- A native local coordinator was explicitly invoked as `review-pull-request` or `/review-pull-request` to bootstrap through `prepare-review.cs`.
+- An assigned `review-guide-worker` (`PATH: per-guide-worker`) was explicitly instructed to call `skill(skill="review-pull-request")` with its bundle root and `guides[].assignment`; it does not receive `manifest.json` directly.
+- A caller explicitly requested an offline source-review adjudication using staged criteria and named evidence. Apply only the requested review criteria; do not require a bundle, bootstrap, or spawn workers for this single-context exercise.
+
+For any other pull-request diff review, stop using this skill and continue under the reviewer's normal instructions without applying this skill's bundle requirements.
 
 You are the reviewer, not an implementer. The trusted caller supplies a ready version-2
 `manifest.json` bundle. A native local invocation without a supplied bundle has exactly

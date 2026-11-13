@@ -1,10 +1,12 @@
 ---
 name: validate-blazor-feature
 description: >-
-  Validate a Blazor feature or regression in a real browser using canonical Components samples before selecting permanent coverage. USE FOR exercising src/Components changes with Playwright; choosing the sample or render mode; proving interactivity; checking browser errors; turning a failure into a temporary JavaScript diagnostic assertion; assessing determinism; investigating producer or timing behavior; replacing arbitrary Selenium sleeps with observable waits or gates; choosing a faithful unit-versus-browser boundary; and recording the permanent-test handoff. Always use for Components tasks involving deterministic browser evidence, flaky Selenium or Thread.Sleep, timing gates, or a JS-versus-Selenium decision. It may author temporary probes but does not write permanent tests. DO NOT USE FOR non-Components work, comparative alternatives research, or isolated browser API/HTML/CSS experiments without a Blazor implementation; use a minimal browser probe instead.
+  Validate Blazor features or regressions in a real browser with Components samples before selecting permanent coverage. USE FOR exercising src/Components changes with Playwright; choosing the sample or render mode; proving interactivity; checking browser errors; reducing failures to temporary JavaScript diagnostic assertions; assessing determinism; investigating producer or timing behavior; replacing arbitrary Selenium sleeps with observable waits or gates; choosing a faithful unit-versus-browser boundary; recording the permanent-test handoff. Always use for Components authoring or fixing tasks involving deterministic browser evidence, flaky Selenium or Thread.Sleep, timing gates, or a JS-versus-Selenium decision. Temporary probes only; no permanent tests. DO NOT USE FOR automated pull request code review (including GitHub Copilot Code Review), general pull-request diff review, non-Components work, comparative research, or isolated browser API/HTML/CSS experiments without Blazor; use a minimal browser probe.
 ---
 
 # Validate a Blazor feature with the Components samples
+
+For automated GitHub Copilot Code Review (`copilot-pull-request-reviewer`) or general pull-request diff review, stop using this skill and continue under the reviewer's normal instructions.
 
 Workflow: pick a sample, add a scenario page, set the render mode, build, launch, drive it in a browser, and check for errors. When the run reproduces a browser regression or failure that needs permanent coverage, also reduce it to a deterministic diagnostic probe before selecting permanent coverage. Remove any temporary diagnostic and sample code once the selected permanent test covers it.
 
