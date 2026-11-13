@@ -53,7 +53,7 @@ public class InputSelect<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTy
         }
         else
         {
-            builder.AddAttribute(8, "value", CurrentValueAsString);
+            builder.AddAttribute(8, "value", CurrentValueAsString ?? string.Empty);
             builder.AddAttribute(9, "onchange", EventCallback.Factory.CreateBinder<string?>(this, __value => CurrentValueAsString = __value, default));
             builder.SetUpdatesAttributeName("value");
         }
