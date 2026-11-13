@@ -1,12 +1,10 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System.Buffers;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Text;
-using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.SignalR.Internal;
 using Microsoft.AspNetCore.SignalR.Protocol;
 using Microsoft.AspNetCore.SignalR.StackExchangeRedis.Internal;
@@ -110,35 +108,28 @@ public class RedisHubLifetimeManager<THub> : HubLifetimeManager<THub>, IDisposab
     }
 
     /// <inheritdoc />
-    public override Task OnDisconnectedAsync(HubConnectionContext connection)
+    public override async Task OnDisconnectedAsync(HubConnectionContext connection)
     {
         _connections.Remove(connection);
 
         // If the bus is null then the Redis connection failed to be established and none of the other connection setup ran
         if (_bus is null)
         {
-            return Task.CompletedTask;
+            return;
         }
 
+        var groupNames = await _groups.SetConnectionDisconnectedAndGetGroupNamesAsync(connection);
         var connectionChannel = _channels.Connection(connection.ConnectionId);
         var tasks = new List<Task>();
 
         RedisLog.Unsubscribe(_logger, connectionChannel);
         tasks.Add(_bus.UnsubscribeAsync(RedisChannel.Literal(connectionChannel)));
 
-        var feature = connection.Features.GetRequiredFeature<IRedisFeature>();
-        var groupNames = feature.Groups;
-
-        if (groupNames != null)
+        foreach (var groupName in groupNames)
         {
-            // Copy the groups to an array here because they get removed from this collection
-            // in RemoveFromGroupAsync
-            foreach (var group in groupNames.ToArray())
-            {
-                // Use RemoveGroupAsyncCore because the connection is local and we don't want to
-                // accidentally go to other servers with our remove request.
-                tasks.Add(RemoveGroupAsyncCore(connection, group));
-            }
+            // Use RemoveGroupAsyncCore because the connection is local and we don't want to
+            // accidentally go to other servers with our remove request.
+            tasks.Add(RemoveGroupAsyncCore(connection, groupName));
         }
 
         if (!string.IsNullOrEmpty(connection.UserIdentifier))
@@ -146,7 +137,7 @@ public class RedisHubLifetimeManager<THub> : HubLifetimeManager<THub>, IDisposab
             tasks.Add(RemoveUserAsync(connection));
         }
 
-        return Task.WhenAll(tasks);
+        await Task.WhenAll(tasks);
     }
 
     /// <inheritdoc />
@@ -301,20 +292,8 @@ public class RedisHubLifetimeManager<THub> : HubLifetimeManager<THub>, IDisposab
 
     private Task AddGroupAsyncCore(HubConnectionContext connection, string groupName)
     {
-        var feature = connection.Features.GetRequiredFeature<IRedisFeature>();
-        var groupNames = feature.Groups;
-
-        lock (groupNames)
-        {
-            // Connection already in group
-            if (!groupNames.Add(groupName))
-            {
-                return Task.CompletedTask;
-            }
-        }
-
         var groupChannel = _channels.Group(groupName);
-        return _groups.AddSubscriptionAsync(groupChannel, connection, SubscribeToGroupAsync);
+        return _groups.AddGroupSubscriptionAsync(groupChannel, groupName, connection, SubscribeToGroupAsync);
     }
 
     /// <summary>
@@ -325,22 +304,12 @@ public class RedisHubLifetimeManager<THub> : HubLifetimeManager<THub>, IDisposab
     {
         var groupChannel = _channels.Group(groupName);
 
-        await _groups.RemoveSubscriptionAsync(groupChannel, connection, this, static (state, channelName) =>
+        await _groups.RemoveGroupSubscriptionAsync(groupChannel, groupName, connection, this, static (state, channelName) =>
         {
             var lifetimeManager = (RedisHubLifetimeManager<THub>)state;
             RedisLog.Unsubscribe(lifetimeManager._logger, channelName);
             return lifetimeManager._bus!.UnsubscribeAsync(RedisChannel.Literal(channelName));
         });
-
-        var feature = connection.Features.GetRequiredFeature<IRedisFeature>();
-        var groupNames = feature.Groups;
-        if (groupNames != null)
-        {
-            lock (groupNames)
-            {
-                groupNames.Remove(groupName);
-            }
-        }
     }
 
     private async Task SendGroupActionAndWaitForAck(string connectionId, string groupName, GroupAction action)
@@ -851,13 +820,9 @@ public class RedisHubLifetimeManager<THub> : HubLifetimeManager<THub>, IDisposab
         }
     }
 
-    private interface IRedisFeature
-    {
-        HashSet<string> Groups { get; }
-    }
-
     private sealed class RedisFeature : IRedisFeature
     {
-        public HashSet<string> Groups { get; } = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+        public HashSet<string> Groups { get; } = new HashSet<string>(StringComparer.Ordinal);
+        public bool IsDisconnected { get; set; }
     }
 }

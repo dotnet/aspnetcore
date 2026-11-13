@@ -31,6 +31,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <Compile Include="$(SharedSourceRoot)CookiePathEscaper.cs" LinkBase="Shared" />
     <Compile Include="$(SharedSourceRoot)\PooledArrayBufferWriter.cs" LinkBase="Infrastructure" />
     <Compile Include="$(SharedSourceRoot)\Components\ResourceCollectionResolver.cs" LinkBase="Infrastructure" />
   </ItemGroup>

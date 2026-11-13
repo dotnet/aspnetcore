@@ -52,6 +52,9 @@ internal sealed partial class HttpConnectionContext : ConnectionContext,
     private bool _activeSend;
     private TimeSpan _startedSendTime;
     private bool _useStatefulReconnect;
+    private readonly object _userLock = new object();
+    private UserIdentitySnapshot? _negotiatedUserIdentity;
+    private bool _hasNegotiatedUser;
     private readonly object _sendingLock = new object();
     internal CancellationToken SendingToken { get; private set; }
 
@@ -66,11 +69,14 @@ internal sealed partial class HttpConnectionContext : ConnectionContext,
     /// The caller is expected to set the <see cref="Transport"/> and <see cref="Application"/> pipes manually.
     /// </summary>
     public HttpConnectionContext(string connectionId, string connectionToken, ILogger logger, MetricsContext metricsContext,
-        IDuplexPipe transport, IDuplexPipe application, HttpConnectionDispatcherOptions options, bool useStatefulReconnect)
+        IDuplexPipe transport, IDuplexPipe application, HttpConnectionDispatcherOptions options, bool useStatefulReconnect,
+        ClaimsPrincipal? negotiatedUser = null, bool hasNegotiatedUser = false)
     {
         Transport = transport;
         _applicationStream = new PipeWriterStream(application.Output);
         _application = application;
+        _hasNegotiatedUser = hasNegotiatedUser || negotiatedUser is not null;
+        _negotiatedUserIdentity = UserIdentitySnapshot.Capture(negotiatedUser);
 
         ConnectionId = connectionId;
         ConnectionToken = connectionToken;
@@ -692,6 +698,40 @@ internal sealed partial class HttpConnectionContext : ConnectionContext,
     public void RequestClose()
     {
         ThreadPool.UnsafeQueueUserWorkItem(static cts => ((CancellationTokenSource)cts!).Cancel(), _connectionCloseRequested);
+    }
+
+    internal bool IsUserAssociatedWithConnection(ClaimsPrincipal user)
+    {
+        lock (_userLock)
+        {
+            if (!_hasNegotiatedUser)
+            {
+                return true;
+            }
+
+            return UserIdentitySnapshot.Matches(_negotiatedUserIdentity, UserIdentitySnapshot.Capture(user));
+        }
+    }
+
+    internal bool HasNegotiatedUser
+    {
+        get
+        {
+            lock (_userLock)
+            {
+                return _hasNegotiatedUser;
+            }
+        }
+    }
+
+    internal void SetUserAndReleaseNegotiatedUser(ClaimsPrincipal? user)
+    {
+        lock (_userLock)
+        {
+            User = user;
+            _hasNegotiatedUser = false;
+            _negotiatedUserIdentity = null;
+        }
     }
 
     private bool UpdateConnectionPair()

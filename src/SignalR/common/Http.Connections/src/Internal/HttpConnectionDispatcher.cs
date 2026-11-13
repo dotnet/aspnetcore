@@ -375,7 +375,7 @@ internal sealed partial class HttpConnectionDispatcher
         HttpConnectionContext? connection = null;
         if (error == null)
         {
-            connection = CreateConnection(options, clientProtocolVersion, useStatefulReconnect);
+            connection = CreateConnection(options, clientProtocolVersion, useStatefulReconnect, context.User);
         }
 
         // Set the Connection ID on the logging scope so that logs from now on will have the
@@ -462,6 +462,11 @@ internal sealed partial class HttpConnectionDispatcher
             Log.PostNotAllowedForWebSockets(_logger);
             context.Response.StatusCode = StatusCodes.Status405MethodNotAllowed;
             await context.Response.WriteAsync("POST requests are not allowed for WebSocket connections.");
+            return;
+        }
+
+        if (await RejectIfConnectionUserChangedAsync(connection, context))
+        {
             return;
         }
 
@@ -558,6 +563,11 @@ internal sealed partial class HttpConnectionDispatcher
             return;
         }
 
+        if (await RejectIfConnectionUserChangedAsync(connection, context))
+        {
+            return;
+        }
+
         Log.TerminatingConnection(_logger);
 
         // Dispose the connection, but don't wait for it. We assign it here so we can wait in tests
@@ -575,6 +585,11 @@ internal sealed partial class HttpConnectionDispatcher
             context.Response.StatusCode = StatusCodes.Status404NotFound;
             Log.TransportNotSupported(_logger, transportType);
             await context.Response.WriteAsync($"{transportType} transport not supported by this end point type");
+            return false;
+        }
+
+        if (await RejectIfConnectionUserChangedAsync(connection, context))
+        {
             return false;
         }
 
@@ -642,13 +657,12 @@ internal sealed partial class HttpConnectionDispatcher
             var newName = connection.HttpContext?.User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
             if (originalName != newName)
             {
-                // Log warning, different user
                 Log.UserNameChanged(_logger, originalName, newName);
             }
         }
 
         // Setup the connection state from the http context
-        connection.User = connection.HttpContext?.User;
+        connection.SetUserAndReleaseNegotiatedUser(connection.HttpContext?.User);
 
         UpdateExpiration(connection, context);
 
@@ -770,6 +784,25 @@ internal sealed partial class HttpConnectionDispatcher
         connection.HttpContext = newHttpContext;
     }
 
+    private async Task<bool> RejectIfConnectionUserChangedAsync(HttpConnectionContext connection, HttpContext context)
+    {
+        if (connection.IsUserAssociatedWithConnection(context.User))
+        {
+            return false;
+        }
+
+        var originalIdentity = connection.User is null
+            ? null
+            : UserIdentitySnapshot.GetUserIdentityKey(connection.User);
+        var newIdentity = UserIdentitySnapshot.GetUserIdentityKey(context.User);
+        Log.UserNameChanged(_logger, originalIdentity?.Value, newIdentity?.Value);
+
+        context.Response.ContentType = "text/plain";
+        context.Response.StatusCode = StatusCodes.Status403Forbidden;
+        await context.Response.WriteAsync("The user associated with this connection changed.");
+        return true;
+    }
+
     private async Task<HttpConnectionContext?> GetConnectionAsync(HttpContext context)
     {
         var connectionToken = GetConnectionToken(context);
@@ -819,9 +852,21 @@ internal sealed partial class HttpConnectionDispatcher
         return connection;
     }
 
-    private HttpConnectionContext CreateConnection(HttpConnectionDispatcherOptions options, int clientProtocolVersion = 0, bool useStatefulReconnect = false)
+    private HttpConnectionContext CreateConnection(
+        HttpConnectionDispatcherOptions options,
+        int clientProtocolVersion = 0,
+        bool useStatefulReconnect = false)
     {
         return _manager.CreateConnection(options, clientProtocolVersion, useStatefulReconnect);
+    }
+
+    private HttpConnectionContext CreateConnection(
+        HttpConnectionDispatcherOptions options,
+        int clientProtocolVersion,
+        bool useStatefulReconnect,
+        ClaimsPrincipal? negotiatedUser)
+    {
+        return _manager.CreateConnection(options, clientProtocolVersion, useStatefulReconnect, negotiatedUser);
     }
 
     private static void AddNoCacheHeaders(HttpResponse response)
