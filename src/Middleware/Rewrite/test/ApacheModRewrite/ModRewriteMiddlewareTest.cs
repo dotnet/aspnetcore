@@ -519,4 +519,32 @@ RewriteRule (.*) http://localhost:80/home/report/%1 [R=301,L,QSD]"));
 
         Assert.Equal("http://localhost:80/home/report/123", response.Headers.Location.OriginalString);
     }
+
+    [Theory]
+    [InlineData("RewriteCond %{REQUEST_SCHEME} !=https\nRewriteRule ^/probe$ - [F]\n", "/probe", HttpStatusCode.Forbidden)]
+    [InlineData("RewriteCond %{REQUEST_SCHEME} =https\nRewriteRule ^/probe$ - [F]\n", "/probe", HttpStatusCode.OK)]
+    [InlineData("RewriteCond %{QUERY_STRING} !-eq1\nRewriteRule ^/probe$ - [F]\n", "/probe?2", HttpStatusCode.Forbidden)]
+    [InlineData("RewriteCond %{QUERY_STRING} !-eq1\nRewriteRule ^/probe$ - [F]\n", "/probe?1", HttpStatusCode.OK)]
+    public async Task Invoke_RewriteCondNegationIsApplied(string rules, string requestUri, HttpStatusCode expectedStatus)
+    {
+        var options = new RewriteOptions().AddApacheModRewrite(new StringReader(rules));
+        using var host = new HostBuilder()
+            .ConfigureWebHost(webHostBuilder =>
+            {
+                webHostBuilder
+                .UseTestServer()
+                .Configure(app =>
+                {
+                    app.UseRewriter(options);
+                    app.Run(context => context.Response.WriteAsync("ok"));
+                });
+            }).Build();
+
+        await host.StartAsync();
+
+        var server = host.GetTestServer();
+        var response = await server.CreateClient().GetAsync(requestUri);
+
+        Assert.Equal(expectedStatus, response.StatusCode);
+    }
 }
