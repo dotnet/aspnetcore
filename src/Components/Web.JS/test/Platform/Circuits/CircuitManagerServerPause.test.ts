@@ -83,6 +83,7 @@ describe('CircuitManager pause deferral', () => {
       connectionClosed = undefined;
       jest.spyOn(connection, 'onclose').mockImplementation(callback => { connectionClosed = callback; });
       jest.spyOn(HubConnectionBuilder.prototype, 'build').mockReturnValue(connection);
+      jest.spyOn(rendererInterop, 'isRendererAttached').mockReturnValue(true);
       jest.spyOn(rendererInterop, 'detachWebRendererInterop').mockReturnValue({} as never);
       Object.defineProperty(globalThis, 'fetch', { configurable: true, value: jest.fn() });
       options = resolveOptions({
@@ -159,6 +160,35 @@ describe('CircuitManager pause deferral', () => {
       await disposal;
       expect(onCircuitPausing).not.toHaveBeenCalled();
       expect(connection.invoke).not.toHaveBeenCalledWith('PauseCircuit');
+    });
+
+    test('connection closure without renderer interop still aborts pause deferrals', async () => {
+      configureHandler('custom');
+      await circuit.start();
+      const deferral = Promise.withResolvers<void>();
+      let signal: AbortSignal | undefined;
+      options.circuitHandlers.push({
+        onCircuitPausing: abortSignal => {
+          signal = abortSignal;
+          return deferral.promise;
+        },
+      });
+      const pausing = circuit.pauseCircuit();
+      jest.mocked(rendererInterop.isRendererAttached).mockReturnValue(false);
+      jest.mocked(rendererInterop.detachWebRendererInterop).mockImplementation(() => {
+        throw new Error('Interop methods are not registered for renderer 1');
+      });
+      jest.spyOn(connection, 'state', 'get').mockReturnValue(HubConnectionState.Disconnected);
+
+      try {
+        expect(() => connectionClosed!()).not.toThrow();
+        expect(signal!.aborted).toBe(true);
+        expect(rendererInterop.detachWebRendererInterop).not.toHaveBeenCalled();
+      } finally {
+        deferral.resolve();
+        await pausing;
+        await circuit.dispose();
+      }
     });
 
     test('disposal waits for transport close before publishing circuit closed', async () => {

@@ -280,6 +280,9 @@ describe('AutoPauseManager', () => {
     await flushPromises();
 
     expect(resumeCircuit).not.toHaveBeenCalled();
+    jest.advanceTimersByTime(5000);
+    await flushPromises();
+    expect(pauseCircuit).toHaveBeenCalledTimes(1);
   });
 
   test('circuit disposal cancels a pending hidden timer', async () => {
@@ -293,21 +296,31 @@ describe('AutoPauseManager', () => {
     expect(pauseCircuit).not.toHaveBeenCalled();
   });
 
-  test('an obsolete pause completion does not rearm the hidden timer', async () => {
-    let resolvePause: ((value: boolean) => void) | undefined;
-    pauseCircuit.mockImplementation(() => new Promise<boolean>(resolve => { resolvePause = resolve; }));
+  test('rearms the hidden timer after a retired pause completes without a visibility change', async () => {
+    const pause = Promise.withResolvers<boolean>();
+    let signal: AbortSignal | undefined;
+    pauseCircuit.mockImplementationOnce(abortSignal => {
+      signal = abortSignal;
+      return pause.promise;
+    });
     create();
     setVisibility('hidden');
     jest.advanceTimersByTime(1000);
     await flushPromises();
+    expect(pauseCircuit).toHaveBeenCalledTimes(1);
 
     circuitEvents.dispatchEvent(new Event('disposed'));
-    resolvePause!(false);
+    expect(signal!.aborted).toBe(true);
+    pause.resolve(false);
     await flushPromises();
-    jest.advanceTimersByTime(5000);
+    jest.advanceTimersByTime(999);
     await flushPromises();
-
     expect(pauseCircuit).toHaveBeenCalledTimes(1);
+
+    jest.advanceTimersByTime(1);
+    await flushPromises();
+    expect(pauseCircuit).toHaveBeenCalledTimes(2);
+    expect(resumeCircuit).not.toHaveBeenCalled();
   });
 
   test('circuit disposal abandons an idle wait without retaining the old busy state', async () => {

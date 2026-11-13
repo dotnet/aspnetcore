@@ -209,7 +209,9 @@ export class CircuitManager implements DotNet.DotNetCallDispatcher {
     });
     connection.on('JS.EndLocationChanging', Blazor._internal.navigationManager.endLocationChanging);
     connection.onclose(error => {
-      this._interopMethodsForReconnection = detachWebRendererInterop(WebRendererId.Server);
+      if (isRendererAttached(WebRendererId.Server)) {
+        this._interopMethodsForReconnection = detachWebRendererInterop(WebRendererId.Server);
+      }
 
       this.handleConnectionDown();
       this.abortPauseDeferrals('connection closed');

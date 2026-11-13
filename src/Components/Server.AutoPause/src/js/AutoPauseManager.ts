@@ -92,8 +92,8 @@ export class AutoPauseManager {
   private onCircuitDisposed(): void {
     this._circuitVersion++;
     this._autoPaused = false;
-    // A replacement started while hidden waits for the next visibility change to auto-pause.
     this.clearHiddenTimer();
+    this._hiddenTimerPending = this._pauseInFlight && document.visibilityState === 'hidden';
     this._activeAbortController?.abort();
     this.onActivityChanged(false);
   }
