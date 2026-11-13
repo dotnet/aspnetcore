@@ -12,6 +12,7 @@ using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http.Connections.Features;
 using Microsoft.AspNetCore.Http.Features;
+using Microsoft.AspNetCore.SignalR.Tests;
 
 namespace Microsoft.AspNetCore.SignalR.Client.FunctionalTests;
 
@@ -20,6 +21,12 @@ public class TestHub : Hub
     public string HelloWorld() => TestHubMethodsImpl.HelloWorld();
 
     public string Echo(string message) => TestHubMethodsImpl.Echo(message);
+
+    public async Task WaitForCancellation()
+    {
+        await Clients.Caller.SendAsync("InvocationStarted");
+        await Context.ConnectionAborted.WaitForCancellationAsync();
+    }
 
     public string InvokeException() => TestHubMethodsImpl.InvokeException();
 
