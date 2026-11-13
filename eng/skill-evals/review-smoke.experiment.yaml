@@ -1,0 +1,25 @@
+name: review-smoke
+evals:
+  - review-pull-request/eval.vally.yaml
+
+overrides:
+  runs: 1
+
+vary:
+  - /environment/skills
+  - /environment/files
+
+baseline: baseline
+variants:
+  baseline:
+    environment:
+      skills: []
+  skilled:
+    environment:
+      skills:
+        - ../../.github/skills/review-pull-request
+      files:
+        - { src: ../../docs/CrossCuttingGuidance.md, dest: docs/CrossCuttingGuidance.md }
+        - { src: ../../docs/BlazorComponentsGuidance.md, dest: docs/BlazorComponentsGuidance.md }
+        - { src: ../../.github/agents/review-candidate-verifier.agent.md, dest: .github/agents/review-candidate-verifier.agent.md }
+        - { src: ../../.github/agents/review-guide-worker.agent.md, dest: .github/agents/review-guide-worker.agent.md }

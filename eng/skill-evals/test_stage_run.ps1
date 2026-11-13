@@ -13,6 +13,7 @@ $destination = Join-Path $testRoot 'staged'
 $trustedMarker = 'TRUSTED_CONTROL_MARKER'
 $candidateControlMarker = 'CANDIDATE_CONTROL_CANARY_MUST_NOT_APPEAR'
 $candidateDataMarker = 'CANDIDATE_DATA_MARKER'
+$repoRoot = (Resolve-Path (Join-Path $PSScriptRoot '../..')).Path
 
 function Assert-True {
     param([bool]$Condition, [string]$Message)
@@ -68,6 +69,20 @@ function Write-ControlPlane {
     Set-Content (Join-Path $evalRoot 'assert_results.ps1') $Marker
     Set-Content (Join-Path $evalRoot 'skills-vs-baseline.experiment.yaml') $Marker
     Set-Content (Join-Path $evalRoot 'skills-smoke.experiment.yaml') $Marker
+}
+
+foreach ($relativePath in @(
+    'eng/skill-evals/run.ps1'
+    'eng/skill-evals/assert_results.ps1'
+    'eng/skill-evals/skills-vs-baseline.experiment.yaml'
+    'eng/skill-evals/skills-smoke.experiment.yaml'
+    'eng/skill-evals/grade_disposition.mjs'
+    'eng/skill-evals/review-vs-baseline.experiment.yaml'
+    'eng/skill-evals/review-smoke.experiment.yaml'
+)) {
+    Assert-True (Test-Path (Join-Path $repoRoot $relativePath) -PathType Leaf) (
+        "Real trusted control-plane file '$relativePath' is missing."
+    )
 }
 
 New-Item -ItemType Directory -Path $trustedRoot, $candidateRoot | Out-Null
@@ -271,6 +286,21 @@ stimuli:
             -Destination (Join-Path $testRoot 'restricted-agent-environment')
     } "forbidden 'agent_environment.commands' field"
 
+    New-RestrictedCandidate 'restricted-values-shadow' @'
+Values: []
+stimuli:
+  - agent_environment:
+      commands:
+        - candidate-command
+'@
+    Assert-Throws {
+        & $stageRun `
+            -TrustedRoot $trustedRoot `
+            -CandidateRoot $candidateRoot `
+            -EvalName restricted-values-shadow `
+            -Destination (Join-Path $testRoot 'restricted-values-shadow')
+    } "forbidden 'agent_environment.commands' field"
+
     New-RestrictedCandidate 'restricted-flow-mapping' @'
 stimuli:
   - environment: { commands: ["chmod +x .eval-gh/gh"] }
@@ -405,6 +435,16 @@ stimuli:
         -CandidateRoot $candidateRoot `
         -EvalName review-pull-request `
         -Destination $reviewDestination
+
+    $realTrustedReviewDestination = Join-Path $testRoot 'staged-review-real-control-plane'
+    & $stageRun `
+        -TrustedRoot $repoRoot `
+        -CandidateRoot $candidateRoot `
+        -EvalName review-pull-request `
+        -Destination $realTrustedReviewDestination
+    Assert-True (
+        Test-Path (Join-Path $realTrustedReviewDestination 'eng/skill-evals/review-pull-request/eval.vally.yaml')
+    ) 'Candidate L1 spec did not stage with the real trusted control plane.'
 
     $stagedReviewFiles = @(
         Get-ChildItem $reviewDestination -Recurse -File -Force |
@@ -617,6 +657,20 @@ stimuli:
             Spec = $canonicalComponentSpec.Replace(
                 '          program: node',
                 "          program: node`n          timeout: 1"
+            )
+        },
+        @{
+            Name = 'ComponentCountShadowsProgramConfig'
+            Spec = $canonicalComponentSpec.Replace(
+                '          program: node',
+                "          program: node`n          Count: 3`n          timeout: 1"
+            )
+        },
+        @{
+            Name = 'ComponentCountShadowsProgramEnvironment'
+            Spec = $canonicalComponentSpec.Replace(
+                '            DISPOSITION_MODE: component',
+                "            DISPOSITION_MODE: component`n            Count: 1`n            CANDIDATE_OVERRIDE: enabled"
             )
         },
         @{

@@ -87,7 +87,7 @@ None.`), 1);
 - \`UNRESOLVED\`:
 **C1:** Missing target-base policy contract.
 - __DISCARDED__:
-None. **C1 is unresolved rather than discarded.**
+None.
 TEST_BOUNDARY
 Offline review of C1 only.
 LIMITATIONS
@@ -187,6 +187,34 @@ test('ReviewDispositionDistinguishesNoProseFromSectionAbsence', async context =>
   }
 });
 
+test('ReviewDispositionDistinguishesSubstantiveNoneFromAbsenceMarkers', async context =>
+{
+  for (const [name, caseName, output, expected] of [
+    ['unresolved-none-of', 'case-06', review('UNRESOLVED', 'unresolved')
+      .replace('C1 missing target-base contract.', 'C1: None of the frozen contracts establishes whether failures propagate.'), 1],
+    ['discarded-none-of', 'case-01', review('DISCARDED', 'discarded')
+      .replace('C1 old and head match.', 'C1: None of the compared lines changes request behavior.'), 1],
+    ['conflicting-none-of', 'case-02', review('NEW_FINDINGS', 'verified')
+      .replace('UNRESOLVED\nNone.', 'UNRESOLVED\nC1: None of the frozen contracts establishes whether failures propagate.'), 0],
+    ['conflicting-none-applicable-prose', 'case-02', review('NEW_FINDINGS', 'verified')
+      .replace('UNRESOLVED\nNone.', 'UNRESOLVED\nC1: None applicable. C1 is unresolved.'), 0],
+  ])
+  {
+    await context.test(name, () =>
+    {
+      assert.equal(score(caseName, output), expected);
+    });
+  }
+
+  for (const marker of ['None.', 'None applicable.', 'None covered.', 'None found.',
+    'None reported.', 'None identified.', 'n/a', 'N/A.'])
+  {
+    const output = review('NEW_FINDINGS', 'verified')
+      .replace('UNRESOLVED\nNone.', `UNRESOLVED\nC1: ${marker}`);
+    assert.equal(score('case-02', output), 1, marker);
+  }
+});
+
 test('ExistingFeedbackRequiresThreadAndRejectsDuplicateInline', () =>
 {
   const good = `STATUS: NO_FINDINGS
@@ -235,5 +263,31 @@ test('ComponentDispositionNormalizesOnlyApplicableFields', () =>
   for (const output of ['null', 'true', '42', '[]', '{"results":[null]}'])
   {
     assert.equal(score('a', output, 'component'), 0, output);
+  }
+});
+
+test('ComponentDispositionRejectsNonStringInapplicableFields', async context =>
+{
+  for (const [name, value] of [
+    ['dropBasis-number', { dropBasis: 123 }],
+    ['contradictedLink-object', { contradictedLink: {} }],
+    ['downgradeKind-false', { downgradeKind: false }],
+    ['dropBasis-array', { dropBasis: [] }],
+  ])
+  {
+    await context.test(name, () =>
+    {
+      assert.equal(score('b', JSON.stringify({ decision: 'KEEP', ...value }), 'component'), 0);
+    });
+  }
+
+  for (const sentinel of [null, '', 'none', 'n/a'])
+  {
+    assert.equal(score('b', JSON.stringify({
+      decision: 'KEEP',
+      downgradeKind: sentinel,
+      dropBasis: sentinel,
+      contradictedLink: sentinel,
+    }), 'component'), 1, String(sentinel));
   }
 });

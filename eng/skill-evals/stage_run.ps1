@@ -141,11 +141,11 @@ function Find-ForbiddenEvalField {
 
         if ($DispositionMode -and $Node['type'] -ceq 'program') {
             $config = $Node['config']
-            if ($config -isnot [Collections.IDictionary] -or $config.Count -ne 3 -or
+            if ($config -isnot [Collections.IDictionary] -or $config.PSBase.Count -ne 3 -or
                 $config['program'] -cne 'node' -or
                 $config['args'] -isnot [Collections.IEnumerable] -or $config['args'] -is [string] -or
                 @($config['args']).Count -ne 1 -or $config['args'][0] -cne 'grade_disposition.mjs' -or
-                $config['env'] -isnot [Collections.IDictionary] -or $config['env'].Count -ne 1 -or
+                $config['env'] -isnot [Collections.IDictionary] -or $config['env'].PSBase.Count -ne 1 -or
                 $config['env']['DISPOSITION_MODE'] -cne $DispositionMode) {
                 return "declares a forbidden program grader; use only node grade_disposition.mjs with DISPOSITION_MODE=$DispositionMode."
             }
@@ -160,7 +160,7 @@ function Find-ForbiddenEvalField {
             }
         }
 
-        foreach ($value in $Node.Values) {
+        foreach ($value in $Node.PSBase.Values) {
             $found = Find-ForbiddenEvalField $value $DispositionMode
             if ($found) {
                 return $found

@@ -62,7 +62,8 @@ function gradeComponent(name, output)
   // Inapplicable fields may be omitted, null, or explicitly marked none.
   return ['downgradeKind', 'dropBasis', 'contradictedLink']
     .filter(key => !(key in expected))
-    .every(key => actual[key] == null || ['', 'none', 'n/a'].includes(normalized(key)));
+    .every(key => actual[key] == null ||
+      (typeof actual[key] === 'string' && ['', 'none', 'n/a'].includes(normalized(key))));
 }
 
 const targetSections = ['NEW_FINDINGS', 'EXISTING_FEEDBACK_COVERAGE', 'UNRESOLVED', 'DISCARDED'];
@@ -101,7 +102,7 @@ function isNegativeC1Line(line)
     .trim()
     .replace(/^(?:[-*+]|\d+[.)])\s+/, '')
     .trim();
-  const explicitAbsence = /^(?:none|n\/a)\b|^no(?:\s+(?:findings|items|candidates|entries|unresolved|discarded|existing\s+feedback)\b|\s+C1[.!]?\s*$|[.!]?\s*$)/i;
+  const explicitAbsence = /^(?:none(?:\s+(?:applicable|covered|found|reported|identified))?[.!]?\s*$|n\/a[.!]?\s*$|no(?:\s+(?:findings|items|candidates|entries|unresolved|discarded|existing\s+feedback)\b|\s+C1[.!]?\s*$|[.!]?\s*$))/i;
   if (!clean || explicitAbsence.test(clean))
   {
     return true;

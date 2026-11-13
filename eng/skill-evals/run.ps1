@@ -85,6 +85,7 @@ $selectedExperiment = if ($hasExplicitExperiment) {
 $script:vallyInitialized = $false
 $reviewExperiment = Join-Path $evalRoot 'review-vs-baseline.experiment.yaml'
 $reviewSmokeExperiment = Join-Path $evalRoot 'review-smoke.experiment.yaml'
+$reviewEval = Join-Path $evalRoot 'review-pull-request/eval.vally.yaml'
 
 function Resolve-Eval {
     if (-not $Eval) {
@@ -310,13 +311,13 @@ switch ($Action) {
             # Component specs have no skill treatment. Lint validates their schema.
         } elseif ($hasExplicitExperiment) {
             Invoke-VallyExperimentDryRun $selectedExperiment
-        } elseif ($Suite -eq 'review-pull-request' -and (Test-Path $reviewExperiment)) {
+        } elseif ($Suite -eq 'review-pull-request' -and (Test-Path $reviewEval)) {
             Invoke-VallyExperimentDryRun $reviewExperiment
             Invoke-VallyExperimentDryRun $reviewSmokeExperiment
         } else {
             Invoke-VallyExperimentDryRun $standardExperiment
             Invoke-VallyExperimentDryRun $smokeExperiment
-            if (Test-Path $reviewExperiment) {
+            if (Test-Path $reviewEval) {
                 Invoke-VallyExperimentDryRun $reviewExperiment
                 Invoke-VallyExperimentDryRun $reviewSmokeExperiment
             }
@@ -365,6 +366,7 @@ switch ($Action) {
                             throw "The '$($directory.Name)' suite run failed."
                         }
                         & (Join-Path $PSScriptRoot 'assert_results.ps1') -OutputDirectory $suiteOutput
+                        $global:LASTEXITCODE = 0
                         Write-Warning "Vally exited with code 1 for '$($directory.Name)'. Complete primary trials passed the applicable result-set checks."
                     }
                 }
@@ -423,10 +425,19 @@ switch ($Action) {
                         }
                         $runs = $parsedRuns
                     } else {
-                        $threshold = [double]$value
-                        if (-not [double]::IsFinite($threshold) -or $threshold -lt 0 -or $threshold -gt 1) {
+                        $parsedThreshold = 0.0
+                        if ([string]::IsNullOrWhiteSpace($value) -or
+                            -not [double]::TryParse(
+                                $value,
+                                [Globalization.NumberStyles]::Float,
+                                [Globalization.CultureInfo]::InvariantCulture,
+                                [ref]$parsedThreshold
+                            ) -or
+                            -not [double]::IsFinite($parsedThreshold) -or
+                            $parsedThreshold -lt 0 -or $parsedThreshold -gt 1) {
                             throw '--threshold must be between 0 and 1.'
                         }
+                        $threshold = $parsedThreshold
                     }
                 }
             }

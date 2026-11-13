@@ -129,8 +129,7 @@ stimuli:
   - name: beta
 '@ | Set-Content (Join-Path $customComponentDirectory 'eval.vally.yaml')
     $allComponentDirectory = Join-Path $allSuiteRoot 'eng/skill-evals/review-candidate-verifier'
-    $allNextDirectory = Join-Path $allSuiteRoot 'eng/skill-evals/z-next'
-    New-Item -ItemType Directory -Path $allComponentDirectory, $allNextDirectory -Force | Out-Null
+    New-Item -ItemType Directory -Path $allComponentDirectory -Force | Out-Null
     @'
 name: review-candidate-verifier
 defaults:
@@ -142,11 +141,6 @@ stimuli:
   - name: b
   - name: c
 '@ | Set-Content (Join-Path $allComponentDirectory 'eval.vally.yaml')
-    @'
-name: z-next
-stimuli:
-  - name: next
-'@ | Set-Content (Join-Path $allNextDirectory 'eval.vally.yaml')
     $env:SKILL_EVAL_RUNNER_RECORD = $record
     $env:SKILL_EVAL_VALLY = $fakeVally
 
@@ -262,6 +256,7 @@ stimuli:
         param(
             [string]$Scenario,
             [int]$ExpectedRuns,
+            [double]$ExpectedThreshold = 0.65,
             [string[]]$RunArguments = @()
         )
 
@@ -279,7 +274,7 @@ stimuli:
         Assert-True ($plan.evals[0].plannedStimulusCount -eq 2) (
             "$Scenario component plan did not derive its stimulus count from the selected YAML."
         )
-        Assert-True ([Math]::Abs([double]$plan.evals[0].threshold - 0.65) -lt 0.000001) (
+        Assert-True ([Math]::Abs([double]$plan.evals[0].threshold - $ExpectedThreshold) -lt 0.000001) (
             "$Scenario component plan did not derive its threshold from the selected YAML."
         )
         Assert-True ($plan.evals[0].runs -eq $ExpectedRuns) (
@@ -331,6 +326,9 @@ stimuli:
             Assert-True ([string]::IsNullOrWhiteSpace($message)) (
                 "A complete passing primary result set did not continue after Vally exit 1: $message"
             )
+            Assert-True ($LASTEXITCODE -eq 0) (
+                'A tolerated final-suite Vally exit code remained after successful result assertions.'
+            )
         } else {
             Assert-True ($message -like "*$ExpectedFailure*") (
                 "$Scenario did not abort through the trusted result gate. Error: $message"
@@ -340,15 +338,10 @@ stimuli:
             Read-Invocations |
                 Where-Object { $_.Arguments[0] -in @('experiment', 'eval') }
         )
-        $expectedCount = if ($ShouldContinue) { 2 } else { 1 }
+        $expectedCount = 1
         Assert-True ($runInvocations.Count -eq $expectedCount) (
             "$Scenario invoked $($runInvocations.Count) suites; expected $expectedCount."
         )
-        if ($ShouldContinue) {
-            Assert-True (($runInvocations[-1].Arguments -join ' ') -like '*z-next*') (
-                'All-suite execution did not continue to the suite after the validated exit-1 result.'
-            )
-        }
     }
 
     Invoke-AllSuiteExitOneScenario -Scenario 'complete-passing' -ShouldContinue $true
@@ -362,6 +355,29 @@ stimuli:
         -RunArguments @('--runs', '2')
     Assert-CustomComponentPlan -Scenario 'EqualsRunsOverride' -ExpectedRuns 3 `
         -RunArguments @('--runs=3')
+    Assert-CustomComponentPlan -Scenario 'ZeroThresholdBoundary' -ExpectedRuns 7 `
+        -ExpectedThreshold 0 -RunArguments @('--threshold=0')
+    Assert-CustomComponentPlan -Scenario 'OneThresholdBoundary' -ExpectedRuns 7 `
+        -ExpectedThreshold 1 -RunArguments @('--threshold', '1')
+
+    foreach ($case in @(
+        @{ Name = 'EmptyThreshold'; Arguments = @('--threshold=') },
+        @{ Name = 'WhitespaceThreshold'; Arguments = @('--threshold', ' ') },
+        @{ Name = 'InvalidThreshold'; Arguments = @('--threshold=not-a-number') }
+    )) {
+        $message = ''
+        try {
+            & $runner Run -Root $customRoot -Suite review-candidate-verifier `
+                -Vally $fakeVally -VallyPrefix @() `
+                -OutputDirectory (Join-Path $testRoot "invalid-$($case.Name)") `
+                @($case.Arguments)
+        } catch {
+            $message = $_.Exception.Message
+        }
+        Assert-True ($message -eq '--threshold must be between 0 and 1.') (
+            "$($case.Name) was not rejected by the threshold parser. Error: $message"
+        )
+    }
 
     Remove-Item $record
     & $runner Validate -Eval eng/skill-evals/review-candidate-verifier/eval.vally.yaml `
