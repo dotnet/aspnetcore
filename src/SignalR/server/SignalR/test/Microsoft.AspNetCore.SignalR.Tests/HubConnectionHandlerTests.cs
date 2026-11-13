@@ -3408,6 +3408,42 @@ public partial class HubConnectionHandlerTests : VerifiableLoggedTest
     }
 
     [Fact]
+    public async Task StreamMethodWithDuplicateIdAndCancellationFails()
+    {
+        using (StartVerifiableLog())
+        {
+            var serviceProvider = HubConnectionHandlerTestUtils.CreateServiceProvider(builder =>
+            {
+                builder.AddSingleton(typeof(IHubActivator<>), typeof(CustomHubActivator<>));
+            }, LoggerFactory);
+            var connectionHandler = serviceProvider.GetService<HubConnectionHandler<MethodHub>>();
+
+            using (var client = new TestClient())
+            {
+                var connectionHandlerTask = await client.ConnectAsync(connectionHandler);
+
+                await client.Connected.DefaultTimeout();
+
+                await client.BeginUploadStreamAsync("123", nameof(MethodHub.StreamDontReadWithCancellation), new[] { "id" }, Array.Empty<object>()).DefaultTimeout();
+
+                await client.BeginUploadStreamAsync("123", nameof(MethodHub.StreamDontReadWithCancellation), new[] { "id2" }, Array.Empty<object>()).DefaultTimeout();
+
+                var completion = Assert.IsType<CompletionMessage>(await client.ReadAsync().DefaultTimeout());
+                Assert.Equal("Invocation ID '123' is already in use.", completion.Error);
+
+                var hubActivator = serviceProvider.GetService<IHubActivator<MethodHub>>() as CustomHubActivator<MethodHub>;
+
+                // OnConnectedAsync and the duplicate invocation's hub have been disposed
+                Assert.Equal(2, hubActivator.ReleaseCount);
+
+                client.Dispose();
+
+                await connectionHandlerTask.DefaultTimeout();
+            }
+        }
+    }
+
+    [Fact]
     public async Task InvocationsRunInOrderWithNoParallelism()
     {
         using (StartVerifiableLog())
