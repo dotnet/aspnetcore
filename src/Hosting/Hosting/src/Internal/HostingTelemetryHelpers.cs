@@ -308,6 +308,12 @@ internal static class HostingTelemetryHelpers
             return namePrefix;
         }
 
+        return GetRouteActivityDisplayName(namePrefix, httpRoute);
+    }
+
+    // For a caller that already derived the prefix, so the method is not normalized twice.
+    internal static string GetRouteActivityDisplayName(string namePrefix, string httpRoute)
+    {
         var namesByMethod = DisplayNameCache.GetOrCreateValue(httpRoute);
         return namesByMethod.GetOrAdd(namePrefix, static (method, route) => $"{method} {route}", httpRoute);
     }
