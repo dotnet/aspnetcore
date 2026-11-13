@@ -93,6 +93,7 @@ public class BlazorWebTemplateTest(ProjectFactoryFixture projectFactory) : Blazo
 
     [Theory]
     [InlineData(BrowserKind.Chromium)]
+    [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/70568")]
     public async Task BlazorWebTemplate_RecoveryEmailsUseStoredAddressAndDoNotSendWithoutIt(BrowserKind browserKind)
     {
         if (!BrowserManager.IsAvailable(browserKind))
