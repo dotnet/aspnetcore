@@ -20,4 +20,11 @@ internal sealed class RegexMatch : UrlMatch
         var res = _match.Match(pattern);
         return new MatchResults(success: res.Success != Negate, new BackReferenceCollection(res.Groups));
     }
+
+    public override MatchResults Evaluate(string input, int startIndex, RewriteContext context)
+    {
+        // Matching within input[startIndex..] gives the same match and group values as matching input.Substring(startIndex).
+        var res = _match.Match(input, startIndex, input.Length - startIndex);
+        return new MatchResults(success: res.Success != Negate, new BackReferenceCollection(res.Groups));
+    }
 }

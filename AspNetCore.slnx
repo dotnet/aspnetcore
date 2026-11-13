@@ -629,6 +629,7 @@
     <Project Path="src/Middleware/ResponseCompression/test/Microsoft.AspNetCore.ResponseCompression.Tests.csproj" />
   </Folder>
   <Folder Name="/src/Middleware/Rewrite/">
+    <Project Path="src/Middleware/Rewrite/perf/Microbenchmarks/Microsoft.AspNetCore.Rewrite.Microbenchmarks.csproj" />
     <Project Path="src/Middleware/Rewrite/sample/RewriteSample.csproj" />
     <Project Path="src/Middleware/Rewrite/src/Microsoft.AspNetCore.Rewrite.csproj" />
     <Project Path="src/Middleware/Rewrite/test/Microsoft.AspNetCore.Rewrite.Tests.csproj" />

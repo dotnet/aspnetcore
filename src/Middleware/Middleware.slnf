@@ -107,6 +107,7 @@
       "src\\Middleware\\ResponseCompression\\sample\\ResponseCompressionSample.csproj",
       "src\\Middleware\\ResponseCompression\\src\\Microsoft.AspNetCore.ResponseCompression.csproj",
       "src\\Middleware\\ResponseCompression\\test\\Microsoft.AspNetCore.ResponseCompression.Tests.csproj",
+      "src\\Middleware\\Rewrite\\perf\\Microbenchmarks\\Microsoft.AspNetCore.Rewrite.Microbenchmarks.csproj",
       "src\\Middleware\\Rewrite\\sample\\RewriteSample.csproj",
       "src\\Middleware\\Rewrite\\src\\Microsoft.AspNetCore.Rewrite.csproj",
       "src\\Middleware\\Rewrite\\test\\Microsoft.AspNetCore.Rewrite.Tests.csproj",
