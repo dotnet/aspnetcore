@@ -10,8 +10,8 @@ description: >-
   choices. Trigger phrases: "review this API", "is this API a good idea", "should we add", "API
   proposal", "api-ready-for-review". Produces a verdict, a need assessment (commonality + target
   audience), per-type bullet changes, and a diff against the existing repo API surface.
-  DO NOT USE FOR automated pull request code review (including GitHub Copilot Code Review),
-  general pull-request diff review, implementing an approved API, or writing analyzers.
+  DO NOT USE FOR automated GitHub Copilot Code Review, general PR diff review,
+  implementing an approved API, or writing analyzers.
 ---
 
 # Review a public API proposal (ASP.NET Core)
