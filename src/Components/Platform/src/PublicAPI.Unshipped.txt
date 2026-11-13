@@ -74,6 +74,9 @@ Microsoft.AspNetCore.Components.Platform.Navigator.GetLanguagesAsync() -> System
 Microsoft.AspNetCore.Components.Platform.Navigator.GetMaxTouchPointsAsync() -> System.Threading.Tasks.ValueTask<int>
 Microsoft.AspNetCore.Components.Platform.Navigator.GetOnLineAsync() -> System.Threading.Tasks.ValueTask<bool>
 Microsoft.AspNetCore.Components.Platform.Navigator.GetUserAgentAsync() -> System.Threading.Tasks.ValueTask<string!>
+Microsoft.AspNetCore.Components.Platform.NavigatorStorageManagerExtensions
+Microsoft.AspNetCore.Components.Platform.NavigatorStorageManagerExtensions.extension(Microsoft.AspNetCore.Components.Platform.Navigator!)
+Microsoft.AspNetCore.Components.Platform.NavigatorStorageManagerExtensions.extension(Microsoft.AspNetCore.Components.Platform.Navigator!).Storage.get -> Microsoft.AspNetCore.Components.Platform.StorageManager!
 Microsoft.AspNetCore.Components.Platform.Screen
 Microsoft.AspNetCore.Components.Platform.Screen.GetAvailHeightAsync() -> System.Threading.Tasks.ValueTask<int>
 Microsoft.AspNetCore.Components.Platform.Screen.GetAvailWidthAsync() -> System.Threading.Tasks.ValueTask<int>
@@ -81,6 +84,12 @@ Microsoft.AspNetCore.Components.Platform.Screen.GetColorDepthAsync() -> System.T
 Microsoft.AspNetCore.Components.Platform.Screen.GetHeightAsync() -> System.Threading.Tasks.ValueTask<int>
 Microsoft.AspNetCore.Components.Platform.Screen.GetPixelDepthAsync() -> System.Threading.Tasks.ValueTask<uint>
 Microsoft.AspNetCore.Components.Platform.Screen.GetWidthAsync() -> System.Threading.Tasks.ValueTask<int>
+Microsoft.AspNetCore.Components.Platform.StorageEstimate
+Microsoft.AspNetCore.Components.Platform.StorageEstimate.Quota.get -> ulong?
+Microsoft.AspNetCore.Components.Platform.StorageEstimate.Quota.init -> void
+Microsoft.AspNetCore.Components.Platform.StorageEstimate.StorageEstimate() -> void
+Microsoft.AspNetCore.Components.Platform.StorageEstimate.Usage.get -> ulong?
+Microsoft.AspNetCore.Components.Platform.StorageEstimate.Usage.init -> void
 Microsoft.AspNetCore.Components.Platform.StorageEvent
 Microsoft.AspNetCore.Components.Platform.StorageEvent.Key.get -> string?
 Microsoft.AspNetCore.Components.Platform.StorageEvent.Key.init -> void
@@ -93,6 +102,10 @@ Microsoft.AspNetCore.Components.Platform.StorageEvent.StorageArea.init -> void
 Microsoft.AspNetCore.Components.Platform.StorageEvent.StorageEvent() -> void
 Microsoft.AspNetCore.Components.Platform.StorageEvent.Url.get -> string!
 Microsoft.AspNetCore.Components.Platform.StorageEvent.Url.init -> void
+Microsoft.AspNetCore.Components.Platform.StorageManager
+Microsoft.AspNetCore.Components.Platform.StorageManager.EstimateAsync() -> System.Threading.Tasks.ValueTask<Microsoft.AspNetCore.Components.Platform.StorageEstimate!>
+Microsoft.AspNetCore.Components.Platform.StorageManager.PersistAsync() -> System.Threading.Tasks.ValueTask<bool>
+Microsoft.AspNetCore.Components.Platform.StorageManager.PersistedAsync() -> System.Threading.Tasks.ValueTask<bool>
 Microsoft.AspNetCore.Components.Platform.Storage
 Microsoft.AspNetCore.Components.Platform.Storage.ClearAsync() -> System.Threading.Tasks.ValueTask
 Microsoft.AspNetCore.Components.Platform.Storage.GetItemAsync(string! key) -> System.Threading.Tasks.ValueTask<string?>
