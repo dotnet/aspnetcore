@@ -47,6 +47,10 @@ export interface CircuitHandler {
 
 export interface ReconnectionHandler {
   onConnectionDown(options: ReconnectionOptions, error?: Error, isClientPause?: boolean, remotePause?: boolean): void;
+  /**
+   * Clears the reconnection UI. When invoked to clean up a paused circuit during disposal,
+   * exceptions are logged without preventing teardown or causing disposal to reject.
+   */
   onConnectionUp(): void;
 }
 

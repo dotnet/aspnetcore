@@ -9,9 +9,9 @@ export interface AutoPauseConfig {
   hiddenDelayMilliseconds: number;
 }
 
-// The subset of the Blazor global this manager depends on: the stable public pause/resume
-// primitives and the 'circuitactivitychanged' event.
+// Uses the public pause/resume and activity APIs, plus same-version internal circuit disposal.
 export interface BlazorActivityHost {
+  _internal?: { circuitEvents?: EventTarget };
   pauseCircuit?: (signal?: AbortSignal) => Promise<boolean>;
   resumeCircuit?: () => Promise<boolean>;
   addEventListener?: (type: 'circuitactivitychanged', handler: (ev: { busy: boolean }) => void) => void;
@@ -29,11 +29,17 @@ export class AutoPauseManager {
 
   private readonly _activityListener: (ev: { busy: boolean }) => void;
 
+  private readonly _circuitEvents: EventTarget | undefined;
+
+  private readonly _circuitDisposedListener: () => void;
+
   private _busy = false;
 
   private _idleResolvers: Array<() => void> = [];
 
   private _hiddenTimerId: ReturnType<typeof setTimeout> | undefined;
+
+  private _hiddenTimerPending = false;
 
   private _activeAbortController: AbortController | undefined;
 
@@ -41,19 +47,24 @@ export class AutoPauseManager {
 
   private _autoPaused = false;
 
+  private _circuitVersion = 0;
+
   private _disposed = false;
 
   public constructor(config: AutoPauseConfig, blazor: BlazorActivityHost) {
     this._config = config;
     this._blazor = blazor;
+    this._circuitEvents = blazor._internal?.circuitEvents;
 
     this._visibilityListener = () => this.onVisibilityChanged();
     this._activityListener = (ev) => this.onActivityChanged(ev.busy);
+    this._circuitDisposedListener = () => this.onCircuitDisposed();
   }
 
   public start(): void {
     initEditedTracking();
     this._blazor.addEventListener?.('circuitactivitychanged', this._activityListener);
+    this._circuitEvents?.addEventListener('disposed', this._circuitDisposedListener);
     document.addEventListener('visibilitychange', this._visibilityListener);
 
     if (document.visibilityState === 'hidden') {
@@ -68,6 +79,7 @@ export class AutoPauseManager {
     this._disposed = true;
     document.removeEventListener('visibilitychange', this._visibilityListener);
     this._blazor.removeEventListener?.('circuitactivitychanged', this._activityListener);
+    this._circuitEvents?.removeEventListener('disposed', this._circuitDisposedListener);
     this.clearHiddenTimer();
     this._activeAbortController?.abort();
     this._activeAbortController = undefined;
@@ -75,6 +87,15 @@ export class AutoPauseManager {
     for (const resolve of resolvers) {
       resolve();
     }
+  }
+
+  private onCircuitDisposed(): void {
+    this._circuitVersion++;
+    this._autoPaused = false;
+    this.clearHiddenTimer();
+    this._hiddenTimerPending = this._pauseInFlight && document.visibilityState === 'hidden';
+    this._activeAbortController?.abort();
+    this.onActivityChanged(false);
   }
 
   private onActivityChanged(busy: boolean): void {
@@ -136,9 +157,14 @@ export class AutoPauseManager {
   }
 
   private startHiddenTimer(): void {
-    if (this._hiddenTimerId !== undefined || this._autoPaused || this._pauseInFlight) {
+    if (this._hiddenTimerId !== undefined || this._autoPaused) {
       return;
     }
+    if (this._pauseInFlight) {
+      this._hiddenTimerPending = true;
+      return;
+    }
+    this._hiddenTimerPending = false;
     this._hiddenTimerId = setTimeout(() => {
       this._hiddenTimerId = undefined;
       this.pauseNow();
@@ -146,6 +172,7 @@ export class AutoPauseManager {
   }
 
   private clearHiddenTimer(): void {
+    this._hiddenTimerPending = false;
     if (this._hiddenTimerId !== undefined) {
       clearTimeout(this._hiddenTimerId);
       this._hiddenTimerId = undefined;
@@ -164,6 +191,7 @@ export class AutoPauseManager {
     }
 
     const controller = new AbortController();
+    const circuitVersion = this._circuitVersion;
     this._activeAbortController = controller;
     this._pauseInFlight = true;
 
@@ -195,7 +223,7 @@ export class AutoPauseManager {
       }
 
       const paused = await this._blazor.pauseCircuit?.(controller.signal) ?? false;
-      if (paused) {
+      if (paused && circuitVersion === this._circuitVersion) {
         this._autoPaused = true;
 
         if (document.visibilityState !== 'hidden') {
@@ -212,22 +240,25 @@ export class AutoPauseManager {
       }
       // If the tab is still hidden (e.g. it flipped visible then hidden again during an
       // aborted attempt), reschedule so we don't get stuck unpaused with no timer.
-      if (!this._disposed && !this._autoPaused && document.visibilityState === 'hidden') {
+      if (!this._disposed && (circuitVersion === this._circuitVersion || this._hiddenTimerPending) && !this._autoPaused && document.visibilityState === 'hidden') {
         this.startHiddenTimer();
       }
     }
   }
 
   private async resumeNow(): Promise<void> {
+    const circuitVersion = this._circuitVersion;
     try {
       const resumed = await this._blazor.resumeCircuit?.() ?? false;
-      if (!resumed) {
+      if (!resumed && circuitVersion === this._circuitVersion) {
         // Resume was rejected; keep treating the circuit as paused so a later visible
         // transition retries.
         this._autoPaused = true;
       }
     } catch {
-      this._autoPaused = true;
+      if (circuitVersion === this._circuitVersion) {
+        this._autoPaused = true;
+      }
     }
   }
 

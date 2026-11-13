@@ -66,6 +66,8 @@ export class CircuitManager implements DotNet.DotNetCallDispatcher {
 
   private _activePauseDeferral?: AbortController;
 
+  private _pauseUiVisible = false;
+
   public constructor(
     componentManager: RootComponentManager<ServerComponentDescriptor>,
     appState: string,
@@ -207,7 +209,9 @@ export class CircuitManager implements DotNet.DotNetCallDispatcher {
     });
     connection.on('JS.EndLocationChanging', Blazor._internal.navigationManager.endLocationChanging);
     connection.onclose(error => {
-      this._interopMethodsForReconnection = detachWebRendererInterop(WebRendererId.Server);
+      if (isRendererAttached(WebRendererId.Server)) {
+        this._interopMethodsForReconnection = detachWebRendererInterop(WebRendererId.Server);
+      }
 
       this.handleConnectionDown();
       this.abortPauseDeferrals('connection closed');
@@ -218,7 +222,7 @@ export class CircuitManager implements DotNet.DotNetCallDispatcher {
         this._pausingState.transitionTo(true);
       }
 
-      if (!this._disposed && !this._renderingFailed && !pausingWasInProgress) {
+      if (!this._disposed && !this.isDisposedOrDisposing() && !this._renderingFailed && !pausingWasInProgress) {
         this._options.reconnectionHandler!.onConnectionDown(this._options.reconnectionOptions, error);
       }
     });
@@ -313,6 +317,7 @@ export class CircuitManager implements DotNet.DotNetCallDispatcher {
       return false;
     }
 
+    this._pauseUiVisible = false;
     this._options.reconnectionHandler!.onConnectionUp();
 
     return true;
@@ -325,6 +330,10 @@ export class CircuitManager implements DotNet.DotNetCallDispatcher {
 
   // Client-initiated pause: runs the registered pause deferrals, then pauses unless the wait was aborted.
   public async pauseCircuit(externalSignal?: AbortSignal): Promise<boolean> {
+    if (this.isDisposedOrDisposing()) {
+      return false;
+    }
+
     await this.runPauseDeferrals(externalSignal);
     if (externalSignal?.aborted) {
       return false;
@@ -360,12 +369,20 @@ export class CircuitManager implements DotNet.DotNetCallDispatcher {
   }
 
   private async handleServerInitiatedPause(): Promise<void> {
+    if (this.isDisposedOrDisposing()) {
+      return;
+    }
+
     // Runs the registered pause deferrals, then pauses.
     await this.runPauseDeferrals();
     await this.pause(true);
   }
 
   public async pause(remote?: boolean): Promise<boolean> {
+    if (this.isDisposedOrDisposing()) {
+      return false;
+    }
+
     if (!this._circuitId) {
       this._logger.log(LogLevel.Error, 'Circuit host not initialized.');
       return false;
@@ -400,6 +417,7 @@ export class CircuitManager implements DotNet.DotNetCallDispatcher {
 
       // Notify the reconnection handler that we are pausing the circuit.
       // This is used to trigger the UI display.
+      this._pauseUiVisible = true;
       this._options.reconnectionHandler?.onConnectionDown(this._options.reconnectionOptions, undefined, true, remote);
 
       // Indicate to the server that we want to pause the circuit.
@@ -417,6 +435,10 @@ export class CircuitManager implements DotNet.DotNetCallDispatcher {
   }
 
   public async resume(): Promise<boolean> {
+    if (this.isDisposedOrDisposing()) {
+      return false;
+    }
+
     if (!this._circuitId) {
       this._logger.log(LogLevel.Error, 'Circuit host not initialized.');
       throw new Error('Circuit host not initialized.');
@@ -426,6 +448,9 @@ export class CircuitManager implements DotNet.DotNetCallDispatcher {
       // The handler might run before the `onclose` handler gets a chance to run.
       this._logger.log(LogLevel.Trace, 'Circuit is disconnecting, cannot resume.');
       await this._disconnectingState.currentProgress();
+      if (this.isDisposedOrDisposing()) {
+        return false;
+      }
     }
 
     if (this._pausingState.isInprogress()) {
@@ -439,11 +464,6 @@ export class CircuitManager implements DotNet.DotNetCallDispatcher {
       return false;
     }
 
-    if (this._connection!.state !== HubConnectionState.Connected) {
-      this._logger.log(LogLevel.Trace, 'Reestablishing SignalR connection...');
-      this._connection = await this.startConnection();
-    }
-
     if (this._resumingState.isInprogress()) {
       // If we are already resuming, wait for the current resume operation to complete.
       this._logger.log(LogLevel.Trace, 'Waiting for the circuit to finish resuming...');
@@ -454,6 +474,16 @@ export class CircuitManager implements DotNet.DotNetCallDispatcher {
     const resumingPromise = this._resumingState.currentProgress();
 
     try {
+      if (this._connection!.state !== HubConnectionState.Connected) {
+        this._logger.log(LogLevel.Trace, 'Reestablishing SignalR connection...');
+        this._connection = await this.startConnection();
+      }
+
+      if (this.isDisposedOrDisposing()) {
+        this._resumingState.complete(false);
+        return resumingPromise;
+      }
+
       // When we get here we know the circuit is gone for good.
       // Signal that we are about to start a new circuit so that
       // any existing handlers can perform the necessary cleanup.
@@ -479,19 +509,32 @@ export class CircuitManager implements DotNet.DotNetCallDispatcher {
         return resumingPromise;
       }
 
-      this._pausingState.transitionTo(false);
-      this._resumingState.complete(true);
-
       this._circuitId = newCircuitId;
+      if (this.isDisposedOrDisposing()) {
+        this._resumingState.complete(false);
+        return resumingPromise;
+      }
+
+      this._pausingState.transitionTo(false);
       this._renderQueue = new RenderQueue(this._logger);
       for (const handler of this._options.circuitHandlers) {
         if (handler.onCircuitOpened) {
           handler.onCircuitOpened();
+          if (this.isDisposedOrDisposing()) {
+            this._resumingState.complete(false);
+            return resumingPromise;
+          }
         }
       }
 
+      this._pauseUiVisible = false;
       this._options.reconnectionHandler!.onConnectionUp();
+      if (this.isDisposedOrDisposing()) {
+        this._resumingState.complete(false);
+        return resumingPromise;
+      }
       this._componentManager.onComponentReload?.(WebRendererId.Server);
+      this._resumingState.complete(!this.isDisposedOrDisposing());
       return resumingPromise;
     } catch (error) {
       this._logger.log(LogLevel.Error, `Failed to resume the circuit: ${error}`);
@@ -628,13 +671,26 @@ export class CircuitManager implements DotNet.DotNetCallDispatcher {
 
   public dispose(): Promise<void> {
     if (!this._disposePromise) {
-      this._disposePromise = this.disposeCore();
+      const { promise, resolve, reject } = Promise.withResolvers<void>();
+      this._disposePromise = promise;
+      this.disposeCore().then(resolve, reject);
     }
 
     return this._disposePromise;
   }
 
   private async disposeCore(): Promise<void> {
+    // Retire automatic pause before awaiting startup, which can overlap a replacement circuit.
+    Blazor._internal.circuitEvents?.dispatchEvent(new Event('disposed'));
+    if (this._pauseUiVisible) {
+      this._pauseUiVisible = false;
+      try {
+        this._options.reconnectionHandler?.onConnectionUp();
+      } catch (error) {
+        this._logger.log(LogLevel.Error, `Failed to clean up the paused circuit UI: ${error}`);
+      }
+    }
+
     if (!this._startPromise) {
       // The circuit hasn't started, so there isn't anything to dispose.
       this._disposed = true;
@@ -645,8 +701,14 @@ export class CircuitManager implements DotNet.DotNetCallDispatcher {
     // we start stop the connection.
     await this._startPromise;
 
+    // A resume can replace both the connection and the circuit ID. Drain it before teardown,
+    // even if it fails, so we dispose the resources it actually owns.
+    if (this._resumingState.isInprogress()) {
+      await Promise.allSettled([this._resumingState.currentProgress()]);
+    }
+
     this._disposed = true;
-    this._connection?.stop();
+    await this._connection?.stop();
 
     // Dispose the circuit on the server immediately. Closing the SignalR connection alone
     // without sending the disconnect message will result in the circuit being kept

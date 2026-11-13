@@ -6,6 +6,7 @@ using Microsoft.AspNetCore.Components.E2ETest.Infrastructure;
 using Microsoft.AspNetCore.Components.E2ETest.Infrastructure.ServerFixtures;
 using Microsoft.AspNetCore.E2ETesting;
 using OpenQA.Selenium;
+using OpenQA.Selenium.Support.UI;
 using TestServer;
 using Xunit.Abstractions;
 
@@ -50,6 +51,226 @@ public class AutoPauseEnhancedNavigationTests : AutoPauseTestBase<App>
         Browser.Equal("0", () => Browser.Exists(By.Id("non-persisted-counter")).Text);
         Browser.Exists(By.Id("increment-persistent-counter-count")).Click();
         Browser.Equal("2", () => Browser.Exists(By.Id("persistent-counter-count")).Text);
+    }
+
+    [Fact]
+    public void AutoPause_DoesNotResumeDisposedCircuitAfterEnhancedNavigation()
+    {
+        Navigate("/subdir/persistent-state/server-pause?auto-pause=true&auto-pause-delay-ms=200&circuit-inactivity-timeout-ms=5000");
+        var htmlElement = Browser.Exists(By.TagName("html"));
+        Browser.NotEqual("", () => Browser.Exists(By.Id("circuit-id")).Text);
+        Browser.Exists(By.Id("increment-persistent-counter-count")).Click();
+        Browser.Equal("1", () => Browser.Exists(By.Id("persistent-counter-count")).Text);
+
+        // Chrome drains its browser log when read, isolating errors from this navigation.
+        Browser.GetBrowserLogs(LogLevel.Severe);
+        var js = (IJavaScriptExecutor)Browser;
+        js.ExecuteScript("""
+            window.resumeAttempts = 0;
+            window.visibilityChanges = [];
+            const resumeCircuit = Blazor.resumeCircuit;
+            Blazor.resumeCircuit = (...args) => {
+                window.resumeAttempts++;
+                return resumeCircuit(...args);
+            };
+            document.addEventListener('visibilitychange', () => window.visibilityChanges.push(document.visibilityState));
+            """);
+
+        Browser.Exists(By.Id("navigate-to-static-auto-pause")).Click();
+        Browser.Equal("static", () => Browser.Exists(By.Id("execution-mode")).Text);
+        Browser.False(() => htmlElement.IsStale());
+
+        WithHiddenTab(hiddenJs =>
+        {
+            Browser.Equal("block", () => hiddenJs.ExecuteScript(
+                "return window.testWindow.getComputedStyle(window.testWindow.document.getElementById('components-reconnect-modal')).display;"));
+            Browser.True(() => (bool)hiddenJs.ExecuteScript(
+                "return window.testWindow.performance.getEntriesByType('resource').some(entry => entry.name.includes('/_blazor/disconnect'));"),
+                TimeSpan.FromSeconds(30));
+        });
+
+        Browser.True(() => (bool)js.ExecuteScript("return window.visibilityChanges.at(-1) === 'visible';"));
+        Browser.Equal("static", () => Browser.Exists(By.Id("execution-mode")).Text);
+        WaitForResumedUI();
+        Assert.Equal(0L, js.ExecuteScript("return window.resumeAttempts;"));
+        Assert.DoesNotContain(Browser.GetBrowserLogs(LogLevel.Severe),
+            entry => entry.Message.Contains("The circuit associated with this dispatcher is no longer available", StringComparison.Ordinal));
+
+        Browser.Exists(By.Id("navigate-to-auto-pause")).Click();
+        Browser.NotEqual("", () => Browser.Exists(By.Id("circuit-id")).Text);
+        Browser.Exists(By.Id("increment-persistent-counter-count")).Click();
+        Browser.Equal("1", () => Browser.Exists(By.Id("persistent-counter-count")).Text);
+        Browser.False(() => htmlElement.IsStale());
+
+        WithHiddenTab(hiddenJs => Browser.Equal("block", () => hiddenJs.ExecuteScript(
+            "return window.testWindow.getComputedStyle(window.testWindow.document.getElementById('components-reconnect-modal')).display;")));
+        WaitForResumedUI();
+        Browser.Equal("1", () => Browser.Exists(By.Id("persistent-counter-count")).Text);
+        Browser.Exists(By.Id("increment-persistent-counter-count")).Click();
+        Browser.Equal("2", () => Browser.Exists(By.Id("persistent-counter-count")).Text);
+    }
+
+    [Fact]
+    public void AutoPause_PausesReplacementAfterAbortedPauseDeferralCompletes()
+    {
+        Navigate("/subdir/persistent-state/server-pause?auto-pause=true&auto-pause-delay-ms=200&suppress-autostart");
+        var htmlElement = Browser.Exists(By.TagName("html"));
+        var js = (IJavaScriptExecutor)Browser;
+        js.ExecuteScript("""
+            const gate = Promise.withResolvers();
+            window.pauseDeferral = { entered: false, aborted: false, settled: false, disposed: false, release: gate.resolve };
+            Blazor._internal.circuitEvents.addEventListener('disposed', () => pauseDeferral.disposed = true, { once: true });
+            Blazor.start({
+                ssr: { circuitInactivityTimeoutMs: 200 },
+                circuit: {
+                    circuitHandlers: [{
+                        onCircuitPausing: async signal => {
+                            if (!pauseDeferral.entered) {
+                                pauseDeferral.entered = true;
+                                signal.addEventListener('abort', () => pauseDeferral.aborted = true, { once: true });
+                                await gate.promise;
+                                pauseDeferral.settled = true;
+                            }
+                        }
+                    }]
+                }
+            });
+            """);
+        Browser.NotEqual("", () => Browser.Exists(By.Id("circuit-id")).Text);
+        var originalCircuitId = Browser.Exists(By.Id("circuit-id")).Text;
+        Browser.Exists(By.Id("increment-persistent-counter-count")).Click();
+        Browser.Equal("1", () => Browser.Exists(By.Id("persistent-counter-count")).Text);
+        Browser.GetBrowserLogs(LogLevel.Severe);
+
+        WithHiddenTab(hiddenJs =>
+        {
+            Browser.True(() => (bool)hiddenJs.ExecuteScript("return window.testWindow.pauseDeferral.entered;"));
+            hiddenJs.ExecuteScript("window.testWindow.document.getElementById('navigate-to-static-auto-pause').click();");
+            Browser.True(() => (bool)hiddenJs.ExecuteScript("return window.testWindow.pauseDeferral.disposed;"));
+            hiddenJs.ExecuteScript("window.testWindow.document.getElementById('navigate-to-auto-pause').click();");
+            Browser.True(() => (bool)hiddenJs.ExecuteScript("""
+                const id = window.testWindow.document.getElementById('circuit-id')?.textContent;
+                return !!id && id !== arguments[0];
+                """, originalCircuitId));
+        });
+
+        Browser.False(() => htmlElement.IsStale());
+        Assert.True((bool)js.ExecuteScript("return pauseDeferral.aborted && !pauseDeferral.settled;"));
+        Browser.Exists(By.Id("increment-persistent-counter-count")).Click();
+        Browser.Equal("1", () => Browser.Exists(By.Id("persistent-counter-count")).Text);
+
+        WithHiddenTab(hiddenJs =>
+        {
+            hiddenJs.ExecuteScript("window.testWindow.pauseDeferral.release();");
+            Browser.True(() => (bool)hiddenJs.ExecuteScript("return window.testWindow.pauseDeferral.settled;"));
+            Browser.True(() => (bool)hiddenJs.ExecuteScript("""
+                const modal = window.testWindow.document.getElementById('components-reconnect-modal');
+                return !!modal && window.testWindow.getComputedStyle(modal).display === 'block';
+                """));
+        });
+
+        WaitForResumedUI();
+        Browser.Equal("1", () => Browser.Exists(By.Id("persistent-counter-count")).Text);
+        Browser.Exists(By.Id("increment-persistent-counter-count")).Click();
+        Browser.Equal("2", () => Browser.Exists(By.Id("persistent-counter-count")).Text);
+        Assert.Empty(Browser.GetBrowserLogs(LogLevel.Severe));
+    }
+
+    [Fact]
+    public void CircuitReplacement_RemainsInteractiveAfterOldResumeTransportCloses()
+    {
+        Navigate("/subdir/persistent-state/server-pause?suppress-autostart");
+        var htmlElement = Browser.Exists(By.TagName("html"));
+        var js = (IJavaScriptExecutor)Browser;
+        js.ExecuteScript("""
+            const gate = Promise.withResolvers();
+            window.transportProbe = { negotiations: 0, entered: false, disposed: false, opened: 0, release: gate.resolve };
+            const originalFetch = window.fetch;
+            window.fetch = async (...args) => {
+                if (String(args[0]).includes('/_blazor/negotiate') && ++transportProbe.negotiations === 2) {
+                    transportProbe.entered = true;
+                    await gate.promise;
+                }
+                return originalFetch(...args);
+            };
+            Blazor._internal.circuitEvents.addEventListener('disposed', () => transportProbe.disposed = true, { once: true });
+            Blazor.start({
+                ssr: { circuitInactivityTimeoutMs: 5000 },
+                circuit: { circuitHandlers: [{ onCircuitOpened: () => transportProbe.opened++ }] }
+            });
+            """);
+        Browser.NotEqual("", () => Browser.Exists(By.Id("circuit-id")).Text);
+        Browser.Exists(By.Id("increment-persistent-counter-count")).Click();
+        Browser.Equal("1", () => Browser.Exists(By.Id("persistent-counter-count")).Text);
+        Browser.GetBrowserLogs(LogLevel.Severe);
+
+        Browser.Exists(By.Id("navigate-to-static-auto-pause")).Click();
+        Browser.Equal("static", () => Browser.Exists(By.Id("execution-mode")).Text);
+        Assert.True((bool)js.ExecuteAsyncScript("""
+            const callback = arguments[arguments.length - 1];
+            Blazor.pauseCircuit().then(callback);
+            """));
+        js.ExecuteScript("Blazor.resumeCircuit();");
+        Browser.True(() => (bool)js.ExecuteScript("return transportProbe.entered;"));
+        Browser.True(() => (bool)js.ExecuteScript("return transportProbe.disposed;"));
+        Browser.Exists(By.Id("navigate-to-auto-pause")).Click();
+        Browser.Exists(By.Id("increment-persistent-counter-count"));
+
+        try
+        {
+            // Observe an early replacement on the baseline; correct startup waits for the gate.
+            new WebDriverWait(Browser, TimeSpan.FromSeconds(3)).Until(
+                _ => (long)js.ExecuteScript("return transportProbe.opened;") > 1);
+        }
+        catch (WebDriverTimeoutException)
+        {
+            // A replacement cannot open yet when teardown is correctly serialized.
+        }
+        finally
+        {
+            js.ExecuteScript("transportProbe.release();");
+        }
+
+        Browser.True(() => (bool)js.ExecuteScript("""
+            return performance.getEntriesByType('resource').some(entry => entry.name.includes('/_blazor/disconnect'));
+            """));
+        Browser.NotEqual("", () => Browser.Exists(By.Id("circuit-id")).Text);
+        Browser.Exists(By.Id("increment-persistent-counter-count")).Click();
+        Browser.Equal("1", () => Browser.Exists(By.Id("persistent-counter-count")).Text);
+        Browser.False(() => htmlElement.IsStale());
+        Assert.Empty(Browser.GetBrowserLogs(LogLevel.Severe));
+    }
+
+    private void WithHiddenTab(Action<IJavaScriptExecutor> action)
+    {
+        var originalWindow = Browser.CurrentWindowHandle;
+        var existingWindows = Browser.WindowHandles;
+        // WebDriver cannot evaluate an unselected tab, so let the cover tab observe its opener.
+        ((IJavaScriptExecutor)Browser).ExecuteScript("""
+            const button = document.createElement('button');
+            button.id = 'hide-auto-pause-tab';
+            button.textContent = 'Hide tab';
+            button.addEventListener('click', () => {
+                button.remove();
+                window.open('about:blank', '_blank').testWindow = window;
+            });
+            document.body.appendChild(button);
+            """);
+        Browser.Exists(By.Id("hide-auto-pause-tab")).Click();
+        var coverWindow = Browser.WindowHandles.Except(existingWindows).Single();
+        Browser.SwitchTo().Window(coverWindow);
+        try
+        {
+            var js = (IJavaScriptExecutor)Browser;
+            Browser.True(() => (string)js.ExecuteScript("return window.testWindow.document.visibilityState;") == "hidden",
+                TimeSpan.FromSeconds(30));
+            action(js);
+        }
+        finally
+        {
+            Browser.Close();
+            Browser.SwitchTo().Window(originalWindow);
+        }
     }
 
 }
