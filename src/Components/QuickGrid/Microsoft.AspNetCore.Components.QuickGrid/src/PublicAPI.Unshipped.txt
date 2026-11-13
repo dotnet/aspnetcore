@@ -1,3 +1,7 @@
 #nullable enable
 Microsoft.AspNetCore.Components.QuickGrid.Paginator.AdditionalAttributes.get -> System.Collections.Generic.IReadOnlyDictionary<string!, object!>?
 Microsoft.AspNetCore.Components.QuickGrid.Paginator.AdditionalAttributes.set -> void
+Microsoft.AspNetCore.Components.QuickGrid.ColumnBase<TGridItem>.ColumnFooterTemplate.get -> Microsoft.AspNetCore.Components.RenderFragment?
+Microsoft.AspNetCore.Components.QuickGrid.ColumnBase<TGridItem>.ColumnFooterTemplate.set -> void
+Microsoft.AspNetCore.Components.QuickGrid.QuickGrid<TGridItem>.GridFooterTemplate.get -> Microsoft.AspNetCore.Components.RenderFragment?
+Microsoft.AspNetCore.Components.QuickGrid.QuickGrid<TGridItem>.GridFooterTemplate.set -> void

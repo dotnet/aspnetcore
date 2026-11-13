@@ -21,13 +21,13 @@ public abstract partial class ColumnBase<TGridItem>
     [Parameter] public string? Title { get; set; }
 
     /// <summary>
-    /// An optional CSS class name. If specified, this is included in the class attribute of table header and body cells
+    /// An optional CSS class name. If specified, this is included in the class attribute of table header, body, and footer cells
     /// for this column.
     /// </summary>
     [Parameter] public string? Class { get; set; }
 
     /// <summary>
-    /// If specified, controls the justification of table header and body cells for this column.
+    /// If specified, controls the justification of table header, body, and footer cells for this column.
     /// </summary>
     [Parameter] public Align Align { get; set; }
 
@@ -75,6 +75,13 @@ public abstract partial class ColumnBase<TGridItem>
     /// If specified, virtualized grids will use this template to render cells whose data has not yet been loaded.
     /// </summary>
     [Parameter] public RenderFragment<PlaceholderContext>? PlaceholderTemplate { get; set; }
+
+    /// <summary>
+    /// An optional template for this column's footer cell. If not specified, no footer cell content will
+    /// be rendered for this column. When any column in the grid has a <see cref="ColumnFooterTemplate"/>, the
+    /// grid will render a footer row in which each column renders its <see cref="ColumnFooterTemplate"/>.
+    /// </summary>
+    [Parameter] public RenderFragment? ColumnFooterTemplate { get; set; }
 
     /// <summary>
     /// Gets a reference to the enclosing <see cref="QuickGrid{TGridItem}" />.
