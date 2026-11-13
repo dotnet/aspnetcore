@@ -5,10 +5,12 @@ using System.Net;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.TestHost;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.Options;
 
 namespace Microsoft.AspNetCore.Diagnostics;
 
@@ -388,5 +390,78 @@ public class StatusCodeMiddlewareTest
         var content = await response.Content.ReadAsStringAsync();
 
         Assert.Equal("Status: 400", content);
+    }
+
+    [Fact]
+    public async Task PathFormatItem_NullWithoutReExecute_AndItemsNotAllocated()
+    {
+        object observed = "unset";
+        var middleware = new StatusCodePagesMiddleware(
+            ctx => { observed = ctx.Items[nameof(StatusCodePagesOptions)]; return Task.CompletedTask; },
+            Options.Create(new StatusCodePagesOptions()));
+        var context = new DefaultHttpContext();
+
+        await middleware.Invoke(context);
+
+        Assert.Null(observed);
+        Assert.False(context.Items.ContainsKey(nameof(StatusCodePagesOptions)));
+    }
+
+    [Fact]
+    public async Task PathFormatItem_NotWrittenWhenItemsUnused()
+    {
+        var middleware = new StatusCodePagesMiddleware(_ => Task.CompletedTask, Options.Create(new StatusCodePagesOptions()));
+        var context = new DefaultHttpContext();
+
+        await middleware.Invoke(context);
+
+        Assert.Null(context.Features.Get<IItemsFeature>());
+    }
+
+    [Fact]
+    public async Task PathFormatItem_OverwritesAndRemovesExistingEntry()
+    {
+        object observed = "unset";
+        var middleware = new StatusCodePagesMiddleware(
+            ctx => { observed = ctx.Items[nameof(StatusCodePagesOptions)]; return Task.CompletedTask; },
+            Options.Create(new StatusCodePagesOptions()));
+        var context = new DefaultHttpContext();
+        context.Items[nameof(StatusCodePagesOptions)] = "existing";
+        context.Items["other"] = "value";
+
+        await middleware.Invoke(context);
+
+        Assert.Null(observed);
+        Assert.False(context.Items.ContainsKey(nameof(StatusCodePagesOptions)));
+        Assert.Equal("value", context.Items["other"]);
+    }
+
+    [Fact]
+    public async Task PathFormatItem_RemovesEntryAddedByNext()
+    {
+        var middleware = new StatusCodePagesMiddleware(
+            ctx => { ctx.Items[nameof(StatusCodePagesOptions)] = "fromNext"; return Task.CompletedTask; },
+            Options.Create(new StatusCodePagesOptions()));
+        var context = new DefaultHttpContext();
+
+        await middleware.Invoke(context);
+
+        Assert.False(context.Items.ContainsKey(nameof(StatusCodePagesOptions)));
+    }
+
+    [Fact]
+    public async Task PathFormatItem_SetDuringReExecuteAndRemovedAfterwards()
+    {
+        object observed = null;
+        var options = new StatusCodePagesOptions { PathFormat = "/error/{0}" };
+        var middleware = new StatusCodePagesMiddleware(
+            ctx => { observed = ctx.Items[nameof(StatusCodePagesOptions)]; return Task.CompletedTask; },
+            Options.Create(options));
+        var context = new DefaultHttpContext();
+
+        await middleware.Invoke(context);
+
+        Assert.Equal("/error/{0}", observed);
+        Assert.False(context.Items.ContainsKey(nameof(StatusCodePagesOptions)));
     }
 }
