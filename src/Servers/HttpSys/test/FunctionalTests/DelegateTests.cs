@@ -225,6 +225,16 @@ public class DelegateTests : LoggedTest
     public async Task DelegateAfterReceiverRestart()
     {
         var queueName = Guid.NewGuid().ToString();
+
+        var statusCode = PInvoke.HttpCreateRequestQueue(
+            HttpApi.Version,
+            queueName,
+            default,
+            PInvoke.HTTP_CREATE_REQUEST_QUEUE_FLAG_CONTROLLER,
+            out var requestQueueHandle);
+        using var queueHandle = requestQueueHandle;
+        Assert.Equal((uint)WIN32_ERROR.ERROR_SUCCESS, statusCode);
+
         using var receiver = Utilities.CreateHttpServer(out var receiverAddress, async httpContext =>
         {
             await httpContext.Response.WriteAsync(_expectedResponseString);
@@ -232,6 +242,7 @@ public class DelegateTests : LoggedTest
         options =>
         {
             options.RequestQueueName = queueName;
+            options.RequestQueueMode = RequestQueueMode.CreateOrAttach;
         }, LoggerFactory);
 
         DelegationRule destination = default;
@@ -264,10 +275,12 @@ public class DelegateTests : LoggedTest
             options.UrlPrefixes.Add(receiverAddress);
         }, LoggerFactory);
 
+        Assert.False(receiverRestarted.Listener.RequestQueue.Created);
         responseString = await SendRequestAsync(delegatorAddress);
         Assert.Equal(_expectedResponseString, responseString);
 
         destination?.Dispose();
+        GC.KeepAlive(queueHandle);
     }
 
     [ConditionalFact]

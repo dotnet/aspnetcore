@@ -13,6 +13,15 @@ public class RequestCookiesCollectionTests
     [InlineData("ke%23y%2C=val%5Eue", "ke%23y%2C", "val^ue")]
     [InlineData("base64=QUI%2BREU%2FRw%3D%3D", "base64", "QUI+REU/Rw==")]
     [InlineData("base64=QUI+REU/Rw==", "base64", "QUI+REU/Rw==")]
+    [InlineData("pct=100%", "pct", "100%")]
+    [InlineData("pct=%%41", "pct", "%A")]
+    [InlineData("pct=%4", "pct", "%4")]
+    [InlineData("pct=%zz", "pct", "%zz")]
+    [InlineData("utf8=%C3%A9t%C3%A9", "utf8", "\u00e9t\u00e9")]
+    [InlineData("utf8=%E2%82%AC%20", "utf8", "\u20ac ")]
+    [InlineData("bad=%FF%C3%28", "bad", "%FF%C3(")]
+    [InlineData("partial=%E2%82", "partial", "%E2%82")]
+    [InlineData("quoted=\"a%20b\"", "quoted", "\"a b\"")]
     public void UnEscapesValues(string input, string expectedKey, string expectedValue)
     {
         var cookies = RequestCookieCollection.Parse(new StringValues(input));

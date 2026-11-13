@@ -13,13 +13,22 @@ namespace Microsoft.AspNetCore.Components.Platform;
 public sealed class CookieStore : IInternalAsyncDisposal
 {
     private readonly IJSRuntime _jsRuntime;
+    private readonly EventListenerCollection _listeners;
     private Task<IJSObjectReference>? _referenceTask;
     private bool _disposed;
 
-    internal CookieStore(IJSRuntime jsRuntime)
+    internal CookieStore(IJSRuntime jsRuntime, EventListenerCollection listeners)
     {
         _jsRuntime = jsRuntime;
+        _listeners = listeners;
     }
+
+    // CookieListItem is a dictionary, so the lists are copied whole.
+    /// <summary>
+    /// Gets the event that fires when cookies visible to the current page change.
+    /// </summary>
+    public static EventType<CookieStore, CookieChangeEvent> ChangeEvent { get; }
+        = EventTypes.Create<CookieStore, CookieChangeEvent>("change", """[{"changed":null,"deleted":null}]""");
 
     /// <summary>
     /// Gets the first cookie with the specified name.
@@ -168,6 +177,51 @@ public sealed class CookieStore : IInternalAsyncDisposal
         await cookieStore.InvokeVoidAsync("delete", options).ConfigureAwait(false);
     }
 
+    /// <summary>
+    /// Adds a listener that is called each time the specified event fires on the cookie store.
+    /// Other listeners, including those added by JavaScript code of the page, are not affected.
+    /// An exception thrown by the listener is logged and does not remove the listener.
+    /// Each call creates an independent registration, even for the same listener;
+    /// disposing the returned object removes only that registration.
+    /// </summary>
+    /// <typeparam name="TEvent">The type of the event object.</typeparam>
+    /// <param name="type">The event to listen for, such as <see cref="ChangeEvent"/>.</param>
+    /// <param name="listener">The function to call with each event.</param>
+    /// <returns>An object that removes the listener when disposed.</returns>
+    /// <exception cref="ArgumentNullException"><paramref name="type"/> or <paramref name="listener"/> is <see langword="null"/>.</exception>
+    /// <exception cref="NotSupportedException">The browser does not provide the Cookie Store API for the current page.</exception>
+    public ValueTask<IAsyncDisposable> AddEventListenerAsync<TEvent>(EventType<CookieStore, TEvent> type, Func<TEvent, Task> listener)
+        => AddEventListenerAsync(type, listener, CancellationToken.None);
+
+    /// <summary>
+    /// Adds a listener that is called each time the specified event fires on the cookie store.
+    /// Other listeners, including those added by JavaScript code of the page, are not affected.
+    /// An exception thrown by the listener is logged and does not remove the listener.
+    /// Each call creates an independent registration, even for the same listener;
+    /// disposing the returned object removes only that registration.
+    /// Canceling <paramref name="cancellationToken"/> removes the listener, as disposing the returned object does.
+    /// </summary>
+    /// <typeparam name="TEvent">The type of the event object.</typeparam>
+    /// <param name="type">The event to listen for, such as <see cref="ChangeEvent"/>.</param>
+    /// <param name="listener">The function to call with each event.</param>
+    /// <param name="cancellationToken">The token that removes the listener when canceled.</param>
+    /// <returns>An object that removes the listener when disposed.</returns>
+    /// <exception cref="ArgumentNullException"><paramref name="type"/> or <paramref name="listener"/> is <see langword="null"/>.</exception>
+    /// <exception cref="OperationCanceledException"><paramref name="cancellationToken"/> was canceled before the listener was added.</exception>
+    /// <exception cref="NotSupportedException">The browser does not provide the Cookie Store API for the current page.</exception>
+    [DynamicDependency(LinkerFlags.JsonSerialized, typeof(CookieListItem))]
+    public async ValueTask<IAsyncDisposable> AddEventListenerAsync<TEvent>(EventType<CookieStore, TEvent> type, Func<TEvent, Task> listener, CancellationToken cancellationToken)
+    {
+        ArgumentNullException.ThrowIfNull(type);
+        ArgumentNullException.ThrowIfNull(listener);
+        cancellationToken.ThrowIfCancellationRequested();
+
+        // Adding and removing listeners changes unlocked state, so these awaits keep the renderer's synchronization context.
+        var cookieStore = await GetReferenceAsync();
+
+        return await type.AddListenerAsync(_listeners, cookieStore, this, listener, cancellationToken);
+    }
+
     async ValueTask IInternalAsyncDisposal.InternalDisposeAsync()
     {
         if (_disposed)
@@ -176,6 +230,9 @@ public sealed class CookieStore : IInternalAsyncDisposal
         }
 
         _disposed = true;
+
+        // Listeners need the cookie store reference to remove themselves, so they go first.
+        await ((IInternalAsyncDisposal)_listeners).InternalDisposeAsync();
 
         // Don't wait for a pending acquisition. It could hold up scope disposal until the JS interop timeout.
         if (_referenceTask is { IsCompletedSuccessfully: true } referenceTask)

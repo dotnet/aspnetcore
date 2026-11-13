@@ -159,7 +159,7 @@ internal ref struct RefPooledArrayBufferWriter<T> : IBufferWriter<T>, IDisposabl
 
         var previousBuffer = oldBuffer.AsSpan(0, _index);
         previousBuffer.CopyTo(_rentedBuffer);
-        ArrayPool<T>.Shared.Return(oldBuffer);
+        ArrayPool<T>.Shared.Return(oldBuffer, clearArray: true);
 
         _buffer = _rentedBuffer;
 

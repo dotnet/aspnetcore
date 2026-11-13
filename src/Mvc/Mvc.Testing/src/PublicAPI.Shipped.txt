@@ -42,6 +42,7 @@ Microsoft.AspNetCore.Mvc.Testing.WebApplicationFactoryContentRootAttribute.WebAp
 override Microsoft.AspNetCore.Mvc.Testing.Handlers.CookieContainerHandler.SendAsync(System.Net.Http.HttpRequestMessage! request, System.Threading.CancellationToken cancellationToken) -> System.Threading.Tasks.Task<System.Net.Http.HttpResponseMessage!>!
 override Microsoft.AspNetCore.Mvc.Testing.Handlers.RedirectHandler.SendAsync(System.Net.Http.HttpRequestMessage! request, System.Threading.CancellationToken cancellationToken) -> System.Threading.Tasks.Task<System.Net.Http.HttpResponseMessage!>!
 virtual Microsoft.AspNetCore.Mvc.Testing.WebApplicationFactory<TEntryPoint>.ConfigureClient(System.Net.Http.HttpClient! client) -> void
+virtual Microsoft.AspNetCore.Mvc.Testing.WebApplicationFactory<TEntryPoint>.ConfigureWebApplicationBuilder(Microsoft.Extensions.Hosting.IHostApplicationBuilder! hostApplicationBuilder) -> void
 virtual Microsoft.AspNetCore.Mvc.Testing.WebApplicationFactory<TEntryPoint>.ConfigureWebHost(Microsoft.AspNetCore.Hosting.IWebHostBuilder! builder) -> void
 virtual Microsoft.AspNetCore.Mvc.Testing.WebApplicationFactory<TEntryPoint>.CreateHost(Microsoft.Extensions.Hosting.IHostBuilder! builder) -> Microsoft.Extensions.Hosting.IHost!
 virtual Microsoft.AspNetCore.Mvc.Testing.WebApplicationFactory<TEntryPoint>.CreateHostBuilder() -> Microsoft.Extensions.Hosting.IHostBuilder?

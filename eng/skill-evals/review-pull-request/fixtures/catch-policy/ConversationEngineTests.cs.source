@@ -1,0 +1,21 @@
+using System.Threading.Tasks;
+using Xunit;
+
+public class ConversationEngineTests
+{
+    [Fact]
+    public async Task ProcessingFailureIsExposed()
+    {
+        var client = new FailingClient();
+        var sink = new ThrowingDiagnosticSink();
+        var observer = new StatusObserver();
+        var engine = new ConversationEngine(client, sink);
+        engine.StatusChanged += observer.OnStatusChanged;
+
+        await engine.SendMessageAsync();
+
+        Assert.Same(client.Failure, engine.Error);
+        Assert.Equal("Error", engine.Status);
+        Assert.Equal(1, observer.NotificationCount);
+    }
+}

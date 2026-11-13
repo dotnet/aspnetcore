@@ -320,6 +320,7 @@
     <Project Path="src/Hosting/Abstractions/src/Microsoft.AspNetCore.Hosting.Abstractions.csproj" />
   </Folder>
   <Folder Name="/src/Hosting/Hosting/">
+    <Project Path="src/Hosting/Hosting/perf/Microbenchmarks/Microsoft.AspNetCore.Hosting.Microbenchmarks.csproj" />
     <Project Path="src/Hosting/Hosting/src/Microsoft.AspNetCore.Hosting.csproj" />
     <Project Path="src/Hosting/Hosting/test/Microsoft.AspNetCore.Hosting.Tests.csproj" />
   </Folder>
@@ -567,6 +568,7 @@
     <Project Path="src/Middleware/HostFiltering/test/Microsoft.AspNetCore.HostFiltering.Tests.csproj" />
   </Folder>
   <Folder Name="/src/Middleware/HttpLogging/">
+    <Project Path="src/Middleware/HttpLogging/perf/Microbenchmarks/Microsoft.AspNetCore.HttpLogging.Microbenchmarks.csproj" />
     <Project Path="src/Middleware/HttpLogging/samples/HttpLogging.Sample/HttpLogging.Sample.csproj" />
     <Project Path="src/Middleware/HttpLogging/samples/Logging.W3C.Sample/Logging.W3C.Sample.csproj" />
     <Project Path="src/Middleware/HttpLogging/src/Microsoft.AspNetCore.HttpLogging.csproj" />
@@ -1299,6 +1301,7 @@
     <Build Solution="*|Any CPU" Project="false" />
     <Build Solution="*|arm64" Project="false" />
   </Project>
+  <Project Path="src/StaticAssets/perf/Microbenchmarks/Microsoft.AspNetCore.StaticAssets.Microbenchmarks.csproj" />
   <Project Path="src/StaticAssets/src/Microsoft.AspNetCore.StaticAssets.csproj" />
   <Project Path="src/StaticAssets/test/Microsoft.AspNetCore.StaticAssets.Tests.csproj" />
   <Project Path="src/Testing/src/Microsoft.AspNetCore.InternalTesting.csproj" />
