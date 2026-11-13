@@ -212,8 +212,27 @@
             const blockLoadBootResource = sessionStorage.getItem('block-load-boot-resource') === 'true';
             const blockWebassemblySettings = getQueryParam('block-webassembly-settings') === 'true';
             const keepCircuitAlive = sessionStorage.getItem('keep-circuit-alive') === 'true';
+            const blockServerRendererAttach = sessionStorage.getItem('block-server-renderer-attach') === 'true';
             sessionStorage.removeItem('block-load-boot-resource');
             sessionStorage.removeItem('enable-classic-initializers');
+            sessionStorage.removeItem('block-server-renderer-attach');
+
+            if (blockServerRendererAttach) {
+                // Holds back attaching the server renderer until the test unblocks it, simulating a slow
+                // response to 'StartCircuit'.
+                const serverRendererAttachUnblocked = new Promise(resolve => {
+                    window.unblockServerRendererAttach = resolve;
+                });
+                const attachWebRendererInterop = Blazor._internal.attachWebRendererInterop;
+                Blazor._internal.attachWebRendererInterop = function (rendererId, ...args) {
+                    if (rendererId !== 1) {
+                        return attachWebRendererInterop(rendererId, ...args);
+                    }
+
+                    appendHiddenParagraph('server-renderer-attach-blocked');
+                    serverRendererAttachUnblocked.then(() => attachWebRendererInterop(rendererId, ...args));
+                };
+            }
 
             let loadBootResourceUnblocked = null;
             if (blockLoadBootResource) {

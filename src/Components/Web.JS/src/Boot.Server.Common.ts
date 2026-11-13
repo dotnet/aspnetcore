@@ -12,7 +12,7 @@ import { JSEventRegistry } from './Services/JSEventRegistry';
 import { fetchAndInvokeInitializers } from './JSInitializers/JSInitializers.Server';
 import { RootComponentManager } from './Services/RootComponentManager';
 import { WebRendererId } from './Rendering/WebRendererId';
-import { addDispatchEventMiddleware } from './Rendering/WebRendererInteropMethods';
+import { addDispatchEventMiddleware, registerRendererAttachedListener } from './Rendering/WebRendererInteropMethods';
 
 let circuitOptionsPromise: Promise<Partial<CircuitStartOptions>> | undefined;
 let appState: string;
@@ -99,6 +99,12 @@ async function startServerCore(components: RootComponentManager<ServerComponentD
     return circuit.sendLocationChanged(uri, state, intercepted);
   }, (callId: number, uri: string, state: string | undefined, intercepted: boolean): Promise<void> => {
     return circuit.sendLocationChanging(callId, uri, state, intercepted);
+  });
+
+  registerRendererAttachedListener(rendererId => {
+    if (rendererId === WebRendererId.Server) {
+      circuit.onRendererAttached();
+    }
   });
 
   Blazor._internal.forceCloseConnection = () => circuit.disconnect();

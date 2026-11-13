@@ -4,7 +4,7 @@
 import '../JSInterop/Microsoft.JSInterop';
 import { scheduleScrollReset, ScrollResetSchedule } from '../Rendering/Renderer';
 import { EventDelegator } from '../Rendering/Events/EventDelegator';
-import { attachEnhancedNavigationListener, getInteractiveRouterRendererId, handleClickForNavigationInterception, hasInteractiveRouter, hasProgrammaticEnhancedNavigationHandler, isForSamePath, isSamePageWithHash, isWithinBaseUriSpace, performProgrammaticEnhancedNavigation, performScrollToElementOnTheSamePage, scrollToElement, setHasInteractiveRouter, toAbsoluteUri } from './NavigationUtils';
+import { attachEnhancedNavigationListener, getInteractiveRouterRendererId, handleClickForNavigationInterception, hasInteractiveRouter, hasProgrammaticEnhancedNavigationHandler, isForSamePath, isSamePageWithHash, isWithinBaseUriSpace, performProgrammaticEnhancedNavigation, performScrollToElementOnTheSamePage, recordLocationChange, scrollToElement, setHasInteractiveRouter, toAbsoluteUri } from './NavigationUtils';
 import { WebRendererId } from '../Rendering/WebRendererId';
 import { isRendererAttached } from '../Rendering/WebRendererInteropMethods';
 import { IBlazor } from '../GlobalExports';
@@ -37,6 +37,8 @@ export const internalFunctions = {
   getLocationHref: (): string => location.href,
   scrollToElement,
 };
+
+export { resetLastLocationChange, wasLastLocationChangeIntercepted } from './NavigationUtils';
 
 function listenForNavigationEvents(
   rendererId: WebRendererId,
@@ -156,6 +158,7 @@ async function performInternalNavigation(absoluteInternalHref: string, intercept
 
   if (isSamePageWithHash(location.href, absoluteInternalHref)) {
     saveToBrowserHistory(absoluteInternalHref, replace, state);
+    recordLocationChange(absoluteInternalHref, interceptedLink);
     performScrollToElementOnTheSamePage(absoluteInternalHref);
     return;
   }
@@ -261,6 +264,8 @@ async function onBrowserInitiatedPopState(state: PopStateEvent) {
 
 async function notifyLocationChanged(interceptedLink: boolean, internalDestinationHref?: string) {
   const uri = internalDestinationHref ?? location.href;
+
+  recordLocationChange(uri, interceptedLink);
 
   await Promise.all(Array.from(navigationCallbacks, async ([rendererId, callbacks]) => {
     if (isRendererAttached(rendererId)) {
