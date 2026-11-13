@@ -235,6 +235,11 @@ public class MethodHub : TestHub
         }
     }
 
+    public async Task StreamDontReadWithCancellation(ChannelReader<string> source, CancellationToken token)
+    {
+        await token.WaitForCancellationAsync();
+    }
+
     public async Task<int> StreamingSum(ChannelReader<int> source)
     {
         var total = 0;
