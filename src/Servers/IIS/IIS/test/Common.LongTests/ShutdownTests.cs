@@ -457,6 +457,7 @@ public class ShutdownTests : IISFunctionalTestBase
         await deploymentResult.AssertRecycledAsync();
     }
 
+    [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/68150")]
     [ConditionalFact]
     [RequiresNewShim]
     public async Task ConfigurationChangeForcesChildProcessRestart()
@@ -470,9 +471,13 @@ public class ShutdownTests : IISFunctionalTestBase
         // Just "touching" web.config should be enough
         deploymentResult.ModifyWebConfig(element => { });
 
-        // Have to retry here to allow ANCM to receive notification and react to it
-        // Verify that worker process gets restarted with new process id
-        await deploymentResult.HttpClient.RetryRequestAsync("/ProcessId", async r => await r.Content.ReadAsStringAsync() != processBefore);
+        // Requests can be interrupted while ANCM replaces the worker, so retry both
+        // transient request failures and responses from the original process.
+        await Helpers.Retry(async () =>
+        {
+            var processAfter = await deploymentResult.HttpClient.GetStringAsync("/ProcessId");
+            Assert.NotEqual(processBefore, processAfter);
+        }, TimeSpan.FromSeconds(10));
     }
 
     [ConditionalFact]

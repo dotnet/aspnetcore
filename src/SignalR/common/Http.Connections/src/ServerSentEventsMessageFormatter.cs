@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Buffers;
+using System.Runtime.CompilerServices;
 
 namespace Microsoft.AspNetCore.Http.Connections;
 
@@ -12,29 +13,55 @@ internal static class ServerSentEventsMessageFormatter
 
     private const byte LineFeed = (byte)'\n';
 
-    public static async Task WriteMessageAsync(ReadOnlySequence<byte> payload, Stream output, CancellationToken token)
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static Task WriteMessageAsync(ReadOnlySequence<byte> payload, Stream output, CancellationToken token)
     {
         // Payload does not contain a line feed so write it directly to output
-        if (payload.PositionOf(LineFeed) == null)
-        {
-            if (payload.Length > 0)
-            {
-                await output.WriteAsync(DataPrefix, token);
-                await output.WriteAsync(payload, token);
-                await output.WriteAsync(Newline, token);
-            }
+        return payload.PositionOf(LineFeed) is null
+            ? WriteSingleLineAsync(payload, output, token)
+            : WriteMultilineAsync(payload, output, token);
+    }
 
+    private static async Task WriteSingleLineAsync(ReadOnlySequence<byte> payload, Stream output, CancellationToken token)
+    {
+        if (payload.Length > 0)
+        {
+            await output.WriteAsync(DataPrefix, token);
+            await output.WriteAsync(payload, token);
             await output.WriteAsync(Newline, token);
-            return;
         }
 
-        var ms = new MemoryStream();
+        await output.WriteAsync(Newline, token);
+    }
 
-        // Parse payload and write formatted output to memory
-        await WriteMessageToMemory(ms, payload);
-        ms.Position = 0;
+    private static async Task WriteMultilineAsync(ReadOnlySequence<byte> payload, Stream output, CancellationToken token)
+    {
+        token.ThrowIfCancellationRequested();
+        var maximumLength = GetFormattedLengthUpperBound(payload);
+        var buffer = ArrayPool<byte>.Shared.Rent(maximumLength);
+        try
+        {
+            // Keep the output coalesced, but do not write unused space from trimmed carriage returns.
+            var length = WriteMessageToMemory(buffer.AsSpan(0, maximumLength), payload);
+            token.ThrowIfCancellationRequested();
+            await output.WriteAsync(buffer.AsMemory(0, length), token);
+        }
+        finally
+        {
+            ArrayPool<byte>.Shared.Return(buffer);
+        }
+    }
 
-        await ms.CopyToAsync(output, token);
+    private static int GetFormattedLengthUpperBound(ReadOnlySequence<byte> payload)
+    {
+        var length = checked(payload.Length + DataPrefix.Length + (2 * Newline.Length));
+        foreach (var segment in payload)
+        {
+            // Each LF is replaced by CRLF and a data prefix. Trimming CR can only reduce the length.
+            length = checked(length + ((long)segment.Span.Count(LineFeed) * (DataPrefix.Length + Newline.Length - 1)));
+        }
+
+        return checked((int)length);
     }
 
     /// <summary>
@@ -63,44 +90,52 @@ internal static class ServerSentEventsMessageFormatter
         throw new InvalidOperationException("Could not get last segment from sequence.");
     }
 
-    private static async Task WriteMessageToMemory(Stream output, ReadOnlySequence<byte> payload)
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    private static ReadOnlySequence<byte> ReadLine(ref ReadOnlySequence<byte> payload, out bool hasMore)
     {
-        var keepWriting = true;
-        while (keepWriting)
+        var sliceEnd = payload.PositionOf(LineFeed);
+        if (sliceEnd is null)
         {
-            var sliceEnd = payload.PositionOf(LineFeed);
-
-            ReadOnlySequence<byte> lineSegment;
-            if (sliceEnd == null)
-            {
-                lineSegment = payload;
-                payload = ReadOnlySequence<byte>.Empty;
-                keepWriting = false;
-            }
-            else
-            {
-                lineSegment = payload.Slice(payload.Start, sliceEnd.Value);
-
-                if (lineSegment.Length > 1)
-                {
-                    // Check if the line ended in \r\n. If it did then trim the \r
-                    var memory = GetLastSegment(lineSegment, out var offset);
-                    if (memory.Span[memory.Length - 1] == '\r')
-                    {
-                        lineSegment = lineSegment.Slice(lineSegment.Start, offset + memory.Length - 1);
-                    }
-                }
-
-                // Update payload to remove \n
-                payload = payload.Slice(payload.GetPosition(1, sliceEnd.Value));
-            }
-
-            // Write line
-            await output.WriteAsync(DataPrefix);
-            await output.WriteAsync(lineSegment);
-            await output.WriteAsync(Newline);
+            var remaining = payload;
+            payload = ReadOnlySequence<byte>.Empty;
+            hasMore = false;
+            return remaining;
         }
 
-        await output.WriteAsync(Newline);
+        var line = payload.Slice(payload.Start, sliceEnd.Value);
+        if (line.Length > 1)
+        {
+            // Preserve the existing CRLF trimming behavior, including across segment boundaries.
+            var memory = GetLastSegment(line, out var offset);
+            if (memory.Span[memory.Length - 1] == '\r')
+            {
+                line = line.Slice(line.Start, offset + memory.Length - 1);
+            }
+        }
+
+        payload = payload.Slice(payload.GetPosition(1, sliceEnd.Value));
+        hasMore = true;
+        return line;
+    }
+
+    private static int WriteMessageToMemory(Span<byte> output, ReadOnlySequence<byte> payload)
+    {
+        var initialLength = output.Length;
+        bool hasMore;
+        do
+        {
+            var line = ReadLine(ref payload, out hasMore);
+            DataPrefix.Span.CopyTo(output);
+            output = output.Slice(DataPrefix.Length);
+            line.CopyTo(output);
+            output = output.Slice((int)line.Length);
+            Newline.Span.CopyTo(output);
+            output = output.Slice(Newline.Length);
+        }
+        while (hasMore);
+
+        Newline.Span.CopyTo(output);
+
+        return initialLength - output.Length + Newline.Length;
     }
 }

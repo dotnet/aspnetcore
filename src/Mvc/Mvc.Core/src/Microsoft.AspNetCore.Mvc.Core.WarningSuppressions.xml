@@ -787,5 +787,11 @@
       <property name="Scope">member</property>
       <property name="Target">M:Microsoft.AspNetCore.Mvc.ModelBinding.Binders.ComplexTypeModelBinder.CreateModel(Microsoft.AspNetCore.Mvc.ModelBinding.ModelBindingContext)</property>
     </attribute>
+    <attribute fullname="System.Diagnostics.CodeAnalysis.UnconditionalSuppressMessageAttribute">
+      <argument>ILLink</argument>
+      <argument>IL2075</argument>
+      <property name="Scope">member</property>
+      <property name="Target">M:Microsoft.AspNetCore.Mvc.ModelBinding.Validation.DefaultUnionValidationStrategy.IsUnionValueProperty(Microsoft.AspNetCore.Mvc.ModelBinding.ModelMetadata,System.Type)</property>
+    </attribute>
   </assembly>
 </linker>

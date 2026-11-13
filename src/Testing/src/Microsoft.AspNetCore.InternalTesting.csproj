@@ -11,7 +11,6 @@
     <IsPackable>true</IsPackable>
     <GenerateFrameworkReferenceAssembly>true</GenerateFrameworkReferenceAssembly>
     <!-- This package is internal, so we don't generate a package baseline. Always build against the latest dependencies. -->
-    <UseLatestPackageReferences>true</UseLatestPackageReferences>
     <!-- No need to track public APIs in test utilities. -->
     <AddPublicApiAnalyzers>false</AddPublicApiAnalyzers>
     <!-- Nullable disabled because package is used in tests. -->
@@ -23,12 +22,12 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Reference Include="Microsoft.Extensions.DependencyInjection" />
-    <Reference Include="Microsoft.Extensions.Logging.Console" />
-    <Reference Include="Microsoft.Extensions.Logging" />
-    <Reference Include="Serilog.Extensions.Logging" />
-    <Reference Include="Serilog.Sinks.File" />
-    <Reference Include="System.ValueTuple" Condition="'$(TargetFrameworkIdentifier)' == '.NETFramework'" />
+    <PackageReference Include="Microsoft.Extensions.DependencyInjection" />
+    <PackageReference Include="Microsoft.Extensions.Logging" />
+    <PackageReference Include="Microsoft.Extensions.Logging.Console" />
+    <PackageReference Include="Serilog.Extensions.Logging" />
+    <PackageReference Include="Serilog.Sinks.File" />
+    <PackageReference Include="System.ValueTuple" Condition="'$(TargetFrameworkIdentifier)' == '.NETFramework'" />
 
     <!--
       This intentionally does not reference 'xunit', 'xunit.core', or any runner packages.
@@ -38,20 +37,20 @@
 
       See https://xunit.github.io/docs/nuget-packages and the special note in https://xunit.github.io/releases/2.3.
     -->
-    <Reference Include="xunit.assert" />
-    <Reference Include="xunit.extensibility.execution" />
-    <Reference Include="Microsoft.DotNet.RemoteExecutor" />
+    <PackageReference Include="Microsoft.DotNet.RemoteExecutor" />
+    <PackageReference Include="xunit.assert" />
+    <PackageReference Include="xunit.extensibility.execution" />
   </ItemGroup>
 
   <ItemGroup Condition=" '$(TargetFramework)' == 'netstandard2.0' OR
       '$(TargetFramework)' == '$(DefaultNetFxTargetFramework)' OR
       '$(MSBuildRestoreSessionId)' == '' ">
-    <Reference Include="Microsoft.Win32.Registry" />
+    <PackageReference Include="Microsoft.Win32.Registry" />
   </ItemGroup>
 
   <ItemGroup Condition="'$(TargetFramework)' == '$(DefaultNetFxTargetFramework)' OR '$(MSBuildRestoreSessionId)' == ''">
-    <Reference Include="System.Net.Http" />
-    <Reference Include="System.Runtime.InteropServices.RuntimeInformation" />
+    <PackageReference Include="System.Net.Http" />
+    <PackageReference Include="System.Runtime.InteropServices.RuntimeInformation" />
   </ItemGroup>
 
   <ItemGroup>

@@ -1,0 +1,65 @@
+@implements IAsyncDisposable
+@inject Microsoft.AspNetCore.Components.Platform.IBrowserPlatform Browser
+
+<h2>Web Storage</h2>
+
+<label for="storage-value">Value</label>
+<input id="storage-value" @bind="value" />
+<button id="save-storage" @onclick="SaveAsync">Save</button>
+<button id="load-storage" @onclick="LoadAsync">Load</button>
+<button id="remove-storage" @onclick="RemoveAsync">Remove</button>
+<button id="watch-storage" @onclick="WatchAsync">Watch storage events</button>
+<p id="storage-result" role="status">@result</p>
+<p id="storage-event" role="status">@storageEvent</p>
+
+@code {
+    private const string StorageKey = "components-platform-e2e";
+    private string value = "initial";
+    private string result = "No operation has run.";
+    private string storageEvent = "No storage event has been reported.";
+    private IAsyncDisposable? listener;
+
+    private async Task SaveAsync()
+    {
+        await Browser.Window.LocalStorage.SetItemAsync(StorageKey, value);
+        result = $"Saved: {value}";
+    }
+
+    private async Task LoadAsync()
+    {
+        value = await Browser.Window.LocalStorage.GetItemAsync(StorageKey) ?? string.Empty;
+        result = value.Length == 0 ? "Value is missing." : $"Loaded: {value}";
+    }
+
+    private async Task RemoveAsync()
+    {
+        await Browser.Window.LocalStorage.RemoveItemAsync(StorageKey);
+        value = string.Empty;
+        result = "Value removed.";
+    }
+
+    private async Task WatchAsync()
+    {
+        listener = await Browser.Window.AddEventListenerAsync(Window.StorageEvent, OnStorageAsync);
+        result = "Watching storage events.";
+    }
+
+    private Task OnStorageAsync(StorageEvent e)
+    {
+        // Comparing with the existing projections shows that StorageArea keeps their identity.
+        var area = e.StorageArea == Browser.Window.LocalStorage ? "localStorage"
+            : e.StorageArea == Browser.Window.SessionStorage ? "sessionStorage"
+            : "unknown storage";
+        storageEvent = $"{e.Key}: {e.OldValue ?? "(none)"} -> {e.NewValue ?? "(none)"} in {area}";
+        StateHasChanged();
+        return Task.CompletedTask;
+    }
+
+    public async ValueTask DisposeAsync()
+    {
+        if (listener is not null)
+        {
+            await listener.DisposeAsync();
+        }
+    }
+}

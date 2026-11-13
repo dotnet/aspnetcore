@@ -23,12 +23,13 @@
     <Compile Include="$(ComponentsSharedSourceRoot)src\QueryParameterNameComparer.cs" LinkBase="Infrastructure" />
     <Compile Include="$(ComponentsSharedSourceRoot)src\UrlValueConstraint.cs" LinkBase="Infrastructure" />
     <Compile Include="$(SharedSourceRoot)QueryStringEnumerable.cs" LinkBase="Infrastructure" />
+    <Compile Include="$(SharedSourceRoot)QueryStringDecoder.cs" LinkBase="Infrastructure" />
   </ItemGroup>
 
   <ItemGroup>
-    <Reference Include="Microsoft.AspNetCore.Components.Web" />
-    <Reference Include="Microsoft.Extensions.DependencyInjection.Abstractions" />
-    <Reference Include="Microsoft.Extensions.Localization.Abstractions" />
+    <ProjectReference Include="$(RepoRoot)src\Components\Web\src\Microsoft.AspNetCore.Components.Web.csproj" />
+    <ProjectReference Include="$(RepoRoot)src\Localization\Abstractions\src\Microsoft.Extensions.Localization.Abstractions.csproj" />
+    <PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" />
   </ItemGroup>
 
   <ItemGroup>

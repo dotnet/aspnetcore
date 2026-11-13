@@ -8,13 +8,17 @@
        a line spacing of 31.9, so 32 should be used when calculating the height of a control that contains a single line of text,
        like a label. For a height of 12, the line spacing to use is 16. -->
     <Font Id="DefaultFont" Height="-12" Weight="500" Foreground="windowtext" Background="window">Segoe UI</Font>
-    <Font Id="WindowBannerFont" Height="-24" Weight="900" Foreground="000000" Background="D42B52">Segoe UI</Font>
+    <Font Id="WindowBannerFont" Height="-24" Weight="900" Foreground="FFFFFF" Background="D42B51">Segoe UI</Font>
     <Font Id="PageHeaderFont" Height="-20" Weight="500" Foreground="graytext" Background="window">Segoe UI</Font>
     <Font Id="ErrorFont" Height="-12" Weight="900" Foreground="windowtext" Background="window">Segoe UI</Font>
     <Window Width="644" Height="460" HexStyle="100a0000" FontId="DefaultFont" Caption="#(loc.Caption)" IconFile="dotnet.ico">
         <ImageControl Name="DotNetLogo" X="12" Y="-48" Width="124" Height="124" ImageFile="DotNetLogo_256x.png" Visible="yes" />
-        <Text X="80" Y="12" Width="-12" Height="40" FontId="WindowBannerFont" Visible="yes" DisablePrefix="yes">#(loc.Title)</Text>
-        <Text X="80" Y="40" Width="-12" Height="40" FontId="WindowBannerFont" Visible="yes" DisablePrefix="yes">#(loc.SubTitle)</Text>
+
+        <!-- A width of 0 extends the control to the right of the window. The first label will render an opaque rectangle using
+             the background color of the specified font. The subsequent labels overlay the title and subtitle text. -->
+        <Label Name="TitleBackground" X="0" Y="0" Width="0" Height="76" FontId="WindowBannerFont" Visible="yes" DisablePrefix="yes" />
+        <Label Name="Title" X="0" Y="12" Width="0" Height="32" FontId="WindowBannerFont" Visible="yes" Center="yes" DisablePrefix="yes">#(loc.Title)</Label>
+        <Label Name="SubTitle" X="0" Y="44" Width="0" Height="32" FontId="WindowBannerFont" Visible="yes" Center="yes" DisablePrefix="yes">#(loc.SubTitle)</Label>
 
         <Page Name="Help">
             <Label Name="HelpHeader" X="148" Y="80" Width="-12" Height="32" FontId="PageHeaderFont" HexStyle="00000000" DisablePrefix="yes">#(loc.HelpHeader)</Label>

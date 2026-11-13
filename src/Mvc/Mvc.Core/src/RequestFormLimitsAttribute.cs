@@ -91,6 +91,9 @@ public class RequestFormLimitsAttribute : Attribute, IFilterFactory, IOrderedFil
     /// <summary>
     /// A limit on the length of individual keys. Forms containing keys that exceed this limit will
     /// throw an <see cref="InvalidDataException"/> when parsed.
+    /// This limit applies only to forms with an <c>application/x-www-form-urlencoded</c> content type.
+    /// For forms with a <c>multipart/form-data</c> content type, the length of a key is limited by
+    /// <see cref="MultipartHeadersLengthLimit"/>.
     /// </summary>
     public int KeyLengthLimit
     {
@@ -103,6 +106,8 @@ public class RequestFormLimitsAttribute : Attribute, IFilterFactory, IOrderedFil
     /// <summary>
     /// A limit on the length of individual form values. Forms containing values that exceed this
     /// limit will throw an <see cref="InvalidDataException"/> when parsed.
+    /// This limit applies only to forms with an <c>application/x-www-form-urlencoded</c> content type.
+    /// For forms with a <c>multipart/form-data</c> content type, use <see cref="MultipartBodyLengthLimit"/>.
     /// </summary>
     public int ValueLengthLimit
     {
@@ -125,9 +130,8 @@ public class RequestFormLimitsAttribute : Attribute, IFilterFactory, IOrderedFil
     int? IFormOptionsMetadata.MultipartBoundaryLengthLimit => MultipartBoundaryLengthLimit;
 
     /// <summary>
-    /// A limit for the number of headers to allow in each multipart section. Headers with the same name will
-    /// be combined. Form sections that exceed this limit will throw an <see cref="InvalidDataException"/>
-    /// when parsed.
+    /// A limit for the number of header lines to allow in each multipart section. Headers with the same name
+    /// count separately. Form sections that exceed this limit will throw an <see cref="InvalidDataException"/> when parsed.
     /// </summary>
     public int MultipartHeadersCountLimit
     {

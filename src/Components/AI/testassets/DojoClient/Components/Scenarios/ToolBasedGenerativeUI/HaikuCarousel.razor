@@ -1,0 +1,36 @@
+<div class="haiku-carousel">
+    @if (Haikus.Count > 0)
+    {
+        <HaikuCard Haiku="Haikus[CurrentIndex]" />
+    }
+
+    @if (Haikus.Count > 1)
+    {
+        <nav class="haiku-carousel__nav" aria-label="Haiku carousel">
+            <button class="haiku-carousel__btn"
+                    aria-label="Previous haiku"
+                    disabled="@(CurrentIndex <= 0)"
+                    @onclick="() => OnNavigate.InvokeAsync(CurrentIndex - 1)">
+                &#x25c0;
+            </button>
+            <span class="haiku-carousel__counter">@(CurrentIndex + 1) / @Haikus.Count</span>
+            <button class="haiku-carousel__btn"
+                    aria-label="Next haiku"
+                    disabled="@(CurrentIndex >= Haikus.Count - 1)"
+                    @onclick="() => OnNavigate.InvokeAsync(CurrentIndex + 1)">
+                &#x25b6;
+            </button>
+        </nav>
+    }
+</div>
+
+@code {
+    [Parameter, EditorRequired]
+    public IReadOnlyList<HaikuData> Haikus { get; set; } = [];
+
+    [Parameter]
+    public int CurrentIndex { get; set; }
+
+    [Parameter]
+    public EventCallback<int> OnNavigate { get; set; }
+}

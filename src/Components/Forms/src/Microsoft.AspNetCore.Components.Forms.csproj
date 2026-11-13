@@ -10,8 +10,8 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <Reference Include="Microsoft.AspNetCore.Components" />
-    <Reference Include="Microsoft.Extensions.Validation" />
+    <ProjectReference Include="$(RepoRoot)src\Components\Components\src\Microsoft.AspNetCore.Components.csproj" />
+    <ProjectReference Include="$(RepoRoot)src\Validation\src\Microsoft.Extensions.Validation.csproj" />
   </ItemGroup>
 
   <ItemGroup>

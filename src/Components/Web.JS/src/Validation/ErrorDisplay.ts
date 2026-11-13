@@ -1,28 +1,25 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-import { findMessageElements } from './DomUtils';
+import { findMessageElements, getFieldElements } from './DomUtils';
 import { ValidatableElement } from './ValidationTypes';
 
-/**
- * CSS class names applied to inputs, message elements, and the validation summary.
- * Override via ValidationOptions.cssClasses to integrate with CSS frameworks
- * (e.g., Bootstrap's 'is-invalid'/'is-valid', or Tailwind utility classes).
- */
-export interface CssClassNames {
+interface CssClassNames {
   inputError: string;
   inputValid: string;
+  inputModified: string;
   messageError: string;
   messageValid: string;
   summaryError: string;
   summaryValid: string;
 }
 
-export const defaultCssClassNames: CssClassNames = {
-  inputError: 'input-validation-error',
-  inputValid: 'input-validation-valid',
-  messageError: 'field-validation-error',
-  messageValid: 'field-validation-valid',
+const defaultCssClassNames: CssClassNames = {
+  inputError: 'invalid',
+  inputValid: 'valid',
+  inputModified: 'modified',
+  messageError: 'validation-message',
+  messageValid: 'validation-message',
   summaryError: 'validation-summary-errors',
   summaryValid: 'validation-summary-valid',
 };
@@ -34,63 +31,72 @@ export const defaultCssClassNames: CssClassNames = {
 export class ErrorDisplay {
   private cssClasses: CssClassNames;
 
-  constructor(cssClasses?: Partial<CssClassNames>) {
-    this.cssClasses = { ...defaultCssClassNames, ...cssClasses };
+  constructor() {
+    this.cssClasses = defaultCssClassNames;
   }
 
   showFieldError(input: ValidatableElement, errorMessage: string): void {
-    addClasses(input, this.cssClasses.inputError);
-    removeClasses(input, this.cssClasses.inputValid);
-
     const messageElements = findMessageElements(input);
     this.updateMessageElements(messageElements, errorMessage);
 
-    // Update ARIA attributes.
-    input.setAttribute('aria-invalid', 'true');
     const firstMessageElement = messageElements[0];
-    if (firstMessageElement) {
-      if (!firstMessageElement.id) {
-        firstMessageElement.id = generateMessageId(input);
+    if (firstMessageElement && !firstMessageElement.id) {
+      firstMessageElement.id = generateMessageId(input);
+    }
+    const messageId = firstMessageElement?.id;
+
+    for (const target of getFieldElements(input)) {
+      addClasses(target, this.cssClasses.inputError);
+      removeClasses(target, this.cssClasses.inputValid);
+      target.setAttribute('aria-invalid', 'true');
+      // Append our message ID to aria-describedby (preserving existing tokens like help text IDs).
+      if (messageId) {
+        addAriaToken(target, 'aria-describedby', messageId);
       }
-      // Append our message ID to aria-describedby (preserving existing tokens like help text IDs)
-      addAriaToken(input, 'aria-describedby', firstMessageElement.id);
     }
   }
 
   clearFieldError(input: ValidatableElement): void {
-    removeClasses(input, this.cssClasses.inputError);
-    addClasses(input, this.cssClasses.inputValid);
-
     const messageElements = findMessageElements(input);
     this.updateMessageElements(messageElements, '');
+    const messageId = messageElements[0]?.id;
 
-    // Update ARIA attributes.
-    input.removeAttribute('aria-invalid');
-    // Remove only our message ID from aria-describedby when we know it,
-    // preserving any other developer-provided tokens.
-    const msgId = messageElements[0]?.id;
-    if (msgId) {
-      removeAriaToken(input, 'aria-describedby', msgId);
+    for (const target of getFieldElements(input)) {
+      removeClasses(target, this.cssClasses.inputError);
+      addClasses(target, this.cssClasses.inputValid);
+      target.removeAttribute('aria-invalid');
+      // Remove only our message ID, preserving any other developer-provided tokens.
+      if (messageId) {
+        removeAriaToken(target, 'aria-describedby', messageId);
+      }
+    }
+  }
+
+  // Marks the field as modified (its value has been changed by the user), mirroring the
+  // 'modified' class Blazor's interactive validation adds. Combined with the valid/invalid class
+  // this drives the template's '.valid.modified' styling. Idempotent.
+  markFieldModified(input: ValidatableElement): void {
+    for (const target of getFieldElements(input)) {
+      addClasses(target, this.cssClasses.inputModified);
     }
   }
 
   clearFieldToPristine(input: ValidatableElement): void {
-    removeClasses(input, this.cssClasses.inputError);
-    removeClasses(input, this.cssClasses.inputValid);
-
+    // Pristine differs from the valid state only in that the input gets no valid class either, so
+    // the field looks untouched. The message is reset to its empty/valid state, keeping its base
+    // class (which for Blazor is the always-present 'validation-message').
     const messageElements = findMessageElements(input);
-    for (const messageElement of messageElements) {
-      removeClasses(messageElement, this.cssClasses.messageError);
-      removeClasses(messageElement, this.cssClasses.messageValid);
-      if (messageElement.getAttribute('data-valmsg-replace') !== 'false') {
-        messageElement.textContent = '';
-      }
-    }
+    this.updateMessageElements(messageElements, '');
+    const messageId = messageElements[0]?.id;
 
-    input.removeAttribute('aria-invalid');
-    const msgId = messageElements[0]?.id;
-    if (msgId) {
-      removeAriaToken(input, 'aria-describedby', msgId);
+    for (const target of getFieldElements(input)) {
+      removeClasses(target, this.cssClasses.inputError);
+      removeClasses(target, this.cssClasses.inputValid);
+      removeClasses(target, this.cssClasses.inputModified);
+      target.removeAttribute('aria-invalid');
+      if (messageId) {
+        removeAriaToken(target, 'aria-describedby', messageId);
+      }
     }
   }
 
@@ -99,11 +105,15 @@ export class ErrorDisplay {
     const classToRemove = errorMessage ? this.cssClasses.messageValid : this.cssClasses.messageError;
 
     for (const messageElement of messageElements) {
-      addClasses(messageElement, classToAdd);
+      // Remove then add so a class shared by both states (Blazor's single 'validation-message')
+      // survives the transition.
       removeClasses(messageElement, classToRemove);
+      addClasses(messageElement, classToAdd);
 
       if (messageElement.getAttribute('data-valmsg-replace') !== 'false') {
         messageElement.textContent = errorMessage;
+        // Toggle the hidden attribute (not inline style) so revealing/hiding stays CSP-safe.
+        messageElement.hidden = !errorMessage;
       }
 
       this.removeServerRenderedSiblings(messageElement);
@@ -128,38 +138,38 @@ export class ErrorDisplay {
   updateSummary(form: HTMLFormElement, errors?: Map<string, string>): void {
     // TODO: Support multiple summary elements?
     // TODO: Support summary elements outside the form?
+    // The summary element is the <ul> itself (ValidationSummary renders data-valmsg-summary on it).
     const summaryElement = form.querySelector<HTMLElement>('[data-valmsg-summary]');
     if (!summaryElement) {
       return;
     }
 
-    let ul = summaryElement.querySelector('ul');
-
     // Clear existing summary messages.
-    while (ul?.firstChild) {
-      ul.removeChild(ul.firstChild);
+    while (summaryElement.firstChild) {
+      summaryElement.removeChild(summaryElement.firstChild);
     }
 
     if (!errors || errors.size === 0) {
-      // Set summary to valid state if there are no errors.
+      // Set summary to valid state if there are no errors and hide it so the empty list stays
+      // out of the layout. Toggle the hidden attribute (not inline style) to stay CSP-safe.
       removeClasses(summaryElement, this.cssClasses.summaryError);
       addClasses(summaryElement, this.cssClasses.summaryValid);
+      summaryElement.hidden = true;
     } else {
-      if (!ul) {
-        ul = document.createElement('ul');
-        summaryElement.appendChild(ul);
-      }
-
-      // Add non-duplicate error messages to the summary.
+      // Add non-duplicate error messages to the summary. Mirror the server-rendered
+      // ValidationSummary markup (<li class="validation-message">) so client- and
+      // server-produced summaries are styled identically.
       const uniqueErrorMessages = new Set<string>(errors.values());
       for (const errorMessage of uniqueErrorMessages) {
         const li = document.createElement('li');
+        li.className = 'validation-message';
         li.textContent = errorMessage;
-        ul.appendChild(li);
+        summaryElement.appendChild(li);
       }
 
       removeClasses(summaryElement, this.cssClasses.summaryValid);
       addClasses(summaryElement, this.cssClasses.summaryError);
+      summaryElement.hidden = false;
     }
   }
 }

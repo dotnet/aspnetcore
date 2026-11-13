@@ -126,6 +126,25 @@ public class NativeAotToolScenarioTests
         }
     }
 
+    [ConditionalFact]
+    [SkipOnHelix("Native AOT publishing is not supported on these queues.", Queues = HelixConstants.NativeAotNotSupportedHelixQueues)]
+    public async Task DevCertsVerboseCheckEmitsCertificateDiagnostics()
+    {
+        using var temporaryDirectory = new TemporaryDirectory();
+        temporaryDirectory.Create();
+
+        var environment = NativeAotToolRunner.CreateIsolatedUserProfileEnvironment(temporaryDirectory);
+        var normal = await RunAsync("dotnet-dev-certs", environment, "https", "--check");
+        var verbose = await RunAsync("dotnet-dev-certs", environment, "https", "--check", "--verbose");
+
+        // macOS and Windows certificate stores are not isolated by the user profile environment.
+        Assert.True(normal.ExitCode is 0 or 6, normal.AllOutput);
+        Assert.Equal(normal.ExitCode, verbose.ExitCode);
+        Assert.DoesNotContain("[1] Listing certificates", normal.AllOutput);
+        Assert.Contains("[1] Listing certificates from CurrentUser\\My", verbose.AllOutput);
+        Assert.DoesNotContain("[0]", verbose.AllOutput);
+    }
+
     private Task<NativeAotToolResult> RunAsync(string toolName, IReadOnlyDictionary<string, string> environment, params string[] arguments)
         => NativeAotToolRunner.RunAsync(toolName, arguments, _output, environmentVariables: environment);
 

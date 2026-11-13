@@ -7,6 +7,7 @@ import { RenderBatch } from './RenderBatch/RenderBatch';
 import { BrowserRenderer } from './BrowserRenderer';
 import { toLogicalElement, LogicalElement } from './LogicalElements';
 import { getAndRemovePendingRootComponentContainer } from './JSRootComponents';
+import { PendingNavigationFocus, restoreNavigationFocus } from './FocusOnNavigate';
 
 interface BrowserRendererRegistry {
   [browserRendererId: number]: BrowserRenderer;
@@ -72,11 +73,15 @@ export function renderBatch(browserRendererId: number, batch: RenderBatch): void
   const referenceFramesValues = arrayRangeReader.values(referenceFrames);
   const diffReader = batch.diffReader;
 
+  let pendingFocus: PendingNavigationFocus | null = null;
   for (let i = 0; i < updatedComponentsLength; i++) {
     const diff = batch.updatedComponentsEntry(updatedComponentsValues, i);
     const componentId = diffReader.componentId(diff);
     const edits = diffReader.edits(diff);
-    browserRenderer.updateComponent(batch, componentId, edits, referenceFramesValues);
+    const capturedFocus = browserRenderer.updateComponent(batch, componentId, edits, referenceFramesValues);
+    if (capturedFocus) {
+      pendingFocus = capturedFocus;
+    }
   }
 
   const disposedComponentIdsRange = batch.disposedComponentIds();
@@ -93,6 +98,10 @@ export function renderBatch(browserRendererId: number, batch: RenderBatch): void
   for (let i = 0; i < disposedEventHandlerIdsLength; i++) {
     const eventHandlerId = batch.disposedEventHandlerIdsEntry(disposedEventHandlerIdsValues, i);
     browserRenderer.disposeEventHandler(eventHandlerId);
+  }
+
+  if (pendingFocus) {
+    restoreNavigationFocus(pendingFocus);
   }
 
   resetScrollIfNeeded(ScrollResetSchedule.AfterBatch);
