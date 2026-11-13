@@ -328,6 +328,10 @@ export class CircuitManager implements DotNet.DotNetCallDispatcher {
 
   // Client-initiated pause: runs the registered pause deferrals, then pauses unless the wait was aborted.
   public async pauseCircuit(externalSignal?: AbortSignal): Promise<boolean> {
+    if (this.isDisposedOrDisposing()) {
+      return false;
+    }
+
     await this.runPauseDeferrals(externalSignal);
     if (externalSignal?.aborted) {
       return false;
@@ -363,6 +367,10 @@ export class CircuitManager implements DotNet.DotNetCallDispatcher {
   }
 
   private async handleServerInitiatedPause(): Promise<void> {
+    if (this.isDisposedOrDisposing()) {
+      return;
+    }
+
     // Runs the registered pause deferrals, then pauses.
     await this.runPauseDeferrals();
     await this.pause(true);
@@ -698,7 +706,7 @@ export class CircuitManager implements DotNet.DotNetCallDispatcher {
     }
 
     this._disposed = true;
-    this._connection?.stop();
+    await this._connection?.stop();
 
     // Dispose the circuit on the server immediately. Closing the SignalR connection alone
     // without sending the disconnect message will result in the circuit being kept

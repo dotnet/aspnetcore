@@ -70,6 +70,7 @@ describe('CircuitManager pause deferral', () => {
       jest.spyOn(connection, 'state', 'get').mockReturnValue(HubConnectionState.Connected);
       jest.spyOn(connection, 'start').mockResolvedValue();
       jest.spyOn(connection, 'stop').mockResolvedValue();
+      jest.spyOn(connection, 'on');
       jest.spyOn(connection, 'invoke').mockImplementation(async method => {
         if (method === 'StartCircuit' || method === 'ResumeCircuit') {
           return 'test-circuit';
@@ -132,6 +133,60 @@ describe('CircuitManager pause deferral', () => {
       jest.spyOn(connection, 'state', 'get').mockReturnValue(HubConnectionState.Disconnected);
       return resumedConnection;
     }
+
+    test.each([
+      ['client', 'disposing'],
+      ['client', 'disposed'],
+      ['server', 'disposing'],
+      ['server', 'disposed'],
+    ])('%s pause does not run deferrals while %s', async (entry, state) => {
+      await circuit.start();
+      const onCircuitPausing = jest.fn(async () => {});
+      options.circuitHandlers.push({ onCircuitPausing });
+      const disposal = circuit.dispose();
+      if (state === 'disposed') {
+        await disposal;
+      }
+
+      if (entry === 'client') {
+        expect(await circuit.pauseCircuit()).toBe(false);
+      } else {
+        const requestPause = jest.mocked(connection.on).mock.calls.find(([method]) => method === 'JS.RequestPause')?.[1];
+        expect(requestPause).toBeDefined();
+        await requestPause!();
+      }
+
+      await disposal;
+      expect(onCircuitPausing).not.toHaveBeenCalled();
+      expect(connection.invoke).not.toHaveBeenCalledWith('PauseCircuit');
+    });
+
+    test('disposal waits for transport close before publishing circuit closed', async () => {
+      await circuit.start();
+      const entered = Promise.withResolvers<void>();
+      const release = Promise.withResolvers<void>();
+      const onCircuitClosed = jest.fn();
+      options.circuitHandlers.push({ onCircuitClosed });
+      jest.mocked(connection.stop).mockImplementation(async () => {
+        entered.resolve();
+        await release.promise;
+        connectionClosed?.();
+      });
+
+      const disposal = circuit.dispose();
+      await entered.promise;
+      try {
+        expect(onCircuitClosed).not.toHaveBeenCalled();
+        expect(fetch).not.toHaveBeenCalled();
+      } finally {
+        release.resolve();
+        await disposal;
+      }
+
+      expect(rendererInterop.detachWebRendererInterop).toHaveBeenCalledWith(WebRendererId.Server);
+      expect(onCircuitClosed).toHaveBeenCalledTimes(1);
+      expect(fetch).toHaveBeenCalledTimes(1);
+    });
 
     test.each(['connection', 'server'])('disposal drains a resume awaiting the %s before final teardown', async boundary => {
       const { onConnectionUp } = configureHandler('custom');
