@@ -3,6 +3,8 @@
   <PropertyGroup>
     <Description>Additional functionality for Xdt transforms.</Description>
     <TargetFramework>$(DefaultNetFxTargetFramework)</TargetFramework>
+    <!-- App Service loads this transform in a process whose architecture can differ from the site. -->
+    <PlatformTarget>AnyCPU</PlatformTarget>
     <CopySymbolsToArtifacts>true</CopySymbolsToArtifacts>
     <IsPackable>false</IsPackable>
     <IsShippingPackage>false</IsShippingPackage>

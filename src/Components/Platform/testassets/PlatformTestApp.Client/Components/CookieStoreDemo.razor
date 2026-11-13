@@ -1,6 +1,8 @@
+@implements IAsyncDisposable
 @using Microsoft.JSInterop
 @inject Microsoft.AspNetCore.Components.Platform.IBrowserPlatform Browser
 @inject NavigationManager Navigation
+@inject IJSRuntime JS
 
 <h2>Cookie Store</h2>
 
@@ -16,6 +18,9 @@
     <button id="set-cookie-with-max-age" @onclick="SetWithMaxAgeAsync">Set with max age</button>
     <button id="set-cookie-with-other-domain" @onclick="SetWithOtherDomainAsync">Set with another domain</button>
     <button id="set-cookie-partitioned" @onclick="SetPartitionedAsync">Set partitioned</button>
+    <button id="set-cookie-same-site-from-string" @onclick="SetSameSiteFromStringAsync">Set SameSite from a string</button>
+    <button id="set-cookie-unknown-same-site" @onclick="SetUnknownSameSiteAsync">Set an unknown SameSite</button>
+    <button id="read-same-site" @onclick="ReadSameSiteAsync">Read SameSite from JavaScript</button>
 </div>
 <div>
     <button id="get-cookie" @onclick="GetAsync">Get</button>
@@ -29,7 +34,15 @@
     <button id="delete-cookie-with-options" @onclick="DeleteWithOptionsAsync">Delete with options</button>
     <button id="delete-cookie-partitioned" @onclick="DeletePartitionedAsync">Delete partitioned</button>
 </div>
+<div>
+    <button id="watch-cookie-changes" @onclick="WatchChangesAsync">Watch changes</button>
+    <button id="watch-cookie-changes-second" @onclick="WatchChangesWithSecondListenerAsync">Watch changes with a second listener</button>
+    <button id="unwatch-cookie-changes" @onclick="UnwatchChangesAsync">Stop watching changes</button>
+    <button id="cancel-second-cookie-watch" @onclick="CancelSecondListenerAsync">Cancel the second listener</button>
+</div>
 <p id="cookie-result" role="status" data-run="@runCount">@result</p>
+<p id="cookie-change" role="status">@change</p>
+<p id="cookie-change-second" role="status">@secondChange</p>
 
 @code {
     // A path other than the page path shows that the Path member reaches the browser.
@@ -39,6 +52,11 @@
     private string value = "initial";
     private string result = "No operation has run.";
     private int runCount;
+    private string change = "No change has been reported.";
+    private string secondChange = "No change has been reported.";
+    private IAsyncDisposable? listener;
+    // The second listener is removed by its token, so the component keeps no handle for it.
+    private readonly CancellationTokenSource secondListenerCancellation = new();
 
     private Task SetAsync() => RunAsync("Set", async () =>
     {
@@ -99,6 +117,34 @@
         return name;
     });
 
+    // An app can create a value that the library does not define.
+    private Task SetSameSiteFromStringAsync() => RunAsync("Set SameSite from a string", async () =>
+    {
+        await Browser.Window.CookieStore.SetAsync(new CookieInit { Name = name, Value = value, SameSite = new CookieSameSite("lax") });
+        return name;
+    });
+
+    // The browser rejects a value it does not support, so the error shows that the string reaches it.
+    private Task SetUnknownSameSiteAsync() => RunAsync("Set an unknown SameSite", async () =>
+    {
+        try
+        {
+            await Browser.Window.CookieStore.SetAsync(new CookieInit { Name = name, Value = value, SameSite = new CookieSameSite("future-value") });
+            return name;
+        }
+        catch (JSException)
+        {
+            return "Rejected.";
+        }
+    });
+
+    // Cookie Store returns no SameSite, so String() stands in for a browser that returns a value the library does not define.
+    private Task ReadSameSiteAsync() => RunAsync("Read SameSite from JavaScript", async () =>
+    {
+        var sameSite = await JS.InvokeAsync<CookieSameSite>("String", "future-value");
+        return $"{sameSite}, known: {sameSite == CookieSameSite.Strict || sameSite == CookieSameSite.Lax || sameSite == CookieSameSite.None}";
+    });
+
     private Task GetAsync() => RunAsync("Get", async () =>
     {
         try
@@ -149,6 +195,69 @@
         result = $"{operation}: {await run()}";
         // Counts only completed runs, so a test waits for its own click and an exception fails at its step.
         runCount++;
+    }
+
+    private Task WatchChangesAsync() => RunAsync("Watch changes", async () =>
+    {
+        listener = await Browser.Window.CookieStore.AddEventListenerAsync(CookieStore.ChangeEvent, OnCookieChangeAsync);
+        return "added";
+    });
+
+    private Task WatchChangesWithSecondListenerAsync() => RunAsync("Watch changes with a second listener", async () =>
+    {
+        await Browser.Window.CookieStore.AddEventListenerAsync(
+            CookieStore.ChangeEvent,
+            changeEvent =>
+            {
+                secondChange = Describe(changeEvent);
+                StateHasChanged();
+                return Task.CompletedTask;
+            },
+            secondListenerCancellation.Token);
+        return "added";
+    });
+
+    private Task UnwatchChangesAsync() => RunAsync("Stop watching changes", async () =>
+    {
+        if (listener is not null)
+        {
+            await listener.DisposeAsync();
+        }
+
+        return "removed";
+    });
+
+    private Task CancelSecondListenerAsync() => RunAsync("Cancel the second listener", () =>
+    {
+        secondListenerCancellation.Cancel();
+        return Task.FromResult("canceled");
+    });
+
+    // The listener runs on the renderer's dispatcher, so StateHasChanged needs no InvokeAsync.
+    private Task OnCookieChangeAsync(CookieChangeEvent changeEvent)
+    {
+        change = Describe(changeEvent);
+        StateHasChanged();
+        return Task.CompletedTask;
+    }
+
+    private static string Describe(CookieChangeEvent changeEvent)
+        => string.Join(
+            "; ",
+            [
+                .. changeEvent.Changed.Select(cookie => $"Changed: {cookie.Name}={cookie.Value}"),
+                .. changeEvent.Deleted.Select(cookie => $"Deleted: {cookie.Name}"),
+            ]);
+
+    public async ValueTask DisposeAsync()
+    {
+        if (listener is not null)
+        {
+            await listener.DisposeAsync();
+        }
+
+        secondListenerCancellation.Cancel();
+        secondListenerCancellation.Dispose();
     }
 
     private static string Format(CookieListItem? cookie)

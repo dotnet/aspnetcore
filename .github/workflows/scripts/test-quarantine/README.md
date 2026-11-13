@@ -44,8 +44,8 @@ issue. These correspond to Case A and Case B in
    either direct or inherited method matching. That logical type-history check
    remains separate from the exact
    method freshness cutoff and Source B pull-request file checks, which still
-   key off the resolved declaring method and inherited runner files rather than
-   every partial sibling declaration.
+   include the resolved declaring method, setup and state in same-project base
+   types, and every partial declaration of those types.
 3. `collect_requarantine_history.py` enumerates every current data-row-,
    method-, type-, and assembly-level quarantine target from trusted source. It
    classifies the exact first-parent history from project-wide commit/parent
@@ -130,12 +130,46 @@ target remains ambiguous.
 Unresolved historical inheritance is unproven, not evidence that a test was
 never inherited.
 
+Project history follows proven project-file renames across directory moves and
+stops at a copy or initial addition. Historical source and assembly ownership use
+the project's location at each commit, preserving earlier re-quarantines without
+borrowing a copied project's history. A verified predecessor hint covers the
+heavily rewritten E2E project move; other weak rename matches remain unproven.
+Method identity checks ignore namespace and
+type changes that predate the method, but still reject possible renames of an
+existing target. Freshness follows changes to the exact method and its declaring
+type header and attributes, constructor/setup helpers, lifecycle entry points,
+and explicitly delegated base implementations. Fields, initializers, properties,
+and unsupported members are conservatively retained, including in partial and
+same-project base types. Referenced helpers and method groups are followed across
+that type chain; ambiguous member extraction falls back to the whole file.
+Supplemental setup/state freshness locations remain separate from the target's
+identity history, so pre-introduction renames do not poison new methods.
+Proven inherited test attributes keep unreferenced sibling overrides out of
+setup dependencies. Unreferenced sibling test methods and pure file moves do not
+discard otherwise fresh failures.
+Historical runner absence is proven from type declarations, not missing method
+names. Existing runners with unresolved bases or source ownership remain
+unproven, including during type-only history scans.
+Proven sibling inheritance branches do not contribute unrelated type quarantines
+through an unresolved external base.
+For a verified latest method/data unquarantine, type history checks that commit
+and newer first-parent commits; older ambiguity cannot replace that proven
+removal. New-quarantine and first-quarantine checks still use complete histories.
+
 Shared sources with conditional namespaces or quarantine attributes
 are resolved separately for each consuming project using literal
 `DefineConstants` and `Compile` item paths,
 including exclusions and removals. Inactive branches are masked without moving
 source lines. Literal `Compile` items are evaluated in document order, so a later
 include can restore a removed file; unresolved membership remains unproven.
+For local sources without C# preprocessor conditions or assembly quarantines,
+literal comparisons against one MSBuild property are evaluated across all
+possible comparison outcomes. A file included in a proven configuration can
+contribute its unchanged identity, including inherited server runners selected by
+`UseMonoRuntime`. Linked sources and context-sensitive annotations still require
+exact ownership; complementary removals that exclude every configuration do not
+make a source candidate.
 Historical scans use the same project context at each commit and
 include project-only symbol/item changes when identifying quarantine transitions.
 Unsupported dynamic or conditional ownership is not treated as exact; this is
