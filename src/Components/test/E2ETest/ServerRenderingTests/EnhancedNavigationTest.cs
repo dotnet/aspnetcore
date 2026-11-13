@@ -55,6 +55,28 @@ public class EnhancedNavigationTest : ServerTestBase<BasicTestAppServerSiteFixtu
     }
 
     [Fact]
+    public void CrossPageNavigationClosesRetainedModalDialog()
+    {
+        Navigate($"{ServerPathBase}/nav/modal-dialog-a");
+        var javascript = (IJavaScriptExecutor)Browser;
+        var dialog = Browser.Exists(By.Id("enhanced-nav-dialog"));
+
+        Browser.Exists(By.Id("open-modal-dialog")).Click();
+        Browser.True(() => (bool)javascript.ExecuteScript("return document.getElementById('enhanced-nav-dialog').matches(':modal');"));
+
+        Browser.Exists(By.Id("navigate-from-modal")).Click();
+
+        Browser.Equal("Page B", () => Browser.Exists(By.Id("modal-dialog-destination")).Text);
+        Browser.True(() => dialog.IsStale());
+        Browser.False(() => (bool)javascript.ExecuteScript("return document.getElementById('enhanced-nav-dialog').open;"));
+        Browser.False(() => (bool)javascript.ExecuteScript("return document.getElementById('enhanced-nav-dialog').matches(':modal');"));
+
+        Browser.Exists(By.Id("destination-button")).Click();
+        Browser.Equal("Destination handler not invoked | Clicked", () => Browser.Exists(By.Id("close-handler-result")).Text);
+        Browser.Equal("source", () => (string)javascript.ExecuteScript("return document.body.dataset.dialogCloseHandler;"));
+    }
+
+    [Fact]
     public void CanNavigateToAnHtmlPageWithAnErrorStatus()
     {
         Navigate($"{ServerPathBase}/nav");

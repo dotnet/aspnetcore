@@ -1,0 +1,7 @@
+﻿@page "/nav/modal-dialog-a"
+
+<dialog id="enhanced-nav-dialog" onclose="document.body.dataset.dialogCloseHandler = 'source'">
+    <a id="navigate-from-modal" href="nav/modal-dialog-b">Navigate to page B</a>
+</dialog>
+
+<button id="open-modal-dialog" type="button" onclick="document.getElementById('enhanced-nav-dialog').showModal()">Open modal dialog</button>
