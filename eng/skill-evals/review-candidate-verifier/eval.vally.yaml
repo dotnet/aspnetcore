@@ -29,19 +29,19 @@ stimuli:
       Do not fetch, execute target code, modify files, publish, or delegate.
     agent_environment:
       files:
-        - src: fixtures/source/head/src/Components/AI/src
+        - src: fixtures/shared/source/head/src/Components/AI/src
           dest: source/head/src/Components/AI/src
-        - src: fixtures/source/mergeBase/src/Components/AI/src
+        - src: fixtures/shared/source/mergeBase/src/Components/AI/src
           dest: source/mergeBase/src/Components/AI/src
-        - src: fixtures/source/baseTip/docs/CrossCuttingGuidance.md
+        - src: fixtures/shared/source/baseTip/docs/CrossCuttingGuidance.md
           dest: source/baseTip/docs/CrossCuttingGuidance.md
-        - src: fixtures/changes.diff
+        - src: fixtures/shared/changes.diff
           dest: changes.diff
-        - src: fixtures/changed-files.json
+        - src: fixtures/shared/changed-files.json
           dest: changed-files.json
-        - src: fixtures/candidate.json
+        - src: fixtures/shared/candidate.json
           dest: candidate.json
-        - src: fixtures/package-a/bundle-index.json
+        - src: fixtures/case-a/bundle-index.json
           dest: bundle-index.json
     graders:
       - type: program
@@ -87,21 +87,21 @@ stimuli:
       Do not fetch, execute target code, modify files, publish, or delegate.
     agent_environment:
       files:
-        - src: fixtures/source/head/src/Components/AI/src
+        - src: fixtures/shared/source/head/src/Components/AI/src
           dest: source/head/src/Components/AI/src
-        - src: fixtures/source/mergeBase/src/Components/AI/src
+        - src: fixtures/shared/source/mergeBase/src/Components/AI/src
           dest: source/mergeBase/src/Components/AI/src
-        - src: fixtures/source/baseTip/docs/CrossCuttingGuidance.md
+        - src: fixtures/shared/source/baseTip/docs/CrossCuttingGuidance.md
           dest: source/baseTip/docs/CrossCuttingGuidance.md
-        - src: fixtures/changes.diff
+        - src: fixtures/shared/changes.diff
           dest: changes.diff
-        - src: fixtures/changed-files.json
+        - src: fixtures/shared/changed-files.json
           dest: changed-files.json
-        - src: fixtures/candidate.json
+        - src: fixtures/shared/candidate.json
           dest: candidate.json
-        - src: fixtures/contracts/api-behavior.txt
+        - src: fixtures/case-b/contracts/api-behavior.txt
           dest: contracts/api-behavior.txt
-        - src: fixtures/package-b/bundle-index.json
+        - src: fixtures/case-b/bundle-index.json
           dest: bundle-index.json
     graders:
       - type: program
@@ -150,21 +150,21 @@ stimuli:
       Do not fetch, execute target code, modify files, publish, or delegate.
     agent_environment:
       files:
-        - src: fixtures/source/head/src/Engine/Conversation.mjs
+        - src: fixtures/case-c/source/head/src/Engine/Conversation.mjs
           dest: source/head/src/Engine/Conversation.mjs
-        - src: fixtures/source/mergeBase/src/Engine/Conversation.mjs
+        - src: fixtures/case-c/source/mergeBase/src/Engine/Conversation.mjs
           dest: source/mergeBase/src/Engine/Conversation.mjs
-        - src: fixtures/source/baseTip/docs/CrossCuttingGuidance.md
+        - src: fixtures/shared/source/baseTip/docs/CrossCuttingGuidance.md
           dest: source/baseTip/docs/CrossCuttingGuidance.md
-        - src: fixtures/package-c/candidate.json
+        - src: fixtures/case-c/candidate.json
           dest: candidate.json
-        - src: fixtures/package-c/changes.diff
+        - src: fixtures/case-c/changes.diff
           dest: changes.diff
-        - src: fixtures/package-c/changed-files.json
+        - src: fixtures/case-c/changed-files.json
           dest: changed-files.json
-        - src: fixtures/observations.json
+        - src: fixtures/case-c/observations.json
           dest: observations.json
-        - src: fixtures/package-c/bundle-index.json
+        - src: fixtures/case-c/bundle-index.json
           dest: bundle-index.json
     graders:
       - type: program

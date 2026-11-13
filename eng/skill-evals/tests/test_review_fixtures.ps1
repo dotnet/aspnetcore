@@ -22,7 +22,7 @@ function Test-FileHash {
     return (Get-FileHash $Path -Algorithm SHA256).Hash -eq $Hash
 }
 
-foreach ($package in 'package-a', 'package-b', 'package-c') {
+foreach ($package in 'case-a', 'case-b', 'case-c') {
     $bundleIndex = Get-Content (Join-Path $componentRoot "fixtures/$package/bundle-index.json") -Raw
     Assert-True (-not $bundleIndex.Contains('\')) "The $package bundle index contains non-portable backslash separators."
 }

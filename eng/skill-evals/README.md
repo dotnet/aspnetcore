@@ -84,7 +84,8 @@ Paths in this table are relative to
 `review-candidate-verifier\fixtures`. Cases a and b share the C# slice.
 Case b adds one synthetic contract. Case c uses separate JavaScript evidence.
 The eval stages each case's index, candidate, diff, and changed-file list under
-the same destination names. A file at the fixture root is not necessarily shared.
+the same destination names. `shared` holds files that more than one case uses.
+Each `case-<name>` folder holds files that only that case uses.
 
 | Case | Purpose | Expected answer |
 |---|---|---|
@@ -95,24 +96,24 @@ the same destination names. A file at the fixture root is not necessarily shared
 | Fixture file or path | Cases | Purpose |
 |---|---|---|
 | `.gitattributes` | a, b, c (checkout only) | Preserve frozen bytes and line endings. |
-| `candidate.json` | a, b | Shared catch-policy candidate. |
-| `changes.diff` | a, b | Shared `AgentContext.cs` change. |
-| `changed-files.json` | a, b | Metadata for that one-file diff. |
-| `package-a\bundle-index.json` | a | Source roots, revision IDs, and assigned evidence paths. |
-| `package-b\bundle-index.json` | b | Same index scope, plus the synthetic propagation contract. |
-| `contracts\api-behavior.txt` | b only | Synthetic rule requiring secondary failures to propagate. |
-| `package-c\bundle-index.json` | c | Synthetic source hashes, evidence paths, and observation hash. |
-| `package-c\candidate.json` | c | Callback-failure candidate. |
-| `package-c\changes.diff` | c | Synthetic JavaScript change. |
-| `package-c\changed-files.json` | c | Metadata for that JavaScript diff. |
-| `observations.json` | c only | Immutable callback-failure observation. |
-| `source\baseTip\docs\CrossCuttingGuidance.md` | a, b, c | Frozen base-tip catch guidance. |
-| `source\head\src\Engine\Conversation.mjs` | c | Synthetic head implementation. |
-| `source\mergeBase\src\Engine\Conversation.mjs` | c | Synthetic earlier implementation. |
+| `shared\candidate.json` | a, b | Shared catch-policy candidate. |
+| `shared\changes.diff` | a, b | Shared `AgentContext.cs` change. |
+| `shared\changed-files.json` | a, b | Metadata for that one-file diff. |
+| `shared\source\baseTip\docs\CrossCuttingGuidance.md` | a, b, c | Frozen base-tip catch guidance. |
+| `case-a\bundle-index.json` | a | Source roots, revision IDs, and assigned evidence paths. |
+| `case-b\bundle-index.json` | b | Same index scope, plus the synthetic propagation contract. |
+| `case-b\contracts\api-behavior.txt` | b | Synthetic rule requiring secondary failures to propagate. |
+| `case-c\bundle-index.json` | c | Synthetic source hashes, evidence paths, and observation hash. |
+| `case-c\candidate.json` | c | Callback-failure candidate. |
+| `case-c\changes.diff` | c | Synthetic JavaScript change. |
+| `case-c\changed-files.json` | c | Metadata for that JavaScript diff. |
+| `case-c\observations.json` | c | Immutable callback-failure observation. |
+| `case-c\source\head\src\Engine\Conversation.mjs` | c | Synthetic head implementation. |
+| `case-c\source\mergeBase\src\Engine\Conversation.mjs` | c | Synthetic earlier implementation. |
 
 The following nine files appear under
-`source\head\src\Components\AI\src` and
-`source\mergeBase\src\Components\AI\src`.
+`shared\source\head\src\Components\AI\src` and
+`shared\source\mergeBase\src\Components\AI\src`.
 Both cases a and b receive all nine files at both revisions.
 
 | C# file relative to either source directory | Cases | Purpose |
