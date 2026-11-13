@@ -1,0 +1,40 @@
+using System;
+using System.Threading.Tasks;
+
+public sealed class ConversationEngine
+{
+    private readonly FailingClient _client;
+    private readonly IDiagnosticSink _sink;
+
+    public ConversationEngine(FailingClient client, IDiagnosticSink sink)
+    {
+        _client = client;
+        _sink = sink;
+    }
+
+    public Exception? Error { get; private set; }
+    public string Status { get; private set; } = "Idle";
+    public event Action<string>? StatusChanged;
+
+    public async Task SendMessageAsync()
+    {
+        try
+        {
+            await _client.ProcessAsync();
+        }
+        catch (Exception processingError)
+        {
+            Error = processingError;
+            Status = "Error";
+            StatusChanged?.Invoke(Status);
+            try
+            {
+                _sink.Write(processingError);
+            }
+            catch (Exception)
+            {
+            }
+            return;
+        }
+    }
+}

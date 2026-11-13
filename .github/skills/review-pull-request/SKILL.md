@@ -282,8 +282,8 @@ coordinator-owned post-gate verifier, not a routed guide worker; it does not cha
 one-worker-per-guide count or any per-guide worker invariant. Use the same explicitly
 selected model and reasoning effort as the guide workers. Give it the trusted bundle
 root; the role-to-root mapping for the frozen `source/<sha>` roots; the exact diff and
-changed-file references; every provisional finding (identifying any incomplete-fix or
-new-feature omission claim); the exact assigned issue, API, base-tip, or
+changed-file references; every provisional finding (identifying any incomplete-fix,
+new-feature omission, or policy-only secondary-failure suppression claim); the exact assigned issue, API, base-tip, or
 primary-repository contract paths; and, when validation was used, the immutable
 source-bound validation artifacts and their paths, not an assertion that tests passed.
 It may read and search only those assigned frozen inputs, must verify only the supplied
@@ -321,7 +321,10 @@ check recorded only in a worker's own `DISCARDED` section, without being propose
 when a contradicted `DROP` names `contradictedLink: contract` but its cited contract is
 head-side, keep the candidate in `NEW_FINDINGS` as an intent question with `confidence:
 question` instead of discarding it. This is an intentional adaptation of the verifier
-contract for skill output. External behavior that remains unestablished is
+contract for skill output. When `DOWNGRADE(intent)` reports `contract: "n/a"` for a
+contract-dependent candidate, record it in `UNRESOLVED` with the missing binding contract,
+not as an intent question. Apply the same unresolved inline rule above. Intent cannot
+supply or waive a mandatory contract. External behavior that remains unestablished is
 `UNRESOLVED`.
 
 For a `KEEP` or an intent question, accept a verifier-corrected changed-line anchor or

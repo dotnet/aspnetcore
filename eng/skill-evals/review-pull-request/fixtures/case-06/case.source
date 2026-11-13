@@ -1,0 +1,1 @@
+C1: The added inner catch prevents a diagnostic sink failure from reaching the caller of SendMessageAsync. Remove the inner catch so the sink exception propagates.

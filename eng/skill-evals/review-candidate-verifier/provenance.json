@@ -1,0 +1,144 @@
+{
+  "repository": "dotnet/aspnetcore",
+  "pullRequest": 69445,
+  "sourceRevisions": {
+    "head": "c0f86a6d725473f7a6f4c56d816ef941591053d2",
+    "mergeBase": "80ce68b5280ef01757bdf9d94b653da62e5724d5",
+    "baseTip": "2e792d799058bf25990ce0c8e2b416c736431ca3"
+  },
+  "caseKinds": {
+    "a": "Frozen public PR source, with no assigned secondary-failure propagation contract.",
+    "b": "Case a with a synthetic assigned propagation contract, not an actual public API guarantee.",
+    "c": "Synthetic JavaScript component and immutable observations, not an ASP.NET Core PR implementation."
+  },
+  "files": [
+    {
+      "file": "candidate.json",
+      "sha256": "2925e9529ca2884a99e1f6ef6a4bc166d7d422852ba00546f62fda9c828859a0"
+    },
+    {
+      "file": "changed-files.json",
+      "sha256": "06eaa182b93948037b2a9b105f2f10fa8e37f3f74b2b8ed4dfdd8837cc1f1a24"
+    },
+    {
+      "file": "changes.diff",
+      "sha256": "4f1712f87a413c06dc2c763136911a84c14c2f2dc9109dc0680467afb111ebd0"
+    },
+    {
+      "file": "contracts/api-behavior.txt",
+      "sha256": "bff28d4062f66d3545b9b76530789592cf4be7de22c0b9ee42ad1d9a5f412fff"
+    },
+    {
+      "file": "observations.json",
+      "sha256": "a4355b34aaf0927946a5c5791fafcdeaca05d4d85f247976d289c1626c0cc5f8"
+    },
+    {
+      "file": "package-a/bundle-index.json",
+      "sha256": "11d98c866d0664a0d8290481dc19a2931fb09f589a06b4ca84c2d3241735fdc3"
+    },
+    {
+      "file": "package-b/bundle-index.json",
+      "sha256": "09e6f4e6679e5a4b566cc096832144d13d2bad099fbf82fe391be2567e26df55"
+    },
+    {
+      "file": "package-c/bundle-index.json",
+      "sha256": "91d337316cf75897daf7a5873771fe77048bd42c1450d60acdf1bc12028a0631"
+    },
+    {
+      "file": "package-c/candidate.json",
+      "sha256": "6ec7c0e8d35ad42dfe2c58e43aa33f1b194e33aa2a1c790b43a0c69dcd916d90"
+    },
+    {
+      "file": "package-c/changed-files.json",
+      "sha256": "93dd39cc3699523242cc571bd40bd96727e15a071dfb64e5fd8f92b1cf25deea"
+    },
+    {
+      "file": "package-c/changes.diff",
+      "sha256": "0afde6935c8bfc044be5931f02bd264ea3b3a42353cb980422bc0bd24c612276"
+    },
+    {
+      "file": "source/baseTip/docs/CrossCuttingGuidance.md",
+      "sha256": "4aac99289d9812ac59c50e5eb702c0226c0afee26ba14d68366a82a55ab0feef"
+    },
+    {
+      "file": "source/head/src/Components/AI/src/Blocks/ContentBlock.cs",
+      "sha256": "7cab62ac70d7faa70dacbdb4bd36723b4061612ab921b9f7d7d019d3ba905261"
+    },
+    {
+      "file": "source/head/src/Components/AI/src/Blocks/IInteractiveBlock.cs",
+      "sha256": "0f6c4f9e859a917755b75bcf335273c37461525fc72d7e5564ba2594c99ba90f"
+    },
+    {
+      "file": "source/head/src/Components/AI/src/Components/MessageInput.cs",
+      "sha256": "d0ddd1d72a79945463c3ddf92b2861b4e2b05d47fb4bebcbc7feef5685397091"
+    },
+    {
+      "file": "source/head/src/Components/AI/src/Engine/AgentContext.cs",
+      "sha256": "cbabd18763571b3ad936002d1d54ea35d6f2c537f7df131655bca0334f2c3ccd"
+    },
+    {
+      "file": "source/head/src/Components/AI/src/Engine/ConversationStatus.cs",
+      "sha256": "b44fd1f2cbb45c401f14a695f3ef8c7dac6f1d2a66f6e9622f15a2c2099546f9"
+    },
+    {
+      "file": "source/head/src/Components/AI/src/Engine/ConversationTurn.cs",
+      "sha256": "3a5dbc73c955c5dec1fa04e195c35387477287a0b5e78013b2c91d65477295ea"
+    },
+    {
+      "file": "source/head/src/Components/AI/src/Engine/UIAgent.cs",
+      "sha256": "15f260ac18c35efde79d4822641961f0ea002bfe398d366b123ad5887b1ea919"
+    },
+    {
+      "file": "source/head/src/Components/AI/src/Engine/UIAgentLog.cs",
+      "sha256": "8f20da705a199ebf56ece8f9e073107a9a7ec8404884c69e4c748fd5f1224061"
+    },
+    {
+      "file": "source/head/src/Components/AI/src/Pipeline/BlockMappingPipeline.cs",
+      "sha256": "3efb30f16570e2754c38b579e3fdb4dc4d5b9d750b3a9408c7fa1238c11258ee"
+    },
+    {
+      "file": "source/head/src/Engine/Conversation.mjs",
+      "sha256": "13e383993dd60d8548089196ada34afcf791c7995ffda48104bbe23bf15cff11"
+    },
+    {
+      "file": "source/mergeBase/src/Components/AI/src/Blocks/ContentBlock.cs",
+      "sha256": "7cab62ac70d7faa70dacbdb4bd36723b4061612ab921b9f7d7d019d3ba905261"
+    },
+    {
+      "file": "source/mergeBase/src/Components/AI/src/Blocks/IInteractiveBlock.cs",
+      "sha256": "0f6c4f9e859a917755b75bcf335273c37461525fc72d7e5564ba2594c99ba90f"
+    },
+    {
+      "file": "source/mergeBase/src/Components/AI/src/Components/MessageInput.cs",
+      "sha256": "d0ddd1d72a79945463c3ddf92b2861b4e2b05d47fb4bebcbc7feef5685397091"
+    },
+    {
+      "file": "source/mergeBase/src/Components/AI/src/Engine/AgentContext.cs",
+      "sha256": "61ca1e7434f6046328435ec8df5bd069c3198af8bb6b2db9912ff4c66cf7b084"
+    },
+    {
+      "file": "source/mergeBase/src/Components/AI/src/Engine/ConversationStatus.cs",
+      "sha256": "b44fd1f2cbb45c401f14a695f3ef8c7dac6f1d2a66f6e9622f15a2c2099546f9"
+    },
+    {
+      "file": "source/mergeBase/src/Components/AI/src/Engine/ConversationTurn.cs",
+      "sha256": "3a5dbc73c955c5dec1fa04e195c35387477287a0b5e78013b2c91d65477295ea"
+    },
+    {
+      "file": "source/mergeBase/src/Components/AI/src/Engine/UIAgent.cs",
+      "sha256": "63783e5da3d7b6fbf0c339d2e3a2298498b2b455a587e79f5f25431bf9812943"
+    },
+    {
+      "file": "source/mergeBase/src/Components/AI/src/Engine/UIAgentLog.cs",
+      "sha256": "f7eb199a984d4b163a972c13e709de02e203789b8e0e834793b94487344e2df7"
+    },
+    {
+      "file": "source/mergeBase/src/Components/AI/src/Pipeline/BlockMappingPipeline.cs",
+      "sha256": "3efb30f16570e2754c38b579e3fdb4dc4d5b9d750b3a9408c7fa1238c11258ee"
+    },
+    {
+      "file": "source/mergeBase/src/Engine/Conversation.mjs",
+      "sha256": "2c59edf3be93947a250c4c0a2787d103775265058fe3dbc533014932e2012deb"
+    }
+  ]
+}

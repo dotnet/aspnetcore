@@ -1,0 +1,83 @@
+=== mergeBase 2a731a48bdbe8747100ce19282d8b96bb93b876e src/Components/Web.JS/src/Services/NavigationEnhancement.ts:60-67 ===
+export function attachProgressivelyEnhancedNavigationListener(callbacks: NavigationEnhancementCallbacks) {
+  navigationEnhancementCallbacks = callbacks;
+  document.addEventListener('click', onDocumentClick);
+  document.addEventListener('submit', onDocumentSubmit);
+  window.addEventListener('popstate', onPopState);
+
+  attachProgrammaticEnhancedNavigationHandler(performProgrammaticEnhancedNavigation);
+}
+
+=== mergeBase 2a731a48bdbe8747100ce19282d8b96bb93b876e src/Components/Web.JS/src/Services/NavigationEnhancement.ts:75-89 ===
+function performProgrammaticEnhancedNavigation(absoluteInternalHref: string, replace: boolean) : void {
+  const originalLocation = location.href;
+
+  if (replace) {
+    history.replaceState(null, /* ignored title */ '', absoluteInternalHref);
+  } else {
+    history.pushState(null, /* ignored title */ '', absoluteInternalHref);
+  }
+
+  if (!isForSamePath(absoluteInternalHref, originalLocation)) {
+    scheduleScrollReset(ScrollResetSchedule.AfterDocumentUpdate);
+  }
+
+  performEnhancedPageLoad(absoluteInternalHref, /* interceptedLink */ false);
+}
+
+=== mergeBase 2a731a48bdbe8747100ce19282d8b96bb93b876e src/Components/Web.JS/src/Services/NavigationEnhancement.ts:91-116 ===
+function onDocumentClick(event: MouseEvent) {
+  if (hasInteractiveRouter()) {
+    return;
+  }
+
+  if (event.target instanceof Element && !enhancedNavigationIsEnabledForElement(event.target)) {
+    return;
+  }
+
+  handleClickForNavigationInterception(event, absoluteInternalHref => {
+    const originalLocation = location.href;
+
+    const shouldScrollToHash = isSamePageWithHash(originalLocation, absoluteInternalHref);
+    history.pushState(null, /* ignored title */ '', absoluteInternalHref);
+
+    if (shouldScrollToHash) {
+      performScrollToElementOnTheSamePage(absoluteInternalHref);
+    } else {
+      const isSelfNavigation = isForSamePath(absoluteInternalHref, originalLocation);
+      performEnhancedPageLoad(absoluteInternalHref, /* interceptedLink */ true);
+      if (!isSelfNavigation) {
+        scheduleScrollReset(ScrollResetSchedule.AfterDocumentUpdate);
+      }
+    }
+  });
+}
+
+=== mergeBase 2a731a48bdbe8747100ce19282d8b96bb93b876e src/Components/Web.JS/src/Services/NavigationEnhancement.ts:200-226 ===
+export async function performEnhancedPageLoad(internalDestinationHref: string, interceptedLink: boolean, fetchOptions?: RequestInit, treatAsRedirectionFromMethod?: 'get' | 'post', changeUrl = true) {
+  performingEnhancedPageLoad = true;
+
+  // First, stop any preceding enhanced page load
+  currentEnhancedNavigationAbortController?.abort();
+
+  // Notify any interactive runtimes that an enhanced navigation is starting
+  notifyEnhancedNavigationListeners(internalDestinationHref, interceptedLink);
+
+  // Notify handlers that enhanced navigation is starting
+  navigationEnhancementCallbacks.enhancedNavigationStarted();
+
+  // Now request the new page via fetch, and a special header that tells the server we want it to inject
+  // framing boundaries to distinguish the initial document and each subsequent streaming SSR update.
+  currentEnhancedNavigationAbortController = new AbortController();
+  const abortSignal = currentEnhancedNavigationAbortController.signal;
+  const responsePromise = fetch(internalDestinationHref, Object.assign(<RequestInit>{
+    signal: abortSignal,
+    mode: 'no-cors', // If there's a redirection to an external origin, even if it enables CORS, we don't want to receive its content and patch it into our DOM on this origin
+    headers: {
+      // Because of no-cors, we can only send CORS-safelisted headers, so communicate the info about
+      // enhanced nav as a MIME type parameter
+      'accept': acceptHeader,
+    },
+  }, fetchOptions));
+  let isNonRedirectedPostToADifferentUrlMessage: string | null = null;
+  await getResponsePartsWithFraming(

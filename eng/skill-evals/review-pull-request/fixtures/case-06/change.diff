@@ -1,0 +1,17 @@
+diff --git a/ConversationEngine.cs.source b/ConversationEngine.cs.source
+--- a/ConversationEngine.cs.source
++++ b/ConversationEngine.cs.source
+@@ -26,6 +26,13 @@
+         {
+             Error = processingError;
+             Status = "Error";
+             StatusChanged?.Invoke(Status);
++            try
++            {
++                _sink.Write(processingError);
++            }
++            catch (Exception)
++            {
++            }
+             return;
+         }

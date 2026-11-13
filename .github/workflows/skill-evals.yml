@@ -6,6 +6,9 @@ on:
   pull_request:
     paths:
       - '.github/skills/**'
+      - '.github/agents/review-*.agent.md'
+      - 'docs/CrossCuttingGuidance.md'
+      - 'docs/BlazorComponentsGuidance.md'
       - 'eng/skill-evals/**'
       - '.github/workflows/skill-evals.yml'
   push:
@@ -13,6 +16,9 @@ on:
       - main
     paths:
       - '.github/skills/**'
+      - '.github/agents/review-*.agent.md'
+      - 'docs/CrossCuttingGuidance.md'
+      - 'docs/BlazorComponentsGuidance.md'
       - 'eng/skill-evals/**'
       - '.github/workflows/skill-evals.yml'
   workflow_dispatch:
@@ -33,7 +39,11 @@ on:
         required: true
         default: review-public-api
         options:
+          - port-components-platform-api
+          - pr-attention-queue
           - review-public-api
+          - review-pull-request
+          - review-candidate-verifier
           - validate-blazor-feature
       run_type:
         description: Trial count to use when action is Run
@@ -102,10 +112,10 @@ jobs:
           SKILL_EVAL_VALLY: ${{ runner.temp }}/evaluation-tools/node_modules/.bin/vally
         run: ./eng/skill-evals/run.ps1 -Action $env:ACTION
 
-      - name: Test trusted staging boundary
+      - name: Run skill eval self-tests
         if: github.event_name != 'workflow_dispatch' || inputs.action == 'Validate'
         shell: pwsh
-        run: ./eng/skill-evals/test_stage_run.ps1
+        run: ./eng/skill-evals/run.ps1 -Action Test
 
   gate:
     name: Resolve PR evaluation
@@ -279,7 +289,16 @@ jobs:
               MATCHED_EVAL=false
               for EVAL_NAME in "${ALL_EVALS[@]}"; do
                 if [[ "$FILE" == ".github/skills/$EVAL_NAME/"* ||
-                      "$FILE" == "eng/skill-evals/$EVAL_NAME/"* ]]; then
+                      "$FILE" == "eng/skill-evals/$EVAL_NAME/"* ||
+                      ( "$EVAL_NAME" == 'review-pull-request' && (
+                        "$FILE" == '.github/agents/review-guide-worker.agent.md' ||
+                        "$FILE" == '.github/agents/review-candidate-verifier.agent.md' ||
+                        "$FILE" == 'docs/CrossCuttingGuidance.md' ||
+                        "$FILE" == 'docs/BlazorComponentsGuidance.md'
+                      ) ) ||
+                      ( "$EVAL_NAME" == 'review-candidate-verifier' &&
+                        "$FILE" == '.github/agents/review-candidate-verifier.agent.md'
+                      ) ]]; then
                   AFFECTED+=("$EVAL_NAME")
                   MATCHED_EVAL=true
                 fi
@@ -628,7 +647,7 @@ jobs:
               }
 
               if ($vallyExitCode -eq 1) {
-                  Write-Warning "Vally exited with code 1 for '$evalName'; both variants produced complete successful results and the skilled score met its threshold."
+                  Write-Warning "Vally exited with code 1 for '$evalName'. Complete primary trials passed the applicable result-set checks."
               }
           }
 
@@ -681,7 +700,9 @@ jobs:
               DESCRIPTION="$RUN_TYPE skill evaluation passed"
               BODY="✅ **$RUN_TYPE skill evaluation passed** for \`$EVAL_NAMES\` at \`${HEAD_SHA:0:7}\`."
               if [[ "$RUN_TYPE" == 'Smoke' ]]; then
-                BODY+=" Smoke validates the pipeline and skilled thresholds; use a Full run for persuasive quality evidence."
+                DESCRIPTION="Smoke pipeline checks passed"
+                BODY="✅ **Smoke pipeline checks passed** for \`$EVAL_NAMES\` at \`${HEAD_SHA:0:7}\`."
+                BODY+=" Smoke checks trial completion and read receipts. Review/verifier smoke does not gate disposition accuracy. Use a Full run for accuracy measurements."
               fi
               ;;
             failure)

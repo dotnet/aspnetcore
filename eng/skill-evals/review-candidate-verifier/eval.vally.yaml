@@ -1,0 +1,205 @@
+name: review-candidate-verifier
+description: Verifier component development cases. Normalized disposition only, not a held-out quality estimate.
+type: capability
+defaults:
+  runs: 5
+  timeout: 600s
+  model: gpt-5.6-sol
+agent_environment:
+  files:
+    - src: ../../../.github/agents/review-candidate-verifier.agent.md
+      dest: verifier.md
+grading_environment:
+  files:
+    - src: ../grade_disposition.mjs
+      dest: grade_disposition.mjs
+scoring:
+  weights:
+    program: 1
+    tool-calls: 0
+  threshold: 0.8
+stimuli:
+  - name: a
+    prompt: |
+      Read verifier.md as your operating instructions. Read bundle-index.json and candidate.json.
+      Process exactly the indexed candidate using its frozen source roots, diff, changed-file metadata,
+      contracts, and immutable validation artifacts. Return one JSON disposition or a results array
+      with one disposition. The normalized decision and applicable downgradeKind, dropBasis, and
+      contradictedLink determine this component check. Schema and citation formatting are diagnostic.
+      Do not fetch, execute target code, modify files, publish, or delegate.
+    agent_environment:
+      files:
+        - src: fixtures/source/head/src/Components/AI/src
+          dest: source/head/src/Components/AI/src
+        - src: fixtures/source/mergeBase/src/Components/AI/src
+          dest: source/mergeBase/src/Components/AI/src
+        - src: fixtures/source/baseTip/docs/CrossCuttingGuidance.md
+          dest: source/baseTip/docs/CrossCuttingGuidance.md
+        - src: fixtures/changes.diff
+          dest: changes.diff
+        - src: fixtures/changed-files.json
+          dest: changed-files.json
+        - src: fixtures/candidate.json
+          dest: candidate.json
+        - src: fixtures/package-a/bundle-index.json
+          dest: bundle-index.json
+    graders:
+      - type: program
+        name: disposition-a
+        config:
+          program: node
+          args:
+            - grade_disposition.mjs
+          env:
+            DISPOSITION_MODE: component
+      - type: tool-calls
+        name: evidence-reads-a
+        config:
+          required:
+            - name: .*
+              pattern: verifier\.md
+              result: validationEvidence
+            - name: .*
+              pattern: bundle-index\.json
+              result: sourceRoots
+            - name: .*
+              pattern: candidate\.json
+              result: candidateId
+            - name: .*
+              pattern: changes\.diff
+              result: "@@"
+            - name: .*
+              pattern: source[/\\]+head[/\\]+.*AgentContext\.cs
+              result: LogProcessingError
+            - name: .*
+              pattern: source[/\\]+mergeBase[/\\]+.*AgentContext\.cs
+              result: ConversationStatus\.Error
+            - name: .*
+              pattern: CrossCuttingGuidance\.md
+              result: catch
+  - name: b
+    prompt: |
+      Read verifier.md as your operating instructions. Read bundle-index.json and candidate.json.
+      Process exactly the indexed candidate using its frozen source roots, diff, changed-file metadata,
+      contracts, and immutable validation artifacts. Return one JSON disposition or a results array
+      with one disposition. The normalized decision and applicable downgradeKind, dropBasis, and
+      contradictedLink determine this component check. Schema and citation formatting are diagnostic.
+      Do not fetch, execute target code, modify files, publish, or delegate.
+    agent_environment:
+      files:
+        - src: fixtures/source/head/src/Components/AI/src
+          dest: source/head/src/Components/AI/src
+        - src: fixtures/source/mergeBase/src/Components/AI/src
+          dest: source/mergeBase/src/Components/AI/src
+        - src: fixtures/source/baseTip/docs/CrossCuttingGuidance.md
+          dest: source/baseTip/docs/CrossCuttingGuidance.md
+        - src: fixtures/changes.diff
+          dest: changes.diff
+        - src: fixtures/changed-files.json
+          dest: changed-files.json
+        - src: fixtures/candidate.json
+          dest: candidate.json
+        - src: fixtures/contracts/api-behavior.txt
+          dest: contracts/api-behavior.txt
+        - src: fixtures/package-b/bundle-index.json
+          dest: bundle-index.json
+    graders:
+      - type: program
+        name: disposition-b
+        config:
+          program: node
+          args:
+            - grade_disposition.mjs
+          env:
+            DISPOSITION_MODE: component
+      - type: tool-calls
+        name: evidence-reads-b
+        config:
+          required:
+            - name: .*
+              pattern: verifier\.md
+              result: validationEvidence
+            - name: .*
+              pattern: bundle-index\.json
+              result: sourceRoots
+            - name: .*
+              pattern: candidate\.json
+              result: candidateId
+            - name: .*
+              pattern: changes\.diff
+              result: "@@"
+            - name: .*
+              pattern: source[/\\]+head[/\\]+.*AgentContext\.cs
+              result: LogProcessingError
+            - name: .*
+              pattern: source[/\\]+mergeBase[/\\]+.*AgentContext\.cs
+              result: ConversationStatus\.Error
+            - name: .*
+              pattern: CrossCuttingGuidance\.md
+              result: catch
+            - name: .*
+              pattern: api-behavior\.txt
+              result: propagate
+  - name: c
+    prompt: |
+      Read verifier.md as your operating instructions. Read bundle-index.json and candidate.json.
+      Process exactly the indexed candidate using its frozen source roots, diff, changed-file metadata,
+      contracts, and immutable validation artifacts. Return one JSON disposition or a results array
+      with one disposition. The normalized decision and applicable downgradeKind, dropBasis, and
+      contradictedLink determine this component check. Schema and citation formatting are diagnostic.
+      Do not fetch, execute target code, modify files, publish, or delegate.
+    agent_environment:
+      files:
+        - src: fixtures/source/head/src/Engine/Conversation.mjs
+          dest: source/head/src/Engine/Conversation.mjs
+        - src: fixtures/source/mergeBase/src/Engine/Conversation.mjs
+          dest: source/mergeBase/src/Engine/Conversation.mjs
+        - src: fixtures/source/baseTip/docs/CrossCuttingGuidance.md
+          dest: source/baseTip/docs/CrossCuttingGuidance.md
+        - src: fixtures/package-c/candidate.json
+          dest: candidate.json
+        - src: fixtures/package-c/changes.diff
+          dest: changes.diff
+        - src: fixtures/package-c/changed-files.json
+          dest: changed-files.json
+        - src: fixtures/observations.json
+          dest: observations.json
+        - src: fixtures/package-c/bundle-index.json
+          dest: bundle-index.json
+    graders:
+      - type: program
+        name: disposition-c
+        config:
+          program: node
+          args:
+            - grade_disposition.mjs
+          env:
+            DISPOSITION_MODE: component
+      - type: tool-calls
+        name: evidence-reads-c
+        config:
+          required:
+            - name: .*
+              pattern: verifier\.md
+              result: validationEvidence
+            - name: .*
+              pattern: bundle-index\.json
+              result: sourceRoots
+            - name: .*
+              pattern: candidate\.json
+              result: candidateId
+            - name: .*
+              pattern: changes\.diff
+              result: "@@"
+            - name: .*
+              pattern: source[/\\]+head[/\\]+.*Conversation\.mjs
+              result: this\.status
+            - name: .*
+              pattern: source[/\\]+mergeBase[/\\]+.*Conversation\.mjs
+              result: this\.status
+            - name: .*
+              pattern: CrossCuttingGuidance\.md
+              result: catch
+            - name: .*
+              pattern: observations\.json
+              result: Running
