@@ -11,7 +11,7 @@ using Microsoft.Extensions.Options;
 using Microsoft.AspNetCore.Http.Json;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.AspNetCore.Http.Features;
-
+using System.Runtime.CompilerServices;
 namespace Microsoft.AspNetCore.Http.HttpResults;
 
 /// <summary>
@@ -91,9 +91,12 @@ public sealed class ServerSentEventsResult<T> : IResult, IEndpointMetadataProvid
         writer.Write(json);
     }
 
-    private static async IAsyncEnumerable<SseItem<T>> WrapEvents(IAsyncEnumerable<T> events, string? eventType = null)
+    private static async IAsyncEnumerable<SseItem<T>> WrapEvents(
+        IAsyncEnumerable<T> events,
+        string? eventType = null,
+        [EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
-        await foreach (var item in events)
+        await foreach (var item in events.WithCancellation(cancellationToken))
         {
             yield return new SseItem<T>(item, eventType);
         }
