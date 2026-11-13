@@ -12,6 +12,8 @@ $fakeVally = Join-Path $testRoot 'fake-vally.ps1'
 $record = Join-Path $testRoot 'invocation.txt'
 $specialized = Join-Path $testRoot 'specialized.vally.yaml'
 $customExperiment = Join-Path $testRoot 'custom.experiment.yaml'
+$customRoot = Join-Path $testRoot 'custom-root'
+$allSuiteRoot = Join-Path $testRoot 'all-suite-root'
 $output = Join-Path $testRoot 'results'
 $relativeOutput = 'artifacts/skill-eval-runner-selftest'
 $previousVally = [Environment]::GetEnvironmentVariable('SKILL_EVAL_VALLY')
@@ -66,9 +68,79 @@ if ($env:SKILL_EVAL_FAKE_FAILURE) {
 } |
     ConvertTo-Json -Compress |
     Add-Content $env:SKILL_EVAL_RUNNER_RECORD
+if ($args[0] -eq 'eval' -and ($args -join ' ') -like '*review-candidate-verifier*') {
+    $output = $args[([array]::IndexOf($args, '--output-dir') + 1)]
+    $run = Join-Path $output '2026-01-01T00-00-00'
+    New-Item -ItemType Directory -Path $run -Force | Out-Null
+    if ($env:SKILL_EVAL_FAKE_EXIT_MODE) {
+        $rows = [Collections.Generic.List[object]]::new()
+        foreach ($name in 'a', 'b', 'c') {
+            foreach ($trial in 0..4) {
+                $score = if (
+                    $env:SKILL_EVAL_FAKE_EXIT_MODE -eq 'failed-gate' -and
+                    $name -eq 'a' -and $trial -ge 3
+                ) { 0 } else { 1 }
+                $rows.Add(@{
+                    type = 'trial-result'
+                    runId = 'fake-component-run'
+                    stimulus = $name
+                    trialIndex = $trial
+                    status = 'success'
+                    gradeResult = @{
+                        score = $score
+                        details = @(
+                            @{ configuredName = "evidence-reads-$name"; passed = $true; score = 1 },
+                            @{ configuredName = "disposition-$name"; passed = $score -eq 1; score = $score }
+                        )
+                    }
+                })
+            }
+        }
+        if ($env:SKILL_EVAL_FAKE_EXIT_MODE -eq 'incomplete') {
+            $rows.RemoveAt(0)
+        }
+        $rows.Add(@{
+            type = 'run-summary'
+            runId = 'fake-component-run'
+            hadExecutionErrors = $false
+        })
+        $rows | ForEach-Object { $_ | ConvertTo-Json -Depth 10 -Compress } |
+            Set-Content (Join-Path $run 'results.jsonl')
+        exit 1
+    }
+    Set-Content (Join-Path $run 'results.jsonl') ''
+    if ($env:SKILL_EVAL_FAKE_EXIT) {
+        exit 1
+    }
+}
 '@ | Set-Content $fakeVally
     Set-Content $specialized "name: specialized`n"
     Set-Content $customExperiment "name: custom`n"
+    $customComponentDirectory = Join-Path $customRoot 'eng/skill-evals/review-candidate-verifier'
+    New-Item -ItemType Directory -Path $customComponentDirectory -Force | Out-Null
+    @'
+name: review-candidate-verifier
+defaults:
+  runs: 7
+scoring:
+  threshold: 0.65
+stimuli:
+  - name: alpha
+  - name: beta
+'@ | Set-Content (Join-Path $customComponentDirectory 'eval.vally.yaml')
+    $allComponentDirectory = Join-Path $allSuiteRoot 'eng/skill-evals/review-candidate-verifier'
+    New-Item -ItemType Directory -Path $allComponentDirectory -Force | Out-Null
+    @'
+name: review-candidate-verifier
+defaults:
+  runs: 5
+scoring:
+  threshold: 0.8
+stimuli:
+  - name: a
+  - name: b
+  - name: c
+'@ | Set-Content (Join-Path $allComponentDirectory 'eval.vally.yaml')
     $env:SKILL_EVAL_RUNNER_RECORD = $record
     $env:SKILL_EVAL_VALLY = $fakeVally
 
@@ -83,7 +155,7 @@ if ($env:SKILL_EVAL_FAKE_FAILURE) {
             Where-Object { $_.Arguments[0] -eq 'experiment' }
     )
     Assert-True ($validateInvocations.Count -eq 2) (
-        'Default validation did not resolve both experiments.'
+        'Default validation did not resolve generic experiments.'
     )
     foreach ($invocation in $validateInvocations) {
         Assert-True ($invocation.Arguments[1] -eq 'run') (
@@ -120,6 +192,29 @@ if ($env:SKILL_EVAL_FAKE_FAILURE) {
     )
     Assert-True ($customValidateInvocations[0].Arguments -contains '--dry-run') (
         'Custom validation could invoke models.'
+    )
+
+    $validationRoot = Join-Path $testRoot 'validation-root'
+    $validationEvalRoot = Join-Path $validationRoot 'eng/skill-evals'
+    New-Item -ItemType Directory -Force -Path `
+        (Join-Path $validationEvalRoot 'review-public-api'), `
+        (Join-Path $validationEvalRoot 'review-pull-request'), `
+        (Join-Path $validationRoot '.github/skills/review-public-api') | Out-Null
+    Set-Content (Join-Path $validationEvalRoot 'review-public-api/eval.vally.yaml') 'name: review-public-api'
+    Set-Content (Join-Path $validationEvalRoot 'review-pull-request/eval.vally.yaml') 'name: review-pull-request'
+    Set-Content (Join-Path $validationRoot '.github/skills/review-public-api/SKILL.md') 'skill'
+    Set-Content (Join-Path $validationEvalRoot 'skills-vs-baseline.experiment.yaml') 'standard'
+    Set-Content (Join-Path $validationEvalRoot 'skills-smoke.experiment.yaml') 'smoke'
+    & git init -q $validationRoot
+    & git -C $validationRoot add eng/skill-evals/review-public-api/eval.vally.yaml
+    if ($LASTEXITCODE -ne 0) {
+        throw 'Could not set up the validation fixture.'
+    }
+    Remove-Item $record
+    & $runner Validate -Root $validationRoot -Suite review-public-api -Vally $fakeVally -VallyPrefix @()
+    $genericValidation = @(Read-Invocations | Where-Object { $_.Arguments[0] -eq 'experiment' })
+    Assert-True ($genericValidation.Count -eq 2) (
+        'Generic suite validation planned the unrelated review experiments.'
     )
 
     & $runner Run `
@@ -162,6 +257,203 @@ if ($env:SKILL_EVAL_FAKE_FAILURE) {
     Assert-True ($specializedInvocation[0] -eq 'eval') 'Specialized run did not use Vally eval.'
     Assert-True ($specializedInvocation -contains '--eval-spec') 'Specialized run omitted --eval-spec.'
 
+    foreach ($smoke in @($false, $true)) {
+        $componentOutput = Join-Path $testRoot "component-$smoke"
+        New-Item -ItemType Directory -Path (Join-Path $componentOutput '2025-12-31T00-00-00') -Force | Out-Null
+        $options = @{ Suite = 'review-candidate-verifier'; Vally = $fakeVally; VallyPrefix = @(); OutputDirectory = $componentOutput }
+        if ($smoke) {
+            $options.Experiment = 'eng/skill-evals/skills-smoke.experiment.yaml'
+        }
+        & $runner Run @options
+        $componentRun = Read-Invocation
+        Assert-True ($componentRun[0] -eq 'eval') 'Component run used a skill comparison experiment.'
+        $plan = Get-Content (Join-Path $componentOutput '2026-01-01T00-00-00/plan-snapshot.json') -Raw | ConvertFrom-Json
+        $runs = if ($smoke) { 1 } else { 5 }
+        Assert-True ($plan.evals[0].runs -eq $runs) 'Component plan has the wrong repeat count.'
+        Assert-True ($componentRun[([array]::IndexOf($componentRun, '--runs') + 1)] -eq "$runs") 'Component invocation has the wrong repeat count.'
+        Assert-True ($plan.evals[0].threshold -eq 0.8 -and $plan.evals[0].plannedStimulusCount -eq 3) (
+            'Component plan lost its per-case 4/5 disposition gate.'
+        )
+    }
+    function Assert-CustomComponentPlan {
+        param(
+            [string]$Scenario,
+            [int]$ExpectedRuns,
+            [double]$ExpectedThreshold = 0.65,
+            [string[]]$RunArguments = @()
+        )
+
+        $scenarioOutput = Join-Path $testRoot "component-plan-$Scenario"
+        & $runner Run -Root $customRoot -Suite review-candidate-verifier `
+            -Vally $fakeVally -VallyPrefix @() -OutputDirectory $scenarioOutput `
+            @RunArguments
+        $invocation = Read-Invocation
+        $plan = Get-Content (
+            Join-Path $scenarioOutput '2026-01-01T00-00-00/plan-snapshot.json'
+        ) -Raw | ConvertFrom-Json
+        Assert-True (($plan.evals[0].plannedStimulusNames -join ',') -eq 'alpha,beta') (
+            "$Scenario component plan did not derive stimulus names from the selected YAML."
+        )
+        Assert-True ($plan.evals[0].plannedStimulusCount -eq 2) (
+            "$Scenario component plan did not derive its stimulus count from the selected YAML."
+        )
+        Assert-True ([Math]::Abs([double]$plan.evals[0].threshold - $ExpectedThreshold) -lt 0.000001) (
+            "$Scenario component plan did not derive its threshold from the selected YAML."
+        )
+        Assert-True ($plan.evals[0].runs -eq $ExpectedRuns) (
+            "$Scenario component plan did not record the effective run count."
+        )
+        $runValues = @(
+            for ($index = 0; $index -lt $invocation.Count; $index++) {
+                if ($invocation[$index] -eq '--runs') {
+                    $invocation[$index + 1]
+                } elseif ($invocation[$index] -like '--runs=*') {
+                    $invocation[$index].Substring('--runs='.Length)
+                }
+            }
+        )
+        Assert-True ($runValues.Count -gt 0 -and $runValues[-1] -eq "$ExpectedRuns") (
+            "$Scenario component invocation's effective final --runs value disagrees with the plan."
+        )
+    }
+
+    $env:SKILL_EVAL_FAKE_EXIT = 'true'
+    $failedOutput = Join-Path $testRoot 'component-exit-one'
+    & $runner Run -Suite review-candidate-verifier -Vally $fakeVally -VallyPrefix @() -OutputDirectory $failedOutput
+    Assert-True ($LASTEXITCODE -eq 1) 'Component Vally exit code was not propagated.'
+    Assert-True (Test-Path (Join-Path $failedOutput '2026-01-01T00-00-00/plan-snapshot.json')) (
+        'A failed component run lost its plan snapshot.'
+    )
+    Remove-Item Env:SKILL_EVAL_FAKE_EXIT
+
+    function Invoke-AllSuiteExitOneScenario {
+        param(
+            [string]$Scenario,
+            [bool]$ShouldContinue,
+            [string]$ExpectedFailure
+        )
+
+        Remove-Item $record -ErrorAction SilentlyContinue
+        $env:SKILL_EVAL_FAKE_EXIT_MODE = $Scenario
+        $message = ''
+        try {
+            & $runner Run -Root $allSuiteRoot -Vally $fakeVally -VallyPrefix @() `
+                -OutputDirectory (Join-Path $testRoot "all-exit-one-$Scenario")
+        } catch {
+            $message = $_.Exception.Message
+        } finally {
+            Remove-Item Env:SKILL_EVAL_FAKE_EXIT_MODE -ErrorAction SilentlyContinue
+        }
+
+        if ($ShouldContinue) {
+            Assert-True ([string]::IsNullOrWhiteSpace($message)) (
+                "A complete passing primary result set did not continue after Vally exit 1: $message"
+            )
+            Assert-True ($LASTEXITCODE -eq 0) (
+                'A tolerated final-suite Vally exit code remained after successful result assertions.'
+            )
+        } else {
+            Assert-True ($message -like "*$ExpectedFailure*") (
+                "$Scenario did not abort through the trusted result gate. Error: $message"
+            )
+        }
+        $runInvocations = @(
+            Read-Invocations |
+                Where-Object { $_.Arguments[0] -in @('experiment', 'eval') }
+        )
+        $expectedCount = 1
+        Assert-True ($runInvocations.Count -eq $expectedCount) (
+            "$Scenario invoked $($runInvocations.Count) suites; expected $expectedCount."
+        )
+    }
+
+    Invoke-AllSuiteExitOneScenario -Scenario 'complete-passing' -ShouldContinue $true
+    Invoke-AllSuiteExitOneScenario -Scenario 'incomplete' -ShouldContinue $false `
+        -ExpectedFailure "Expected 15 'current' trial results; found 14"
+    Invoke-AllSuiteExitOneScenario -Scenario 'failed-gate' -ShouldContinue $false `
+        -ExpectedFailure "stimulus 'a' score 0.6 is below threshold 0.8"
+
+    Assert-CustomComponentPlan -Scenario 'YamlDefault' -ExpectedRuns 7
+    Assert-CustomComponentPlan -Scenario 'SeparateRunsOverride' -ExpectedRuns 2 `
+        -RunArguments @('--runs', '2')
+    Assert-CustomComponentPlan -Scenario 'EqualsRunsOverride' -ExpectedRuns 3 `
+        -RunArguments @('--runs=3')
+    Assert-CustomComponentPlan -Scenario 'ZeroThresholdBoundary' -ExpectedRuns 7 `
+        -ExpectedThreshold 0 -RunArguments @('--threshold=0')
+    Assert-CustomComponentPlan -Scenario 'OneThresholdBoundary' -ExpectedRuns 7 `
+        -ExpectedThreshold 1 -RunArguments @('--threshold', '1')
+
+    $componentSpecPath = Join-Path $customComponentDirectory 'eval.vally.yaml'
+    $validComponentSpec = Get-Content $componentSpecPath -Raw
+    foreach ($invalidThreshold in @('null', '""', '"NaN"', '-0.1', '1.1')) {
+        Set-Content $componentSpecPath ($validComponentSpec.Replace('threshold: 0.65', "threshold: $invalidThreshold"))
+        $message = ''
+        try {
+            & $runner Run -Root $customRoot -Suite review-candidate-verifier `
+                -Vally $fakeVally -VallyPrefix @() `
+                -OutputDirectory (Join-Path $testRoot 'invalid-yaml-threshold')
+        } catch {
+            $message = $_.Exception.Message
+        } finally {
+            Set-Content $componentSpecPath $validComponentSpec
+        }
+        Assert-True ($message -like '*threshold must be between 0 and 1*') (
+            "Invalid YAML threshold '$invalidThreshold' was accepted. Error: $message"
+        )
+    }
+
+    foreach ($case in @(
+        @{ Name = 'EmptyThreshold'; Arguments = @('--threshold=') },
+        @{ Name = 'WhitespaceThreshold'; Arguments = @('--threshold', ' ') },
+        @{ Name = 'InvalidThreshold'; Arguments = @('--threshold=not-a-number') }
+    )) {
+        $message = ''
+        try {
+            & $runner Run -Root $customRoot -Suite review-candidate-verifier `
+                -Vally $fakeVally -VallyPrefix @() `
+                -OutputDirectory (Join-Path $testRoot "invalid-$($case.Name)") `
+                @($case.Arguments)
+        } catch {
+            $message = $_.Exception.Message
+        }
+        Assert-True ($message -eq '--threshold must be between 0 and 1.') (
+            "$($case.Name) was not rejected by the threshold parser. Error: $message"
+        )
+    }
+
+    Remove-Item $record
+    & $runner Validate -Eval eng/skill-evals/review-candidate-verifier/eval.vally.yaml `
+        -Vally $fakeVally -VallyPrefix @()
+    $componentValidation = @(Read-Invocations)
+    Assert-True ($componentValidation.Count -eq 1 -and $componentValidation[0].Arguments[0] -eq 'lint') (
+        'Component -Eval validation planned unrelated comparison experiments.'
+    )
+
+    Remove-Item $record
+    & $runner Run -Vally $fakeVally -VallyPrefix @() -OutputDirectory (Join-Path $testRoot 'all-results')
+    $allRuns = @(Read-Invocations | Where-Object { $_.Arguments[0] -in @('experiment', 'eval') })
+    $suiteCount = @(Get-ChildItem (Join-Path $repoRoot 'eng/skill-evals') -Directory |
+        Where-Object { Test-Path (Join-Path $_.FullName 'eval.vally.yaml') }).Count
+    Assert-True ($allRuns.Count -eq $suiteCount) 'Default run omitted a standard suite.'
+    Assert-True (($allRuns.Arguments -join ' ') -like '*review-candidate-verifier*') 'Default run omitted the component suite.'
+
+    foreach ($invalidSuite in @('../outside', '..', 'missing-suite')) {
+        $rejected = $false
+        try {
+            & $runner Lint -Suite $invalidSuite -Vally $fakeVally -VallyPrefix @()
+        } catch {
+            $rejected = $_.Exception.Message -match 'Invalid suite name|Missing suite specification'
+        }
+        Assert-True $rejected "Invalid or missing suite '$invalidSuite' was not rejected."
+    }
+    $ambiguousSelectionRejected = $false
+    try {
+        & $runner Lint -Suite review-pull-request -Eval $specialized -Vally $fakeVally -VallyPrefix @()
+    } catch {
+        $ambiguousSelectionRejected = $_.Exception.Message -like '*Specify either -Suite or -Eval*'
+    }
+    Assert-True $ambiguousSelectionRejected 'Conflicting suite and eval selectors were not rejected.'
+
     $env:SKILL_EVAL_FAKE_FAILURE = 'true'
     $failurePropagated = $false
     try {
@@ -175,6 +467,8 @@ if ($env:SKILL_EVAL_FAKE_FAILURE) {
 } finally {
     Remove-Item Env:SKILL_EVAL_RUNNER_RECORD -ErrorAction SilentlyContinue
     Remove-Item Env:SKILL_EVAL_FAKE_FAILURE -ErrorAction SilentlyContinue
+    Remove-Item Env:SKILL_EVAL_FAKE_EXIT -ErrorAction SilentlyContinue
+    Remove-Item Env:SKILL_EVAL_FAKE_EXIT_MODE -ErrorAction SilentlyContinue
     if ($hadPreviousVally) {
         $env:SKILL_EVAL_VALLY = $previousVally
     } else {

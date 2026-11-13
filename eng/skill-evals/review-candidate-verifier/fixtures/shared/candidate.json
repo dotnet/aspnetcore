@@ -1,0 +1,13 @@
+{
+  "candidateId": "C1",
+  "claim": "The newly added catch prevents an exception thrown by the logging provider from reaching the caller awaiting SendMessageAsync.",
+  "mechanism": "A processing exception enters the outer catch, LogProcessingError throws another exception, and the inner catch permits normal completion after NotifyStatusChanged.",
+  "consequence": "The awaiting caller cannot observe the logging-provider exception.",
+  "proposedRemedy": "Remove the inner catch so the logging-provider exception propagates.",
+  "changedLine": {
+    "role": "head",
+    "path": "src/Components/AI/src/Engine/AgentContext.cs",
+    "line": 306
+  },
+  "repro": "Construct UIAgent with an IChatClient whose streaming response throws ProcessingFailure and an ILoggerFactory returning a logger that enables Error, ignores other levels and throws LoggingFailure from Log at Error. Construct AgentContext with that UIAgent. Await SendMessageAsync and inspect whether LoggingFailure propagates."
+}

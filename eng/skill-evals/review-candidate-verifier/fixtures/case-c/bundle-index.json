@@ -1,0 +1,27 @@
+{
+  "candidate": "candidate.json",
+  "diff": "changes.diff",
+  "changedFiles": "changed-files.json",
+  "sourceRoots": {
+    "head": "source/head",
+    "mergeBase": "source/mergeBase",
+    "baseTip": "source/baseTip"
+  },
+  "sourceContentHashes": {
+    "head": "13e383993dd60d8548089196ada34afcf791c7995ffda48104bbe23bf15cff11",
+    "mergeBase": "2c59edf3be93947a250c4c0a2787d103775265058fe3dbc533014932e2012deb"
+  },
+  "sourceRevisions": {
+    "baseTip": "2e792d799058bf25990ce0c8e2b416c736431ca3"
+  },
+  "primarySource": "src/Engine/Conversation.mjs",
+  "contractPaths": [
+    "source/baseTip/docs/CrossCuttingGuidance.md"
+  ],
+  "validationArtifacts": [
+    {
+      "path": "observations.json",
+      "sha256": "a4355b34aaf0927946a5c5791fafcdeaca05d4d85f247976d289c1626c0cc5f8"
+    }
+  ]
+}

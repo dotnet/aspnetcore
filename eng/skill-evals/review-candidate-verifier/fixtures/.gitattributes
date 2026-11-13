@@ -1,0 +1,3 @@
+* -text whitespace=cr-at-eol
+*.cs whitespace=-blank-at-eol,-blank-at-eof
+*.diff whitespace=-blank-at-eol,-blank-at-eof

@@ -13,6 +13,7 @@ $destination = Join-Path $testRoot 'staged'
 $trustedMarker = 'TRUSTED_CONTROL_MARKER'
 $candidateControlMarker = 'CANDIDATE_CONTROL_CANARY_MUST_NOT_APPEAR'
 $candidateDataMarker = 'CANDIDATE_DATA_MARKER'
+$repoRoot = (Resolve-Path (Join-Path $PSScriptRoot '../..')).Path
 
 function Assert-True {
     param([bool]$Condition, [string]$Message)
@@ -39,6 +40,23 @@ function Assert-Throws {
     }
 }
 
+function Assert-Rejected {
+    param(
+        [scriptblock]$Action,
+        [string]$Scenario
+    )
+
+    $rejected = $false
+    try {
+        & $Action
+    } catch {
+        $rejected = $true
+    }
+    if (-not $rejected) {
+        throw "$Scenario was accepted."
+    }
+}
+
 function Write-ControlPlane {
     param(
         [string]$Root,
@@ -51,6 +69,20 @@ function Write-ControlPlane {
     Set-Content (Join-Path $evalRoot 'assert_results.ps1') $Marker
     Set-Content (Join-Path $evalRoot 'skills-vs-baseline.experiment.yaml') $Marker
     Set-Content (Join-Path $evalRoot 'skills-smoke.experiment.yaml') $Marker
+}
+
+foreach ($relativePath in @(
+    'eng/skill-evals/run.ps1'
+    'eng/skill-evals/assert_results.ps1'
+    'eng/skill-evals/skills-vs-baseline.experiment.yaml'
+    'eng/skill-evals/skills-smoke.experiment.yaml'
+    'eng/skill-evals/grade_disposition.mjs'
+    'eng/skill-evals/review-vs-baseline.experiment.yaml'
+    'eng/skill-evals/review-smoke.experiment.yaml'
+)) {
+    Assert-True (Test-Path (Join-Path $repoRoot $relativePath) -PathType Leaf) (
+        "Real trusted control-plane file '$relativePath' is missing."
+    )
 }
 
 New-Item -ItemType Directory -Path $trustedRoot, $candidateRoot | Out-Null
@@ -207,6 +239,39 @@ stimuli:
             -Destination (Join-Path $testRoot 'restricted-mcp')
     } "forbidden 'environment.mcpServers' field"
 
+    if (-not $env:SKILL_EVAL_STAGE_RESTRICTION) {
+        New-RestrictedCandidate 'restricted-grading-commands' @'
+grading_environment:
+  commands:
+    - node candidate-grader.mjs
+stimuli:
+  - name: case
+'@
+        Assert-Throws {
+            & $stageRun `
+                -TrustedRoot $trustedRoot `
+                -CandidateRoot $candidateRoot `
+                -EvalName restricted-grading-commands `
+                -Destination (Join-Path $testRoot 'restricted-grading-commands')
+        } "forbidden 'grading_environment.commands' field"
+
+        New-RestrictedCandidate 'restricted-grading-mcp' @'
+stimuli:
+  - name: case
+    grading_environment:
+      mcpServers:
+        candidate:
+          command: node
+'@
+        Assert-Throws {
+            & $stageRun `
+                -TrustedRoot $trustedRoot `
+                -CandidateRoot $candidateRoot `
+                -EvalName restricted-grading-mcp `
+                -Destination (Join-Path $testRoot 'restricted-grading-mcp')
+        } "forbidden 'grading_environment.mcpServers' field"
+    }
+
     New-RestrictedCandidate 'restricted-agent-environment' @'
 stimuli:
   - agent_environment:
@@ -219,6 +284,21 @@ stimuli:
             -CandidateRoot $candidateRoot `
             -EvalName restricted-agent-environment `
             -Destination (Join-Path $testRoot 'restricted-agent-environment')
+    } "forbidden 'agent_environment.commands' field"
+
+    New-RestrictedCandidate 'restricted-values-shadow' @'
+Values: []
+stimuli:
+  - agent_environment:
+      commands:
+        - candidate-command
+'@
+    Assert-Throws {
+        & $stageRun `
+            -TrustedRoot $trustedRoot `
+            -CandidateRoot $candidateRoot `
+            -EvalName restricted-values-shadow `
+            -Destination (Join-Path $testRoot 'restricted-values-shadow')
     } "forbidden 'agent_environment.commands' field"
 
     New-RestrictedCandidate 'restricted-flow-mapping' @'
@@ -273,6 +353,29 @@ stimuli:
         -EvalName allowed-executor `
         -Destination (Join-Path $testRoot 'allowed-executor')
 
+    New-RestrictedCandidate 'allowed-generic-graders' @'
+grading_environment:
+  files:
+    - src: candidate-grader.py
+      dest: custom/grader.py
+stimuli:
+  - name: generic-case
+    graders:
+      - type: program
+        name: generic-program
+        config:
+          program: python
+          args:
+            - custom/grader.py
+          env:
+            GENERIC_MODE: flexible
+'@
+    & $stageRun `
+        -TrustedRoot $trustedRoot `
+        -CandidateRoot $candidateRoot `
+        -EvalName allowed-generic-graders `
+        -Destination (Join-Path $testRoot 'allowed-generic-graders')
+
     # A prompt mentioning "commands:"-looking lines is plain text, not YAML
     # mapping keys; staging must not misread it as a forbidden field.
     New-RestrictedCandidate 'allowed-prompt-text' @'
@@ -289,6 +392,321 @@ stimuli:
         -CandidateRoot $candidateRoot `
         -EvalName allowed-prompt-text `
         -Destination (Join-Path $testRoot 'allowed-prompt-text')
+
+    $canonicalReviewSpec = @'
+name: review-pull-request
+grading_environment:
+  files:
+    - src: ../grade_disposition.mjs
+      dest: grade_disposition.mjs
+stimuli:
+  - name: review-case
+    prompt: Review the staged case.
+    graders:
+      - type: program
+        name: disposition-review-case
+        config:
+          program: node
+          args:
+            - grade_disposition.mjs
+          env:
+            DISPOSITION_MODE: review
+'@
+    New-RestrictedCandidate 'review-pull-request' $canonicalReviewSpec
+    $agentsDir = Join-Path $candidateRoot '.github/agents'
+    $docsDir = Join-Path $candidateRoot 'docs'
+    New-Item -ItemType Directory -Path $agentsDir, $docsDir -Force | Out-Null
+    Set-Content (Join-Path $agentsDir 'review-guide-worker.agent.md') $candidateDataMarker
+    Set-Content (Join-Path $agentsDir 'review-candidate-verifier.agent.md') $candidateDataMarker
+    Set-Content (Join-Path $agentsDir 'unrelated.agent.md') 'UNRELATED_AGENT'
+    Set-Content (Join-Path $docsDir 'CrossCuttingGuidance.md') $candidateDataMarker
+    Set-Content (Join-Path $docsDir 'BlazorComponentsGuidance.md') $candidateDataMarker
+    Set-Content (Join-Path $docsDir 'UnrelatedDoc.md') 'UNRELATED_DOC'
+    foreach ($controlFile in @(
+        'grade_disposition.mjs',
+        'review-vs-baseline.experiment.yaml',
+        'review-smoke.experiment.yaml'
+    )) {
+        Set-Content (Join-Path $trustedRoot "eng/skill-evals/$controlFile") $trustedMarker
+    }
+
+    $reviewDestination = Join-Path $testRoot 'staged-review-pull-request'
+    & $stageRun `
+        -TrustedRoot $trustedRoot `
+        -CandidateRoot $candidateRoot `
+        -EvalName review-pull-request `
+        -Destination $reviewDestination
+
+    New-RestrictedCandidate 'review-pull-request' $canonicalReviewSpec.Replace(
+        'name: review-pull-request', 'name: renamed-review'
+    )
+    Assert-Throws {
+        & $stageRun -TrustedRoot $trustedRoot -CandidateRoot $candidateRoot `
+            -EvalName review-pull-request -Destination (Join-Path $testRoot 'renamed-review')
+    } "must have name 'review-pull-request'"
+    New-RestrictedCandidate 'review-pull-request' $canonicalReviewSpec
+
+    $realTrustedReviewDestination = Join-Path $testRoot 'staged-review-real-control-plane'
+    & $stageRun `
+        -TrustedRoot $repoRoot `
+        -CandidateRoot $candidateRoot `
+        -EvalName review-pull-request `
+        -Destination $realTrustedReviewDestination
+    Assert-True (
+        Test-Path (Join-Path $realTrustedReviewDestination 'eng/skill-evals/review-pull-request/eval.vally.yaml')
+    ) 'Candidate L1 spec did not stage with the real trusted control plane.'
+
+    $stagedReviewFiles = @(
+        Get-ChildItem $reviewDestination -Recurse -File -Force |
+            ForEach-Object {
+                [IO.Path]::GetRelativePath($reviewDestination, $_.FullName).Replace('\', '/')
+            } |
+            Sort-Object
+    )
+    $expectedReviewFiles = @(
+        '.github/agents/review-candidate-verifier.agent.md'
+        '.github/agents/review-guide-worker.agent.md'
+        '.github/skills/review-pull-request/SKILL.md'
+        'docs/BlazorComponentsGuidance.md'
+        'docs/CrossCuttingGuidance.md'
+        'eng/skill-evals/assert_results.ps1'
+        'eng/skill-evals/grade_disposition.mjs'
+        'eng/skill-evals/review-vs-baseline.experiment.yaml'
+        'eng/skill-evals/review-smoke.experiment.yaml'
+        'eng/skill-evals/review-pull-request/eval.vally.yaml'
+        'eng/skill-evals/run.ps1'
+        'eng/skill-evals/skills-smoke.experiment.yaml'
+        'eng/skill-evals/skills-vs-baseline.experiment.yaml'
+    ) | Sort-Object
+    Assert-True (
+        @(Compare-Object $expectedReviewFiles $stagedReviewFiles).Count -eq 0
+    ) "Unexpected staged review-pull-request files: $($stagedReviewFiles -join ', ')."
+
+    foreach ($relativePath in @(
+        '.github/agents/review-candidate-verifier.agent.md'
+        '.github/agents/review-guide-worker.agent.md'
+        'docs/CrossCuttingGuidance.md'
+        'docs/BlazorComponentsGuidance.md'
+    )) {
+        $sourcePath = Join-Path $candidateRoot $relativePath
+        $missingDestination = Join-Path $testRoot ([guid]::NewGuid().ToString('N'))
+        Remove-Item $sourcePath
+        try {
+            Assert-Throws {
+                & $stageRun `
+                    -TrustedRoot $trustedRoot `
+                    -CandidateRoot $candidateRoot `
+                    -EvalName review-pull-request `
+                    -Destination $missingDestination
+            } "Missing candidate support file '$relativePath'"
+            Assert-True (-not (Test-Path $missingDestination)) 'Failed staging left a partial tree.'
+        } finally {
+            Set-Content $sourcePath $candidateDataMarker
+        }
+    }
+
+    $canonicalComponentSpec = @'
+name: review-candidate-verifier
+grading_environment:
+  files:
+    - src: ../grade_disposition.mjs
+      dest: grade_disposition.mjs
+stimuli:
+  - name: component-case
+    graders:
+      - type: program
+        name: disposition-component-case
+        config:
+          program: node
+          args:
+            - grade_disposition.mjs
+          env:
+            DISPOSITION_MODE: component
+'@
+    $componentEval = Join-Path $candidateRoot 'eng/skill-evals/review-candidate-verifier'
+    New-Item -ItemType Directory -Path $componentEval -Force | Out-Null
+    Set-Content (Join-Path $componentEval 'eval.vally.yaml') $canonicalComponentSpec
+    $componentDestination = Join-Path $testRoot 'staged-verifier'
+    & $stageRun -TrustedRoot $trustedRoot -CandidateRoot $candidateRoot `
+        -EvalName review-candidate-verifier -Destination $componentDestination
+    Assert-True (
+        -not (Test-Path (Join-Path $componentDestination '.github/skills/review-candidate-verifier'))
+    ) 'A component suite must not invent a runtime skill.'
+    Assert-True (
+        (Get-Content (Join-Path $componentDestination 'eng/skill-evals/grade_disposition.mjs') -Raw).Trim() -eq $trustedMarker
+    ) 'The component grader does not come from the trusted control plane.'
+    Assert-True (
+        Test-Path (Join-Path $componentDestination '.github/agents/review-candidate-verifier.agent.md')
+    ) 'The component verifier profile is missing.'
+
+    $extendedCanonicalComponentSpec = $canonicalComponentSpec.Replace(
+        '  - name: component-case',
+        "  - name: component-case`n    grading_environment:`n      files:`n        - src: ../grade_disposition.mjs`n          dest: grade_disposition.mjs"
+    ) + @'
+
+      - type: program
+        name: secondary-component-case
+        config:
+          program: node
+          args:
+            - grade_disposition.mjs
+          env:
+            DISPOSITION_MODE: component
+'@
+    Set-Content (Join-Path $componentEval 'eval.vally.yaml') $extendedCanonicalComponentSpec
+    & $stageRun -TrustedRoot $trustedRoot -CandidateRoot $candidateRoot `
+        -EvalName review-candidate-verifier `
+        -Destination (Join-Path $testRoot 'staged-verifier-extended-canonical')
+
+    function Assert-RestrictedDispositionSpecRejected {
+        param(
+            [string]$EvalName,
+            [string]$Scenario,
+            [string]$EvalSpec
+        )
+
+        $evalPath = Join-Path $candidateRoot "eng/skill-evals/$EvalName/eval.vally.yaml"
+        Set-Content $evalPath $EvalSpec
+        $rejectedDestination = Join-Path $testRoot "rejected-$Scenario"
+        Assert-Rejected {
+            & $stageRun -TrustedRoot $trustedRoot -CandidateRoot $candidateRoot `
+                -EvalName $EvalName -Destination $rejectedDestination
+        } "Restricted grader scenario '$Scenario'"
+        Assert-True (-not (Test-Path $rejectedDestination)) (
+            "Restricted grader scenario '$Scenario' left a partial staged tree."
+        )
+    }
+
+    $reviewRestrictions = @(
+        @{
+            Name = 'ReviewMissingRootGradingFiles'
+            Spec = $canonicalReviewSpec -replace '(?ms)^grading_environment:.*?(?=^stimuli:)', ''
+        },
+        @{
+            Name = 'ReviewSubstitutedGraderSource'
+            Spec = $canonicalReviewSpec.Replace('../grade_disposition.mjs', 'candidate-grader.mjs')
+        },
+        @{
+            Name = 'ReviewSubstitutedGraderDestination'
+            Spec = $canonicalReviewSpec.Replace('dest: grade_disposition.mjs', 'dest: candidate-grader.mjs')
+        },
+        @{
+            Name = 'ReviewExtraGradingFile'
+            Spec = $canonicalReviewSpec.Replace(
+                '      dest: grade_disposition.mjs',
+                "      dest: grade_disposition.mjs`n    - src: ../candidate-grader.mjs`n      dest: candidate-grader.mjs"
+            )
+        },
+        @{
+            Name = 'ReviewNestedSubstitutedGradingFile'
+            Spec = $canonicalReviewSpec.Replace(
+                '  - name: review-case',
+                "  - name: review-case`n    grading_environment:`n      files:`n        - src: candidate-grader.mjs`n          dest: grade_disposition.mjs"
+            )
+        },
+        @{
+            Name = 'ReviewMissingPrimaryDispositionGrader'
+            Spec = $canonicalReviewSpec -replace '(?ms)^    graders:.*\z', ''
+        },
+        @{
+            Name = 'ReviewPrimaryDispositionReplacedByPrompt'
+            Spec = $canonicalReviewSpec.Replace('      - type: program', '      - type: prompt')
+        },
+        @{
+            Name = 'ReviewWrongPrimaryDispositionName'
+            Spec = $canonicalReviewSpec.Replace('name: disposition-review-case', 'name: candidate-review-case')
+        },
+        @{
+            Name = 'ReviewDuplicatePrimaryDispositionGrader'
+            Spec = $canonicalReviewSpec + @'
+
+      - type: program
+        name: disposition-review-case
+        config:
+          program: node
+          args:
+            - grade_disposition.mjs
+          env:
+            DISPOSITION_MODE: review
+'@
+        }
+    )
+    foreach ($case in $reviewRestrictions) {
+        if ($env:SKILL_EVAL_STAGE_RESTRICTION -and
+            $env:SKILL_EVAL_STAGE_RESTRICTION -ne $case.Name) {
+            continue
+        }
+        Assert-RestrictedDispositionSpecRejected -EvalName review-pull-request `
+            -Scenario $case.Name -EvalSpec $case.Spec
+    }
+
+    $componentRestrictions = @(
+        @{
+            Name = 'ComponentSubstitutedProgram'
+            Spec = $canonicalComponentSpec.Replace('program: node', 'program: pwsh')
+        },
+        @{
+            Name = 'ComponentSubstitutedArguments'
+            Spec = $canonicalComponentSpec.Replace(
+                '            - grade_disposition.mjs',
+                "            - grade_disposition.mjs`n            - candidate-grader.mjs"
+            )
+        },
+        @{
+            Name = 'ComponentWrongDispositionMode'
+            Spec = $canonicalComponentSpec.Replace('DISPOSITION_MODE: component', 'DISPOSITION_MODE: review')
+        },
+        @{
+            Name = 'ComponentExtraGraderEnvironment'
+            Spec = $canonicalComponentSpec.Replace(
+                '            DISPOSITION_MODE: component',
+                "            DISPOSITION_MODE: component`n            CANDIDATE_OVERRIDE: enabled"
+            )
+        },
+        @{
+            Name = 'ComponentExtraProgramConfig'
+            Spec = $canonicalComponentSpec.Replace(
+                '          program: node',
+                "          program: node`n          timeout: 1"
+            )
+        },
+        @{
+            Name = 'ComponentCountShadowsProgramConfig'
+            Spec = $canonicalComponentSpec.Replace(
+                '          program: node',
+                "          program: node`n          Count: 3`n          timeout: 1"
+            )
+        },
+        @{
+            Name = 'ComponentCountShadowsProgramEnvironment'
+            Spec = $canonicalComponentSpec.Replace(
+                '            DISPOSITION_MODE: component',
+                "            DISPOSITION_MODE: component`n            Count: 1`n            CANDIDATE_OVERRIDE: enabled"
+            )
+        },
+        @{
+            Name = 'ComponentInvalidAdditionalProgramGrader'
+            Spec = $canonicalComponentSpec + @'
+
+      - type: program
+        name: candidate-secondary
+        config:
+          program: python
+          args:
+            - candidate-grader.py
+          env:
+            DISPOSITION_MODE: component
+'@
+        }
+    )
+    foreach ($case in $componentRestrictions) {
+        if ($env:SKILL_EVAL_STAGE_RESTRICTION -and
+            $env:SKILL_EVAL_STAGE_RESTRICTION -ne $case.Name) {
+            continue
+        }
+        Assert-RestrictedDispositionSpecRejected -EvalName review-candidate-verifier `
+            -Scenario $case.Name -EvalSpec $case.Spec
+    }
 
     Write-Host 'Trusted skill-eval staging self-test passed.'
 } finally {
