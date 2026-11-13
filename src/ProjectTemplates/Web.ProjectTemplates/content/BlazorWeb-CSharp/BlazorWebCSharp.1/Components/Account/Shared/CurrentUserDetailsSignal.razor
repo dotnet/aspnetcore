@@ -1,0 +1,39 @@
+﻿@using Microsoft.AspNetCore.Identity
+@using BlazorWebCSharp._1.Data
+
+@inject UserManager<ApplicationUser> UserManager
+@inject SignInManager<ApplicationUser> SignInManager
+
+@if (signalOptionsJson is not null)
+{
+    <current-user-details-signal options="@signalOptionsJson"></current-user-details-signal>
+}
+
+@code {
+    [Parameter]
+    [EditorRequired]
+    public ApplicationUser User { get; set; } = default!;
+
+    private string? signalOptionsJson;
+
+    protected override async Task OnInitializedAsync()
+    {
+        if (!SignInManager.SupportsPasskeySignalOptions)
+        {
+            return;
+        }
+
+        // The ID must match the user entity passed to MakePasskeyCreationOptionsAsync when the
+        // passkey was created, otherwise the authenticator won't recognize the user. The name and
+        // display name are the values being updated.
+        var userId = await UserManager.GetUserIdAsync(User);
+        var userName = await UserManager.GetUserNameAsync(User) ?? "User";
+
+        signalOptionsJson = await SignInManager.MakeCurrentUserDetailsSignalOptionsAsync(User, new()
+        {
+            Id = userId,
+            Name = userName,
+            DisplayName = userName,
+        });
+    }
+}

@@ -38,6 +38,7 @@ public class QuickGridNoInteractivityTest : ServerTestBase<BasicTestAppServerSit
         Assert.Equal("43", paginatorCount);
         Assert.Equal("1", currentPageNumber);
         Assert.Equal("5", totalPageNumber);
+        Assert.Equal("Pagination", Assert.IsAssignableFrom<WebElement>(paginator.FindElement(By.TagName("nav"))).ComputedAccessibleLabel);
     }
 
     [Fact]

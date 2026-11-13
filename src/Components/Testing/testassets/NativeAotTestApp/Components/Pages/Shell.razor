@@ -1,0 +1,46 @@
+@page "/"
+@rendermode InteractiveServer
+
+<NativeAotStatus />
+<h1>Native AOT interactive shell</h1>
+
+<div role="tablist" aria-label="Dashboard surfaces">
+    <button id="menu-tab" role="tab" @onclick="ShowMenu">Menu</button>
+    <button id="dialog-tab" role="tab" @onclick="ShowDialog">Dialog</button>
+</div>
+
+<CascadingValue Value="@("native-theme")">
+    <DynamicComponent Type="_panelType" Parameters="_parameters" />
+</CascadingValue>
+<p id="shell-result">@_result</p>
+
+@code {
+    private Type _panelType = typeof(MenuPanel);
+    private IDictionary<string, object> _parameters = new Dictionary<string, object>();
+    private string _result = "(none)";
+
+    protected override void OnInitialized()
+    {
+        ShowMenu();
+    }
+
+    private void ShowMenu()
+    {
+        _panelType = typeof(MenuPanel);
+        _parameters = new Dictionary<string, object>
+        {
+            [nameof(MenuPanel.Title)] = "Resource menu",
+            [nameof(MenuPanel.OnSelect)] = EventCallback.Factory.Create<string>(this, value => _result = $"menu:{value}"),
+        };
+    }
+
+    private void ShowDialog()
+    {
+        _panelType = typeof(DialogPanel);
+        _parameters = new Dictionary<string, object>
+        {
+            [nameof(DialogPanel.Title)] = "Command input",
+            [nameof(DialogPanel.OnSubmit)] = EventCallback.Factory.Create<string>(this, value => _result = $"dialog:{value}"),
+        };
+    }
+}

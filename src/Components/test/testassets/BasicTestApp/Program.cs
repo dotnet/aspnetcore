@@ -24,9 +24,7 @@ public class Program
 
         var builder = WebAssemblyHostBuilder.CreateDefault(args);
 
-#pragma warning disable ASP0029 // Type is for evaluation purposes only and is subject to change or removal in future updates.
         builder.Services.AddValidation();
-#pragma warning restore ASP0029
 
         // Interactive host registers the gate so the async validation E2E tests control settling deterministically.
         builder.Services.AddSingleton<BasicTestApp.FormsTest.AsyncValidationGate>();
@@ -39,12 +37,18 @@ public class Program
             javaScriptInitializer: "myJsRootComponentInitializers.testInitializer");
         builder.RootComponents.RegisterCustomElement<CustomElementParameterTypes>("my-custom-element");
 
+        var authorizationGate = new AsyncAuthorizationGate();
+        builder.Services.AddSingleton(authorizationGate);
+
         builder.Services.AddSingleton(new HttpClient { BaseAddress = new Uri(builder.HostEnvironment.BaseAddress) });
         builder.Services.AddSingleton<AuthenticationStateProvider, ServerAuthenticationStateProvider>();
         builder.Services.AddAuthorizationCore(options =>
         {
             options.AddPolicy("NameMustStartWithB", policy =>
                 policy.RequireAssertion(ctx => ctx.User.Identity.Name?.StartsWith('B') ?? false));
+
+            options.AddPolicy("SlowPolicyRequiringGate", policy =>
+                policy.RequireAssertion(_ => authorizationGate.WaitAsync()));
         });
 
         builder.Services.AddScoped<PreserveStateService>();

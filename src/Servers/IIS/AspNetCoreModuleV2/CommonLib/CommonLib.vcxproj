@@ -80,7 +80,7 @@
     <ClCompile Include="WebConfigConfigurationSource.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\IISLib\IISLib.vcxproj">
+    <ProjectReference Include="$(RepoRoot)src\Servers\IIS\AspNetCoreModuleV2\IISLib\IISLib.vcxproj">
       <Project>{4787a64f-9a3e-4867-a55a-70cb4b2b2ffe}</Project>
     </ProjectReference>
   </ItemGroup>

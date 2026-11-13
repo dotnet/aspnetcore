@@ -20,6 +20,11 @@ internal sealed class HttpResponseStream : WriteOnlyStreamInternal
 
     public override void Flush()
     {
+        if (!_bodyControl.AllowSynchronousIO)
+        {
+            throw new InvalidOperationException(CoreStrings.SynchronousWritesDisallowed);
+        }
+
         FlushAsync(default).GetAwaiter().GetResult();
     }
 

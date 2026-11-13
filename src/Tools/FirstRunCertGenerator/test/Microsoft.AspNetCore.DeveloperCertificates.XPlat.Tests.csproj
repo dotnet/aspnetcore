@@ -5,7 +5,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-  	<Reference Include="Microsoft.AspNetCore.DeveloperCertificates.XPlat" />
+    <ProjectReference Include="$(RepoRoot)src\Tools\FirstRunCertGenerator\src\Microsoft.AspNetCore.DeveloperCertificates.XPlat.csproj" />
   </ItemGroup>
 
 </Project>

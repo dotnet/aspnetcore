@@ -123,6 +123,31 @@ public class Http3StreamTests : Http3TestBase
         Assert.Equal("0", responseHeaders["content-length"]);
     }
 
+    [Theory]
+    [InlineData(3)]
+    [InlineData(7)]
+    public async Task NonAsciiMethodStart_Reset(int length)
+    {
+        var method = "\u0100" + new string('A', length - 1);
+        var headers = new[]
+        {
+            new KeyValuePair<string, string>(InternalHeaderNames.Method, method),
+            new KeyValuePair<string, string>(InternalHeaderNames.Path, "/"),
+            new KeyValuePair<string, string>(InternalHeaderNames.Scheme, "http"),
+            new KeyValuePair<string, string>(InternalHeaderNames.Authority, "localhost:80"),
+        };
+
+        var requestStream = await Http3Api.InitializeConnectionAndStreamsAsync(_echoApplication, headers: null);
+        var headersEnumerator = requestStream.GetHeadersEnumerator(headers);
+        headersEnumerator.EncodingSelector = _ => Encoding.UTF8;
+        await requestStream.SendHeadersAsync(headersEnumerator, endStream: true);
+
+        await requestStream.WaitForStreamErrorAsync(
+            Http3ErrorCode.ProtocolError,
+            AssertExpectedErrorMessages,
+            CoreStrings.FormatHttp3ErrorMethodInvalid(method));
+    }
+
     [Fact]
     public async Task RequestHeadersMaxRequestHeaderFieldSize_EndsStream()
     {
@@ -221,6 +246,60 @@ public class Http3StreamTests : Http3TestBase
         Assert.Equal("/a/path", responseHeaders["path"]);
         Assert.Equal("?a&que%35ry", responseHeaders["query"]);
         Assert.Equal("/a/path?a&que%35ry", responseHeaders["rawtarget"]);
+        Assert.Equal("0", responseHeaders["content-length"]);
+    }
+
+    [Theory]
+    [InlineData("/a/path?q=a b")]
+    [InlineData("/a/path?q=a\tb")]
+    [InlineData("/a/path?q=a\u0001b")]
+    [InlineData("/a/path?q=a\u001Fb")]
+    [InlineData("/a/path?q=a\u007Fb")]
+    [InlineData("/a/path? ")]
+    [InlineData("/a/path?\t")]
+    [InlineData("/a/path? q=a")]
+    public async Task QueryWithInvalidCharacter_Reset(string path)
+    {
+        var headers = new[] { new KeyValuePair<string, string>(InternalHeaderNames.Method, "GET"),
+            new KeyValuePair<string, string>(InternalHeaderNames.Scheme, "http"),
+            new KeyValuePair<string, string>(InternalHeaderNames.Path, path)};
+
+        var requestStream = await Http3Api.InitializeConnectionAndStreamsAsync(_noopApplication, headers, endStream: true);
+
+        await requestStream.WaitForStreamErrorAsync(
+            Http3ErrorCode.ProtocolError,
+            AssertExpectedErrorMessages,
+            CoreStrings.FormatHttp3StreamErrorPathInvalid(path));
+    }
+
+    // https://www.rfc-editor.org/rfc/rfc3986#section-3.4
+    [Theory]
+    [InlineData("/a/path?")]
+    [InlineData("/a/path?a=b&c=d")]
+    [InlineData("/a/path?q=a%20b+c/d?e")]
+    [InlineData("/a/path?q=~!$'()*,;:@[]")]
+    [InlineData("/a/path?q=<>\"\\^`{|}")]
+    public async Task QueryWithValidCharacters_Accepted(string path)
+    {
+        var expectedQuery = path[path.IndexOf('?')..];
+
+        var headers = new[] { new KeyValuePair<string, string>(InternalHeaderNames.Method, "GET"),
+            new KeyValuePair<string, string>(InternalHeaderNames.Scheme, "http"),
+            new KeyValuePair<string, string>(InternalHeaderNames.Path, path)};
+
+        var requestStream = await Http3Api.InitializeConnectionAndStreamsAsync(context =>
+        {
+            Assert.Equal("/a/path", context.Request.Path.Value);
+            Assert.Equal(expectedQuery, context.Request.QueryString.Value);
+            Assert.Equal(path, context.Features.Get<IHttpRequestFeature>().RawTarget);
+            return Task.CompletedTask;
+        }, headers, endStream: true);
+
+        var responseHeaders = await requestStream.ExpectHeadersAsync();
+
+        Assert.Equal(3, responseHeaders.Count);
+        Assert.Contains("date", responseHeaders.Keys, StringComparer.OrdinalIgnoreCase);
+        Assert.Equal("200", responseHeaders[InternalHeaderNames.Status]);
         Assert.Equal("0", responseHeaders["content-length"]);
     }
 
@@ -2024,6 +2103,33 @@ public class Http3StreamTests : Http3TestBase
         Assert.Equal("TestValue", testValue);
 
         await requestStream.ExpectReceiveEndOfStream();
+    }
+
+    [Theory]
+    [InlineData("\r")]
+    [InlineData("\n")]
+    [InlineData("\r\n")]
+    public async Task RequestTrailers_ContainsNewlines(string newlineChars)
+    {
+
+        var headers = new[]
+        {
+            new KeyValuePair<string, string>(InternalHeaderNames.Method, "GET"),
+            new KeyValuePair<string, string>(InternalHeaderNames.Path, "/"),
+            new KeyValuePair<string, string>(InternalHeaderNames.Scheme, "http"),
+        };
+
+        var trailerWithNewlines = new[]
+        {
+            new KeyValuePair<string, string>("contains-newlines", newlineChars),
+        };
+
+        var requestStream = await Http3Api.InitializeConnectionAndStreamsAsync(_echoApplication, headers, endStream: false);
+        await requestStream.SendHeadersAsync(trailerWithNewlines, endStream: true);
+
+        await requestStream.WaitForStreamErrorAsync(
+            Http3ErrorCode.MessageError,
+            expectedErrorMessage: CoreStrings.BadRequest_MalformedRequestInvalidHeaders);
     }
 
     [Fact]

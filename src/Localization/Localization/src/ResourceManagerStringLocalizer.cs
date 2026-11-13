@@ -166,16 +166,28 @@ public partial class ResourceManagerStringLocalizer : IStringLocalizer
 
         if (_missingManifestCache.ContainsKey(cacheKey))
         {
+            Log.ResourceNotFound(_logger, name, keyCulture);
+
             return null;
         }
 
         try
         {
-            return _resourceManager.GetString(name, culture);
+            var value = _resourceManager.GetString(name, culture);
+
+            if (value is null)
+            {
+                Log.ResourceNotFound(_logger, name, keyCulture);
+            }
+
+            return value;
         }
         catch (MissingManifestResourceException)
         {
             _missingManifestCache.TryAdd(cacheKey, null);
+
+            Log.ResourceNotFound(_logger, name, keyCulture);
+
             return null;
         }
     }
@@ -221,5 +233,8 @@ public partial class ResourceManagerStringLocalizer : IStringLocalizer
     {
         [LoggerMessage(1, LogLevel.Debug, $"{nameof(ResourceManagerStringLocalizer)} searched for '{{Key}}' in '{{LocationSearched}}' with culture '{{Culture}}'.", EventName = "SearchedLocation")]
         public static partial void SearchedLocation(ILogger logger, string key, string locationSearched, CultureInfo culture);
+
+        [LoggerMessage(2, LogLevel.Debug, $"A resource for '{{Key}}' with culture '{{Culture}}' was not found.", EventName = "ResourceNotFound")]
+        public static partial void ResourceNotFound(ILogger logger, string key, CultureInfo culture);
     }
 }

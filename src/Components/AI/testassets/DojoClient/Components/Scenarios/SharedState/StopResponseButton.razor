@@ -1,0 +1,31 @@
+@implements IDisposable
+
+@if (IsRunning)
+{
+    <button class="shared-state-stop"
+            type="button"
+            aria-label="Stop response"
+            @onclick="AgentContext.CancelAsync"></button>
+}
+
+@code {
+    private IDisposable? _statusChangedRegistration;
+
+    [CascadingParameter]
+    public AgentContext AgentContext { get; set; } = default!;
+
+    private bool IsRunning
+        => AgentContext.Status is ConversationStatus.Streaming or ConversationStatus.AwaitingInput;
+
+    protected override void OnInitialized()
+    {
+        _statusChangedRegistration = AgentContext.RegisterOnStatusChanged(OnStatusChanged);
+    }
+
+    private void OnStatusChanged(ConversationStatus status)
+    {
+        _ = InvokeAsync(StateHasChanged);
+    }
+
+    public void Dispose() => _statusChangedRegistration?.Dispose();
+}

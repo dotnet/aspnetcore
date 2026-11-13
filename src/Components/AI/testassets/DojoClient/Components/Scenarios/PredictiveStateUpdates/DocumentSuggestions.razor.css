@@ -1,0 +1,20 @@
+.document-suggestions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    padding: 0 16px 12px;
+}
+
+.document-suggestions button {
+    background: #fff;
+    border: 1px solid #6366f1;
+    border-radius: 999px;
+    color: #4f46e5;
+    cursor: pointer;
+    padding: 6px 10px;
+}
+
+.document-suggestions button:disabled {
+    cursor: wait;
+    opacity: 0.6;
+}

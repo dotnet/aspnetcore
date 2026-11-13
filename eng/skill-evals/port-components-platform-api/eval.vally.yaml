@@ -1,0 +1,524 @@
+name: port-components-platform-api
+description: >-
+  Verifies that the Components Platform API porting skill reproduces the API shape, ownership,
+  lifetime, and verification patterns established by the merged Web Storage and Cookie Store
+  projections.
+version: "1"
+type: capability
+
+tags:
+  area: components
+  feature: platform-api
+
+defaults:
+  runs: 5
+  timeout: 600s
+  model: gpt-5.6-sol
+  judge_model: gpt-5.6-sol
+
+stimuli:
+  - name: design-web-storage-projection
+    prompt: |
+      Design the public .NET projection for the Web Storage API in
+      Microsoft.AspNetCore.Components.Platform. Produce only the design proposal and planned C#
+      signatures. Do not edit files or begin implementation. Treat this as the complete pinned Web
+      IDL input and do not use the network:
+
+        [Exposed=Window]
+        interface Storage {
+          readonly attribute unsigned long length;
+          DOMString? key(unsigned long index);
+          getter DOMString? getItem(DOMString key);
+          setter undefined setItem(DOMString key, DOMString value);
+          deleter undefined removeItem(DOMString key);
+          undefined clear();
+        };
+
+        partial interface Window {
+          [SameObject] readonly attribute Storage localStorage;
+          [SameObject] readonly attribute Storage sessionStorage;
+        };
+
+      Show how an application reaches both browser objects from IBrowserPlatform. Account for
+      SameObject identity, the relationship between localStorage and sessionStorage, method names,
+      nullability, numeric types, asynchronous return types, cancellation, and disposal ownership.
+    tags:
+      network: none
+      phase: design
+    rubric:
+      - The proposed public surface has one sealed Storage projection type shared by localStorage and sessionStorage rather than separate LocalStorage and SessionStorage types.
+      - Callers reach the family through synchronous LocalStorage and SessionStorage extension properties on Window, starting from IBrowserPlatform.Window.
+      - Repeated access to each property returns the same Storage wrapper, while LocalStorage and SessionStorage return distinct wrappers.
+      - "The planned Storage methods match the merged projection: GetLengthAsync, KeyAsync, GetItemAsync, SetItemAsync, RemoveItemAsync, and ClearAsync."
+      - "The return types match the Web IDL mapping: ValueTask<uint> for length, ValueTask<string?> for key/getItem, and ValueTask for mutating operations."
+      - Non-nullable key and value parameters remain string and receive null argument checks; missing keys and out-of-range indexes remain nullable results.
+      - No CancellationToken is added because the Web IDL operations have no AbortSignal.
+      - Storage has no public DisposeAsync or IAsyncDisposable contract; its JavaScript reference is owned and disposed by the Window scope.
+      - No source implementation is attempted before the proposal is agreed.
+    graders:
+      - type: tool-calls
+        config:
+          disallowed:
+            - edit
+            - create
+      - type: skill-invocation
+        config:
+          required:
+            - port-components-platform-api
+      - type: prompt
+        config:
+          scoring: binary
+
+  - name: review-web-storage-proposal
+    prompt: |
+      Review this proposed Components.Platform projection of the Web Storage API. Return a corrected
+      public API proposal and explain each material correction. Do not edit files or begin
+      implementation.
+
+        public sealed class LocalStorage : IAsyncDisposable
+        {
+            public Task<int> LengthAsync(CancellationToken cancellationToken = default);
+            public Task<string> GetAsync(string? key, CancellationToken cancellationToken = default);
+            public Task SetAsync(string? key, string? value, CancellationToken cancellationToken = default);
+            public ValueTask DisposeAsync();
+        }
+
+        public sealed class SessionStorage : IAsyncDisposable
+        {
+            public Task<int> LengthAsync(CancellationToken cancellationToken = default);
+            public Task<string> GetAsync(string? key, CancellationToken cancellationToken = default);
+            public Task SetAsync(string? key, string? value, CancellationToken cancellationToken = default);
+            public ValueTask DisposeAsync();
+        }
+
+        public static class WindowStorageExtensions
+        {
+            public static ValueTask<LocalStorage> GetLocalStorageAsync(this Window window);
+            public static ValueTask<SessionStorage> GetSessionStorageAsync(this Window window);
+        }
+
+      The source Web IDL defines one Storage interface, exposes SameObject localStorage and
+      sessionStorage attributes on Window, maps length to unsigned long, and defines key, getItem,
+      setItem, removeItem, and clear operations. None accepts AbortSignal.
+    tags:
+      network: none
+      phase: design
+    rubric:
+      - The review replaces the two projection types with one sealed Storage type while preserving two distinct Window-owned instances.
+      - The review replaces asynchronous GetLocalStorageAsync/GetSessionStorageAsync methods with synchronous LocalStorage and SessionStorage properties in an extension(Window window) block.
+      - The corrected members follow the Web IDL names and merged projection instead of convenience names such as GetAsync and SetAsync.
+      - The review changes Task returns to ValueTask and maps unsigned long length to uint rather than int.
+      - KeyAsync and GetItemAsync return string? because the browser can return null.
+      - GetItemAsync, SetItemAsync, and RemoveItemAsync use non-nullable string parameters with argument-null checks.
+      - CancellationToken parameters are removed because the Web IDL has no AbortSignal and cancellation would not stop the browser operation.
+      - Public IAsyncDisposable and DisposeAsync are removed because one caller must not be able to invalidate a scope-shared wrapper.
+      - The corrected proposal includes RemoveItemAsync and ClearAsync rather than omitting Web IDL operations.
+      - No source implementation is attempted before the corrected proposal is agreed.
+    graders:
+      - type: tool-calls
+        config:
+          disallowed:
+            - edit
+            - create
+      - type: skill-invocation
+        config:
+          required:
+            - port-components-platform-api
+      - type: prompt
+        config:
+          scoring: binary
+
+  - name: verify-web-storage-forwarding
+    prompt: |
+      Prepare only the focused unit-test plan for identity, JavaScript forwarding, and lazy
+      acquisition in the merged-shape Components.Platform Web Storage projection. Do not cover
+      disposal, browser E2E, publishing, or trimming in this answer. Do not edit files or run tests.
+
+      - IBrowserPlatform is scoped and exposes a stable Window facade.
+      - Window has synchronous LocalStorage and SessionStorage extension properties.
+      - Both properties return the same sealed Storage projection type.
+      - Storage exposes GetLengthAsync, KeyAsync, GetItemAsync, SetItemAsync, RemoveItemAsync, and
+        ClearAsync.
+      - Each JavaScript Storage object is acquired lazily and a successful or pending acquisition
+        is shared by callers.
+      - A failed or canceled acquisition must not be cached permanently.
+
+      Identify the smallest unit scenarios that establish this contract. State the exact
+      JavaScript property or operation identifiers and arguments that each scenario observes.
+    tags:
+      network: none
+      phase: verification
+    rubric:
+      - Unit coverage proves IBrowserPlatform, Window, LocalStorage, and SessionStorage are stable within one scope, and that the two storage properties return distinct wrappers.
+      - Unit coverage proves merely reading the LocalStorage or SessionStorage property does not acquire a JavaScript reference.
+      - Acquisition coverage verifies the exact localStorage and sessionStorage Window property identifiers and proves that the two wrappers do not cross-route references.
+      - "Forwarding coverage verifies length through property access and the exact operation identifiers key, getItem, setItem, removeItem, and clear with their exact arguments."
+      - Unit coverage proves concurrent or repeated operations share one successful acquisition.
+      - Unit coverage proves a canceled or failed acquisition is retried on the next operation rather than cached permanently.
+      - The answer stays within forwarding and acquisition rather than substituting browser E2E for deterministic unit assertions.
+    graders:
+      - type: tool-calls
+        config:
+          disallowed:
+            - edit
+            - create
+      - type: skill-invocation
+        config:
+          required:
+            - port-components-platform-api
+      - type: prompt
+        config:
+          scoring: binary
+
+  - name: verify-web-storage-lifecycle
+    prompt: |
+      Prepare only the focused unit-test plan for ownership and disposal in the merged-shape
+      Components.Platform Web Storage projection. Do not cover operation forwarding, browser E2E,
+      publishing, or trimming in this answer. Do not edit files or run tests.
+
+      - LocalStorage and SessionStorage are stable, scope-shared Storage wrappers owned by Window.
+      - Applications must not be able to dispose either wrapper.
+      - An acquired JavaScript reference is released when the scope ends.
+      - Scope disposal must not wait for a pending acquisition.
+      - Window disposes features in access order, so one pending feature must not prevent later
+        already acquired features from being released.
+
+      Identify the smallest unit scenarios that establish this contract before first use, after a
+      successful acquisition, after a failed or canceled acquisition, and while an acquisition is
+      still pending. State the observable assertion for each scenario.
+    tags:
+      network: none
+      phase: verification
+    rubric:
+      - The public-surface check proves Storage cannot be disposed through IAsyncDisposable, DisposeAsync, or await using by application code.
+      - Unit coverage proves scope disposal releases an already acquired reference and later Storage calls throw ObjectDisposedException.
+      - Unit coverage proves disposal before first use performs no acquisition.
+      - Unit coverage proves failed and canceled acquisitions do not make disposal throw and are not treated as successfully acquired references.
+      - A pending-acquisition scenario leaves the first-accessed storage feature pending, acquires the other storage feature afterward, and proves disposal finishes without waiting while still disposing the later completed reference.
+      - The still-pending acquisition is not treated as an available reference to dispose.
+      - The answer stays within lifecycle behavior rather than replacing deterministic disposal assertions with browser E2E.
+    graders:
+      - type: tool-calls
+        config:
+          disallowed:
+            - edit
+            - create
+      - type: skill-invocation
+        config:
+          required:
+            - port-components-platform-api
+      - type: prompt
+        config:
+          scoring: binary
+
+  - name: verify-web-storage-browser-and-release
+    prompt: |
+      Prepare only the browser and release-verification plan for the merged-shape
+      Components.Platform Web Storage projection. Do not repeat unit-level identity, forwarding,
+      retry, or disposal tests. Do not edit files or run tests.
+
+      The public API exposes LocalStorage and SessionStorage through IBrowserPlatform.Window, with
+      GetItemAsync, SetItemAsync, RemoveItemAsync, and the remaining Web Storage operations. The
+      shipped behavior must work in Interactive Server and WebAssembly. Components E2E tests use a
+      prebuilt application in CI, and the package must remain correct when WebAssembly is trimmed.
+
+      Identify the smallest browser scenarios and release checks that prove consumer-observable
+      behavior through the public API. State the final browser observable for each operation and
+      distinguish browser evidence from unit-test evidence.
+    tags:
+      network: none
+      phase: verification
+    rubric:
+      - One shared browser scenario runs through the public API in both Interactive Server and WebAssembly.
+      - The browser scenario performs set, get, and remove and observes the stored value followed by its absence, rather than merely checking that interop was invoked.
+      - LocalStorage and SessionStorage use distinct values or keys so the browser scenario can observe that they reach distinct native stores.
+      - The E2E plan includes execution from published output because CI consumes a prebuilt application layout.
+      - The release plan publishes a trimmed WebAssembly application and verifies that used Storage members still work while unused families and unused members are removable.
+      - The answer keeps mocked forwarding and disposal assertions in unit tests rather than claiming browser coverage replaces them.
+    graders:
+      - type: tool-calls
+        config:
+          disallowed:
+            - edit
+            - create
+      - type: skill-invocation
+        config:
+          required:
+            - port-components-platform-api
+      - type: prompt
+        config:
+          scoring: binary
+
+  - name: design-member-that-is-not-baseline
+    prompt: |
+      Design the public .NET projection for the following part of the Screen API in
+      Microsoft.AspNetCore.Components.Platform. The person who asked for the port wants every member
+      below. Produce only the design proposal and planned C# signatures, and say how the plan
+      handles browser support in the source, PublicAPI.Unshipped.txt, unit tests, and demo pages.
+      Do not edit files or begin implementation. Treat this as the complete pinned Web IDL input
+      and do not use the network:
+
+        [Exposed=Window]
+        interface Screen {
+          readonly attribute long width;
+          readonly attribute long height;
+          readonly attribute unsigned long colorDepth;
+          [SecureContext] readonly attribute boolean isExtended;
+        };
+
+        partial interface Window {
+          [SameObject, Replaceable] readonly attribute Screen screen;
+        };
+
+      Browser compatibility data on MDN: width, height, and colorDepth are Baseline widely
+      available. isExtended is supported only in Chromium-based browsers and is not Baseline.
+    tags:
+      network: none
+      phase: design
+    rubric:
+      - The plan keeps isExtended as GetIsExtendedAsync returning ValueTask<bool> rather than dropping or deferring it for its browser support.
+      - "GetIsExtendedAsync is marked [Experimental(\"ASP0040\", UrlFormat = \"https://aka.ms/aspnet/analyzer/{0}\")], and the Baseline members are not marked experimental."
+      - The PublicAPI.Unshipped.txt lines for the experimental member have no diagnostic ID prefix.
+      - The ASP0040 warning is suppressed only around the code that uses the experimental member, not for a whole project with NoWarn.
+      - The answer does not treat the experimental marking itself as an unresolved open question that blocks the design.
+      - Callers reach the family through a synchronous Screen extension property on Window, and the other attributes become GetWidthAsync, GetHeightAsync, and GetColorDepthAsync with int, int, and uint results.
+      - No source implementation is attempted before the proposal is agreed.
+    graders:
+      - type: tool-calls
+        config:
+          disallowed:
+            - edit
+            - create
+      - type: skill-invocation
+        config:
+          required:
+            - port-components-platform-api
+      - type: prompt
+        config:
+          scoring: binary
+
+  - name: design-missing-browser-object
+    prompt: |
+      The Components.Platform projection of the Cookie Store API is reached through a Window.CookieStore
+      extension property. window.cookieStore does not exist on an insecure page or in an older
+      browser, and the JavaScript property can also hold null. Plan how the projection behaves in
+      that case. Cover the public surface, the acquisition of the JavaScript reference, the XML
+      documentation, and the unit tests. Do not edit files or begin implementation.
+    tags:
+      network: none
+      phase: design
+    rubric:
+      - Window.CookieStore stays a synchronous, non-nullable property even though the browser object can be missing.
+      - Every member that reaches the browser object throws NotSupportedException when window.cookieStore is missing or null, and the answer treats this as the fixed package rule rather than an open question.
+      - The acquisition translates only JSException into NotSupportedException and keeps the JSException as the inner exception, while a disconnect or a timeout reaches the caller unchanged.
+      - A null reference also fails the acquisition with NotSupportedException instead of a NullReferenceException.
+      - The failed acquisition is not cached, so a later call acquires the reference again.
+      - The answer does not add an API that only reports whether the Cookie Store API exists, such as IsSupported or IsAvailableAsync.
+      - The XML documentation adds an exception element for NotSupportedException to each member that reaches the browser object and does not document JSException.
+      - Unit coverage includes both a JSException from the acquisition and a null reference, and shows that disposal still does not throw.
+    graders:
+      - type: tool-calls
+        config:
+          disallowed:
+            - edit
+            - create
+      - type: skill-invocation
+        config:
+          required:
+            - port-components-platform-api
+      - type: prompt
+        config:
+          scoring: binary
+
+  - name: verify-e2e-step-results
+    prompt: |
+      Plan the PlatformTestApp demo component and the E2E test steps for the Components.Platform
+      Cookie Store projection. The demo has one button for each operation, such as Set, Get, and
+      Delete, and shows the result of the last operation on the page. The test clicks the buttons in
+      order and checks the shown result after each click. Some steps expect the same result as an
+      earlier step. For example, Get shows that the cookie is missing both before Set and after
+      Delete. Describe how the demo shows results and how each test step waits for its own result.
+      Do not edit files or run tests.
+    tags:
+      network: none
+      phase: verification
+    rubric:
+      - The answer identifies that a step that waits only for the result text can pass on the text of the previous step.
+      - "The demo shows each result in one shared status element as text that starts with the operation name, such as \"<operation>: <result>\"."
+      - The status element carries a run counter, such as a data-run attribute, that goes up by one when an operation completes.
+      - Each test step reads the counter before the click and waits for it to go up by one before checking the result text.
+      - The counter goes up only after the operation finishes, not when the click starts.
+    graders:
+      - type: tool-calls
+        config:
+          disallowed:
+            - edit
+            - create
+      - type: skill-invocation
+        config:
+          required:
+            - port-components-platform-api
+      - type: prompt
+        config:
+          scoring: binary
+
+  - name: design-web-idl-enum
+    prompt: |
+      Design the .NET projection of the type attribute of the Screen Orientation API in
+      Microsoft.AspNetCore.Components.Platform, including the OrientationType type. Assume that
+      Screen.Orientation already returns a shared ScreenOrientation projection. Produce only the
+      design proposal, the planned C# signatures, and the planned unit tests. Do not edit files or
+      begin implementation. Treat this as the complete pinned Web IDL input and do not use the
+      network:
+
+        enum OrientationType {
+          "portrait-primary",
+          "portrait-secondary",
+          "landscape-primary",
+          "landscape-secondary"
+        };
+
+        [Exposed=Window]
+        interface ScreenOrientation {
+          readonly attribute OrientationType type;
+        };
+
+      A future browser may report a value that is not in this list.
+    tags:
+      network: none
+      phase: design
+    rubric:
+      - OrientationType is a hand-written readonly struct that wraps the string, not a C# enum and not a record struct.
+      - OrientationType has a public constructor that takes the string, static properties PortraitPrimary, PortraitSecondary, LandscapePrimary, and LandscapeSecondary, and a Value property with the exact Web IDL string.
+      - A value that the package does not define reaches the application instead of failing deserialization, and the answer does not leave unknown values as an open question.
+      - The type uses the package's Web IDL enum JSON converter (WebIdlEnumJsonConverter) rather than JsonStringEnumConverter.
+      - The type declares its equality members (Equals, GetHashCode, == and !=) explicitly.
+      - Because the Web IDL gives OrientationType no default, default(OrientationType).Value throws InvalidOperationException, while default(OrientationType).ToString() does not throw.
+      - The attribute is projected as GetTypeAsync returning ValueTask<OrientationType>.
+      - The planned unit tests cover default(OrientationType) and an unknown string from the browser.
+      - No source implementation is attempted before the proposal is agreed.
+    graders:
+      - type: tool-calls
+        config:
+          disallowed:
+            - edit
+            - create
+      - type: skill-invocation
+        config:
+          required:
+            - port-components-platform-api
+      - type: prompt
+        config:
+          scoring: binary
+
+  - name: design-window-event
+    prompt: |
+      Design the .NET projection of the deviceorientation event of Window in
+      Microsoft.AspNetCore.Components.Platform. Show how a Blazor component starts and stops
+      listening. Produce only the design proposal and planned C# signatures. Do not edit files or
+      begin implementation. Treat this as the complete pinned Web IDL input and do not use the
+      network:
+
+        [Exposed=Window, SecureContext]
+        interface DeviceOrientationEvent : Event {
+          readonly attribute double? alpha;
+          readonly attribute double? beta;
+          readonly attribute double? gamma;
+          readonly attribute boolean absolute;
+        };
+
+        partial interface Window {
+          [SecureContext] attribute EventHandler ondeviceorientation;
+        };
+    tags:
+      network: none
+      phase: design
+    rubric:
+      - No ondeviceorientation property and no SetOnDeviceOrientationAsync method is added.
+      - The event is identified by a static EventType<Window, DeviceOrientationEvent> key on Window, declared as a static member in an extension(Window) block.
+      - The component listens with the existing Window.AddEventListenerAsync and stops by disposing the returned IAsyncDisposable, with no RemoveEventListenerAsync.
+      - The key is created through the package's internal event type factory with a shape that copies alpha, beta, gamma, and absolute, and no JavaScript is added for this family.
+      - DeviceOrientationEvent is a sealed class with init-only properties, and Alpha, Beta, and Gamma are nullable doubles.
+      - No source implementation is attempted before the proposal is agreed.
+    graders:
+      - type: tool-calls
+        config:
+          disallowed:
+            - edit
+            - create
+      - type: skill-invocation
+        config:
+          required:
+            - port-components-platform-api
+      - type: prompt
+        config:
+          scoring: binary
+
+  - name: review-cache-storage-proposal
+    prompt: |
+      Review this proposed Components.Platform projection of the part of the Cache Storage API that
+      does not need Fetch types. Return a corrected public API proposal and explain each material
+      correction. Do not review the members that wait for Fetch types. Do not edit files or begin
+      implementation.
+
+        public sealed class CacheStorage
+        {
+            public ValueTask<bool> HasAsync(string cacheName);
+            public ValueTask<CacheHandle> OpenAsync(string cacheName);
+            public ValueTask<bool> DeleteAsync(string cacheName);
+            public ValueTask<IReadOnlyList<string>> KeysAsync();
+        }
+
+        public sealed class CacheHandle : IAsyncDisposable
+        {
+            public Cache Value { get; }
+            public ValueTask DisposeAsync();
+        }
+
+        public sealed class Cache
+        {
+            public ValueTask AddAsync(string request);
+            public ValueTask<bool> DeleteAsync(string request);
+        }
+
+        public static class WindowCachesExtensions
+        {
+            extension(Window window)
+            {
+                public CacheStorage Caches { get; }
+            }
+        }
+
+      The source Web IDL exposes [SameObject] readonly attribute CacheStorage caches on the global
+      object. keys() returns Promise<sequence<DOMString>>. open() returns Promise<Cache>, and each
+      call creates a new Cache object.
+    tags:
+      network: none
+      phase: design
+    rubric:
+      - KeysAsync returns ValueTask<ImmutableArray<string>> instead of IReadOnlyList<string>.
+      - The CacheHandle type is removed, and OpenAsync returns the Cache itself.
+      - Cache implements public IAsyncDisposable because the caller who opened it owns it, and the answer does not treat its disposal as an undecided open question.
+      - CacheStorage stays a shared wrapper without a public IAsyncDisposable or DisposeAsync.
+      - The extension class is named after the returned type, such as WindowCacheStorageExtensions, rather than after the caches property.
+      - No source implementation is attempted before the corrected proposal is agreed.
+    graders:
+      - type: tool-calls
+        config:
+          disallowed:
+            - edit
+            - create
+      - type: skill-invocation
+        config:
+          required:
+            - port-components-platform-api
+      - type: prompt
+        config:
+          scoring: binary
+
+scoring:
+  weights:
+    skill-invocation: 0.3
+    tool-calls: 0
+    prompt: 0.7
+  threshold: 0.8

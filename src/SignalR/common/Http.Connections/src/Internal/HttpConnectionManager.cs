@@ -5,6 +5,7 @@ using System.Collections.Concurrent;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Net.WebSockets;
+using System.Security.Claims;
 using System.Security.Cryptography;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Internal;
@@ -46,11 +47,24 @@ internal sealed partial class HttpConnectionManager
         _ = ExecuteTimerLoop();
     }
 
+    // This overload intentionally skips endpoint validation and is only used by tests.
     internal bool TryGetConnection(string id, [NotNullWhen(true)] out HttpConnectionContext? connection)
     {
         return _connections.TryGetValue(id, out connection);
     }
 
+    internal bool TryGetConnection(string id, HttpConnectionEndpointMetadata? endpointMetadata, [NotNullWhen(true)] out HttpConnectionContext? connection)
+    {
+        if (_connections.TryGetValue(id, out connection) && ReferenceEquals(connection.EndpointMetadata, endpointMetadata))
+        {
+            return true;
+        }
+
+        connection = null;
+        return false;
+    }
+
+    // This overload intentionally omits endpoint metadata and is only used by tests.
     internal HttpConnectionContext CreateConnection()
     {
         return CreateConnection(new());
@@ -60,7 +74,69 @@ internal sealed partial class HttpConnectionManager
     /// Creates a connection without Pipes setup to allow saving allocations until Pipes are needed.
     /// </summary>
     /// <returns></returns>
-    internal HttpConnectionContext CreateConnection(HttpConnectionDispatcherOptions options, int negotiateVersion = 0, bool useStatefulReconnect = false)
+    internal HttpConnectionContext CreateConnection(
+        HttpConnectionDispatcherOptions options,
+        int negotiateVersion = 0,
+        bool useStatefulReconnect = false,
+        HttpConnectionEndpointMetadata? endpointMetadata = null)
+    {
+        return CreateConnection(
+            options,
+            negotiateVersion,
+            useStatefulReconnect,
+            endpointMetadata,
+            negotiatedUser: null,
+            hasNegotiatedUser: false);
+    }
+
+    internal HttpConnectionContext CreateConnection(
+        HttpConnectionDispatcherOptions options,
+        ClaimsPrincipal? negotiatedUser)
+    {
+        return CreateConnection(
+            options,
+            negotiateVersion: 0,
+            useStatefulReconnect: false,
+            endpointMetadata: null,
+            negotiatedUser);
+    }
+
+    internal HttpConnectionContext CreateConnection(
+        HttpConnectionDispatcherOptions options,
+        int negotiateVersion,
+        ClaimsPrincipal? negotiatedUser)
+    {
+        return CreateConnection(
+            options,
+            negotiateVersion,
+            useStatefulReconnect: false,
+            endpointMetadata: null,
+            negotiatedUser);
+    }
+
+    internal HttpConnectionContext CreateConnection(
+        HttpConnectionDispatcherOptions options,
+        int negotiateVersion,
+        bool useStatefulReconnect,
+        HttpConnectionEndpointMetadata? endpointMetadata,
+        ClaimsPrincipal? negotiatedUser)
+    {
+        return CreateConnection(
+            options,
+            negotiateVersion,
+            useStatefulReconnect,
+            endpointMetadata,
+            negotiatedUser,
+            hasNegotiatedUser: true);
+    }
+
+    private HttpConnectionContext CreateConnection(
+        HttpConnectionDispatcherOptions options,
+        int negotiateVersion,
+        bool useStatefulReconnect,
+        HttpConnectionEndpointMetadata? endpointMetadata,
+        ClaimsPrincipal? negotiatedUser,
+        bool hasNegotiatedUser)
     {
         string connectionToken;
         var id = MakeNewConnectionId();
@@ -78,7 +154,20 @@ internal sealed partial class HttpConnectionManager
         Log.CreatedNewConnection(_logger, id);
 
         var pair = CreateConnectionPair(options.TransportPipeOptions, options.AppPipeOptions);
-        var connection = new HttpConnectionContext(id, connectionToken, _connectionLogger, metricsContext, pair.Application, pair.Transport, options, useStatefulReconnect);
+        var connection = new HttpConnectionContext(
+            id,
+            connectionToken,
+            _connectionLogger,
+            metricsContext,
+            pair.Application,
+            pair.Transport,
+            options,
+            useStatefulReconnect,
+            negotiatedUser,
+            hasNegotiatedUser)
+        {
+            EndpointMetadata = endpointMetadata,
+        };
 
         _connections.TryAdd(connectionToken, connection);
 

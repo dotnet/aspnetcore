@@ -108,6 +108,18 @@ public class JSRootComponentsTest : ServerTestBase<ToggleExecutionModeServerFixt
     }
 
     [Fact]
+    public void CannotUpdateParametersOnNonJSRootComponent()
+    {
+        var parameterValue = Browser.FindElement(By.Id("non-js-root-parameter"));
+
+        app.FindElement(By.Id("set-non-js-root-parameters")).Click();
+
+        Browser.Contains("Error setting parameters on non-JS root", () => app.FindElement(By.Id("message")).Text);
+        Browser.Equal("Initial non-JS root value", () => parameterValue.Text);
+        AssertGlobalErrorState(false);
+    }
+
+    [Fact]
     public void CanSupplyComplexParameters()
     {
         app.FindElement(By.Id("add-root-component")).Click();

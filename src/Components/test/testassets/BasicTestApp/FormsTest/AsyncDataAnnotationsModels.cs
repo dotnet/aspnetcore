@@ -14,8 +14,6 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
 using Microsoft.Extensions.Validation;
 
-#pragma warning disable ASP0029 // Type is for evaluation purposes only and is subject to change or removal in future updates.
-
 namespace BasicTestApp.FormsTest;
 
 // Async per-field validation attribute used by the DataAnnotations async E2E components.

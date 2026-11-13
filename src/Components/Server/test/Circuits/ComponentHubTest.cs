@@ -5,7 +5,9 @@ using System.Collections.ObjectModel;
 using System.Diagnostics.CodeAnalysis;
 using System.Security.Claims;
 using System.Text.RegularExpressions;
+using Microsoft.AspNetCore.Components.Authorization;
 using Microsoft.AspNetCore.Components.Server.Circuits;
+using Microsoft.AspNetCore.Connections.Features;
 using Microsoft.AspNetCore.DataProtection;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Connections.Features;
@@ -334,11 +336,68 @@ public class ComponentHubTest
         mockClientProxy.Verify(m => m.SendCoreAsync("JS.Error", new[] { errorMessage }, It.IsAny<CancellationToken>()), Times.Once());
     }
 
+    [Fact]
+    public async Task OnConnectedAsyncReplacesSignalRUserRefreshPolicy()
+    {
+        var userRefreshFeature = new Mock<IConnectionAuthenticationRefreshFeature>();
+        userRefreshFeature.SetupAllProperties();
+        userRefreshFeature.Object.OnAuthenticationRefresh = static _ => Task.FromResult(false);
+        var (_, hub) = InitializeComponentHub(userRefreshFeature: userRefreshFeature.Object);
+
+        await hub.OnConnectedAsync();
+
+        var callback = userRefreshFeature.Object.OnAuthenticationRefresh;
+        Assert.NotNull(callback);
+        var context = new AuthenticationRefreshContext
+        {
+            HttpContext = new DefaultHttpContext(),
+            ConnectionId = "123",
+            PreviousUser = new ClaimsPrincipal(),
+            NewUser = new ClaimsPrincipal(),
+            NewExpiration = null,
+        };
+        Assert.True(await callback(context));
+    }
+
+    [Fact]
+    public async Task OnAuthenticationRefreshedAsyncUpdatesCircuitUser()
+    {
+        var authenticationStateProvider = new ServerAuthenticationStateProvider();
+        var services = new ServiceCollection()
+            .AddSingleton<AuthenticationStateProvider>(authenticationStateProvider)
+            .BuildServiceProvider();
+        var circuitHost = TestCircuitHost.Create(serviceScope: services.CreateAsyncScope());
+
+        var handleRegistryMock = new Mock<ICircuitHandleRegistry>();
+        handleRegistryMock.Setup(m => m.GetCircuit(It.IsAny<IDictionary<object, object>>(), It.IsAny<object>()))
+            .Returns(circuitHost);
+
+        var refreshedUser = new ClaimsPrincipal(new ClaimsIdentity(
+            [new Claim(ClaimTypes.Name, "refreshed-user")],
+            "TestAuthType"));
+        var (_, hub) = InitializeComponentHub(handleRegistry: handleRegistryMock.Object, user: refreshedUser);
+
+        await hub.OnAuthenticationRefreshedAsync();
+
+        var authenticationState = await authenticationStateProvider.GetAuthenticationStateAsync();
+        Assert.Same(refreshedUser, authenticationState.User);
+    }
+
+    [Fact]
+    public async Task OnAuthenticationRefreshedAsyncWithoutCircuitDoesNotThrow()
+    {
+        var (_, hub) = InitializeComponentHub();
+
+        await hub.OnAuthenticationRefreshedAsync();
+    }
+
     private static (Mock<ISingleClientProxy>, ComponentHub) InitializeComponentHub(
         TestServerComponentDeserializer deserializer = null,
         ICircuitHandleRegistry handleRegistry = null,
         ICircuitPersistenceProvider provider = null,
-        ICircuitFactory circuitFactory = null)
+        ICircuitFactory circuitFactory = null,
+        ClaimsPrincipal user = null,
+        IConnectionAuthenticationRefreshFeature userRefreshFeature = null)
     {
         deserializer ??= new TestServerComponentDeserializer();
         var ephemeralDataProtectionProvider = new EphemeralDataProtectionProvider();
@@ -382,8 +441,13 @@ public class ComponentHubTest
         var httpContextFeature = new Mock<IHttpContextFeature>();
         httpContextFeature.Setup(x => x.HttpContext).Returns(() => new DefaultHttpContext());
         feature.Set(httpContextFeature.Object);
+        if (userRefreshFeature is not null)
+        {
+            feature.Set(userRefreshFeature);
+        }
         mockContext.Setup(x => x.Features).Returns(feature);
         mockContext.Setup(x => x.ConnectionId).Returns("123");
+        mockContext.Setup(x => x.User).Returns(user ?? new ClaimsPrincipal());
         hub.Context = mockContext.Object;
 
         return (mockClientProxy, hub);
