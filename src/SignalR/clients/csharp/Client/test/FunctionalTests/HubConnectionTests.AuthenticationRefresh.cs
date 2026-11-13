@@ -8,6 +8,7 @@ using System.Threading.Channels;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http.Connections;
 using Microsoft.AspNetCore.InternalTesting;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Testing;
 using Xunit;
@@ -70,6 +71,7 @@ public partial class HubConnectionTests
     {
         await using (var server = await StartServer<Startup>())
         {
+            var authenticationRefreshObserver = server.Services.GetRequiredService<AuthenticationRefreshObserver>();
             var includeScope = true;
             async Task<string> AccessTokenProvider()
             {
@@ -98,6 +100,7 @@ public partial class HubConnectionTests
                 // Refresh with a token that no longer carries the required claim.
                 includeScope = false;
                 await hubConnection.RefreshAuthenticationAsync().DefaultTimeout();
+                await authenticationRefreshObserver.Refreshed.Task.DefaultTimeout();
 
                 // The authorized method is now rejected by the server's policy.
                 await Assert.ThrowsAsync<HubException>(
@@ -126,6 +129,7 @@ public partial class HubConnectionTests
     {
         await using (var server = await StartServer<Startup>())
         {
+            var authenticationRefreshObserver = server.Services.GetRequiredService<AuthenticationRefreshObserver>();
             var includeScope = false;
             async Task<string> AccessTokenProvider()
             {
@@ -154,6 +158,7 @@ public partial class HubConnectionTests
                 // Refresh with a token that now carries the required claim.
                 includeScope = true;
                 await hubConnection.RefreshAuthenticationAsync().DefaultTimeout();
+                await authenticationRefreshObserver.Refreshed.Task.DefaultTimeout();
 
                 // The authorized method now succeeds.
                 var result = await hubConnection.InvokeAsync<string>(nameof(AuthenticationRefreshHub.ScopeProtected)).DefaultTimeout();
