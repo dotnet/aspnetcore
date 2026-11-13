@@ -115,6 +115,7 @@
       "src\\Middleware\\Session\\test\\Microsoft.AspNetCore.Session.Tests.csproj",
       "src\\Middleware\\Spa\\SpaProxy\\src\\Microsoft.AspNetCore.SpaProxy.csproj",
       "src\\Middleware\\Spa\\SpaServices.Extensions\\src\\Microsoft.AspNetCore.SpaServices.Extensions.csproj",
+      "src\\Middleware\\StaticFiles\\perf\\Microbenchmarks\\Microsoft.AspNetCore.StaticFiles.Microbenchmarks.csproj",
       "src\\Middleware\\StaticFiles\\samples\\StaticFileSample\\StaticFileSample.csproj",
       "src\\Middleware\\StaticFiles\\src\\Microsoft.AspNetCore.StaticFiles.csproj",
       "src\\Middleware\\StaticFiles\\test\\FunctionalTests\\Microsoft.AspNetCore.StaticFiles.FunctionalTests.csproj",
