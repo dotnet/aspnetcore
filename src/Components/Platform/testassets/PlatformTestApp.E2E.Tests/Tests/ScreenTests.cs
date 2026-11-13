@@ -50,6 +50,72 @@ public partial class ScreenTests : BrowserTest
         }
     }
 
+    [TestMethod]
+    public async Task ScreenOrientation_ReadsBrowserValuesInBothRenderModes()
+    {
+        foreach (var path in ScreenPaths)
+        {
+            await NavigateAsync(path, "#get-orientation-type");
+
+            await RunAsync("#get-orientation-type", $"Orientation type: {await _page.EvaluateAsync<string>("screen.orientation.type")}, known: True");
+            await RunAsync("#get-orientation-angle", $"Orientation angle: {await EvaluateAsync("screen.orientation.angle")}");
+        }
+    }
+
+    [TestMethod]
+    public async Task ScreenOrientation_ReportsChangeEventsInBothRenderModes()
+    {
+        foreach (var path in ScreenPaths)
+        {
+            await NavigateAsync(path, "#watch-orientation");
+            var orientationEvent = _page.Locator("#orientation-event");
+
+            await RunAsync("#watch-orientation", "Watch orientation: added");
+            // Events that the page's own JavaScript dispatches reach the listener too.
+            await _page.EvaluateAsync<bool>("screen.orientation.dispatchEvent(new Event('change'))");
+            await Expect(orientationEvent).ToHaveTextAsync("change (1)");
+
+            await RunAsync("#unwatch-orientation", "Stop watching orientation: removed");
+            await _page.EvaluateAsync<bool>("screen.orientation.dispatchEvent(new Event('change'))");
+            // A round trip after the browser event lets a late notification arrive before the check.
+            await RunAsync("#get-orientation-angle", $"Orientation angle: {await EvaluateAsync("screen.orientation.angle")}");
+            await Expect(orientationEvent).ToHaveTextAsync("change (1)");
+        }
+    }
+
+    [TestMethod]
+    public async Task ScreenOrientation_ReportsRotationInBothRenderModes()
+    {
+        // Playwright emulates a rotated screen only for a mobile viewport, which Firefox does not support.
+        if (BrowserName != "chromium")
+        {
+            Assert.Inconclusive("Only Chromium emulates the screen orientation.");
+        }
+
+        var options = new BrowserNewContextOptions
+        {
+            ViewportSize = new() { Width = 400, Height = 700 },
+            IsMobile = true,
+        };
+        var context = await NewContext(options.WithServerRouting(_server));
+        _page = await context.NewPageAsync();
+
+        foreach (var path in ScreenPaths)
+        {
+            await _page.SetViewportSizeAsync(400, 700);
+            await NavigateAsync(path, "#watch-orientation");
+            var orientationEvent = _page.Locator("#orientation-event");
+            await RunAsync("#get-orientation-type", "Orientation type: portrait-primary, known: True");
+            await RunAsync("#watch-orientation", "Watch orientation: added");
+
+            await _page.SetViewportSizeAsync(700, 400);
+
+            await Expect(orientationEvent).ToHaveTextAsync("change (1)");
+            await RunAsync("#get-orientation-type", "Orientation type: landscape-primary, known: True");
+            await RunAsync("#get-orientation-angle", "Orientation angle: 90");
+        }
+    }
+
     private async Task NavigateAsync(string path, string interactiveSelector)
     {
         await _page.GotoAsync($"{_server.TestUrl}{path}");

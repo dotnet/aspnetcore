@@ -11,12 +11,14 @@ namespace Microsoft.AspNetCore.Components.Platform;
 public sealed class Screen : IInternalAsyncDisposal
 {
     private readonly IJSRuntime _jsRuntime;
+    private readonly Window _window;
     private Task<IJSObjectReference>? _referenceTask;
     private bool _disposed;
 
-    internal Screen(IJSRuntime jsRuntime)
+    internal Screen(IJSRuntime jsRuntime, Window window)
     {
         _jsRuntime = jsRuntime;
+        _window = window;
     }
 
     /// <summary>
@@ -88,6 +90,20 @@ public sealed class Screen : IInternalAsyncDisposal
         var screen = await GetReferenceAsync().ConfigureAwait(false);
 
         return await screen.GetValueAsync<uint>("pixelDepth").ConfigureAwait(false);
+    }
+
+    /// <summary>
+    /// Gets the projection of type <typeparamref name="T"/> that hangs off the screen, creating it on first access.
+    /// </summary>
+    /// <typeparam name="T">The projection type.</typeparam>
+    /// <param name="factory">The callback that creates the projection.</param>
+    /// <returns>The projection keyed by <typeparamref name="T"/>.</returns>
+    internal T GetOrAddFeature<T>(Func<FeatureContext, T> factory) where T : class
+    {
+        ArgumentNullException.ThrowIfNull(factory);
+
+        // Window keeps every projection of the scope, so its disposal reaches this one too.
+        return _window.GetOrAddFeature(factory);
     }
 
     async ValueTask IInternalAsyncDisposal.InternalDisposeAsync()
