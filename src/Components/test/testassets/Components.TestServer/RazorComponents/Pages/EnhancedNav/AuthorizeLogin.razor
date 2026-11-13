@@ -6,10 +6,26 @@
 
 <h1>Login Page</h1>
 
+@if (_interactive)
+{
+    <p id="login-interactive-ready">Interactive</p>
+}
+
 <p>ReturnUrl: <span id="login-returnurl">@ReturnUrl</span></p>
 <p>Current URL: <span id="login-nav-uri">@Navigation.Uri</span></p>
 
 @code {
+    private bool _interactive;
+
     [SupplyParameterFromQuery]
     public string? ReturnUrl { get; set; }
+
+    protected override void OnAfterRender(bool firstRender)
+    {
+        if (firstRender)
+        {
+            _interactive = true;
+            StateHasChanged();
+        }
+    }
 }

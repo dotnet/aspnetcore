@@ -2,7 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 import { synchronizeDomContent } from '../Rendering/DomMerging/DomSync';
-import { attachProgrammaticEnhancedNavigationHandler, handleClickForNavigationInterception, hasInteractiveRouter, isForSamePath, notifyEnhancedNavigationListeners, performScrollToElementOnTheSamePage, isSamePageWithHash } from './NavigationUtils';
+import { attachProgrammaticEnhancedNavigationHandler, handleClickForNavigationInterception, hasInteractiveRouter, isForSamePath, notifyEnhancedNavigationListeners, performScrollToElementOnTheSamePage, isSamePageWithHash, isWithinBaseUriSpace } from './NavigationUtils';
 import { scheduleScrollReset, ScrollResetSchedule } from '../Rendering/Renderer';
 
 /*
@@ -274,6 +274,11 @@ export async function performEnhancedPageLoad(internalDestinationHref: string, i
           if (response.url !== location.href) {
             history.pushState(null, '', response.url);
           }
+        }
+        if (!isWithinBaseUriSpace(response.url)) {
+          // Existing interactive runtimes cannot accept a location outside their original base URI.
+          retryEnhancedNavAsFullPageLoad(response.url);
+          return;
         }
         if (internalDestinationHref !== response.url) {
           internalDestinationHref = response.url;

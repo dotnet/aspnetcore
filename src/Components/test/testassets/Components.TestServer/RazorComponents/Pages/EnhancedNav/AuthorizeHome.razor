@@ -1,9 +1,16 @@
 ﻿@page "/authorize-home"
 @layout Components.TestServer.RazorComponents.Shared.AuthorizeMenuLayout
+@using Microsoft.AspNetCore.Components.Forms
 @using static Microsoft.AspNetCore.Components.Web.RenderMode
 @rendermode InteractiveServer
 
 <h1>Authorize Home Page</h1>
+
+<a id="redirect-outside-base" href="redirect/outside-base">Redirect outside base</a>
+<form action="redirect/outside-base" method="post" data-enhance>
+    <AntiforgeryToken />
+    <button id="submit-redirect-outside-base" type="submit">Submit outside base</button>
+</form>
 
 @if (_interactive)
 {

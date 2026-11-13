@@ -187,6 +187,11 @@ public class RazorComponentEndpointsStartup<TRootComponent>
 
             ConfigureSubdirPipeline(app, env);
         });
+
+        app.Map("/outside-base", outsideBaseApp =>
+        {
+            ConfigureSubdirPipeline(outsideBaseApp, env);
+        });
     }
 
     private void ConfigureSubdirPipeline(IApplicationBuilder app, IWebHostEnvironment env)
@@ -377,6 +382,13 @@ public class RazorComponentEndpointsStartup<TRootComponent>
         // Used in the redirection to non-Blazor endpoints tests
         endpoints.MapGet("redirect/nonblazor/get", PerformRedirection);
         endpoints.MapPost("redirect/nonblazor/post", PerformRedirection);
+
+        endpoints.Map("/redirect/outside-base", (HttpRequest request, HttpResponse response) =>
+        {
+            var returnUrl = $"{request.PathBase}{request.Path}";
+            response.Redirect($"/outside-base/account/login?ReturnUrl={Uri.EscapeDataString(returnUrl)}");
+            return Task.CompletedTask;
+        });
 
         // Used when testing enhanced navigation to non-Blazor endpoints
         endpoints.Map("/nav/non-blazor-html-response", async (HttpResponse response) =>
