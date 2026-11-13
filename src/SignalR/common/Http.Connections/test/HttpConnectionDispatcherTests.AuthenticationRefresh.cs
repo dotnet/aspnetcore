@@ -23,6 +23,8 @@ namespace Microsoft.AspNetCore.Http.Connections.Tests;
 
 public partial class HttpConnectionDispatcherTests
 {
+    private const string ConnectionTokenHeaderName = "X-SignalR-Connection-Token";
+
     [Fact]
     public async Task RefreshReturnsMethodNotAllowedForNonPost()
     {
@@ -83,7 +85,45 @@ public partial class HttpConnectionDispatcherTests
     }
 
     [Fact]
-    public async Task RefreshReturnsNotFoundWhenConnectionDoesNotExist()
+    public async Task RefreshReturnsBadRequestWhenConnectionTokenIsOnlyInQueryString()
+    {
+        using (StartVerifiableLog())
+        {
+            var manager = CreateConnectionManager(LoggerFactory);
+            var dispatcher = CreateDispatcher(manager, LoggerFactory);
+            var options = new HttpConnectionDispatcherOptions { EnableAuthenticationRefresh = true };
+            var connection = manager.CreateConnection(options, negotiateVersion: 1);
+            var originalUser = CreateAuthenticatedUserWithStableIdentity("original");
+            var originalExpiration = DateTimeOffset.UtcNow.AddMinutes(5);
+            connection.User = originalUser;
+            connection.AuthenticationExpiration = originalExpiration;
+
+            var refreshedUser = CreateAuthenticatedUserWithStableIdentity("refreshed");
+            var ticket = new AuthenticationTicket(
+                refreshedUser,
+                new AuthenticationProperties { ExpiresUtc = DateTimeOffset.UtcNow.AddMinutes(30) },
+                "Test");
+            var context = new DefaultHttpContext();
+            context.Request.Path = "/foo/refresh";
+            context.Request.Method = "POST";
+            context.Response.Body = new MemoryStream();
+            context.Request.QueryString = new QueryString($"?id={connection.ConnectionToken}");
+            context.User = refreshedUser;
+            context.Features.Set<IAuthenticateResultFeature>(
+                new TestAuthenticateResultFeature(AuthenticateResult.Success(ticket)));
+
+            await dispatcher.ExecuteRefreshAsync(context, options);
+
+            Assert.Equal(StatusCodes.Status400BadRequest, context.Response.StatusCode);
+            var json = ReadJson(context.Response.Body);
+            AssertRefreshError(json, "missing_connection_token");
+            Assert.Same(originalUser, connection.User);
+            Assert.Equal(originalExpiration, connection.AuthenticationExpiration);
+        }
+    }
+
+    [Fact]
+    public async Task RefreshReturnsNotFoundWhenHeaderConnectionDoesNotExist()
     {
         using (StartVerifiableLog())
         {
@@ -93,10 +133,7 @@ public partial class HttpConnectionDispatcherTests
             context.Request.Path = "/foo/refresh";
             context.Request.Method = "POST";
             context.Response.Body = new MemoryStream();
-            context.Request.Query = new QueryCollection(new Dictionary<string, StringValues>
-            {
-                ["id"] = "does-not-exist",
-            });
+            context.Request.Headers[ConnectionTokenHeaderName] = "does-not-exist";
 
             await dispatcher.ExecuteRefreshAsync(context, new HttpConnectionDispatcherOptions { EnableAuthenticationRefresh = true });
 
@@ -159,10 +196,7 @@ public partial class HttpConnectionDispatcherTests
             context.Request.Path = "/foo/refresh";
             context.Request.Method = "POST";
             context.Response.Body = new MemoryStream();
-            context.Request.Query = new QueryCollection(new Dictionary<string, StringValues>
-            {
-                ["id"] = connection.ConnectionToken,
-            });
+            context.Request.Headers[ConnectionTokenHeaderName] = connection.ConnectionToken;
 
             context.Features.Set<IAuthenticateResultFeature>(new TestAuthenticateResultFeature(AuthenticateResult.Success(ticket)));
 
@@ -213,10 +247,7 @@ public partial class HttpConnectionDispatcherTests
             context.Request.Path = "/foo/refresh";
             context.Request.Method = "POST";
             context.Response.Body = new MemoryStream();
-            context.Request.Query = new QueryCollection(new Dictionary<string, StringValues>
-            {
-                ["id"] = connection.ConnectionToken,
-            });
+            context.Request.Headers[ConnectionTokenHeaderName] = connection.ConnectionToken;
             context.Features.Set<IAuthenticateResultFeature>(new TestAuthenticateResultFeature(AuthenticateResult.Success(ticket)));
 
             await dispatcher.ExecuteRefreshAsync(context, options);
@@ -269,10 +300,7 @@ public partial class HttpConnectionDispatcherTests
             context.Request.Path = "/foo/refresh";
             context.Request.Method = HttpMethods.Post;
             context.Response.Body = new MemoryStream();
-            context.Request.Query = new QueryCollection(new Dictionary<string, StringValues>
-            {
-                ["id"] = connection.ConnectionToken,
-            });
+            context.Request.Headers[ConnectionTokenHeaderName] = connection.ConnectionToken;
             context.Features.Set<IAuthenticateResultFeature>(new TestAuthenticateResultFeature(AuthenticateResult.Success(ticket)));
 
             await dispatcher.ExecuteRefreshAsync(context, options);
@@ -312,10 +340,7 @@ public partial class HttpConnectionDispatcherTests
             refreshContext.Request.Path = "/foo/refresh";
             refreshContext.Request.Method = HttpMethods.Post;
             refreshContext.Response.Body = new MemoryStream();
-            refreshContext.Request.Query = new QueryCollection(new Dictionary<string, StringValues>
-            {
-                ["id"] = connection.ConnectionToken,
-            });
+            refreshContext.Request.Headers[ConnectionTokenHeaderName] = connection.ConnectionToken;
             refreshContext.Features.Set<IAuthenticateResultFeature>(
                 new TestAuthenticateResultFeature(AuthenticateResult.Success(refreshTicket)));
 
@@ -378,10 +403,7 @@ public partial class HttpConnectionDispatcherTests
             context.Request.Path = "/foo/refresh";
             context.Request.Method = "POST";
             context.Response.Body = new MemoryStream();
-            context.Request.Query = new QueryCollection(new Dictionary<string, StringValues>
-            {
-                ["id"] = connection.ConnectionToken,
-            });
+            context.Request.Headers[ConnectionTokenHeaderName] = connection.ConnectionToken;
             context.Features.Set<IAuthenticateResultFeature>(new TestAuthenticateResultFeature(AuthenticateResult.Success(ticket)));
 
             await dispatcher.ExecuteRefreshAsync(context, options);
@@ -413,10 +435,7 @@ public partial class HttpConnectionDispatcherTests
             context.Request.Path = "/foo/refresh";
             context.Request.Method = "POST";
             context.Response.Body = new MemoryStream();
-            context.Request.Query = new QueryCollection(new Dictionary<string, StringValues>
-            {
-                ["id"] = connection.ConnectionToken,
-            });
+            context.Request.Headers[ConnectionTokenHeaderName] = connection.ConnectionToken;
 
             context.Features.Set<IAuthenticateResultFeature>(new TestAuthenticateResultFeature(AuthenticateResult.Success(ticket)));
 
@@ -448,10 +467,7 @@ public partial class HttpConnectionDispatcherTests
             context.Request.Path = "/foo/refresh";
             context.Request.Method = "POST";
             context.Response.Body = new MemoryStream();
-            context.Request.Query = new QueryCollection(new Dictionary<string, StringValues>
-            {
-                ["id"] = connection.ConnectionToken,
-            });
+            context.Request.Headers[ConnectionTokenHeaderName] = connection.ConnectionToken;
 
             context.Features.Set<IAuthenticateResultFeature>(new TestAuthenticateResultFeature(AuthenticateResult.Success(ticket)));
 
@@ -486,10 +502,7 @@ public partial class HttpConnectionDispatcherTests
             context.Request.Path = "/foo/refresh";
             context.Request.Method = "POST";
             context.Response.Body = new MemoryStream();
-            context.Request.Query = new QueryCollection(new Dictionary<string, StringValues>
-            {
-                ["id"] = connection.ConnectionToken,
-            });
+            context.Request.Headers[ConnectionTokenHeaderName] = connection.ConnectionToken;
             context.Features.Set<IAuthenticateResultFeature>(
                 new TestAuthenticateResultFeature(AuthenticateResult.Success(ticket)));
 
@@ -518,10 +531,7 @@ public partial class HttpConnectionDispatcherTests
             context.Request.Path = "/foo/refresh";
             context.Request.Method = "POST";
             context.Response.Body = new MemoryStream();
-            context.Request.Query = new QueryCollection(new Dictionary<string, StringValues>
-            {
-                ["id"] = connection.ConnectionToken,
-            });
+            context.Request.Headers[ConnectionTokenHeaderName] = connection.ConnectionToken;
 
             using var windowsIdentity = WindowsIdentity.GetAnonymous();
             var newUser = new WindowsPrincipal(windowsIdentity);
@@ -558,10 +568,7 @@ public partial class HttpConnectionDispatcherTests
             context.Request.Path = "/foo/refresh";
             context.Request.Method = HttpMethods.Post;
             context.Response.Body = new MemoryStream();
-            context.Request.Query = new QueryCollection(new Dictionary<string, StringValues>
-            {
-                ["id"] = connection.ConnectionToken,
-            });
+            context.Request.Headers[ConnectionTokenHeaderName] = connection.ConnectionToken;
 
             await dispatcher.ExecuteRefreshAsync(context, options);
 
@@ -600,10 +607,7 @@ public partial class HttpConnectionDispatcherTests
             context.Request.Path = "/foo/refresh";
             context.Request.Method = "POST";
             context.Response.Body = new MemoryStream();
-            context.Request.Query = new QueryCollection(new Dictionary<string, StringValues>
-            {
-                ["id"] = connection.ConnectionToken,
-            });
+            context.Request.Headers[ConnectionTokenHeaderName] = connection.ConnectionToken;
 
             var props = new AuthenticationProperties { ExpiresUtc = newExpires };
             var ticket = new AuthenticationTicket(newUser, props, "Test");
@@ -658,10 +662,7 @@ public partial class HttpConnectionDispatcherTests
             context.Request.Path = "/foo/refresh";
             context.Request.Method = "POST";
             context.Response.Body = new MemoryStream();
-            context.Request.Query = new QueryCollection(new Dictionary<string, StringValues>
-            {
-                ["id"] = connection.ConnectionToken,
-            });
+            context.Request.Headers[ConnectionTokenHeaderName] = connection.ConnectionToken;
             context.Features.Set<IAuthenticateResultFeature>(new TestAuthenticateResultFeature(AuthenticateResult.Success(ticket)));
 
             await dispatcher.ExecuteRefreshAsync(context, options);
@@ -689,10 +690,7 @@ public partial class HttpConnectionDispatcherTests
             context.Request.Path = "/foo/refresh";
             context.Request.Method = "POST";
             context.Response.Body = new MemoryStream();
-            context.Request.Query = new QueryCollection(new Dictionary<string, StringValues>
-            {
-                ["id"] = connection.ConnectionToken,
-            });
+            context.Request.Headers[ConnectionTokenHeaderName] = connection.ConnectionToken;
 
             await dispatcher.ExecuteRefreshAsync(context, options);
 
@@ -723,10 +721,7 @@ public partial class HttpConnectionDispatcherTests
             context.Request.Path = "/foo/refresh";
             context.Request.Method = "POST";
             context.Response.Body = new MemoryStream();
-            context.Request.Query = new QueryCollection(new Dictionary<string, StringValues>
-            {
-                ["id"] = connection.ConnectionToken,
-            });
+            context.Request.Headers[ConnectionTokenHeaderName] = connection.ConnectionToken;
             context.Features.Set<IAuthenticateResultFeature>(
                 new TestAuthenticateResultFeature(AuthenticateResult.Success(ticket)));
 
@@ -758,10 +753,7 @@ public partial class HttpConnectionDispatcherTests
             context.Request.Path = "/foo/refresh";
             context.Request.Method = "POST";
             context.Response.Body = new MemoryStream();
-            context.Request.Query = new QueryCollection(new Dictionary<string, StringValues>
-            {
-                ["id"] = connection.ConnectionToken,
-            });
+            context.Request.Headers[ConnectionTokenHeaderName] = connection.ConnectionToken;
             context.Features.Set<IAuthenticateResultFeature>(
                 new TestAuthenticateResultFeature(AuthenticateResult.Success(ticket)));
 
@@ -787,10 +779,7 @@ public partial class HttpConnectionDispatcherTests
             context.Request.Path = "/foo/refresh";
             context.Request.Method = "POST";
             context.Response.Body = new MemoryStream();
-            context.Request.Query = new QueryCollection(new Dictionary<string, StringValues>
-            {
-                ["id"] = connection.ConnectionToken,
-            });
+            context.Request.Headers[ConnectionTokenHeaderName] = connection.ConnectionToken;
 
             await dispatcher.ExecuteRefreshAsync(context, options);
 
@@ -821,10 +810,7 @@ public partial class HttpConnectionDispatcherTests
             context.Request.Path = "/foo/refresh";
             context.Request.Method = "POST";
             context.Response.Body = new MemoryStream();
-            context.Request.Query = new QueryCollection(new Dictionary<string, StringValues>
-            {
-                ["id"] = connection.ConnectionToken,
-            });
+            context.Request.Headers[ConnectionTokenHeaderName] = connection.ConnectionToken;
             context.Features.Set<IAuthenticateResultFeature>(
                 new TestAuthenticateResultFeature(AuthenticateResult.NoResult()));
 
@@ -854,10 +840,7 @@ public partial class HttpConnectionDispatcherTests
             context.Request.Path = "/foo/refresh";
             context.Request.Method = "POST";
             context.Response.Body = new MemoryStream();
-            context.Request.Query = new QueryCollection(new Dictionary<string, StringValues>
-            {
-                ["id"] = connection.ConnectionId,
-            });
+            context.Request.Headers[ConnectionTokenHeaderName] = connection.ConnectionId;
 
             context.Features.Set<IAuthenticateResultFeature>(new TestAuthenticateResultFeature(
                 AuthenticateResult.Success(new AuthenticationTicket(
@@ -889,10 +872,7 @@ public partial class HttpConnectionDispatcherTests
             context.Request.Path = "/foo/refresh";
             context.Request.Method = "POST";
             context.Response.Body = new MemoryStream();
-            context.Request.Query = new QueryCollection(new Dictionary<string, StringValues>
-            {
-                ["id"] = token,
-            });
+            context.Request.Headers[ConnectionTokenHeaderName] = token;
 
             await dispatcher.ExecuteRefreshAsync(context, options);
 
@@ -1314,10 +1294,7 @@ public partial class HttpConnectionDispatcherTests
             context.Request.Path = "/foo/refresh";
             context.Request.Method = "POST";
             context.Response.Body = new MemoryStream();
-            context.Request.Query = new QueryCollection(new Dictionary<string, StringValues>
-            {
-                ["id"] = connection.ConnectionToken,
-            });
+            context.Request.Headers[ConnectionTokenHeaderName] = connection.ConnectionToken;
 
             context.Features.Set<IAuthenticateResultFeature>(new TestAuthenticateResultFeature(AuthenticateResult.Success(ticket)));
 
@@ -1366,10 +1343,7 @@ public partial class HttpConnectionDispatcherTests
             context.Request.Path = "/foo/refresh";
             context.Request.Method = "POST";
             context.Response.Body = new MemoryStream();
-            context.Request.Query = new QueryCollection(new Dictionary<string, StringValues>
-            {
-                ["id"] = connection.ConnectionToken,
-            });
+            context.Request.Headers[ConnectionTokenHeaderName] = connection.ConnectionToken;
 
             context.Features.Set<IAuthenticateResultFeature>(new TestAuthenticateResultFeature(AuthenticateResult.Success(ticket)));
 
@@ -1408,10 +1382,7 @@ public partial class HttpConnectionDispatcherTests
             context.Request.Path = "/foo/refresh";
             context.Request.Method = "POST";
             context.Response.Body = new MemoryStream();
-            context.Request.Query = new QueryCollection(new Dictionary<string, StringValues>
-            {
-                ["id"] = connection.ConnectionToken,
-            });
+            context.Request.Headers[ConnectionTokenHeaderName] = connection.ConnectionToken;
 
             context.Features.Set<IAuthenticateResultFeature>(new TestAuthenticateResultFeature(AuthenticateResult.Success(ticket)));
 
@@ -1447,10 +1418,7 @@ public partial class HttpConnectionDispatcherTests
             context.Request.Path = "/foo/refresh";
             context.Request.Method = "POST";
             context.Response.Body = new MemoryStream();
-            context.Request.Query = new QueryCollection(new Dictionary<string, StringValues>
-            {
-                ["id"] = connection.ConnectionToken,
-            });
+            context.Request.Headers[ConnectionTokenHeaderName] = connection.ConnectionToken;
 
             context.Features.Set<IAuthenticateResultFeature>(new TestAuthenticateResultFeature(AuthenticateResult.Success(ticket)));
 
@@ -1608,21 +1576,27 @@ public partial class HttpConnectionDispatcherTests
     }
 
     [Fact]
-    public async Task LongPollingDifferentStandardIdentityIsRejectedBeforeAuthenticationRefresh()
+    public async Task LongPollingDifferentStandardIdentityRequiresExplicitAuthenticationRefresh()
     {
-        using (StartVerifiableLog(write => write.EventId.Name == "UserNameChangedRejected"))
+        using (StartVerifiableLog())
         {
             var manager = CreateConnectionManager(LoggerFactory);
             var connection = manager.CreateConnection();
             connection.TransportType = HttpTransportType.LongPolling;
             var dispatcher = CreateDispatcher(manager, LoggerFactory);
-            var callbackInvoked = false;
+            var featureCallbackCount = 0;
+            var optionsCallbackCount = 0;
+            connection.Features.Get<IConnectionAuthenticationRefreshFeature>().OnAuthenticationRefresh = _ =>
+            {
+                featureCallbackCount++;
+                return Task.FromResult(true);
+            };
             var options = new HttpConnectionDispatcherOptions
             {
                 EnableAuthenticationRefresh = true,
                 OnAuthenticationRefresh = _ =>
                 {
-                    callbackInvoked = true;
+                    optionsCallbackCount++;
                     return Task.FromResult(true);
                 },
             };
@@ -1642,9 +1616,68 @@ public partial class HttpConnectionDispatcherTests
             var context2 = BuildAuthPollContext(connection, sp, differentUser, DateTimeOffset.UtcNow.AddMinutes(30));
             await dispatcher.ExecuteAsync(context2, options, app).DefaultTimeout();
 
-            Assert.Equal(StatusCodes.Status403Forbidden, context2.Response.StatusCode);
-            Assert.False(callbackInvoked);
+            Assert.Equal(StatusCodes.Status409Conflict, context2.Response.StatusCode);
+            Assert.Equal("application/json", context2.Response.ContentType);
+            AssertRefreshError(ReadJson(context2.Response.Body), "authentication_refresh_required");
+            Assert.Equal(0, featureCallbackCount);
+            Assert.Equal(0, optionsCallbackCount);
             Assert.Same(originalUser, connection.User);
+            Assert.Equal(originalExpiration, connection.AuthenticationExpiration);
+            Assert.Null(connection.DisposeAndRemoveTask);
+            Assert.True(manager.TryGetConnection(connection.ConnectionToken, out _));
+        }
+    }
+
+    [Fact]
+    public async Task LongPollingDifferentStandardIdentityUsesLegacyAuthenticationRefreshWhenEnabled()
+    {
+        using (StartVerifiableLog())
+        {
+            var manager = CreateConnectionManager(LoggerFactory);
+            var connection = manager.CreateConnection();
+            connection.TransportType = HttpTransportType.LongPolling;
+            var dispatcher = CreateDispatcher(manager, LoggerFactory);
+            var featureCallbackCount = 0;
+            var optionsCallbackCount = 0;
+            connection.Features.Get<IConnectionAuthenticationRefreshFeature>().OnAuthenticationRefresh = _ =>
+            {
+                featureCallbackCount++;
+                return Task.FromResult(true);
+            };
+            var options = new HttpConnectionDispatcherOptions
+            {
+                EnableAuthenticationRefresh = true,
+                UseLegacyLongPollingAuthenticationRefresh = true,
+                OnAuthenticationRefresh = _ =>
+                {
+                    optionsCallbackCount++;
+                    return Task.FromResult(true);
+                },
+            };
+            var app = BuildTestConnectionHandlerApp(out var sp);
+
+            var originalUser = new ClaimsPrincipal(new ClaimsIdentity(
+                new[] { new Claim(ClaimTypes.NameIdentifier, "user-a") }, "Test"));
+            var originalExpiration = DateTimeOffset.UtcNow.AddMinutes(5);
+            connection.User = originalUser;
+            connection.AuthenticationExpiration = originalExpiration;
+            var context1 = BuildAuthPollContext(connection, sp, originalUser, originalExpiration);
+            await dispatcher.ExecuteAsync(context1, options, app).DefaultTimeout();
+            Assert.Equal(StatusCodes.Status200OK, context1.Response.StatusCode);
+
+            var differentUser = new ClaimsPrincipal(new ClaimsIdentity(
+                new[] { new Claim(ClaimTypes.NameIdentifier, "user-b") }, "Test"));
+            var differentExpiration = DateTimeOffset.UtcNow.AddMinutes(30);
+            var context2 = BuildAuthPollContext(connection, sp, differentUser, differentExpiration);
+            var pollTask = dispatcher.ExecuteAsync(context2, options, app);
+            await connection.Transport.Output.WriteAsync(Encoding.UTF8.GetBytes("Unblock")).AsTask().DefaultTimeout();
+            await pollTask.DefaultTimeout();
+
+            Assert.Equal(StatusCodes.Status200OK, context2.Response.StatusCode);
+            Assert.Equal(1, featureCallbackCount);
+            Assert.Equal(1, optionsCallbackCount);
+            Assert.Same(differentUser, connection.User);
+            Assert.Equal(differentExpiration, connection.AuthenticationExpiration, TimeSpan.FromSeconds(1));
             Assert.Null(connection.DisposeAndRemoveTask);
             Assert.True(manager.TryGetConnection(connection.ConnectionToken, out _));
         }
@@ -1988,32 +2021,32 @@ public partial class HttpConnectionDispatcherTests
         using (StartVerifiableLog(write => write.EventId.Name == "UserNameChangedRejected"))
         {
             var manager = CreateConnectionManager(LoggerFactory);
-            var connection = manager.CreateConnection();
+            var connection = manager.CreateConnection(new HttpConnectionDispatcherOptions(), negotiateVersion: 1);
             connection.TransportType = HttpTransportType.LongPolling;
             var dispatcher = CreateDispatcher(manager, LoggerFactory);
 
             var app = BuildTestConnectionHandlerApp(out var sp);
             var options = new HttpConnectionDispatcherOptions { EnableAuthenticationRefresh = true };
+            var refreshEntered = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+            var releaseRefresh = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
 
-            var userA = new ClaimsPrincipal(new ClaimsIdentity(
-                new[] { new Claim(ClaimTypes.NameIdentifier, "user-a") }, "Test"));
+            var userB = new ClaimsPrincipal(new ClaimsIdentity(
+                [new Claim(ClaimTypes.NameIdentifier, "user-b")],
+                "Test"));
             var initialExpiration = DateTimeOffset.UtcNow.AddMinutes(5);
-            connection.User = userA;
+
+            connection.User = userB;
             connection.AuthenticationExpiration = initialExpiration;
 
-            var context1 = BuildAuthPollContext(connection, sp, userA, initialExpiration);
+            var context1 = BuildAuthPollContext(connection, sp, userB, initialExpiration);
             await dispatcher.ExecuteAsync(context1, options, app).DefaultTimeout();
             Assert.Equal(StatusCodes.Status200OK, context1.Response.StatusCode);
 
-            // The application replaces the built-in identity check with its own policy: it accepts user-a's
-            // own refreshes and rejects anyone else.
-            var refreshedUserA = new ClaimsPrincipal(new ClaimsIdentity(
-                new[]
-                {
-                    new Claim(ClaimTypes.NameIdentifier, "user-a"),
-                    new Claim(ClaimTypes.Name, "refreshed"),
-                }, "Test"));
-            var laterExpiration = DateTimeOffset.UtcNow.AddMinutes(30);
+            var userA = new ClaimsPrincipal(new ClaimsIdentity(
+                [new Claim(ClaimTypes.NameIdentifier, "user-a")],
+                "Test"));
+            var refreshedExpiration = DateTimeOffset.UtcNow.AddMinutes(30);
+
             var feature = connection.Features.Get<IConnectionAuthenticationRefreshFeature>();
             Assert.NotNull(feature);
             feature.OnAuthenticationRefresh = async ctx =>
@@ -2023,26 +2056,40 @@ public partial class HttpConnectionDispatcherTests
                     return true;
                 }
 
-                // user-a's own /refresh lands while this policy is running, so the connection's user
-                // reference advances past the snapshot this decision was made against.
-                var concurrentUpdate = await connection.UpdateUserAsync(refreshedUserA, laterExpiration, ctx.HttpContext);
-                Assert.Equal(HttpConnectionContext.UserUpdateResult.Updated, concurrentUpdate);
+                refreshEntered.TrySetResult();
+                await releaseRefresh.Task;
                 return false;
             };
 
-            // A different user polls with a token that expires no sooner than the connection's, so the
-            // stale-token shortcut does not apply and the policy above is what rejects it.
-            var userB = new ClaimsPrincipal(new ClaimsIdentity(
-                new[] { new Claim(ClaimTypes.NameIdentifier, "user-b") }, "Test"));
-            var context2 = BuildAuthPollContext(connection, sp, userB, laterExpiration);
-            var pollTask = dispatcher.ExecuteAsync(context2, options, app);
+            // B's identity still matches the connection, so this poll reaches the callback.
+            var pollContext = BuildAuthPollContext(connection, sp, userB, DateTimeOffset.UtcNow.AddMinutes(10));
+            var pollTask = dispatcher.ExecuteAsync(pollContext, options, app);
+
+            await refreshEntered.Task.DefaultTimeout();
+
+            // A's refresh advances the connection while B's poll policy is waiting.
+            var ticket = new AuthenticationTicket(
+                userA,
+                new AuthenticationProperties { ExpiresUtc = refreshedExpiration },
+                "Test");
+            var refreshContext = BuildRefreshContext(connection, ticket);
+
+            try
+            {
+                await dispatcher.ExecuteRefreshAsync(refreshContext, options);
+            }
+            finally
+            {
+                releaseRefresh.TrySetResult();
+            }
+
             await connection.Transport.Output.WriteAsync(Encoding.UTF8.GetBytes("Unblock")).AsTask().DefaultTimeout();
             await pollTask.DefaultTimeout();
 
-            Assert.Equal(StatusCodes.Status403Forbidden, context2.Response.StatusCode);
-            // The rejected poll leaves the connection intact and owned by user-a.
-            Assert.Same(refreshedUserA, connection.User);
-            Assert.Equal(laterExpiration, connection.AuthenticationExpiration, TimeSpan.FromSeconds(1));
+            Assert.Equal(StatusCodes.Status200OK, refreshContext.Response.StatusCode);
+            Assert.Equal(StatusCodes.Status403Forbidden, pollContext.Response.StatusCode);
+            Assert.Same(userA, connection.User);
+            Assert.Equal(refreshedExpiration, connection.AuthenticationExpiration, TimeSpan.FromSeconds(1));
             Assert.Null(connection.DisposeAndRemoveTask);
             Assert.True(manager.TryGetConnection(connection.ConnectionToken, out _));
         }
@@ -2177,10 +2224,7 @@ public partial class HttpConnectionDispatcherTests
         context.Request.Path = "/foo/refresh";
         context.Request.Method = "POST";
         context.Response.Body = new MemoryStream();
-        context.Request.Query = new QueryCollection(new Dictionary<string, StringValues>
-        {
-            ["id"] = connection.ConnectionToken,
-        });
+        context.Request.Headers[ConnectionTokenHeaderName] = connection.ConnectionToken;
         context.User = ticket.Principal;
         context.Features.Set<IAuthenticateResultFeature>(
             new TestAuthenticateResultFeature(AuthenticateResult.Success(ticket)));
@@ -2469,10 +2513,7 @@ public partial class HttpConnectionDispatcherTests
         context.Request.Path = "/foo/refresh";
         context.Request.Method = "POST";
         context.Response.Body = new MemoryStream();
-        context.Request.Query = new QueryCollection(new Dictionary<string, StringValues>
-        {
-            ["id"] = connectionToken,
-        });
+        context.Request.Headers[ConnectionTokenHeaderName] = connectionToken;
         SetConnectionEndpointMetadata(context, endpointMetadata);
         return context;
     }

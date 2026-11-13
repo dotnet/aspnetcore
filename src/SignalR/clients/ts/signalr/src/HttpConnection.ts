@@ -4,6 +4,7 @@
 import { AccessTokenHttpClient } from "./AccessTokenHttpClient";
 import { DefaultHttpClient } from "./DefaultHttpClient";
 import { AggregateErrors, DisabledTransportError, FailedToNegotiateWithServerError, FailedToStartTransportError, HttpError, UnsupportedTransportError, AbortError } from "./Errors";
+import { HeaderNames } from "./HeaderNames";
 import { HttpRequest } from "./HttpClient";
 import { IConnection } from "./IConnection";
 import { IHttpConnectionOptions } from "./IHttpConnectionOptions";
@@ -11,7 +12,7 @@ import { ILogger, LogLevel } from "./ILogger";
 import { HttpTransportType, ITransport, TransferFormat } from "./ITransport";
 import { LongPollingTransport } from "./LongPollingTransport";
 import { ServerSentEventsTransport } from "./ServerSentEventsTransport";
-import { Arg, createLogger, getUserAgentHeader, Platform } from "./Utils";
+import { Arg, createLogger, getHttpResponseError, getUserAgentHeader, Platform } from "./Utils";
 import { WebSocketTransport } from "./WebSocketTransport";
 
 /** @private */
@@ -345,6 +346,9 @@ export class HttpConnection implements IConnection {
             const response = await this._httpClient.post(negotiateUrl, request);
 
             if (response.statusCode !== 200) {
+                if (response.statusText || (typeof response.content === "string" && response.content)) {
+                    throw getHttpResponseError(response);
+                }
                 return Promise.reject(new Error(`Unexpected status code returned from negotiate '${response.statusCode}'`));
             }
 
@@ -386,7 +390,7 @@ export class HttpConnection implements IConnection {
         return url + (url.indexOf("?") === -1 ? "?" : "&") + `id=${connectionToken}`;
     }
 
-    private _createRefreshUrl(url: string, connectionToken: string): string {
+    private _createRefreshUrl(url: string): string {
         const refreshUrl = new URL(url);
 
         if (refreshUrl.pathname.endsWith("/")) {
@@ -395,7 +399,6 @@ export class HttpConnection implements IConnection {
             refreshUrl.pathname += "/refresh";
         }
 
-        refreshUrl.searchParams.append("id", connectionToken);
         return refreshUrl.toString();
     }
 
@@ -420,12 +423,16 @@ export class HttpConnection implements IConnection {
         const [name, value] = getUserAgentHeader();
         headers[name] = value;
 
-        const refreshUrl = this._createRefreshUrl(this._connectionUrl, this._connectionToken);
+        const refreshUrl = this._createRefreshUrl(this._connectionUrl);
         this._logger.log(LogLevel.Debug, `Sending authentication refresh request: ${refreshUrl}.`);
 
         const request: HttpRequest = {
             content: "",
-            headers: { ...headers, ...this._options.headers },
+            headers: {
+                ...headers,
+                ...this._options.headers,
+                [HeaderNames.ConnectionToken]: this._connectionToken,
+            },
             timeout: this._options.timeout,
             withCredentials: this._options.withCredentials,
         };
@@ -536,7 +543,7 @@ export class HttpConnection implements IConnection {
                 }
                 return new ServerSentEventsTransport(this._httpClient, this._httpClient._accessToken, this._logger, this._options);
             case HttpTransportType.LongPolling:
-                return new LongPollingTransport(this._httpClient, this._logger, this._options);
+                return new LongPollingTransport(this._httpClient, this._logger, this._options, () => this._refreshAuthentication());
             default:
                 throw new Error(`Unknown transport: ${transport}.`);
         }

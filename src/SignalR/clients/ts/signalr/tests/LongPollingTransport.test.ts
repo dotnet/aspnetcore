@@ -3,6 +3,7 @@
 
 import { AccessTokenHttpClient } from "../src/AccessTokenHttpClient";
 import { HttpResponse } from "../src/HttpClient";
+import { LogLevel } from "../src/ILogger";
 import { TransferFormat } from "../src/ITransport";
 import { LongPollingTransport } from "../src/LongPollingTransport";
 import { getUserAgentHeader } from "../src/Utils";
@@ -76,6 +77,161 @@ describe("LongPollingTransport", () => {
         });
     });
 
+    it("refreshes authentication once per challenged poll", async () => {
+        await VerifyLogger.run(async (logger) => {
+            let pollCount = 0;
+            let refreshCount = 0;
+            const client = new TestHttpClient()
+                .on("GET", () => {
+                    pollCount++;
+                    switch (pollCount) {
+                        case 1:
+                        case 3:
+                            return new HttpResponse(200);
+                        case 2:
+                        case 4:
+                            return new HttpResponse(409, "Conflict", JSON.stringify({ error: "authentication_refresh_required" }));
+                        default:
+                            return new HttpResponse(204);
+                    }
+                });
+            const transport = new LongPollingTransport(
+                client,
+                logger,
+                { logMessageContent: false, withCredentials: true, headers: {} },
+                async () => {
+                    refreshCount++;
+                });
+            const closed = makeClosedPromise(transport);
+
+            await transport.connect("http://example.com", TransferFormat.Text);
+            await closed;
+
+            expect(refreshCount).toEqual(2);
+            expect(pollCount).toEqual(5);
+        });
+    });
+
+    it("refreshes authentication for a binary poll challenge", async () => {
+        await VerifyLogger.run(async (logger) => {
+            let pollCount = 0;
+            let refreshCount = 0;
+            const client = new TestHttpClient()
+                .on("GET", (request) => {
+                    expect(request.responseType).toEqual("arraybuffer");
+                    pollCount++;
+                    switch (pollCount) {
+                        case 1:
+                            return new HttpResponse(200);
+                        case 2:
+                            return new HttpResponse(409, "Conflict",
+                                toArrayBuffer(JSON.stringify({ error: "authentication_refresh_required" })));
+                        default:
+                            return new HttpResponse(204);
+                    }
+                });
+            const transport = new LongPollingTransport(
+                client,
+                logger,
+                { logMessageContent: false, withCredentials: true, headers: {} },
+                async () => {
+                    refreshCount++;
+                });
+            const closed = makeClosedPromise(transport);
+
+            await transport.connect("http://example.com", TransferFormat.Binary);
+            await closed;
+
+            expect(refreshCount).toEqual(1);
+            expect(pollCount).toEqual(3);
+        });
+    });
+
+    it("stops after a repeated authentication refresh challenge", async () => {
+        await VerifyLogger.run(async (logger) => {
+            let pollCount = 0;
+            let refreshCount = 0;
+            const client = new TestHttpClient()
+                .on("GET", () => {
+                    pollCount++;
+                    return pollCount === 1
+                        ? new HttpResponse(200)
+                        : new HttpResponse(409, "Conflict", JSON.stringify({ error: "authentication_refresh_required" }));
+                });
+            const transport = new LongPollingTransport(
+                client,
+                logger,
+                { logMessageContent: false, withCredentials: true, headers: {} },
+                async () => {
+                    refreshCount++;
+                });
+            const closed = makeClosedPromise(transport);
+
+            await transport.connect("http://example.com", TransferFormat.Text);
+            await expect(closed).rejects.toThrow("Conflict");
+
+            expect(refreshCount).toEqual(1);
+            expect(pollCount).toEqual(3);
+        }, "(LongPolling transport) Unexpected response code: 409.");
+    });
+
+    it.each([
+        [409, "Conflict", JSON.stringify({ error: "connection_already_active" })],
+        [400, "Bad Request", JSON.stringify({ error: "authentication_refresh_required" })],
+        [409, "Conflict", "not-json"],
+    ])("does not refresh authentication for a non-challenge response", async (statusCode, statusText, content) => {
+        await VerifyLogger.run(async (logger) => {
+            let firstPoll = true;
+            let refreshCount = 0;
+            const client = new TestHttpClient()
+                .on("GET", () => {
+                    if (firstPoll) {
+                        firstPoll = false;
+                        return new HttpResponse(200);
+                    }
+
+                    return new HttpResponse(statusCode, statusText, content);
+                });
+            const transport = new LongPollingTransport(
+                client,
+                logger,
+                { logMessageContent: false, withCredentials: true, headers: {} },
+                async () => {
+                    refreshCount++;
+                });
+            const closed = makeClosedPromise(transport);
+
+            await transport.connect("http://example.com", TransferFormat.Text);
+            await expect(closed).rejects.toThrow(statusText);
+
+            expect(refreshCount).toEqual(0);
+        }, `(LongPolling transport) Unexpected response code: ${statusCode}.`);
+    });
+
+    it("stops when authentication refresh fails", async () => {
+        await VerifyLogger.run(async (logger) => {
+            let firstPoll = true;
+            const client = new TestHttpClient()
+                .on("GET", () => {
+                    if (firstPoll) {
+                        firstPoll = false;
+                        return new HttpResponse(200);
+                    }
+
+                    return new HttpResponse(409, "Conflict", JSON.stringify({ error: "authentication_refresh_required" }));
+                });
+            const transport = new LongPollingTransport(
+                client,
+                logger,
+                { logMessageContent: false, withCredentials: true, headers: {} },
+                () => Promise.reject(new Error("refresh failed")));
+            const closed = makeClosedPromise(transport);
+
+            await transport.connect("http://example.com", TransferFormat.Text);
+            await expect(closed).rejects.toThrow("refresh failed");
+        });
+    });
+
     it("sends DELETE on stop after polling has finished", async () => {
         await VerifyLogger.run(async (logger) => {
             let firstPoll = true;
@@ -121,6 +277,39 @@ describe("LongPollingTransport", () => {
             // Wait for stop to complete
             await stopPromise;
         });
+    });
+
+    it.each([
+        [202, "Accepted", "(LongPolling transport) DELETE request accepted.", true],
+        [404, "Not Found", "(LongPolling transport) A 404 response was returned from sending a DELETE request.", false],
+        [500, "Internal Server Error", "(LongPolling transport) Error sending a DELETE request: Error: Internal Server Error: Status code '500'", false],
+    ])("handles returned %s response when sending DELETE", async (statusCode, statusText, expectedLog, accepted) => {
+        const logger = { log: jest.fn() };
+        let firstPoll = true;
+        const httpClient = new TestHttpClient()
+            .on("GET", () => {
+                if (firstPoll) {
+                    firstPoll = false;
+                    return new HttpResponse(200);
+                }
+
+                return new HttpResponse(204);
+            })
+            .on("DELETE", () => new HttpResponse(statusCode, statusText));
+        const transport = new LongPollingTransport(
+            httpClient,
+            logger,
+            { logMessageContent: false, withCredentials: true, headers: {} });
+
+        await transport.connect("http://tempuri.org", TransferFormat.Text);
+        await transport.stop();
+
+        expect(logger.log).toHaveBeenCalledWith(LogLevel.Trace, expectedLog);
+        if (!accepted) {
+            expect(logger.log).not.toHaveBeenCalledWith(
+                LogLevel.Trace,
+                "(LongPolling transport) DELETE request accepted.");
+        }
     });
 
     it("user agent header set on sends and polls", async () => {
@@ -384,4 +573,12 @@ function makeClosedPromise(transport: LongPollingTransport): Promise<void> {
         }
     };
     return closed.promise;
+}
+
+function toArrayBuffer(value: string): ArrayBuffer {
+    const bytes = new Uint8Array(value.length);
+    for (let i = 0; i < value.length; i++) {
+        bytes[i] = value.charCodeAt(i);
+    }
+    return bytes.buffer;
 }
