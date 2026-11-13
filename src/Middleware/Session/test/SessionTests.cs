@@ -1127,6 +1127,88 @@ public class SessionTests
         Assert.Equal(LogLevel.Error, message.LogLevel);
     }
 
+    private static DistributedSession CreateDistributedSession(IDistributedCache cache, string sessionKey = "session-key", bool isNewSessionKey = false)
+        => new DistributedSession(cache, sessionKey, TimeSpan.FromMinutes(20), TimeSpan.FromMinutes(1), () => true, NullLoggerFactory.Instance, isNewSessionKey);
+
+    [Fact]
+    public async Task DistributedSession_CommitWritesExpectedFormat()
+    {
+        var cache = new MemoryDistributedCache(Options.Create(new MemoryDistributedCacheOptions()));
+        var session = CreateDistributedSession(cache, isNewSessionKey: true);
+        session.Set("a", new byte[] { 1, 2, 3 });
+        session.Set("\u00e9", Array.Empty<byte>());
+
+        await session.CommitAsync();
+
+        var data = cache.Get("session-key");
+        var id = Guid.Parse(session.Id).ToByteArray();
+        var expected = new List<byte> { 2, 0, 0, 2 };
+        expected.AddRange(id);
+        expected.AddRange(new byte[] { 0, 1, (byte)'a', 0, 0, 0, 3, 1, 2, 3 });
+        expected.AddRange(new byte[] { 0, 2, 0xC3, 0xA9, 0, 0, 0, 0 });
+        Assert.Equal(expected.ToArray(), data);
+    }
+
+    [Fact]
+    public async Task DistributedSession_RoundTripsValues()
+    {
+        var cache = new MemoryDistributedCache(Options.Create(new MemoryDistributedCacheOptions()));
+        var session = CreateDistributedSession(cache, isNewSessionKey: true);
+        var large = new byte[100_000];
+        new Random(42).NextBytes(large);
+        session.Set("small", new byte[] { 42 });
+        session.Set("empty", Array.Empty<byte>());
+        session.Set("large", large);
+        session.Set(new string('k', 1000), new byte[] { 7, 8 });
+        await session.CommitAsync();
+
+        var loaded = CreateDistributedSession(cache);
+        await loaded.LoadAsync();
+
+        Assert.Equal(session.Id, loaded.Id);
+        Assert.Equal(4, loaded.Keys.Count());
+        Assert.True(loaded.TryGetValue("small", out var small));
+        Assert.Equal(new byte[] { 42 }, small);
+        Assert.True(loaded.TryGetValue("empty", out var empty));
+        Assert.Empty(empty);
+        Assert.True(loaded.TryGetValue("large", out var largeValue));
+        Assert.Equal(large, largeValue);
+        Assert.True(loaded.TryGetValue(new string('k', 1000), out var longKeyValue));
+        Assert.Equal(new byte[] { 7, 8 }, longKeyValue);
+    }
+
+    [Fact]
+    public async Task DistributedSession_TruncatedPayload_LoadAsyncThrowsEndOfStream()
+    {
+        var cache = new MemoryDistributedCache(Options.Create(new MemoryDistributedCacheOptions()));
+        var session = CreateDistributedSession(cache, isNewSessionKey: true);
+        session.Set("key", new byte[] { 1, 2, 3, 4 });
+        await session.CommitAsync();
+
+        var data = cache.Get("session-key");
+        cache.Set("session-key", data.AsSpan(0, data.Length - 1).ToArray(), new DistributedCacheEntryOptions());
+
+        await Assert.ThrowsAsync<EndOfStreamException>(() => CreateDistributedSession(cache).LoadAsync());
+
+        var syncSession = CreateDistributedSession(cache);
+        Assert.False(syncSession.IsAvailable);
+    }
+
+    [Fact]
+    public async Task DistributedSession_UnknownRevision_IsTreatedAsEmptyAndRewritten()
+    {
+        var cache = new MemoryDistributedCache(Options.Create(new MemoryDistributedCacheOptions()));
+        cache.Set("session-key", new byte[] { 1, 0, 0, 1 }, new DistributedCacheEntryOptions());
+
+        var session = CreateDistributedSession(cache);
+        await session.LoadAsync();
+        Assert.Empty(session.Keys);
+        Assert.True(session.IsAvailable);
+
+        await session.CommitAsync();
+        Assert.Equal(2, cache.Get("session-key")[0]);
+    }
+
     private class TestClock : ISystemClock
     {
         public TestClock()
