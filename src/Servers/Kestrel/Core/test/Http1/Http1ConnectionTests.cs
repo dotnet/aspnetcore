@@ -126,8 +126,10 @@ public class Http1ConnectionTests : Http1ConnectionTestsBase
         SequencePosition TakeStartLineAndMessageHeaders()
         {
             var reader = new SequenceReader<byte>(readableBuffer);
-            Assert.True(_http1Connection.TakeStartLine(ref reader));
-            Assert.False(_http1Connection.TakeMessageHeaders(ref reader, trailers: false));
+            Assert.True(_http1Connection.TryTakeStartLineCore(ref reader).IsComplete);
+            var headersResult = _http1Connection.TryTakeMessageHeadersCore(ref reader, trailers: false);
+            Assert.False(headersResult.HasError);
+            Assert.False(headersResult.IsComplete);
             return reader.Position;
         }
 
@@ -141,7 +143,7 @@ public class Http1ConnectionTests : Http1ConnectionTestsBase
         SequencePosition TakeMessageHeaders()
         {
             var reader = new SequenceReader<byte>(readableBuffer);
-            Assert.True(_http1Connection.TakeMessageHeaders(ref reader, trailers: false));
+            Assert.True(_http1Connection.TryTakeMessageHeadersCore(ref reader, trailers: false).IsComplete);
             return reader.Position;
         }
 
@@ -1079,7 +1081,13 @@ public class Http1ConnectionTests : Http1ConnectionTestsBase
     private bool TakeMessageHeaders(ReadOnlySequence<byte> readableBuffer, bool trailers, out SequencePosition consumed, out SequencePosition examined)
     {
         var reader = new SequenceReader<byte>(readableBuffer);
-        if (_http1Connection.TakeMessageHeaders(ref reader, trailers: trailers))
+        var parseResult = _http1Connection.TryTakeMessageHeadersCore(ref reader, trailers: trailers);
+        if (parseResult.HasError)
+        {
+            throw _http1Connection.CreateBadRequestException(parseResult, readableBuffer);
+        }
+
+        if (parseResult.IsComplete)
         {
             consumed = reader.Position;
             examined = reader.Position;
@@ -1096,7 +1104,13 @@ public class Http1ConnectionTests : Http1ConnectionTestsBase
     private bool TakeStartLine(ReadOnlySequence<byte> readableBuffer, out SequencePosition consumed, out SequencePosition examined)
     {
         var reader = new SequenceReader<byte>(readableBuffer);
-        if (_http1Connection.TakeStartLine(ref reader))
+        var parseResult = _http1Connection.TryTakeStartLineCore(ref reader);
+        if (parseResult.HasError)
+        {
+            throw _http1Connection.CreateBadRequestException(parseResult, readableBuffer);
+        }
+
+        if (parseResult.IsComplete)
         {
             consumed = reader.Position;
             examined = reader.Position;
