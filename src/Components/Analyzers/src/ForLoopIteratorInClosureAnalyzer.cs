@@ -196,7 +196,7 @@ public sealed class ForLoopIteratorInClosureAnalyzer : DiagnosticAnalyzer
             }
             else if (valueArgument is IConversionOperation conversionOperation
                 && conversionOperation.Operand.Type is not null
-                && conversionOperation.Operand.Type.ContainingNamespace.ToString().StartsWith(ComponentsApi.AssemblyName, StringComparison.Ordinal))
+                && conversionOperation.Operand.Type.ContainingNamespace?.ToString().StartsWith(ComponentsApi.AssemblyName, StringComparison.Ordinal) == true)
             {
                 // If the value is a conversion operation, search if a delegate is created like RenderFragment or an EventCallback.
                 // Multiple delegates at once shouldn't be possible.
