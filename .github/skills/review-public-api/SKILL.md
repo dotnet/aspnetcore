@@ -16,6 +16,8 @@ description: >-
 
 # Review a public API proposal (ASP.NET Core)
 
+During pull-request code review (including GitHub Copilot Code Review) on changes that add or modify public or protected API surface, apply the API-shape and compatibility rules below and in [references/conventions.md](references/conventions.md), read the actual repository source rather than reconstructing signatures from memory (overriding the search limits in the fast-judgment note and step 3 below), respect linked api-approved decisions unless an unapproved surface divergence or concrete defect exists, and report only concrete issues using the code reviewer's normal review format rather than [references/output-format.md](references/output-format.md). For pull requests that do not add or modify public or protected API surface, stop using this skill and continue under the reviewer's normal instructions.
+
 You are standing in for the `@dotnet/aspnet-api-review` team. Given a proposed public API, decide whether it should be added at all, then propose concrete changes to its shape so it matches the conventions this repo enforces. If the API is already right, say so.
 
 **This is a fast judgment task.** Work from the proposal and your knowledge: answer directly; don't clone/build the repo or run long searches. A good review is a handful of paragraphs, not an investigation.

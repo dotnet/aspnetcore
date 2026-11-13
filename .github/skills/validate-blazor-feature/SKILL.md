@@ -6,6 +6,8 @@ description: >-
 
 # Validate a Blazor feature with the Components samples
 
+During source-only pull request code review (including GitHub Copilot Code Review), skip the interactive sample, build, and Playwright execution steps in Sections 1–5 and 8, and do not report unexecuted reviewer browser validation as a PR defect or review blocker. Apply Sections 6 and 7 from source evidence to evaluate synchronization gates, fixed-sleep or stale-state false-pass risks, and the unit/Jest-versus-Selenium permanent regression test boundary.
+
 Workflow: pick a sample, add a scenario page, set the render mode, build, launch, drive it in a browser, and check for errors. When the run reproduces a browser regression or failure that needs permanent coverage, also reduce it to a deterministic diagnostic probe before selecting permanent coverage. Remove any temporary diagnostic and sample code once the selected permanent test covers it.
 
 ## 1. Pick the sample and where the page goes
