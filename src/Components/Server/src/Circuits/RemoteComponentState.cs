@@ -10,6 +10,8 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits;
 /// </summary>
 internal sealed class RemoteComponentState : ComponentState
 {
+    private readonly RemoteRenderer _renderer;
+
     public RemoteComponentState(
         RemoteRenderer renderer,
         int componentId,
@@ -17,7 +19,11 @@ internal sealed class RemoteComponentState : ComponentState
         ComponentState? parentComponentState)
         : base(renderer, componentId, component, parentComponentState)
     {
+        _renderer = renderer;
     }
+
+    public override ValueTask DisposeAsync()
+        => _renderer.TrackComponentDisposal(this, base.DisposeAsync());
 
     protected override object? GetComponentKey()
     {

@@ -1,0 +1,43 @@
+﻿@page "/nav/element-reference-disposal"
+
+<PageTitle>Element reference disposal</PageTitle>
+
+<h1>Element reference disposal</h1>
+
+<p>Captured element references remain available until asynchronous disposal of the root and its descendants completes.</p>
+
+<script src="_content/TestContentPackage/ElementReferenceDisposal.ack.js"></script>
+
+<article id="element-reference-disposal-content">
+    @if (!Removed)
+    {
+        <TestContentPackage.ElementReferenceDisposal
+            @rendermode="@(new InteractiveServerRenderMode(prerender: Prerender))"
+            Id="server"
+            ThrowOnDispose="FailServerDisposal" />
+        <TestContentPackage.ElementReferenceDisposal
+            @rendermode="@(new InteractiveWebAssemblyRenderMode(prerender: Prerender))"
+            Id="webassembly" />
+    }
+
+    @if (FailServerDisposal)
+    {
+        <TestContentPackage.ElementReferenceDisposal
+            @rendermode="@(new InteractiveWebAssemblyRenderMode(prerender: Prerender))"
+            Id="webassembly-survivor" />
+    }
+
+    <a id="element-reference-disposal-navigation"
+       href="@(FailServerDisposal ? $"nav/element-reference-disposal?removed=true&failServerDisposal=true&prerender={Prerender}" : "nav/other")">Navigate away</a>
+</article>
+
+@code {
+    [SupplyParameterFromQuery]
+    public bool Prerender { get; set; }
+
+    [SupplyParameterFromQuery]
+    public bool FailServerDisposal { get; set; }
+
+    [SupplyParameterFromQuery]
+    public bool Removed { get; set; }
+}
