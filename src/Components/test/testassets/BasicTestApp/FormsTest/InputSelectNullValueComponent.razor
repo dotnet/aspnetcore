@@ -28,6 +28,17 @@
 <p id="current-model">@ModelState</p>
 <p id="submitted-model">@submittedModel</p>
 
+<InputSelect id="selected-placeholder" @bind-Value="selectedPlaceholderValue">
+    <option selected disabled>Choose…</option>
+    <option value="US">US</option>
+</InputSelect>
+<InputSelect id="selected-empty-placeholder" @bind-Value="selectedEmptyPlaceholderValue">
+    <option selected disabled value="">Choose…</option>
+    <option value="US">US</option>
+</InputSelect>
+<p id="selected-placeholder-model">@Display(selectedPlaceholderValue); @Display(selectedEmptyPlaceholderValue)</p>
+<button id="reset-selected-placeholders" type="button" @onclick="ResetSelectedPlaceholders">Reset placeholders</button>
+
 <InputSelect id="null-enum" @bind-Value="enumValue">
     <option value="First">First</option>
     <option value="Second">Second</option>
@@ -40,6 +51,14 @@
     private readonly TestModel model = new();
     private string submittedModel = "Not submitted";
     private TestEnum? enumValue;
+    private string? selectedPlaceholderValue;
+    private string? selectedEmptyPlaceholderValue;
+
+    private void ResetSelectedPlaceholders()
+    {
+        selectedPlaceholderValue = null;
+        selectedEmptyPlaceholderValue = null;
+    }
 
     private string ModelState =>
         $"Text={Display(model.Text)}; " +

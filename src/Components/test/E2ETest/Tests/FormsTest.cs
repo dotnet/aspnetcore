@@ -265,6 +265,32 @@ public class FormsTest : ServerTestBase<ToggleExecutionModeServerFixture<Program
         }
     }
 
+    [Theory]
+    [InlineData("selected-placeholder", "-1")]
+    [InlineData("selected-empty-placeholder", "0")]
+    public void InputSelectNullValueOverridesSelectedPlaceholder(string id, string initialIndex)
+    {
+        var appElement = Browser.MountTestComponent<InputSelectNullValueComponent>();
+        var select = new SelectElement(appElement.FindElement(By.Id(id)));
+
+        Browser.Equal(initialIndex, () => select.WrappedElement.GetDomProperty("selectedIndex"));
+        Browser.Equal("", () => select.WrappedElement.GetDomProperty("value"));
+        Browser.Equal("<null>; <null>", () => appElement.FindElement(By.Id("selected-placeholder-model")).Text);
+
+        select.SelectByValue("US");
+
+        Browser.Equal("US", () => select.WrappedElement.GetDomProperty("value"));
+        Browser.Equal("1", () => select.WrappedElement.GetDomProperty("selectedIndex"));
+        Browser.Equal(id == "selected-placeholder" ? "\"US\"; <null>" : "<null>; \"US\"",
+            () => appElement.FindElement(By.Id("selected-placeholder-model")).Text);
+
+        appElement.FindElement(By.Id("reset-selected-placeholders")).Click();
+
+        Browser.Equal("<null>; <null>", () => appElement.FindElement(By.Id("selected-placeholder-model")).Text);
+        Browser.Equal(initialIndex, () => select.WrappedElement.GetDomProperty("selectedIndex"));
+        Browser.Equal("", () => select.WrappedElement.GetDomProperty("value"));
+    }
+
     [Fact]
     public void InputSelectWithNullableEnumPreservesSelectionAndReset()
     {
