@@ -6091,6 +6091,40 @@ public class RendererTest
         }
     }
 
+    [Fact]
+    public async Task DispatchExceptionAsync_AfterRendererIsDisposed_DoesNotThrow()
+    {
+        var renderer = new TestRenderer();
+        var component = new DispatchExceptionComponent();
+        var componentId = renderer.AssignRootComponentId(component);
+        await renderer.RenderRootComponentAsync(componentId);
+        renderer.Dispose();
+
+        await component.DispatchAsync(new InvalidTimeZoneException("Test exception"));
+
+        Assert.Empty(renderer.HandledExceptions);
+    }
+
+    [Fact]
+    public async Task DispatchExceptionAsync_AfterComponentIsRemoved_Throws()
+    {
+        var renderer = new TestRenderer();
+        var component = new DispatchExceptionComponent();
+        var componentId = renderer.AssignRootComponentId(component);
+        await renderer.RenderRootComponentAsync(componentId);
+        await renderer.Dispatcher.InvokeAsync(() => renderer.RemoveRootComponent(componentId));
+
+        var exception = await Assert.ThrowsAsync<ArgumentException>(() => component.DispatchAsync(new InvalidTimeZoneException("Test exception")));
+
+        Assert.Equal($"The renderer does not have a component with ID {componentId}.", exception.Message);
+        Assert.Empty(renderer.HandledExceptions);
+    }
+
+    private class DispatchExceptionComponent : ComponentBase
+    {
+        public Task DispatchAsync(Exception exception) => DispatchExceptionAsync(exception);
+    }
+
     private class ComponentThatAwaitsTask : ComponentBase
     {
         [Parameter] public Task TaskToAwait { get; set; }
