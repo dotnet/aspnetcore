@@ -80,8 +80,7 @@ internal static class IdentityComponentsEndpointRouteBuilderExtensions
 
         accountGroup.MapPost("/PasskeyRequestOptions", [RequireAntiforgeryToken] async (
             HttpContext context,
-            [FromServices] SignInManager<ApplicationUser> signInManager,
-            [FromQuery] string? username) =>
+            [FromServices] SignInManager<ApplicationUser> signInManager) =>
         {
             var antiforgeryValidationFeature = context.Features.Get<IAntiforgeryValidationFeature>();
             if (antiforgeryValidationFeature is not { IsValid: true })

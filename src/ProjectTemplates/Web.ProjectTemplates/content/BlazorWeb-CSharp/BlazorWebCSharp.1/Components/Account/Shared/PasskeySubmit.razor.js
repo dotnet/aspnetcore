@@ -58,9 +58,8 @@ async function reauthenticateCredential(signal) {
     return await navigator.credentials.get({ publicKey: options, signal });
 }
 
-async function requestCredential(email, mediation, signal) {
-    const query = new URLSearchParams({ username: email });
-    const optionsResponse = await fetchWithErrorHandling(`/Account/PasskeyRequestOptions?${query}`, {
+async function requestCredential(mediation, signal) {
+    const optionsResponse = await fetchWithErrorHandling(`/Account/PasskeyRequestOptions`, {
         method: 'POST',
         signal,
     });
@@ -176,7 +175,7 @@ customElements.define('passkey-submit', class extends HTMLElement {
             return await reauthenticateCredential(signal);
         } else if (this.attrs.operation === 'Request') {
             const mediation = useConditionalMediation ? 'conditional' : undefined;
-            return await requestCredential(this.getEmail(), mediation, signal);
+            return await requestCredential(mediation, signal);
         } else if (this.attrs.operation === 'Register') {
             return await registerCredential(this.getEmail(), signal);
         } else {

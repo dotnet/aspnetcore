@@ -603,10 +603,11 @@ public abstract class BlazorTemplateTest : BrowserTestBase
                 // The passkey created during registration signs the account in
                 await page.FillAsync("[name=\"Input.Email\"]", passkeyUserName);
                 var requestOptionsRequestTask = page.WaitForRequestAsync(
-                    request => request.Url.Contains("/Account/PasskeyRequestOptions?", StringComparison.Ordinal));
+                    request => request.Url.Contains("/Account/PasskeyRequestOptions", StringComparison.Ordinal));
                 await page.ClickAsync("text=Log in with a passkey");
                 var requestOptionsRequest = await requestOptionsRequestTask;
-                Assert.Contains($"username={Uri.EscapeDataString(passkeyUserName)}", requestOptionsRequest.Url);
+                Assert.DoesNotContain("username=", requestOptionsRequest.Url);
+                Assert.DoesNotContain(Uri.EscapeDataString(passkeyUserName), requestOptionsRequest.Url);
                 await page.WaitForSelectorAsync("text=Hello, world!");
 
                 // The password page offers to set a password rather than change one, which only
