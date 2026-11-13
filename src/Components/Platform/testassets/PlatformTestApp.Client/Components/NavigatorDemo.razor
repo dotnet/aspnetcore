@@ -25,8 +25,8 @@
     private int runCount;
     private string onlineStateEvent = "No event has been reported.";
     private int onlineStateEventCount;
-    private IAsyncDisposable? onlineListener;
-    private IAsyncDisposable? offlineListener;
+    private Task<IAsyncDisposable>? onlineListenerTask;
+    private Task<IAsyncDisposable>? offlineListenerTask;
 
     private Task GetLanguageAsync() => RunAsync("Language", async () =>
         await Browser.Window.Navigator.GetLanguageAsync());
@@ -51,8 +51,11 @@
 
     private Task WatchOnlineStateAsync() => RunAsync("Watch online and offline", async () =>
     {
-        onlineListener = await Browser.Window.AddEventListenerAsync(Window.OnlineEvent, _ => ReportOnlineStateEvent("online"));
-        offlineListener = await Browser.Window.AddEventListenerAsync(Window.OfflineEvent, _ => ReportOnlineStateEvent("offline"));
+        // Stored before the first await, so a click while adding reuses the pending pair instead of adding another.
+        var online = onlineListenerTask ??= Browser.Window.AddEventListenerAsync(Window.OnlineEvent, _ => ReportOnlineStateEvent("online")).AsTask();
+        var offline = offlineListenerTask ??= Browser.Window.AddEventListenerAsync(Window.OfflineEvent, _ => ReportOnlineStateEvent("offline")).AsTask();
+        await online;
+        await offline;
         return "added";
     });
 
@@ -73,14 +76,20 @@
 
     private async Task DisposeListenersAsync()
     {
-        if (onlineListener is not null)
+        // Cleared before the first await, so a Watch click meanwhile adds a new pair that this call does not remove.
+        var online = onlineListenerTask;
+        var offline = offlineListenerTask;
+        onlineListenerTask = null;
+        offlineListenerTask = null;
+
+        if (online is not null)
         {
-            await onlineListener.DisposeAsync();
+            await (await online).DisposeAsync();
         }
 
-        if (offlineListener is not null)
+        if (offline is not null)
         {
-            await offlineListener.DisposeAsync();
+            await (await offline).DisposeAsync();
         }
     }
 
