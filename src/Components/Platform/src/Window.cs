@@ -170,7 +170,7 @@ public sealed class Window : IInternalAsyncDisposal
         // Don't wait for a pending acquisition. It could hold up scope disposal until the JS interop timeout.
         if (_referenceTask is { IsCompletedSuccessfully: true } referenceTask)
         {
-            await referenceTask.Result.DisposeAsync().ConfigureAwait(false);
+            await referenceTask.Result.DisposeAsync();
         }
 
         var features = _features.Values.ToArray();
@@ -180,11 +180,11 @@ public sealed class Window : IInternalAsyncDisposal
         {
             if (feature is IInternalAsyncDisposal disposable)
             {
-                await disposable.InternalDisposeAsync().ConfigureAwait(false);
+                await disposable.InternalDisposeAsync();
             }
         }
 
-        // Features remove their listeners first, so the module is no longer needed.
+        // Remove remaining listeners on caller-owned targets before releasing the shared module.
         await ((IInternalAsyncDisposal)_context).InternalDisposeAsync();
     }
 }

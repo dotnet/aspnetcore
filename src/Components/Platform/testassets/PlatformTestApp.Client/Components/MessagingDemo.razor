@@ -1,0 +1,121 @@
+@using System.Text.Json
+@implements IAsyncDisposable
+@inject IBrowserPlatform Browser
+
+<h2>Browser messaging</h2>
+
+<label for="message-json">JSON message</label>
+<input id="message-json" @bind="messageJson" />
+<select id="message-format" @bind="messageFormat">
+    <option value="json">JSON value</option>
+    <option value="string">Literal string</option>
+    <option value="typed">Typed message</option>
+    <option value="collection">Typed collection</option>
+    <option value="nullable">Nullable number</option>
+</select>
+<button id="send-port" @onclick="SendPortAsync">Send through a port</button>
+<button id="send-broadcast" @onclick="SendBroadcastAsync">Broadcast</button>
+<button id="close-messaging" @onclick="CloseAsync">Close channels</button>
+<p id="messaging-result" role="status">@result</p>
+
+<MessagingReceiveDemo />
+
+@code {
+    private MessageChannel? channel;
+    private BroadcastChannel? broadcast;
+    private string messageJson = """{"text":"hello"}""";
+    private string messageFormat = "json";
+    private string result = "No operation has run.";
+
+    private async Task SendPortAsync()
+    {
+        channel ??= await Browser.Window.MessageChannel.CreateAsync();
+        await channel.Port1.StartAsync();
+        switch (messageFormat)
+        {
+            case "string":
+                await channel.Port1.PostMessageAsync(messageJson);
+                break;
+            case "typed":
+                await channel.Port1.PostMessageAsync(JsonSerializer.Deserialize(messageJson, MessagingJsonContext.Default.MessagingPayload), MessagingJsonContext.Default.MessagingPayload);
+                break;
+            case "collection":
+                await channel.Port1.PostMessageAsync(JsonSerializer.Deserialize(messageJson, MessagingJsonContext.Default.ListMessagingPayload), MessagingJsonContext.Default.ListMessagingPayload);
+                break;
+            case "nullable":
+                await channel.Port1.PostMessageAsync(JsonSerializer.Deserialize(messageJson, MessagingJsonContext.Default.NullableInt32), MessagingJsonContext.Default.NullableInt32);
+                break;
+            default:
+                using (var message = JsonDocument.Parse(messageJson))
+                {
+                    await channel.Port1.PostMessageAsync(message.RootElement);
+                }
+                break;
+        }
+        result = "Port message posted.";
+    }
+
+    private async Task SendBroadcastAsync()
+    {
+        broadcast ??= await Browser.Window.BroadcastChannel.CreateAsync("components-platform-messaging");
+        switch (messageFormat)
+        {
+            case "string":
+                await broadcast.PostMessageAsync(messageJson);
+                break;
+            case "typed":
+                await broadcast.PostMessageAsync(JsonSerializer.Deserialize(messageJson, MessagingJsonContext.Default.MessagingPayload), MessagingJsonContext.Default.MessagingPayload);
+                break;
+            case "collection":
+                await broadcast.PostMessageAsync(JsonSerializer.Deserialize(messageJson, MessagingJsonContext.Default.ListMessagingPayload), MessagingJsonContext.Default.ListMessagingPayload);
+                break;
+            case "nullable":
+                await broadcast.PostMessageAsync(JsonSerializer.Deserialize(messageJson, MessagingJsonContext.Default.NullableInt32), MessagingJsonContext.Default.NullableInt32);
+                break;
+            default:
+                using (var message = JsonDocument.Parse(messageJson))
+                {
+                    await broadcast.PostMessageAsync(message.RootElement);
+                }
+                break;
+        }
+        result = $"Broadcast posted: {await broadcast.GetNameAsync()}";
+    }
+
+    private async Task CloseAsync()
+    {
+        if (channel is not null)
+        {
+            await channel.Port1.CloseAsync();
+            await channel.Port2.CloseAsync();
+        }
+
+        if (broadcast is not null)
+        {
+            await broadcast.CloseAsync();
+        }
+
+        await DisposeAsync();
+        result = "Channels closed.";
+    }
+
+    public async ValueTask DisposeAsync()
+    {
+        try
+        {
+            if (channel is not null)
+            {
+                await channel.DisposeAsync();
+                channel = null;
+            }
+        }
+        finally
+        {
+            if (broadcast is not null)
+            {
+                await broadcast.DisposeAsync();
+                broadcast = null;
+            }
+        }
+    }
+}
