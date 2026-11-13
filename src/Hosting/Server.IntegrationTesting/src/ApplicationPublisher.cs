@@ -48,7 +48,7 @@ public class ApplicationPublisher
 
             // Forward build-mode properties from the outer build (via runtimeconfig.json)
             // so subprocess compilations use the same settings.
-            foreach (var prop in new[] { "DotNetBuildUseMonoRuntime", "ContinuousIntegrationBuild" })
+            foreach (var prop in new[] { "ContinuousIntegrationBuild" })
             {
                 if (AppContext.GetData(prop) is string value && !string.IsNullOrEmpty(value))
                 {
