@@ -4,6 +4,8 @@
 #pragma warning disable ASPDEPR008 // Type or member is obsolete
 
 using System.Net.Http;
+using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Server.IntegrationTesting;
 using Microsoft.AspNetCore.InternalTesting;
@@ -110,9 +112,12 @@ public class WebHostFunctionalTests : LoggedTest
     [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/36079")]
     public void LoggingConfigurationSectionPassedToLoggerByDefault()
     {
+        var contentRootPath = Path.Combine(Path.GetTempPath(), Path.GetRandomFileName());
+        Directory.CreateDirectory(contentRootPath);
+
         try
         {
-            File.WriteAllText("appsettings.json", @"
+            File.WriteAllText(Path.Combine(contentRootPath, "appsettings.json"), @"
 {
     ""Logging"": {
         ""LogLevel"": {
@@ -121,30 +126,21 @@ public class WebHostFunctionalTests : LoggedTest
     }
 }
 ");
-            using (var webHost = WebHost.Start("http://127.0.0.1:0", context => context.Response.WriteAsync("Hello, World!")))
-            {
-                var factory = (ILoggerFactory)webHost.Services.GetService(typeof(ILoggerFactory));
-                var logger = factory.CreateLogger("Test");
 
-                logger.Log(LogLevel.Information, 0, "Message", null, (s, e) =>
-                {
-                    Assert.Fail("Information log when log level set to warning in config");
-                    return string.Empty;
-                });
+            using var webHost = WebHost.CreateDefaultBuilder()
+                .UseContentRoot(contentRootPath)
+                .Configure(context => context.Run(context => context.Response.WriteAsync("Hello, World!")))
+                .Build();
 
-                var logWritten = false;
-                logger.Log(LogLevel.Warning, 0, "Message", null, (s, e) =>
-                {
-                    logWritten = true;
-                    return string.Empty;
-                });
+            var factory = (ILoggerFactory)webHost.Services.GetService(typeof(ILoggerFactory));
+            var logger = factory.CreateLogger("Test");
 
-                Assert.True(logWritten);
-            }
+            Assert.False(logger.IsEnabled(LogLevel.Information));
+            Assert.True(logger.IsEnabled(LogLevel.Warning));
         }
         finally
         {
-            File.Delete("appsettings.json");
+            Directory.Delete(contentRootPath, recursive: true);
         }
     }
 
