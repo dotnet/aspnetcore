@@ -493,4 +493,37 @@ public class ListAdapterTest
         Assert.False(testStatus);
         Assert.Equal(expectedErrorMessage, errorMessage);
     }
+
+    [Fact]
+    public void Test_DoesNotThrowException_IfValueIsNullAndTestValueIsNull()
+    {
+        // Arrange
+        var resolver = new DefaultContractResolver();
+        var targetObject = new List<int?>() { null, 20 };
+        var listAdapter = new ListAdapter();
+
+        // Act
+        var testStatus = listAdapter.TryTest(targetObject, "0", resolver, null, out var message);
+
+        //Assert
+        Assert.True(testStatus);
+        Assert.True(string.IsNullOrEmpty(message), "Expected no error message");
+    }
+
+    [Fact]
+    public void Test_ThrowsJsonPatchException_IfValueIsNullAndTestValueIsEmptyString()
+    {
+        // Arrange
+        var resolver = new DefaultContractResolver();
+        var targetObject = new List<int?>() { null, 20 };
+        var listAdapter = new ListAdapter();
+        var expectedErrorMessage = "The current value '' at position '0' is not equal to the test value ''.";
+
+        // Act
+        var testStatus = listAdapter.TryTest(targetObject, "0", resolver, "", out var message);
+
+        //Assert
+        Assert.False(testStatus);
+        Assert.Equal(expectedErrorMessage, message);
+    }
 }
