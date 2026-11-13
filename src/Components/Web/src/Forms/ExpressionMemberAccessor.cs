@@ -14,7 +14,6 @@ namespace Microsoft.AspNetCore.Components.Forms;
 
 internal static class ExpressionMemberAccessor
 {
-    private static readonly ConcurrentDictionary<Expression, MemberInfo> _memberInfoCache = new();
     private static readonly ConcurrentDictionary<(MemberInfo Member, string CultureName), string> _displayNameCache = new();
 
     static ExpressionMemberAccessor()
@@ -29,19 +28,16 @@ internal static class ExpressionMemberAccessor
     {
         ArgumentNullException.ThrowIfNull(accessor);
 
-        return _memberInfoCache.GetOrAdd(accessor, static expr =>
+        var lambdaExpression = (LambdaExpression)accessor;
+        var member = GetMemberInfo(lambdaExpression.Body, out var accessorBody);
+        if (member is null)
         {
-            var lambdaExpression = (LambdaExpression)expr;
-            var member = GetMemberInfo(lambdaExpression.Body, out var accessorBody);
-            if (member is null)
-            {
-                throw new ArgumentException(
-                    $"The provided expression contains a {accessorBody.GetType().Name} which is not supported. " +
-                    $"Only simple member accessors (fields, properties) of an object are supported.");
-            }
+            throw new ArgumentException(
+                $"The provided expression contains a {accessorBody.GetType().Name} which is not supported. " +
+                $"Only simple member accessors (fields, properties) of an object are supported.");
+        }
 
-            return member;
-        });
+        return member;
     }
 
     private static MemberInfo? GetMemberInfo(Expression accessorBody, out Expression normalizedAccessorBody)
@@ -115,7 +111,6 @@ internal static class ExpressionMemberAccessor
 
     private static void ClearCache()
     {
-        _memberInfoCache.Clear();
         _displayNameCache.Clear();
     }
 }

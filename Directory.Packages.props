@@ -169,10 +169,8 @@ are expressed as central `<PackageVersion>` items.
         <PackageVersion Include="Microsoft.AspNet.WebApi.Client" Version="$(MicrosoftAspNetWebApiClientVersion)" />
         <PackageVersion Include="Microsoft.AspNetCore.AzureAppServices.SiteExtension.10.0.x64" Version="$(MicrosoftAspNetCoreAzureAppServicesSiteExtension100x64Version)" />
         <PackageVersion Include="Microsoft.AspNetCore.AzureAppServices.SiteExtension.10.0.x86" Version="$(MicrosoftAspNetCoreAzureAppServicesSiteExtension100x86Version)" />
-        <PackageVersion Include="Microsoft.AspNetCore.AzureAppServices.SiteExtension.8.0.x64" Version="$(MicrosoftAspNetCoreAzureAppServicesSiteExtension80x64Version)" />
-        <PackageVersion Include="Microsoft.AspNetCore.AzureAppServices.SiteExtension.8.0.x86" Version="$(MicrosoftAspNetCoreAzureAppServicesSiteExtension80x86Version)" />
-        <PackageVersion Include="Microsoft.AspNetCore.AzureAppServices.SiteExtension.9.0.x64" Version="$(MicrosoftAspNetCoreAzureAppServicesSiteExtension90x64Version)" />
-        <PackageVersion Include="Microsoft.AspNetCore.AzureAppServices.SiteExtension.9.0.x86" Version="$(MicrosoftAspNetCoreAzureAppServicesSiteExtension90x86Version)" />
+        <PackageVersion Include="Microsoft.AspNetCore.AzureAppServices.SiteExtension.11.0.x64" Version="$(MicrosoftAspNetCoreAzureAppServicesSiteExtension110x64Version)" />
+        <PackageVersion Include="Microsoft.AspNetCore.AzureAppServices.SiteExtension.11.0.x86" Version="$(MicrosoftAspNetCoreAzureAppServicesSiteExtension110x86Version)" />
         <PackageVersion Include="Microsoft.Bcl.AsyncInterfaces" Version="$(MicrosoftBclAsyncInterfacesVersion)" />
         <PackageVersion Include="Microsoft.DotNet.RemoteExecutor" Version="$(MicrosoftDotNetRemoteExecutorVersion)" />
         <PackageVersion Include="Microsoft.EntityFrameworkCore" Version="$(MicrosoftEntityFrameworkCoreVersion)" />
