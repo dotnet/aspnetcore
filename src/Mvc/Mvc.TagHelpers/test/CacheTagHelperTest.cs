@@ -853,7 +853,7 @@ public class CacheTagHelperTest
     {
         // Arrange
         var expected = new DivideByZeroException();
-        var cache = new TestMemoryCache();
+        using var cache = new MemoryCache(new MemoryCacheOptions());
         // The two instances represent two instances of the same cache tag helper appearance in the page.
         var cacheTagHelper1 = new CacheTagHelper(new CacheTagHelperMemoryCacheFactory(cache), new HtmlTestEncoder())
         {
@@ -867,18 +867,24 @@ public class CacheTagHelperTest
         };
 
         var invokeCount = 0;
+        var executorStarted = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+        var completeExecutor = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
         var tagHelperOutput = new TagHelperOutput(
             "cache",
             new TagHelperAttributeList(),
-            getChildContentAsync: (useCachedResult, _) =>
+            getChildContentAsync: async (useCachedResult, _) =>
             {
-                invokeCount++;
+                Interlocked.Increment(ref invokeCount);
+                executorStarted.TrySetResult();
+                await completeExecutor.Task;
                 throw expected;
             });
 
         // Act
-        var task1 = Task.Run(() => cacheTagHelper1.ProcessAsync(GetTagHelperContext(cache.Key1), tagHelperOutput));
-        var task2 = Task.Run(() => cacheTagHelper2.ProcessAsync(GetTagHelperContext(cache.Key2), tagHelperOutput));
+        var task1 = cacheTagHelper1.ProcessAsync(GetTagHelperContext(), tagHelperOutput);
+        await executorStarted.Task.TimeoutAfter(TimeSpan.FromSeconds(5));
+        var task2 = cacheTagHelper2.ProcessAsync(GetTagHelperContext(), tagHelperOutput);
+        completeExecutor.SetResult();
 
         // Assert
         await Assert.ThrowsAsync<DivideByZeroException>(() => task1);
@@ -892,7 +898,7 @@ public class CacheTagHelperTest
     {
         // Arrange
         var expected = "Hello world";
-        var cache = new TestMemoryCache();
+        using var cache = new MemoryCache(new MemoryCacheOptions());
         var encoder = new HtmlTestEncoder();
         // The two instances represent two instances of the same cache tag helper appearance in the page.
         var cacheTagHelper1 = new CacheTagHelper(new CacheTagHelperMemoryCacheFactory(cache), encoder)
@@ -908,22 +914,28 @@ public class CacheTagHelperTest
         };
 
         var invokeCount = 0;
+        var executorStarted = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+        var completeExecutor = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
 
-        Func<bool, HtmlEncoder, Task<TagHelperContent>> getChildContentAsync = (useCachedResult, _) =>
+        async Task<TagHelperContent> GetChildContentAsync(bool useCachedResult, HtmlEncoder _)
         {
-            invokeCount++;
+            Interlocked.Increment(ref invokeCount);
+            executorStarted.TrySetResult();
+            await completeExecutor.Task;
 
             var content = new DefaultTagHelperContent();
             content.SetContent(expected);
-            return Task.FromResult<TagHelperContent>(content);
-        };
+            return content;
+        }
 
-        var tagHelperOutput1 = new TagHelperOutput("cache", new TagHelperAttributeList(), getChildContentAsync);
-        var tagHelperOutput2 = new TagHelperOutput("cache", new TagHelperAttributeList(), getChildContentAsync);
+        var tagHelperOutput1 = new TagHelperOutput("cache", new TagHelperAttributeList(), GetChildContentAsync);
+        var tagHelperOutput2 = new TagHelperOutput("cache", new TagHelperAttributeList(), GetChildContentAsync);
 
         // Act
-        var task1 = Task.Run(() => cacheTagHelper1.ProcessAsync(GetTagHelperContext(cache.Key1), tagHelperOutput1));
-        var task2 = Task.Run(() => cacheTagHelper2.ProcessAsync(GetTagHelperContext(cache.Key2), tagHelperOutput2));
+        var task1 = cacheTagHelper1.ProcessAsync(GetTagHelperContext(), tagHelperOutput1);
+        await executorStarted.Task.TimeoutAfter(TimeSpan.FromSeconds(5));
+        var task2 = cacheTagHelper2.ProcessAsync(GetTagHelperContext(), tagHelperOutput2);
+        completeExecutor.SetResult();
 
         // Assert
         await Task.WhenAll(task1, task2);
@@ -971,89 +983,4 @@ public class CacheTagHelperTest
             });
     }
 
-    private class TestCacheEntry : ICacheEntry
-    {
-        public object Key { get; set; }
-        public object Value { get; set; }
-        public DateTimeOffset? AbsoluteExpiration { get; set; }
-        public TimeSpan? AbsoluteExpirationRelativeToNow { get; set; }
-        public TimeSpan? SlidingExpiration { get; set; }
-        public long? Size { get; set; }
-
-        public IList<IChangeToken> ExpirationTokens { get; } = new List<IChangeToken>();
-
-        public IList<PostEvictionCallbackRegistration> PostEvictionCallbacks { get; } =
-            new List<PostEvictionCallbackRegistration>();
-
-        public CacheItemPriority Priority { get; set; }
-
-        public Action DisposeCallback { get; set; }
-
-        public void Dispose() => DisposeCallback();
-    }
-
-    // Simulates the scenario where a call to CacheTagHelper.ProcessAsync appears immediately after a prior one has assigned
-    // a TaskCancellationSource as an entry. We want to ensure that both calls use the results of the TCS as their output.
-    private class TestMemoryCache : IMemoryCache
-    {
-        private const int WaitTimeout = 5000;
-        public readonly string Key1 = "Key1";
-        public readonly string Key2 = "Key2";
-        public readonly ManualResetEventSlim ManualResetEvent1 = new ManualResetEventSlim();
-        public readonly ManualResetEventSlim ManualResetEvent2 = new ManualResetEventSlim();
-        public TestCacheEntry Entry { get; private set; }
-
-        public ICacheEntry CreateEntry(object key)
-        {
-            if (Entry != null)
-            {
-                // We're being invoked in the inner "CreateEntry" call where the TCS is replaced by the GetChildContentAsync
-                // Task. Wait for the other concurrent Task to grab the TCS before we proceed.
-                Assert.True(ManualResetEvent1.Wait(WaitTimeout));
-            }
-
-            var cacheKey = Assert.IsType<CacheTagKey>(key);
-            Assert.Equal(Key1, cacheKey.Key);
-
-            Entry = new TestCacheEntry
-            {
-                Key = key,
-                DisposeCallback = ManualResetEvent2.Set,
-            };
-
-            return Entry;
-        }
-
-        public void Dispose()
-        {
-        }
-
-        public void Remove(object key)
-        {
-        }
-
-        public bool TryGetValue(object key, out object value)
-        {
-            var cacheKey = Assert.IsType<CacheTagKey>(key);
-            if (cacheKey.Key == Key2)
-            {
-                Assert.True(ManualResetEvent2.Wait(WaitTimeout));
-
-                Assert.NotNull(Entry);
-                value = Entry.Value;
-                Assert.NotNull(value);
-
-                ManualResetEvent1.Set();
-
-                return true;
-            }
-            else if (cacheKey.Key == Key1)
-            {
-                value = null;
-                return false;
-            }
-
-            throw new Exception();
-        }
-    }
 }
