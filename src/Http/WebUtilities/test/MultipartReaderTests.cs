@@ -31,6 +31,13 @@ public class MultipartReaderTests
 "\r\n" +
 "text default\r\n" +
 "--9051914041544843365972754266--\r\n";
+    // A vertical tab is not linear whitespace (RFC 822 only allows SP and HTAB), so it must not be trimmed.
+    private const string OnePartBodyWithVerticalTabAfterBoundary =
+"--9051914041544843365972754266\r\n" +
+"Content-Disposition: form-data; name=\"text\"\r\n" +
+"\r\n" +
+"text default\r\n" +
+"--9051914041544843365972754266\v--\r\n";
     // It's non-compliant but common to leave off the last CRLF.
     private const string OnePartBodyWithoutFinalCRLF =
 "--9051914041544843365972754266\r\n" +
@@ -300,6 +307,20 @@ public class MultipartReaderTests
         Assert.Equal("text default", Encoding.ASCII.GetString(buffer.ToArray()));
 
         Assert.Null(await reader.ReadNextSectionAsync());
+    }
+
+    [Fact]
+    public async Task MultipartReader_ReadSinglePartBodyWithVerticalTabAfterBoundary_Throws()
+    {
+        var stream = MakeStream(OnePartBodyWithVerticalTabAfterBoundary);
+        var reader = new MultipartReader(Boundary, stream);
+
+        var section = await reader.ReadNextSectionAsync();
+        Assert.NotNull(section);
+
+        var buffer = new MemoryStream();
+        var exception = await Assert.ThrowsAsync<IOException>(() => section.Body.CopyToAsync(buffer));
+        Assert.Equal("Unexpected data found on the boundary line.", exception.Message);
     }
 
     [Fact]
