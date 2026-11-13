@@ -7,7 +7,7 @@ This guide provides step-by-step instructions for investigating, reviewing, and 
 You MUST follow this workflow when investigating or reviewing behavioral issues, implementing behavioral fixes, or implementing new features in the Components area.
 * Add the applicable workflow steps to your `todos` and follow them strictly.
 
-The mandatory sample-to-E2E workflow, including permanent automated test coverage, applies to production feature and bug-fix implementation. Design research, code review, comparative alternatives work, and explicitly throwaway prototypes must honor the requested scope. When feasible, use the Components sample projects and a browser to validate claims at a faithful boundary, but do not add unit or E2E tests solely to satisfy the implementation workflow. State honestly whether validation is source-level, DOM-level, or end-to-end.
+The mandatory sample-validation and permanent-test workflow, including permanent automated regression coverage at the smallest faithful owning boundary, applies to production feature and bug-fix implementation. Design research, code review, comparative alternatives work, and explicitly throwaway prototypes must honor the requested scope. When feasible, use the Components sample projects and a browser to validate claims at a faithful boundary, but do not add unit or E2E tests solely to satisfy the implementation workflow. State honestly whether validation is source-level, DOM-level, or end-to-end.
 
 ### Structural relocations
 
@@ -18,7 +18,7 @@ A pure source, project, or package relocation with intentionally unchanged runti
 - Validate generated project metadata, NuGet and npm package outputs, and every affected area or repository build entry point.
 - Follow the [project relocation checklist](../../docs/AddingNewProjects.md#adding-moving-or-removing-a-project) for added, moved, or removed projects.
 
-If the change alters behavior, or validation reveals a behavioral regression, follow the normal sample-to-E2E workflow in this guide.
+If the change alters behavior, or validation reveals a behavioral regression, follow the normal sample-validation and permanent-test workflow in this guide.
 
 When moving a JavaScript workspace:
 
@@ -42,7 +42,7 @@ For behavioral investigations and reviews:
 - For decisive claims about native browser lifecycle or state behavior, use authoritative documentation and a minimal browser probe. Treat synthesized search results as leads, not evidence.
 - Any test establishes only the downstream response, not producer reachability, if it directly injects callbacks or events or otherwise bypasses the owning producer. An isolated test can provide faithful evidence when it exercises the real producer.
 - Treat faithful non-reproduction as evidence only for the exercised conditions. A single pass does not disprove race-, timing-, load-, browser-, or platform-dependent reachability; narrow the claim to the conditions and evidence it supports. Withdraw only when faithful evidence contradicts the claimed trigger or material effect and no supported materially different condition remains.
-- Do not require E2E to validate a finding when its disputed preconditions and material effects are fully established at a lower faithful boundary. This does not waive E2E coverage required for shipped implementation work.
+- Do not require E2E to validate a finding when its disputed preconditions and material effects are fully established at a lower faithful boundary. For shipped implementation work, select the smallest faithful permanent test surface under [Permanent regression test boundary](#permanent-regression-test-boundary); a focused unit or module test that owns the final observable satisfies that requirement and does not also require E2E.
 
 For implementation work:
 - For a behavioral fix, reproduce the problem at the faithful boundary before attempting the fix. If faithful validation is impractical, state the observed boundary and limitation and do not call the behavioral claim verified.
@@ -77,7 +77,12 @@ Permanent JavaScript or TypeScript unit tests remain appropriate when the JavaSc
 
 If WebDriver cannot perform or observe one operation, keep the permanent C# Selenium scenario, name the exact WebDriver limitation, and use only the smallest existing JavaScript helper or `IJavaScriptExecutor` snippet for that step. Keep scenario orchestration and the final user-visible assertion in C#.
 
-For browser fixes, require strict red/green evidence: the identical assertion in the selected real-browser suite must fail for the expected reason without the fix and pass with it. Include a nearest-opposite control, meaning the closest scenario that must remain green, and, when meaningful, an adjacent control driven by the same production producer. The fix remains blocked while Jest is its only regression proof.
+For regression fixes, require strict red/green evidence on the permanent test surface selected above: the identical assertion must fail for the expected reason without the fix and pass with it. Keep test scope proportional to the fix:
+
+- Default to one focused regression test (or an additional assertion or `[Theory]` row in an existing test) rather than adding multiple standalone test methods for a localized bug fix.
+- Add a nearest-opposite control assertion only when the fix narrows or flips a branch whose opposite path is not already covered by existing tests; when needed, prefer asserting it inside the same test or parameterized `[Theory]` rather than creating a multi-test control matrix.
+- When a real-browser E2E test is required by the boundary above, Jest alone is not sufficient regression proof; conversely, when a focused .NET unit test or `Web.JS` `.test.ts` test faithfully covers the owning contract, do not also add or request a Selenium E2E test.
+- Do not add test-only optional parameters, fields, properties, or hooks to production types when the behavior can be exercised through existing entry points.
 
 In Components Selenium tests, synchronize assertions with observable conditions through existing waits such as `Browser.True` and `Browser.Equal`, which poll with `WebDriverWait`, or with explicit test-controlled gates such as `TaskCompletionSource` when managed timing must be controlled. Do not use an arbitrary `Thread.Sleep` as the synchronization mechanism for the regression assertion. Existing bounded polling helpers may sleep between checks when they repeatedly observe the condition and enforce a timeout.
 
