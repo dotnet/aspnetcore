@@ -1182,6 +1182,26 @@ public abstract partial class Renderer : IDisposable, IAsyncDisposable
     internal void HandleComponentException(Exception exception, int componentId)
         => HandleExceptionViaErrorBoundary(exception, GetRequiredComponentState(componentId));
 
+    internal Task InvokeWithErrorHandlingAsync(int componentId, Func<Task> callback)
+    {
+        Dispatcher.AssertAccess();
+
+        // Retain the error source before user code can render and dispose it.
+        var componentState = GetRequiredComponentState(componentId);
+        Task task;
+        try
+        {
+            task = callback();
+        }
+        catch (Exception exception)
+        {
+            HandleExceptionViaErrorBoundary(exception, componentState);
+            return Task.CompletedTask;
+        }
+
+        return GetErrorHandledTask(task, componentState);
+    }
+
     /// <summary>
     /// If the exception can be routed to an error boundary around <paramref name="errorSourceOrNull"/>, do so.
     /// Otherwise handle it as fatal.
