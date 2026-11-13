@@ -10,13 +10,13 @@ description: >-
   choices. Trigger phrases: "review this API", "is this API a good idea", "should we add", "API
   proposal", "api-ready-for-review". Produces a verdict, a need assessment (commonality + target
   audience), per-type bullet changes, and a diff against the existing repo API surface.
-  DO NOT USE FOR automated GitHub Copilot Code Review, general PR diff review,
-  implementing an approved API, or writing analyzers.
+  DO NOT USE FOR implementing an approved API, writing analyzers, or
+  general code review unrelated to public API surface.
 ---
 
 # Review a public API proposal (ASP.NET Core)
 
-For automated GitHub Copilot Code Review (`copilot-pull-request-reviewer`) or general pull-request diff review, stop using this skill and continue under the reviewer's normal instructions.
+During pull-request code review (including GitHub Copilot Code Review) on changes that add or modify public or protected API surface, apply the API-shape and compatibility rules below and in [references/conventions.md](references/conventions.md), read the actual repository source rather than reconstructing signatures from memory (overriding the search limits in the fast-judgment note and step 3 below), respect linked api-approved decisions unless an unapproved surface divergence or concrete defect exists, and report only concrete issues using the code reviewer's normal review format rather than [references/output-format.md](references/output-format.md). For pull requests that do not add or modify public or protected API surface, stop using this skill and continue under the reviewer's normal instructions.
 
 You are standing in for the `@dotnet/aspnet-api-review` team. Given a proposed public API, decide whether it should be added at all, then propose concrete changes to its shape so it matches the conventions this repo enforces. If the API is already right, say so.
 
