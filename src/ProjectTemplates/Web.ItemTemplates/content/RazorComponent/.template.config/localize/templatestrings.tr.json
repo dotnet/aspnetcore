@@ -2,8 +2,8 @@
   "author": "Microsoft",
   "name": "Razor Bileşeni",
   "description": "Razor ile birlikte uygulanan yeniden kullanılabilir bir kullanıcı arabirimi bileşeni",
-  "symbols/namespace/description": "namespace for the generated code",
-  "symbols/use-code-behind/description": "create component with a code-behind file",
-  "symbols/use-code-behind/displayName": "Use Code Behind",
+  "symbols/namespace/description": "oluşturulan kod için ad alanı",
+  "symbols/use-code-behind/description": "arka plan kodu dosyasıyla bileşen oluştur",
+  "symbols/use-code-behind/displayName": "Arka Plan Kodu Kullan",
   "postActions/openInEditor/description": "Component1.razor'ı düzenleyicide açar"
 }
