@@ -151,6 +151,9 @@ public class HubConnectionHandler<[DynamicallyAccessedMembers(Hub.DynamicallyAcc
         }
         finally
         {
+            // Ensure the connection is aborted before lifetime manager teardown.
+            await connectionContext.AbortAsync();
+
             connectionContext.Cleanup();
 
             Log.ConnectedEnding(_logger);

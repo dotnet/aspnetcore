@@ -178,6 +178,18 @@ public class CookieTempDataProviderTest
         Assert.Null(cookieInfo.Options.Domain);
     }
 
+    [Fact]
+    public void SaveTempData_DefaultProviderOptions_EscapesSemicolonInPathBase()
+    {
+        var tempDataProvider = GetProvider(new PassThroughDataProtector());
+        var httpContext = new DefaultHttpContext();
+        httpContext.Request.PathBase = "/a;b";
+
+        tempDataProvider.SaveTempData(httpContext, Dictionary);
+
+        Assert.Contains("path=/a%3Bb", httpContext.Response.Headers.SetCookie.ToString(), StringComparison.Ordinal);
+    }
+
     [Theory]
     [InlineData(null, "/")]
     [InlineData("", "/")]
