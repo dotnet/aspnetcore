@@ -4,7 +4,7 @@
 import '../JSInterop/Microsoft.JSInterop';
 import { scheduleScrollReset, ScrollResetSchedule } from '../Rendering/Renderer';
 import { EventDelegator } from '../Rendering/Events/EventDelegator';
-import { attachEnhancedNavigationListener, getInteractiveRouterRendererId, handleClickForNavigationInterception, hasInteractiveRouter, hasProgrammaticEnhancedNavigationHandler, isForSamePath, isSamePageWithHash, isWithinBaseUriSpace, performProgrammaticEnhancedNavigation, performScrollToElementOnTheSamePage, scrollToElement, setHasInteractiveRouter, toAbsoluteUri } from './NavigationUtils';
+import { attachEnhancedNavigationListener, getInteractiveRouterRendererId, handleClickForNavigationInterception, hasInteractiveRouter, hasProgrammaticEnhancedNavigationHandler, isForSamePath, isSamePageWithHash, isWithinBaseUriSpace, performProgrammaticEnhancedNavigation, performScrollToElementOnTheSamePage, recordLocationChange, scrollToElement, setHasInteractiveRouter, toAbsoluteUri } from './NavigationUtils';
 import { WebRendererId } from '../Rendering/WebRendererId';
 import { isRendererAttached } from '../Rendering/WebRendererInteropMethods';
 import { IBlazor } from '../GlobalExports';
@@ -12,7 +12,6 @@ import { IBlazor } from '../GlobalExports';
 let hasRegisteredNavigationEventListeners = false;
 let currentHistoryIndex = 0;
 let currentLocationChangingCallId = 0;
-let lastLocationChange: { uri: string; intercepted: boolean } | undefined;
 
 type NavigationCallbacks = {
   rendererId: WebRendererId;
@@ -39,13 +38,7 @@ export const internalFunctions = {
   scrollToElement,
 };
 
-export function resetLastLocationChange(): void {
-  lastLocationChange = undefined;
-}
-
-export function wasLastLocationChangeIntercepted(uri: string): boolean {
-  return lastLocationChange?.uri === uri && lastLocationChange.intercepted;
-}
+export { resetLastLocationChange, wasLastLocationChangeIntercepted } from './NavigationUtils';
 
 function listenForNavigationEvents(
   rendererId: WebRendererId,
@@ -165,6 +158,7 @@ async function performInternalNavigation(absoluteInternalHref: string, intercept
 
   if (isSamePageWithHash(location.href, absoluteInternalHref)) {
     saveToBrowserHistory(absoluteInternalHref, replace, state);
+    recordLocationChange(absoluteInternalHref, interceptedLink);
     performScrollToElementOnTheSamePage(absoluteInternalHref);
     return;
   }
@@ -271,9 +265,7 @@ async function onBrowserInitiatedPopState(state: PopStateEvent) {
 async function notifyLocationChanged(interceptedLink: boolean, internalDestinationHref?: string) {
   const uri = internalDestinationHref ?? location.href;
 
-  if (uri === location.href) {
-    lastLocationChange = { uri, intercepted: interceptedLink };
-  }
+  recordLocationChange(uri, interceptedLink);
 
   await Promise.all(Array.from(navigationCallbacks, async ([rendererId, callbacks]) => {
     if (isRendererAttached(rendererId)) {
