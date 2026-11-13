@@ -1,0 +1,21 @@
+<MissingCallbackWithCapture Value="Value" ValueChanged="@ValueChanged" class="ordinary-attribute" />
+
+@code {
+    [Parameter] public bool Value { get; set; }
+    [Parameter] public EventCallback<bool> ValueChanged { get; set; }
+
+    public override Task SetParametersAsync(ParameterView parameters)
+    {
+        if (parameters.TryGetValue(nameof(Value), out bool value))
+        {
+            Value = value;
+        }
+
+        if (parameters.TryGetValue(nameof(ValueChanged), out EventCallback<bool> valueChanged))
+        {
+            ValueChanged = valueChanged;
+        }
+
+        return base.SetParametersAsync(ParameterView.Empty);
+    }
+}

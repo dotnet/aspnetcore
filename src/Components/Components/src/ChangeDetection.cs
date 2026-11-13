@@ -36,6 +36,13 @@ internal sealed class ChangeDetection
             {
                 return true;
             }
+
+            // Public callback equality ignores binding provenance, but parameter validation must not.
+            if (oldValue is IEventCallback oldCallback && newValue is IEventCallback newCallback
+                && oldCallback.IsBinding != newCallback.IsBinding)
+            {
+                return true;
+            }
         }
 
         // By now we know either both are null, or they are the same immutable type
