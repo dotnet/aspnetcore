@@ -1,12 +1,14 @@
 ---
 name: api-review
 description: >-
-  Author and file a separate ASP.NET Core API review issue from an originating issue and an implementation pull request or commits. USE FOR writing API review issues, preparing api-ready-for-review proposals, filling API proposal templates, creating API review descriptions from issues and code changes, "fill out the API review", "prepare API review", or opening a pull request that changes public API. DO NOT USE FOR reviewing API design decisions, approving APIs, implementing APIs, or general code review.
+  Author and file a separate ASP.NET Core API review issue from an originating issue and an implementation pull request or commits. USE FOR writing API review issues, preparing api-ready-for-review proposals, filling API proposal templates, creating API review descriptions from issues and code changes, "fill out the API review", "prepare API review", opening a non-draft pull request that changes public API, or marking such a draft ready for review. DO NOT USE FOR merely opening a draft pull request, reviewing API design decisions, approving APIs, implementing APIs, or general code review.
 ---
 
 # Author an API review issue
 
 Create a separate ASP.NET Core API proposal issue from the originating issue and implementation changes.
+
+Opening a draft pull request does not require an originating issue link or a separate API proposal issue. If the task is only to open a draft, skip this workflow and do not request these issues as prerequisites. Before opening a non-draft pull request or marking a draft ready for review, link an open originating issue and create and link the separate API proposal issue for public API changes. An explicit request to prepare an API proposal for a draft still uses this workflow.
 
 ## Inputs
 
