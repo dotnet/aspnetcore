@@ -3,7 +3,7 @@
 $ErrorActionPreference = 'Stop'
 Set-StrictMode -Version 3
 
-$componentRoot = (Resolve-Path (Join-Path $PSScriptRoot '../review-candidate-verifier')).Path
+$componentRoot = (Resolve-Path (Join-Path $PSScriptRoot 'review-candidate-verifier')).Path
 $repoRoot = (Resolve-Path (Join-Path $componentRoot '../../..')).Path
 $script:checks = 0
 

@@ -330,7 +330,7 @@ switch ($Action) {
         & (Join-Path $PSScriptRoot 'test_stage_run.ps1')
         & (Join-Path $PSScriptRoot 'test_workflow.ps1')
         if (-not $Suite -or $Suite -in @('review-pull-request', 'review-candidate-verifier')) {
-            & (Join-Path $PSScriptRoot 'tests/test_review_fixtures.ps1')
+            & (Join-Path $PSScriptRoot 'test_review_fixtures.ps1')
         }
         if (Test-Path (Join-Path $PSScriptRoot 'test_disposition.mjs')) {
             & node --test (Join-Path $PSScriptRoot 'test_disposition.mjs')

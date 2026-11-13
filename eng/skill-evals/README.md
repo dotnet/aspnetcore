@@ -143,8 +143,6 @@ Run these commands from any directory:
 ./eng/skill-evals/run.ps1 Validate -Suite review-candidate-verifier
 # Run infrastructure self-tests plus the selected suite's fixture checks.
 ./eng/skill-evals/run.ps1 Test -Suite review-candidate-verifier
-# The original staging self-test also has this forwarding entry point.
-./eng/skill-evals/tests/test_stage_run.ps1
 
 # Strict Vally parsing/schema lint; does not call a model
 ./eng/skill-evals/run.ps1 Lint
