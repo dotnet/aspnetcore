@@ -575,6 +575,7 @@
     <Project Path="src/Middleware/HttpLogging/test/Microsoft.AspNetCore.HttpLogging.Tests.csproj" />
   </Folder>
   <Folder Name="/src/Middleware/HttpOverrides/">
+    <Project Path="src/Middleware/HttpOverrides/perf/Microbenchmarks/Microsoft.AspNetCore.HttpOverrides.Microbenchmarks.csproj" />
     <Project Path="src/Middleware/HttpOverrides/sample/HttpOverridesSample.csproj" />
     <Project Path="src/Middleware/HttpOverrides/src/Microsoft.AspNetCore.HttpOverrides.csproj" />
     <Project Path="src/Middleware/HttpOverrides/test/Microsoft.AspNetCore.HttpOverrides.Tests.csproj" />
