@@ -24,10 +24,43 @@
 
 @((MarkupString)myMarkup)
 
+<h2>Large markup string</h2>
+<button id="large-markup-flat" @onclick="() => RenderLargeMarkup(false)">Render flat</button>
+<button id="large-markup-wrapped" @onclick="() => RenderLargeMarkup(true)">Render wrapped</button>
+<button id="large-markup-orphans" @onclick="RenderMarkupWithOrphans">Render with removals</button>
+<button id="large-markup-clear" @onclick="ClearLargeMarkup">Clear</button>
+<div id="large-markup">@((MarkupString)largeMarkup)</div>
+<div id="markup-relocation-target"></div>
+<span id="large-markup-state">@largeMarkupState</span>
+
 @code {
     bool changeOutput;
 
     string myMarkup = "<p class='markup-string-value'>This is a <em>markup string</em>.</p>";
+    string largeMarkup = string.Empty;
+    string largeMarkupState = "empty";
+
+    void RenderLargeMarkup(bool wrapped)
+    {
+        var paragraphs = string.Concat(Enumerable.Range(0, 1000).Select(index => $"<p data-markup-item>{index};</p>"));
+        largeMarkup = wrapped ? $"<div>{paragraphs}</div>" : paragraphs;
+        largeMarkupState = wrapped ? "wrapped" : "flat";
+    }
+
+    void RenderMarkupWithOrphans()
+    {
+        largeMarkup = "<p id='markup-moved'>moving</p><p id='markup-removed'>removed</p>" +
+            "<script>document.getElementById('markup-relocation-target').appendChild(document.getElementById('markup-moved'));document.getElementById('markup-removed').remove()</script>" +
+            "<p id='markup-middle'>middle</p><script>document.getElementById('markup-moved').remove()</script>" +
+            "<p id='markup-last'>last</p><script>document.currentScript.remove()</script>";
+        largeMarkupState = "mutated";
+    }
+
+    void ClearLargeMarkup()
+    {
+        largeMarkup = string.Empty;
+        largeMarkupState = "empty";
+    }
 
     void EmitMarkupBlock(RenderTreeBuilder builder)
     {
