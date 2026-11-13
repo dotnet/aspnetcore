@@ -263,6 +263,22 @@ public class RazorComponentEndpointsStartup<TRootComponent>
                 .AddInteractiveWebAssemblyRenderMode(options => options.PathPrefix = "/WasmMinimal")
                 .WithBrowserOptions(config =>
                 {
+                    config.LogLevel = Configuration.GetValue<Microsoft.Extensions.Logging.LogLevel?>("BrowserConfigurationLogLevel");
+                    config.StaticServer.PreserveDom = Configuration.GetValue<bool?>("BrowserConfigurationPreserveDom");
+                    if (Configuration.GetValue<double?>("BrowserConfigurationCircuitInactivityTimeoutMs") is { } inactivityTimeout)
+                    {
+                        config.StaticServer.CircuitInactivityTimeout = TimeSpan.FromMilliseconds(inactivityTimeout);
+                    }
+                    config.InteractiveServer.ReconnectionMaxRetries = Configuration.GetValue<int?>("BrowserConfigurationReconnectionMaxRetries");
+                    if (Configuration.GetValue<double?>("BrowserConfigurationReconnectionRetryIntervalMs") is { } retryInterval)
+                    {
+                        config.InteractiveServer.ReconnectionRetryInterval = TimeSpan.FromMilliseconds(retryInterval);
+                    }
+                    config.InteractiveWebAssembly.ApplicationCulture = Configuration["BrowserConfigurationApplicationCulture"];
+                    if (config.InteractiveWebAssembly.ApplicationCulture is not null)
+                    {
+                        config.InteractiveWebAssembly.EnvironmentVariables["BROWSER_CONFIGURATION_USE_APPLICATION_CULTURE"] = "true";
+                    }
                     var environmentName = Configuration["BrowserConfigurationEnvironmentName"];
                     if (environmentName is not null)
                     {

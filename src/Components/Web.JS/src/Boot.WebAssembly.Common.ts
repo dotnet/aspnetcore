@@ -212,6 +212,9 @@ export function loadWebAssemblyPlatformIfNotStarted(serverOptions: WebAssemblySe
     if (!finalOptions.environment) {
       finalOptions.environment = serverOptions?.environmentName ?? undefined;
     }
+    if (!finalOptions.applicationCulture) {
+      finalOptions.applicationCulture = serverOptions?.applicationCulture;
+    }
     const existingConfig = options?.configureRuntime;
     finalOptions.configureRuntime = (config) => {
       existingConfig?.(config);

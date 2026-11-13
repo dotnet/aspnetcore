@@ -6,15 +6,13 @@ import { NavigationEnhancementCallbacks, hasNeverStartedAnyEnhancedPageLoad, per
 import { isWithinBaseUriSpace, toAbsoluteUri } from '../Services/NavigationUtils';
 import { synchronizeDomContent } from './DomMerging/DomSync';
 
-let enableDomPreservation = true;
+let ssrOptions: SsrStartOptions | undefined;
 let navigationEnhancementCallbacks: NavigationEnhancementCallbacks;
 
 export function attachStreamingRenderingListener(options: SsrStartOptions | undefined, callbacks: NavigationEnhancementCallbacks) {
   navigationEnhancementCallbacks = callbacks;
 
-  if (options?.disableDomPreservation) {
-    enableDomPreservation = false;
-  }
+  ssrOptions = options;
 
   // By the time <blazor-ssr-end> is in the DOM, we know all the preceding content within the same <blazor-ssr> is also there,
   // so it's time to process it. We can't simply listen for <blazor-ssr>, because connectedCallback may fire before its content
@@ -53,7 +51,7 @@ class BlazorStreamingUpdate extends HTMLElement {
             case 'not-found':
               // not-found template has enhanced nav set to true by default,
               // check for the options to avoid overriding user settings
-              const useEnhancedNav = isEnhancedNav && enableDomPreservation;
+              const useEnhancedNav = isEnhancedNav && !ssrOptions?.disableDomPreservation;
               redirect(node, false, useEnhancedNav);
               break;
             case 'error':
@@ -103,7 +101,7 @@ function insertStreamingContentIntoDocument(componentIdAsString: string, docFrag
   const markers = findStreamingMarkers(componentIdAsString);
   if (markers) {
     const { startMarker, endMarker } = markers;
-    if (enableDomPreservation) {
+    if (!ssrOptions?.disableDomPreservation) {
       synchronizeDomContent({ startExclusive: startMarker, endExclusive: endMarker }, docFrag);
     } else {
       // In this mode we completely delete the old content before inserting the new content

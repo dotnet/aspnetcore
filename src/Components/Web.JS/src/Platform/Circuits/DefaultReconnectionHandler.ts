@@ -196,7 +196,7 @@ class ReconnectionProcess {
       }
     };
 
-    timeoutId = setTimeout(step, intervalMs);
+    timeoutId = setTimeout(step, Math.min(totalTimeMs, intervalMs));
 
     document.addEventListener('visibilitychange', stepIfDocumentIsVisible);
     await new Promise<void>(resolve => resolveTimerPromise = resolve);
