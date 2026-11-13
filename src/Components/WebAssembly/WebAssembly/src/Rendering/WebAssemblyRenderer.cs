@@ -76,7 +76,7 @@ internal sealed partial class WebAssemblyRenderer : WebRenderer
             switch (operation.Type)
             {
                 case RootComponentOperationType.Add:
-                    ObserveActivationFault(webRootComponentManager.AddRootComponentAsync(
+                    ObserveActivationFault(() => webRootComponentManager.AddRootComponentAsync(
                         operation.SsrComponentId,
                         operation.Descriptor!.ComponentType,
                         operation.Marker!.Value.Key!,
@@ -112,6 +112,21 @@ internal sealed partial class WebAssemblyRenderer : WebRenderer
     // Root component activation is otherwise fire-and-forget, so a fault would be silently discarded
     // instead of being logged and surfacing the error UI like other unhandled rendering exceptions.
     // Use a fault-only continuation to avoid allocating an async state machine on the success path.
+    private void ObserveActivationFault(Func<Task> activate)
+        => ObserveActivationFault(CaptureActivationTask(activate));
+
+    internal static Task CaptureActivationTask(Func<Task> activate)
+    {
+        try
+        {
+            return activate();
+        }
+        catch (Exception exception)
+        {
+            return Task.FromException(exception);
+        }
+    }
+
     private void ObserveActivationFault(Task activationTask)
         => activationTask.ContinueWith(
             static (task, state) => ((WebAssemblyRenderer)state!).HandleException(task.Exception!),

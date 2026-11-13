@@ -33,7 +33,7 @@ internal partial class WebAssemblyRenderer
         private readonly Dictionary<int, WebRootComponent> _webRootComponents = new();
         private Task _currentUpdateTask = Task.CompletedTask;
 
-        public async Task AddRootComponentAsync(
+        public Task AddRootComponentAsync(
             int ssrComponentId,
             [DynamicallyAccessedMembers(Component)] Type componentType,
             ComponentMarkerKey? key,
@@ -53,6 +53,11 @@ internal partial class WebAssemblyRenderer
 
             var component = WebRootComponent.Create(renderer, componentType, ssrComponentId, key, parameters);
             _webRootComponents.Add(ssrComponentId, component);
+            return RenderRootComponentAsync(component);
+        }
+
+        private async Task RenderRootComponentAsync(WebRootComponent component)
+        {
             await _currentUpdateTask;
             await component.RenderAsync(renderer);
         }
