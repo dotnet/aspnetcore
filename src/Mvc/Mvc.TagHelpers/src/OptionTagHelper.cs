@@ -100,7 +100,7 @@ public class OptionTagHelper : TagHelper
                     }
 
                     TagHelperContent childContent;
-                    if (output.IsContentModified)
+                    if (output.Content.IsModified)
                     {
                         // Another tag helper has modified the body. Use what they wrote.
                         childContent = output.Content;
