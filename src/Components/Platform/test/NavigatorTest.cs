@@ -3,6 +3,7 @@
 
 #nullable enable
 
+using System.Text.Json;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.JSInterop;
 using Xunit;
@@ -146,6 +147,40 @@ public class NavigatorTest
 
         Assert.True(feature.Disposed);
         Assert.Throws<ObjectDisposedException>(() => navigator.GetOrAddFeature(context => new TestFeature(context)));
+    }
+
+    [Fact]
+    public async Task OnlineAndOfflineEvents_AddFunctionsThatDeliverTheEvent()
+    {
+        var jsRuntime = new BrowserJSRuntime();
+        await using var provider = CreateServiceProvider(jsRuntime);
+        var window = provider.GetRequiredService<IBrowserPlatform>().Window;
+        var received = new List<(string Name, Event Event)>();
+
+        await window.AddEventListenerAsync(Window.OnlineEvent, onlineEvent =>
+        {
+            received.Add(("online", onlineEvent));
+            return Task.CompletedTask;
+        });
+        await window.AddEventListenerAsync(Window.OfflineEvent, offlineEvent =>
+        {
+            received.Add(("offline", offlineEvent));
+            return Task.CompletedTask;
+        });
+        await jsRuntime.InvokeCallbackAsync(1, "[{}]");
+        await jsRuntime.InvokeCallbackAsync(0, "[{}]");
+
+        // The window is object 1, the module is object 2, and the functions are objects 3 and 4.
+        Assert.Equal(
+            ["""["online",{"__jsObjectId":3}]""", """["offline",{"__jsObjectId":4}]"""],
+            jsRuntime.CallsTo("addEventListener").Select(call => call.ArgsJson));
+        Assert.All(jsRuntime.CallsTo("createCallback"), call =>
+        {
+            using var args = JsonDocument.Parse(call.ArgsJson);
+            Assert.Equal("[{}]", args.RootElement[1].GetString());
+        });
+        Assert.Equal(["offline", "online"], received.Select(item => item.Name));
+        Assert.All(received, item => Assert.NotNull(item.Event));
     }
 
     private static ServiceProvider CreateServiceProvider(IJSRuntime jsRuntime)
