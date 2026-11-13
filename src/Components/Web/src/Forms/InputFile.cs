@@ -22,6 +22,14 @@ public class InputFile : ComponentBase, IInputFileJsCallbacks, IDisposable
     /// <summary>
     /// Gets or sets the event callback that will be invoked when the collection of selected files changes.
     /// </summary>
+    /// <remarks>
+    /// Unhandled exceptions from the callback are treated as exceptions from this component, including
+    /// when the callback completes after this component is removed. They are dispatched to the error
+    /// boundary enclosing this component, if any, or otherwise to the renderer's unhandled exception
+    /// handler. Unlike ordinary DOM events, the error boundary is determined by this component's
+    /// location, not the component that owns the callback. Without an error boundary, an unhandled
+    /// exception terminates a Blazor Server circuit.
+    /// </remarks>
     [Parameter]
     public EventCallback<InputFileChangeEventArgs> OnChange { get; set; }
 
@@ -93,7 +101,7 @@ public class InputFile : ComponentBase, IInputFileJsCallbacks, IDisposable
             file.Owner = this;
         }
 
-        return OnChange.InvokeAsync(new InputFileChangeEventArgs(files));
+        return InvokeWithErrorHandlingAsync(() => OnChange.InvokeAsync(new InputFileChangeEventArgs(files)));
     }
 
     /// <summary>
