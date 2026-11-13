@@ -19,7 +19,20 @@ public class StringMatchTests
     public void StringMatch_Evaluation_Check_Cases(string value, int operation, bool ignoreCase, string input, bool expectedResult)
     {
         var context = new RewriteContext { HttpContext = new DefaultHttpContext() };
-        var stringMatch = new StringMatch(value, (StringOperationType)operation, ignoreCase);
+        var stringMatch = new StringMatch(value, (StringOperationType)operation, ignoreCase, negate: false);
+        var matchResult = stringMatch.Evaluate(input, context);
+        Assert.Equal(expectedResult, matchResult.Success);
+    }
+
+    [Theory]
+    [InlineData("hi", (int)StringOperationType.Equal, "hi", false)]
+    [InlineData("hi", (int)StringOperationType.Equal, "bye", true)]
+    [InlineData("a", (int)StringOperationType.Greater, "b", false)]
+    [InlineData("b", (int)StringOperationType.Less, "a", false)]
+    public void StringMatch_Evaluation_Negate_Cases(string value, int operation, string input, bool expectedResult)
+    {
+        var context = new RewriteContext { HttpContext = new DefaultHttpContext() };
+        var stringMatch = new StringMatch(value, (StringOperationType)operation, ignoreCase: false, negate: true);
         var matchResult = stringMatch.Evaluate(input, context);
         Assert.Equal(expectedResult, matchResult.Success);
     }

@@ -11,7 +11,7 @@ public class IntegerMatchTests
     [Fact]
     public void IntegerMatch_Constructor_Integer_Parse_Excetion()
     {
-        var ex = Assert.Throws<FormatException>(() => new IntegerMatch("Not an int", IntegerOperationType.Equal));
+        var ex = Assert.Throws<FormatException>(() => new IntegerMatch("Not an int", IntegerOperationType.Equal, negate: false));
         Assert.Equal(ex.Message, Resources.Error_IntegerMatch_FormatExceptionMessage);
     }
 
@@ -29,6 +29,18 @@ public class IntegerMatchTests
     {
         var context = new RewriteContext { HttpContext = new DefaultHttpContext() };
         var integerMatch = new IntegerMatch(value, (IntegerOperationType)operation);
+        var matchResult = integerMatch.Evaluate(input, context);
+        Assert.Equal(expectedResult, matchResult.Success);
+    }
+
+    [Theory]
+    [InlineData("1", (int)IntegerOperationType.Equal, "1", false)]
+    [InlineData("1", (int)IntegerOperationType.Equal, "2", true)]
+    [InlineData("1", (int)IntegerOperationType.NotEqual, "2", false)]
+    public void IntegerMatch_Evaluation_Negate_Cases(string value, int operation, string input, bool expectedResult)
+    {
+        var context = new RewriteContext { HttpContext = new DefaultHttpContext() };
+        var integerMatch = new IntegerMatch(value, (IntegerOperationType)operation, negate: true);
         var matchResult = integerMatch.Evaluate(input, context);
         Assert.Equal(expectedResult, matchResult.Success);
     }

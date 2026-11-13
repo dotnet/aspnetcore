@@ -16,7 +16,7 @@ internal sealed class IntegerMatch : UrlMatch
         _operation = operation;
     }
 
-    public IntegerMatch(string value, IntegerOperationType operation)
+    public IntegerMatch(string value, IntegerOperationType operation, bool negate)
     {
         int compValue;
         if (!int.TryParse(value, NumberStyles.None, CultureInfo.InvariantCulture, out compValue))
@@ -31,6 +31,7 @@ internal sealed class IntegerMatch : UrlMatch
         }
 
         _operation = operation;
+        Negate = negate;
     }
 
     public override MatchResults Evaluate(string input, RewriteContext context)
@@ -41,23 +42,32 @@ internal sealed class IntegerMatch : UrlMatch
             return MatchResults.EmptyFailure;
         }
 
+        bool success;
         switch (_operation)
         {
             case IntegerOperationType.Equal:
-                return compValue == _value ? MatchResults.EmptySuccess : MatchResults.EmptyFailure;
+                success = compValue == _value;
+                break;
             case IntegerOperationType.Greater:
-                return compValue > _value ? MatchResults.EmptySuccess : MatchResults.EmptyFailure;
+                success = compValue > _value;
+                break;
             case IntegerOperationType.GreaterEqual:
-                return compValue >= _value ? MatchResults.EmptySuccess : MatchResults.EmptyFailure;
+                success = compValue >= _value;
+                break;
             case IntegerOperationType.Less:
-                return compValue < _value ? MatchResults.EmptySuccess : MatchResults.EmptyFailure;
+                success = compValue < _value;
+                break;
             case IntegerOperationType.LessEqual:
-                return compValue <= _value ? MatchResults.EmptySuccess : MatchResults.EmptyFailure;
+                success = compValue <= _value;
+                break;
             case IntegerOperationType.NotEqual:
-                return compValue != _value ? MatchResults.EmptySuccess : MatchResults.EmptyFailure;
+                success = compValue != _value;
+                break;
             default:
                 Debug.Fail("This is never reached.");
                 throw new InvalidOperationException(); // Will never be thrown
         }
+
+        return success != Negate ? MatchResults.EmptySuccess : MatchResults.EmptyFailure;
     }
 }

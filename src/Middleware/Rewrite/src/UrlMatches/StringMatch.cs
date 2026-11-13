@@ -11,7 +11,7 @@ internal sealed class StringMatch : UrlMatch
     private readonly StringOperationType _operation;
     private readonly StringComparison _stringComparison;
 
-    public StringMatch(string value, StringOperationType operation, bool ignoreCase)
+    public StringMatch(string value, StringOperationType operation, bool ignoreCase, bool negate)
     {
         _value = value;
         if (operation < StringOperationType.Equal || operation > StringOperationType.LessEqual)
@@ -21,25 +21,34 @@ internal sealed class StringMatch : UrlMatch
 
         _operation = operation;
         _stringComparison = ignoreCase ? StringComparison.OrdinalIgnoreCase : StringComparison.Ordinal;
+        Negate = negate;
     }
 
     public override MatchResults Evaluate(string input, RewriteContext context)
     {
+        bool success;
         switch (_operation)
         {
             case StringOperationType.Equal:
-                return string.Compare(input, _value, _stringComparison) == 0 ? MatchResults.EmptySuccess : MatchResults.EmptyFailure;
+                success = string.Compare(input, _value, _stringComparison) == 0;
+                break;
             case StringOperationType.Greater:
-                return string.Compare(input, _value, _stringComparison) > 0 ? MatchResults.EmptySuccess : MatchResults.EmptyFailure;
+                success = string.Compare(input, _value, _stringComparison) > 0;
+                break;
             case StringOperationType.GreaterEqual:
-                return string.Compare(input, _value, _stringComparison) >= 0 ? MatchResults.EmptySuccess : MatchResults.EmptyFailure;
+                success = string.Compare(input, _value, _stringComparison) >= 0;
+                break;
             case StringOperationType.Less:
-                return string.Compare(input, _value, _stringComparison) < 0 ? MatchResults.EmptySuccess : MatchResults.EmptyFailure;
+                success = string.Compare(input, _value, _stringComparison) < 0;
+                break;
             case StringOperationType.LessEqual:
-                return string.Compare(input, _value, _stringComparison) <= 0 ? MatchResults.EmptySuccess : MatchResults.EmptyFailure;
+                success = string.Compare(input, _value, _stringComparison) <= 0;
+                break;
             default:
                 Debug.Fail("This is never reached.");
                 throw new InvalidOperationException(); // Will never be thrown
         }
+
+        return success != Negate ? MatchResults.EmptySuccess : MatchResults.EmptyFailure;
     }
 }
