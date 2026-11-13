@@ -95,7 +95,7 @@ function synchronizeDomContentCore(destination: CommentBoundedRange | Node, newC
   const editScript = computeEditScript(
     originalNodesForDiff,
     newNodesForDiff,
-    domNodeComparer
+    (a, b) => domNodeComparer(a, b, options)
   );
 
   let destinationWalker: EditWalker;
@@ -138,7 +138,7 @@ function synchronizeDomContentCore(destination: CommentBoundedRange | Node, newC
         case Operation.Delete: {
           const nodeToRemove = destinationWalker.current;
           destinationWalker.advance();
-          treatAsDeletion(nodeToRemove, destinationParent);
+          treatAsDeletion(nodeToRemove, destinationParent, options);
           break;
         }
         case Operation.Insert: {
@@ -234,7 +234,12 @@ function treatAsSubstitution(destination: Node, source: Node) {
   }
 }
 
-function treatAsDeletion(nodeToDelete: Node, parentNode: Node) {
+function treatAsDeletion(nodeToDelete: Node, parentNode: Node, options: DomSyncOptions) {
+  if (!options.preserveModalState && nodeToDelete instanceof HTMLDialogElement && nodeToDelete.matches(':modal')) {
+    // Complete the source page's native modal lifecycle before removing the dialog.
+    nodeToDelete.close();
+  }
+
   if (isLogicalElement(parentNode)) {
     // It's not safe to call 'removeLogicalChild' here because it recursively removes
     // logical descendants from their parents, and that can potentially interfere with
@@ -269,13 +274,18 @@ function treatAsInsertion(nodeToInsert: Node, nextNode: Node | null, parentNode:
   }
 }
 
-function domNodeComparer(a: Node, b: Node): UpdateCost {
+function domNodeComparer(a: Node, b: Node, options: DomSyncOptions): UpdateCost {
   if (a.nodeType !== b.nodeType) {
     return UpdateCost.Infinite;
   }
 
   if (isLogicalElement(a) !== isLogicalElement(b)) {
     // We cannot merge logical elements with non-logical elements.
+    return UpdateCost.Infinite;
+  }
+
+  if (!options.preserveModalState && a instanceof HTMLDialogElement && a.matches(':modal')) {
+    // A cross-page update must not install destination handlers on a modal whose close event is still pending.
     return UpdateCost.Infinite;
   }
 

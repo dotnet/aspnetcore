@@ -2,11 +2,6 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 export function synchronizeAttributes(destination: Element, source: Element, preserveModalState: boolean) {
-  if (!preserveModalState && destination instanceof HTMLDialogElement && destination.matches(':modal')) {
-    // Complete the native modal lifecycle before applying attributes from a different page.
-    destination.close();
-  }
-
   const destAttrs = destination.attributes;
   const sourceAttrs = source.attributes;
 

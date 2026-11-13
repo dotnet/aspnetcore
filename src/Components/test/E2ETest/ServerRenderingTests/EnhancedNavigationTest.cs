@@ -67,12 +67,13 @@ public class EnhancedNavigationTest : ServerTestBase<BasicTestAppServerSiteFixtu
         Browser.Exists(By.Id("navigate-from-modal")).Click();
 
         Browser.Equal("Page B", () => Browser.Exists(By.Id("modal-dialog-destination")).Text);
-        Browser.False(() => dialog.IsStale());
+        Browser.True(() => dialog.IsStale());
         Browser.False(() => (bool)javascript.ExecuteScript("return document.getElementById('enhanced-nav-dialog').open;"));
         Browser.False(() => (bool)javascript.ExecuteScript("return document.getElementById('enhanced-nav-dialog').matches(':modal');"));
 
         Browser.Exists(By.Id("destination-button")).Click();
-        Browser.Equal("Clicked", () => Browser.Exists(By.Id("destination-button")).Text);
+        Browser.Equal("Destination handler not invoked | Clicked", () => Browser.Exists(By.Id("close-handler-result")).Text);
+        Browser.Equal("source", () => (string)javascript.ExecuteScript("return document.body.dataset.dialogCloseHandler;"));
     }
 
     [Fact]

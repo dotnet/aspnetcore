@@ -1,8 +1,9 @@
 ﻿@page "/nav/modal-dialog-b"
 
-<dialog id="enhanced-nav-dialog">
+<dialog id="enhanced-nav-dialog" onclose="document.getElementById('close-handler-result').textContent = 'Destination handler invoked'">
     <p>Destination dialog</p>
 </dialog>
 
 <p id="modal-dialog-destination">Page B</p>
-<button id="destination-button" type="button" onclick="this.textContent = 'Clicked'">Click</button>
+<p id="close-handler-result">Destination handler not invoked</p>
+<button id="destination-button" type="button" onclick="document.getElementById('close-handler-result').textContent += ' | Clicked'">Click</button>

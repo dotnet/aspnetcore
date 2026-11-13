@@ -1,6 +1,6 @@
 ﻿@page "/nav/modal-dialog-a"
 
-<dialog id="enhanced-nav-dialog">
+<dialog id="enhanced-nav-dialog" onclose="document.body.dataset.dialogCloseHandler = 'source'">
     <a id="navigate-from-modal" href="nav/modal-dialog-b">Navigate to page B</a>
 </dialog>
 
