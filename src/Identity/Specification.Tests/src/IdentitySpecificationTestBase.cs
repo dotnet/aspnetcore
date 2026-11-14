@@ -632,7 +632,8 @@ public abstract class IdentitySpecificationTestBase<TUser, TRole, TKey> : UserMa
             attestationObject: [5, 6, 7],
             clientDataJson: [8, 9])
         {
-            Name = "InitialName"
+            Name = "InitialName",
+            Aaguid = Guid.Parse("812c5566-7fd4-4567-8ab1-84c3a4765123").ToByteArray()
         };
 
         IdentityResultAssert.IsSuccess(await manager.AddOrUpdatePasskeyAsync(user, passkey));
