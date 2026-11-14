@@ -141,6 +141,12 @@ public readonly struct HostString : IEquatable<HostString>
 
         if (!_value.AsSpan().ContainsAnyExcept(s_safeHostStringChars))
         {
+            var colonIndex = _value.IndexOf(':');
+            if (!_value.Contains('[') && colonIndex >= 0 && _value.IndexOf(':', colonIndex + 1) >= 0)
+            {
+                return $"[{_value}]";
+            }
+
             return _value;
         }
 
