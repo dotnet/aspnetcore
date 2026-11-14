@@ -2,7 +2,9 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Globalization;
+using System.Net.Http;
 using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.OpenApi;
 using Microsoft.Extensions.DependencyInjection;
 
@@ -33,6 +35,96 @@ public class DocumentTransformerTests : OpenApiDocumentServiceTestBase
         {
             Assert.Equal("2", document.Info.Description);
         });
+    }
+
+    [Fact]
+    public async Task DocumentTransformer_RunsBeforeOperationGenerationToPreserveTagMetadata()
+    {
+        var builder = CreateBuilder();
+
+        builder.MapGet("/todo", () => { }).WithTags("todos", "v1");
+
+        var options = new OpenApiOptions();
+        options.AddDocumentTransformer((document, context, cancellationToken) =>
+        {
+            document.Tags ??= new SortedSet<OpenApiTag>(Comparer<OpenApiTag>.Create(
+                static (left, right) => StringComparer.Ordinal.Compare(left.Name, right.Name)));
+            document.Tags.Add(new OpenApiTag
+            {
+                Name = "todos",
+                Description = "Operations for managing todo items."
+            });
+            document.Tags.Add(new OpenApiTag
+            {
+                Name = "v1",
+                Description = "Version 1 operations."
+            });
+            return Task.CompletedTask;
+        });
+        options.AddOperationTransformer((operation, context, cancellationToken) => Task.CompletedTask);
+
+        await VerifyOpenApiDocument(builder, options, document =>
+        {
+            Assert.Collection(document.Tags,
+                tag =>
+                {
+                    Assert.Equal("todos", tag.Name);
+                    Assert.Equal("Operations for managing todo items.", tag.Description);
+                },
+                tag =>
+                {
+                    Assert.Equal("v1", tag.Name);
+                    Assert.Equal("Version 1 operations.", tag.Description);
+                });
+        });
+    }
+
+    [Fact]
+    public async Task DocumentTransformer_RunsBeforeOperationTransformerWhenRegisteredFirst()
+    {
+        var builder = CreateBuilder();
+
+        builder.MapGet("/todo", () => { });
+
+        var options = new OpenApiOptions();
+        options.AddDocumentTransformer((document, context, cancellationToken) =>
+        {
+            document.Info.Description = "Document transformer ran.";
+            return Task.CompletedTask;
+        });
+        options.AddOperationTransformer((operation, context, cancellationToken) =>
+        {
+            Assert.Equal("Document transformer ran.", context.Document.Info.Description);
+            operation.Description = "Operation transformer ran.";
+            return Task.CompletedTask;
+        });
+
+        await VerifyOpenApiDocument(builder, options, document =>
+        {
+            Assert.Equal("Document transformer ran.", document.Info.Description);
+            Assert.Equal("Operation transformer ran.", document.Paths["/todo"].Operations[HttpMethod.Get].Description);
+        });
+    }
+
+    [Fact]
+    public async Task TransformerRegisteredAsOperationTransformer_DoesNotRunAsDocumentTransformer()
+    {
+        var builder = CreateBuilder();
+
+        builder.MapGet("/todo", () => { });
+
+        var transformer = new OperationAndDocumentTransformer();
+        var options = new OpenApiOptions();
+        options.AddOperationTransformer(transformer);
+
+        await VerifyOpenApiDocument(builder, options, document =>
+        {
+            Assert.Null(document.Info.Description);
+            Assert.Equal("Operation transformer ran.", document.Paths["/todo"].Operations[HttpMethod.Get].Description);
+        });
+
+        Assert.Equal(0, transformer.DocumentTransformCount);
+        Assert.Equal(1, transformer.OperationTransformCount);
     }
 
     [Fact]
@@ -320,6 +412,27 @@ public class DocumentTransformerTests : OpenApiDocumentServiceTestBase
         await documentTask;
 
         Assert.Equal([1, 2, 3], transformerOrder);
+    }
+
+    private sealed class OperationAndDocumentTransformer : IOpenApiOperationTransformer, IOpenApiDocumentTransformer
+    {
+        public int OperationTransformCount { get; private set; }
+
+        public int DocumentTransformCount { get; private set; }
+
+        public Task TransformAsync(OpenApiOperation operation, OpenApiOperationTransformerContext context, CancellationToken cancellationToken)
+        {
+            OperationTransformCount++;
+            operation.Description = "Operation transformer ran.";
+            return Task.CompletedTask;
+        }
+
+        public Task TransformAsync(OpenApiDocument document, OpenApiDocumentTransformerContext context, CancellationToken cancellationToken)
+        {
+            DocumentTransformCount++;
+            document.Info.Description = "Document transformer ran.";
+            return Task.CompletedTask;
+        }
     }
 
     private class ActivatedTransformer : IOpenApiDocumentTransformer
