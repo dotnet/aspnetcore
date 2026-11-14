@@ -114,7 +114,7 @@ internal sealed class ProcessEx : IDisposable
         {
             RedirectStandardOutput = true,
             RedirectStandardError = true,
-            UseShellExecute = false,
+            InheritedHandles = [],
             CreateNoWindow = true,
             WorkingDirectory = workingDirectory
         };
@@ -140,7 +140,7 @@ internal sealed class ProcessEx : IDisposable
         }
 
         output.WriteLine($"==> {startInfo.FileName} {startInfo.Arguments} [{startInfo.WorkingDirectory}]");
-        var proc = Process.Start(startInfo);
+        var proc = Process.Start(startInfo)!;
 
         return new ProcessEx(output, proc, timeout ?? DefaultProcessTimeout);
     }
