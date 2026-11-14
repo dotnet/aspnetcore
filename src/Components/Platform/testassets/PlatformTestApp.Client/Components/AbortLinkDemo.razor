@@ -1,0 +1,76 @@
+@inject IBrowserPlatform Browser
+
+<h2>Abort link</h2>
+
+<div>
+    <button id="fetch-not-canceled" @onclick="FetchNotCanceledAsync">Not canceled</button>
+    <button id="fetch-without-token" @onclick="FetchWithoutTokenAsync">Without token</button>
+</div>
+<div>
+    <button id="start-before-headers" @onclick="StartBeforeHeadersAsync">Start, cancel before headers</button>
+    <button id="cancel" @onclick="CancelAsync">Cancel</button>
+    <button id="cancel-during-body" @onclick="CancelDuringBodyAsync">Cancel during body</button>
+    <button id="cancel-before-start" @onclick="CancelBeforeStartAsync">Cancel before start</button>
+</div>
+<p id="abortlink-result" role="status" data-run="@runCount" data-request-id="@requestId">@result</p>
+
+@code {
+    private string result = "No operation has run.";
+    private string requestId = "";
+    private int runCount;
+    private CancellationTokenSource? pending;
+
+    // Gets the demo feature the way a family gets its projection, so it uses the abort links of the scope.
+    private AbortLinkDemoFetch Fetch
+        => Browser.Window.GetOrAddFeature(static context => new AbortLinkDemoFetch(context.JSRuntime, context.AbortLinkFactory));
+
+    private Task FetchNotCanceledAsync() => RunAsync("Not canceled", async id =>
+    {
+        using var cts = new CancellationTokenSource();
+        return await Fetch.FetchTextAsync($"/abortlink/respond?id={id}", cts.Token);
+    });
+
+    private Task FetchWithoutTokenAsync() => RunAsync("Without token", id =>
+        Fetch.FetchTextAsync($"/abortlink/respond?id={id}", CancellationToken.None));
+
+    // The server holds the headers until the test clicks Cancel.
+    private Task StartBeforeHeadersAsync() => RunAsync("Cancel before headers", async id =>
+    {
+        // Not disposed, because Cancel may still run on another thread. It has no timer to release.
+        pending = new CancellationTokenSource();
+        return await Fetch.FetchTextAsync($"/abortlink/hold-headers?id={id}", pending.Token);
+    });
+
+    // Cancels on a thread pool thread, as a timer does, which in Interactive Server is outside the circuit's context.
+    private Task CancelAsync()
+    {
+        var cts = pending;
+        return Task.Run(() => cts?.Cancel());
+    }
+
+    // Cancels once text() is sent, so the abort reaches the browser while it reads the body.
+    private Task CancelDuringBodyAsync() => RunAsync("Cancel during body", async id =>
+    {
+        using var cts = new CancellationTokenSource();
+        return await Fetch.FetchTextAsync($"/abortlink/hold-body?id={id}", cts.Token, onBodyReadStarted: cts.Cancel);
+    });
+
+    private Task CancelBeforeStartAsync() => RunAsync("Cancel before start", id =>
+        Fetch.FetchTextAsync($"/abortlink/respond?id={id}", new CancellationToken(canceled: true)));
+
+    private async Task RunAsync(string operation, Func<string, Task<string>> run)
+    {
+        requestId = Guid.NewGuid().ToString("N");
+        try
+        {
+            result = $"{operation}: {await run(requestId)}";
+        }
+        catch (OperationCanceledException ex)
+        {
+            var inner = ex.InnerException?.GetType().Name ?? "no inner exception";
+            result = $"{operation}: Canceled ({inner})";
+        }
+        // Counts only completed runs, so a test waits for its own click and an exception fails at its step.
+        runCount++;
+    }
+}
