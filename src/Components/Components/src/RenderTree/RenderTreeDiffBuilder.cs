@@ -822,8 +822,8 @@ internal static class RenderTreeDiffBuilder
         {
             // Retain the event handler ID by copying the old frame over the new frame.
             // this will prevent us from needing to dispose the old event handler
-            // since it was unchanged.
-            newFrame = oldFrame;
+            // since it was unchanged. Keep the new binding target, which can change independently.
+            newFrame = oldFrame.WithAttributeEventUpdatesAttributeName(newFrame.AttributeEventUpdatesAttributeNameField);
         }
     }
 

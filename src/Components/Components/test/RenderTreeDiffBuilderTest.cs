@@ -1697,6 +1697,127 @@ public class RenderTreeDiffBuilderTest : IDisposable
         Assert.Empty(batchBuilder.DisposedEventHandlerIDs.AsEnumerable());
     }
 
+    [Theory]
+    [InlineData("text", "checkbox", true, false)]
+    [InlineData("text", "checkbox", false, false)]
+    [InlineData("checkbox", "text", true, false)]
+    [InlineData("checkbox", "text", false, false)]
+    [InlineData("text", "checkbox", true, true)]
+    [InlineData("text", "checkbox", false, true)]
+    [InlineData("checkbox", "text", true, true)]
+    [InlineData("checkbox", "text", false, true)]
+    public async Task InputTypeChange_WithRetainedBinding_RevertsRejectedEdit(
+        string oldType, string newType, bool value, bool useSlowPath)
+    {
+        var setterCalled = false;
+        var retainedHandler = EventCallback.Factory.CreateBinder<bool>(
+            this, _ => { setterCalled = true; }, value);
+
+        BuildInput(oldTree, oldType, addAttribute: false);
+        BuildInput(newTree, newType, addAttribute: useSlowPath);
+
+        var (_, _, batch) = GetSingleUpdatedComponentWithBatch(initializeFromFrames: true);
+        var oldEventFrame = Assert.Single(oldTree.GetFrames().AsEnumerable(),
+            frame => frame.FrameType == RenderTreeFrameType.Attribute && frame.AttributeName == "onchange");
+        var newEventFrame = Assert.Single(newTree.GetFrames().AsEnumerable(),
+            frame => frame.FrameType == RenderTreeFrameType.Attribute && frame.AttributeName == "onchange");
+        var bindingTarget = newType == "checkbox" ? "checked" : "value";
+
+        Assert.NotEqual(default, oldEventFrame.AttributeEventHandlerId);
+        Assert.Equal(oldEventFrame.AttributeEventHandlerId, newEventFrame.AttributeEventHandlerId);
+        Assert.Equal(bindingTarget, newEventFrame.AttributeEventUpdatesAttributeName);
+        Assert.Empty(batch.DisposedEventHandlerIDs.AsEnumerable());
+
+        object fieldValue = newType == "checkbox" ? !value : "not a boolean";
+        RenderTreeUpdater.UpdateToMatchClientState(newTree, newEventFrame.AttributeEventHandlerId, fieldValue);
+        await retainedHandler.InvokeAsync(new ChangeEventArgs { Value = fieldValue });
+        Assert.Equal(newType == "checkbox", setterCalled);
+
+        using var correctedTree = new RenderTreeBuilder();
+        BuildInput(correctedTree, newType, addAttribute: useSlowPath);
+        var correctedBatch = GetRenderedBatch(newTree, correctedTree, initializeFromFrames: false);
+        var correctedDiff = Assert.Single(correctedBatch.UpdatedComponents.AsEnumerable());
+        var edit = Assert.Single(correctedDiff.Edits);
+        if (value)
+        {
+            AssertEdit(edit, RenderTreeEditType.SetAttribute, 0);
+            AssertFrame.Attribute(correctedBatch.ReferenceFrames.Array[edit.ReferenceFrameIndex],
+                bindingTarget, true, 2);
+        }
+        else
+        {
+            AssertEdit(edit, RenderTreeEditType.RemoveAttribute, 0);
+            Assert.Equal(bindingTarget, edit.RemovedAttributeName);
+        }
+
+        void BuildInput(RenderTreeBuilder builder, string type, bool addAttribute)
+        {
+            builder.OpenElement(0, "input");
+            builder.AddAttribute(1, "type", type);
+            builder.AddAttribute(2, "value", BindConverter.FormatValue(value));
+            if (addAttribute)
+            {
+                builder.AddAttribute(3, "title", "Additional attribute before the retained handler");
+            }
+
+            builder.AddAttribute(useSlowPath ? 3 : 4, "onchange", retainedHandler);
+            builder.SetUpdatesAttributeName("value");
+            builder.CloseElement();
+        }
+    }
+
+    [Theory]
+    [InlineData(true, false)]
+    [InlineData(false, false)]
+    [InlineData(true, true)]
+    [InlineData(false, true)]
+    public void ExplicitUncheckedAttributeChange_WithRetainedBinding_PreservesTargetAndHandler(
+        bool value, bool addExplicitChecked)
+    {
+        var retainedHandler = EventCallback.Factory.CreateBinder<bool>(this, _ => { }, value);
+        BuildInput(oldTree, hasExplicitChecked: !addExplicitChecked);
+        BuildInput(newTree, hasExplicitChecked: addExplicitChecked);
+
+        var (result, referenceFrames, batch) = GetSingleUpdatedComponentWithBatch(initializeFromFrames: true);
+        var oldEventFrame = Assert.Single(oldTree.GetFrames().AsEnumerable(),
+            frame => frame.FrameType == RenderTreeFrameType.Attribute && frame.AttributeName == "onchange");
+        var newEventFrame = Assert.Single(newTree.GetFrames().AsEnumerable(),
+            frame => frame.FrameType == RenderTreeFrameType.Attribute && frame.AttributeName == "onchange");
+
+        Assert.NotEqual(default, oldEventFrame.AttributeEventHandlerId);
+        Assert.Equal(oldEventFrame.AttributeEventHandlerId, newEventFrame.AttributeEventHandlerId);
+        Assert.Equal(addExplicitChecked ? "value" : "checked", newEventFrame.AttributeEventUpdatesAttributeName);
+        Assert.Empty(batch.DisposedEventHandlerIDs.AsEnumerable());
+        if (value)
+        {
+            Assert.Equal(2, result.Edits.Count);
+            var removal = Assert.Single(result.Edits, edit => edit.Type == RenderTreeEditType.RemoveAttribute);
+            Assert.Equal(addExplicitChecked ? "checked" : "value", removal.RemovedAttributeName);
+            var addition = Assert.Single(result.Edits, edit => edit.Type == RenderTreeEditType.SetAttribute);
+            AssertFrame.Attribute(referenceFrames[addition.ReferenceFrameIndex],
+                addExplicitChecked ? "value" : "checked", true, 3);
+        }
+        else
+        {
+            Assert.Empty(result.Edits);
+        }
+
+        void BuildInput(RenderTreeBuilder builder, bool hasExplicitChecked)
+        {
+            builder.OpenElement(0, "input");
+            builder.AddAttribute(1, "type", "checkbox");
+            if (hasExplicitChecked)
+            {
+                builder.AddAttribute(2, "checked", false);
+            }
+
+            builder.AddAttribute(3, "value", value);
+            builder.AddAttribute(4, "onchange", retainedHandler);
+            builder.SetUpdatesAttributeName("value");
+            builder.CloseElement();
+        }
+    }
+
     [Fact]
     public void SetsUpdatedParametersOnChildComponents()
     {
