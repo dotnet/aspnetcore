@@ -15,6 +15,27 @@ namespace Microsoft.AspNetCore.JsonPatch.SystemTextJson;
 public class JsonPatchDocumentTest
 {
     [Fact]
+    public void MoveFromReadOnlyProperty_DoesNotChangeDestinationWhenErrorsAreLogged()
+    {
+        var model = new ReadOnlyMoveModel();
+        var errors = new List<JsonPatchError>();
+        var patch = new JsonPatchDocument();
+        patch.Move("/Reference", "/Note");
+
+        patch.ApplyTo(model, errors.Add);
+
+        Assert.Single(errors);
+        Assert.Equal("original", model.Note);
+        Assert.Equal("reference", model.Reference);
+    }
+
+    private sealed class ReadOnlyMoveModel
+    {
+        public string Reference { get; } = "reference";
+        public string Note { get; set; } = "original";
+    }
+
+    [Fact]
     public void DoubleSlashAtBeginningShouldParseCorrectly()
     {
         // Arrange
