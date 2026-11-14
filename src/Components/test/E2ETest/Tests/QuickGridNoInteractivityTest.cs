@@ -22,9 +22,32 @@ public class QuickGridNoInteractivityTest : ServerTestBase<BasicTestAppServerSit
     {
     }
 
+    protected override void InitializeAsyncCore()
+    {
+        _serverFixture.AdditionalArguments.Add("EnableCultureTesting=true");
+        base.InitializeAsyncCore();
+    }
+	
     public override Task InitializeAsync() => InitializeAsync(BrowserFixture.StreamingContext);
 
     [Fact]
+    public void PaginatorUsesLocalizedText()
+    {
+        Navigate($"{ServerPathBase}/Culture/SetCulture?culture=es-ES&uiCulture=es-ES&redirectUri={Uri.EscapeDataString($"{ServerPathBase}/quickgrid")}");
+        Browser.Exists(By.ClassName("return-from-culture-setter")).Click();
+
+        Browser.Equal("43 elementos", () => Browser.FindElement(By.CssSelector(".first-paginator .summary")).Text);
+        Browser.Equal("Página 1 de 5", () => Browser.FindElement(By.CssSelector(".first-paginator .pagination-text")).Text);
+        Assert.Equal("Ir a la página siguiente", Browser.FindElement(By.CssSelector(".first-paginator .go-next")).GetDomAttribute("title"));
+        Assert.Equal("Ir a la página siguiente", Browser.FindElement(By.CssSelector(".first-paginator .go-next")).GetDomAttribute("aria-label"));
+
+        Browser.FindElement(By.CssSelector(".first-paginator .go-next")).Click();
+
+        Browser.Equal("Página 2 de 5", () => Browser.FindElement(By.CssSelector(".first-paginator .pagination-text")).Text);
+        Assert.Contains("page=2", Browser.Url);
+    }
+	
+	[Fact]
     public void PaginatorDisplaysCorrectItemCount()
     {
         Navigate($"{ServerPathBase}/quickgrid");
