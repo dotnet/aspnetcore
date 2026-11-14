@@ -40,6 +40,9 @@ internal sealed partial class DefaultHubDispatcher<[DynamicallyAccessedMembers(H
     private readonly Func<HubLifetimeContext, Exception?, Task>? _onDisconnectedMiddleware;
     private readonly HubLifetimeManager<THub> _hubLifetimeManager;
 
+    // Tracks whether IHubActivator<THub> resolves to the built-in DefaultHubActivator<THub>.
+    private HubActivatorKind _hubActivatorKind;
+
     [FeatureSwitchDefinition("Microsoft.AspNetCore.SignalR.Hub.IsCustomAwaitableSupported")]
     [FeatureGuard(typeof(RequiresDynamicCodeAttribute))]
     [FeatureGuard(typeof(RequiresUnreferencedCodeAttribute))]
@@ -54,6 +57,11 @@ internal sealed partial class DefaultHubDispatcher<[DynamicallyAccessedMembers(H
         _enableDetailedErrors = enableDetailedErrors;
         _logger = logger;
         _hubLifetimeManager = lifetimeManager;
+        // Other containers can supply registrations that are not part of the IServiceCollection (or vary them per scope),
+        // so the collection cannot prove which IHubActivator<THub> they will produce. Only consider the fast path when the
+        // scopes come from Microsoft.Extensions.DependencyInjection, whose registrations are exactly the collection it was
+        // built from and are the same for every scope.
+        _hubActivatorKind = IsMicrosoftDependencyInjection(serviceScopeFactory) ? HubActivatorKind.Unknown : HubActivatorKind.Custom;
         DiscoverHubMethods(disableImplicitFromServiceParameters);
 
         var count = hubFilters?.Count ?? 0;
@@ -87,11 +95,47 @@ internal sealed partial class DefaultHubDispatcher<[DynamicallyAccessedMembers(H
         }
     }
 
+    private IHubActivator<THub> GetHubActivator(IServiceProvider scopedServiceProvider)
+    {
+        // Resolving the scoped IHubActivator<THub> from DI on every invocation allocates (the scope's
+        // resolved-services cache grows) and is relatively expensive. The default activator is internal,
+        // stateless apart from the scoped provider and not disposable, so when the container is known to
+        // produce it we can construct it directly with the same scoped provider.
+        if (_hubActivatorKind == HubActivatorKind.Default)
+        {
+            return new DefaultHubActivator<THub>(scopedServiceProvider);
+        }
+
+        var hubActivator = scopedServiceProvider.GetRequiredService<IHubActivator<THub>>();
+        if (_hubActivatorKind == HubActivatorKind.Unknown)
+        {
+            // Only take the fast path when the effective registration is SignalR's own open generic descriptor
+            // (not a factory or a user registration that happened to return the default activator), and the
+            // container actually produced it (third-party containers may have registrations outside the collection).
+            var isDefault = hubActivator.GetType() == typeof(DefaultHubActivator<THub>)
+                && scopedServiceProvider.GetService<DefaultHubActivatorRegistration>() is { } registration
+                && registration.IsDefaultActivatorRegistered(typeof(IHubActivator<THub>));
+            _hubActivatorKind = isDefault ? HubActivatorKind.Default : HubActivatorKind.Custom;
+        }
+
+        return hubActivator;
+    }
+
+    private static bool IsMicrosoftDependencyInjection(IServiceScopeFactory serviceScopeFactory)
+        => string.Equals(serviceScopeFactory.GetType().Assembly.GetName().Name, "Microsoft.Extensions.DependencyInjection", StringComparison.Ordinal);
+
+    private enum HubActivatorKind : byte
+    {
+        Unknown,
+        Default,
+        Custom,
+    }
+
     public override async Task OnConnectedAsync(HubConnectionContext connection)
     {
         await using var scope = _serviceScopeFactory.CreateAsyncScope();
 
-        var hubActivator = scope.ServiceProvider.GetRequiredService<IHubActivator<THub>>();
+        var hubActivator = GetHubActivator(scope.ServiceProvider);
         var hub = hubActivator.Create();
         Activity? activity = null;
         try
@@ -128,7 +172,7 @@ internal sealed partial class DefaultHubDispatcher<[DynamicallyAccessedMembers(H
     {
         await using var scope = _serviceScopeFactory.CreateAsyncScope();
 
-        var hubActivator = scope.ServiceProvider.GetRequiredService<IHubActivator<THub>>();
+        var hubActivator = GetHubActivator(scope.ServiceProvider);
         var hub = hubActivator.Create();
         Activity? activity = null;
         try
@@ -175,7 +219,7 @@ internal sealed partial class DefaultHubDispatcher<[DynamicallyAccessedMembers(H
     {
         await using var scope = _serviceScopeFactory.CreateAsyncScope();
 
-        var hubActivator = scope.ServiceProvider.GetRequiredService<IHubActivator<THub>>();
+        var hubActivator = GetHubActivator(scope.ServiceProvider);
         var hub = hubActivator.Create();
         Activity? activity = null;
         try
@@ -380,7 +424,7 @@ internal sealed partial class DefaultHubDispatcher<[DynamicallyAccessedMembers(H
         long? streamOwner = null;
         try
         {
-            hubActivator = scope.ServiceProvider.GetRequiredService<IHubActivator<THub>>();
+            hubActivator = GetHubActivator(scope.ServiceProvider);
             hub = hubActivator.Create();
             var hubCallerContext = connection.HubCallerContext;
 
