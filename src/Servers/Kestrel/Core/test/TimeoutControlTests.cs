@@ -10,6 +10,19 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests;
 
 public class TimeoutControlTests
 {
+    [Theory]
+    [InlineData((int)TimeoutReason.KeepAlive)]
+    [InlineData((int)TimeoutReason.RequestHeaders)]
+    public void InfiniteTimeout_DoesNotExpireOnHeartbeat(int reason)
+    {
+        _timeoutControl.Initialize();
+        _timeoutControl.SetTimeout(TimeSpan.MaxValue, (TimeoutReason)reason);
+        _timeProvider.Advance(TimeSpan.FromDays(1));
+        _timeoutControl.Tick(_timeProvider.GetTimestamp());
+
+        _mockTimeoutHandler.Verify(h => h.OnTimeout(It.IsAny<TimeoutReason>()), Times.Never);
+    }
+
     private readonly Mock<ITimeoutHandler> _mockTimeoutHandler;
     private readonly TimeoutControl _timeoutControl;
     private readonly FakeTimeProvider _timeProvider;
