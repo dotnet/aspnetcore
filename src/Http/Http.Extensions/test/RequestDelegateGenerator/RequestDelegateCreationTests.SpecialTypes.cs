@@ -21,6 +21,27 @@ namespace Microsoft.AspNetCore.Http.Generators.Tests;
 
 public abstract partial class RequestDelegateCreationTests : RequestDelegateCreationTestBase
 {
+    [Theory]
+    [InlineData("FromQuery")]
+    [InlineData("FromHeader")]
+    [InlineData("FromRoute")]
+    public async Task ExplicitStringBinding_UsesDefaultWhenValueIsAbsent(string sourceAttribute)
+    {
+        var source = $$"""
+app.MapGet("/{value?}", (HttpContext context, [Microsoft.AspNetCore.Mvc.{{sourceAttribute}}] string value = "fallback") =>
+{
+    context.Items["value"] = value;
+});
+""";
+        var (_, compilation) = await RunGeneratorAsync(source);
+        var endpoint = GetEndpointFromCompilation(compilation);
+        var context = CreateHttpContext();
+
+        await endpoint.RequestDelegate(context);
+
+        Assert.Equal("fallback", context.Items["value"]);
+    }
+
     [Fact]
     public async Task RequestDelegatePopulatesHttpContextParameterWithoutAttribute()
     {
