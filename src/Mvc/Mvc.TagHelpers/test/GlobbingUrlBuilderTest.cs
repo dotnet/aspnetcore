@@ -14,6 +14,19 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers;
 public class GlobbingUrlBuilderTest
 {
     [Fact]
+    public void SharedCache_UsesCurrentRequestPathBase()
+    {
+        var fileProvider = MakeFileProvider(MakeDirectoryContents("site.css"));
+        using var cache = new MemoryCache(new MemoryCacheOptions());
+        var first = new GlobbingUrlBuilder(fileProvider, cache, new PathString("/foo"));
+        var second = new GlobbingUrlBuilder(fileProvider, cache, new PathString("/bar"));
+
+        Assert.Equal("/foo/site.css", Assert.Single(first.BuildUrlList(null, "**/*.css", null)));
+        Assert.Equal("/bar/site.css", Assert.Single(second.BuildUrlList(null, "**/*.css", null)));
+        Assert.Equal("/foo/site.css", Assert.Single(first.BuildUrlList(null, "**/*.css", null)));
+    }
+
+    [Fact]
     public void ReturnsOnlyStaticUrlWhenPatternDoesntFindAnyMatches()
     {
         // Arrange
@@ -496,7 +509,7 @@ public class GlobbingUrlBuilderTest
     {
         var files = fileNames.Select(name => MakeFileInfo(name));
         var directoryContents = new Mock<IDirectoryContents>();
-        directoryContents.Setup(dc => dc.GetEnumerator()).Returns(files.GetEnumerator());
+        directoryContents.Setup(dc => dc.GetEnumerator()).Returns(() => files.GetEnumerator());
 
         return directoryContents.Object;
     }

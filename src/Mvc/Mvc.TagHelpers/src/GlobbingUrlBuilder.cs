@@ -104,7 +104,7 @@ public class GlobbingUrlBuilder
             return Array.Empty<string>();
         }
 
-        var cacheKey = new GlobbingUrlKey(include, exclude);
+        var cacheKey = new GlobbingUrlKey(include, exclude, RequestPathBase.Value);
         if (Cache.TryGetValue(cacheKey, out List<string> files))
         {
             return files;
@@ -338,25 +338,29 @@ public class GlobbingUrlBuilder
 
     private readonly struct GlobbingUrlKey : IEquatable<GlobbingUrlKey>
     {
-        public GlobbingUrlKey(string include, string exclude)
+        public GlobbingUrlKey(string include, string exclude, string requestPathBase)
         {
             Include = include;
             Exclude = exclude;
+            RequestPathBase = requestPathBase;
         }
 
         public string Include { get; }
 
         public string Exclude { get; }
 
+        public string RequestPathBase { get; }
+
         public bool Equals(GlobbingUrlKey other)
         {
             return string.Equals(Include, other.Include, StringComparison.Ordinal) &&
-                string.Equals(Exclude, other.Exclude, StringComparison.Ordinal);
+                string.Equals(Exclude, other.Exclude, StringComparison.Ordinal) &&
+                string.Equals(RequestPathBase, other.RequestPathBase, StringComparison.Ordinal);
         }
 
         public override int GetHashCode()
         {
-            return HashCode.Combine(Include, Exclude);
+            return HashCode.Combine(Include, Exclude, RequestPathBase);
         }
     }
 }
