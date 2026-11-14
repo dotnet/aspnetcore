@@ -1154,6 +1154,43 @@ public class OpenApiSchemaReferenceTransformerTests : OpenApiDocumentServiceTest
         });
     }
 
+    // Test for: https://github.com/dotnet/aspnetcore/issues/69862
+    [Theory]
+    [InlineData(true)]
+    [InlineData(false)]
+    public async Task ConstructorParameterDefaultIsAppliedToReferenceRegardlessOfMappingOrder(bool mapRequestWithDefaultFirst)
+    {
+        var builder = CreateBuilder();
+        if (mapRequestWithDefaultFirst)
+        {
+            builder.MapPost("/with-default", (StatusRequestWithConstructorDefault request) => { });
+            builder.MapPost("/without-default", (StatusRequestWithoutDefault request) => { });
+        }
+        else
+        {
+            builder.MapPost("/without-default", (StatusRequestWithoutDefault request) => { });
+            builder.MapPost("/with-default", (StatusRequestWithConstructorDefault request) => { });
+        }
+
+        await VerifyOpenApiDocument(builder, document =>
+        {
+            Assert.NotNull(document.Components?.Schemas);
+            Assert.Null(document.Components.Schemas["Status"].Default);
+
+            var withDefaultSchema = document.Components.Schemas[nameof(StatusRequestWithConstructorDefault)];
+            Assert.NotNull(withDefaultSchema.Properties);
+            var withDefaultStatus = Assert.IsType<OpenApiSchemaReference>(withDefaultSchema.Properties["status"]);
+            Assert.Equal("Status", withDefaultStatus.Reference.Id);
+            Assert.Equal("Approved", withDefaultStatus.Default?.GetValue<string>());
+
+            var withoutDefaultSchema = document.Components.Schemas[nameof(StatusRequestWithoutDefault)];
+            Assert.NotNull(withoutDefaultSchema.Properties);
+            var withoutDefaultStatus = Assert.IsType<OpenApiSchemaReference>(withoutDefaultSchema.Properties["status"]);
+            Assert.Equal("Status", withoutDefaultStatus.Reference.Id);
+            Assert.Null(withoutDefaultStatus.Default);
+        });
+    }
+
     // Test models for issue 61194
     private class Config
     {
@@ -1253,5 +1290,10 @@ public class OpenApiSchemaReferenceTransformerTests : OpenApiDocumentServiceTest
     {
         public ICollection<CircularReferenceWithArrayModel> SelfArray { get; set; } = [];
     }
+
+    // Test models for issue 69862
+    private record StatusRequestWithConstructorDefault(string Title, Status Status = Status.Approved);
+
+    private record StatusRequestWithoutDefault(string Title, Status Status);
 }
 #nullable restore
