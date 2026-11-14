@@ -3,6 +3,7 @@
 
 using System.Text;
 using System.Text.Json;
+using Microsoft.AspNetCore.Mvc.Core;
 using Microsoft.Extensions.Logging;
 
 namespace Microsoft.AspNetCore.Mvc.Formatters;
@@ -117,11 +118,19 @@ public partial class SystemTextJsonInputFormatter : TextInputFormatter, IInputFo
 
         if (model == null && !context.TreatEmptyInputAsDefaultValue)
         {
-            // Some nonempty inputs might deserialize as null, for example whitespace,
-            // or the JSON-encoded value "null". The upstream BodyModelBinder needs to
-            // be notified that we don't regard this as a real input so it can register
-            // a model binding error.
-            return InputFormatterResult.NoValue();
+            // The request body contained a valid JSON value (e.g. the literal "null")
+            // that deserialized to null, but the parameter is required. Return a
+            // specific error message rather than the generic "non-empty request body"
+            // message, because the body is not empty — it just contains null.
+            var modelName = context.ModelName ?? string.Empty;
+            var modelDisplayName = context.Metadata?.DisplayName
+                ?? context.Metadata?.Name
+                ?? modelName;
+            context.ModelState.TryAddModelError(
+                modelName,
+                Resources.FormatFormatExceptionMessage_NullJsonIsInvalid(modelDisplayName));
+
+            return InputFormatterResult.Failure();
         }
         else
         {
