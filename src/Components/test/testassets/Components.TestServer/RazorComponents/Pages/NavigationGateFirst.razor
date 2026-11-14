@@ -1,0 +1,11 @@
+@page "/navigation-gate/first"
+@using static Microsoft.AspNetCore.Components.Web.RenderMode
+@rendermode InteractiveServer
+
+<h1>First navigation component</h1>
+<a id="navigation-gate-next" href="navigation-gate/second">Navigate to second component</a>
+<button id="navigation-gate-first-button" @onclick="() => _count++">First clicks: @_count</button>
+
+@code {
+    private int _count;
+}
