@@ -6,7 +6,6 @@ using System.Buffers.Text;
 using System.Text;
 using Microsoft.AspNetCore.DataProtection;
 using Microsoft.AspNetCore.Shared;
-using Microsoft.Extensions.Internal;
 
 namespace Microsoft.AspNetCore.Antiforgery;
 
@@ -39,7 +38,12 @@ internal sealed class DefaultAntiforgeryTokenSerializer : IAntiforgeryTokenSeria
                 : (tokenBytesRent = ArrayPool<byte>.Shared.Rent(maxTokenDecodedSize));
             var tokenBytes = rent[..maxTokenDecodedSize];
 
-            var bytesWritten = WebEncoders.Base64UrlDecode(serializedToken, tokenBytes);
+            var decodeStatus = Base64Url.DecodeFromChars(serializedToken, tokenBytes, out _, out var bytesWritten);
+            if (decodeStatus != OperationStatus.Done || bytesWritten == 0)
+            {
+                throw new FormatException("The serialized antiforgery token is not a valid Base64Url string.");
+            }
+
             var tokenBytesDecoded = tokenBytes[..bytesWritten];
 
             if (_perfCryptoSystem is not null)
