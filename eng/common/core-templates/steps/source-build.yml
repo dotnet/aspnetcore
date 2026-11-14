@@ -50,7 +50,7 @@ steps:
       ${{ parameters.platform.buildArguments }} \
       $internalRuntimeDownloadArgs \
       $targetRidArgs \
-      $portableBuildArgs \
+      $portableBuildArgs
   displayName: Build
 
 - template: /eng/common/core-templates/steps/publish-pipeline-artifacts.yml
