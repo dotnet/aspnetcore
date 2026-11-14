@@ -40,7 +40,13 @@ public static class ListenOptionsHttpsExtensions
     public static ListenOptions UseHttps(this ListenOptions listenOptions, string fileName)
     {
         var env = listenOptions.ApplicationServices.GetRequiredService<IHostEnvironment>();
-        return listenOptions.UseHttps(new X509Certificate2(Path.Combine(env.ContentRootPath, fileName)));
+        var certificatePath = Path.Combine(env.ContentRootPath, fileName);
+        // X509Certificate2(string) accepted either a single PEM/DER certificate or a (password-less) PKCS12
+        // archive, so detect the content type to preserve that behavior with X509CertificateLoader.
+        var serverCertificate = X509Certificate2.GetCertContentType(certificatePath) == X509ContentType.Cert
+            ? X509CertificateLoader.LoadCertificateFromFile(certificatePath)
+            : X509CertificateLoader.LoadPkcs12FromFile(certificatePath, password: null);
+        return listenOptions.UseHttps(serverCertificate);
     }
 
     /// <summary>
@@ -54,7 +60,7 @@ public static class ListenOptionsHttpsExtensions
     public static ListenOptions UseHttps(this ListenOptions listenOptions, string fileName, string? password)
     {
         var env = listenOptions.ApplicationServices.GetRequiredService<IHostEnvironment>();
-        return listenOptions.UseHttps(new X509Certificate2(Path.Combine(env.ContentRootPath, fileName), password));
+        return listenOptions.UseHttps(X509CertificateLoader.LoadPkcs12FromFile(Path.Combine(env.ContentRootPath, fileName), password));
     }
 
     /// <summary>
@@ -69,7 +75,7 @@ public static class ListenOptionsHttpsExtensions
         Action<HttpsConnectionAdapterOptions> configureOptions)
     {
         var env = listenOptions.ApplicationServices.GetRequiredService<IHostEnvironment>();
-        return listenOptions.UseHttps(new X509Certificate2(Path.Combine(env.ContentRootPath, fileName), password), configureOptions);
+        return listenOptions.UseHttps(X509CertificateLoader.LoadPkcs12FromFile(Path.Combine(env.ContentRootPath, fileName), password), configureOptions);
     }
 
     /// <summary>
