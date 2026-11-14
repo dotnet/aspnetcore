@@ -409,3 +409,226 @@ public sealed class Results<[DynamicallyAccessedMembers(ResultsOfTHelper.Require
         ResultsOfTHelper.PopulateMetadataIfTargetIsIEndpointMetadataProvider<TResult6>(method, builder);
     }
 }
+
+/// <summary>
+/// An <see cref="IResult"/> that could be one of seven different <see cref="IResult"/> types. On execution will
+/// execute the underlying <see cref="IResult"/> instance that was actually returned by the HTTP endpoint.
+/// </summary>
+/// <remarks>
+/// An instance of this type cannot be created explicitly. Use the implicit cast operators to create an instance
+/// from an instance of one of the declared type arguments, e.g.
+/// <code>Results&lt;Ok, BadRequest&gt; result = TypedResults.Ok();</code>
+/// </remarks>
+/// <typeparam name="TResult1">The first result type.</typeparam>
+/// <typeparam name="TResult2">The second result type.</typeparam>
+/// <typeparam name="TResult3">The third result type.</typeparam>
+/// <typeparam name="TResult4">The fourth result type.</typeparam>
+/// <typeparam name="TResult5">The fifth result type.</typeparam>
+/// <typeparam name="TResult6">The sixth result type.</typeparam>
+/// <typeparam name="TResult7">The seventh result type.</typeparam>
+public sealed class Results<[DynamicallyAccessedMembers(ResultsOfTHelper.RequireMethods)] TResult1, [DynamicallyAccessedMembers(ResultsOfTHelper.RequireMethods)] TResult2, [DynamicallyAccessedMembers(ResultsOfTHelper.RequireMethods)] TResult3, [DynamicallyAccessedMembers(ResultsOfTHelper.RequireMethods)] TResult4, [DynamicallyAccessedMembers(ResultsOfTHelper.RequireMethods)] TResult5, [DynamicallyAccessedMembers(ResultsOfTHelper.RequireMethods)] TResult6, [DynamicallyAccessedMembers(ResultsOfTHelper.RequireMethods)] TResult7> : IResult, INestedHttpResult, IEndpointMetadataProvider
+    where TResult1 : IResult
+    where TResult2 : IResult
+    where TResult3 : IResult
+    where TResult4 : IResult
+    where TResult5 : IResult
+    where TResult6 : IResult
+    where TResult7 : IResult
+{
+    // Use implicit cast operators to create an instance
+    private Results(IResult activeResult)
+    {
+        Result = activeResult;
+    }
+
+    /// <summary>
+    /// Gets the actual <see cref="IResult"/> returned by the <see cref="Endpoint"/> route handler delegate.
+    /// </summary>
+    public IResult Result { get; }
+
+    /// <inheritdoc/>
+    public Task ExecuteAsync(HttpContext httpContext)
+    {
+        ArgumentNullException.ThrowIfNull(httpContext);
+
+        if (Result is null)
+        {
+            throw new InvalidOperationException("The IResult assigned to the Result property must not be null.");
+        }
+
+        return Result.ExecuteAsync(httpContext);
+    }
+
+    /// <summary>
+    /// Converts the <typeparamref name="TResult1"/> to a <see cref="Results{TResult1, TResult2, TResult3, TResult4, TResult5, TResult6, TResult7}" />.
+    /// </summary>
+    /// <param name="result">The result.</param>
+    public static implicit operator Results<TResult1, TResult2, TResult3, TResult4, TResult5, TResult6, TResult7>(TResult1 result) => new(result);
+
+    /// <summary>
+    /// Converts the <typeparamref name="TResult2"/> to a <see cref="Results{TResult1, TResult2, TResult3, TResult4, TResult5, TResult6, TResult7}" />.
+    /// </summary>
+    /// <param name="result">The result.</param>
+    public static implicit operator Results<TResult1, TResult2, TResult3, TResult4, TResult5, TResult6, TResult7>(TResult2 result) => new(result);
+
+    /// <summary>
+    /// Converts the <typeparamref name="TResult3"/> to a <see cref="Results{TResult1, TResult2, TResult3, TResult4, TResult5, TResult6, TResult7}" />.
+    /// </summary>
+    /// <param name="result">The result.</param>
+    public static implicit operator Results<TResult1, TResult2, TResult3, TResult4, TResult5, TResult6, TResult7>(TResult3 result) => new(result);
+
+    /// <summary>
+    /// Converts the <typeparamref name="TResult4"/> to a <see cref="Results{TResult1, TResult2, TResult3, TResult4, TResult5, TResult6, TResult7}" />.
+    /// </summary>
+    /// <param name="result">The result.</param>
+    public static implicit operator Results<TResult1, TResult2, TResult3, TResult4, TResult5, TResult6, TResult7>(TResult4 result) => new(result);
+
+    /// <summary>
+    /// Converts the <typeparamref name="TResult5"/> to a <see cref="Results{TResult1, TResult2, TResult3, TResult4, TResult5, TResult6, TResult7}" />.
+    /// </summary>
+    /// <param name="result">The result.</param>
+    public static implicit operator Results<TResult1, TResult2, TResult3, TResult4, TResult5, TResult6, TResult7>(TResult5 result) => new(result);
+
+    /// <summary>
+    /// Converts the <typeparamref name="TResult6"/> to a <see cref="Results{TResult1, TResult2, TResult3, TResult4, TResult5, TResult6, TResult7}" />.
+    /// </summary>
+    /// <param name="result">The result.</param>
+    public static implicit operator Results<TResult1, TResult2, TResult3, TResult4, TResult5, TResult6, TResult7>(TResult6 result) => new(result);
+
+    /// <summary>
+    /// Converts the <typeparamref name="TResult7"/> to a <see cref="Results{TResult1, TResult2, TResult3, TResult4, TResult5, TResult6, TResult7}" />.
+    /// </summary>
+    /// <param name="result">The result.</param>
+    public static implicit operator Results<TResult1, TResult2, TResult3, TResult4, TResult5, TResult6, TResult7>(TResult7 result) => new(result);
+
+    /// <inheritdoc/>
+    static void IEndpointMetadataProvider.PopulateMetadata(MethodInfo method, EndpointBuilder builder)
+    {
+        ArgumentNullException.ThrowIfNull(method);
+        ArgumentNullException.ThrowIfNull(builder);
+
+        ResultsOfTHelper.PopulateMetadataIfTargetIsIEndpointMetadataProvider<TResult1>(method, builder);
+        ResultsOfTHelper.PopulateMetadataIfTargetIsIEndpointMetadataProvider<TResult2>(method, builder);
+        ResultsOfTHelper.PopulateMetadataIfTargetIsIEndpointMetadataProvider<TResult3>(method, builder);
+        ResultsOfTHelper.PopulateMetadataIfTargetIsIEndpointMetadataProvider<TResult4>(method, builder);
+        ResultsOfTHelper.PopulateMetadataIfTargetIsIEndpointMetadataProvider<TResult5>(method, builder);
+        ResultsOfTHelper.PopulateMetadataIfTargetIsIEndpointMetadataProvider<TResult6>(method, builder);
+        ResultsOfTHelper.PopulateMetadataIfTargetIsIEndpointMetadataProvider<TResult7>(method, builder);
+    }
+}
+
+/// <summary>
+/// An <see cref="IResult"/> that could be one of eight different <see cref="IResult"/> types. On execution will
+/// execute the underlying <see cref="IResult"/> instance that was actually returned by the HTTP endpoint.
+/// </summary>
+/// <remarks>
+/// An instance of this type cannot be created explicitly. Use the implicit cast operators to create an instance
+/// from an instance of one of the declared type arguments, e.g.
+/// <code>Results&lt;Ok, BadRequest&gt; result = TypedResults.Ok();</code>
+/// </remarks>
+/// <typeparam name="TResult1">The first result type.</typeparam>
+/// <typeparam name="TResult2">The second result type.</typeparam>
+/// <typeparam name="TResult3">The third result type.</typeparam>
+/// <typeparam name="TResult4">The fourth result type.</typeparam>
+/// <typeparam name="TResult5">The fifth result type.</typeparam>
+/// <typeparam name="TResult6">The sixth result type.</typeparam>
+/// <typeparam name="TResult7">The seventh result type.</typeparam>
+/// <typeparam name="TResult8">The eighth result type.</typeparam>
+public sealed class Results<[DynamicallyAccessedMembers(ResultsOfTHelper.RequireMethods)] TResult1, [DynamicallyAccessedMembers(ResultsOfTHelper.RequireMethods)] TResult2, [DynamicallyAccessedMembers(ResultsOfTHelper.RequireMethods)] TResult3, [DynamicallyAccessedMembers(ResultsOfTHelper.RequireMethods)] TResult4, [DynamicallyAccessedMembers(ResultsOfTHelper.RequireMethods)] TResult5, [DynamicallyAccessedMembers(ResultsOfTHelper.RequireMethods)] TResult6, [DynamicallyAccessedMembers(ResultsOfTHelper.RequireMethods)] TResult7, [DynamicallyAccessedMembers(ResultsOfTHelper.RequireMethods)] TResult8> : IResult, INestedHttpResult, IEndpointMetadataProvider
+    where TResult1 : IResult
+    where TResult2 : IResult
+    where TResult3 : IResult
+    where TResult4 : IResult
+    where TResult5 : IResult
+    where TResult6 : IResult
+    where TResult7 : IResult
+    where TResult8 : IResult
+{
+    // Use implicit cast operators to create an instance
+    private Results(IResult activeResult)
+    {
+        Result = activeResult;
+    }
+
+    /// <summary>
+    /// Gets the actual <see cref="IResult"/> returned by the <see cref="Endpoint"/> route handler delegate.
+    /// </summary>
+    public IResult Result { get; }
+
+    /// <inheritdoc/>
+    public Task ExecuteAsync(HttpContext httpContext)
+    {
+        ArgumentNullException.ThrowIfNull(httpContext);
+
+        if (Result is null)
+        {
+            throw new InvalidOperationException("The IResult assigned to the Result property must not be null.");
+        }
+
+        return Result.ExecuteAsync(httpContext);
+    }
+
+    /// <summary>
+    /// Converts the <typeparamref name="TResult1"/> to a <see cref="Results{TResult1, TResult2, TResult3, TResult4, TResult5, TResult6, TResult7, TResult8}" />.
+    /// </summary>
+    /// <param name="result">The result.</param>
+    public static implicit operator Results<TResult1, TResult2, TResult3, TResult4, TResult5, TResult6, TResult7, TResult8>(TResult1 result) => new(result);
+
+    /// <summary>
+    /// Converts the <typeparamref name="TResult2"/> to a <see cref="Results{TResult1, TResult2, TResult3, TResult4, TResult5, TResult6, TResult7, TResult8}" />.
+    /// </summary>
+    /// <param name="result">The result.</param>
+    public static implicit operator Results<TResult1, TResult2, TResult3, TResult4, TResult5, TResult6, TResult7, TResult8>(TResult2 result) => new(result);
+
+    /// <summary>
+    /// Converts the <typeparamref name="TResult3"/> to a <see cref="Results{TResult1, TResult2, TResult3, TResult4, TResult5, TResult6, TResult7, TResult8}" />.
+    /// </summary>
+    /// <param name="result">The result.</param>
+    public static implicit operator Results<TResult1, TResult2, TResult3, TResult4, TResult5, TResult6, TResult7, TResult8>(TResult3 result) => new(result);
+
+    /// <summary>
+    /// Converts the <typeparamref name="TResult4"/> to a <see cref="Results{TResult1, TResult2, TResult3, TResult4, TResult5, TResult6, TResult7, TResult8}" />.
+    /// </summary>
+    /// <param name="result">The result.</param>
+    public static implicit operator Results<TResult1, TResult2, TResult3, TResult4, TResult5, TResult6, TResult7, TResult8>(TResult4 result) => new(result);
+
+    /// <summary>
+    /// Converts the <typeparamref name="TResult5"/> to a <see cref="Results{TResult1, TResult2, TResult3, TResult4, TResult5, TResult6, TResult7, TResult8}" />.
+    /// </summary>
+    /// <param name="result">The result.</param>
+    public static implicit operator Results<TResult1, TResult2, TResult3, TResult4, TResult5, TResult6, TResult7, TResult8>(TResult5 result) => new(result);
+
+    /// <summary>
+    /// Converts the <typeparamref name="TResult6"/> to a <see cref="Results{TResult1, TResult2, TResult3, TResult4, TResult5, TResult6, TResult7, TResult8}" />.
+    /// </summary>
+    /// <param name="result">The result.</param>
+    public static implicit operator Results<TResult1, TResult2, TResult3, TResult4, TResult5, TResult6, TResult7, TResult8>(TResult6 result) => new(result);
+
+    /// <summary>
+    /// Converts the <typeparamref name="TResult7"/> to a <see cref="Results{TResult1, TResult2, TResult3, TResult4, TResult5, TResult6, TResult7, TResult8}" />.
+    /// </summary>
+    /// <param name="result">The result.</param>
+    public static implicit operator Results<TResult1, TResult2, TResult3, TResult4, TResult5, TResult6, TResult7, TResult8>(TResult7 result) => new(result);
+
+    /// <summary>
+    /// Converts the <typeparamref name="TResult8"/> to a <see cref="Results{TResult1, TResult2, TResult3, TResult4, TResult5, TResult6, TResult7, TResult8}" />.
+    /// </summary>
+    /// <param name="result">The result.</param>
+    public static implicit operator Results<TResult1, TResult2, TResult3, TResult4, TResult5, TResult6, TResult7, TResult8>(TResult8 result) => new(result);
+
+    /// <inheritdoc/>
+    static void IEndpointMetadataProvider.PopulateMetadata(MethodInfo method, EndpointBuilder builder)
+    {
+        ArgumentNullException.ThrowIfNull(method);
+        ArgumentNullException.ThrowIfNull(builder);
+
+        ResultsOfTHelper.PopulateMetadataIfTargetIsIEndpointMetadataProvider<TResult1>(method, builder);
+        ResultsOfTHelper.PopulateMetadataIfTargetIsIEndpointMetadataProvider<TResult2>(method, builder);
+        ResultsOfTHelper.PopulateMetadataIfTargetIsIEndpointMetadataProvider<TResult3>(method, builder);
+        ResultsOfTHelper.PopulateMetadataIfTargetIsIEndpointMetadataProvider<TResult4>(method, builder);
+        ResultsOfTHelper.PopulateMetadataIfTargetIsIEndpointMetadataProvider<TResult5>(method, builder);
+        ResultsOfTHelper.PopulateMetadataIfTargetIsIEndpointMetadataProvider<TResult6>(method, builder);
+        ResultsOfTHelper.PopulateMetadataIfTargetIsIEndpointMetadataProvider<TResult7>(method, builder);
+        ResultsOfTHelper.PopulateMetadataIfTargetIsIEndpointMetadataProvider<TResult8>(method, builder);
+    }
+}
