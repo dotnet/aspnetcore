@@ -20,7 +20,7 @@ public class CacheTagKey : IEquatable<CacheTagKey>
     private static readonly char[] AttributeSeparator = new[] { ',' };
     private static readonly Func<IRequestCookieCollection, string, string> CookieAccessor = (c, key) => c[key];
     private static readonly Func<IHeaderDictionary, string, string> HeaderAccessor = (c, key) => c[key];
-    private static readonly Func<IQueryCollection, string, string> QueryAccessor = (c, key) => c[key];
+    private static readonly Func<IQueryCollection, string, string> QueryAccessor = (c, key) => EncodeQueryValues(c[key]);
     private static readonly Func<RouteValueDictionary, string, string> RouteValueAccessor = (c, key) =>
         Convert.ToString(c[key], CultureInfo.InvariantCulture);
 
@@ -277,6 +277,30 @@ public class CacheTagKey : IEquatable<CacheTagKey>
 
         return _hashcode.Value;
     }
+
+    private static string EncodeQueryValues(StringValues values)
+    {
+        if (values.Count == 1)
+        {
+            return EscapeQueryValue(values[0]);
+        }
+
+        var builder = new StringBuilder();
+        for (var i = 0; i < values.Count; i++)
+        {
+            if (i > 0)
+            {
+                builder.Append(',');
+            }
+
+            builder.Append(EscapeQueryValue(values[i]));
+        }
+
+        return builder.ToString();
+    }
+
+    private static string EscapeQueryValue(string value)
+        => value?.Replace("\\", "\\\\", StringComparison.Ordinal).Replace(",", "\\,", StringComparison.Ordinal) ?? string.Empty;
 
     private static IList<KeyValuePair<string, string>> ExtractCollection<TSourceCollection>(
         string keys,

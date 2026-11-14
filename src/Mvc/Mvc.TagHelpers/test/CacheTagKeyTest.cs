@@ -21,6 +21,24 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers;
 public class CacheTagKeyTest
 {
     [Fact]
+    public void MultiValueQueryWithComma_DoesNotCollideWithSingleValue()
+    {
+        var helper = new CacheTagHelper(new CacheTagHelperMemoryCacheFactory(Mock.Of<IMemoryCache>()), new HtmlTestEncoder())
+        {
+            ViewContext = GetViewContext(),
+            VaryByQuery = "value"
+        };
+        helper.ViewContext.HttpContext.Request.QueryString = new QueryString("?value=a&value=b");
+        var multiple = new CacheTagKey(helper, GetTagHelperContext("same-id"));
+        helper.ViewContext.HttpContext.Request.QueryString = new QueryString("?value=a%2Cb");
+        var single = new CacheTagKey(helper, GetTagHelperContext("same-id"));
+
+        Assert.NotEqual(multiple, single);
+        Assert.NotEqual(multiple.GenerateKey(), single.GenerateKey());
+        Assert.NotEqual(multiple.GenerateHashedKey(), single.GenerateHashedKey());
+    }
+
+    [Fact]
     public void GenerateKey_ReturnsKeyBasedOnTagHelperUniqueId()
     {
         // Arrange
