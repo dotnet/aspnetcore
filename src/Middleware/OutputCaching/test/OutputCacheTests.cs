@@ -625,6 +625,41 @@ public class OutputCacheTests
     }
 
     [Fact]
+    public async Task ServesFreshContent_IfPredicateChangesBetweenPhases()
+    {
+        var options = new OutputCacheOptions();
+        options.AddBasePolicy(builder => builder.With(context =>
+            !context.HttpContext.Items.ContainsKey(nameof(ServesFreshContent_IfPredicateChangesBetweenPhases))));
+        var builders = TestUtils.CreateBuildersWithOutputCaching(
+            options: options,
+            contextAction: context =>
+            {
+                context.Items[nameof(ServesFreshContent_IfPredicateChangesBetweenPhases)] = true;
+                context.Response.StatusCode = StatusCodes.Status302Found;
+                context.Response.Headers.SetCookie = "cookieName=cookieValue";
+            });
+
+        foreach (var builder in builders)
+        {
+            using var host = builder.Build();
+
+            await host.StartAsync();
+
+            using var server = host.GetTestServer();
+            var client = server.CreateClient();
+            var initialResponse = await client.GetAsync("");
+            var subsequentResponse = await client.GetAsync("");
+
+            Assert.Equal(StatusCodes.Status302Found, (int)initialResponse.StatusCode);
+            Assert.Equal(StatusCodes.Status302Found, (int)subsequentResponse.StatusCode);
+            Assert.True(initialResponse.Headers.Contains(HeaderNames.SetCookie));
+            Assert.True(subsequentResponse.Headers.Contains(HeaderNames.SetCookie));
+            Assert.False(subsequentResponse.Headers.Contains(HeaderNames.Age));
+            Assert.NotEqual(await initialResponse.Content.ReadAsStringAsync(), await subsequentResponse.Content.ReadAsStringAsync());
+        }
+    }
+
+    [Fact]
     public async Task ServesCachedContent_IfSubsequentRequestContainsNoStore()
     {
         var builders = TestUtils.CreateBuildersWithOutputCaching();
