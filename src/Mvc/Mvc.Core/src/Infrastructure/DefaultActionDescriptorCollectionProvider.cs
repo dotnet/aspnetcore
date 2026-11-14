@@ -12,7 +12,7 @@ using Microsoft.Extensions.Primitives;
 
 namespace Microsoft.AspNetCore.Mvc.Infrastructure;
 
-internal sealed partial class DefaultActionDescriptorCollectionProvider : ActionDescriptorCollectionProvider
+internal sealed partial class DefaultActionDescriptorCollectionProvider : ActionDescriptorCollectionProvider, IDisposable
 {
     private readonly IActionDescriptorProvider[] _actionDescriptorProviders;
     private readonly IActionDescriptorChangeProvider[] _actionDescriptorChangeProviders;
@@ -22,6 +22,7 @@ internal sealed partial class DefaultActionDescriptorCollectionProvider : Action
     private readonly object _lock;
     private ActionDescriptorCollection? _collection;
     private IChangeToken? _changeToken;
+    private IDisposable? _disposable;
     private CancellationTokenSource? _cancellationTokenSource;
     private int _version;
 
@@ -41,7 +42,7 @@ internal sealed partial class DefaultActionDescriptorCollectionProvider : Action
         _logger = logger;
 
         // IMPORTANT: this needs to be the last thing we do in the constructor. Change notifications can happen immediately!
-        ChangeToken.OnChange(
+        _disposable = ChangeToken.OnChange(
             GetCompositeChangeToken,
             UpdateCollection);
     }
@@ -73,6 +74,13 @@ internal sealed partial class DefaultActionDescriptorCollectionProvider : Action
         Debug.Assert(_changeToken != null);
 
         return _changeToken;
+    }
+
+    public void Dispose()
+    {
+        // Action descriptors can still be accessed after dispose, only the change tracking is disabled.
+        _disposable?.Dispose();
+        _disposable = null;
     }
 
     private IChangeToken GetCompositeChangeToken()
