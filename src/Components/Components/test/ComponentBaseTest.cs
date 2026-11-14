@@ -437,6 +437,45 @@ public class ComponentBaseTest
     }
 
     [Fact]
+    public void ErrorBoundaryRendersErrorContentWhenMultipleChildrenThrowInSameBatch()
+    {
+        var renderer = new TestRenderer();
+        TestErrorBoundary capturedBoundary = null;
+
+        // Several children failing in one batch each route an error to the same error boundary.
+        var rootComponent = new TestComponent();
+        rootComponent.ChildContent = builder =>
+        {
+            builder.OpenComponent<TestErrorBoundary>(0);
+            builder.AddComponentParameter(1, nameof(TestErrorBoundary.ChildContent), (RenderFragment)(childBuilder =>
+            {
+                for (var i = 0; i < 3; i++)
+                {
+                    childBuilder.OpenComponent<TestComponentErrorBuildRenderTree>(i);
+                    childBuilder.CloseComponent();
+                }
+            }));
+            builder.AddComponentReferenceCapture(2, inst => capturedBoundary = (TestErrorBoundary)inst);
+            builder.CloseComponent();
+        };
+
+        var rootComponentId = renderer.AssignRootComponentId(rootComponent);
+        renderer.RenderRootComponent(rootComponentId);
+
+        Assert.NotNull(capturedBoundary);
+        Assert.NotNull(capturedBoundary.ReceivedException);
+
+        // Receiving an exception is not the regression. A later empty clear in the same batch
+        // leaves CurrentException set while the boundary's render tree is blank.
+        var boundaryId = renderer.Batches.Single().GetComponentFrames<TestErrorBoundary>().Single().ComponentId;
+        var boundaryFrames = renderer.GetCurrentRenderTreeFrames(boundaryId).AsEnumerable();
+        Assert.Collection(
+            boundaryFrames,
+            frame => AssertFrame.Element(frame, "div", subtreeLength: 2, sequence: 2),
+            frame => AssertFrame.Attribute(frame, "class", "blazor-error-boundary", sequence: 3));
+    }
+
+    [Fact]
     public async Task ComponentBaseDoesntRenderWhenOnInitializedAsyncFaultedTask()
     {
         // Arrange
