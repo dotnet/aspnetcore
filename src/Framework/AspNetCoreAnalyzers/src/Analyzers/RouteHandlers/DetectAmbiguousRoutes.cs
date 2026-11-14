@@ -215,7 +215,7 @@ public partial class RouteHandlerAnalyzer : DiagnosticAnalyzer
         {
             if (httpMethods1.IsEmpty || httpMethods2.IsEmpty)
             {
-                return true;
+                return httpMethods1.IsEmpty && httpMethods2.IsEmpty;
             }
 
             foreach (var item1 in httpMethods1)
