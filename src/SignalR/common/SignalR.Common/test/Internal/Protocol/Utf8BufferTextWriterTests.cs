@@ -15,6 +15,23 @@ namespace Microsoft.AspNetCore.SignalR.Common.Tests.Internal.Protocol;
 public class Utf8BufferTextWriterTests
 {
     [Fact]
+    public void Flush_ReacquiresBufferBeforeWritingAgain()
+    {
+        var buffer = new ArrayBufferWriter<byte>();
+        var writer = new Utf8BufferTextWriter();
+        writer.SetWriter(buffer);
+
+        writer.Write("first");
+        writer.Flush();
+        // A buffer writer may relocate its memory after Advance.
+        buffer.GetMemory(buffer.Capacity + 1);
+        writer.Write("second");
+        writer.Flush();
+
+        Assert.Equal("firstsecond", Encoding.UTF8.GetString(buffer.WrittenSpan));
+    }
+
+    [Fact]
     public void WriteChar_Unicode()
     {
         var bufferWriter = new TestMemoryBufferWriter(4096);
