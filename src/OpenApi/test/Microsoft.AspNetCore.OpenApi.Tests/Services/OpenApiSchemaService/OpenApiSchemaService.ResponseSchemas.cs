@@ -9,6 +9,7 @@ using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.OpenApi;
 
 public partial class OpenApiSchemaServiceTests : OpenApiDocumentServiceTestBase
 {
@@ -826,6 +827,326 @@ public partial class OpenApiSchemaServiceTests : OpenApiDocumentServiceTestBase
                     Assert.Equal("date-time", property.Value.Format);
                 });
         });
+    }
+
+    [Fact]
+    public async Task GetOpenApiResponse_InlineNullableEnumArray_PreservesNull()
+    {
+        var builder = CreateBuilder();
+        static Status?[] GetStatuses() => [Status.Pending, null];
+        builder.MapGet("/statuses", GetStatuses);
+
+        var options = new OpenApiOptions
+        {
+            CreateSchemaReferenceId = _ => null
+        };
+
+        var document = await VerifyOpenApiDocument(builder, options, _ => { });
+        var actual = await document.SerializeAsJsonAsync(OpenApiSpecVersion.OpenApi3_2);
+        var expected = """
+            {
+              "openapi": "3.2.0",
+              "info": {
+                "title": "OpenApiDocumentServiceTests | Test",
+                "version": "1.0.0"
+              },
+              "paths": {
+                "/statuses": {
+                  "get": {
+                    "tags": [
+                      "OpenApiSchemaServiceTests"
+                    ],
+                    "responses": {
+                      "200": {
+                        "description": "OK",
+                        "content": {
+                          "application/json": {
+                            "schema": {
+                              "type": "array",
+                              "items": {
+                                "enum": [
+                                  "Pending",
+                                  "Approved",
+                                  "Rejected",
+                                  null
+                                ]
+                              }
+                            }
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              },
+              "tags": [
+                {
+                  "name": "OpenApiSchemaServiceTests"
+                }
+              ]
+            }
+            """;
+
+        Assert.Equal(expected, actual, ignoreLineEndingDifferences: true);
+    }
+
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task GetOpenApiResponse_NullableComponentArray_PreservesNull(bool nullableEndpointFirst)
+    {
+        var builder = CreateBuilder();
+#nullable enable
+        static Todo[] GetTodos() => [];
+        static Todo?[] GetNullableTodos() => [];
+#nullable restore
+
+        if (nullableEndpointFirst)
+        {
+            builder.MapGet("/nullable-todos", GetNullableTodos);
+            builder.MapGet("/todos", GetTodos);
+        }
+        else
+        {
+            builder.MapGet("/todos", GetTodos);
+            builder.MapGet("/nullable-todos", GetNullableTodos);
+        }
+
+        var options = new OpenApiOptions();
+        var transformedItems = 0;
+        options.AddSchemaTransformer((schema, context, cancellationToken) =>
+        {
+            if (context.JsonTypeInfo.Type == typeof(Todo))
+            {
+                schema.Type |= JsonSchemaType.Null;
+                transformedItems++;
+            }
+
+            return Task.CompletedTask;
+        });
+
+        var document = await VerifyOpenApiDocument(builder, options, _ => { });
+        Assert.Equal(2, transformedItems);
+        var json = JsonNode.Parse(await document.SerializeAsJsonAsync(OpenApiSpecVersion.OpenApi3_2));
+        var expectedPaths = JsonNode.Parse("""
+            {
+              "/todos": {
+                "get": {
+                  "tags": ["OpenApiSchemaServiceTests"],
+                  "responses": {
+                    "200": {
+                      "description": "OK",
+                      "content": {
+                        "application/json": {
+                          "schema": {
+                            "type": "array",
+                            "items": { "$ref": "#/components/schemas/Todo" }
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              },
+              "/nullable-todos": {
+                "get": {
+                  "tags": ["OpenApiSchemaServiceTests"],
+                  "responses": {
+                    "200": {
+                      "description": "OK",
+                      "content": {
+                        "application/json": {
+                          "schema": {
+                            "type": "array",
+                            "items": { "$ref": "#/components/schemas/Todo" }
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+            """);
+        var expectedComponents = JsonNode.Parse("""
+            {
+              "schemas": {
+                "Todo": {
+                  "required": ["id", "title", "completed", "createdAt"],
+                  "type": ["null", "object"],
+                  "properties": {
+                    "id": { "type": "integer", "format": "int32" },
+                    "title": { "type": ["null", "string"] },
+                    "completed": { "type": "boolean" },
+                    "createdAt": { "type": "string", "format": "date-time" }
+                  }
+                }
+              }
+            }
+            """);
+        var expected = new JsonObject
+        {
+            ["openapi"] = "3.2.0",
+            ["info"] = new JsonObject
+            {
+                ["title"] = "OpenApiDocumentServiceTests | Test",
+                ["version"] = "1.0.0"
+            },
+            ["paths"] = expectedPaths,
+            ["components"] = expectedComponents,
+            ["tags"] = new JsonArray(new JsonObject { ["name"] = "OpenApiSchemaServiceTests" })
+        };
+        Assert.True(JsonNode.DeepEquals(expected, json), json.ToJsonString());
+    }
+
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task GetOpenApiResponse_HandlesNullableComponentizedArrayElementsWithOneOf(bool useSchemaTransformer)
+    {
+        var builder = CreateBuilder();
+
+#nullable enable
+        static Status?[] GetStatuses() => [Status.Pending, null];
+        static Todo?[] GetTodos() => [new Todo(1, "Test Title", true, DateTime.Now), null];
+        builder.MapGet("/statuses", GetStatuses);
+        builder.MapGet("/todos", GetTodos);
+#nullable restore
+
+        var options = new OpenApiOptions();
+        var transformedArrays = 0;
+        if (useSchemaTransformer)
+        {
+            options.AddSchemaTransformer((schema, context, cancellationToken) =>
+            {
+                if (context.JsonTypeInfo.Type.IsArray)
+                {
+                    // Schema transformers run after null pruning, before response nullability is applied.
+                    schema.Items = schema.Items.CreateOneOfNullableWrapper();
+                    transformedArrays++;
+                }
+                return Task.CompletedTask;
+            });
+        }
+
+        var document = await VerifyOpenApiDocument(builder, options, _ => { });
+        Assert.Equal(useSchemaTransformer ? 2 : 0, transformedArrays);
+        var actual = await document.SerializeAsJsonAsync(OpenApiSpecVersion.OpenApi3_2);
+        var expected = """
+            {
+              "openapi": "3.2.0",
+              "info": {
+                "title": "OpenApiDocumentServiceTests | Test",
+                "version": "1.0.0"
+              },
+              "paths": {
+                "/statuses": {
+                  "get": {
+                    "tags": [
+                      "OpenApiSchemaServiceTests"
+                    ],
+                    "responses": {
+                      "200": {
+                        "description": "OK",
+                        "content": {
+                          "application/json": {
+                            "schema": {
+                              "type": "array",
+                              "items": {
+                                "oneOf": [
+                                  {
+                                    "type": "null"
+                                  },
+                                  {
+                                    "$ref": "#/components/schemas/Status"
+                                  }
+                                ]
+                              }
+                            }
+                          }
+                        }
+                      }
+                    }
+                  }
+                },
+                "/todos": {
+                  "get": {
+                    "tags": [
+                      "OpenApiSchemaServiceTests"
+                    ],
+                    "responses": {
+                      "200": {
+                        "description": "OK",
+                        "content": {
+                          "application/json": {
+                            "schema": {
+                              "type": "array",
+                              "items": {
+                                "oneOf": [
+                                  {
+                                    "type": "null"
+                                  },
+                                  {
+                                    "$ref": "#/components/schemas/Todo"
+                                  }
+                                ]
+                              }
+                            }
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              },
+              "components": {
+                "schemas": {
+                  "Status": {
+                    "enum": [
+                      "Pending",
+                      "Approved",
+                      "Rejected"
+                    ]
+                  },
+                  "Todo": {
+                    "required": [
+                      "id",
+                      "title",
+                      "completed",
+                      "createdAt"
+                    ],
+                    "type": "object",
+                    "properties": {
+                      "id": {
+                        "type": "integer",
+                        "format": "int32"
+                      },
+                      "title": {
+                        "type": [
+                          "null",
+                          "string"
+                        ]
+                      },
+                      "completed": {
+                        "type": "boolean"
+                      },
+                      "createdAt": {
+                        "type": "string",
+                        "format": "date-time"
+                      }
+                    }
+                  }
+                }
+              },
+              "tags": [
+                {
+                  "name": "OpenApiSchemaServiceTests"
+                }
+              ]
+            }
+            """;
+
+        Assert.Equal(expected, actual, ignoreLineEndingDifferences: true);
     }
 
     [Fact]
