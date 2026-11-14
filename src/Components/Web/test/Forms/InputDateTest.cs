@@ -108,6 +108,207 @@ public class InputDateTest
         Assert.Equal("custom-date-id", idAttribute.AttributeValue);
     }
 
+    [Fact]
+    public async Task RendersTypeAttributeAsTime()
+    {
+        var model = new TestModelTimeOnly();
+        var rootComponent = new TestInputHostComponent<TimeOnly, InputDate<TimeOnly>>
+        {
+            EditContext = new EditContext(model),
+            ValueExpression = () => model.TimeProperty,
+            AdditionalAttributes = new Dictionary<string, object>
+            {
+                { "Type", InputDateType.Time }
+            }
+        };
+
+        var hostId = _testRenderer.AssignRootComponentId(rootComponent);
+        await _testRenderer.RenderRootComponentAsync(hostId);
+        var batch = _testRenderer.Batches.Single();
+        var componentFrame = batch.GetComponentFrames<InputDate<TimeOnly>>().Single();
+        var componentId = componentFrame.ComponentId;
+        var frames = _testRenderer.GetCurrentRenderTreeFrames(componentId);
+
+        var typeAttribute = frames.Array.Single(f => f.FrameType == RenderTreeFrameType.Attribute && f.AttributeName == "type");
+        Assert.Equal("time", typeAttribute.AttributeValue);
+    }
+
+    [Fact]
+    public async Task UsesCustomParsingErrorMessage()
+    {
+        var model = new TestModel();
+        var rootComponent = new TestInputHostComponent<DateTime, TestInputDateComponent>
+        {
+            EditContext = new EditContext(model),
+            ValueExpression = () => model.DateProperty,
+            AdditionalAttributes = new Dictionary<string, object>
+            {
+                { "ParsingErrorMessage", "My custom parse error for {0}." }
+            }
+        };
+
+        var fieldIdentifier = FieldIdentifier.Create(() => model.DateProperty);
+        var inputComponent = await InputRenderer.RenderAndGetComponent(rootComponent);
+
+        await inputComponent.SetCurrentValueAsStringAsync("invalidDate");
+
+        var validationMessages = rootComponent.EditContext.GetValidationMessages(fieldIdentifier);
+        Assert.NotEmpty(validationMessages);
+        Assert.Contains("My custom parse error for Date from attribute.", validationMessages);
+    }
+
+    [Fact]
+    public async Task ValueChangedCallbackInvokedWhenValueChanges()
+    {
+        var model = new TestModel();
+        DateTime? captured = null;
+        var rootComponent = new TestInputHostComponent<DateTime, TestInputDateComponent>
+        {
+            EditContext = new EditContext(model),
+            ValueExpression = () => model.DateProperty,
+            ValueChanged = v => captured = v
+        };
+
+        var inputComponent = await InputRenderer.RenderAndGetComponent(rootComponent);
+
+        await inputComponent.SetCurrentValueAsStringAsync("2020-01-01");
+
+        Assert.NotNull(captured);
+        Assert.Equal(new DateTime(2020, 1, 1), captured.Value);
+    }
+
+    [Fact]
+    public async Task RendersNameAttribute()
+    {
+        var model = new TestModel();
+        var rootComponent = new TestInputHostComponent<DateTime, TestInputDateComponent>
+        {
+            EditContext = new EditContext(model),
+            ValueExpression = () => model.DateProperty,
+        };
+
+        var componentId = await RenderAndGetInputDateComponentIdAsync(rootComponent);
+        var frames = _testRenderer.GetCurrentRenderTreeFrames(componentId);
+
+        var nameAttribute = frames.Array.Single(f => f.FrameType == RenderTreeFrameType.Attribute && f.AttributeName == "name");
+        Assert.Equal("model.DateProperty", nameAttribute.AttributeValue);
+    }
+
+    [Fact]
+    public async Task RendersTypeAttributeAsDateTimeLocal()
+    {
+        var model = new TestModel();
+
+        var rootComponent =
+            new TestInputHostComponent<DateTime,
+                TestInputDateComponent>
+            {
+                EditContext = new EditContext(model),
+                ValueExpression = () => model.DateProperty,
+                AdditionalAttributes = new Dictionary<string, object>
+                {
+                { "Type", InputDateType.DateTimeLocal }
+                }
+            };
+
+        var hostId = _testRenderer.AssignRootComponentId(rootComponent);
+
+        await _testRenderer.RenderRootComponentAsync(hostId);
+
+        var batch = _testRenderer.Batches.Single();
+
+        var componentFrame =
+            batch.GetComponentFrames<TestInputDateComponent>()
+                 .Single();
+
+        var frames =
+            _testRenderer.GetCurrentRenderTreeFrames(componentFrame.ComponentId);
+
+        var typeAttribute =
+            frames.Array.Single(
+                f => f.FrameType == RenderTreeFrameType.Attribute &&
+                     f.AttributeName == "type");
+
+        Assert.Equal("datetime-local", typeAttribute.AttributeValue);
+    }
+
+    [Fact]
+    public async Task RendersTypeAttributeAsDate()
+    {
+        var model = new TestModel();
+        var rootComponent = new TestInputHostComponent<DateTime, TestInputDateComponent>
+        {
+            EditContext = new EditContext(model),
+            ValueExpression = () => model.DateProperty,
+        };
+
+        var hostId = _testRenderer.AssignRootComponentId(rootComponent);
+
+        await _testRenderer.RenderRootComponentAsync(hostId);
+
+        var batch = _testRenderer.Batches.Single();
+
+        var componentFrame =
+            batch.GetComponentFrames<TestInputDateComponent>().Single();
+
+        var frames =
+            _testRenderer.GetCurrentRenderTreeFrames(componentFrame.ComponentId);
+
+        var typeAttribute =
+            frames.Array.Single(
+                f => f.FrameType == RenderTreeFrameType.Attribute &&
+                     f.AttributeName == "type");
+
+        Assert.Equal("date", typeAttribute.AttributeValue);
+    }
+
+    [Fact]
+    public async Task RendersTypeAttributeAsMonth()
+    {
+        var model = new TestModel();
+
+        var rootComponent =
+            new TestInputHostComponent<DateTime, TestInputDateComponent>
+            {
+                EditContext = new EditContext(model),
+                ValueExpression = () => model.DateProperty,
+                AdditionalAttributes = new Dictionary<string, object>
+                {
+                { "Type", InputDateType.Month }
+                }
+            };
+
+        var hostId = _testRenderer.AssignRootComponentId(rootComponent);
+
+        await _testRenderer.RenderRootComponentAsync(hostId);
+
+        var batch = _testRenderer.Batches.Single();
+
+        var componentFrame =
+            batch.GetComponentFrames<TestInputDateComponent>()
+                 .Single();
+
+        var frames =
+            _testRenderer.GetCurrentRenderTreeFrames(componentFrame.ComponentId);
+
+        var typeAttribute =
+            frames.Array.Single(
+                f => f.FrameType == RenderTreeFrameType.Attribute &&
+                     f.AttributeName == "type");
+
+        Assert.Equal("month", typeAttribute.AttributeValue);
+    }
+    [Fact]
+    public void ThrowsForUnsupportedType()
+    {
+        var ex = Assert.Throws<InvalidOperationException>(
+            () => new TestInputDateUnsupportedComponent());
+
+        Assert.Contains("Unsupported", ex.Message);
+    }
+    private class TestInputDateUnsupportedComponent : InputDate<int>
+    {
+    }
     private async Task<int> RenderAndGetInputDateComponentIdAsync(TestInputHostComponent<DateTime, TestInputDateComponent> hostComponent)
     {
         var hostComponentId = _testRenderer.AssignRootComponentId(hostComponent);
@@ -120,6 +321,11 @@ public class InputDateTest
     {
         [Display(Name = "Date from attribute")]
         public DateTime DateProperty { get; set; }
+    }
+
+    private class TestModelTimeOnly
+    {
+        public TimeOnly TimeProperty { get; set; }
     }
 
     private class TestInputDateComponent : InputDate<DateTime>
