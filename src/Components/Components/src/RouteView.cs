@@ -85,11 +85,13 @@ public class RouteView : IComponent
 
     private void RenderPageWithParameters(RenderTreeBuilder builder)
     {
-        builder.OpenComponent(0, RouteData.PageType);
+        // Use a sequence distinct from LayoutView's layout frame so a page is never matched
+        // with a layout instance of the same component type (for example, a routable layout).
+        builder.OpenComponent(1, RouteData.PageType);
 
         foreach (var kvp in RouteData.RouteValues)
         {
-            builder.AddComponentParameter(1, kvp.Key, kvp.Value);
+            builder.AddComponentParameter(2, kvp.Key, kvp.Value);
         }
 
         builder.CloseComponent();
