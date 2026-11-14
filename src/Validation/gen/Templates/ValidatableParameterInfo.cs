@@ -186,17 +186,14 @@ file abstract class ValidatableParameterInfo : ValidatableInfo, global::Microsof
             attribute,
             result);
 
-        if (errorMessage is not null)
+        var key = string.IsNullOrEmpty(context.CurrentValidationPath) ? Name : $"{context.CurrentValidationPath}.{Name}";
+        var errorContext = new global::Microsoft.Extensions.Validation.ValidationError()
         {
-            var key = string.IsNullOrEmpty(context.CurrentValidationPath) ? Name : $"{context.CurrentValidationPath}.{Name}";
-            var errorContext = new global::Microsoft.Extensions.Validation.ValidationError()
-            {
-                Name = Name,
-                Path = key,
-                ErrorMessage = errorMessage,
-                Container = null,
-            };
-            context.AddValidationError(errorContext);
-        }
+            Name = Name,
+            Path = key,
+            ErrorMessage = errorMessage,
+            Container = null,
+        };
+        context.AddValidationError(errorContext);
     }
 }

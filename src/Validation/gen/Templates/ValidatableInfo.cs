@@ -67,7 +67,7 @@ file abstract class ValidatableInfo
         return false;
     }
 
-    private protected static string? ResolveAttributeErrorMessage(
+    private protected static string ResolveAttributeErrorMessage(
         global::Microsoft.Extensions.Validation.ValidateContext context,
         string? memberName,
         string displayName,
@@ -77,12 +77,12 @@ file abstract class ValidatableInfo
     {
         if (attribute.ErrorMessageResourceType is not null)
         {
-            return result.ErrorMessage;
+            return EnsureNonEmptyErrorMessage(result.ErrorMessage);
         }
 
         if (context.ServiceProvider?.GetService(typeof(global::Microsoft.Extensions.Localization.IStringLocalizerFactory)) is not global::Microsoft.Extensions.Localization.IStringLocalizerFactory localizerFactory)
         {
-            return result.ErrorMessage;
+            return EnsureNonEmptyErrorMessage(result.ErrorMessage);
         }
 
         var localizer = LocalizationHelpers.CreateStringLocalizer(context, declaringType, localizerFactory);
@@ -90,11 +90,19 @@ file abstract class ValidatableInfo
         var localizedTemplate = LocalizationHelpers.FindLocalizedTemplate(localizer, attribute, memberName, declaringType);
         if (localizedTemplate is null)
         {
-            return result.ErrorMessage;
+            return EnsureNonEmptyErrorMessage(result.ErrorMessage);
         }
 
-        return attribute.FormatMessage(localizedTemplate, displayName);
+        return EnsureNonEmptyErrorMessage(attribute.FormatMessage(localizedTemplate, displayName));
     }
+
+    // A non-success validation result must always surface with a non-empty message. Some sources
+    // (for example an IValidatableObject or a ValidationAttribute.FormatMessage override) can return
+    // a null or empty message, and dropping the error in that case would fail-open.
+    private protected const string DefaultValidationErrorMessage = "The value is invalid.";
+
+    private protected static string EnsureNonEmptyErrorMessage(string? errorMessage)
+        => string.IsNullOrEmpty(errorMessage) ? DefaultValidationErrorMessage : errorMessage;
 
     private protected async global::System.Threading.Tasks.Task ValidateAttributesAsync(
         global::Microsoft.Extensions.Validation.ValidateContext context,
