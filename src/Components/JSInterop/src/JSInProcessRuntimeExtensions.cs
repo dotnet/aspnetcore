@@ -17,7 +17,7 @@ public static class JSInProcessRuntimeExtensions
     /// <param name="jsRuntime">The <see cref="IJSInProcessRuntime"/>.</param>
     /// <param name="identifier">An identifier for the function to invoke. For example, the value <c>"someScope.someFunction"</c> will invoke the function <c>window.someScope.someFunction</c>.</param>
     /// <param name="args">JSON-serializable arguments.</param>
-    [UnconditionalSuppressMessage("ReflectionAnalysis", "IL2026:RequiresUnreferencedCode", Justification = "The method returns void, so nothing is deserialized.")]
+    [RequiresUnreferencedCode("JSON serialization and deserialization might require types that cannot be statically analyzed.")]
     public static void InvokeVoid(this IJSInProcessRuntime jsRuntime, string identifier, params object?[]? args)
     {
         ArgumentNullException.ThrowIfNull(jsRuntime);

@@ -1,6 +1,7 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Diagnostics.CodeAnalysis;
 using Microsoft.JSInterop;
 
 namespace Microsoft.AspNetCore.Components.Forms;
@@ -83,6 +84,7 @@ internal sealed class BrowserFileStream : Stream
         return bytesRead;
     }
 
+    [UnconditionalSuppressMessage("Trimming", "IL2026", Justification = "The call uses the framework's fixed ElementReference converter and a primitive file ID.")]
     private async Task<Stream> OpenReadStreamAsync(CancellationToken cancellationToken)
     {
         // This method only gets called once, from the constructor, so we're never overwriting an

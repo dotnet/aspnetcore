@@ -22,6 +22,7 @@ public static class JSComponentConfigurationExtensions
     /// <typeparam name="TComponent">The component type.</typeparam>
     /// <param name="configuration">The <see cref="IJSComponentConfiguration"/>.</param>
     /// <param name="identifier">A unique identifier for the component type that will be used by JavaScript code.</param>
+    [RequiresUnreferencedCode("A registered component might serialize arbitrary EventCallback<T> values whose types cannot be statically analyzed.")]
     public static void RegisterForJavaScript<[DynamicallyAccessedMembers(Component)] TComponent>(this IJSComponentConfiguration configuration, string identifier) where TComponent : IComponent
         => RegisterForJavaScript(configuration, typeof(TComponent), identifier);
 
@@ -32,6 +33,7 @@ public static class JSComponentConfigurationExtensions
     /// <param name="configuration">The <see cref="IJSComponentConfiguration"/>.</param>
     /// <param name="identifier">A unique identifier for the component type that will be used by JavaScript code.</param>
     /// <param name="javaScriptInitializer">Specifies an optional identifier for a JavaScript function that will be called to register the custom element.</param>
+    [RequiresUnreferencedCode("A registered component might serialize arbitrary EventCallback<T> values whose types cannot be statically analyzed.")]
     public static void RegisterForJavaScript<[DynamicallyAccessedMembers(Component)] TComponent>(this IJSComponentConfiguration configuration, string identifier, string javaScriptInitializer) where TComponent : IComponent
         => RegisterForJavaScript(configuration, typeof(TComponent), identifier, javaScriptInitializer);
 
@@ -41,6 +43,7 @@ public static class JSComponentConfigurationExtensions
     /// <param name="configuration">The <see cref="IJSComponentConfiguration"/>.</param>
     /// <param name="componentType">The component type.</param>
     /// <param name="identifier">A unique identifier for the component type that will be used by JavaScript code.</param>
+    [RequiresUnreferencedCode("A registered component might serialize arbitrary EventCallback<T> values whose types cannot be statically analyzed.")]
     [DynamicDependency(DynamicallyAccessedMemberTypes.PublicMethods, typeof(JSComponentInterop))]
     public static void RegisterForJavaScript(this IJSComponentConfiguration configuration, [DynamicallyAccessedMembers(Component)] Type componentType, string identifier)
         => configuration.JSComponents.Add(componentType, identifier);
@@ -52,6 +55,7 @@ public static class JSComponentConfigurationExtensions
     /// <param name="componentType">The component type.</param>
     /// <param name="identifier">A unique identifier for the component type that will be used by JavaScript code.</param>
     /// <param name="javaScriptInitializer">Specifies an optional identifier for a JavaScript function that will be called to register the custom element.</param>
+    [RequiresUnreferencedCode("A registered component might serialize arbitrary EventCallback<T> values whose types cannot be statically analyzed.")]
     [DynamicDependency(DynamicallyAccessedMemberTypes.PublicMethods, typeof(JSComponentInterop))]
     public static void RegisterForJavaScript(this IJSComponentConfiguration configuration, [DynamicallyAccessedMembers(Component)] Type componentType, string identifier, string javaScriptInitializer)
         => configuration.JSComponents.Add(componentType, identifier, javaScriptInitializer);
