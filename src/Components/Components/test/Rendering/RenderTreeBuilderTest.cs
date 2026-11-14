@@ -937,6 +937,23 @@ public class RenderTreeBuilderTest
     }
 
     [Theory]
+    [InlineData(true, "true")]
+    [InlineData(false, "false")]
+    public void AddAttribute_Element_DraggableBool_AddsFrameWithExplicitStringValue(bool value, string expected)
+    {
+        var builder = new RenderTreeBuilder();
+
+        builder.OpenElement(0, "div");
+        builder.AddAttribute(1, "draggable", value);
+        builder.CloseElement();
+
+        Assert.Collection(
+            builder.GetFrames().AsEnumerable(),
+            frame => AssertFrame.Element(frame, "div", 2, 0),
+            frame => AssertFrame.Attribute(frame, "draggable", expected, 1));
+    }
+
+    [Theory]
     [InlineData(false)]
     [InlineData(true)]
     public void AddAttribute_Component_Bool_SetsAttributeValue(bool value)
