@@ -324,6 +324,8 @@ public abstract class MessagePackHubProtocolTestBase
             new InvalidMessageData("InvocationTargetInt", new byte[] { 0x94, 1, 0x80, 0xa3, (byte)'a', (byte)'b', (byte)'c', 42 }, "Reading 'target' as String failed."),
             new InvalidMessageData("InvocationTargetEmptyString", new byte[] { 0x94, 1, 0x80, 0xa3, (byte)'a', (byte)'b', (byte)'c', 0xa0 }, "Null or empty target for Invocation message."),
             new InvalidMessageData("InvocationEmptyStringStreamId", new byte[] { 0x96, 1, 0x80, 0xa3, (byte)'a', (byte)'b', (byte)'c', 0xa1, (byte)'T', 0x91, 0xa0, 0x91, 0xa0 }, "Null or empty value in streamIds received."),
+            // array32 header declaring int.MaxValue stream IDs with no elements must be rejected before any count-sized allocation.
+            new InvalidMessageData("InvocationStreamIdsCountExceedsPayload", new byte[] { 0x96, 1, 0x80, 0xa3, (byte)'a', (byte)'b', (byte)'c', 0xa1, (byte)'T', 0x91, 0xa0, 0xdd, 0x7f, 0xff, 0xff, 0xff }, "Reading array length for 'streamIds' failed."),
 
             // StreamInvocationMessage
             new InvalidMessageData("StreamInvocationMissingId", new byte[] { 0x92, 4, 0x80 }, "Reading 'invocationId' as String failed."),
@@ -332,6 +334,7 @@ public abstract class MessagePackHubProtocolTestBase
             new InvalidMessageData("StreamInvocationTargetMissing", new byte[] { 0x93, 4, 0x80, 0xa3, (byte)'a', (byte)'b', (byte)'c' }, "Reading 'target' as String failed."),
             new InvalidMessageData("StreamInvocationTargetInt", new byte[] { 0x94, 4, 0x80, 0xa3, (byte)'a', (byte)'b', (byte)'c', 42 }, "Reading 'target' as String failed."),
             new InvalidMessageData("StreamInvocationTargetEmptyString", new byte[] { 0x94, 4, 0x80, 0xa3, (byte)'a', (byte)'b', (byte)'c', 0xa0 }, "Null or empty target for StreamInvocation message."),
+            new InvalidMessageData("StreamInvocationStreamIdsCountExceedsPayload", new byte[] { 0x96, 4, 0x80, 0xa3, (byte)'a', (byte)'b', (byte)'c', 0xa1, (byte)'T', 0x91, 0xa1, (byte)'x', 0xdd, 0x7f, 0xff, 0xff, 0xff }, "Reading array length for 'streamIds' failed."),
 
             // StreamItemMessage
             new InvalidMessageData("StreamItemMissingId", new byte[] { 0x92, 2, 0x80 }, "Reading 'invocationId' as String failed."),
