@@ -519,9 +519,9 @@ internal sealed class Http1ChunkedEncodingMessageBody : Http1MessageBody
                 }
             }
         }
-        catch (OverflowException ex)
+        catch (OverflowException)
         {
-            throw new IOException(CoreStrings.BadRequest_BadChunkSizeData, ex);
+            KestrelBadHttpRequestException.Throw(RequestRejectionReason.BadChunkSizeData);
         }
 
         KestrelBadHttpRequestException.Throw(RequestRejectionReason.BadChunkSizeData);
