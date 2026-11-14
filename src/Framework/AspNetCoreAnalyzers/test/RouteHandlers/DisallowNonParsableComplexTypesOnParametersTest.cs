@@ -8,6 +8,24 @@ namespace Microsoft.AspNetCore.Analyzers.RouteHandlers;
 
 public partial class DisallowNonParsableComplexTypesOnParametersTest
 {
+    [Theory]
+    [InlineData("new System.Func<int, string>(Handlers.Format)")]
+    [InlineData("(System.Func<int, string>)(value => value.ToString())")]
+    public async Task ExplicitDelegateHandler_DoesNotThrow(string handler)
+    {
+        var source = $$"""
+using Microsoft.AspNetCore.Builder;
+var app = WebApplication.Create();
+app.MapGet("/", {{handler}});
+static class Handlers
+{
+    public static string Format(int value) => value.ToString();
+}
+""";
+
+        await VerifyCS.VerifyAnalyzerAsync(source);
+    }
+
     private TestDiagnosticAnalyzerRunner Runner { get; } = new(new RouteHandlerAnalyzer());
 
     [Fact]
