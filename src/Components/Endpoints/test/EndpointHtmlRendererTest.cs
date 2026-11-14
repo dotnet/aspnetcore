@@ -4,6 +4,7 @@
 using System;
 using System.Text.Encodings.Web;
 using System.Text.Json;
+using System.Text.Json.Serialization.Metadata;
 using System.Text.RegularExpressions;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Components.Endpoints.Forms;
@@ -18,11 +19,13 @@ using Microsoft.AspNetCore.Components.Routing;
 using Microsoft.AspNetCore.Components.Test.Helpers;
 using Microsoft.AspNetCore.Components.Web;
 using Microsoft.AspNetCore.DataProtection;
+using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Html;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.InternalTesting;
 using Microsoft.DotNet.RemoteExecutor;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.FileProviders;
@@ -1565,6 +1568,105 @@ public class EndpointHtmlRendererTest
     [InlineData("server")]
     [InlineData("wasm")]
     [InlineData("auto")]
+    public async Task PrerenderedState_UsesDefaultJsonContract_WithCircuitResolvers(string renderMode)
+    {
+        IComponentRenderMode persistenceMode = renderMode switch
+        {
+            "server" => RenderMode.InteractiveServer,
+            "wasm" => RenderMode.InteractiveWebAssembly,
+            "auto" => RenderMode.InteractiveAuto,
+            _ => throw new InvalidOperationException($"Unexpected render mode: {renderMode}"),
+        };
+        var resolver = new DefaultJsonTypeInfoResolver();
+        resolver.Modifiers.Add(typeInfo =>
+        {
+            if (typeInfo.Type == typeof(PersistentCustomer))
+            {
+                typeInfo.Properties.Single(property => property.Name == "name").Name = "displayName";
+            }
+        });
+        var services = new ServiceCollection();
+        var environment = new Mock<IWebHostEnvironment>();
+        environment.SetupGet(value => value.ApplicationName).Returns(typeof(EndpointHtmlRendererTest).Assembly.GetName().Name);
+        environment.SetupGet(value => value.WebRootFileProvider).Returns(new NullFileProvider());
+        services.AddSingleton(environment.Object);
+        services.AddSingleton<IConfiguration>(new ConfigurationBuilder().Build());
+        services.AddScoped<PersistentCustomerService>();
+#pragma warning disable ASPNETCORE9004 // The framework implements this experimental extension point.
+        services.AddRazorComponents()
+            .RegisterPersistentService<PersistentCustomerService>(persistenceMode)
+            .AddInteractiveServerComponents(options => options.JsonTypeInfoResolvers.Add(resolver));
+#pragma warning restore ASPNETCORE9004
+        await using var provider = services.BuildServiceProvider();
+        await using var requestScope = provider.CreateAsyncScope();
+        await using var prerenderer = GetEndpointHtmlRenderer(requestScope.ServiceProvider);
+        var httpContext = GetHttpContext(new DefaultHttpContext { RequestServices = requestScope.ServiceProvider });
+        httpContext.SetEndpoint(new Endpoint(null, new EndpointMetadataCollection(
+            new ConfiguredRenderModesMetadata([RenderMode.InteractiveServer, RenderMode.InteractiveWebAssembly])), "TestEndpoint"));
+
+        await prerenderer.Dispatcher.InvokeAsync(() => prerenderer.InitializeStandardComponentServicesAsync(httpContext));
+        requestScope.ServiceProvider.GetRequiredService<PersistentCustomerService>().Customer = new PersistentCustomer { Name = "Alice" };
+        var content = Assert.IsType<EndpointHtmlRenderer.ComponentStateHtmlContent>(
+            await prerenderer.PrerenderPersistedStateAsync(httpContext));
+        var dataProtection = provider.GetRequiredService<IDataProtectionProvider>();
+
+        if (renderMode != "server")
+        {
+            var webAssemblyStore = Assert.IsType<PrerenderComponentApplicationStore>(content.WebAssemblyStore);
+            Assert.NotNull(webAssemblyStore.PersistedState);
+            var store = new PrerenderComponentApplicationStore(webAssemblyStore.PersistedState);
+            Assert.Contains("""{"name":"Alice"}""", store.ExistingState.Values.Select(data => System.Text.Encoding.UTF8.GetString(data)));
+            await using var clientProvider = CreateDefaultServiceCollection()
+                .AddSingleton<PersistentCustomerService>()
+                .BuildServiceProvider();
+            var manager = clientProvider.GetRequiredService<ComponentStatePersistenceManager>();
+            manager.SetPlatformRenderMode(RenderMode.InteractiveWebAssembly);
+            await manager.RestoreStateAsync(store, RestoreContext.InitialValue);
+            Assert.Equal("Alice", clientProvider.GetRequiredService<PersistentCustomerService>().Customer.Name);
+        }
+
+        if (renderMode != "wasm")
+        {
+            var serverStore = Assert.IsType<ProtectedPrerenderComponentApplicationStore>(content.ServerStore);
+            Assert.NotNull(serverStore.PersistedState);
+            var store = new ProtectedPrerenderComponentApplicationStore(serverStore.PersistedState, dataProtection);
+            Assert.Contains("""{"name":"Alice"}""", store.ExistingState.Values.Select(data => System.Text.Encoding.UTF8.GetString(data)));
+            await using var circuitScope = provider.CreateAsyncScope();
+            var manager = circuitScope.ServiceProvider.GetRequiredService<ComponentStatePersistenceManager>();
+            manager.SetPlatformRenderMode(RenderMode.InteractiveServer);
+            await manager.RestoreStateAsync(store, RestoreContext.InitialValue);
+            Assert.Equal("Alice", circuitScope.ServiceProvider.GetRequiredService<PersistentCustomerService>().Customer.Name);
+
+            var snapshotStore = new ProtectedPrerenderComponentApplicationStore(dataProtection);
+            await using var circuitRenderer = GetEndpointHtmlRenderer(circuitScope.ServiceProvider);
+            await manager.PersistStateAsync(snapshotStore, circuitRenderer);
+            Assert.NotNull(snapshotStore.PersistedState);
+            var snapshot = new ProtectedPrerenderComponentApplicationStore(snapshotStore.PersistedState, dataProtection);
+            Assert.Contains("""{"displayName":"Alice"}""", snapshot.ExistingState.Values.Select(data => System.Text.Encoding.UTF8.GetString(data)));
+
+            await using var resumedScope = provider.CreateAsyncScope();
+            var resumedManager = resumedScope.ServiceProvider.GetRequiredService<ComponentStatePersistenceManager>();
+            resumedManager.SetPlatformRenderMode(RenderMode.InteractiveServer);
+            await resumedManager.RestoreStateAsync(snapshot, RestoreContext.LastSnapshot);
+            var service = resumedScope.ServiceProvider.GetRequiredService<PersistentCustomerService>();
+            Assert.Equal("Alice", service.Customer.Name);
+            service.Customer.Name = "Changed in circuit";
+            await resumedManager.RestoreStateAsync(
+                new ProtectedPrerenderComponentApplicationStore(serverStore.PersistedState, dataProtection), RestoreContext.ValueUpdate);
+            Assert.Equal("Alice", service.Customer.Name);
+            var updatedSnapshotStore = new ProtectedPrerenderComponentApplicationStore(dataProtection);
+            await using var resumedRenderer = GetEndpointHtmlRenderer(resumedScope.ServiceProvider);
+            await resumedManager.PersistStateAsync(updatedSnapshotStore, resumedRenderer);
+            Assert.NotNull(updatedSnapshotStore.PersistedState);
+            var updatedSnapshot = new ProtectedPrerenderComponentApplicationStore(updatedSnapshotStore.PersistedState, dataProtection);
+            Assert.Contains("""{"displayName":"Alice"}""", updatedSnapshot.ExistingState.Values.Select(data => System.Text.Encoding.UTF8.GetString(data)));
+        }
+    }
+
+    [Theory]
+    [InlineData("server")]
+    [InlineData("wasm")]
+    [InlineData("auto")]
     public async Task PrerenderedState_PersistToStores_OnlyWhenContentIsAvailable(string renderMode)
     {
         IComponentRenderMode persistenceMode = renderMode switch
@@ -1908,6 +2010,17 @@ public class EndpointHtmlRendererTest
 
         protected override void BuildRenderTree(RenderTreeBuilder builder)
             => _renderFragment(builder);
+    }
+
+    private sealed class PersistentCustomerService
+    {
+        [PersistentState(AllowUpdates = true)]
+        public PersistentCustomer Customer { get; set; }
+    }
+
+    private sealed class PersistentCustomer
+    {
+        public string Name { get; set; }
     }
 
     class PersistenceComponent : IComponent
