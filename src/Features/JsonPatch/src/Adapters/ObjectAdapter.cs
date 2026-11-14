@@ -105,7 +105,10 @@ public class ObjectAdapter : IObjectAdapterWithTest
         if (TryGetValue(operation.from, objectToApplyTo, operation, out var propertyValue))
         {
             // remove that value
-            Remove(operation.from, objectToApplyTo, operation);
+            if (!Remove(operation.from, objectToApplyTo, operation))
+            {
+                return;
+            }
 
             // add that value to the path location
             Add(operation.path,
@@ -125,12 +128,10 @@ public class ObjectAdapter : IObjectAdapterWithTest
 
     /// <summary>
     /// Remove is used by various operations (eg: remove, move, ...), yet through different operations;
-    /// This method allows code reuse yet reporting the correct operation on error.  The return value
-    /// contains the type of the item that has been removed (and a bool possibly signifying an error)
-    /// This can be used by other methods, like replace, to ensure that we can pass in the correctly
-    /// typed value to whatever method follows.
+    /// This method allows code reuse while reporting the correct operation on error.
+    /// Returns whether the value was successfully removed.
     /// </summary>
-    private void Remove(string path, object objectToApplyTo, Operation operationToReport)
+    private bool Remove(string path, object objectToApplyTo, Operation operationToReport)
     {
         var parsedPath = new ParsedPath(path);
         var visitor = new ObjectVisitor(parsedPath, ContractResolver, AdapterFactory);
@@ -140,15 +141,17 @@ public class ObjectAdapter : IObjectAdapterWithTest
         {
             var error = CreatePathNotFoundError(objectToApplyTo, path, operationToReport, errorMessage);
             ErrorReporter(error);
-            return;
+            return false;
         }
 
         if (!adapter.TryRemove(target, parsedPath.LastSegment, ContractResolver, out errorMessage))
         {
             var error = CreateOperationFailedError(objectToApplyTo, path, operationToReport, errorMessage);
             ErrorReporter(error);
-            return;
+            return false;
         }
+
+        return true;
     }
 
     public void Replace(Operation operation, object objectToApplyTo)
