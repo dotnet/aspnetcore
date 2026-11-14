@@ -5,6 +5,7 @@ using System.Buffers;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
+using System.Reflection;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Components.Discovery;
 using Microsoft.AspNetCore.Components.Endpoints.Infrastructure;
@@ -118,6 +119,16 @@ internal class RazorComponentEndpointDataSource<[DynamicallyAccessedMembers(Comp
 
             var configuredRenderModesMetadata = new ConfiguredRenderModesMetadata(
                 [.. Options.ConfiguredRenderModes]);
+            var assemblyNames = new List<string> { typeof(TRootComponent).Assembly.GetName().Name! };
+            foreach (var assemblyName in componentApplicationBuilder.AssemblyNames)
+            {
+                var name = new AssemblyName(assemblyName).Name!;
+                if (!assemblyNames.Contains(name, StringComparer.Ordinal))
+                {
+                    assemblyNames.Add(name);
+                }
+            }
+            var configuredAssembliesMetadata = new RazorComponentApplicationAssembliesMetadata([.. assemblyNames]);
 
             var endpointContext = new RazorComponentEndpointUpdateContext(endpoints, _options);
 
@@ -133,7 +144,8 @@ internal class RazorComponentEndpointDataSource<[DynamicallyAccessedMembers(Comp
                     definition,
                     _conventions,
                     _finallyConventions,
-                    configuredRenderModesMetadata);
+                    configuredRenderModesMetadata,
+                    configuredAssembliesMetadata);
             }
 
             // Extract the endpoint collection from any of the endpoints

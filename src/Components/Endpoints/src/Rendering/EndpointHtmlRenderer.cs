@@ -3,6 +3,7 @@
 
 using System.Collections;
 using System.Diagnostics.CodeAnalysis;
+using System.Text.Json;
 using Microsoft.AspNetCore.Components.Authorization;
 using Microsoft.AspNetCore.Components.Endpoints.DependencyInjection;
 using Microsoft.AspNetCore.Components.Endpoints.Forms;
@@ -139,7 +140,9 @@ internal partial class EndpointHtmlRenderer : StaticHtmlRenderer, IComponentPrer
         // (which will obviously not work, but should not fail)
         var componentApplicationLifetime = httpContext.RequestServices.GetRequiredService<ComponentStatePersistenceManager>();
         componentApplicationLifetime.SetPlatformRenderMode(RenderMode.InteractiveAuto);
-        await componentApplicationLifetime.RestoreStateAsync(new PrerenderComponentApplicationStore(), RestoreContext.InitialValue);
+        var initialStateStore = new PrerenderComponentApplicationStore();
+        InitializeRazorComponentApplicationAssemblies(httpContext, initialStateStore);
+        await componentApplicationLifetime.RestoreStateAsync(initialStateStore, RestoreContext.InitialValue);
 
         if (componentType != null)
         {
@@ -168,6 +171,31 @@ internal partial class EndpointHtmlRenderer : StaticHtmlRenderer, IComponentPrer
             resourceCollectionProvider.ResourceCollectionUrl = resourceCollectionUrl.Url;
             resourceCollectionProvider.SetResourceCollection(resourceCollection ?? ResourceAssetCollection.Empty);
         }
+    }
+
+    private static void InitializeRazorComponentApplicationAssemblies(
+        HttpContext httpContext,
+        PrerenderComponentApplicationStore initialStateStore)
+    {
+        var metadata = httpContext.GetEndpoint()?.Metadata.GetMetadata<RazorComponentApplicationAssembliesMetadata>();
+        if (metadata is not null)
+        {
+            var state = httpContext.RequestServices.GetRequiredService<PersistentComponentState>();
+            initialStateStore.ExistingState.Add(
+                typeof(Router).FullName!,
+                JsonSerializer.SerializeToUtf8Bytes(metadata.AssemblyNames));
+            state.RegisterOnPersisting(() =>
+            {
+                PersistRazorComponentApplicationAssemblies(state, metadata.AssemblyNames);
+                return Task.CompletedTask;
+            }, RenderMode.InteractiveAuto);
+        }
+    }
+
+    [UnconditionalSuppressMessage("Trimming", "IL2026", Justification = "The persisted value is a string array.")]
+    private static void PersistRazorComponentApplicationAssemblies(PersistentComponentState state, string[] assemblyNames)
+    {
+        state.PersistAsJson(typeof(Router).FullName!, assemblyNames);
     }
 
     protected override ComponentState CreateComponentState(int componentId, IComponent component, ComponentState? parentComponentState)
