@@ -752,4 +752,10 @@ For more information on configuring HTTPS see https://go.microsoft.com/fwlink/?l
   <data name="BadRequest_ChunkedExtensionNotAllowed" xml:space="preserve">
     <value>Parsing chunked extensions is not enabled by default. It can be enabled by using 'Microsoft.AspNetCore.Server.Kestrel.EnableChunkedExtensions' AppContext switch. This switch might be removed in a future release.</value>
   </data>
+  <data name="InvalidConfigurationValue" xml:space="preserve">
+    <value>The configuration key '{key}' has an invalid value: '{value}'.</value>
+  </data>
+  <data name="MissingConfigurationValue" xml:space="preserve">
+    <value>The configuration key '{key}' is required.</value>
+  </data>
 </root>
