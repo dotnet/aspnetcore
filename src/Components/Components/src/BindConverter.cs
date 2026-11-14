@@ -2140,15 +2140,24 @@ public static class BindConverter
                     value = default!;
                     return true;
                 }
-                var converted = typeConverter.ConvertFrom(context: null, culture ?? CultureInfo.CurrentCulture, obj);
-                if (converted == null)
+
+                try
                 {
-                    value = default!;
+                    var converted = typeConverter.ConvertFrom(context: null, culture ?? CultureInfo.CurrentCulture, obj);
+                    if (converted == null)
+                    {
+                        value = default!;
+                        return true;
+                    }
+
+                    value = (T)converted;
                     return true;
                 }
-
-                value = (T)converted;
-                return true;
+                catch (Exception ex) when (ex is NotSupportedException || ex is FormatException || ex is OverflowException || ex is ArgumentException || ex is JsonException)
+                {
+                    value = default!;
+                    return false;
+                }
             }
         }
     }
