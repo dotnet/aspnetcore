@@ -3,6 +3,7 @@
 
 using System.ComponentModel;
 using System.Net.Http;
+using System.Text.Json.Nodes;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.OpenApi;
 using Microsoft.AspNetCore.Routing;
@@ -217,6 +218,264 @@ public partial class OpenApiSchemaServiceTests : OpenApiDocumentServiceTestBase
     }
 
     [Fact]
+    public async Task SchemaDeprecated_ObsoletePropertyDoesNotDeprecateReferencedSchemaAcrossEndpoints()
+    {
+        var builder = CreateBuilder();
+
+        builder.MapPost("/orders", (DtoWithOnlyObsoleteReferenceProperty dto) => { });
+        builder.MapPost("/shipments", (DtoWithOnlyCurrentReferenceProperty dto) => { });
+
+        var document = await VerifyOpenApiDocument(builder, _ => { });
+        var actual = await document.SerializeAsJsonAsync(OpenApiSpecVersion.OpenApi3_2);
+        var expected = """
+            {
+              "openapi": "3.2.0",
+              "info": {
+                "title": "OpenApiDocumentServiceTests | Test",
+                "version": "1.0.0"
+              },
+              "paths": {
+                "/orders": {
+                  "post": {
+                    "tags": [
+                      "OpenApiDocumentServiceTests"
+                    ],
+                    "requestBody": {
+                      "content": {
+                        "application/json": {
+                          "schema": {
+                            "$ref": "#/components/schemas/DtoWithOnlyObsoleteReferenceProperty"
+                          }
+                        }
+                      }
+                    },
+                    "responses": {
+                      "200": {
+                        "description": "OK"
+                      }
+                    }
+                  }
+                },
+                "/shipments": {
+                  "post": {
+                    "tags": [
+                      "OpenApiDocumentServiceTests"
+                    ],
+                    "requestBody": {
+                      "content": {
+                        "application/json": {
+                          "schema": {
+                            "$ref": "#/components/schemas/DtoWithOnlyCurrentReferenceProperty"
+                          }
+                        }
+                      }
+                    },
+                    "responses": {
+                      "200": {
+                        "description": "OK"
+                      }
+                    }
+                  }
+                }
+              },
+              "components": {
+                "schemas": {
+                  "DtoWithOnlyCurrentReferenceProperty": {
+                    "type": "object",
+                    "properties": {
+                      "current": {
+                        "$ref": "#/components/schemas/NonObsoleteChildDto"
+                      }
+                    }
+                  },
+                  "DtoWithOnlyObsoleteReferenceProperty": {
+                    "type": "object",
+                    "properties": {
+                      "old": {
+                        "deprecated": true,
+                        "$ref": "#/components/schemas/NonObsoleteChildDto"
+                      }
+                    }
+                  },
+                  "NonObsoleteChildDto": {
+                    "type": "object",
+                    "properties": {
+                      "value": {
+                        "type": [
+                          "null",
+                          "string"
+                        ]
+                      }
+                    }
+                  }
+                }
+              },
+              "tags": [
+                {
+                  "name": "OpenApiDocumentServiceTests"
+                }
+              ]
+            }
+            """;
+        Assert.True(JsonNode.DeepEquals(JsonNode.Parse(actual), JsonNode.Parse(expected)), $"Actual: {actual}");
+    }
+
+    [Fact]
+    public async Task SchemaDeprecated_ObsoleteNullablePropertyDoesNotDeprecateReferencedSchema()
+    {
+        var builder = CreateBuilder();
+
+        builder.MapPost("/", (DtoWithObsoleteNullableReferenceProperty dto) => { });
+
+        var document = await VerifyOpenApiDocument(builder, _ => { });
+        var actual = await document.SerializeAsJsonAsync(OpenApiSpecVersion.OpenApi3_2);
+        // "deprecated" is inside the oneOf branch instead of on "old" until #69727 is fixed.
+        var expected = """
+            {
+              "openapi": "3.2.0",
+              "info": {
+                "title": "OpenApiDocumentServiceTests | Test",
+                "version": "1.0.0"
+              },
+              "paths": {
+                "/": {
+                  "post": {
+                    "tags": [
+                      "OpenApiDocumentServiceTests"
+                    ],
+                    "requestBody": {
+                      "content": {
+                        "application/json": {
+                          "schema": {
+                            "$ref": "#/components/schemas/DtoWithObsoleteNullableReferenceProperty"
+                          }
+                        }
+                      }
+                    },
+                    "responses": {
+                      "200": {
+                        "description": "OK"
+                      }
+                    }
+                  }
+                }
+              },
+              "components": {
+                "schemas": {
+                  "DtoWithObsoleteNullableReferenceProperty": {
+                    "type": "object",
+                    "properties": {
+                      "old": {
+                        "oneOf": [
+                          {
+                            "type": "null"
+                          },
+                          {
+                            "deprecated": true,
+                            "$ref": "#/components/schemas/NonObsoleteChildDto"
+                          }
+                        ]
+                      }
+                    }
+                  },
+                  "NonObsoleteChildDto": {
+                    "type": "object",
+                    "properties": {
+                      "value": {
+                        "type": [
+                          "null",
+                          "string"
+                        ]
+                      }
+                    }
+                  }
+                }
+              },
+              "tags": [
+                {
+                  "name": "OpenApiDocumentServiceTests"
+                }
+              ]
+            }
+            """;
+        Assert.True(JsonNode.DeepEquals(JsonNode.Parse(actual), JsonNode.Parse(expected)), $"Actual: {actual}");
+    }
+
+    [Fact]
+    public async Task SchemaDeprecated_ObsoletePropertyOfObsoleteTypeKeepsReferencedSchemaDeprecated()
+    {
+        var builder = CreateBuilder();
+
+        builder.MapPost("/", (DtoWithObsoleteReferencePropertyOfObsoleteType dto) => { });
+
+        var document = await VerifyOpenApiDocument(builder, _ => { });
+        var actual = await document.SerializeAsJsonAsync(OpenApiSpecVersion.OpenApi3_2);
+        var expected = """
+            {
+              "openapi": "3.2.0",
+              "info": {
+                "title": "OpenApiDocumentServiceTests | Test",
+                "version": "1.0.0"
+              },
+              "paths": {
+                "/": {
+                  "post": {
+                    "tags": [
+                      "OpenApiDocumentServiceTests"
+                    ],
+                    "requestBody": {
+                      "content": {
+                        "application/json": {
+                          "schema": {
+                            "$ref": "#/components/schemas/DtoWithObsoleteReferencePropertyOfObsoleteType"
+                          }
+                        }
+                      }
+                    },
+                    "responses": {
+                      "200": {
+                        "description": "OK"
+                      }
+                    }
+                  }
+                }
+              },
+              "components": {
+                "schemas": {
+                  "DtoWithObsoleteReferencePropertyOfObsoleteType": {
+                    "type": "object",
+                    "properties": {
+                      "old": {
+                        "deprecated": true,
+                        "$ref": "#/components/schemas/ObsoleteDto"
+                      }
+                    }
+                  },
+                  "ObsoleteDto": {
+                    "type": "object",
+                    "properties": {
+                      "name": {
+                        "type": [
+                          "null",
+                          "string"
+                        ]
+                      }
+                    },
+                    "deprecated": true
+                  }
+                }
+              },
+              "tags": [
+                {
+                  "name": "OpenApiDocumentServiceTests"
+                }
+              ]
+            }
+            """;
+        Assert.True(JsonNode.DeepEquals(JsonNode.Parse(actual), JsonNode.Parse(expected)), $"Actual: {actual}");
+    }
+
+    [Fact]
     public async Task SchemaDeprecated_NonObsoleteTypeIsNotDeprecated()
     {
         var builder = CreateBuilder();
@@ -253,5 +512,30 @@ public partial class OpenApiSchemaServiceTests : OpenApiDocumentServiceTestBase
     public class NonObsoleteChildDto
     {
         public string Value { get; set; }
+    }
+
+    public class DtoWithOnlyObsoleteReferenceProperty
+    {
+        [Obsolete("Use something else.")]
+        public NonObsoleteChildDto Old { get; set; }
+    }
+
+    public class DtoWithOnlyCurrentReferenceProperty
+    {
+        public NonObsoleteChildDto Current { get; set; }
+    }
+
+#nullable enable
+    public class DtoWithObsoleteNullableReferenceProperty
+    {
+        [Obsolete("Use something else.")]
+        public NonObsoleteChildDto? Old { get; set; }
+    }
+#nullable restore
+
+    public class DtoWithObsoleteReferencePropertyOfObsoleteType
+    {
+        [Obsolete("Use something else.")]
+        public ObsoleteDto Old { get; set; }
     }
 }
