@@ -120,13 +120,13 @@ You have likely attempted to build projects or execute tests which require the j
 shared framework. Execute the following to ensure that exists within the `$(DOTNET_ROOT)` folder:
 
 ```powershell
-.\build.cmd -projects src\Framework\App.Runtime\src\Microsoft.AspNetCore.App.Runtime.csproj
+.\eng\build.cmd -projects src\Framework\App.Runtime\src\Microsoft.AspNetCore.App.Runtime.sfxproj
 ```
 
 or
 
 ```bash
-./build.sh --projects "$PWD/src/Framework/App.Runtime/src/Microsoft.AspNetCore.App.Runtime.csproj"
+./eng/build.sh --projects "$PWD/src/Framework/App.Runtime/src/Microsoft.AspNetCore.App.Runtime.sfxproj"
 ```
 
 ## Errors when restoring older clones
