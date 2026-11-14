@@ -539,4 +539,62 @@ public class SummaryValueParametersClass
             Assert.Equal("Property with only value documentation.", valueOnlyParam2.Description);
         });
     }
+
+    [Fact]
+    public async Task SupportsXmlCommentsOnAsParametersPropertiesWithCustomBindingNames()
+    {
+        var source = """
+using System;
+using System.Threading.Tasks;
+using Microsoft.AspNetCore.Builder;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Http.HttpResults;
+using Microsoft.AspNetCore.Mvc;
+
+var builder = WebApplication.CreateBuilder();
+
+builder.Services.AddOpenApi();
+
+var app = builder.Build();
+
+app.MapPost("/login", RouteHandlerExtensionMethods.Login);
+
+app.Run();
+
+public static class RouteHandlerExtensionMethods
+{
+    public static Ok<string> Login([AsParameters] ClientInfo clientInfo, LoginRequest request)
+    {
+        return TypedResults.Ok("Logged in.");
+    }
+}
+
+/// <param name="Version">The version of the client application.</param>
+/// <param name="DeviceId">The identifier of the client device.</param>
+public record ClientInfo(
+    [FromHeader(Name = "x-client-version")] string Version,
+    [FromHeader(Name = "x-client-device-id")] string? DeviceId);
+
+/// <summary>
+/// The login payload.
+/// </summary>
+public record LoginRequest(string User, string Password);
+""";
+        var generator = new XmlCommentGenerator();
+        await SnapshotTestHelper.Verify(source, generator, out var compilation);
+        await SnapshotTestHelper.VerifyOpenApi(compilation, document =>
+        {
+            var operation = document.Paths["/login"].Operations[HttpMethod.Post];
+
+            var versionParameter = operation.Parameters.First(parameter => parameter.Name == "x-client-version");
+            Assert.Equal("The version of the client application.", versionParameter.Description);
+
+            var deviceIdParameter = operation.Parameters.First(parameter => parameter.Name == "x-client-device-id");
+            Assert.Equal("The identifier of the client device.", deviceIdParameter.Description);
+
+            // Documentation for header-bound properties must not leak into the request body.
+            Assert.Null(operation.RequestBody.Description);
+        });
+    }
 }
