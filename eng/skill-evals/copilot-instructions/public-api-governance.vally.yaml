@@ -1,0 +1,137 @@
+name: copilot-instructions-public-api-governance
+description: >-
+  Regression coverage for repository-wide public API governance timing and
+  API-proposal authoring guidance.
+type: capability
+
+defaults:
+  runs: 5
+  timeout: 420s
+  model: gpt-5.6-luna
+  judge_model: gpt-5.6-luna
+
+environment:
+  skills:
+    - "../../../.github/skills/api-review"
+  files:
+    - src: "../../../.github/copilot-instructions.md"
+      dest: ".github/copilot-instructions.md"
+
+scoring:
+  weights:
+    output-matches: 0.2
+    skill-invocation: 0.1
+    prompt: 0.7
+  threshold: 0.6
+
+stimuli:
+  - name: Allow implementation before API approval
+    prompt: |
+      An originating issue calls for a new public `int MaxRetryCount` property on
+      an ASP.NET Core options type. The API proposal does not have the
+      `api-approved` label yet, and I want to start implementing the property now.
+      We are not preparing an RTM release. Does repository policy require me to
+      stop, or can implementation proceed? Do not look up an external issue; all
+      relevant approval status is stated here.
+    graders:
+      - type: output-matches
+        config:
+          pattern: (?i)((may|can|allowed).{0,60}(implement|implementation|proceed)|(implement|implementation).{0,60}(may|can|proceed))
+      - type: output-matches
+        config:
+          pattern: (?i)(api-review|API proposal|api-approved|RTM)
+      - type: prompt
+    rubric:
+      - Identifies the request as a public API change subject to API review
+      - Explicitly permits implementation to proceed before api-approved
+      - Does not treat missing API approval as an implementation, pull request readiness, or merge gate
+      - States that the final implemented API shape must be api-approved before inclusion in an RTM release
+
+  - name: Author a proposal when opening the implementation PR
+    prompt: |
+      I implemented `CancellationToken` support for a shipped public ASP.NET Core
+      interface and am opening the implementation pull request. The originating
+      issue and implementation changes are available, but there is no separate API
+      proposal issue and the API is not approved. Do not file anything or look up
+      external issues. Describe the complete repository workflow I should follow
+      now, including the relevant repository skill, proposal format, required issue
+      labels and links, and whether the pull request must wait for approval.
+    graders:
+      - type: skill-invocation
+        config:
+          required:
+            - api-review
+      - type: output-matches
+        config:
+          pattern: (?i)(api-review.{0,30}skill|skill.{0,30}api-review)
+      - type: output-matches
+        config:
+          pattern: (?i)api-suggestion
+      - type: output-matches
+        config:
+          pattern: (?i)api-proposal
+      - type: output-matches
+        config:
+          pattern: (?i)(originating issue|implementation (PR|pull request))
+      - type: prompt
+    rubric:
+      - Identifies the interface change as a public API change
+      - Directs the author to use the api-review skill to create a separate API proposal issue
+      - Requires links between the proposal, originating issue, and implementation pull request
+      - Includes the proposal's ref-assembly shape and the api-suggestion and api-proposal labels
+      - States that the implementation pull request may become ready or merge before api-approved
+      - Preserves api-approved as a requirement for the final implemented shape before RTM inclusion
+
+  - name: Block an unapproved API from RTM
+    prompt: |
+      We are preparing an RTM release that includes a shipped ASP.NET Core option
+      default changing from 14 days to 7 days. The separate API proposal issue
+      exists but does not have the `api-approved` label. Can this API change be
+      included in the RTM release? Do not look up an external issue; explain the
+      complete path to approval and distinguish compatibility tracking from API
+      approval.
+    graders:
+      - type: output-matches
+        config:
+          pattern: (?i)(api-approved|RTM|release)
+      - type: output-matches
+        config:
+          pattern: (?i)(api-ready-for-review|@dotnet/aspnet-api-review|ref-assembly|reference assembly)
+      - type: output-matches
+        config:
+          pattern: (?i)PublicAPI\.Unshipped
+      - type: prompt
+    rubric:
+      - Identifies the shipped default change as a public API or convention change
+      - Refuses to include the change in an RTM release until the proposal is api-approved
+      - Explains that an owner or champion drives the api-suggestion in ref-assembly form
+      - Requires api-ready-for-review and notification of @dotnet/aspnet-api-review before approval
+      - Distinguishes PublicAPI.Unshipped.txt compatibility tracking from API approval
+
+  - name: Return a changed approved shape to API review
+    prompt: |
+      An API proposal was approved for a new public `int MaxRetryCount` property,
+      but the final implementation changed it to `TimeSpan MaxRetryDelay`. We are
+      preparing the implementation for inclusion in an RTM release. Does the
+      earlier `api-approved` label cover this final shape? Do not look up an
+      external issue; explain what must happen to the separate proposal, how the
+      revised API should be represented, and what blocks RTM inclusion.
+    graders:
+      - type: output-matches
+        config:
+          pattern: (?i)(final (implemented|implementation)|shape|api-approved)
+      - type: output-matches
+        config:
+          pattern: (?i)(return|update|re-review|review again|API review)
+      - type: output-matches
+        config:
+          pattern: (?i)proposal
+      - type: output-matches
+        config:
+          pattern: (?i)(ref-assembly|reference assembly)
+      - type: prompt
+    rubric:
+      - Identifies that the approved proposal and final implementation have materially different API shapes
+      - States that the earlier approval does not cover the changed final shape
+      - Requires updating the separate proposal and returning the revised ref-assembly shape to API review
+      - Blocks inclusion in an RTM release until api-approved covers the final implemented shape
