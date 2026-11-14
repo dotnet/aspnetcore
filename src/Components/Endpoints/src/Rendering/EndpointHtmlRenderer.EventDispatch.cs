@@ -89,18 +89,15 @@ internal partial class EndpointHtmlRenderer
         SignalRendererToFinishRendering();
     }
 
-    internal async Task SetNotFoundWhenResponseHasStarted()
+    internal async Task SetNotFoundWhenResponseHasStarted(TextWriter writer)
     {
         if (string.IsNullOrEmpty(_notFoundUrl))
         {
             var baseUri = $"{_httpContext.Request.Scheme}://{_httpContext.Request.Host}{_httpContext.Request.PathBase}/";
             _notFoundUrl = GetNotFoundUrl(baseUri, NotFoundEventArgs);
         }
-        var defaultBufferSize = 16 * 1024;
-        await using var writer = new HttpResponseStreamWriter(_httpContext.Response.Body, Encoding.UTF8, defaultBufferSize, ArrayPool<byte>.Shared, ArrayPool<char>.Shared);
-        using var bufferWriter = new BufferedTextWriter(writer);
-        HandleNotFoundAfterResponseStarted(bufferWriter, _httpContext, _notFoundUrl);
-        await bufferWriter.FlushAsync();
+        HandleNotFoundAfterResponseStarted(writer, _httpContext, _notFoundUrl);
+        await writer.FlushAsync();
 
         // When the application triggers a NotFound event, we continue rendering the current batch.
         // However, after completing this batch, we do not want to process any further UI updates,
@@ -128,6 +125,15 @@ internal partial class EndpointHtmlRenderer
     {
         if (_httpContext.Response.HasStarted)
         {
+            if (_streamingUpdatesWriter is { } streamingWriter)
+            {
+                // Share the page's buffered writer so navigation cannot interrupt an in-progress flush.
+                HandleNavigationAfterResponseStarted(streamingWriter, _httpContext, uri);
+                SignalRendererToFinishRendering();
+                await streamingWriter.FlushAsync();
+                return;
+            }
+
             var defaultBufferSize = 16 * 1024;
             await using var writer = new HttpResponseStreamWriter(_httpContext.Response.Body, Encoding.UTF8, defaultBufferSize, ArrayPool<byte>.Shared, ArrayPool<char>.Shared);
             using var bufferWriter = new BufferedTextWriter(writer);
