@@ -99,7 +99,7 @@ internal partial class ResourceCollectionUrlEndpoint
             """u8;
         content.Write(preamble);
         var utf8Writer = new Utf8JsonWriter(content);
-        JsonSerializer.Serialize<IReadOnlyList<ResourceAsset>>(utf8Writer, resourceCollection, ResourceCollectionSerializerContext.Default.Options);
+        JsonSerializer.Serialize(utf8Writer, resourceCollection, ResourceCollectionSerializerContext.Default.IReadOnlyListResourceAsset);
         var epilogue = """
             ;
             }
