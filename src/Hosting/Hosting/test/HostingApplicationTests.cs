@@ -7,9 +7,11 @@ using System.Diagnostics.Metrics;
 using Microsoft.AspNetCore.Hosting.Server.Abstractions;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Features;
+using Microsoft.AspNetCore.Http.Metadata;
 using Microsoft.AspNetCore.InternalTesting;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Diagnostics.Metrics;
+using Microsoft.Extensions.Diagnostics.Metrics.Testing;
 using Microsoft.Extensions.Logging.Abstractions;
 using Moq;
 using static Microsoft.AspNetCore.Hosting.HostingApplication;
@@ -46,6 +48,79 @@ public class HostingApplicationTests
         // Act/Assert
         hostingApplication.DisposeContext(context, null);
         Assert.Null(context.HttpContext);
+    }
+
+    [Fact]
+    public void DisposeContextDoesNotCreateItemsWhenRequestDoesNotUseThem()
+    {
+        var testSource = new ActivitySource(Path.GetRandomFileName());
+        using var listener = new ActivityListener
+        {
+            ShouldListenTo = activitySource => ReferenceEquals(activitySource, testSource),
+            Sample = (ref ActivityCreationOptions<ActivityContext> _) => ActivitySamplingResult.AllData
+        };
+
+        ActivitySource.AddActivityListener(listener);
+
+        var meterFactory = new TestMeterFactory();
+        using var requestDurationCollector = new MetricCollector<double>(meterFactory, HostingMetrics.MeterName, "http.server.request.duration");
+        var hostingApplication = CreateApplication(activitySource: testSource, meterFactory: meterFactory);
+
+        var features = new FeatureCollection();
+        features.Set<IHttpRequestFeature>(new HttpRequestFeature());
+        features.Set<IHttpResponseFeature>(new HttpResponseFeature());
+
+        var context = hostingApplication.CreateContext(features);
+        Assert.NotNull(context.Activity);
+        hostingApplication.DisposeContext(context, null);
+
+        Assert.Single(requestDurationCollector.GetMeasurementSnapshot());
+        Assert.Null(features.Get<IItemsFeature>());
+    }
+
+    [Fact]
+    public async Task OriginalEndpointRouteIsUsedWhenEndpointIsCleared()
+    {
+        var testSource = new ActivitySource(Path.GetRandomFileName());
+        Activity stoppedActivity = null;
+        using var listener = new ActivityListener
+        {
+            ShouldListenTo = activitySource => ReferenceEquals(activitySource, testSource),
+            Sample = (ref ActivityCreationOptions<ActivityContext> _) => ActivitySamplingResult.AllData,
+            ActivityStopped = activity => stoppedActivity = activity
+        };
+
+        ActivitySource.AddActivityListener(listener);
+
+        var meterFactory = new TestMeterFactory();
+        using var requestDurationCollector = new MetricCollector<double>(meterFactory, HostingMetrics.MeterName, "http.server.request.duration");
+
+        var endpoint = new Endpoint(c => Task.CompletedTask, new EndpointMetadataCollection(new TestRouteDiagnosticsMetadata("/original")), "Test");
+        var hostingApplication = CreateApplication(activitySource: testSource, meterFactory: meterFactory, requestDelegate: context =>
+        {
+            // Middleware that re-executes the pipeline, such as the exception handler, stashes the endpoint in Items before clearing it.
+            context.SetEndpoint(endpoint);
+            HttpExtensions.ClearEndpoint(context);
+            return Task.CompletedTask;
+        });
+
+        var features = new FeatureCollection();
+        features.Set<IHttpRequestFeature>(new HttpRequestFeature());
+        features.Set<IHttpResponseFeature>(new HttpResponseFeature());
+
+        var context = hostingApplication.CreateContext(features);
+        await hostingApplication.ProcessRequestAsync(context);
+        Assert.Null(context.HttpContext.GetEndpoint());
+        hostingApplication.DisposeContext(context, null);
+
+        Assert.Equal("/original", Assert.Single(requestDurationCollector.GetMeasurementSnapshot()).Tags["http.route"]);
+        Assert.NotNull(stoppedActivity);
+        Assert.Equal("/original", stoppedActivity.GetTagItem("http.route"));
+    }
+
+    private sealed class TestRouteDiagnosticsMetadata(string route) : IRouteDiagnosticsMetadata
+    {
+        public string Route { get; } = route;
     }
 
     [Fact]
@@ -180,7 +255,7 @@ public class HostingApplicationTests
     }
 
     private static HostingApplication CreateApplication(IHttpContextFactory httpContextFactory = null, bool useHttpContextAccessor = false,
-        ActivitySource activitySource = null, IMeterFactory meterFactory = null)
+        ActivitySource activitySource = null, IMeterFactory meterFactory = null, RequestDelegate requestDelegate = null)
     {
         var services = new ServiceCollection();
         services.AddOptions();
@@ -192,7 +267,7 @@ public class HostingApplicationTests
         httpContextFactory ??= new DefaultHttpContextFactory(services.BuildServiceProvider());
 
         var hostingApplication = new HostingApplication(
-            ctx => Task.CompletedTask,
+            requestDelegate ?? (ctx => Task.CompletedTask),
             NullLogger.Instance,
             new DiagnosticListener("Microsoft.AspNetCore"),
             activitySource ?? new ActivitySource("Microsoft.AspNetCore"),
