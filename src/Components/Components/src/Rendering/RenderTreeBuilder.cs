@@ -814,7 +814,13 @@ public sealed class RenderTreeBuilder : IDisposable
             // It's never valid to leave an element/component/region unclosed. Doing so
             // could cause undefined behavior in diffing.
             ref var invalidFrame = ref _entries.Buffer[_openElementIndices.Peek()];
-            throw new InvalidOperationException($"Render output is invalid for component of type '{component.GetType().FullName}'. A frame of type '{invalidFrame.FrameType}' was left unclosed. Do not use try/catch inside rendering logic, because partial output cannot be undone.");
+            throw new InvalidOperationException(
+                $"Render output is invalid for component of type '{component.GetType().FullName}'. " +
+                $"A frame of type '{invalidFrame.FrameType}' was left unclosed. Every frame opened by OpenElement, " +
+                $"OpenComponent, or OpenRegion must be closed by a matching call to CloseElement, CloseComponent, or " +
+                $"CloseRegion. This can occur when control flow skips a closing call but the render fragment still " +
+                $"completes normally, such as with break, continue, return, goto, or a caught exception. " +
+                $"See https://learn.microsoft.com/aspnet/core/blazor/advanced-scenarios.");
         }
     }
 
