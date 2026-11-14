@@ -212,7 +212,21 @@ public class InputSelectTest
         var validationMessages = rootComponent.EditContext.GetValidationMessages(fieldIdentifier);
         Assert.Contains("The Number from attribute field is not valid.", validationMessages);
     }
+    [Fact]
+    public async Task RendersMultipleSelectWhenBoundArrayValueIsNull()
+    {
+        var model = new TestModel();
+        var rootComponent = new TestInputHostComponent<string[], TestInputSelect<string[]>>
+        {
+            EditContext = new EditContext(model),
+            ValueExpression = () => model.NullableStringArray,
+        };
 
+        var componentId = await RenderAndGetInputSelectComponentIdAsync(rootComponent);
+        var frames = _testRenderer.GetCurrentRenderTreeFrames(componentId);
+        Assert.Contains(frames.Array, frame => frame.FrameType == RenderTreeFrameType.Attribute && frame.AttributeName == "multiple" && Equals(frame.AttributeValue, true));
+        Assert.DoesNotContain(frames.Array, frame => frame.FrameType == RenderTreeFrameType.Attribute && frame.AttributeName == "value");
+    }
     [Fact]
     public async Task InputElementIsAssignedSuccessfully()
     {
@@ -247,6 +261,62 @@ public class InputSelectTest
 
         var idAttribute = frames.Array.Single(f => f.FrameType == RenderTreeFrameType.Attribute && f.AttributeName == "id");
         Assert.Equal("model_NotNullableEnum", idAttribute.AttributeValue);
+    }
+
+    // InputSelect<string[]> with null value should not throw during render
+    [Fact]
+    public async Task InputSelectMultipleWithNullValue_RendersSuccessfully()
+    {
+        var model = new TestModel { StringArray = null };
+        var rootComponent = new TestInputHostComponent<string[], TestInputSelect<string[]>>
+        {
+            EditContext = new EditContext(model),
+            ValueExpression = () => model.StringArray,
+            Value = null
+        };
+
+        var exception = await Record.ExceptionAsync(() => InputRenderer.RenderAndGetComponent(rootComponent));
+        Assert.Null(exception);
+    }
+
+    [Fact]
+    public async Task InputSelectMultiple_EditForm_DeselectingAll_DoesNotThrow()
+    {
+        var model = new TestModel { StringArray = new[] { "alpha", "beta" } };
+        var rootComponent = new TestInputHostComponent<string[], TestInputSelect<string[]>>
+        {
+            EditContext = new EditContext(model),
+            ValueExpression = () => model.StringArray,
+            Value = model.StringArray
+        };
+
+        var component = await InputRenderer.RenderAndGetComponent(rootComponent);
+
+        var exception = Record.Exception(() => component.SetCurrentValueAsStringArray(Array.Empty<string>()));
+
+        Assert.Null(exception);
+        Assert.NotNull(component.CurrentValue);
+        Assert.Empty(component.CurrentValue);
+    }
+
+    [Fact]
+    public async Task InputSelectMultiple_EditForm_NullValue_DeselectingAll_DoesNotThrow()
+    {
+        var model = new TestModel { StringArray = null };
+        var rootComponent = new TestInputHostComponent<string[], TestInputSelect<string[]>>
+        {
+            EditContext = new EditContext(model),
+            ValueExpression = () => model.StringArray,
+            Value = null
+        };
+
+        var component = await InputRenderer.RenderAndGetComponent(rootComponent);
+
+        var exception = Record.Exception(() => component.SetCurrentValueAsStringArray(Array.Empty<string>()));
+
+        Assert.Null(exception);
+        Assert.NotNull(component.CurrentValue);
+        Assert.Empty(component.CurrentValue);
     }
 
     [Fact]
@@ -296,6 +366,10 @@ public class InputSelectTest
         public int NotNullableInt { get; set; }
 
         public int? NullableInt { get; set; }
+
+        public string[] NullableStringArray { get; set; }
+
+        public string[] StringArray { get; set; }
     }
 
     class TestInputSelect<TValue> : InputSelect<TValue>

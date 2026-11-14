@@ -1,0 +1,28 @@
+@page "/forms/input-select-multiple-deselect-all"
+@using Microsoft.AspNetCore.Components.Forms
+
+<h2>InputSelect multiple - deselect all (SSR)</h2>
+
+<EditForm Enhance Model="this" method="POST" OnValidSubmit="() => _submitted = true" FormName="deselect-all-form">
+    <InputSelect @bind-Value="SelectedCities" id="cities">
+        <option value="SanFrancisco">San Francisco</option>
+        <option value="Tokyo">Tokyo</option>
+        <option value="London">London</option>
+        <option value="Madrid">Madrid</option>
+    </InputSelect>
+    <input id="send" type="submit" value="Send" />
+</EditForm>
+
+@if (_submitted)
+{
+    <p id="result">Submitted. Length: @(SelectedCities?.Length ?? -1)</p>
+    <p id="result-null">Submitted. IsNull: @(SelectedCities is null)</p>
+}
+
+@code {
+    bool _submitted;
+
+    [SupplyParameterFromForm] public City[]? SelectedCities { get; set; } = new[] { City.SanFrancisco, City.Tokyo };
+
+    public enum City { SanFrancisco, Tokyo, London, Madrid }
+}
