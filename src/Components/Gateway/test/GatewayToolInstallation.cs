@@ -29,10 +29,15 @@ internal sealed partial class GatewayToolInstallation : IDisposable
     {
         get
         {
-            var fileName = OperatingSystem.IsWindows()
-                ? $"{GatewayCliTestData.ToolCommandName}.exe"
-                : GatewayCliTestData.ToolCommandName;
-            return Path.Combine(ToolPath, fileName);
+            if (!OperatingSystem.IsWindows())
+            {
+                return Path.Combine(ToolPath, GatewayCliTestData.ToolCommandName);
+            }
+
+            var commandPath = Path.Combine(ToolPath, $"{GatewayCliTestData.ToolCommandName}.cmd");
+            return File.Exists(commandPath)
+                ? commandPath
+                : Path.Combine(ToolPath, $"{GatewayCliTestData.ToolCommandName}.exe");
         }
     }
 
@@ -41,12 +46,24 @@ internal sealed partial class GatewayToolInstallation : IDisposable
     /// installed package's unpacked contents, mirroring the layout of the original .nupkg.
     /// </summary>
     public string PackageContentPath
+        => GetPackageContentPath(GatewayCliTestData.PackageId);
+
+    public string SelectedRuntimePackageId =>
+        GatewayCliTestData.IsNativePackageAvailable
+            ? GatewayCliTestData.HostRuntimePackageId
+            : GatewayCliTestData.AnyPackageId;
+
+    public string SelectedRuntimePackageContentPath
+        => GetPackageContentPath(SelectedRuntimePackageId);
+
+    public string SelectedToolDirectory
     {
         get
         {
-            var packageId = GatewayCliTestData.PackageId.ToLowerInvariant();
-            var version = GatewayCliTestData.PackageVersion.ToLowerInvariant();
-            return Path.Combine(ToolPath, ".store", packageId, version, packageId, version);
+            var relativePath = GatewayCliTestData.IsNativePackageAvailable
+                ? Path.Combine("tools", "any", GatewayCliTestData.HostRuntimeIdentifier)
+                : Path.Combine("tools", GatewayCliTestData.DefaultTargetFramework, "any");
+            return Path.Combine(SelectedRuntimePackageContentPath, relativePath);
         }
     }
 
@@ -76,6 +93,14 @@ internal sealed partial class GatewayToolInstallation : IDisposable
     /// Reads the .nuspec that NuGet keeps alongside the installed package's unpacked contents.
     /// </summary>
     public string ReadNuspec() => ReadFile($"{GatewayCliTestData.PackageId}.nuspec");
+
+    public bool SelectedRuntimePackageHasFile(string relativePath)
+        => RuntimePackageHasFile(SelectedRuntimePackageId, relativePath);
+
+    private bool RuntimePackageHasFile(string packageId, string relativePath)
+        => File.Exists(Path.Combine(
+            GetPackageContentPath(packageId),
+            relativePath.Replace('/', Path.DirectorySeparatorChar)));
 
     /// <summary>
     /// Installs the tool into a fresh tool-path from the local package output. Callers must gate the
@@ -134,14 +159,18 @@ internal sealed partial class GatewayToolInstallation : IDisposable
     /// it to report the address it is listening on.
     /// </summary>
     public async Task<RunningGatewayTool> StartAsync(params string[] arguments)
+        => await StartAsync(false, arguments);
+
+    public async Task<RunningGatewayTool> StartAsync(bool useHttps, params string[] arguments)
     {
-        var argLine = new StringBuilder("--urls http://127.0.0.1:0");
+        var scheme = useHttps ? "https" : "http";
+        var argLine = new StringBuilder($"--urls {scheme}://127.0.0.1:0");
         foreach (var argument in arguments)
         {
             argLine.Append(' ').Append(argument);
         }
 
-        var psi = CreateStartInfo(CommandPath, argLine.ToString(), _root);
+        var psi = CreateToolStartInfo(argLine.ToString());
 
         var log = new StringBuilder();
         var listeningUrl = new TaskCompletionSource<string>(TaskCreationOptions.RunContinuationsAsynchronously);
@@ -181,7 +210,62 @@ internal sealed partial class GatewayToolInstallation : IDisposable
             throw new TimeoutException($"The gateway tool did not start listening within the timeout.\n{log}");
         }
 
-        return new RunningGatewayTool(process, await listeningUrl.Task, log);
+        return new RunningGatewayTool(process, await listeningUrl.Task, log, useHttps);
+    }
+
+    public async Task<CommandResult> RunAsync(params string[] arguments)
+    {
+        var psi = CreateToolStartInfo(string.Join(' ', arguments));
+        using var process = new Process { StartInfo = psi };
+
+        process.Start();
+        var standardOutput = process.StandardOutput.ReadToEndAsync();
+        var standardError = process.StandardError.ReadToEndAsync();
+        try
+        {
+            await process.WaitForExitAsync().WaitAsync(TimeSpan.FromSeconds(30));
+        }
+        catch (TimeoutException)
+        {
+            try
+            {
+                process.Kill(entireProcessTree: true);
+            }
+            catch
+            {
+            }
+
+            throw;
+        }
+
+        return new CommandResult(
+            process.ExitCode,
+            await standardOutput,
+            await standardError);
+    }
+
+    private ProcessStartInfo CreateToolStartInfo(string arguments)
+    {
+        if (!OperatingSystem.IsWindows() ||
+            !string.Equals(Path.GetExtension(CommandPath), ".cmd", StringComparison.OrdinalIgnoreCase))
+        {
+            return CreateStartInfo(CommandPath, arguments, _root);
+        }
+
+        var commandProcessor = Environment.GetEnvironmentVariable("ComSpec") ??
+            throw new InvalidOperationException("The ComSpec environment variable is not set.");
+        return CreateStartInfo(
+            commandProcessor,
+            $"/d /c \"\"{CommandPath}\" {arguments}\"",
+            _root);
+    }
+
+    private string GetPackageContentPath(string packageId)
+    {
+        var topLevelPackageId = GatewayCliTestData.PackageId.ToLowerInvariant();
+        packageId = packageId.ToLowerInvariant();
+        var version = GatewayCliTestData.PackageVersion.ToLowerInvariant();
+        return Path.Combine(ToolPath, ".store", topLevelPackageId, version, packageId, version);
     }
 
     private static ProcessStartInfo CreateStartInfo(string fileName, string arguments, string workingDirectory)
@@ -195,8 +279,7 @@ internal sealed partial class GatewayToolInstallation : IDisposable
             UseShellExecute = false,
         };
 
-        // The gateway is framework-dependent: point the host at the repo's shared framework so it can
-        // resolve Microsoft.AspNetCore.App, and keep the process from reaching outside the .dotnet folder.
+        // The any-RID fallback needs the repo shared framework. Native RID packages ignore DOTNET_ROOT.
         psi.Environment["DOTNET_ROOT"] = GatewayCliTestData.DotNetRoot;
         psi.Environment["DOTNET_MULTILEVEL_LOOKUP"] = "0";
         psi.Environment["DOTNET_SKIP_FIRST_TIME_EXPERIENCE"] = "1";
@@ -219,9 +302,11 @@ internal sealed partial class GatewayToolInstallation : IDisposable
         }
     }
 
-    [GeneratedRegex(@"Now listening on:\s*(http://\S+)")]
+    [GeneratedRegex(@"Now listening on:\s*(https?://\S+)")]
     private static partial Regex ListeningOnRegex();
 }
+
+internal sealed record CommandResult(int ExitCode, string StandardOutput, string StandardError);
 
 /// <summary>
 /// A running <c>blazor-gateway</c> process started from an installed tool, exposing an
@@ -232,12 +317,18 @@ internal sealed class RunningGatewayTool : IAsyncDisposable
     private readonly Process _process;
     private readonly StringBuilder _log;
 
-    public RunningGatewayTool(Process process, string listeningUrl, StringBuilder log)
+    public RunningGatewayTool(Process process, string listeningUrl, StringBuilder log, bool useHttps)
     {
         _process = process;
         _log = log;
         ListeningUrl = listeningUrl;
-        Client = new HttpClient { BaseAddress = new Uri(listeningUrl) };
+        HttpMessageHandler handler = useHttps
+            ? new HttpClientHandler
+            {
+                ServerCertificateCustomValidationCallback = HttpClientHandler.DangerousAcceptAnyServerCertificateValidator,
+            }
+            : new HttpClientHandler();
+        Client = new HttpClient(handler) { BaseAddress = new Uri(listeningUrl) };
     }
 
     public string ListeningUrl { get; }

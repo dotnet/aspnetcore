@@ -67,4 +67,114 @@ public class BlazorGatewayCliToolTests
         Assert.Equal("application/json", response.Content.Headers.ContentType?.MediaType);
         Assert.Equal(configJson, body, ignoreLineEndingDifferences: true);
     }
+
+    [ConditionalFact]
+    public async Task Tool_ReportsNativeAotWithDynamicCodeDisabled_OnSupportedHost()
+    {
+        if (!GatewayCliTestData.IsNativePackageAvailable)
+        {
+            return;
+        }
+
+        using var tool = GatewayToolInstallation.Install();
+
+        var result = await tool.RunAsync("--info");
+
+        Assert.Equal(0, result.ExitCode);
+        Assert.Contains($"RID: {GatewayCliTestData.HostRuntimeIdentifier}", result.StandardOutput, StringComparison.Ordinal);
+        Assert.Contains("Dynamic code supported: False", result.StandardOutput, StringComparison.Ordinal);
+        Assert.DoesNotContain(".NET Framework", result.StandardOutput, StringComparison.Ordinal);
+    }
+
+    [ConditionalFact]
+    public async Task Tool_PreservesGatewayFeatures_OnNativeAotHost()
+    {
+        if (!GatewayCliTestData.IsNativePackageAvailable)
+        {
+            return;
+        }
+
+        var traceparent = new TaskCompletionSource<string>(TaskCreationOptions.RunContinuationsAsynchronously);
+        var exportedTelemetry = new TaskCompletionSource<string>(TaskCreationOptions.RunContinuationsAsynchronously);
+        await using var upstream = await GatewayTestHelpers.StartUpstreamAsync(app =>
+        {
+            app.MapGet("/proxy/{**path}", (HttpContext context) =>
+            {
+                traceparent.TrySetResult(context.Request.Headers["traceparent"].ToString());
+                return "proxied";
+            });
+            app.MapPost("/v1/{signal}", (string signal) =>
+            {
+                if (string.Equals(signal, "traces", StringComparison.Ordinal))
+                {
+                    exportedTelemetry.TrySetResult(signal);
+                }
+
+                return Results.Ok();
+            });
+        });
+        var upstreamUri = new Uri(upstream.BaseUrl);
+
+        using var tool = GatewayToolInstallation.Install();
+        var manifestPath = Path.Combine(
+            tool.SelectedToolDirectory,
+            "blazor-gateway.staticwebassets.endpoints.json");
+
+        await using var running = await tool.StartAsync(
+            "--environment", "Development",
+            "--ClientApps:app:ConfigEndpointPath", "/app/_blazor/_configuration",
+            "--ClientApps:app:ConfigResponse", "\"{\\\"enabled\\\":true}\"",
+            "--ClientApps:app:EndpointsManifest", $"\"{manifestPath}\"",
+            "--ReverseProxy:Routes:proxy:ClusterId", "upstream",
+            "--ReverseProxy:Routes:proxy:Match:Path", "/proxy/{**catch-all}",
+            "--ReverseProxy:Clusters:upstream:Destinations:primary:Address", "http://upstream",
+            "--services:upstream:default:0", $"{upstreamUri.Host}:{upstreamUri.Port}",
+            "--OTEL_EXPORTER_OTLP_ENDPOINT", upstream.BaseUrl,
+            "--OTEL_EXPORTER_OTLP_PROTOCOL", "http/protobuf",
+            "--OTEL_BSP_SCHEDULE_DELAY", "100");
+
+        Assert.Equal(HttpStatusCode.OK, (await running.Client.GetAsync("/alive")).StatusCode);
+        Assert.Equal(HttpStatusCode.OK, (await running.Client.GetAsync("/health")).StatusCode);
+
+        var configRequest = new HttpRequestMessage(HttpMethod.Get, "/app/_blazor/_configuration");
+        configRequest.Headers.AcceptEncoding.ParseAdd("identity");
+        var configResponse = await running.Client.SendAsync(configRequest);
+        Assert.Equal(HttpStatusCode.OK, configResponse.StatusCode);
+        Assert.Equal("""{"enabled":true}""", await configResponse.Content.ReadAsStringAsync());
+
+        var staticAsset = await running.Client.GetAsync("/_framework/blazor.web.js");
+        Assert.Equal(HttpStatusCode.OK, staticAsset.StatusCode);
+
+        var proxy = await running.Client.GetAsync("/proxy/echo");
+        Assert.Equal(HttpStatusCode.OK, proxy.StatusCode);
+        Assert.Equal("proxied", await proxy.Content.ReadAsStringAsync());
+        Assert.False(string.IsNullOrEmpty(await traceparent.Task.WaitAsync(TimeSpan.FromSeconds(10))));
+        Assert.Equal("traces", await exportedTelemetry.Task.WaitAsync(TimeSpan.FromSeconds(10)));
+    }
+
+    [ConditionalFact]
+    public async Task Tool_ServesHttps_OnNativeAotHost()
+    {
+        if (!GatewayCliTestData.IsNativePackageAvailable)
+        {
+            return;
+        }
+
+        using var tool = GatewayToolInstallation.Install();
+        var certificatePath = Path.Combine(
+            GatewayCliTestData.RepoRoot,
+            "src",
+            "Shared",
+            "TestCertificates",
+            "testCert.pfx");
+
+        await using var running = await tool.StartAsync(
+            useHttps: true,
+            "--environment", "Development",
+            "--Kestrel:Certificates:Default:Path", $"\"{certificatePath}\"",
+            "--Kestrel:Certificates:Default:Password", "testPassword");
+
+        Assert.StartsWith("https://", running.ListeningUrl, StringComparison.Ordinal);
+        Assert.Equal(HttpStatusCode.OK, (await running.Client.GetAsync("/alive")).StatusCode);
+    }
 }
