@@ -26,6 +26,9 @@ public class CertificateManagerTests
         // Certificate should be recognized as an ASP.NET Core HTTPS development certificate
         Assert.True(CertificateManager.IsHttpsDevelopmentCertificate(certificate));
 
+        var subjectAlternativeName = Assert.Single(certificate.Extensions.OfType<X509SubjectAlternativeNameExtension>());
+        Assert.Contains("host.wslc.internal", subjectAlternativeName.EnumerateDnsNames());
+
         // Certificate should include a Subject Key Identifier extension
         var subjectKeyIdentifier = Assert.Single(certificate.Extensions.OfType<X509SubjectKeyIdentifierExtension>());
 
@@ -138,21 +141,21 @@ public class CertificateManagerTests
         var notBefore = now.AddMinutes(-5);
         var notAfter = now.AddMinutes(5);
 
-        var manager = new TestCertificateManager(generatedVersion: 6, minimumVersion: 4);
+        var manager = new TestCertificateManager(generatedVersion: 7, minimumVersion: 4);
 
         var v3Certificate = manager.CreateDevelopmentCertificateWithVersion(3, notBefore, notAfter);
         var v4Certificate = manager.CreateDevelopmentCertificateWithVersion(4, notBefore, notAfter);
-        var v6Certificate = manager.CreateAspNetCoreHttpsDevelopmentCertificate(notBefore, notAfter);
+        var v7Certificate = manager.CreateAspNetCoreHttpsDevelopmentCertificate(notBefore, notAfter);
 
         manager.AddCertificate(StoreName.My, StoreLocation.CurrentUser, v3Certificate, isExportable: true);
         manager.AddCertificate(StoreName.My, StoreLocation.CurrentUser, v4Certificate, isExportable: true);
-        manager.AddCertificate(StoreName.My, StoreLocation.CurrentUser, v6Certificate, isExportable: true);
+        manager.AddCertificate(StoreName.My, StoreLocation.CurrentUser, v7Certificate, isExportable: true);
 
         var certificates = manager.ListCertificates(StoreName.My, StoreLocation.CurrentUser, isValid: true, requireExportable: true);
 
         Assert.DoesNotContain(certificates, cert => CertificateManager.GetCertificateVersion(cert) < manager.MinimumAspNetHttpsCertificateVersion);
         Assert.Contains(certificates, cert => CertificateManager.GetCertificateVersion(cert) == 4);
-        Assert.Contains(certificates, cert => CertificateManager.GetCertificateVersion(cert) == 6);
+        Assert.Contains(certificates, cert => CertificateManager.GetCertificateVersion(cert) == 7);
     }
 
     [Fact]
@@ -162,7 +165,7 @@ public class CertificateManagerTests
         var notBefore = now.AddMinutes(-5);
         var notAfter = now.AddMinutes(5);
 
-        var manager = new TestCertificateManager(generatedVersion: 6, minimumVersion: 4);
+        var manager = new TestCertificateManager(generatedVersion: 7, minimumVersion: 4);
         var olderCertificate = manager.CreateDevelopmentCertificateWithVersion(5, notBefore, notAfter);
 
         manager.AddCertificate(StoreName.My, StoreLocation.CurrentUser, olderCertificate, isExportable: true);
@@ -172,7 +175,7 @@ public class CertificateManagerTests
         Assert.Equal(EnsureCertificateResult.Succeeded, result);
 
         var certificates = manager.GetStoreCertificates(StoreName.My, StoreLocation.CurrentUser);
-        Assert.Contains(certificates, cert => CertificateManager.GetCertificateVersion(cert) == 6);
+        Assert.Contains(certificates, cert => CertificateManager.GetCertificateVersion(cert) == 7);
     }
 
     [Fact]
@@ -182,7 +185,7 @@ public class CertificateManagerTests
         var notBefore = now.AddMinutes(-5);
         var notAfter = now.AddMinutes(5);
 
-        var manager = new TestCertificateManager(generatedVersion: 6, minimumVersion: 4);
+        var manager = new TestCertificateManager(generatedVersion: 7, minimumVersion: 4);
         var minimumCertificate = manager.CreateDevelopmentCertificateWithVersion(4, notBefore, notAfter);
         manager.AddCertificate(StoreName.My, StoreLocation.CurrentUser, minimumCertificate, isExportable: true);
 
@@ -193,7 +196,7 @@ public class CertificateManagerTests
         Assert.Equal(EnsureCertificateResult.ValidCertificatePresent, result);
         Assert.Equal(beforeCount, afterCount);
         Assert.DoesNotContain(manager.GetStoreCertificates(StoreName.My, StoreLocation.CurrentUser),
-            cert => CertificateManager.GetCertificateVersion(cert) == 6);
+            cert => CertificateManager.GetCertificateVersion(cert) == 7);
     }
 
     [Fact]
@@ -203,7 +206,7 @@ public class CertificateManagerTests
         var notBefore = now.AddMinutes(-5);
         var notAfter = now.AddMinutes(5);
 
-        var manager = new TestCertificateManager(generatedVersion: 6, minimumVersion: 4);
+        var manager = new TestCertificateManager(generatedVersion: 7, minimumVersion: 4);
         var minimumCertificate = manager.CreateDevelopmentCertificateWithVersion(4, notBefore, notAfter);
         manager.AddCertificate(StoreName.My, StoreLocation.CurrentUser, minimumCertificate, isExportable: true);
 
@@ -215,7 +218,7 @@ public class CertificateManagerTests
         Assert.Equal(EnsureCertificateResult.Succeeded, result);
         Assert.Equal(beforeCount + 1, afterCount);
         Assert.Contains(certificates, cert => CertificateManager.GetCertificateVersion(cert) == 4);
-        Assert.Contains(certificates, cert => CertificateManager.GetCertificateVersion(cert) == 6);
+        Assert.Contains(certificates, cert => CertificateManager.GetCertificateVersion(cert) == 7);
     }
 
     [Fact]
@@ -225,7 +228,7 @@ public class CertificateManagerTests
         var notBefore = now.AddMinutes(-5);
         var notAfter = now.AddMinutes(5);
 
-        var manager = new TestCertificateManager(generatedVersion: 6, minimumVersion: 4);
+        var manager = new TestCertificateManager(generatedVersion: 7, minimumVersion: 4);
         var currentCertificate = manager.CreateAspNetCoreHttpsDevelopmentCertificate(notBefore, notAfter);
         manager.AddCertificate(StoreName.My, StoreLocation.CurrentUser, currentCertificate, isExportable: true);
 
@@ -244,8 +247,8 @@ public class CertificateManagerTests
         var notBefore = now.AddMinutes(-5);
         var notAfter = now.AddMinutes(5);
 
-        var manager = new TestCertificateManager(generatedVersion: 6, minimumVersion: 4);
-        var newerCertificate = manager.CreateDevelopmentCertificateWithVersion(7, notBefore, notAfter);
+        var manager = new TestCertificateManager(generatedVersion: 7, minimumVersion: 4);
+        var newerCertificate = manager.CreateDevelopmentCertificateWithVersion(8, notBefore, notAfter);
         manager.AddCertificate(StoreName.My, StoreLocation.CurrentUser, newerCertificate, isExportable: true);
 
         var beforeCount = manager.GetStoreCertificates(StoreName.My, StoreLocation.CurrentUser).Count;
@@ -255,6 +258,6 @@ public class CertificateManagerTests
         Assert.Equal(EnsureCertificateResult.ValidCertificatePresent, result);
         Assert.Equal(beforeCount, afterCount);
         Assert.Contains(manager.GetStoreCertificates(StoreName.My, StoreLocation.CurrentUser),
-            cert => CertificateManager.GetCertificateVersion(cert) == 7);
+            cert => CertificateManager.GetCertificateVersion(cert) == 8);
     }
 }
