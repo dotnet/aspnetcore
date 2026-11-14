@@ -6,11 +6,14 @@ using System.Text;
 using System.Web;
 using Microsoft.AspNetCore.Components.Forms;
 using Microsoft.AspNetCore.Components.Forms.Mapping;
+using Microsoft.AspNetCore.Components.HtmlRendering.Infrastructure;
 using Microsoft.AspNetCore.Components.Rendering;
+using Microsoft.AspNetCore.Components.RenderTree;
 using Microsoft.AspNetCore.Components.Sections;
 using Microsoft.AspNetCore.Components.Web;
 using Microsoft.AspNetCore.Components.Web.HtmlRendering;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 
 namespace Microsoft.AspNetCore.Components.HtmlRendering;
@@ -832,6 +835,91 @@ public class HtmlRendererTest
     }
 
     [Fact]
+    public async Task WriteHtmlTo_CanReplaceSectionContentWhileRenderingOutlet()
+    {
+        var services = GetServiceProvider();
+        await using var htmlRenderer = new SectionUpdatingStaticHtmlRenderer(services, NullLoggerFactory.Instance);
+
+        await htmlRenderer.Dispatcher.InvokeAsync(async () =>
+        {
+            var outlet = htmlRenderer.BeginRenderingComponent(
+                new SectionOutlet(),
+                ParameterView.FromDictionary(new Dictionary<string, object>
+                {
+                    { nameof(SectionOutlet.SectionId), "testsection" }
+                }));
+            await outlet.QuiescenceTask;
+
+            var content = new UpdatingSectionContent();
+            var contentRoot = htmlRenderer.BeginRenderingComponent(content, ParameterView.Empty);
+            await contentRoot.QuiescenceTask;
+
+            htmlRenderer.BeforeRenderingSectionContent = content.Update;
+
+            Assert.Equal("initial", outlet.ToHtmlString());
+            Assert.Equal("updated", outlet.ToHtmlString());
+        });
+    }
+
+    [Fact]
+    public async Task WriteHtmlTo_CanRemoveSectionContentWhileRenderingOutlet()
+    {
+        var services = GetServiceProvider();
+        await using var htmlRenderer = new SectionUpdatingStaticHtmlRenderer(services, NullLoggerFactory.Instance);
+
+        await htmlRenderer.Dispatcher.InvokeAsync(async () =>
+        {
+            var outlet = htmlRenderer.BeginRenderingComponent(
+                new SectionOutlet(),
+                ParameterView.FromDictionary(new Dictionary<string, object>
+                {
+                    { nameof(SectionOutlet.SectionId), "testsection" }
+                }));
+            await outlet.QuiescenceTask;
+
+            var content = new UpdatingSectionContent();
+            var contentRoot = htmlRenderer.BeginRenderingComponent(content, ParameterView.Empty);
+            await contentRoot.QuiescenceTask;
+
+            htmlRenderer.BeforeRenderingSectionContent = () => htmlRenderer.RemoveRootComponent(content);
+
+            Assert.Equal("initial", outlet.ToHtmlString());
+            Assert.Empty(outlet.ToHtmlString());
+        });
+    }
+
+    [Fact]
+    public async Task WriteHtmlTo_PreservesWritingExceptionAndRetainsDeferredRender()
+    {
+        var services = GetServiceProvider();
+        await using var htmlRenderer = new SectionUpdatingStaticHtmlRenderer(services, NullLoggerFactory.Instance);
+
+        await htmlRenderer.Dispatcher.InvokeAsync(async () =>
+        {
+            var outlet = htmlRenderer.BeginRenderingComponent(
+                new SectionOutlet(),
+                ParameterView.FromDictionary(new Dictionary<string, object>
+                {
+                    { nameof(SectionOutlet.SectionId), "testsection" }
+                }));
+            await outlet.QuiescenceTask;
+
+            var content = new UpdatingSectionContent();
+            var contentRoot = htmlRenderer.BeginRenderingComponent(content, ParameterView.Empty);
+            await contentRoot.QuiescenceTask;
+
+            htmlRenderer.BeforeRenderingSectionContent = content.UpdateWithException;
+            using var writer = new ThrowingTextWriter();
+
+            var exception = Assert.Throws<IOException>(() => outlet.WriteHtmlTo(writer));
+            Assert.Equal("Writing failed.", exception.Message);
+
+            var renderException = Assert.Throws<InvalidOperationException>(() => outlet.ToHtmlString());
+            Assert.Equal("Rendering failed.", renderException.Message);
+        });
+    }
+
+    [Fact]
     public async Task RenderComponentAsync_CanOutputToTextWriter()
     {
         // Arrange
@@ -1309,6 +1397,79 @@ And now with HTML encoding: Person with special chars like &#x27; &quot; &lt;/sc
             _renderHandle.Render(Fragment);
             return Task.CompletedTask;
         }
+    }
+
+    private sealed class SectionUpdatingStaticHtmlRenderer(IServiceProvider services, ILoggerFactory loggerFactory)
+        : StaticHtmlRenderer(services, loggerFactory)
+    {
+        public Action BeforeRenderingSectionContent { get; set; }
+
+        public void RemoveRootComponent(IComponent component)
+            => RemoveRootComponent(GetComponentState(component).ComponentId);
+
+        protected override void RenderChildComponent(TextWriter output, ref RenderTreeFrame componentFrame)
+        {
+            if (componentFrame.Component is SectionOutlet.SectionOutletContentRenderer)
+            {
+                var callback = BeforeRenderingSectionContent;
+                BeforeRenderingSectionContent = null;
+                callback?.Invoke();
+            }
+
+            base.RenderChildComponent(output, ref componentFrame);
+        }
+    }
+
+    private sealed class UpdatingSectionContent : IComponent
+    {
+        private RenderHandle _renderHandle;
+        private RenderFragment _content = builder => builder.AddContent(0, "initial");
+
+        public void Attach(RenderHandle renderHandle)
+        {
+            _renderHandle = renderHandle;
+        }
+
+        public Task SetParametersAsync(ParameterView parameters)
+        {
+            Render();
+            return Task.CompletedTask;
+        }
+
+        public void Update()
+        {
+            _content = builder => builder.AddContent(0, "updated");
+            Render();
+        }
+
+        public void UpdateWithException()
+        {
+            _content = _ => throw new InvalidOperationException("Rendering failed.");
+            Render();
+        }
+
+        private void Render()
+        {
+            _renderHandle.Render(builder =>
+            {
+                builder.OpenComponent<SectionContent>(0);
+                builder.AddComponentParameter(1, nameof(SectionContent.SectionId), "testsection");
+                builder.AddComponentParameter(2, nameof(SectionContent.ChildContent), _content);
+                builder.CloseComponent();
+            });
+        }
+    }
+
+    private sealed class ThrowingTextWriter : StringWriter
+    {
+        public override void Write(char value)
+            => throw new IOException("Writing failed.");
+
+        public override void Write(string value)
+            => throw new IOException("Writing failed.");
+
+        public override void Write(ReadOnlySpan<char> buffer)
+            => throw new IOException("Writing failed.");
     }
 
     private class AsyncLoadingComponent : ComponentBase
