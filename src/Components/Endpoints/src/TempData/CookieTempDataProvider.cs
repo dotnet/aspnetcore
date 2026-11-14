@@ -144,7 +144,7 @@ internal sealed partial class CookieTempDataProvider : ITempDataProvider
             var pathBase = httpContext.Request.PathBase.ToString();
             if (!string.IsNullOrEmpty(pathBase))
             {
-                cookieOptions.Path = pathBase;
+                cookieOptions.Path = CookiePathEscaper.Escape(pathBase);
             }
         }
     }

@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.ComponentModel.DataAnnotations;
+using System.Diagnostics;
 using System.Reflection;
 
 namespace Microsoft.Extensions.Validation.Tests;
@@ -106,6 +107,29 @@ public class ValidatableParameterInfoTests : ValidationTestBase
         var error = Assert.Single(context.ValidationErrors!);
         Assert.Equal("people[1].Name", error.Key);
         Assert.Equal("The Name field is required.", error.Value.Select(e => e.ErrorMessage).Single());
+    }
+
+    [Theory]
+    [InlineData(true)]
+    [InlineData(false)]
+    public async Task Validate_WithEnumerableOfValidatableType_ValidatesEachItem_AccessingValidationErrorsDoesNotCopy(bool useAsync)
+    {
+        var (provider, options) = GeneratedValidationTestHelpers.CreateValidationServices();
+        var parameterInfo = GetParameter(nameof(ParameterActions.PeopleParameter));
+        Assert.True(options.TryGetValidatableParameterInfo(parameterInfo, out var paramInfo));
+        var context = GeneratedValidationTestHelpers.CreateContext(provider, options);
+
+        var array = new ParameterPerson[10000];
+        for (var i = 0; i < array.Length; i++)
+        {
+            array[i] = new ParameterPerson();
+        }
+
+        await ValidateAsync(paramInfo, array, context, useAsync, default);
+
+        Assert.NotNull(context.ValidationErrors);
+        Assert.True(ReferenceEquals(context.ValidationErrors, context.ValidationErrors));
+        Assert.Equal(array.Length, context.ValidationErrors.Count);
     }
 
     [Theory]
