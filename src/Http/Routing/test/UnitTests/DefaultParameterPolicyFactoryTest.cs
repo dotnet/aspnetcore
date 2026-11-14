@@ -4,6 +4,7 @@
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Routing.Constraints;
 using Microsoft.AspNetCore.Routing.Patterns;
+using Microsoft.AspNetCore.Routing.TestObjects;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
 
@@ -125,6 +126,29 @@ public class DefaultParameterPolicyFactoryTest
         // Assert
         var optionalConstraint = Assert.IsType<OptionalRouteConstraint>(parameterPolicy);
         Assert.IsType<IntRouteConstraint>(optionalConstraint.InnerConstraint);
+    }
+
+    [Fact]
+    public void Create_CreatesParameterPolicy_FromRoutePattern_Constraint_Optional_PreservesOutboundParameterTransformer()
+    {
+        // Arrange
+        var factory = GetParameterPolicyFactory();
+
+        var parameter = RoutePatternFactory.ParameterPart(
+            "id",
+            @default: null,
+            parameterKind: RoutePatternParameterKind.Optional,
+            parameterPolicies: new[] { RoutePatternFactory.ParameterPolicy(new UpperCaseTransformingRouteConstraint()), });
+
+        // Act
+        var parameterPolicy = factory.Create(parameter, parameter.ParameterPolicies[0]);
+
+        // Assert
+        var optionalConstraint = Assert.IsAssignableFrom<OptionalRouteConstraint>(parameterPolicy);
+        Assert.IsType<UpperCaseTransformingRouteConstraint>(optionalConstraint.InnerConstraint);
+
+        var transformer = Assert.IsAssignableFrom<IOutboundParameterTransformer>(parameterPolicy);
+        Assert.Equal("VALUE", transformer.TransformOutbound("value"));
     }
 
     [Fact]
