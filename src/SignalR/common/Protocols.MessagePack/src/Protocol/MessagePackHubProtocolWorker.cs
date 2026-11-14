@@ -247,10 +247,10 @@ internal abstract class MessagePackHubProtocolWorker
 
             for (var i = 0; i < headerCount; i++)
             {
-                var key = ReadString(ref reader, $"headers[{i}].Key");
+                var key = ReadHeaderString(ref reader, i, isKey: true);
                 ThrowIfNullOrEmpty(key, "key in header");
 
-                var value = ReadString(ref reader, $"headers[{i}].Value");
+                var value = ReadHeaderString(ref reader, i, isKey: false);
                 ThrowIfNullOrEmpty(value, "value in header");
 
                 headers.Add(key, value);
@@ -596,10 +596,22 @@ internal abstract class MessagePackHubProtocolWorker
             writer.WriteMapHeader(headers.Count);
             if (headers.Count > 0)
             {
-                foreach (var header in headers)
+                // Enumerate Dictionary<,> directly to avoid boxing its enumerator.
+                if (headers is Dictionary<string, string> dictionary)
                 {
-                    writer.Write(header.Key);
-                    writer.Write(header.Value);
+                    foreach (var header in dictionary)
+                    {
+                        writer.Write(header.Key);
+                        writer.Write(header.Value);
+                    }
+                }
+                else
+                {
+                    foreach (var header in headers)
+                    {
+                        writer.Write(header.Key);
+                        writer.Write(header.Value);
+                    }
                 }
             }
         }
@@ -677,6 +689,19 @@ internal abstract class MessagePackHubProtocolWorker
         catch (Exception ex)
         {
             throw new InvalidDataException($"Reading '{field}' as String failed.", ex);
+        }
+    }
+
+    // The field name is only needed for the error message, so only format it when reading fails.
+    private static string? ReadHeaderString(ref MessagePackReader reader, int index, bool isKey)
+    {
+        try
+        {
+            return reader.ReadString();
+        }
+        catch (Exception ex)
+        {
+            throw new InvalidDataException($"Reading 'headers[{index}].{(isKey ? "Key" : "Value")}' as String failed.", ex);
         }
     }
 
