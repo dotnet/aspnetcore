@@ -41,7 +41,7 @@ public abstract class ModelMetadata : IEquatable<ModelMetadata?>, IModelMetadata
     private static bool IsEnhancedModelMetadataSupported { get; } =
         AppContext.TryGetSwitch("Microsoft.AspNetCore.Mvc.ApiExplorer.IsEnhancedModelMetadataSupported", out var isEnhancedModelMetadataSupported) ? isEnhancedModelMetadataSupported : true;
 
-    private int? _hashCode;
+    private int _hashCode;
     private IReadOnlyList<ModelMetadata>? _boundProperties;
     private IReadOnlyDictionary<ModelMetadata, ModelMetadata>? _parameterMapping;
     private IReadOnlyDictionary<ModelMetadata, ModelMetadata>? _boundConstructorPropertyMapping;
@@ -736,12 +736,15 @@ public abstract class ModelMetadata : IEquatable<ModelMetadata?>, IModelMetadata
     public override int GetHashCode()
     {
         // Normally caching the hashcode would be dangerous, but Identity is deeply immutable so this is safe.
-        if (_hashCode == null)
+        // 0 means not computed yet. The cache is a single int so a concurrent reader sees either 0 or the computed hash.
+        var hashCode = _hashCode;
+        if (hashCode == 0)
         {
-            _hashCode = Identity.GetHashCode();
+            hashCode = Identity.GetHashCode();
+            _hashCode = hashCode;
         }
 
-        return _hashCode.Value;
+        return hashCode;
     }
 
     private void InitializeTypeInformation()
