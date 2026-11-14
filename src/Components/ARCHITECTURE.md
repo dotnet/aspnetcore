@@ -295,7 +295,7 @@ Behavior associated with a DOM element must follow the lifetime of that element.
 
 The .NET and JavaScript parts of Blazor communicate through internal contracts for bootstrapping, root-component activation, render batches, browser events, navigation, streaming updates, and interop. These contracts cross language and, for Interactive Server and WebView, process boundaries.
 
-The framework's .NET and JavaScript assets ship and evolve together. Their internal protocol is not a compatibility boundary between different major framework versions, so coordinated changes should update both sides rather than add version negotiation or compatibility shims.
+The framework's .NET and JavaScript assets ship and evolve together. Their internal protocol is not a compatibility boundary between different major framework versions, so coordinated changes should update both sides rather than add version negotiation or compatibility shims. Within a servicing branch for a released major version, keep the internal boundary compatible unless the change is explicitly approved.
 
 This does not apply to public contracts used by applications. Public .NET APIs, documented JavaScript entry points such as `Blazor.start`, and the documented JavaScript interop APIs retain their normal compatibility requirements.
 
