@@ -1,1 +1,3 @@
 #nullable enable
+Microsoft.AspNetCore.Authentication.AuthenticationProperties.RotateSessionKey.get -> bool?
+Microsoft.AspNetCore.Authentication.AuthenticationProperties.RotateSessionKey.set -> void
