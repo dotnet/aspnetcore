@@ -4541,6 +4541,72 @@ public class RendererTest
     }
 
     [Fact]
+    public void ExceptionDuringFirstRender_LeavesRenderTreeEmpty_AndLaterRenderSucceeds()
+    {
+        var renderer = new TestRenderer { ShouldHandleExceptions = true };
+        var exception = new InvalidTimeZoneException("Error during render");
+        var shouldThrow = true;
+        var component = new TestComponent(builder =>
+        {
+            builder.OpenElement(0, "partial");
+            builder.CloseElement();
+            if (shouldThrow)
+            {
+                throw exception;
+            }
+
+            builder.AddContent(1, "Hello");
+        });
+        var componentId = renderer.AssignRootComponentId(component);
+
+        // The first render throws after producing partial output
+        renderer.RenderRootComponent(componentId);
+
+        // The partial output was discarded
+        Assert.Same(exception, Assert.Single(renderer.HandledExceptions));
+        Assert.Equal(0, renderer.GetCurrentRenderTreeFrames(componentId).Count);
+
+        // A later render succeeds, and is diffed against the empty tree
+        shouldThrow = false;
+        component.TriggerRender();
+
+        AssertFrame.Element(renderer.GetCurrentRenderTreeFrames(componentId).Array[0], "partial", 1, 0);
+        AssertFrame.Text(renderer.GetCurrentRenderTreeFrames(componentId).Array[1], "Hello", 1);
+        var diff = renderer.Batches.Last().DiffsByComponentId[componentId].Single();
+        Assert.Collection(diff.Edits,
+            edit =>
+            {
+                Assert.Equal(RenderTreeEditType.PrependFrame, edit.Type);
+                Assert.Equal(0, edit.SiblingIndex);
+            },
+            edit =>
+            {
+                Assert.Equal(RenderTreeEditType.PrependFrame, edit.Type);
+                Assert.Equal(1, edit.SiblingIndex);
+            });
+
+        // A subsequent render is diffed against the previous output
+        component.TriggerRender();
+
+        Assert.Empty(renderer.Batches.Last().DiffsByComponentId[componentId].Single().Edits);
+        Assert.Equal(2, renderer.GetCurrentRenderTreeFrames(componentId).Count);
+    }
+
+    [Fact]
+    public async Task InvalidRenderTreeDuringFirstRender_LeavesRenderTreeEmpty()
+    {
+        var renderer = new TestRenderer();
+        var component = new TestComponent(builder =>
+        {
+            builder.OpenElement(0, "myElem");
+        });
+        var componentId = renderer.AssignRootComponentId(component);
+
+        await Assert.ThrowsAsync<InvalidOperationException>(() => renderer.RenderRootComponentAsync(componentId));
+        Assert.Equal(0, renderer.GetCurrentRenderTreeFrames(componentId).Count);
+    }
+
+    [Fact]
     public void RenderingExceptionsCanBeHandledByClosestErrorBoundary()
     {
         // Arrange
