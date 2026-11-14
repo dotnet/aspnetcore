@@ -4540,6 +4540,41 @@ public class RendererTest
         Assert.StartsWith($"Render output is invalid for component of type '{typeof(TestComponent).FullName}'. A frame of type 'Element' was left unclosed.", ex.Message);
     }
 
+    [Theory]
+    [InlineData(0)]
+    [InlineData(1)]
+    [InlineData(2)]
+    public async Task ErrorBoundaryRetainsErrorContentWhenRecoveryFails(int nestingDepth)
+    {
+        using var renderer = new TestRenderer();
+        var component = new ErrorBoundaryRecoveryComponent { NestingDepth = nestingDepth };
+        var componentId = renderer.AssignRootComponentId(component);
+        renderer.RenderRootComponent(componentId);
+        var boundaryId = Assert.Single(renderer.GetCurrentRenderTreeFrames(componentId).AsEnumerable(),
+            frame => frame.FrameType == RenderTreeFrameType.Component).ComponentId;
+
+        for (var attempt = 1; attempt <= 3; attempt++)
+        {
+            var frames = renderer.GetCurrentRenderTreeFrames(boundaryId);
+            var button = Assert.Single(frames.AsEnumerable(),
+                frame => frame.FrameType == RenderTreeFrameType.Attribute && frame.AttributeName == "onclick");
+            Assert.Equal("onclick", button.AttributeName);
+            Assert.Equal($"Attempt {attempt}", Assert.Single(frames.AsEnumerable(), frame => frame.FrameType == RenderTreeFrameType.Text).TextContent);
+            Assert.Equal(attempt, component.Attempts);
+            Assert.Equal(attempt, component.ErrorContentInitializations);
+            Assert.Equal(attempt - 1, component.ErrorContentDisposals);
+
+            await renderer.DispatchEventAsync(button.AttributeEventHandlerId, EventArgs.Empty);
+        }
+
+        var finalFrames = renderer.GetCurrentRenderTreeFrames(boundaryId);
+        Assert.Equal("Attempt 4", Assert.Single(finalFrames.AsEnumerable(), frame => frame.FrameType == RenderTreeFrameType.Text).TextContent);
+        Assert.Equal(4, component.Attempts);
+        Assert.Equal(4, component.ErrorContentInitializations);
+        Assert.Equal(3, component.ErrorContentDisposals);
+        Assert.Empty(renderer.HandledExceptions);
+    }
+
     [Fact]
     public void RenderingExceptionsCanBeHandledByClosestErrorBoundary()
     {
@@ -6200,6 +6235,87 @@ public class RendererTest
             // Return a task that never completes to show that access is forbidden
             // after the synchronous return, not just after the returned task completes
             return new TaskCompletionSource().Task;
+        }
+    }
+
+    private class ErrorBoundaryRecoveryComponent : ComponentBase
+    {
+        private RecoverableErrorBoundary _boundary;
+
+        public int NestingDepth { get; set; }
+        public int Attempts { get; private set; }
+        public int ErrorContentInitializations { get; private set; }
+        public int ErrorContentDisposals { get; private set; }
+
+        protected override void BuildRenderTree(RenderTreeBuilder builder)
+        {
+            builder.OpenComponent<RecoverableErrorBoundary>(0);
+            builder.AddComponentParameter(1, nameof(ErrorBoundaryBase.ChildContent), (RenderFragment)(contentBuilder =>
+            {
+                contentBuilder.OpenComponent<ErrorBoundaryRecoveryChild>(0);
+                contentBuilder.AddComponentParameter(1, nameof(ErrorBoundaryRecoveryChild.NestingDepth), NestingDepth);
+                contentBuilder.AddComponentParameter(2, nameof(ErrorBoundaryRecoveryChild.OnAttempt), (Action)(() => Attempts++));
+                contentBuilder.CloseComponent();
+            }));
+            builder.AddComponentParameter(2, nameof(ErrorBoundaryBase.ErrorContent), (RenderFragment<Exception>)(_ => contentBuilder =>
+            {
+                contentBuilder.OpenElement(0, "button");
+                contentBuilder.AddAttribute(1, "onclick", EventCallback.Factory.Create(this, () => _boundary.Recover()));
+                contentBuilder.AddContent(2, $"Attempt {Attempts}");
+                contentBuilder.CloseElement();
+                contentBuilder.OpenComponent<ErrorBoundaryRecoveryDetails>(3);
+                contentBuilder.AddComponentParameter(4, nameof(ErrorBoundaryRecoveryDetails.OnInitialize),
+                    (Action)(() => ErrorContentInitializations++));
+                contentBuilder.AddComponentParameter(5, nameof(ErrorBoundaryRecoveryDetails.OnDispose),
+                    (Action)(() => ErrorContentDisposals++));
+                contentBuilder.CloseComponent();
+            }));
+            builder.AddComponentReferenceCapture(3, instance => _boundary = (RecoverableErrorBoundary)instance);
+            builder.CloseComponent();
+        }
+
+        private class RecoverableErrorBoundary : ErrorBoundaryBase
+        {
+            protected override Task OnErrorAsync(Exception exception) => Task.CompletedTask;
+
+            protected override void BuildRenderTree(RenderTreeBuilder builder)
+            {
+                builder.AddContent(0, CurrentException is null ? ChildContent : ErrorContent(CurrentException));
+            }
+        }
+
+    }
+
+    private class ErrorBoundaryRecoveryDetails : ComponentBase, IDisposable
+    {
+        [Parameter] public Action OnInitialize { get; set; }
+        [Parameter] public Action OnDispose { get; set; }
+
+        protected override void OnInitialized() => OnInitialize();
+
+        public void Dispose() => OnDispose();
+    }
+
+    private class ErrorBoundaryRecoveryChild : ComponentBase
+    {
+        [Parameter] public int NestingDepth { get; set; }
+        [Parameter] public Action OnAttempt { get; set; }
+
+        protected override void OnInitialized()
+        {
+            if (NestingDepth == 0)
+            {
+                OnAttempt();
+                throw new InvalidOperationException("Initialization failed.");
+            }
+        }
+
+        protected override void BuildRenderTree(RenderTreeBuilder builder)
+        {
+            builder.OpenComponent<ErrorBoundaryRecoveryChild>(0);
+            builder.AddComponentParameter(1, nameof(NestingDepth), NestingDepth - 1);
+            builder.AddComponentParameter(2, nameof(OnAttempt), OnAttempt);
+            builder.CloseComponent();
         }
     }
 
