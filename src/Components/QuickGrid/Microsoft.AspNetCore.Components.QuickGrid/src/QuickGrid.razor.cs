@@ -319,6 +319,13 @@ public partial class QuickGrid<TGridItem> : IAsyncDisposable
                 return;
             }
             _jsEventDisposable = await _jsModule.InvokeAsync<IJSObjectReference>("init", _tableReference);
+            if (_wasDisposed)
+            {
+                // If the component has been disposed while init was running, DisposeAsync could not remove the listeners it added
+                await _jsEventDisposable.InvokeVoidAsync("stop");
+                await _jsEventDisposable.DisposeAsync();
+                return;
+            }
         }
 
         if (_checkColumnOptionsPosition && _displayOptionsForColumn is not null)
