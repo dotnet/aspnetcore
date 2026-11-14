@@ -119,11 +119,12 @@ public class RemoteAuthenticatorCoreTests
     }
 
     [Fact]
-    public async Task AuthenticationManager_LoginCallback_ThrowsOnRedirectResult()
+    public async Task AuthenticationManager_LoginCallback_RedirectsToLoginOnRedirectResult()
     {
         // Arrange
+        var originalUrl = "https://www.example.com/base/authentication/login-callback?code=1234";
         var (remoteAuthenticator, renderer, authServiceMock) = CreateAuthenticationManager(
-            "https://www.example.com/base/authentication/");
+            originalUrl);
 
         authServiceMock.CompleteSignInCallback = s => Task.FromResult(new RemoteAuthenticationResult<RemoteAuthenticationState>()
         {
@@ -135,12 +136,11 @@ public class RemoteAuthenticatorCoreTests
             [_action] = RemoteAuthenticationActions.LogInCallback
         });
 
-        await Assert.ThrowsAsync<InvalidOperationException>(
-            async () => await renderer.Dispatcher.InvokeAsync<object>(async () =>
-            {
-                await remoteAuthenticator.SetParametersAsync(parameters);
-                return null;
-            }));
+        // Act
+        await renderer.Dispatcher.InvokeAsync<object>(() => remoteAuthenticator.SetParametersAsync(parameters));
+
+        // Assert
+        Assert.Equal("https://www.example.com/base/authentication/login", remoteAuthenticator.Navigation.Uri);
     }
 
     [Fact]
@@ -702,6 +702,7 @@ public class RemoteAuthenticatorCoreTests
 
         remoteAuthenticator.AuthenticationService = authenticationServiceMock;
         remoteAuthenticator.AuthenticationProvider = authenticationServiceMock;
+        remoteAuthenticator.JSRuntime = jsRuntime;
         return (remoteAuthenticator, renderer, authenticationServiceMock);
     }
 

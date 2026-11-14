@@ -40,8 +40,8 @@ describe('MSAL AuthenticationService initialization', () => {
     expect(clients[0].handleRedirectPromise).not.toHaveBeenCalled();
 
     clients[0].finishInitialization();
-    expect(await initialization).toEqual({ status: 'operationCompleted' });
-    expect(await initialize()).toEqual({ status: 'operationCompleted' });
+    expect(await initialization).toEqual({ status: 'redirect' });
+    expect(await initialize()).toEqual({ status: 'redirect' });
 
     expect(clients).toHaveLength(1);
     expect(clients[0].initialize).toHaveBeenCalledTimes(1);
@@ -54,12 +54,12 @@ describe('MSAL AuthenticationService initialization', () => {
 
     // Complete the first caller while any competing client is still blocked.
     clients[0].finishInitialization();
-    expect(await first).toEqual({ status: 'operationCompleted' });
+    expect(await first).toEqual({ status: 'redirect' });
 
     for (const client of clients) {
       client.finishInitialization();
     }
-    expect(await second).toEqual({ status: 'operationCompleted' });
+    expect(await second).toEqual({ status: 'redirect' });
     expect(clients).toHaveLength(1);
     expect(clients[0].initialize).toHaveBeenCalledTimes(1);
     expect(clients[0].handleRedirectPromise).toHaveBeenCalledTimes(1);
@@ -77,7 +77,7 @@ describe('MSAL AuthenticationService initialization', () => {
     const retry = initialize();
     expect(clients).toHaveLength(2);
     clients[1].finishInitialization();
-    expect(await retry).toEqual({ status: 'operationCompleted' });
+    expect(await retry).toEqual({ status: 'redirect' });
     expect(clients[1].initialize).toHaveBeenCalledTimes(1);
     expect(clients[1].handleRedirectPromise).toHaveBeenCalledTimes(1);
   });

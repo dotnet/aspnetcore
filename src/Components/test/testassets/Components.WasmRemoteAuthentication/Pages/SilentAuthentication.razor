@@ -1,0 +1,12 @@
+﻿@page "/silent-authentication"
+
+@using Microsoft.AspNetCore.Components.Authorization
+
+<AuthorizeView>
+    <Authorized>
+        <h1>Hello, @context.User.Identity?.Name!</h1>
+    </Authorized>
+    <NotAuthorized>
+        <p>Silent authentication completed.</p>
+    </NotAuthorized>
+</AuthorizeView>
