@@ -254,7 +254,7 @@ public class Http2ConnectionTests : Http2TestBase
 
         // Hacky but required because header references is private.
         var headerReferences1 = typeof(HttpRequestHeaders).GetField("_headers", privateFlags).GetValue(stream1.RequestHeaders);
-        var contentTypeValue1 = (StringValues)headerReferences1.GetType().GetField("_ContentType").GetValue(headerReferences1);
+        var contentTypeValue1 = (StringValues)headerReferences1.GetType().GetProperty("_ContentType").GetValue(headerReferences1);
 
         await StartStreamAsync(3, requestHeaders2, endStream: true);
 
@@ -272,7 +272,7 @@ public class Http2ConnectionTests : Http2TestBase
 
         // Hacky but required because header references is private.
         var headerReferences2 = typeof(HttpRequestHeaders).GetField("_headers", privateFlags).GetValue(stream2.RequestHeaders);
-        var contentTypeValue2 = (StringValues)headerReferences2.GetType().GetField("_ContentType").GetValue(headerReferences2);
+        var contentTypeValue2 = (StringValues)headerReferences2.GetType().GetProperty("_ContentType").GetValue(headerReferences2);
 
         Assert.Equal("application/json", contentTypeValue1);
         Assert.Equal(StringValues.Empty, contentTypeValue2);

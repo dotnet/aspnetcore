@@ -1,0 +1,38 @@
+profiles:
+  loopback-poc:
+    variables:
+      serverAddress: 127.0.0.1
+    jobs:
+      application:
+        endpoints:
+          - http://127.0.0.1:15010
+        arguments: "--urls http://127.0.0.1:15000 --access {{access}} --lazy {{lazy}}"
+        environmentVariables:
+          DOTNET_ROOT: "{{pocDotnetRoot}}"
+          TMPDIR: /tmp/lhp-7a143fff
+        options:
+          displayOutput: true
+          counterProviders:
+            - Microsoft-AspNetCore-Server-Kestrel
+            - Microsoft.AspNetCore.Hosting
+      load:
+        source:
+          localFolder: "{{wrkWrapperPublish}}"
+          noBuild: true
+          cacheOnAgent: false
+          project: ""
+          repository: ""
+          sourceKey: ""
+        executable: Microsoft.Crank.Jobs.Wrk
+        environmentVariables:
+          TMPDIR: /tmp/lhp-7a143fff
+        endpoints:
+          - http://127.0.0.1:15010
+        framework: net10.0
+        sdkVersion: 10.0.402
+        runtimeVersion: 10.0.13
+        aspNetCoreVersion: 10.0.13
+        variables:
+          serverPort: 15000
+        options:
+          displayOutput: true

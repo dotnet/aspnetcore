@@ -1,0 +1,10 @@
+access,mode,variant,rps,requests,bad_responses,socket_errors,p99_ms
+enumerate,changing,base,37693.7,1132822.0,0.0,15.0,4.86
+enumerate,changing,off,37453.25,1125546.0,0.0,0.0,5.63
+enumerate,changing,on,37327.37,1121391.0,0.0,0.0,5.2
+ignore,duplicate,base,38797.21,1164901.0,0.0,0.0,4.93
+ignore,duplicate,off,39969.22,1201076.0,0.0,0.0,4.86
+ignore,duplicate,on,38878.0,1168384.0,0.0,0.0,5.11
+read,duplicate,base,37535.63,1127398.0,0.0,0.0,5.74
+read,duplicate,off,38707.09,1162263.0,0.0,0.0,5.08
+read,duplicate,on,39852.0,1196863.0,0.0,0.0,5.31
