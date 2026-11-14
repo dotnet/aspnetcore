@@ -40,4 +40,7 @@ internal static partial class NegotiateLoggingExtensions
 
     [LoggerMessage(12, LogLevel.Debug, "Negotiate is not supported with {protocol}.", EventName = "ProtocolNotSupported")]
     public static partial void ProtocolNotSupported(this ILogger logger, string protocol);
+
+    [LoggerMessage(13, LogLevel.Debug, "No TLS channel binding is available for this HTTPS request; Negotiate authentication will not be bound to the TLS channel.", EventName = "ChannelBindingUnavailable")]
+    public static partial void ChannelBindingUnavailable(this ILogger logger);
 }

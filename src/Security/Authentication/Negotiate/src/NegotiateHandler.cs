@@ -419,6 +419,11 @@ public class NegotiateHandler : AuthenticationHandler<NegotiateOptions>, IAuthen
             return channelBindingToken;
         }
 
+        if (Request.IsHttps)
+        {
+            Logger.ChannelBindingUnavailable();
+        }
+
         return default;
     }
 
