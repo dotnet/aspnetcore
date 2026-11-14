@@ -1,0 +1,11 @@
+@page "/activity-links/server/navigation/one"
+@layout ActivityLinksLayout
+
+<h1>Activity links navigation one</h1>
+
+<a id="activity-links-navigate" href="@($"activity-links/server/navigation/two?activity-links-test-id={TestId}")">Navigate</a>
+
+@code {
+    [SupplyParameterFromQuery(Name = "activity-links-test-id")]
+    public string? TestId { get; set; }
+}

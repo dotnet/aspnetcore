@@ -20,6 +20,9 @@ public class ComponentStatePersistenceManager
     private readonly PersistentServicesRegistry? _servicesRegistry;
     private readonly Dictionary<string, byte[]> _currentState = new(StringComparer.Ordinal);
 
+    // The state can be registered with DI without registering its manager.
+    internal ComponentsActivityState ActivityState => State.GetActivityState(_logger);
+
     /// <summary>
     /// Initializes a new instance of <see cref="ComponentStatePersistenceManager"/>.
     /// </summary>
