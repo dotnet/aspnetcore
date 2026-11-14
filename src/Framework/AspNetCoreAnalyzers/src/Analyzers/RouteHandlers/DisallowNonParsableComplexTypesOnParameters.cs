@@ -44,6 +44,11 @@ public partial class RouteHandlerAnalyzer : DiagnosticAnalyzer
                 continue;
             }
 
+            if (handlerDelegateParameter.DeclaringSyntaxReferences.IsEmpty)
+            {
+                continue;
+            }
+
             var syntax = (ParameterSyntax)handlerDelegateParameter.DeclaringSyntaxReferences[0].GetSyntax(context.CancellationToken);
             var location = syntax.GetLocation();
 

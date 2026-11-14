@@ -25,6 +25,18 @@ webApp.MapGet(""/{name}"", (string name) => {});
     }
 
     [Fact]
+    public async Task MetadataMethodGroup_DoesNotThrow()
+    {
+        var source = """
+using Microsoft.AspNetCore.Builder;
+var app = WebApplication.Create();
+app.MapGet("/", string.IsNullOrEmpty);
+""";
+
+        await VerifyCS.VerifyAnalyzerAsync(source);
+    }
+
+    [Fact]
     public async Task QueryString_Parameter_withString_Works()
     {
         // Arrange
