@@ -37,7 +37,7 @@ public class StreamOutputFormatter : IOutputFormatter
                 response.ContentType = context.ContentType.ToString();
             }
 
-            await valueAsStream.CopyToAsync(response.Body);
+            await valueAsStream.CopyToAsync(response.Body, context.HttpContext.RequestAborted);
         }
     }
 }
