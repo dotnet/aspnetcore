@@ -368,6 +368,14 @@ try {
             param($rows)
             $rows[0].gradeResult.details += $rows[0].gradeResult.details[0]
         } }
+        @{ Name = 'BooleanReceiptScore'; Expected = 'failed read integrity'; Mutation = {
+            param($rows)
+            $rows[0].gradeResult.details[0].score = $true
+        } }
+        @{ Name = 'ReceiptGraderError'; Expected = 'failed read integrity'; Mutation = {
+            param($rows)
+            $rows[0].gradeResult.details[0].status = 'error'
+        } }
         @{ Name = 'DispositionGraderError'; Expected = 'valid primary disposition'; Mutation = {
             param($rows)
             $rows[0].gradeResult.details[1].status = 'error'

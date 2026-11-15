@@ -68,17 +68,37 @@ if ($env:SKILL_EVAL_FAKE_FAILURE) {
 } |
     ConvertTo-Json -Compress |
     Add-Content $env:SKILL_EVAL_RUNNER_RECORD
+if ($args[0] -eq 'experiment' -and $args -notcontains '--dry-run') {
+    $output = $args[([array]::IndexOf($args, '--output-dir') + 1)]
+    $run = Join-Path $output ('experiment-' + [guid]::NewGuid().ToString('N'))
+    New-Item -ItemType Directory -Path $run -Force | Out-Null
+    @{
+        evals = @('baseline', 'skilled' | ForEach-Object {
+            @{ variant = $_; plannedStimulusNames = @('s'); plannedStimulusCount = 1; runs = 1; threshold = 0 }
+        })
+    } | ConvertTo-Json -Depth 10 | Set-Content (Join-Path $run 'plan-snapshot.json')
+    foreach ($variant in 'baseline', 'skilled') {
+        New-Item -ItemType Directory -Path (Join-Path $run $variant) | Out-Null
+        @{ type = 'trial-result'; variant = $variant; stimulus = 's'; status = 'success'; gradeResult = @{ score = 1 } } |
+            ConvertTo-Json -Depth 10 -Compress |
+            Set-Content (Join-Path $run "$variant/results.jsonl")
+    }
+}
 if ($args[0] -eq 'eval' -and ($args -join ' ') -like '*review-candidate-verifier*') {
     $output = $args[([array]::IndexOf($args, '--output-dir') + 1)]
     $run = Join-Path $output '2026-01-01T00-00-00'
     New-Item -ItemType Directory -Path $run -Force | Out-Null
-    if ($env:SKILL_EVAL_FAKE_EXIT_MODE) {
+    if ($env:SKILL_EVAL_FAKE_RESULTS -ne 'empty') {
+        $runs = [int]$args[([array]::IndexOf($args, '--runs') + 1)]
+        $names = @(Get-Content $args[([array]::IndexOf($args, '--eval-spec') + 1)] |
+            Where-Object { $_ -match '^  - name: (\S+)$' } |
+            ForEach-Object { $Matches[1] })
         $rows = [Collections.Generic.List[object]]::new()
-        foreach ($name in 'a', 'b', 'c') {
-            foreach ($trial in 0..4) {
+        foreach ($name in $names) {
+            foreach ($trial in 0..($runs - 1)) {
                 $score = if (
                     $env:SKILL_EVAL_FAKE_EXIT_MODE -eq 'failed-gate' -and
-                    $name -eq 'a' -and $trial -ge 3
+                    $name -eq $names[0] -and $trial -ge 3
                 ) { 0 } else { 1 }
                 $rows.Add(@{
                     type = 'trial-result'
@@ -89,7 +109,11 @@ if ($args[0] -eq 'eval' -and ($args -join ' ') -like '*review-candidate-verifier
                     gradeResult = @{
                         score = $score
                         details = @(
-                            @{ configuredName = "evidence-reads-$name"; passed = $true; score = 1 },
+                            @{
+                                configuredName = "evidence-reads-$name"
+                                passed = -not ($env:SKILL_EVAL_FAKE_EXIT_MODE -eq 'failed-receipt' -and $name -eq $names[0] -and $trial -eq 0)
+                                score = 1
+                            },
                             @{ configuredName = "disposition-$name"; passed = $score -eq 1; score = $score }
                         )
                     }
@@ -106,12 +130,12 @@ if ($args[0] -eq 'eval' -and ($args -join ' ') -like '*review-candidate-verifier
         })
         $rows | ForEach-Object { $_ | ConvertTo-Json -Depth 10 -Compress } |
             Set-Content (Join-Path $run 'results.jsonl')
-        exit 1
+    } else {
+        Set-Content (Join-Path $run 'results.jsonl') ''
     }
-    Set-Content (Join-Path $run 'results.jsonl') ''
-    if ($env:SKILL_EVAL_FAKE_EXIT) {
-        exit 1
-    }
+}
+if ($env:SKILL_EVAL_FAKE_EXIT_CODE) {
+    exit [int]$env:SKILL_EVAL_FAKE_EXIT_CODE
 }
 '@ | Set-Content $fakeVally
     Set-Content $specialized "name: specialized`n"
@@ -317,14 +341,59 @@ stimuli:
         )
     }
 
-    $env:SKILL_EVAL_FAKE_EXIT = 'true'
-    $failedOutput = Join-Path $testRoot 'component-exit-one'
-    & $runner Run -Suite review-candidate-verifier -Vally $fakeVally -VallyPrefix @() -OutputDirectory $failedOutput
-    Assert-True ($LASTEXITCODE -eq 1) 'Component Vally exit code was not propagated.'
-    Assert-True (Test-Path (Join-Path $failedOutput '2026-01-01T00-00-00/plan-snapshot.json')) (
-        'A failed component run lost its plan snapshot.'
-    )
-    Remove-Item Env:SKILL_EVAL_FAKE_EXIT
+    function Invoke-ComponentFailure {
+        param([string]$Scenario, [hashtable]$Environment, [string]$ExpectedFailure)
+
+        foreach ($entry in $Environment.GetEnumerator()) {
+            Set-Item "Env:$($entry.Key)" $entry.Value
+        }
+        $scenarioOutput = Join-Path $testRoot "component-failure-$Scenario"
+        $message = ''
+        try {
+            & $runner Run -Suite review-candidate-verifier -Vally $fakeVally -VallyPrefix @() -OutputDirectory $scenarioOutput
+        } catch {
+            $message = $_.Exception.Message
+        } finally {
+            foreach ($key in $Environment.Keys) {
+                Remove-Item "Env:$key" -ErrorAction SilentlyContinue
+            }
+        }
+        Assert-True ($message -like "*$ExpectedFailure*") (
+            "$Scenario direct component run did not fail through the result gate. Error: $message"
+        )
+        Assert-True (Test-Path (Join-Path $scenarioOutput '2026-01-01T00-00-00/plan-snapshot.json')) (
+            "$Scenario component run lost its plan snapshot."
+        )
+    }
+
+    Invoke-ComponentFailure -Scenario 'ExitOneEmpty' `
+        -Environment @{ SKILL_EVAL_FAKE_EXIT_CODE = '1'; SKILL_EVAL_FAKE_RESULTS = 'empty' } `
+        -ExpectedFailure 'invalid or missing completion summary'
+    Invoke-ComponentFailure -Scenario 'ExitZeroFailedGate' `
+        -Environment @{ SKILL_EVAL_FAKE_EXIT_MODE = 'failed-gate' } `
+        -ExpectedFailure "stimulus 'a' score 0.6 is below threshold 0.8"
+    Invoke-ComponentFailure -Scenario 'ExitZeroFailedReceipt' `
+        -Environment @{ SKILL_EVAL_FAKE_EXIT_MODE = 'failed-receipt' } `
+        -ExpectedFailure "'a:0' failed read integrity: evidence-reads-a"
+
+    foreach ($invalidRuns in @('0', '1.5', '"5"')) {
+        $componentSpecPath = Join-Path $customComponentDirectory 'eval.vally.yaml'
+        $validComponentSpec = Get-Content $componentSpecPath -Raw
+        Set-Content $componentSpecPath ($validComponentSpec.Replace('runs: 7', "runs: $invalidRuns"))
+        $message = ''
+        try {
+            & $runner Run -Root $customRoot -Suite review-candidate-verifier `
+                -Vally $fakeVally -VallyPrefix @() `
+                -OutputDirectory (Join-Path $testRoot 'invalid-yaml-runs')
+        } catch {
+            $message = $_.Exception.Message
+        } finally {
+            Set-Content $componentSpecPath $validComponentSpec
+        }
+        Assert-True ($message -eq 'The component defaults.runs must be a positive integer.') (
+            "Invalid YAML runs '$invalidRuns' was not rejected clearly. Error: $message"
+        )
+    }
 
     function Invoke-AllSuiteExitOneScenario {
         param(
@@ -335,6 +404,7 @@ stimuli:
 
         Remove-Item $record -ErrorAction SilentlyContinue
         $env:SKILL_EVAL_FAKE_EXIT_MODE = $Scenario
+        $env:SKILL_EVAL_FAKE_EXIT_CODE = '1'
         $message = ''
         try {
             & $runner Run -Root $allSuiteRoot -Vally $fakeVally -VallyPrefix @() `
@@ -343,6 +413,7 @@ stimuli:
             $message = $_.Exception.Message
         } finally {
             Remove-Item Env:SKILL_EVAL_FAKE_EXIT_MODE -ErrorAction SilentlyContinue
+            Remove-Item Env:SKILL_EVAL_FAKE_EXIT_CODE -ErrorAction SilentlyContinue
         }
 
         if ($ShouldContinue) {
@@ -467,7 +538,8 @@ stimuli:
 } finally {
     Remove-Item Env:SKILL_EVAL_RUNNER_RECORD -ErrorAction SilentlyContinue
     Remove-Item Env:SKILL_EVAL_FAKE_FAILURE -ErrorAction SilentlyContinue
-    Remove-Item Env:SKILL_EVAL_FAKE_EXIT -ErrorAction SilentlyContinue
+    Remove-Item Env:SKILL_EVAL_FAKE_EXIT_CODE -ErrorAction SilentlyContinue
+    Remove-Item Env:SKILL_EVAL_FAKE_RESULTS -ErrorAction SilentlyContinue
     Remove-Item Env:SKILL_EVAL_FAKE_EXIT_MODE -ErrorAction SilentlyContinue
     if ($hadPreviousVally) {
         $env:SKILL_EVAL_VALLY = $previousVally
@@ -475,4 +547,5 @@ stimuli:
         Remove-Item Env:SKILL_EVAL_VALLY -ErrorAction SilentlyContinue
     }
     Remove-Item -Recurse -Force $testRoot
+    Remove-Item -Recurse -Force (Join-Path $repoRoot $relativeOutput) -ErrorAction SilentlyContinue
 }

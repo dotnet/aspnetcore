@@ -120,7 +120,10 @@ if ($Eval -and -not $Suite) {
 }
 
 function Invoke-Vally {
-    param([string[]]$VallyArguments)
+    param(
+        [string[]]$VallyArguments,
+        [switch]$TolerateExitOne
+    )
 
     $command = Get-Command $Vally -ErrorAction SilentlyContinue
     if (-not $command) {
@@ -147,6 +150,10 @@ function Invoke-Vally {
     & $Vally @VallyPrefix @VallyArguments
     $invocationSucceeded = $?
     $invocationExitCode = $LASTEXITCODE
+    $script:vallyExitCode = $invocationExitCode
+    if ($TolerateExitOne -and $invocationExitCode -eq 1) {
+        return
+    }
     if (-not $invocationSucceeded -or $invocationExitCode -ne 0) {
         if ($invocationExitCode -eq 0) {
             $invocationExitCode = 1
@@ -169,7 +176,10 @@ function Invoke-VallyLint {
 }
 
 function Invoke-VallyIsolated {
-    param([string[]]$VallyArguments)
+    param(
+        [string[]]$VallyArguments,
+        [switch]$TolerateExitOne
+    )
 
     $workDirectory = Join-Path ([IO.Path]::GetTempPath()) (
         'aspnetcore-skill-evals-' + [guid]::NewGuid().ToString('N')
@@ -177,7 +187,7 @@ function Invoke-VallyIsolated {
     New-Item -ItemType Directory -Path $workDirectory | Out-Null
     try {
         Push-Location $workDirectory
-        Invoke-Vally $VallyArguments
+        Invoke-Vally $VallyArguments -TolerateExitOne:$TolerateExitOne
     } finally {
         Pop-Location
         Remove-Item -Recurse -Force $workDirectory
@@ -362,12 +372,7 @@ switch ($Action) {
                         -OutputDirectory $suiteOutput `
                         -Vally $Vally -VallyPrefix $VallyPrefix @Arguments
                     if (-not $? -or $LASTEXITCODE -ne 0) {
-                        if ($LASTEXITCODE -ne 1) {
-                            throw "The '$($directory.Name)' suite run failed."
-                        }
-                        & (Join-Path $PSScriptRoot 'assert_results.ps1') -OutputDirectory $suiteOutput
-                        $global:LASTEXITCODE = 0
-                        Write-Warning "Vally exited with code 1 for '$($directory.Name)'. Complete primary trials passed the applicable result-set checks."
+                        throw "The '$($directory.Name)' suite run failed."
                     }
                 }
             }
@@ -398,7 +403,12 @@ switch ($Action) {
             $runs = if ($selectedExperiment -in @($smokeExperiment, $reviewSmokeExperiment)) {
                 1
             } elseif ($componentDefaults -is [Collections.IDictionary] -and $null -ne $componentDefaults['runs']) {
-                [int]$componentDefaults['runs']
+                $specifiedRuns = $componentDefaults['runs']
+                if (($specifiedRuns -isnot [int] -and $specifiedRuns -isnot [long]) -or
+                    $specifiedRuns -lt 1 -or $specifiedRuns -gt [int]::MaxValue) {
+                    throw 'The component defaults.runs must be a positive integer.'
+                }
+                [int]$specifiedRuns
             } else {
                 1
             }
@@ -477,15 +487,17 @@ switch ($Action) {
         }
 
         $vallyArguments += $Arguments
+        $assertsResults = ($selectedSuite -eq 'review-candidate-verifier' -or $vallyArguments[0] -eq 'experiment') -and
+            $Arguments -notcontains '--dry-run'
         $existingRunDirectoryNames = [Collections.Generic.HashSet[string]]::new([StringComparer]::Ordinal)
-        if ($selectedSuite -eq 'review-candidate-verifier' -and (Test-Path $output -PathType Container)) {
+        if (($selectedSuite -eq 'review-candidate-verifier' -or $assertsResults) -and (Test-Path $output -PathType Container)) {
             foreach ($directory in Get-ChildItem $output -Directory -ErrorAction SilentlyContinue) {
                 [void]$existingRunDirectoryNames.Add($directory.Name)
             }
         }
         $invocationCompleted = $false
         try {
-            Invoke-VallyIsolated $vallyArguments
+            Invoke-VallyIsolated $vallyArguments -TolerateExitOne:$assertsResults
             $invocationCompleted = $true
         } finally {
             if ($selectedSuite -eq 'review-candidate-verifier') {
@@ -508,6 +520,20 @@ switch ($Action) {
                     throw 'Expected one completed component output directory with results.jsonl.'
                 }
             }
+        }
+        if ($assertsResults) {
+            $newRunDirectories = @(
+                Get-ChildItem $output -Directory -ErrorAction SilentlyContinue |
+                    Where-Object { -not $existingRunDirectoryNames.Contains($_.Name) }
+            )
+            if ($newRunDirectories.Count -ne 1) {
+                throw "Expected one new Vally run directory under '$output'; found $($newRunDirectories.Count)."
+            }
+            & (Join-Path $PSScriptRoot 'assert_results.ps1') -RunDirectory $newRunDirectories[0].FullName
+            if ($script:vallyExitCode -eq 1) {
+                Write-Warning 'Vally exited with code 1. Complete primary trials passed the applicable result-set checks.'
+            }
+            $global:LASTEXITCODE = 0
         }
     }
 }

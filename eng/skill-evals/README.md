@@ -157,8 +157,10 @@ Run these commands from any directory:
 
 Without a suite or explicit experiment, `Run` dispatches each standard suite into
 its own output subdirectory. This includes the direct verifier component suite.
-`assert_results.ps1` checks that combined output recursively. An exit code of 1 does not stop dispatch when the complete primary
-results pass those checks. A direct component run writes a plan beside Vally's
+Each experiment or direct component `Run` checks its own new run directory with
+`assert_results.ps1` before it returns. A Vally exit code of 1 is accepted only
+after those checks pass; any failed check stops the run, including in the
+all-suite dispatch. A direct component run writes a plan beside Vally's
 timestamped `results.jsonl`; it does not invent an experiment variant directory.
 That plan reflects the selected YAML and CLI runs/threshold overrides. For the
 verifier suite, smoke selects one repeat per case and checks trial

@@ -1,15 +1,22 @@
 #requires -Version 7.0
 param(
-    [Parameter(Mandatory = $true)]
-    [string]$OutputDirectory
+    [Parameter(Mandatory = $true, ParameterSetName = 'Output')]
+    [string]$OutputDirectory,
+
+    [Parameter(Mandatory = $true, ParameterSetName = 'Run')]
+    [string]$RunDirectory
 )
 
 $ErrorActionPreference = 'Stop'
 Set-StrictMode -Version 3
 
-$resolvedOutput = (Resolve-Path $OutputDirectory).Path
-$runDirectories = @(Get-ChildItem $resolvedOutput -Directory)
-if ($runDirectories.Count -gt 0 -and
+if ($RunDirectory) {
+    $runDirectories = @(Get-Item -LiteralPath (Resolve-Path $RunDirectory).Path)
+} else {
+    $resolvedOutput = (Resolve-Path $OutputDirectory).Path
+    $runDirectories = @(Get-ChildItem $resolvedOutput -Directory)
+}
+if (-not $RunDirectory -and $runDirectories.Count -gt 0 -and
     @($runDirectories | Where-Object { Test-Path (Join-Path $_.FullName 'plan-snapshot.json') }).Count -eq 0) {
     foreach ($directory in $runDirectories) {
         & $PSCommandPath -OutputDirectory $directory.FullName
@@ -174,7 +181,11 @@ foreach ($variant in $variants) {
                 $details = @($gradeResultProperty.Value.details |
                     Where-Object { $_.PSObject.Properties['configuredName'] -and $_.configuredName -eq $receipt })
                 if ($details.Count -ne 1 -or $details[0].passed -isnot [bool] -or
-                    -not $details[0].passed -or $details[0].score -is [string] -or $details[0].score -ne 1) {
+                    -not $details[0].passed -or
+                    ($details[0].score -isnot [int] -and $details[0].score -isnot [long] -and
+                        $details[0].score -isnot [double] -and $details[0].score -isnot [decimal]) -or
+                    $details[0].score -ne 1 -or
+                    ($details[0].PSObject.Properties['status'] -and $details[0].status -eq 'error')) {
                     throw "The '$variant' trial '$($result.stimulus):$trialIndex' failed read integrity: $receipt."
                 }
             }

@@ -708,6 +708,28 @@ stimuli:
             -Scenario $case.Name -EvalSpec $case.Spec
     }
 
+    $componentStimuliSpecs = @(
+        @{
+            Name = 'ComponentEmptyStimuli'
+            Spec = $canonicalComponentSpec -replace '(?ms)^stimuli:.*\z', 'stimuli: []'
+        }
+    )
+    foreach ($case in $componentStimuliSpecs) {
+        if ($env:SKILL_EVAL_STAGE_RESTRICTION -and
+            $env:SKILL_EVAL_STAGE_RESTRICTION -ne $case.Name) {
+            continue
+        }
+        Set-Content (Join-Path $componentEval 'eval.vally.yaml') $case.Spec
+        $rejectedDestination = Join-Path $testRoot "rejected-$($case.Name)"
+        Assert-Throws {
+            & $stageRun -TrustedRoot $trustedRoot -CandidateRoot $candidateRoot `
+                -EvalName review-candidate-verifier -Destination $rejectedDestination
+        } 'must declare a non-empty stimuli list of named stimuli'
+        Assert-True (-not (Test-Path $rejectedDestination)) (
+            "Stimuli scenario '$($case.Name)' left a partial staged tree."
+        )
+    }
+
     Write-Host 'Trusted skill-eval staging self-test passed.'
 } finally {
     Remove-Item $testRoot -Recurse -Force

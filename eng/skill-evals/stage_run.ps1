@@ -202,7 +202,16 @@ function Assert-EvalSpecIsRestricted {
             -not $parsed['grading_environment'].Contains('files')) {
             throw "$Description must declare the trusted grading_environment.files mapping."
         }
-        foreach ($stimulus in @($parsed['stimuli'])) {
+        $stimuli = $parsed['stimuli']
+        if ($stimuli -isnot [Collections.IList] -or $stimuli.Count -eq 0 -or
+            @($stimuli | Where-Object {
+                $_ -isnot [Collections.IDictionary] -or
+                $_['name'] -isnot [string] -or
+                [string]::IsNullOrWhiteSpace($_['name'])
+            }).Count -gt 0) {
+            throw "$Description must declare a non-empty stimuli list of named stimuli."
+        }
+        foreach ($stimulus in $stimuli) {
             $primary = @($stimulus['graders'] | Where-Object {
                 $_ -is [Collections.IDictionary] -and
                 $_['name'] -ceq "disposition-$($stimulus['name'])"
