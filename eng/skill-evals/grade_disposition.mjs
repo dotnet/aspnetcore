@@ -102,14 +102,14 @@ function isNegativeC1Line(line)
     .trim()
     .replace(/^(?:[-*+]|\d+[.)])\s+/, '')
     .trim();
-  const explicitAbsence = /^(?:none(?:\s+(?:applicable|covered|found|reported|identified))?[.!]?\s*$|n\/a[.!]?\s*$|no(?:\s+(?:findings|items|candidates|entries|unresolved|discarded|existing\s+feedback)\b|\s+C1[.!]?\s*$|[.!]?\s*$))/i;
+  const explicitAbsence = /^(?:none(?:\s+(?:applicable|covered|found|reported|identified))?[.!]?\s*$|n\/a[.!]?\s*$|no(?:\s+(?:findings|items|candidates|entries|unresolved|discarded|existing\s+feedback)[.!]?\s*$|\s+C1[.!]?\s*$|[.!]?\s*$))/i;
   if (!clean || explicitAbsence.test(clean))
   {
     return true;
   }
   const afterC1 = clean.replace(/^C1\b\s*(?:[-:—–]|\s)*/i, '');
   return afterC1 !== clean && (explicitAbsence.test(afterC1) ||
-    /^(?:(?:is\s+|was\s+)?not\s+(?:covered|unresolved|discarded|applicable)|has\s+no\s+existing\s+feedback|(?:is\s+|was\s+)?omitted)\b/i.test(afterC1));
+    /^(?:(?:is\s+|was\s+)?not\s+(?:covered(?:\s+by\s+(?:any\s+)?(?:existing\s+)?feedback(?:\s+in\s+[^.!;,]*)?)?|unresolved|discarded|applicable)|has\s+no\s+existing\s+feedback|(?:is\s+|was\s+)?omitted)[.!]?\s*$/i.test(afterC1));
 }
 
 function hasPositiveC1(sectionText)

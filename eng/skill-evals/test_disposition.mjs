@@ -198,6 +198,18 @@ test('ReviewDispositionDistinguishesSubstantiveNoneFromAbsenceMarkers', async co
       .replace('UNRESOLVED\nNone.', 'UNRESOLVED\nC1: None of the frozen contracts establishes whether failures propagate.'), 0],
     ['conflicting-none-applicable-prose', 'case-02', review('NEW_FINDINGS', 'verified')
       .replace('UNRESOLVED\nNone.', 'UNRESOLVED\nC1: None applicable. C1 is unresolved.'), 0],
+    ['conflicting-no-existing-feedback-prose', 'case-02', review('NEW_FINDINGS', 'verified')
+      .replace('UNRESOLVED\nNone.', 'UNRESOLVED\nC1: No existing feedback resolves whether failures propagate.'), 0],
+    ['conflicting-not-covered-prose', 'case-02', review('NEW_FINDINGS', 'verified')
+      .replace('UNRESOLVED\nNone.', 'UNRESOLVED\nC1: Not covered by the head tests, so propagation is unknown.'), 0],
+    ['conflicting-omitted-prose', 'case-02', review('NEW_FINDINGS', 'verified')
+      .replace('DISCARDED\nNone.', 'DISCARDED\nC1: Omitted guard causes the old and head paths to match.'), 0],
+    ['absence-and-prose-in-different-sections', 'case-02', review('NEW_FINDINGS', 'verified')
+      .replace('UNRESOLVED\nNone.', 'UNRESOLVED\nC1: None.')
+      .replace('DISCARDED\nNone.', 'DISCARDED\nC1: Not covered by the head tests, so propagation is unknown.'), 0],
+    ['absence-in-one-section-only', 'case-02', review('NEW_FINDINGS', 'verified')
+      .replace('UNRESOLVED\nNone.', 'UNRESOLVED\nC1: None.')
+      .replace('DISCARDED\nNone.', 'DISCARDED\nC1 omitted.'), 1],
   ])
   {
     await context.test(name, () =>
