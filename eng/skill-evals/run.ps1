@@ -490,8 +490,8 @@ switch ($Action) {
         $assertsResults = ($selectedSuite -eq 'review-candidate-verifier' -or $vallyArguments[0] -eq 'experiment') -and
             $Arguments -notcontains '--dry-run'
         $existingRunDirectoryNames = [Collections.Generic.HashSet[string]]::new([StringComparer]::Ordinal)
-        if (($selectedSuite -eq 'review-candidate-verifier' -or $assertsResults) -and (Test-Path $output -PathType Container)) {
-            foreach ($directory in Get-ChildItem $output -Directory -ErrorAction SilentlyContinue) {
+        if (($selectedSuite -eq 'review-candidate-verifier' -or $assertsResults) -and (Test-Path -LiteralPath $output -PathType Container)) {
+            foreach ($directory in Get-ChildItem -LiteralPath $output -Directory -ErrorAction SilentlyContinue) {
                 [void]$existingRunDirectoryNames.Add($directory.Name)
             }
         }
@@ -502,11 +502,11 @@ switch ($Action) {
         } finally {
             if ($selectedSuite -eq 'review-candidate-verifier') {
                 $runDirectories = @(
-                    Get-ChildItem $output -Directory -ErrorAction SilentlyContinue |
+                    Get-ChildItem -LiteralPath $output -Directory -ErrorAction SilentlyContinue |
                         Where-Object { -not $existingRunDirectoryNames.Contains($_.Name) }
                 )
                 if ($runDirectories.Count -eq 1 -and
-                    (Test-Path (Join-Path $runDirectories[0].FullName 'results.jsonl'))) {
+                    (Test-Path -LiteralPath (Join-Path $runDirectories[0].FullName 'results.jsonl'))) {
                     @{
                         evals = @(@{
                             variant = 'current'
@@ -515,7 +515,7 @@ switch ($Action) {
                             runs = $runs
                             threshold = $threshold
                         })
-                    } | ConvertTo-Json -Depth 10 | Set-Content (Join-Path $runDirectories[0].FullName 'plan-snapshot.json')
+                    } | ConvertTo-Json -Depth 10 | Set-Content -LiteralPath (Join-Path $runDirectories[0].FullName 'plan-snapshot.json')
                 } elseif ($invocationCompleted) {
                     throw 'Expected one completed component output directory with results.jsonl.'
                 }
@@ -523,7 +523,7 @@ switch ($Action) {
         }
         if ($assertsResults) {
             $newRunDirectories = @(
-                Get-ChildItem $output -Directory -ErrorAction SilentlyContinue |
+                Get-ChildItem -LiteralPath $output -Directory -ErrorAction SilentlyContinue |
                     Where-Object { -not $existingRunDirectoryNames.Contains($_.Name) }
             )
             if ($newRunDirectories.Count -ne 1) {

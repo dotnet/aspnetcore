@@ -129,9 +129,9 @@ if ($args[0] -eq 'eval' -and ($args -join ' ') -like '*review-candidate-verifier
             hadExecutionErrors = $false
         })
         $rows | ForEach-Object { $_ | ConvertTo-Json -Depth 10 -Compress } |
-            Set-Content (Join-Path $run 'results.jsonl')
+            Set-Content -LiteralPath (Join-Path $run 'results.jsonl')
     } else {
-        Set-Content (Join-Path $run 'results.jsonl') ''
+        Set-Content -LiteralPath (Join-Path $run 'results.jsonl') ''
     }
 }
 if ($env:SKILL_EVAL_FAKE_EXIT_CODE) {
@@ -282,7 +282,7 @@ stimuli:
     Assert-True ($specializedInvocation -contains '--eval-spec') 'Specialized run omitted --eval-spec.'
 
     foreach ($smoke in @($false, $true)) {
-        $componentOutput = Join-Path $testRoot "component-$smoke"
+        $componentOutput = Join-Path $testRoot "component-[$smoke]"
         New-Item -ItemType Directory -Path (Join-Path $componentOutput '2025-12-31T00-00-00') -Force | Out-Null
         $options = @{ Suite = 'review-candidate-verifier'; Vally = $fakeVally; VallyPrefix = @(); OutputDirectory = $componentOutput }
         if ($smoke) {
@@ -291,7 +291,7 @@ stimuli:
         & $runner Run @options
         $componentRun = Read-Invocation
         Assert-True ($componentRun[0] -eq 'eval') 'Component run used a skill comparison experiment.'
-        $plan = Get-Content (Join-Path $componentOutput '2026-01-01T00-00-00/plan-snapshot.json') -Raw | ConvertFrom-Json
+        $plan = Get-Content -LiteralPath (Join-Path $componentOutput '2026-01-01T00-00-00/plan-snapshot.json') -Raw | ConvertFrom-Json
         $runs = if ($smoke) { 1 } else { 5 }
         Assert-True ($plan.evals[0].runs -eq $runs) 'Component plan has the wrong repeat count.'
         Assert-True ($componentRun[([array]::IndexOf($componentRun, '--runs') + 1)] -eq "$runs") 'Component invocation has the wrong repeat count.'

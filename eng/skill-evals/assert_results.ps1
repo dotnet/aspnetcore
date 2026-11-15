@@ -11,13 +11,17 @@ $ErrorActionPreference = 'Stop'
 Set-StrictMode -Version 3
 
 if ($RunDirectory) {
-    $runDirectories = @(Get-Item -LiteralPath (Resolve-Path $RunDirectory).Path)
+    $resolvedOutput = (Resolve-Path -LiteralPath $RunDirectory).Path
+    if (-not (Test-Path -LiteralPath $resolvedOutput -PathType Container)) {
+        throw "RunDirectory must be a directory: '$resolvedOutput'."
+    }
+    $runDirectories = @(Get-Item -LiteralPath $resolvedOutput)
 } else {
-    $resolvedOutput = (Resolve-Path $OutputDirectory).Path
-    $runDirectories = @(Get-ChildItem $resolvedOutput -Directory)
+    $resolvedOutput = (Resolve-Path -LiteralPath $OutputDirectory).Path
+    $runDirectories = @(Get-ChildItem -LiteralPath $resolvedOutput -Directory)
 }
 if (-not $RunDirectory -and $runDirectories.Count -gt 0 -and
-    @($runDirectories | Where-Object { Test-Path (Join-Path $_.FullName 'plan-snapshot.json') }).Count -eq 0) {
+    @($runDirectories | Where-Object { Test-Path -LiteralPath (Join-Path $_.FullName 'plan-snapshot.json') }).Count -eq 0) {
     foreach ($directory in $runDirectories) {
         & $PSCommandPath -OutputDirectory $directory.FullName
     }
@@ -29,11 +33,11 @@ if ($runDirectories.Count -ne 1) {
 
 $runDirectory = $runDirectories[0].FullName
 $snapshotPath = Join-Path $runDirectory 'plan-snapshot.json'
-if (-not (Test-Path $snapshotPath -PathType Leaf)) {
+if (-not (Test-Path -LiteralPath $snapshotPath -PathType Leaf)) {
     throw "Missing Vally plan snapshot at '$snapshotPath'."
 }
 
-$snapshot = Get-Content $snapshotPath -Raw | ConvertFrom-Json -Depth 100
+$snapshot = Get-Content -LiteralPath $snapshotPath -Raw | ConvertFrom-Json -Depth 100
 $scoresByVariant = @{}
 $plansByVariant = @{}
 $variants = if ($snapshot.evals.Count -eq 1 -and $snapshot.evals[0].variant -eq 'current') {
@@ -63,12 +67,12 @@ foreach ($variant in $variants) {
     }
     $plansByVariant[$variant] = $plan
     $resultsPath = Join-Path $runDirectory $(if ($variant -eq 'current') { 'results.jsonl' } else { "$variant/results.jsonl" })
-    if (-not (Test-Path $resultsPath -PathType Leaf)) {
+    if (-not (Test-Path -LiteralPath $resultsPath -PathType Leaf)) {
         throw "Missing Vally results at '$resultsPath'."
     }
 
     $results = @(
-        Get-Content $resultsPath |
+        Get-Content -LiteralPath $resultsPath |
             Where-Object { -not [string]::IsNullOrWhiteSpace($_) } |
             ForEach-Object {
                 $record = ConvertFrom-Json -InputObject $_ -Depth 100 -NoEnumerate

@@ -112,6 +112,15 @@ try {
         throw 'A passing generic LLM suite no longer reports its aggregate threshold gate.'
     }
 
+    $literalRun = Join-Path $output 'run-[1]'
+    Move-Item -LiteralPath $run -Destination $literalRun
+    try {
+        & $assertResults -RunDirectory $literalRun
+        Write-Host 'LiteralRunDirectoryWithBrackets passed.'
+    } finally {
+        Move-Item -LiteralPath $literalRun -Destination $run
+    }
+
     Reset-Results
     Write-Results -Variant skilled -Score 0.8
     Assert-Throws {
