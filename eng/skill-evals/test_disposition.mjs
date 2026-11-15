@@ -227,6 +227,27 @@ test('ReviewDispositionDistinguishesSubstantiveNoneFromAbsenceMarkers', async co
   }
 });
 
+test('ReviewDispositionRejectsContradictoryFeedbackScopeProse', () =>
+{
+  const output = review('NEW_FINDINGS', 'verified')
+    .replace('UNRESOLVED\nNone.', 'UNRESOLVED\nC1: Not covered by feedback in base-tip docs — propagation contract is unestablished.');
+  assert.equal(score('case-02', output), 0);
+});
+
+test('ReviewDispositionAcceptsUnresolvedFeedbackScopeProse', () =>
+{
+  const output = review('UNRESOLVED', 'unresolved')
+    .replace('C1 missing target-base contract.', 'C1: Not covered by existing feedback in the supplied docs so propagation is unresolved.');
+  assert.equal(score('case-06', output), 1);
+});
+
+test('ReviewDispositionAcceptsReviewThreadsAbsenceScope', () =>
+{
+  const output = review('NEW_FINDINGS', 'verified')
+    .replace('UNRESOLVED\nNone.', 'UNRESOLVED\nC1: Not covered by existing feedback in the review threads.');
+  assert.equal(score('case-02', output), 1);
+});
+
 test('ExistingFeedbackRequiresThreadAndRejectsDuplicateInline', () =>
 {
   const good = `STATUS: NO_FINDINGS

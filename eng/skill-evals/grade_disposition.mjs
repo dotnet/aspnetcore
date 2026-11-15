@@ -109,7 +109,7 @@ function isNegativeC1Line(line)
   }
   const afterC1 = clean.replace(/^C1\b\s*(?:[-:—–]|\s)*/i, '');
   return afterC1 !== clean && (explicitAbsence.test(afterC1) ||
-    /^(?:(?:is\s+|was\s+)?not\s+(?:covered(?:\s+by\s+(?:any\s+)?(?:existing\s+)?feedback(?:\s+in\s+[^.!;,]*)?)?|unresolved|discarded|applicable)|has\s+no\s+existing\s+feedback|(?:is\s+|was\s+)?omitted)[.!]?\s*$/i.test(afterC1));
+    /^(?:(?:is\s+|was\s+)?not\s+(?:covered(?:\s+by\s+(?:any\s+)?(?:existing\s+)?feedback(?:\s+in\s+(?:the\s+)?(?:supplied\s+|frozen\s+|existing\s+)*(?:(?:pr|review|evidence)\s+)*(?:evidence|bundle|pr|review|threads?|comments?|feedback))?)?|unresolved|discarded|applicable)|has\s+no\s+existing\s+feedback|(?:is\s+|was\s+)?omitted)[.!]?\s*$/i.test(afterC1));
 }
 
 function hasPositiveC1(sectionText)
