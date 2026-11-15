@@ -39,8 +39,6 @@ on:
         required: true
         default: review-public-api
         options:
-          - port-components-platform-api
-          - pr-attention-queue
           - review-public-api
           - review-candidate-verifier
           - validate-blazor-feature
