@@ -70,7 +70,20 @@ public class FormPipeReader
             // In ASCII-compatible encodings other than UTF-8 (e.g. GBK, Shift_JIS, Latin1), %XX escapes are bytes
             // in that encoding, so they must be un-escaped before the bytes are decoded.
             _decodeEscapedBytesWithEncoding = _encoding.CodePage != Encoding.UTF8.CodePage
-                && _encoding.GetBytes("=&%+").AsSpan().SequenceEqual("=&%+"u8);
+                && EncodesFormEscapeCharactersAsAscii(_encoding);
+        }
+    }
+
+    private static bool EncodesFormEscapeCharactersAsAscii(Encoding encoding)
+    {
+        try
+        {
+            return encoding.GetBytes("=&%+").AsSpan().SequenceEqual("=&%+"u8);
+        }
+        catch (EncoderFallbackException)
+        {
+            // The encoding can't represent '%' or '+', so keep decoding with the slow path.
+            return false;
         }
     }
 

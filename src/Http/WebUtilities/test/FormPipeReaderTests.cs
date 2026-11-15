@@ -955,6 +955,18 @@ public class FormPipeReaderTests
         Assert.Equal("查 重", formCollection["t"].ToString());
     }
 
+    [Fact]
+    public async Task ReadFormAsync_EncodingThatCannotEncodePercentOrPlus_UsesSlowPath()
+    {
+        var encoding = new Latin1WithoutPercentAndPlusEncoding();
+        var bodyPipe = await MakePipeReader(Encoding.Latin1.GetBytes("caf%C3%A9=cr%C3%A8me+br%C3%BBl%C3%A9e&raw=été"));
+
+        var formCollection = await ReadFormAsync(new FormPipeReader(bodyPipe, encoding));
+
+        Assert.Equal("crème brûlée", formCollection["café"].ToString());
+        Assert.Equal("été", formCollection["raw"].ToString());
+    }
+
     public static TheoryData<ReadOnlySequence<byte>> IncompleteFormKeys =>
         new TheoryData<ReadOnlySequence<byte>>
         {
@@ -1013,5 +1025,39 @@ public class FormPipeReaderTests
         keyValue[2] = 'y';
         keyValue[3] = '=';
         return Encoding.UTF8.GetBytes(keyValue);
+    }
+
+    // Latin1, except that '%' and '+' can't be encoded.
+    private sealed class Latin1WithoutPercentAndPlusEncoding : Encoding
+    {
+        public override int GetByteCount(char[] chars, int index, int count)
+        {
+            ThrowIfUnsupported(chars, index, count);
+            return Latin1.GetByteCount(chars, index, count);
+        }
+
+        public override int GetBytes(char[] chars, int charIndex, int charCount, byte[] bytes, int byteIndex)
+        {
+            ThrowIfUnsupported(chars, charIndex, charCount);
+            return Latin1.GetBytes(chars, charIndex, charCount, bytes, byteIndex);
+        }
+
+        public override int GetCharCount(byte[] bytes, int index, int count) => Latin1.GetCharCount(bytes, index, count);
+
+        public override int GetChars(byte[] bytes, int byteIndex, int byteCount, char[] chars, int charIndex)
+            => Latin1.GetChars(bytes, byteIndex, byteCount, chars, charIndex);
+
+        public override int GetMaxByteCount(int charCount) => Latin1.GetMaxByteCount(charCount);
+
+        public override int GetMaxCharCount(int byteCount) => Latin1.GetMaxCharCount(byteCount);
+
+        private static void ThrowIfUnsupported(char[] chars, int index, int count)
+        {
+            var unsupported = chars.AsSpan(index, count).IndexOfAny('%', '+');
+            if (unsupported >= 0)
+            {
+                throw new EncoderFallbackException($"Unable to encode '{chars[index + unsupported]}'.");
+            }
+        }
     }
 }
