@@ -17,6 +17,7 @@ public class QueryCollectionBenchmarks
     private const string _singleValue = "?key1=value1";
     private const string _singleValueWithPlus = "?key1=value1+value2+value3";
     private const string _encoded = "?key1=value%231";
+    private const string _encodedWithPlus = "?key1=value+%231+value2";
 
     [Benchmark(Description = "ParseNew")]
     [BenchmarkCategory("QueryString")]
@@ -46,6 +47,13 @@ public class QueryCollectionBenchmarks
         _ = QueryFeature.ParseNullableQueryInternal(_encoded);
     }
 
+    [Benchmark(Description = "ParseNew")]
+    [BenchmarkCategory("EncodedWithPlus")]
+    public void ParseNewEncodedWithPlus()
+    {
+        _ = QueryFeature.ParseNullableQueryInternal(_encodedWithPlus);
+    }
+
     [Benchmark(Description = "QueryHelpersParse")]
     [BenchmarkCategory("QueryString")]
     public void QueryHelpersParse()
@@ -72,6 +80,13 @@ public class QueryCollectionBenchmarks
     public void QueryHelpersParseEncoded()
     {
         _ = QueryHelpers.ParseNullableQuery(_encoded);
+    }
+
+    [Benchmark(Description = "QueryHelpersParse")]
+    [BenchmarkCategory("EncodedWithPlus")]
+    public void QueryHelpersParseEncodedWithPlus()
+    {
+        _ = QueryHelpers.ParseNullableQuery(_encodedWithPlus);
     }
 
     [Benchmark]

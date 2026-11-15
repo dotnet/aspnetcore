@@ -6,20 +6,24 @@ using System.Diagnostics;
 using System.IO.Pipelines;
 using System.Net;
 using System.Net.Http;
+using System.Net.Http.Headers;
+using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Connections;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
-using System.Net.Http.Headers;
 
 namespace Microsoft.AspNetCore.Http.Connections.Client.Internal;
 
 internal sealed partial class LongPollingTransport : ITransport
 {
+    private const string AuthenticationRefreshRequiredError = "authentication_refresh_required";
+
     private readonly HttpClient _httpClient;
     private readonly ILogger _logger;
     private readonly HttpConnectionOptions _httpConnectionOptions;
+    private readonly Func<CancellationToken, Task>? _authenticationRefresh;
     private IDuplexPipe? _application;
     private IDuplexPipe? _transport;
     // Volatile so that the poll loop sees the updated value set from a different thread
@@ -33,11 +37,16 @@ internal sealed partial class LongPollingTransport : ITransport
 
     public PipeWriter Output => _transport!.Output;
 
-    public LongPollingTransport(HttpClient httpClient, HttpConnectionOptions? httpConnectionOptions = null, ILoggerFactory? loggerFactory = null)
+    public LongPollingTransport(
+        HttpClient httpClient,
+        HttpConnectionOptions? httpConnectionOptions = null,
+        ILoggerFactory? loggerFactory = null,
+        Func<CancellationToken, Task>? authenticationRefresh = null)
     {
         _httpClient = httpClient;
         _logger = (loggerFactory ?? NullLoggerFactory.Instance).CreateLogger(typeof(LongPollingTransport));
         _httpConnectionOptions = httpConnectionOptions ?? new();
+        _authenticationRefresh = authenticationRefresh;
     }
 
     public async Task StartAsync(Uri url, TransferFormat transferFormat, CancellationToken cancellationToken = default)
@@ -146,6 +155,7 @@ internal sealed partial class LongPollingTransport : ITransport
 
         // Allocate this once for the duration of the transport so we can continuously write to it
         var applicationStream = new PipeWriterStream(_application.Output);
+        var authenticationRefreshAttempted = false;
 
         try
         {
@@ -174,19 +184,30 @@ internal sealed partial class LongPollingTransport : ITransport
                     continue;
                 }
 
-                Log.PollResponseReceived(_logger, response);
-
-                response.EnsureSuccessStatusCode();
-
-                if (response.StatusCode == HttpStatusCode.NoContent || cancellationToken.IsCancellationRequested)
+                using (response)
                 {
-                    Log.ClosingConnection(_logger);
+                    Log.PollResponseReceived(_logger, response);
 
-                    // Transport closed or polling stopped, we're done
-                    break;
-                }
-                else
-                {
+                    if (!authenticationRefreshAttempted
+                        && _authenticationRefresh is not null
+                        && await IsAuthenticationRefreshRequiredAsync(response, cancellationToken).ConfigureAwait(false))
+                    {
+                        authenticationRefreshAttempted = true;
+                        await _authenticationRefresh(cancellationToken).ConfigureAwait(false);
+                        continue;
+                    }
+
+                    authenticationRefreshAttempted = false;
+                    response.EnsureSuccessStatusCode();
+
+                    if (response.StatusCode == HttpStatusCode.NoContent || cancellationToken.IsCancellationRequested)
+                    {
+                        Log.ClosingConnection(_logger);
+
+                        // Transport closed or polling stopped, we're done
+                        break;
+                    }
+
                     Log.ReceivedMessages(_logger);
 #if NETCOREAPP
                     await response.Content.CopyToAsync(applicationStream, cancellationToken).ConfigureAwait(false);
@@ -206,6 +227,12 @@ internal sealed partial class LongPollingTransport : ITransport
                 }
             }
         }
+        catch (OperationCanceledException ex) when (!cancellationToken.IsCancellationRequested)
+        {
+            Log.ErrorPolling(_logger, pollUrl, ex);
+
+            _error = ex;
+        }
         catch (OperationCanceledException)
         {
             // transport is being closed
@@ -222,6 +249,37 @@ internal sealed partial class LongPollingTransport : ITransport
             _application.Output.Complete(_error);
 
             Log.ReceiveStopped(_logger);
+        }
+    }
+
+    private static async Task<bool> IsAuthenticationRefreshRequiredAsync(
+        HttpResponseMessage response,
+        CancellationToken cancellationToken)
+    {
+        if (response.StatusCode != HttpStatusCode.Conflict)
+        {
+            return false;
+        }
+
+#if NET5_0_OR_GREATER
+        var content = await response.Content.ReadAsByteArrayAsync(cancellationToken).ConfigureAwait(false);
+#else
+#pragma warning disable CA2016 // Forward the 'CancellationToken' parameter to methods
+        var content = await response.Content.ReadAsByteArrayAsync().ConfigureAwait(false);
+#pragma warning restore CA2016
+#endif
+
+        try
+        {
+            using var document = JsonDocument.Parse(content);
+            return document.RootElement.ValueKind == JsonValueKind.Object
+                && document.RootElement.TryGetProperty("error", out var error)
+                && error.ValueKind == JsonValueKind.String
+                && error.GetString() == AuthenticationRefreshRequiredError;
+        }
+        catch (JsonException)
+        {
+            return false;
         }
     }
 

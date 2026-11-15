@@ -234,8 +234,8 @@ export class CircuitManager implements DotNet.DotNetCallDispatcher {
     } catch (ex: any) {
       this.unhandledError(ex as Error);
 
-      if (ex.errorType === 'FailedToNegotiateWithServerError') {
-        // Connection with the server has been interrupted, and we're in the process of reconnecting.
+      if (this._circuitId || ex.errorType === 'FailedToNegotiateWithServerError') {
+        // An existing circuit can retry any connection-start failure, including when negotiation is skipped.
         // Throw this exception so it can be handled at the reconnection layer, and don't show the
         // error notification.
         throw ex;
