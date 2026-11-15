@@ -487,6 +487,21 @@ switch ($Action) {
         }
 
         $vallyArguments += $Arguments
+        $assertOptions = @{}
+        if ($vallyArguments[0] -eq 'experiment') {
+            for ($index = 0; $Arguments -and $index -lt $Arguments.Count; $index++) {
+                if ($Arguments[$index] -match '^--variant(?:=(.*))?$') {
+                    $assertOptions.Variant = if ($Arguments[$index].Contains('=')) {
+                        $Matches[1]
+                    } else {
+                        if (++$index -ge $Arguments.Count) {
+                            throw 'Missing value for --variant.'
+                        }
+                        $Arguments[$index]
+                    }
+                }
+            }
+        }
         $assertsResults = ($selectedSuite -eq 'review-candidate-verifier' -or $vallyArguments[0] -eq 'experiment') -and
             $Arguments -notcontains '--dry-run'
         $existingRunDirectoryNames = [Collections.Generic.HashSet[string]]::new([StringComparer]::Ordinal)
@@ -529,7 +544,7 @@ switch ($Action) {
             if ($newRunDirectories.Count -ne 1) {
                 throw "Expected one new Vally run directory under '$output'; found $($newRunDirectories.Count)."
             }
-            & (Join-Path $PSScriptRoot 'assert_results.ps1') -RunDirectory $newRunDirectories[0].FullName
+            & (Join-Path $PSScriptRoot 'assert_results.ps1') -RunDirectory $newRunDirectories[0].FullName @assertOptions
             if ($script:vallyExitCode -eq 1) {
                 Write-Warning 'Vally exited with code 1. Complete primary trials passed the applicable result-set checks.'
             }

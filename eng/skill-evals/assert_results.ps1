@@ -4,7 +4,9 @@ param(
     [string]$OutputDirectory,
 
     [Parameter(Mandatory = $true, ParameterSetName = 'Run')]
-    [string]$RunDirectory
+    [string]$RunDirectory,
+
+    [string]$Variant
 )
 
 $ErrorActionPreference = 'Stop'
@@ -23,7 +25,7 @@ if ($RunDirectory) {
 if (-not $RunDirectory -and $runDirectories.Count -gt 0 -and
     @($runDirectories | Where-Object { Test-Path -LiteralPath (Join-Path $_.FullName 'plan-snapshot.json') }).Count -eq 0) {
     foreach ($directory in $runDirectories) {
-        & $PSCommandPath -OutputDirectory $directory.FullName
+        & $PSCommandPath -OutputDirectory $directory.FullName -Variant $Variant
     }
     return
 }
@@ -40,7 +42,9 @@ if (-not (Test-Path -LiteralPath $snapshotPath -PathType Leaf)) {
 $snapshot = Get-Content -LiteralPath $snapshotPath -Raw | ConvertFrom-Json -Depth 100
 $scoresByVariant = @{}
 $plansByVariant = @{}
-$variants = if ($snapshot.evals.Count -eq 1 -and $snapshot.evals[0].variant -eq 'current') {
+$variants = if ($Variant) {
+    @($Variant)
+} elseif ($snapshot.evals.Count -eq 1 -and $snapshot.evals[0].variant -eq 'current') {
     @('current')
 } else {
     @('baseline', 'skilled')

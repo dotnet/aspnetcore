@@ -167,6 +167,8 @@ That plan reflects the selected YAML and CLI runs/threshold overrides. For the
 verifier suite, smoke selects one repeat per case and checks trial
 completion, grader scores, and read-integrity receipts without enforcing the
 multi-trial per-stimulus disposition threshold.
+Experiment runs with `--variant skilled` or `--variant=skilled` check only the
+selected variant; without this option, both baseline and skilled are required.
 
 ## Hosted entry point
 

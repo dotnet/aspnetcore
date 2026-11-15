@@ -72,12 +72,20 @@ if ($args[0] -eq 'experiment' -and $args -notcontains '--dry-run') {
     $output = $args[([array]::IndexOf($args, '--output-dir') + 1)]
     $run = Join-Path $output ('experiment-' + [guid]::NewGuid().ToString('N'))
     New-Item -ItemType Directory -Path $run -Force | Out-Null
+    $variants = @('baseline', 'skilled')
+    for ($index = 0; $index -lt $args.Count; $index++) {
+        if ($args[$index] -eq '--variant') {
+            $variants = @($args[++$index])
+        } elseif ($args[$index] -like '--variant=*') {
+            $variants = @($args[$index].Substring('--variant='.Length))
+        }
+    }
     @{
-        evals = @('baseline', 'skilled' | ForEach-Object {
+        evals = @($variants | ForEach-Object {
             @{ variant = $_; plannedStimulusNames = @('s'); plannedStimulusCount = 1; runs = 1; threshold = 0 }
         })
     } | ConvertTo-Json -Depth 10 | Set-Content (Join-Path $run 'plan-snapshot.json')
-    foreach ($variant in 'baseline', 'skilled') {
+    foreach ($variant in $variants) {
         New-Item -ItemType Directory -Path (Join-Path $run $variant) | Out-Null
         @{ type = 'trial-result'; variant = $variant; stimulus = 's'; status = 'success'; gradeResult = @{ score = 1 } } |
             ConvertTo-Json -Depth 10 -Compress |
@@ -217,6 +225,17 @@ stimuli:
     Assert-True ($customValidateInvocations[0].Arguments -contains '--dry-run') (
         'Custom validation could invoke models.'
     )
+
+    foreach ($syntax in @('Separate', 'Equals')) {
+        $variantArguments = if ($syntax -eq 'Separate') { @('--variant', 'skilled') } else { @('--variant=skilled') }
+        & $runner Run -Suite review-public-api -Vally $fakeVally -VallyPrefix @() `
+            -OutputDirectory (Join-Path $testRoot "selected-variant-$syntax") -Arguments $variantArguments
+        $invocation = Read-Invocation
+        foreach ($argument in $variantArguments) {
+            Assert-True ($invocation -contains $argument) 'Selected variant was not forwarded to Vally.'
+        }
+        Write-Host "SelectedVariant${syntax}Syntax passed."
+    }
 
     $validationRoot = Join-Path $testRoot 'validation-root'
     $validationEvalRoot = Join-Path $validationRoot 'eng/skill-evals'

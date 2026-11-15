@@ -121,6 +121,27 @@ try {
         Move-Item -LiteralPath $literalRun -Destination $run
     }
 
+    $snapshotPath = Join-Path $run 'plan-snapshot.json'
+    $fullSnapshot = Get-Content -LiteralPath $snapshotPath -Raw
+    try {
+        $snapshot = $fullSnapshot | ConvertFrom-Json
+        $snapshot.evals = @($snapshot.evals | Where-Object variant -eq 'skilled')
+        $snapshot | ConvertTo-Json -Depth 10 | Set-Content -LiteralPath $snapshotPath
+        Assert-Throws {
+            & $assertResults -RunDirectory $run
+        } "Expected exactly one 'baseline' plan; found 0" 'A single variant was accepted without explicit selection.'
+        Write-Host 'SingleVariantRequiresSelection passed.'
+        & $assertResults -RunDirectory $run -Variant skilled
+        & $assertResults -OutputDirectory $output -Variant skilled
+        Write-Host 'SelectedSkilledVariant passed.'
+        Assert-Throws {
+            & $assertResults -RunDirectory $run -Variant baseline
+        } "Expected exactly one 'baseline' plan; found 0" 'A mismatched selected variant was accepted.'
+        Write-Host 'SelectedVariantMustMatchPlan passed.'
+    } finally {
+        Set-Content -LiteralPath $snapshotPath $fullSnapshot
+    }
+
     Reset-Results
     Write-Results -Variant skilled -Score 0.8
     Assert-Throws {
