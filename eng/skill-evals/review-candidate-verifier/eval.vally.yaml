@@ -33,6 +33,18 @@ stimuli:
           dest: source/head/src/Components/AI/src
         - src: fixtures/shared/source/mergeBase/src/Components/AI/src
           dest: source/mergeBase/src/Components/AI/src
+        - src: fixtures/shared/source/head/src/Components/AI/src/Blocks/ContentBlock.cs
+          dest: source/mergeBase/src/Components/AI/src/Blocks/ContentBlock.cs
+        - src: fixtures/shared/source/head/src/Components/AI/src/Blocks/IInteractiveBlock.cs
+          dest: source/mergeBase/src/Components/AI/src/Blocks/IInteractiveBlock.cs
+        - src: fixtures/shared/source/head/src/Components/AI/src/Components/MessageInput.cs
+          dest: source/mergeBase/src/Components/AI/src/Components/MessageInput.cs
+        - src: fixtures/shared/source/head/src/Components/AI/src/Engine/ConversationStatus.cs
+          dest: source/mergeBase/src/Components/AI/src/Engine/ConversationStatus.cs
+        - src: fixtures/shared/source/head/src/Components/AI/src/Engine/ConversationTurn.cs
+          dest: source/mergeBase/src/Components/AI/src/Engine/ConversationTurn.cs
+        - src: fixtures/shared/source/head/src/Components/AI/src/Pipeline/BlockMappingPipeline.cs
+          dest: source/mergeBase/src/Components/AI/src/Pipeline/BlockMappingPipeline.cs
         - src: fixtures/shared/source/baseTip/docs/CrossCuttingGuidance.md
           dest: source/baseTip/docs/CrossCuttingGuidance.md
         - src: fixtures/shared/changes.diff
@@ -91,6 +103,18 @@ stimuli:
           dest: source/head/src/Components/AI/src
         - src: fixtures/shared/source/mergeBase/src/Components/AI/src
           dest: source/mergeBase/src/Components/AI/src
+        - src: fixtures/shared/source/head/src/Components/AI/src/Blocks/ContentBlock.cs
+          dest: source/mergeBase/src/Components/AI/src/Blocks/ContentBlock.cs
+        - src: fixtures/shared/source/head/src/Components/AI/src/Blocks/IInteractiveBlock.cs
+          dest: source/mergeBase/src/Components/AI/src/Blocks/IInteractiveBlock.cs
+        - src: fixtures/shared/source/head/src/Components/AI/src/Components/MessageInput.cs
+          dest: source/mergeBase/src/Components/AI/src/Components/MessageInput.cs
+        - src: fixtures/shared/source/head/src/Components/AI/src/Engine/ConversationStatus.cs
+          dest: source/mergeBase/src/Components/AI/src/Engine/ConversationStatus.cs
+        - src: fixtures/shared/source/head/src/Components/AI/src/Engine/ConversationTurn.cs
+          dest: source/mergeBase/src/Components/AI/src/Engine/ConversationTurn.cs
+        - src: fixtures/shared/source/head/src/Components/AI/src/Pipeline/BlockMappingPipeline.cs
+          dest: source/mergeBase/src/Components/AI/src/Pipeline/BlockMappingPipeline.cs
         - src: fixtures/shared/source/baseTip/docs/CrossCuttingGuidance.md
           dest: source/baseTip/docs/CrossCuttingGuidance.md
         - src: fixtures/shared/changes.diff

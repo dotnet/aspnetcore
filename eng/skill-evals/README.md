@@ -111,10 +111,11 @@ Each `case-<name>` folder holds files that only that case uses.
 | `case-c\source\head\src\Engine\Conversation.mjs` | c | Synthetic head implementation. |
 | `case-c\source\mergeBase\src\Engine\Conversation.mjs` | c | Synthetic earlier implementation. |
 
-The following nine files appear under
-`shared\source\head\src\Components\AI\src` and
+Cases a and b receive all nine files at both revisions. Six files are unchanged
+between the revisions, so only `shared\source\head\src\Components\AI\src` stores
+them, and the spec maps each one to both revisions. Only `AgentContext.cs`,
+`UIAgent.cs`, and `UIAgentLog.cs` are also stored under
 `shared\source\mergeBase\src\Components\AI\src`.
-Both cases a and b receive all nine files at both revisions.
 
 | C# file relative to either source directory | Cases | Purpose |
 |---|---|---|

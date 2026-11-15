@@ -101,28 +101,8 @@
       "sha256": "13e383993dd60d8548089196ada34afcf791c7995ffda48104bbe23bf15cff11"
     },
     {
-      "file": "shared/source/mergeBase/src/Components/AI/src/Blocks/ContentBlock.cs",
-      "sha256": "7cab62ac70d7faa70dacbdb4bd36723b4061612ab921b9f7d7d019d3ba905261"
-    },
-    {
-      "file": "shared/source/mergeBase/src/Components/AI/src/Blocks/IInteractiveBlock.cs",
-      "sha256": "0f6c4f9e859a917755b75bcf335273c37461525fc72d7e5564ba2594c99ba90f"
-    },
-    {
-      "file": "shared/source/mergeBase/src/Components/AI/src/Components/MessageInput.cs",
-      "sha256": "d0ddd1d72a79945463c3ddf92b2861b4e2b05d47fb4bebcbc7feef5685397091"
-    },
-    {
       "file": "shared/source/mergeBase/src/Components/AI/src/Engine/AgentContext.cs",
       "sha256": "61ca1e7434f6046328435ec8df5bd069c3198af8bb6b2db9912ff4c66cf7b084"
-    },
-    {
-      "file": "shared/source/mergeBase/src/Components/AI/src/Engine/ConversationStatus.cs",
-      "sha256": "b44fd1f2cbb45c401f14a695f3ef8c7dac6f1d2a66f6e9622f15a2c2099546f9"
-    },
-    {
-      "file": "shared/source/mergeBase/src/Components/AI/src/Engine/ConversationTurn.cs",
-      "sha256": "3a5dbc73c955c5dec1fa04e195c35387477287a0b5e78013b2c91d65477295ea"
     },
     {
       "file": "shared/source/mergeBase/src/Components/AI/src/Engine/UIAgent.cs",
@@ -131,10 +111,6 @@
     {
       "file": "shared/source/mergeBase/src/Components/AI/src/Engine/UIAgentLog.cs",
       "sha256": "f7eb199a984d4b163a972c13e709de02e203789b8e0e834793b94487344e2df7"
-    },
-    {
-      "file": "shared/source/mergeBase/src/Components/AI/src/Pipeline/BlockMappingPipeline.cs",
-      "sha256": "3efb30f16570e2754c38b579e3fdb4dc4d5b9d750b3a9408c7fa1238c11258ee"
     },
     {
       "file": "case-c/source/mergeBase/src/Engine/Conversation.mjs",
