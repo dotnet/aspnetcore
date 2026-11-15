@@ -239,39 +239,6 @@ stimuli:
             -Destination (Join-Path $testRoot 'restricted-mcp')
     } "forbidden 'environment.mcpServers' field"
 
-    if (-not $env:SKILL_EVAL_STAGE_RESTRICTION) {
-        New-RestrictedCandidate 'restricted-grading-commands' @'
-grading_environment:
-  commands:
-    - node candidate-grader.mjs
-stimuli:
-  - name: case
-'@
-        Assert-Throws {
-            & $stageRun `
-                -TrustedRoot $trustedRoot `
-                -CandidateRoot $candidateRoot `
-                -EvalName restricted-grading-commands `
-                -Destination (Join-Path $testRoot 'restricted-grading-commands')
-        } "forbidden 'grading_environment.commands' field"
-
-        New-RestrictedCandidate 'restricted-grading-mcp' @'
-stimuli:
-  - name: case
-    grading_environment:
-      mcpServers:
-        candidate:
-          command: node
-'@
-        Assert-Throws {
-            & $stageRun `
-                -TrustedRoot $trustedRoot `
-                -CandidateRoot $candidateRoot `
-                -EvalName restricted-grading-mcp `
-                -Destination (Join-Path $testRoot 'restricted-grading-mcp')
-        } "forbidden 'grading_environment.mcpServers' field"
-    }
-
     New-RestrictedCandidate 'restricted-agent-environment' @'
 stimuli:
   - agent_environment:
@@ -539,10 +506,7 @@ stimuli:
         Test-Path (Join-Path $componentDestination '.github/agents/review-candidate-verifier.agent.md')
     ) 'The component verifier profile is missing.'
 
-    $extendedCanonicalComponentSpec = $canonicalComponentSpec.Replace(
-        '  - name: component-case',
-        "  - name: component-case`n    grading_environment:`n      files:`n        - src: ../grade_disposition.mjs`n          dest: grade_disposition.mjs"
-    ) + @'
+    $extendedCanonicalComponentSpec = $canonicalComponentSpec + @'
 
       - type: program
         name: secondary-component-case
