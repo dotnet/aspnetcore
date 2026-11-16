@@ -685,7 +685,7 @@ export class CircuitManager implements DotNet.DotNetCallDispatcher {
     if (this._pauseUiVisible) {
       this._pauseUiVisible = false;
       try {
-        this._options.reconnectionHandler?.onConnectionUp();
+        this._options.reconnectionHandler?.dispose?.();
       } catch (error) {
         this._logger.log(LogLevel.Error, `Failed to clean up the paused circuit UI: ${error}`);
       }

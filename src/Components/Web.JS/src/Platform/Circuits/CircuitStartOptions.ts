@@ -48,10 +48,14 @@ export interface CircuitHandler {
 export interface ReconnectionHandler {
   onConnectionDown(options: ReconnectionOptions, error?: Error, isClientPause?: boolean, remotePause?: boolean): void;
   /**
-   * Clears the reconnection UI. When invoked to clean up a paused circuit during disposal,
-   * exceptions are logged without preventing teardown or causing disposal to reject.
+   * Called after the connection is successfully restored.
    */
   onConnectionUp(): void;
+  /**
+   * Cleans up the reconnection UI when a paused circuit is disposed, without indicating
+   * that the connection was restored. Exceptions are logged without preventing teardown.
+   */
+  dispose?(): void;
 }
 
 function computeDefaultRetryInterval(previousAttempts: number, maxRetries?: number): number | null {

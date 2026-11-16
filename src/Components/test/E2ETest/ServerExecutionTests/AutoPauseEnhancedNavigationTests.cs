@@ -110,6 +110,83 @@ public class AutoPauseEnhancedNavigationTests : AutoPauseTestBase<App>
         Browser.Equal("2", () => Browser.Exists(By.Id("persistent-counter-count")).Text);
     }
 
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public void PausedCircuitDisposal_DoesNotReportConnectionUp(bool supportsCleanup)
+    {
+        Navigate("/subdir/persistent-state/server-pause?suppress-autostart");
+        var htmlElement = Browser.Exists(By.TagName("html"));
+        var js = (IJavaScriptExecutor)Browser;
+        js.ExecuteScript("""
+            window.retirement = { connected: true, up: 0, cleanup: 0, closed: 0 };
+            const handler = {
+                onConnectionDown: (...args) => {
+                    retirement.connected = false;
+                    Blazor.defaultReconnectionHandler.onConnectionDown(...args);
+                },
+                onConnectionUp: () => {
+                    retirement.connected = true;
+                    retirement.up++;
+                    Blazor.defaultReconnectionHandler.onConnectionUp();
+                }
+            };
+            if (arguments[0]) {
+                handler.dispose = () => {
+                    retirement.cleanup++;
+                    Blazor.defaultReconnectionHandler.dispose();
+                };
+            }
+            Blazor.start({
+                ssr: { circuitInactivityTimeoutMs: 2000 },
+                circuit: {
+                    reconnectionHandler: handler,
+                    circuitHandlers: [{ onCircuitClosed: () => retirement.closed++ }]
+                }
+            });
+            """, supportsCleanup);
+        Browser.NotEqual("", () => Browser.Exists(By.Id("circuit-id")).Text);
+        Browser.Exists(By.Id("increment-persistent-counter-count")).Click();
+        Browser.Equal("1", () => Browser.Exists(By.Id("persistent-counter-count")).Text);
+        Browser.GetBrowserLogs(LogLevel.Severe);
+
+        Assert.True((bool)js.ExecuteAsyncScript("""
+            const callback = arguments[arguments.length - 1];
+            Blazor.pauseCircuit().then(callback);
+            """));
+        WaitForPausedUI();
+        Assert.True((bool)js.ExecuteAsyncScript("""
+            const callback = arguments[arguments.length - 1];
+            Blazor.resumeCircuit().then(callback);
+            """));
+        WaitForResumedUI();
+        Assert.Equal(1L, js.ExecuteScript("return retirement.up;"));
+        Assert.True((bool)js.ExecuteScript("return retirement.connected;"));
+        Assert.Equal(0L, js.ExecuteScript("return retirement.cleanup;"));
+        Browser.Exists(By.Id("increment-persistent-counter-count")).Click();
+        Browser.Equal("2", () => Browser.Exists(By.Id("persistent-counter-count")).Text);
+        js.ExecuteScript("retirement.up = 0; retirement.closed = 0;");
+
+        Browser.Exists(By.Id("navigate-to-static-auto-pause")).Click();
+        Browser.Equal("static", () => Browser.Exists(By.Id("execution-mode")).Text);
+        Assert.True((bool)js.ExecuteAsyncScript("""
+            const callback = arguments[arguments.length - 1];
+            Blazor.pauseCircuit().then(callback);
+            """));
+        WaitForPausedUI();
+        Browser.Equal(1L, () => js.ExecuteScript("return retirement.closed;"));
+
+        Assert.Equal(0L, js.ExecuteScript("return retirement.up;"));
+        Assert.False((bool)js.ExecuteScript("return retirement.connected;"));
+        Assert.Equal(supportsCleanup ? 1L : 0L, js.ExecuteScript("return retirement.cleanup;"));
+        if (supportsCleanup)
+        {
+            WaitForResumedUI();
+        }
+        Browser.False(() => htmlElement.IsStale());
+        Assert.Empty(Browser.GetBrowserLogs(LogLevel.Severe));
+    }
+
     [Fact]
     public void AutoPause_PausesReplacementAfterAbortedPauseDeferralCompletes()
     {
