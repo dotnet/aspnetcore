@@ -132,9 +132,9 @@ public class AutoPauseEnhancedNavigationTests : AutoPauseTestBase<App>
                 }
             };
             if (arguments[0]) {
-                handler.dispose = () => {
+                handler.onPausedCircuitDisposed = () => {
                     retirement.cleanup++;
-                    Blazor.defaultReconnectionHandler.dispose();
+                    Blazor.defaultReconnectionHandler.onPausedCircuitDisposed();
                 };
             }
             Blazor.start({
