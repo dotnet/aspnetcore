@@ -85,6 +85,64 @@ const cases = [
   ['discarded reason', findingWithBody('**Why discarded:** Old and head match.'), false],
   ['discarded confidence', findingWithBody('**Confidence:** `discarded`'), false],
   ['discarded marker case insensitive', findingWithBody('[discarded] Pre-existing behavior.'), false],
+  ['canonical discarded inline', findingWithBody(
+    '- [DISCARDED] Pre-existing behavior.\n  - confidence: discarded\n  - Why discarded: Old and head match.'), false],
+  ['styled severity-prefixed discarded claim', findingWithBody(
+    '\n## **[P2] [DISCARDED] Pre-existing behavior.**'), false],
+  ['numbered discarded claim', findingWithBody('1. **[DISCARDED] Pre-existing behavior.**'), false],
+  ['bulleted discarded reason', findingWithBody(
+    'A candidate.\n* **Why discarded:** Old and head match.'), false],
+  ['bulleted discarded confidence', findingWithBody(
+    'A candidate.\n+ **Confidence:** `discarded`'), false],
+  ['verified label does not override discarded claim', findingWithBody(
+    '[DISCARDED] Pre-existing behavior.\nConfidence: verified'), false],
+  ['unresolved label does not override discarded reason', findingWithBody(
+    '[UNRESOLVED] A candidate.\nWhy discarded: Old and head match.'), false],
+  ['verified label does not override discarded confidence', findingWithBody(
+    'A candidate.\nConfidence: verified\nConfidence: discarded'), false],
+  ...['verified', 'unresolved'].flatMap(confidence => {
+    const claim = confidence === 'unresolved' ? '[UNRESOLVED] Incorrect marker handling.' : 'Incorrect marker handling.';
+    const prefix = `${claim}\nConfidence: ${confidence}\n`;
+    return [
+      [`${confidence} inline marker literals`, findingWithBody(
+        `${prefix}The parser rejects \`[DISCARDED]\`, \`Why discarded:\`, and \`Confidence: discarded\` in valid findings.`), true],
+      [`${confidence} backtick-fenced marker literals`, findingWithBody(
+        `${prefix}\`\`\`text\n[DISCARDED] Example.\nWhy discarded: Example.\nConfidence: discarded\n\`\`\``), true],
+      [`${confidence} tilde-fenced marker literals`, findingWithBody(
+        `${prefix}~~~text\n[DISCARDED] Example.\nWhy discarded: Example.\nConfidence: discarded\n~~~`), true],
+      [`${confidence} blockquoted marker literals`, findingWithBody(
+        `${prefix}> [DISCARDED] Example.\n> Why discarded: Example.\n> Confidence: discarded`), true],
+    ];
+  }),
+  ['quoted marker before real claim', findingWithBody(
+    '> [DISCARDED] Example.\n\nA verified regression.\nConfidence: verified'), true],
+  ['fenced marker before real claim', findingWithBody(
+    '```\n[DISCARDED] Example.\n```\nA verified regression.\nConfidence: verified'), true],
+  ['inline code label is not a field', findingWithBody(
+    'A verified regression.\n`Why discarded:` is treated as metadata.\n`Confidence: discarded` is also mishandled.'), true],
+  ['discarded marker in later prose is not claim', findingWithBody(
+    'A verified regression.\n[DISCARDED] is an example of a parsed marker.'), true],
+  ['confidence value must be discarded exactly', findingWithBody(
+    'A verified regression.\nConfidence: discarded-value is parsed incorrectly.'), true],
+  ['field labels cannot cross lines', findingWithBody(
+    'A verified regression.\nWhy\ndiscarded: is parsed incorrectly.\nConfidence:\ndiscarded'), true],
+  ['different fence does not close quoted example', findingWithBody(
+    'A verified regression.\n````text\n```\nConfidence: discarded\n````'), true],
+  ['inline code does not hide discarded field', findingWithBody(
+    'A candidate.\n```quoted inline code```\nConfidence: discarded'), false],
+  ['discarded claim with punctuation', findingWithBody('[DISCARDED]: Old behavior.'), false],
+  ['discarded claim after quoted evidence', findingWithBody(
+    '~~~text\nConfidence: verified\n~~~\n> A quote.\n**[DISCARDED] Pre-existing behavior.**'), false],
+  ['discarded field after fenced evidence', findingWithBody(
+    'A candidate.\n```\nConfidence: verified\n```\nConfidence: discarded'), false],
+  ['mixed valid quoted findings', {
+    items: [
+      { ...comment(), body: 'The parser rejects `[DISCARDED]` in valid claims.\nConfidence: verified' },
+      { ...comment(), body: '[UNRESOLVED] Another finding.\nConfidence: unresolved\nWhy unresolved: Missing external evidence.' },
+      review(),
+    ],
+    errors: [],
+  }, true],
   ['mixed real and discarded findings', {
     items: [
       { ...comment(), body: 'Real regression.\nConfidence: verified' },

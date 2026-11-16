@@ -1019,6 +1019,63 @@ try {
   ], '1');
   assert.equal(acceptedVerifierRun.status, 0, acceptedVerifierRun.stderr);
 
+  const bodyClassificationCases = [
+    ['canonical discarded inline', '[DISCARDED] Old behavior.\nConfidence: discarded\nWhy discarded: Old and head match.', false],
+    ['discarded claim alone', '[DISCARDED] Old behavior.', false],
+    ['discarded reason alone', 'A candidate.\nWhy discarded: Old and head match.', false],
+    ['discarded confidence alone', 'A candidate.\nConfidence: discarded', false],
+    ['styled severity-prefixed discard', '## **[P2] [DISCARDED] Old behavior.**', false],
+    ['unresolved label with discarded field', '[UNRESOLVED] A candidate.\n- **Confidence:** `discarded`', false],
+    ...['verified', 'unresolved'].flatMap(confidence => {
+      const claim = confidence === 'unresolved' ? '[UNRESOLVED] Incorrect marker handling.' : 'Incorrect marker handling.';
+      const prefix = `${claim}\nConfidence: ${confidence}\n`;
+      return [
+        [`${confidence} inline quotes`, `${prefix}The parser rejects \`[DISCARDED]\`, \`Why discarded:\`, and \`Confidence: discarded\`.`, true],
+        [`${confidence} fenced quotes`, `${prefix}\`\`\`\n[DISCARDED] Example.\nWhy discarded: Example.\nConfidence: discarded\n\`\`\``, true],
+        [`${confidence} tilde-fenced quotes`, `${prefix}~~~\n[DISCARDED] Example.\nWhy discarded: Example.\nConfidence: discarded\n~~~`, true],
+        [`${confidence} blockquotes`, `${prefix}> [DISCARDED] Example.\n> Why discarded: Example.\n> Confidence: discarded`, true],
+      ];
+    }),
+  ];
+  const bodyClassificationMismatches = [];
+  for (const [workflowName, workflow] of [['source', workflowSource], ['lock', workflowLock]]) {
+    const preflight = workflow.match(
+      /- name: Reject incomplete or partial publication sets\r?\n[\s\S]*?\r?\n([ \t]+)script: \|\r?\n([\s\S]*?)(?=\r?\n[ \t]*- name:)/);
+    assert.ok(preflight, `${workflowName} publication preflight must be extractable.`);
+    const script = preflight[2].split(/\r?\n/)
+      .map(line => line.slice(preflight[1].length + 2)).join('\n');
+    for (const [name, body, accepted] of bodyClassificationCases) {
+      const items = [
+        { type: 'create_pull_request_review_comment', path: 'example.cs', line: 1, body },
+        { type: 'create_pull_request_review_comment', path: 'example.cs', line: 2, body: 'Another real finding.\nConfidence: verified' },
+        { type: 'submit_pull_request_review', event: 'COMMENT', body: '<details><summary>DISCARDED</summary>\n[DISCARDED] Old and head match.\n</details>' },
+      ];
+      const events = [
+        ...initialReport,
+        ...hostedCandidateVerifier(),
+        ...items.flatMap((item, index) => {
+          const { type, ...arguments_ } = item;
+          return safeOutputCall(`body-classification-${index}`, `safeoutputs-${type}`, arguments_);
+        }),
+      ];
+      const verified = runVerifier(events, '1');
+      assert.equal(verified.status, 0, `${workflowName} ${name}: ${verified.stderr}`);
+      const artifact = path.join(tempRoot, 'review-publication-gate');
+      fs.mkdirSync(artifact, { recursive: true });
+      fs.writeFileSync(path.join(artifact, 'agent_output.json'), JSON.stringify({ items, errors: [] }));
+      const failures = [];
+      Function('require', 'process', 'core', script)(
+        moduleName => moduleName === 'fs' ? fs : moduleName === 'path' ? path : undefined,
+        { env: { RUNNER_TEMP: tempRoot } },
+        { setFailed: message => failures.push(message) });
+      if ((failures.length === 0) !== accepted) {
+        bodyClassificationMismatches.push(`${workflowName} ${name}: ${failures.join('; ')}`);
+      }
+    }
+  }
+  assert.deepEqual(bodyClassificationMismatches, [], bodyClassificationMismatches.join('\n'));
+  console.log(`Validated ${bodyClassificationCases.length} mixed publication body classifications against source and compiled lock.`);
+
   const findingsWithoutVerifierRejected = runVerifier([
     ...initialReport,
     ...safeOutputCall('finding', 'safeoutputs-create_pull_request_review_comment', {

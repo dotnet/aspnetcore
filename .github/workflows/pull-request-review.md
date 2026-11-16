@@ -749,11 +749,38 @@ jobs:
               core.setFailed('The agent output contains an unsupported item type.');
               return;
             }
+            const isDiscardedInline = body => {
+              let fence;
+              const lines = body.split(/\r?\n/).filter(line => {
+                if (/^[ \t]*>/.test(line)) {
+                  return false;
+                }
+                const delimiter = line.match(/^[ \t]*(`{3,}|~{3,})/);
+                if (fence) {
+                  if (delimiter && delimiter[1][0] === fence[0] &&
+                      delimiter[1].length >= fence.length &&
+                      /^[ \t]*$/.test(line.slice(delimiter[0].length))) {
+                    fence = undefined;
+                  }
+                  return false;
+                }
+                if (delimiter && (delimiter[1][0] !== '`' ||
+                    !line.slice(delimiter[0].length).includes('`'))) {
+                  fence = delimiter[1];
+                  return false;
+                }
+                return true;
+              }).map(line => line.replace(/[*_]/g, '')
+                .replace(/^[ \t]*(?:(?:[-+]|[0-9]+[.)]|#{1,6})[ \t]+)+/, '').trim())
+                .filter(line => line.length > 0);
+              return /^(?:\[P[0-3]\][ \t]+)?\[DISCARDED\]/i.test(lines[0] ?? '') ||
+                lines.some(line => /^Why[ \t]+discarded[ \t]*:/i.test(line)) ||
+                lines.some(line => /^Confidence[ \t]*:[ \t]*`?discarded`?[ \t]*$/i.test(line));
+            };
             if (output.items.some(item =>
               item.type === 'create_pull_request_review_comment' &&
               typeof item.body === 'string' &&
-              /\[DISCARDED\]|\bWhy\s+discarded\s*:|\bconfidence\s*:\s*discarded\b/i.test(
-                item.body.replace(/[*_`]/g, '')))) {
+              isDiscardedInline(item.body))) {
               core.setFailed('Discarded candidates belong only in the review summary, never inline.');
               return;
             }
