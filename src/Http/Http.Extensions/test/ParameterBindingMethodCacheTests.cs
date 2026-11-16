@@ -3,11 +3,11 @@
 
 #nullable enable
 
+using System.Collections.Concurrent;
 using System.Globalization;
 using System.Linq.Expressions;
 using System.Reflection;
 using System.Reflection.Emit;
-using System.Runtime.CompilerServices;
 using Microsoft.Extensions.Internal;
 
 namespace Microsoft.AspNetCore.Http.Extensions.Tests;
@@ -150,30 +150,21 @@ public class ParameterBindingMethodCacheTests
     }
 
     [Fact]
-    public void FindTryParseMethod_DoesNotRootCollectibleTypes()
-    {
-        var weakReference = CallFindTryParseOnCollectibleType();
-
-        for (var i = 0; i < 10 && weakReference.IsAlive; i++)
-        {
-            GC.Collect();
-            GC.WaitForPendingFinalizers();
-        }
-
-        Assert.False(weakReference.IsAlive, "The collectible type was rooted by the process-wide cache.");
-    }
-
-    [MethodImpl(MethodImplOptions.NoInlining)]
-    private static WeakReference CallFindTryParseOnCollectibleType()
+    public void FindTryParseMethod_DoesNotCacheCollectibleTypesInTheProcessWideDictionary()
     {
         var assemblyBuilder = AssemblyBuilder.DefineDynamicAssembly(new AssemblyName("CollectibleTestAssembly"), AssemblyBuilderAccess.RunAndCollect);
         var moduleBuilder = assemblyBuilder.DefineDynamicModule("CollectibleTestModule");
         var type = moduleBuilder.DefineType("CollectibleType", TypeAttributes.Public).CreateType();
         Assert.True(type.IsCollectible);
 
-        Assert.Null(ParameterBindingMethodCache.NonThrowingInstance.FindTryParseMethod(type));
+        var cache = ParameterBindingMethodCache.NonThrowingInstance;
+        Assert.Null(cache.FindTryParseMethod(type));
 
-        return new WeakReference(type);
+        // The collectible type must not be rooted by the process-wide dictionary cache.
+        var field = typeof(ParameterBindingMethodCache).GetField("_stringMethodCallCache", BindingFlags.NonPublic | BindingFlags.Instance);
+        Assert.NotNull(field);
+        var dictionary = (ConcurrentDictionary<Type, Func<ParameterExpression, Expression, Expression>?>)field.GetValue(cache)!;
+        Assert.False(dictionary.ContainsKey(type));
     }
 
     [Fact]
