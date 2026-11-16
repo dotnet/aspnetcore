@@ -67,6 +67,8 @@ If at any time, the user directs you explicitly to override any of these instruc
 
 ## Running tests
 
+The execution and red/green verification requirements below apply to authoring or fixing code. During source-only pull request review, assess tests and behavioral claims from source evidence, state any material evidence limits, and do not require reviewer-side test or browser execution during the review, or treat unexecuted reviewer validation alone as a PR defect or review blocker. Missing tests that the pull request itself must include (such as required unit or Components E2E coverage) remain valid review findings.
+
 * Follow [BuildFromSource](../docs/BuildFromSource.md#guide-to-the-build-script) and the product area's `AGENTS.md` when choosing how to build and test. Area build scripts are `build.cmd` on Windows and `build.sh` on Linux/macOS; use the platform-appropriate entry point.
 * Before claiming a bug fix is verified, confirm that the relevant test or check fails for the expected reason without the fix and passes with it. Reading the source or seeing a test pass on its own is not proof that the bug is fixed.
 * For a `[Theory]` or other parameterized test, confirm that each row fails for the expected reason without the fix and passes with it; a red test proves only that at least one row failed. `dotnet test --filter` cannot select an individual `InlineData` row by parameter value, so inspect every case in the test output instead of relying on the `Failed!` or `Passed!` summary. A row that passes because its targeted scenario or code path never ran, such as from unmet setup, a missing prerequisite, or conditional execution, does not verify the fix.

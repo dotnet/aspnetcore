@@ -65,7 +65,10 @@ namespace Microsoft.AspNetCore.Components
         {
             public void OpenElement(int sequence, string elementName) { }
             public void CloseElement() { }
-            public void AddAttribute<T>(int sequence, string name, T value) { }
+            public void AddAttribute(int sequence, string name, string value) { }
+            public void AddAttribute(int sequence, string name, MulticastDelegate value) { }
+            public void AddAttribute<T>(int sequence, string name, EventCallback<T> value) { }
+            public void AddAttribute(int sequence, string name, object value) { }
             public void AddMarkupContent(int sequence, string markupContent) { }
             public void SetUpdatesAttributeName(string name) { }
             public void AddContent(int sequence, object textContent) { }
@@ -102,6 +105,66 @@ namespace ConsoleApplication1
     }
 }
 ";
+
+    [Theory]
+    [InlineData("AddAttribute", "new int[0]", true)]
+    [InlineData("AddAttribute", "new int[0]", false)]
+    [InlineData("AddComponentParameter", "Microsoft.AspNetCore.Components.CompilerServices.RuntimeHelpers.TypeCheck<string[]>(stringArray)", true)]
+    [InlineData("AddComponentParameter", "Microsoft.AspNetCore.Components.CompilerServices.RuntimeHelpers.TypeCheck<string[]>(stringArray)", false)]
+    public void ArrayValuesInsideOrAfterForLoopDoNotThrow(string method, string expression, bool insideLoop)
+    {
+        var addValue = $"__builder.{method}(0, \"value\", {expression});";
+        var test = $@"
+namespace ConsoleApplication1
+{{
+    partial class TestComponent : Microsoft.AspNetCore.Components.ComponentBase
+    {{
+        protected override void BuildRenderTree(Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder __builder)
+        {{
+            for (var i = 0; i < 1; i++)
+            {{
+                {(insideLoop ? addValue : "")}
+            }}
+            {(insideLoop ? "" : addValue)}
+        }}
+    }}
+}}" + BaseComponentDeclarations;
+
+        VerifyCSharpDiagnostic(test);
+    }
+
+    [Fact]
+    public void ArrayAttributeAfterForLoopDoesNotHideWarning()
+    {
+        var test = @"
+namespace ConsoleApplication1
+{
+    partial class TestComponent : Microsoft.AspNetCore.Components.ComponentBase
+    {
+        protected override void BuildRenderTree(Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder __builder)
+        {
+            for (var i = 0; i < 1; i++)
+            {
+                __builder.AddAttribute(0, ""onclick"", Microsoft.AspNetCore.Components.EventCallback.Factory.Create<Microsoft.AspNetCore.Components.Web.MouseEventArgs>(this,
+                    () => SelectItem(i)));
+            }
+            __builder.AddAttribute(1, ""data-x"", new int[0]);
+        }
+    }
+}" + BaseComponentDeclarations;
+
+        VerifyCSharpDiagnostic(test,
+            new DiagnosticResult
+            {
+                Id = DiagnosticDescriptors.ForLoopIteratorVariableUsedInClosure.Id,
+                Message = "For loop iterator 'i' is used in a closure or RenderFragment/ChildContent. This can lead to unexpected runtime behavior.",
+                Severity = DiagnosticSeverity.Warning,
+                Locations = new[]
+                {
+                    new DiagnosticResultLocation("Test0.cs", 11, 38)
+                }
+            });
+    }
 
     [Fact]
     public void IteratorVariableDifferentIncrementationsUsedInLambdaShouldThrowWarnings()
