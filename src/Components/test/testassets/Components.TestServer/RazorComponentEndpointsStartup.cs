@@ -17,6 +17,7 @@ using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Endpoints;
 using Microsoft.AspNetCore.Components.Server.Circuits;
 using Microsoft.AspNetCore.Components.Web;
+using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.Localization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Localization;
@@ -244,7 +245,54 @@ public class RazorComponentEndpointsStartup<TRootComponent>
             }
             return nxt();
         });
+        app.Use(async (context, next) =>
+        {
+            if (context.Request.Path != "/nav/streaming-redirect-destination"
+                || !context.Request.Headers.Accept.ToString().Contains("blazor-enhanced-nav"))
+            {
+                await next();
+                return;
+            }
+
+            var originalBody = context.Response.Body;
+            var originalBodyFeature = context.Features.Get<IHttpResponseBodyFeature>()!;
+            var operations = context.RequestServices.GetRequiredService<AsyncOperationService>();
+            await using var buffer = new BufferedStreamingResponseStream(async cancellationToken =>
+            {
+                await originalBodyFeature.StartAsync(cancellationToken);
+                operations.Complete(context.Request.Query["operation"].ToString());
+            });
+            context.Response.Body = buffer;
+            try
+            {
+                await next();
+            }
+            catch (InvalidOperationException exception) when (exception.Message == "Streaming redirect error")
+            {
+                context.RequestServices.GetRequiredService<ILogger<RazorComponentEndpointsStartup<TRootComponent>>>()
+                    .LogInformation("Expected streaming test error: {Message}", exception.Message);
+            }
+            finally
+            {
+                context.Response.Body = originalBody;
+            }
+
+            // Model a buffering proxy: deliver the initial document and the real renderer's error frame together.
+            buffer.Position = 0;
+            await buffer.CopyToAsync(originalBody, context.RequestAborted);
+        });
         ConfigureEndpoints(app, env);
+    }
+
+    private sealed class BufferedStreamingResponseStream(Func<CancellationToken, Task> startResponse) : MemoryStream
+    {
+        public override Task FlushAsync(CancellationToken cancellationToken) => startResponse(cancellationToken);
+
+        public override async ValueTask WriteAsync(ReadOnlyMemory<byte> buffer, CancellationToken cancellationToken = default)
+        {
+            await startResponse(cancellationToken);
+            await base.WriteAsync(buffer, cancellationToken);
+        }
     }
 
     private void ConfigureEndpoints(IApplicationBuilder app, IWebHostEnvironment env)
@@ -388,6 +436,12 @@ public class RazorComponentEndpointsStartup<TRootComponent>
             var returnUrl = $"{request.PathBase}{request.Path}";
             response.Redirect($"/outside-base/account/login?ReturnUrl={Uri.EscapeDataString(returnUrl)}");
             return Task.CompletedTask;
+        });
+
+        endpoints.MapGet("/redirect/streaming", (HttpRequest request, HttpResponse response, bool outsideBase, string operation) =>
+        {
+            var pathBase = outsideBase ? "/outside-base" : request.PathBase.ToString();
+            response.Redirect($"{pathBase}/nav/streaming-redirect-destination?operation={Uri.EscapeDataString(operation)}");
         });
 
         // Used when testing enhanced navigation to non-Blazor endpoints
