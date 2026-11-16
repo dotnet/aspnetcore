@@ -441,19 +441,35 @@ public class DefaultApiDescriptionProvider : IApiDescriptionProvider
 
         // Lowercase only the literal parts of the template so the route pattern matches the
         // URLs LinkGenerator produces, while preserving parameter names, inline constraints and defaults.
+        // Doubled braces are escapes in the routing grammar, both inside and outside parameters.
         var builder = new StringBuilder(template.Length);
         var inParameter = false;
-        foreach (var c in template)
+        for (var i = 0; i < template.Length; i++)
         {
+            var c = template[i];
             if (c == '{')
             {
-                inParameter = true;
                 builder.Append(c);
+                if (i + 1 < template.Length && template[i + 1] == '{')
+                {
+                    builder.Append(template[++i]);
+                }
+                else
+                {
+                    inParameter = true;
+                }
             }
             else if (c == '}')
             {
-                inParameter = false;
                 builder.Append(c);
+                if (i + 1 < template.Length && template[i + 1] == '}')
+                {
+                    builder.Append(template[++i]);
+                }
+                else
+                {
+                    inParameter = false;
+                }
             }
             else
             {
