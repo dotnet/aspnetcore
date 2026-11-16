@@ -179,6 +179,32 @@ test('ReviewDispositionRecognizesUnderscoreEmphasizedCandidateIds', async contex
   }
 });
 
+test('ReviewDispositionTreatsCrossSectionNegationAsAbsence', async context =>
+{
+  for (const [name, caseName, output, expected] of [
+    ['semicolon', 'case-06', review('UNRESOLVED', 'unresolved')
+      .replace('DISCARDED\nNone.', 'DISCARDED\nC1 is not discarded; it remains unresolved.'), 1],
+    ['comma', 'case-06', review('UNRESOLVED', 'unresolved')
+      .replace('DISCARDED\nNone.', 'DISCARDED\nC1 is not discarded, it remains unresolved.'), 1],
+    ['colon', 'case-06', review('UNRESOLVED', 'unresolved')
+      .replace('DISCARDED\nNone.', 'DISCARDED\n**C1:** Not discarded: it remains unresolved.'), 1],
+    ['none-rather-than', 'case-06', review('UNRESOLVED', 'unresolved')
+      .replace('DISCARDED\nNone.', 'DISCARDED\nNone. **C1 is unresolved rather than discarded.**'), 1],
+    ['unresolved-section', 'case-01', review('DISCARDED', 'discarded')
+      .replace('UNRESOLVED\nNone.', 'UNRESOLVED\nC1 is not unresolved; it is discarded.'), 1],
+    ['matching-section-is-present', 'case-02', review('NEW_FINDINGS', 'verified')
+      .replace('UNRESOLVED\nNone.', 'UNRESOLVED\nC1 is not discarded; it remains unresolved.'), 0],
+    ['negation-with-prose', 'case-02', review('NEW_FINDINGS', 'verified')
+      .replace('DISCARDED\nNone.', 'DISCARDED\nC1 is not discarded; old and head match.'), 0],
+  ])
+  {
+    await context.test(name, () =>
+    {
+      assert.equal(score(caseName, output), expected);
+    });
+  }
+});
+
 test('ReviewDispositionDistinguishesNoProseFromSectionAbsence', async context =>
 {
   for (const [name, caseName, output, expected] of [

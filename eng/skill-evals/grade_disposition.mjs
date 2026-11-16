@@ -112,11 +112,35 @@ function isNegativeC1Line(line)
     /^(?:(?:is\s+|was\s+)?not\s+(?:covered(?:\s+by\s+(?:any\s+)?(?:existing\s+)?feedback(?:\s+in\s+(?:the\s+)?(?:supplied\s+|frozen\s+|existing\s+)*(?:(?:pr|review|evidence)\s+)*(?:evidence|bundle|pr|review|threads?|comments?|feedback))?)?|unresolved|discarded|applicable)|has\s+no\s+existing\s+feedback|(?:is\s+|was\s+)?omitted)[.!]?\s*$/i.test(afterC1));
 }
 
-function hasPositiveC1(sectionText)
+const sectionStatuses = new Map([
+  ['UNRESOLVED', 'unresolved'],
+  ['DISCARDED', 'discarded'],
+]);
+
+function isCrossSectionNegation(line, section)
+{
+  const status = sectionStatuses.get(section);
+  if (!status)
+  {
+    return false;
+  }
+  const clean = stripMarkdown(line)
+    .trim()
+    .replace(/^(?:[-*+]|\d+[.)])\s+/, '')
+    .replace(/^(?:none|n\/a)[.!]\s+/i, '')
+    .trim();
+  const afterC1 = clean.replace(/^C1\b\s*(?:[-:—–]|\s)*/i, '');
+  const otherStatus = `(?!${status}\\b)(?:unresolved|discarded|verified|a\\s+new\\s+finding)`;
+  return afterC1 !== clean && (
+    new RegExp(`^(?:is\\s+|was\\s+)?not\\s+${status}\\s*[;,:—–-]\\s*(?:it|C1)\\s+(?:is|remains|stays)\\s+${otherStatus}[.!]?\\s*$`, 'i').test(afterC1) ||
+    new RegExp(`^(?:is|was|remains)\\s+${otherStatus}\\s+rather\\s+than\\s+${status}[.!]?\\s*$`, 'i').test(afterC1));
+}
+
+function hasPositiveC1(sectionText, section)
 {
   return sectionText
     .split(/\r?\n/)
-    .some(line => /\bC1\b/.test(stripMarkdown(line)) && !isNegativeC1Line(line));
+    .some(line => /\bC1\b/.test(stripMarkdown(line)) && !isNegativeC1Line(line) && !isCrossSectionNegation(line, section));
 }
 
 function gradeReview(name, output)
@@ -164,7 +188,7 @@ function gradeReview(name, output)
   {
     return false;
   }
-  const hasCandidate = key => hasPositiveC1(sections.get(key));
+  const hasCandidate = key => hasPositiveC1(sections.get(key), key);
   if (!hasCandidate(expected.section))
   {
     return false;
