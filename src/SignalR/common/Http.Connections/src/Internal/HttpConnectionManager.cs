@@ -5,6 +5,7 @@ using System.Collections.Concurrent;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Net.WebSockets;
+using System.Security.Claims;
 using System.Security.Cryptography;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Internal;
@@ -79,6 +80,64 @@ internal sealed partial class HttpConnectionManager
         bool useStatefulReconnect = false,
         HttpConnectionEndpointMetadata? endpointMetadata = null)
     {
+        return CreateConnection(
+            options,
+            negotiateVersion,
+            useStatefulReconnect,
+            endpointMetadata,
+            negotiatedUser: null,
+            hasNegotiatedUser: false);
+    }
+
+    internal HttpConnectionContext CreateConnection(
+        HttpConnectionDispatcherOptions options,
+        ClaimsPrincipal? negotiatedUser)
+    {
+        return CreateConnection(
+            options,
+            negotiateVersion: 0,
+            useStatefulReconnect: false,
+            endpointMetadata: null,
+            negotiatedUser);
+    }
+
+    internal HttpConnectionContext CreateConnection(
+        HttpConnectionDispatcherOptions options,
+        int negotiateVersion,
+        ClaimsPrincipal? negotiatedUser)
+    {
+        return CreateConnection(
+            options,
+            negotiateVersion,
+            useStatefulReconnect: false,
+            endpointMetadata: null,
+            negotiatedUser);
+    }
+
+    internal HttpConnectionContext CreateConnection(
+        HttpConnectionDispatcherOptions options,
+        int negotiateVersion,
+        bool useStatefulReconnect,
+        HttpConnectionEndpointMetadata? endpointMetadata,
+        ClaimsPrincipal? negotiatedUser)
+    {
+        return CreateConnection(
+            options,
+            negotiateVersion,
+            useStatefulReconnect,
+            endpointMetadata,
+            negotiatedUser,
+            hasNegotiatedUser: true);
+    }
+
+    private HttpConnectionContext CreateConnection(
+        HttpConnectionDispatcherOptions options,
+        int negotiateVersion,
+        bool useStatefulReconnect,
+        HttpConnectionEndpointMetadata? endpointMetadata,
+        ClaimsPrincipal? negotiatedUser,
+        bool hasNegotiatedUser)
+    {
         string connectionToken;
         var id = MakeNewConnectionId();
         if (negotiateVersion > 0)
@@ -95,7 +154,17 @@ internal sealed partial class HttpConnectionManager
         Log.CreatedNewConnection(_logger, id);
 
         var pair = CreateConnectionPair(options.TransportPipeOptions, options.AppPipeOptions);
-        var connection = new HttpConnectionContext(id, connectionToken, _connectionLogger, metricsContext, pair.Application, pair.Transport, options, useStatefulReconnect)
+        var connection = new HttpConnectionContext(
+            id,
+            connectionToken,
+            _connectionLogger,
+            metricsContext,
+            pair.Application,
+            pair.Transport,
+            options,
+            useStatefulReconnect,
+            negotiatedUser,
+            hasNegotiatedUser)
         {
             EndpointMetadata = endpointMetadata,
         };
