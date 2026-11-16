@@ -173,7 +173,11 @@ internal sealed class InvokeCommand : HelpCommandBase
                 args.Add(((int)timeout.TotalSeconds).ToString(CultureInfo.InvariantCulture));
             }
 
-            return Exe.Run(executable, args, Reporter, timeout: TimeSpan.FromTicks(timeout.Ticks * 2));
+            // Keep a fixed floor for application startup. The per-document timeout only
+            // bounds a single document; deriving the whole child-process lifetime from a
+            // small value would abort before the application starts.
+            var processTimeout = TimeSpan.FromSeconds(Math.Max(120, timeout.TotalSeconds * 2));
+            return Exe.Run(executable, args, Reporter, timeout: processTimeout);
         }
         finally
         {
