@@ -614,7 +614,7 @@ function init(dotNetHelper: DotNet.DotNetObject, spacerBefore: HTMLElement, spac
     return ['ArrowUp', 'ArrowDown', 'PageUp', 'PageDown', ' '].includes(key);
   }
 
-  function isEditableTarget(target: EventTarget | null): boolean {
+  function isEditableElement(target: EventTarget | null): boolean {
     if (!(target instanceof HTMLElement)) {
       return false;
     }
@@ -625,12 +625,19 @@ function init(dotNetHelper: DotNet.DotNetObject, spacerBefore: HTMLElement, spac
     return tagName === 'INPUT' || tagName === 'TEXTAREA' || tagName === 'SELECT';
   }
 
+  function isEditableTarget(e: KeyboardEvent): boolean {
+    // A keydown inside a shadow root is retargeted to the host at a document
+    // listener, so inspect the composed path instead of only the target.
+    const path = typeof e.composedPath === 'function' ? e.composedPath() : [e.target];
+    return path.some(isEditableElement);
+  }
+
   const keydownTarget: EventTarget = scrollContainer || document;
   function handleJumpKeys(e: Event): void {
     const ke = e as KeyboardEvent;
     // Home and End belong to the focused control (for example, moving the caret in
     // a text input) unless the list itself is handling the key.
-    if (ke.defaultPrevented || isEditableTarget(ke.target)) {
+    if (ke.defaultPrevented || isEditableTarget(ke)) {
       return;
     }
     if (ke.key === 'End') {
