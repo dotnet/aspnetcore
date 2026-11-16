@@ -227,6 +227,9 @@ internal partial class RemoteJSRuntime : JSRuntime
     {
         _permanentlyDisconnected = true;
         _clientProxy = null;
+        FailPendingTasks(new JSDisconnectedException(
+            "JavaScript interop calls cannot be issued at this time. This is because the circuit has disconnected " +
+            "and is being disposed."));
     }
 
     protected override async Task<Stream> ReadJSDataAsStreamAsync(IJSStreamReference jsStreamReference, long totalLength, CancellationToken cancellationToken = default)
