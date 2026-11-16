@@ -939,7 +939,23 @@ internal sealed partial class HttpConnectionDispatcher
 
         // Set the IConnectionEndPointFeature from the HttpContext so that real connection endpoint
         // information (LocalEndPoint and RemoteEndPoint) is available for telemetry and other uses.
-        connection.Features.Set(context.Features.Get<IConnectionEndPointFeature>());
+        if (context.Features.Get<IConnectionEndPointFeature>() is { } endpointFeature)
+        {
+            if (transportType == HttpTransportType.LongPolling)
+            {
+                // For long polling, snapshot endpoints so subsequent hub calls and telemetry
+                // don't read from an IISHttpContext whose native request has already completed.
+                connection.Features.Set<IConnectionEndPointFeature>(new ConnectionEndPointFeature
+                {
+                    LocalEndPoint = endpointFeature.LocalEndPoint,
+                    RemoteEndPoint = endpointFeature.RemoteEndPoint
+                });
+            }
+            else
+            {
+                connection.Features.Set(endpointFeature);
+            }
+        }
 
         // Configure transport-specific features.
         if (transportType == HttpTransportType.LongPolling)
@@ -1113,6 +1129,14 @@ internal sealed partial class HttpConnectionDispatcher
         features.Set<IHttpResponseFeature>(responseFeature);
         features.Set<IHttpResponseBodyFeature>(new StreamResponseBodyFeature(Stream.Null));
         features.Set<IHttpConnectionFeature>(connectionFeature);
+        if (context.Features.Get<IConnectionEndPointFeature>() is { } existingEndPointFeature)
+        {
+            features.Set<IConnectionEndPointFeature>(new ConnectionEndPointFeature
+            {
+                LocalEndPoint = existingEndPointFeature.LocalEndPoint,
+                RemoteEndPoint = existingEndPointFeature.RemoteEndPoint
+            });
+        }
 
         // REVIEW: We could strategically look at adding other features but it might be better
         // if we expose a callback that would allow the user to preserve HttpContext properties.
@@ -1243,5 +1267,11 @@ internal sealed partial class HttpConnectionDispatcher
     {
         public static EmptyServiceProvider Instance { get; } = new EmptyServiceProvider();
         public object? GetService(Type serviceType) => null;
+    }
+
+    private sealed class ConnectionEndPointFeature : IConnectionEndPointFeature
+    {
+        public System.Net.EndPoint? LocalEndPoint { get; set; }
+        public System.Net.EndPoint? RemoteEndPoint { get; set; }
     }
 }
