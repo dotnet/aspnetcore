@@ -285,15 +285,37 @@ describe('AutoPauseManager', () => {
     expect(pauseCircuit).toHaveBeenCalledTimes(1);
   });
 
-  test('circuit disposal cancels a pending hidden timer', async () => {
+  test('circuit disposal preserves a pending hidden timer for a replacement without a visibility change', async () => {
+    const replacementPause = jest.fn<() => Promise<boolean>>().mockResolvedValue(true);
     create();
     setVisibility('hidden');
+    jest.advanceTimersByTime(500);
     circuitEvents.dispatchEvent(new Event('disposed'));
+    host.pauseCircuit = replacementPause;
+
+    jest.advanceTimersByTime(499);
+    await flushPromises();
+    expect(pauseCircuit).not.toHaveBeenCalled();
+    expect(replacementPause).not.toHaveBeenCalled();
+
+    jest.advanceTimersByTime(1);
+    await flushPromises();
+    expect(pauseCircuit).not.toHaveBeenCalled();
+    expect(replacementPause).toHaveBeenCalledTimes(1);
+    expect(resumeCircuit).not.toHaveBeenCalled();
+  });
+
+  test('becoming visible after circuit disposal cancels the preserved hidden timer', async () => {
+    create();
+    setVisibility('hidden');
+    jest.advanceTimersByTime(500);
+    circuitEvents.dispatchEvent(new Event('disposed'));
+    setVisibility('visible');
 
     jest.advanceTimersByTime(5000);
     await flushPromises();
-
     expect(pauseCircuit).not.toHaveBeenCalled();
+    expect(resumeCircuit).not.toHaveBeenCalled();
   });
 
   test('rearms the hidden timer after a retired pause completes without a visibility change', async () => {
