@@ -71,7 +71,14 @@ function getScaleFactor(spacerBefore: HTMLElement, spacerAfter: HTMLElement): nu
   if (!el) {
     return 1;
   }
-  const scale = el.getBoundingClientRect().height / el.offsetHeight;
+  const measuredHeight = el.getBoundingClientRect().height;
+  const declaredHeight = parseFloat(el.style.height);
+  // offsetHeight is rounded to whole pixels. For fractional row heights the ratio then
+  // drifts from 1 even without a zoom or transform, so use the fractional declared height
+  // when the spacer has one.
+  const scale = Number.isFinite(declaredHeight) && declaredHeight > 0
+    ? measuredHeight / declaredHeight
+    : measuredHeight / el.offsetHeight;
   return (Number.isFinite(scale) && scale > 0) ? scale : 1;
 }
 

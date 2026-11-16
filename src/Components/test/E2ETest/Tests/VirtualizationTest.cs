@@ -425,6 +425,50 @@ public class VirtualizationTest : ServerTestBase<ToggleExecutionModeServerFixtur
         Assert.Equal(0, nestedTrCountAfterScroll);
     }
 
+    [Fact]
+    public void VariableHeightTable_FractionalRowHeights_KeepViewportFilled()
+    {
+        Browser.MountTestComponent<VirtualizationFractionalHeightTable>();
+        var js = (IJavaScriptExecutor)Browser;
+
+        Browser.True(() =>
+            js.ExecuteScript("return document.querySelectorAll('#fractional-height-table-container [id^=\"fractional-row-\"]').length") is long count && count > 0,
+            TimeSpan.FromSeconds(10), "Expected initially rendered fractional-height rows");
+
+        // Match the report's scroll cadence so the virtualizer renders between steps.
+        js.ExecuteAsyncScript(@"
+            var container = document.getElementById('fractional-height-table-container');
+            var done = arguments[arguments.length - 1];
+            var steps = 0;
+            function step() {
+                container.scrollTop += 120;
+                if (++steps < 25) {
+                    setTimeout(step, 60);
+                } else {
+                    done();
+                }
+            }
+            step();
+        ");
+
+        Browser.True(() =>
+        {
+            var visible = js.ExecuteScript(@"
+                var container = document.getElementById('fractional-height-table-container');
+                var containerRect = container.getBoundingClientRect();
+                var rows = container.querySelectorAll('[id^=""fractional-row-""]');
+                for (var i = 0; i < rows.length; i++) {
+                    var rect = rows[i].getBoundingClientRect();
+                    if (rect.bottom > containerRect.top && rect.top < containerRect.bottom) {
+                        return true;
+                    }
+                }
+                return false;
+            ");
+            return visible is bool isVisible && isVisible;
+        }, TimeSpan.FromSeconds(10), "Fractional-height table should keep at least one row visible after scrolling");
+    }
+
     [Theory]
     [InlineData(true)]
     [InlineData(false)]
