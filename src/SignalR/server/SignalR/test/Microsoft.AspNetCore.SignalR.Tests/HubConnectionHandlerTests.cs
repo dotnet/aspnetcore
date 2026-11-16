@@ -693,6 +693,10 @@ public partial class HubConnectionHandlerTests : VerifiableLoggedTest
             mockLifetimeManager
                 .Setup(m => m.OnConnectedAsync(It.IsAny<HubConnectionContext>()))
                 .Throws(new InvalidOperationException("Lifetime manager OnConnectedAsync failed."));
+            mockLifetimeManager
+                .Setup(m => m.OnDisconnectedAsync(It.IsAny<HubConnectionContext>()))
+                .Callback<HubConnectionContext>(connection => Assert.True(connection.ConnectionAborted.IsCancellationRequested))
+                .Returns(Task.CompletedTask);
             var mockHubActivator = new Mock<IHubActivator<Hub>>();
 
             var serviceProvider = HubConnectionHandlerTestUtils.CreateServiceProvider(services =>
@@ -726,7 +730,7 @@ public partial class HubConnectionHandlerTests : VerifiableLoggedTest
     }
 
     [Fact]
-    public async Task HubOnDisconnectedAsyncCalledIfHubOnConnectedAsyncThrows()
+    public async Task LifetimeManagerOnDisconnectedAsyncCalledAfterConnectionAbortedIfHubOnConnectedAsyncThrows()
     {
         bool ExpectedErrors(WriteContext writeContext)
         {
@@ -737,6 +741,10 @@ public partial class HubConnectionHandlerTests : VerifiableLoggedTest
         using (StartVerifiableLog(ExpectedErrors))
         {
             var mockLifetimeManager = new Mock<HubLifetimeManager<OnConnectedThrowsHub>>();
+            mockLifetimeManager
+                .Setup(m => m.OnDisconnectedAsync(It.IsAny<HubConnectionContext>()))
+                .Callback<HubConnectionContext>(connection => Assert.True(connection.ConnectionAborted.IsCancellationRequested))
+                .Returns(Task.CompletedTask);
             var serviceProvider = HubConnectionHandlerTestUtils.CreateServiceProvider(services =>
             {
                 services.AddSingleton(mockLifetimeManager.Object);
@@ -5465,6 +5473,41 @@ public partial class HubConnectionHandlerTests : VerifiableLoggedTest
             await connectionHandlerTask.DefaultTimeout();
 
             Assert.Null(state.DisconnectedException);
+        }
+    }
+
+    [Theory]
+    [InlineData(0)]
+    [InlineData(-1)]
+    public async Task NonPositiveSequenceIdClosesConnectionWithError(long sequenceId)
+    {
+        using (StartVerifiableLog())
+        {
+            var state = new ConnectionLifetimeState();
+            var serviceProvider = HubConnectionHandlerTestUtils.CreateServiceProvider(s =>
+            {
+                s.AddSingleton(state);
+                s.AddSignalR(options => options.EnableDetailedErrors = true);
+            }, LoggerFactory);
+            var connectionHandler = serviceProvider.GetService<HubConnectionHandler<ConnectionLifetimeHub>>();
+
+            using var client = new TestClient();
+            var reconnectFeature = new TestReconnectFeature();
+#pragma warning disable CA2252 // This API requires opting into preview features
+            client.Connection.Features.Set<IStatefulReconnectFeature>(reconnectFeature);
+#pragma warning restore CA2252 // This API requires opting into preview features
+
+            var connectionHandlerTask = await client.ConnectAsync(connectionHandler);
+
+            await client.SendHubMessageAsync(new SequenceMessage(sequenceId)).DefaultTimeout();
+
+            var closeMessage = Assert.IsType<CloseMessage>(await client.ReadAsync().DefaultTimeout());
+            Assert.Equal("Connection closed with an error. InvalidOperationException: Sequence ID must be greater than 0.", closeMessage.Error);
+
+            await connectionHandlerTask.DefaultTimeout();
+
+            var exception = Assert.IsType<InvalidOperationException>(state.DisconnectedException);
+            Assert.Equal("Sequence ID must be greater than 0.", exception.Message);
         }
     }
 

@@ -18,6 +18,8 @@
       "src\\Components\\JSInterop\\test\\Microsoft.JSInterop.Tests.csproj",
       "src\\Components\\Media\\src\\Microsoft.AspNetCore.Components.Media.csproj",
       "src\\Components\\Media\\test\\Microsoft.AspNetCore.Components.Media.Tests.csproj",
+      "src\\Components\\Platform\\src\\Microsoft.AspNetCore.Components.Platform.csproj",
+      "src\\Components\\Platform\\test\\Microsoft.AspNetCore.Components.Platform.Tests.csproj",
       "src\\Components\\Samples\\BlazorWebAppGlobal.Client\\BlazorWebAppGlobal.Client.csproj",
       "src\\Components\\Samples\\BlazorWebAppGlobal\\BlazorWebAppGlobal.csproj",
       "src\\Components\\Samples\\BlazorWebAppPerPage.Client\\BlazorWebAppPerPage.Client.csproj",

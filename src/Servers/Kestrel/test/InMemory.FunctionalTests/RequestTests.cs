@@ -1296,6 +1296,47 @@ public class RequestTests : TestApplicationErrorLoggerLoggedTest
     }
 
     [Fact]
+    public async Task InputCompletionDoesNotReparseUnreadRequestBody()
+    {
+        var requestStarted = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+        var requestAborted = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+        var allowRequestToComplete = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+        var connectionStopped = WaitForLogMessage(m => m.EventId.Name == "ConnectionStop");
+
+        var requestCount = 0;
+
+        await using var server = new TestServer(async context =>
+        {
+            Interlocked.Increment(ref requestCount);
+            using var registration = context.RequestAborted.Register(() => requestAborted.TrySetResult());
+            requestStarted.TrySetResult();
+            await allowRequestToComplete.Task.DefaultTimeout();
+        }, new TestServiceContext(LoggerFactory));
+
+        using var connection = server.CreateConnection();
+
+        // The GET is entirely inside the POST body, not a pipelined request.
+        const string body = "GET /must-not-dispatch HTTP/1.1\r\nHost:\r\n\r\n";
+
+        await connection.SendAll(
+            "POST / HTTP/1.1",
+            "Host:",
+            $"Content-Length: {Encoding.ASCII.GetByteCount(body)}",
+            "",
+            body);
+
+        // Ensure request cleanup observes the abort instead of relying on transport timing.
+        await requestStarted.Task.DefaultTimeout();
+        connection.ShutdownSend();
+        await requestAborted.Task.DefaultTimeout();
+
+        allowRequestToComplete.SetResult();
+        await connectionStopped.DefaultTimeout();
+
+        Assert.Equal(1, requestCount);
+    }
+
+    [Fact]
     public async Task RequestHeadersAreResetOnEachRequest()
     {
         var testContext = new TestServiceContext(LoggerFactory);

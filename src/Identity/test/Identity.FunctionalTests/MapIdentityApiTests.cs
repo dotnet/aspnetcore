@@ -1,4 +1,4 @@
-// Licensed to the .NET Foundation under one or more agreements.
+﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
 #nullable enable
@@ -31,6 +31,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Diagnostics.Metrics;
 using Microsoft.Extensions.Diagnostics.Metrics.Testing;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 using Microsoft.Extensions.Time.Testing;
 using Microsoft.Net.Http.Headers;
 using Xunit.Sdk;
@@ -1122,6 +1123,68 @@ public class MapIdentityApiTests : LoggedTest
     }
 
     [Fact]
+    public async Task ResendConfirmationEmailSendsToStoredEmail()
+    {
+        var emailSender = new TestEmailSender();
+
+        await using var app = await CreateAppAsync(services =>
+        {
+            AddIdentityApiEndpoints(services);
+            services.AddSingleton<IEmailSender>(emailSender);
+            services.Configure<IdentityOptions>(options =>
+            {
+                options.SignIn.RequireConfirmedEmail = true;
+            });
+        });
+        using var client = app.GetTestClient();
+
+        var registeredEmail = "user@example.com";
+        await RegisterAsync(client, email: registeredEmail);
+
+        Assert.Single(emailSender.Emails);
+
+        // Simulate a request using a different casing than what was registered.
+        var requestEmail = "USER@example.com";
+        AssertOk(await client.PostAsJsonAsync("/identity/resendConfirmationEmail", new { Email = requestEmail }));
+
+        // FindByEmailAsync finds the user, but the confirmation must go to the stored address.
+        Assert.Equal(2, emailSender.Emails.Count);
+        var resentEmail = emailSender.Emails[1];
+        Assert.Equal("Confirm your email", resentEmail.Subject);
+        Assert.Equal(registeredEmail, resentEmail.Address);
+        Assert.NotEqual(requestEmail, resentEmail.Address);
+    }
+
+    [Fact]
+    public async Task ResendConfirmationEmailReturnsBadRequestWhenStoredEmailIsNull()
+    {
+        var emailSender = new TestEmailSender();
+        var nullEmailToggle = new NullEmailToggle();
+
+        await using var app = await CreateAppAsync(services =>
+        {
+            AddIdentityApiEndpoints(services);
+            services.AddSingleton<IEmailSender>(emailSender);
+            services.Configure<IdentityOptions>(options =>
+            {
+                options.SignIn.RequireConfirmedEmail = true;
+            });
+            services.AddSingleton(nullEmailToggle);
+            // Replace UserManager with one that can return null from GetEmailAsync on demand.
+            services.AddScoped<UserManager<ApplicationUser>, NullEmailUserManager>();
+        });
+        using var client = app.GetTestClient();
+
+        await RegisterAsync(client);
+
+        // Enable the null-email simulation only after registration, which itself relies on
+        // GetEmailAsync to persist the user's NormalizedEmail.
+        nullEmailToggle.Enabled = true;
+
+        await AssertValidationProblemAsync(await client.PostAsJsonAsync("/identity/resendConfirmationEmail", new { Email }), "MissingEmail");
+    }
+
+    [Fact]
     public async Task AccountConfirmationEmailCanBeCustomized()
     {
         var emailSender = new TestEmailSender();
@@ -1570,6 +1633,75 @@ public class MapIdentityApiTests : LoggedTest
 
         // But the new password is
         AssertOk(await client.PostAsJsonAsync("/identity/login", new { Email = confirmedEmail, Password = newPassword }));
+    }
+
+    [Fact]
+    public async Task ForgotPasswordSendsToStoredEmail()
+    {
+        var emailSender = new TestEmailSender();
+
+        await using var app = await CreateAppAsync(services =>
+        {
+            AddIdentityApiEndpoints(services);
+            services.AddSingleton<IEmailSender>(emailSender);
+            services.Configure<IdentityOptions>(options =>
+            {
+                options.SignIn.RequireConfirmedAccount = true;
+            });
+        });
+        using var client = app.GetTestClient();
+
+        var registeredEmail = "user@example.com";
+        await RegisterAsync(client, email: registeredEmail);
+        await LoginWithEmailConfirmationAsync(client, emailSender, email: registeredEmail);
+
+        // Simulate a forgot-password request using a different casing than what was registered.
+        var requestEmail = "USER@example.com";
+        AssertOkAndEmpty(await client.PostAsJsonAsync("/identity/forgotPassword", new { Email = requestEmail }));
+
+        // FindByEmailAsync finds the confirmed user, but the reset email must go to the stored address.
+        var resetEmail = emailSender.Emails.Last();
+        Assert.Equal("Reset your password", resetEmail.Subject);
+        Assert.Equal(registeredEmail, resetEmail.Address);
+        Assert.NotEqual(requestEmail, resetEmail.Address);
+
+        // Verify the reset code in that email actually works to reset the password.
+        var resetCode = GetPasswordResetCode(resetEmail);
+        var newPassword = $"{Password}!";
+        AssertOkAndEmpty(await client.PostAsJsonAsync("/identity/resetPassword",
+            new { Email = registeredEmail, resetCode, newPassword }));
+        AssertOk(await client.PostAsJsonAsync("/identity/login",
+            new { Email = registeredEmail, Password = newPassword }));
+    }
+
+    [Fact]
+    public async Task ForgotPasswordReturnsBadRequestWhenStoredEmailIsNull()
+    {
+        var emailSender = new TestEmailSender();
+        var nullEmailToggle = new NullEmailToggle();
+
+        await using var app = await CreateAppAsync(services =>
+        {
+            AddIdentityApiEndpoints(services);
+            services.AddSingleton<IEmailSender>(emailSender);
+            services.Configure<IdentityOptions>(options =>
+            {
+                options.SignIn.RequireConfirmedAccount = true;
+            });
+            services.AddSingleton(nullEmailToggle);
+            // Replace UserManager with one that can return null from GetEmailAsync on demand.
+            services.AddScoped<UserManager<ApplicationUser>, NullEmailUserManager>();
+        });
+        using var client = app.GetTestClient();
+
+        // Registration and email confirmation internally rely on GetEmailAsync (e.g. to persist
+        // NormalizedEmail), so the null-email simulation must stay disabled until after they succeed.
+        await RegisterAsync(client);
+        await LoginWithEmailConfirmationAsync(client, emailSender);
+
+        nullEmailToggle.Enabled = true;
+
+        await AssertValidationProblemAsync(await client.PostAsJsonAsync("/identity/forgotPassword", new { Email }), "MissingEmail");
     }
 
     [Theory]
@@ -2457,4 +2589,32 @@ public class MapIdentityApiTests : LoggedTest
     }
 
     private sealed record TestEmail(string Address, string Subject, string HtmlMessage);
+
+    // Shared toggle so tests can enable the null-email simulation only once setup (registration,
+    // email confirmation, etc.) has completed. Those steps internally call GetEmailAsync too
+    // (e.g. UserManager.UpdateNormalizedEmailAsync reads it to persist NormalizedEmail), so
+    // suppressing it from the start would prevent FindByEmailAsync from ever locating the user.
+    private sealed class NullEmailToggle
+    {
+        public bool Enabled { get; set; }
+    }
+
+    private sealed class NullEmailUserManager(
+        IUserStore<ApplicationUser> store,
+        IOptions<IdentityOptions> optionsAccessor,
+        IPasswordHasher<ApplicationUser> passwordHasher,
+        IEnumerable<IUserValidator<ApplicationUser>> userValidators,
+        IEnumerable<IPasswordValidator<ApplicationUser>> passwordValidators,
+        ILookupNormalizer keyNormalizer,
+        IdentityErrorDescriber errors,
+        IServiceProvider services,
+        ILogger<UserManager<ApplicationUser>> logger,
+        NullEmailToggle nullEmailToggle)
+        : UserManager<ApplicationUser>(store, optionsAccessor, passwordHasher, userValidators, passwordValidators, keyNormalizer, errors, services, logger)
+    {
+        // Simulates a broken/misconfigured store where a user has no stored email, but only
+        // once the toggle is enabled by the test (see NullEmailToggle above).
+        public override Task<string?> GetEmailAsync(ApplicationUser user) =>
+            nullEmailToggle.Enabled ? Task.FromResult<string?>(null) : base.GetEmailAsync(user);
+    }
 }

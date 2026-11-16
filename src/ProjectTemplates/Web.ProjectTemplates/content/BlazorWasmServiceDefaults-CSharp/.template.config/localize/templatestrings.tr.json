@@ -1,4 +1,4 @@
-﻿{
+{
   "author": "Microsoft",
   "name": "Blazor WebAssembly Hizmeti Varsayılanları",
   "description": "Blazor WebAssembly uygulamaları için hizmet varsayılanları kitaplığı oluşturmak üzere bir proje şablonu. Aspire entegrasyonu için OpenTelemetry, hizmet bulma ve dayanıklılık desteği içerir.",

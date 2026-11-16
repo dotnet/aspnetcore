@@ -1,4 +1,4 @@
-﻿{
+{
   "author": "Microsoft",
   "name": "Standardeinstellungen des Blazor WebAssembly-Diensts",
   "description": "Eine Projektvorlage zum Erstellen einer Dienststandardbibliothek für Blazor WebAssembly-Anwendungen. Umfasst OpenTelemetry, Dienstermittlung und Resilienzunterstützung für die Aspire-Integration.",

@@ -1,4 +1,4 @@
-﻿{
+{
   "author": "Microsoft",
   "name": "Valores predeterminados del servicio Blazor WebAssembly",
   "description": "Una plantilla de proyecto para crear una biblioteca predeterminada de servicio para aplicaciones Blazor WebAssembly. Incluye OpenTelemetry, detección de servicios y soporte de resiliencia para la integración de Aspire.",

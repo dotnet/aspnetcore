@@ -460,7 +460,7 @@ try
         $bodyPath = Join-Path $tempRoot "producer-publication.txt"
         [IO.File]::WriteAllText($bodyPath, $body, [Text.UTF8Encoding]::new($false))
         & node (Join-Path $testRoot "Test-PulseIssueUpdate.cjs") $collectorJsRoot $lockPath $bodyPath
-        Assert-True ($LASTEXITCODE -eq 0) "The pinned publication handler must retain the combined producer body exactly."
+        Assert-True ($LASTEXITCODE -eq 0) "The pinned publication handler must preserve the combined producer body and append trusted provenance."
     }
 }
 finally

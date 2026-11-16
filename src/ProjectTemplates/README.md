@@ -17,6 +17,8 @@ The following contains a description of each sub-directory in the `ProjectTempla
   - `Templates.Blazor.Tests`: Contains the Blazor template tests. These are currently split out due to not being Helix ready yet.
 - `testassets`: Contains assets used by the tests, like a dotnet tools installer
 
+Generated-project .NET CLI commands must clear inherited `MSBuildSDKsPath` so restore, build, and publish use the same copied SDK and pack layout.
+
 ## Submitting pull requests
 
 You can submit changes for templates in this repo by submitting a pull request. If you make changes to any

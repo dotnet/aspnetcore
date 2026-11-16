@@ -221,7 +221,6 @@ public class RedirectionTest :
     [Theory]
     [InlineData(true)]
     [InlineData(false)]
-    [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/67342")]
     public void RedirectEnhancedNonBlazorGetToInternal(bool disableThrowNavigationException)
     {
         TestFeatureSwitches.SetDisableThrowNavigationException(disableThrowNavigationException);

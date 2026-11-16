@@ -44,6 +44,8 @@
     <Compile Include="$(SharedSourceRoot)ValueStopwatch\**\*.cs" Link="Shared\ValueStopwatch\%(Filename)%(Extension)" />
     <Compile Include="$(SharedSourceRoot)WebEncoders\**\*.cs" Link="Shared\WebEncoders\%(Filename)%(Extension)" />
     <Compile Include="$(SharedSourceRoot)QueryStringEnumerable.cs" />
+    <Compile Include="$(SharedSourceRoot)QueryStringDecoder.cs" />
+    <Compile Include="$(SharedSourceRoot)PooledMemoryStream.cs" />
     <Compile Include="$(SharedSourceRoot)UrlDecoder\**\*.cs" Link="Shared\UrlDecoder\%(Filename)%(Extension)" />
     <Compile Include="$(SharedSourceRoot)PathNormalizer\**\*.cs" Link="Shared\PathNormalizer\%(Filename)%(Extension)" />
     <Compile Include="$(SharedSourceRoot)ThrowHelpers\**\*.cs" Link="Shared\ThrowHelpers\%(Filename)%(Extension)" />
@@ -56,6 +58,7 @@
     <Compile Include="$(SharedSourceRoot)PooledArrayBufferWriter.cs" Link="Shared\Buffers\%(Filename)%(Extension)" />
     <Compile Include="$(SharedSourceRoot)Buffers\RefPooledArrayBufferWriter.cs" Link="Shared\Buffers\%(Filename)%(Extension)" />
     <Compile Include="$(SharedSourceRoot)Encoding\Int7BitEncodingUtils.cs" Link="Shared\Encoding\%(Filename)%(Extension)" />
+    <Compile Include="$(SharedSourceRoot)System.Text\StringBuilderCache.cs" Link="Shared\System.Text\%(Filename)%(Extension)" />
   </ItemGroup>
 
   <ItemGroup>

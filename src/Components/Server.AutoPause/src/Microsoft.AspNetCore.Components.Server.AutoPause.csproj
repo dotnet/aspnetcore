@@ -19,46 +19,15 @@
        *.lib.module.js from referenced Razor class libraries. -->
   <PropertyGroup>
     <InteropWorkingDir>$(MSBuildThisFileDirectory)js\</InteropWorkingDir>
-    <ResolveStaticWebAssetsInputsDependsOn>
-      IncludeCompileJsOutput;
-      $(ResolveStaticWebAssetsInputsDependsOn)
-    </ResolveStaticWebAssetsInputsDependsOn>
   </PropertyGroup>
 
-  <Target Name="IncludeCompileJsOutput" BeforeTargets="ResolveJSModuleStaticWebAssets;ResolveJsInitializerModuleStaticWebAssets">
+  <!-- Match SDK discovery's condition so no-build packing doesn't include the bundles as raw Content. -->
+  <Target Name="IncludeCompileJsOutput" BeforeTargets="ResolveProjectStaticWebAssets" Condition="'$(NoBuild)' != 'true'">
     <ItemGroup>
-      <_JsBuildOutput Include="$(InteropWorkingDir)dist\$(Configuration)\**" Exclude="$(InteropWorkingDir)dist\.gitignore" />
-      <_JsBuildOutput>
-        <RelativePath>%(_JsBuildOutput.RecursiveDir)%(Filename)%(Extension)</RelativePath>
-      </_JsBuildOutput>
-    </ItemGroup>
-
-    <DefineStaticWebAssets Condition="'@(_JsBuildOutput)' != ''"
-      SourceType="Discovered"
-      SourceId="$(PackageId)"
-      ContentRoot="$(InteropWorkingDir)dist\$(Configuration)\"
-      BasePath="_content\$(PackageId)"
-      CandidateAssets="@(_JsBuildOutput)"
-      RelativePathFilter="**.js"
-      RelativePathPattern="**"
-    >
-      <Output TaskParameter="Assets" ItemName="_JSBuildStaticWebAsset" />
-    </DefineStaticWebAssets>
-
-    <DefineStaticWebAssetEndpoints
-      Condition="'@(_JsBuildOutput)' != ''"
-      CandidateAssets="@(_JSBuildStaticWebAsset)"
-      ExistingEndpoints="@()"
-      ContentTypeMappings="@(StaticWebAssetContentTypeMapping)"
-    >
-      <Output TaskParameter="Endpoints" ItemName="_JSBuildStaticWebAssetEndpoint" />
-    </DefineStaticWebAssetEndpoints>
-
-    <ItemGroup>
-      <StaticWebAsset Include="@(_JSBuildStaticWebAsset)" />
-      <StaticWebAssetEndpoint Include="@(_JSBuildStaticWebAssetEndpoint)" />
-      <_JsBuildOutput Include="$(InteropWorkingDir)dist\$(Configuration)\**" Exclude="$(InteropWorkingDir)dist\.gitignore" />
-      <FileWrites Include="$(_JsBuildOutput)" />
+      <_JsBuildOutput Include="$(InteropWorkingDir)dist\$(Configuration)\**" />
+      <Content Include="@(_JsBuildOutput)"
+        Link="wwwroot\%(_JsBuildOutput.RecursiveDir)%(_JsBuildOutput.Filename)%(_JsBuildOutput.Extension)"
+        ContentRoot="$(InteropWorkingDir)dist\$(Configuration)\" />
     </ItemGroup>
   </Target>
 

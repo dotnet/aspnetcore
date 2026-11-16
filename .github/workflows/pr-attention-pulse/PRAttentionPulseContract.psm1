@@ -1,7 +1,7 @@
 Set-StrictMode -Version Latest
 
-# Hard ceiling for the whole published issue body, kept safely under GitHub's issue-body limit.
-$script:PulseMaxBodyLength = 65000
+# Hard ceiling for the canonical issue body, reserving space for the gh-aw publication suffix.
+$script:PulseMaxBodyLength = 64000
 
 function Assert-PulseSnapshotRun
 {

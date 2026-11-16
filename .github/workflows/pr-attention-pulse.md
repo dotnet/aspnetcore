@@ -54,6 +54,35 @@ jobs:
             throw "The fixed Pulse dashboard target must be an open issue whose title starts with '[pr-attention-pulse]'."
           }
 
+  snapshot_binding:
+    name: Preserve Pulse snapshot producer binding
+    runs-on: ubuntu-latest
+    needs: [agent]
+    outputs:
+      pulse_snapshot_run_attempt: ${{ steps.read_binding.outputs.run_attempt }}
+    steps:
+      - name: Download trusted Pulse publication validator
+        uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
+        with:
+          name: pulse-publication-validator
+          path: ${{ runner.temp }}/pr-attention-pulse-validator
+
+      - name: Read producer attempt
+        id: read_binding
+        shell: pwsh
+        env:
+          EXPR_RUNNER_TEMP: ${{ runner.temp }}
+        run: |
+          $contextPath = Join-Path $env:EXPR_RUNNER_TEMP "pr-attention-pulse-validator/pulse-snapshot-context.json"
+          $context = Get-Content -LiteralPath $contextPath -Raw | ConvertFrom-Json -Depth 20
+          $attempt = [string]$context.runAttempt
+          if ($attempt -cnotmatch "\A[1-9][0-9]*\z")
+          {
+            throw "The frozen Pulse snapshot producer attempt is invalid."
+          }
+
+          "run_attempt=$attempt" | Out-File -FilePath $env:GITHUB_OUTPUT -Encoding utf8 -Append
+
   activation:
     steps:
       - name: Remove repository data from activation artifact
@@ -70,7 +99,7 @@ jobs:
             fi
           done
   safe_outputs:
-    needs: [validate_dashboard_target]
+    needs: [validate_dashboard_target, snapshot_binding]
     if: "needs.agent.result == 'success'"
     pre-steps:
       - name: Revalidate fixed Pulse dashboard target
@@ -97,13 +126,6 @@ jobs:
             throw "The fixed Pulse dashboard target must be an open issue whose title starts with '[pr-attention-pulse]'."
           }
 
-      - name: Preserve canonical Pulse body on publication
-        uses: actions/github-script@3a2844b7e9c422d3c10d287c895573f7108da1b3 # v9.0.0
-        with:
-          # footer:false still appends a workflow-id comment.
-          # Suppress only that decoration in this publication job; run identity
-          # and before/after state remain in the safe-output execution manifest.
-          script: core.exportVariable("GH_AW_WORKFLOW_ID", "");
   detection:
     if: "needs.agent.result == 'success'"
   agent:
@@ -343,79 +365,14 @@ pre-agent-steps:
       done
 
 post-steps:
-  - name: Validate the sole publication payload
+  - name: Upload trusted Pulse publication validator
     if: always()
-    shell: pwsh
-    env:
-      GH_AW_SAFE_OUTPUTS_URLS: allowed-or-code-region
-      GH_AW_ALLOWED_GITHUB_REFS: dotnet/aspnetcore
-      GH_AW_SANITIZER_MODULE_PATH: ${{ runner.temp }}/gh-aw/actions/sanitize_content.cjs
-      PULSE_SNAPSHOT_REPOSITORY: ${{ github.repository }}
-      PULSE_SNAPSHOT_SERVER_URL: ${{ github.server_url }}
-      PULSE_SNAPSHOT_RUN_ID: ${{ github.run_id }}
-      PULSE_SNAPSHOT_RUN_ATTEMPT: ${{ github.run_attempt }}
-      EXPR_RUNNER_TEMP: ${{ runner.temp }}
-    run: |
-      function Get-CanonicalPath
-      {
-        param([Parameter(Mandatory)][string]$Path)
-
-        $resolved = & realpath --canonicalize-existing -- $Path
-        if ($LASTEXITCODE -ne 0)
-        {
-          throw "Could not resolve trusted path '$Path'."
-        }
-
-        return ([string]$resolved).Trim()
-      }
-
-      function Assert-PrivateValidatorRoot
-      {
-        param([Parameter(Mandatory)][string]$Path)
-
-        $candidate = Get-CanonicalPath -Path $Path
-        foreach ($forbiddenPath in @(
-          (Get-CanonicalPath -Path $env:GITHUB_WORKSPACE),
-          (Get-CanonicalPath -Path "/tmp"),
-          (Get-CanonicalPath -Path (Join-Path $env:RUNNER_TEMP "gh-aw"))))
-        {
-          $prefix = $forbiddenPath.TrimEnd([IO.Path]::DirectorySeparatorChar) + [IO.Path]::DirectorySeparatorChar
-          if ([string]::Equals($candidate, $forbiddenPath, [StringComparison]::Ordinal) -or
-            $candidate.StartsWith($prefix, [StringComparison]::Ordinal))
-          {
-            throw "The trusted validator root resolves inside a model-visible path."
-          }
-        }
-      }
-
-      $dashboardIssueNumber = 69328
-
-      Assert-PrivateValidatorRoot -Path "$env:EXPR_RUNNER_TEMP/pr-attention-pulse-validator"
-      pwsh "$env:EXPR_RUNNER_TEMP/pr-attention-pulse-validator/Validate-PRAttentionPulseOutput.ps1" `
-        -AgentOutputPath /tmp/gh-aw/agent_output.json `
-        -PulseInputPath "$env:EXPR_RUNNER_TEMP/pr-attention-pulse-validator/pulse-input.json" `
-        -ExpectedBodyPath "$env:EXPR_RUNNER_TEMP/pr-attention-pulse-validator/pulse-body.md" `
-        -SnapshotContextPath "$env:EXPR_RUNNER_TEMP/pr-attention-pulse-validator/pulse-snapshot-context.json" `
-        -ExpectedRepository $env:PULSE_SNAPSHOT_REPOSITORY `
-        -ExpectedServerUrl $env:PULSE_SNAPSHOT_SERVER_URL `
-        -ExpectedRunId $env:PULSE_SNAPSHOT_RUN_ID `
-        -ExpectedRunAttempt $env:PULSE_SNAPSHOT_RUN_ATTEMPT `
-        -SanitizerModulePath $env:GH_AW_SANITIZER_MODULE_PATH `
-        -ExpectedIssueNumber $dashboardIssueNumber
-      if ($LASTEXITCODE -ne 0)
-      {
-        throw "The trusted publication validator rejected the agent output."
-      }
-
-  - name: Upload validated Pulse publication evidence
-    uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+    uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9  # v7.0.2
     with:
-      name: pulse-publication-evidence
-      path: |
-        ${{ runner.temp }}/pr-attention-pulse-validator/pulse-input.json
-        ${{ runner.temp }}/pr-attention-pulse-validator/pulse-body.md
+      name: pulse-publication-validator
+      path: ${{ runner.temp }}/pr-attention-pulse-validator
       if-no-files-found: error
-      retention-days: 7
+      retention-days: 1
 
   - name: Remove sanitized Pulse data
     if: always()
@@ -463,6 +420,85 @@ safe-outputs:
   missing-tool: false
   noop: false
   mentions: false
+  steps:
+    - name: Download trusted Pulse publication validator
+      uses: actions/download-artifact@v8.0.2
+      with:
+        name: pulse-publication-validator
+        path: ${{ runner.temp }}/pr-attention-pulse-validator
+
+    - name: Validate the sole publication payload
+      shell: pwsh
+      env:
+        GH_AW_SAFE_OUTPUTS_URLS: allowed-or-code-region
+        GH_AW_ALLOWED_GITHUB_REFS: dotnet/aspnetcore
+        GH_AW_SANITIZER_MODULE_PATH: ${{ runner.temp }}/gh-aw/actions/sanitize_content.cjs
+        PULSE_SNAPSHOT_REPOSITORY: ${{ github.repository }}
+        PULSE_SNAPSHOT_SERVER_URL: ${{ github.server_url }}
+        PULSE_SNAPSHOT_RUN_ID: ${{ github.run_id }}
+        PULSE_SNAPSHOT_RUN_ATTEMPT: ${{ needs.snapshot_binding.outputs.pulse_snapshot_run_attempt }}
+        EXPR_RUNNER_TEMP: ${{ runner.temp }}
+      run: |
+        $dashboardIssueNumber = 69328
+
+        function Get-CanonicalPath
+        {
+          param([Parameter(Mandatory)][string]$Path)
+
+          $resolved = & realpath --canonicalize-existing -- $Path
+          if ($LASTEXITCODE -ne 0)
+          {
+            throw "Could not resolve trusted path '$Path'."
+          }
+
+          return ([string]$resolved).Trim()
+        }
+
+        function Assert-PrivateValidatorRoot
+        {
+          param([Parameter(Mandatory)][string]$Path)
+
+          $candidate = Get-CanonicalPath -Path $Path
+          foreach ($forbiddenPath in @(
+            (Get-CanonicalPath -Path $env:GITHUB_WORKSPACE),
+            (Get-CanonicalPath -Path "/tmp"),
+            (Get-CanonicalPath -Path (Join-Path $env:RUNNER_TEMP "gh-aw"))))
+          {
+            $prefix = $forbiddenPath.TrimEnd([IO.Path]::DirectorySeparatorChar) + [IO.Path]::DirectorySeparatorChar
+            if ([string]::Equals($candidate, $forbiddenPath, [StringComparison]::Ordinal) -or
+              $candidate.StartsWith($prefix, [StringComparison]::Ordinal))
+            {
+              throw "The trusted validator root resolves inside a model-visible path."
+            }
+          }
+        }
+
+        Assert-PrivateValidatorRoot -Path "$env:EXPR_RUNNER_TEMP/pr-attention-pulse-validator"
+        pwsh "$env:EXPR_RUNNER_TEMP/pr-attention-pulse-validator/Validate-PRAttentionPulseOutput.ps1" `
+          -AgentOutputPath /tmp/gh-aw/agent_output.json `
+          -PulseInputPath "$env:EXPR_RUNNER_TEMP/pr-attention-pulse-validator/pulse-input.json" `
+          -ExpectedBodyPath "$env:EXPR_RUNNER_TEMP/pr-attention-pulse-validator/pulse-body.md" `
+          -SnapshotContextPath "$env:EXPR_RUNNER_TEMP/pr-attention-pulse-validator/pulse-snapshot-context.json" `
+          -ExpectedRepository $env:PULSE_SNAPSHOT_REPOSITORY `
+          -ExpectedServerUrl $env:PULSE_SNAPSHOT_SERVER_URL `
+          -ExpectedRunId $env:PULSE_SNAPSHOT_RUN_ID `
+          -ExpectedRunAttempt $env:PULSE_SNAPSHOT_RUN_ATTEMPT `
+          -SanitizerModulePath $env:GH_AW_SANITIZER_MODULE_PATH `
+          -ExpectedIssueNumber $dashboardIssueNumber
+        if ($LASTEXITCODE -ne 0)
+        {
+          throw "The trusted publication validator rejected the agent output."
+        }
+
+    - name: Upload validated Pulse publication evidence
+      uses: actions/upload-artifact@v7.0.2
+      with:
+        name: pulse-publication-evidence
+        path: |
+          ${{ runner.temp }}/pr-attention-pulse-validator/pulse-input.json
+          ${{ runner.temp }}/pr-attention-pulse-validator/pulse-body.md
+        if-no-files-found: error
+        retention-days: 7
   allowed-github-references:
     - dotnet/aspnetcore
   max-bot-mentions: ${{ 0 }}

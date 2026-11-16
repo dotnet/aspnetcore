@@ -12,6 +12,7 @@
       "src\\Hosting\\Hosting\\src\\Microsoft.AspNetCore.Hosting.csproj",
       "src\\Hosting\\Server.IntegrationTesting\\src\\Microsoft.AspNetCore.Server.IntegrationTesting.csproj",
       "src\\Hosting\\TestHost\\src\\Microsoft.AspNetCore.TestHost.csproj",
+      "src\\Mvc\\Mvc.Testing.Tasks\\src\\Microsoft.AspNetCore.Mvc.Testing.Tasks.csproj",
       "src\\Mvc\\Mvc.Testing\\src\\Microsoft.AspNetCore.Mvc.Testing.csproj",
       "src\\Security\\Authentication\\Cookies\\src\\Microsoft.AspNetCore.Authentication.Cookies.csproj",
       "src\\Mvc\\Mvc\\src\\Microsoft.AspNetCore.Mvc.csproj",

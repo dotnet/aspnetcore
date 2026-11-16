@@ -131,9 +131,6 @@
       '$(Language)' == 'C#' AND
       '$(TargetFrameworkIdentifier)' != '.NETFramework' ">
     <AssemblyVersion>$(AspNetCoreMajorMinorVersion).0.0</AssemblyVersion>
-    <!-- Keep assembly identities compatible with the bootstrap SDK's ASP.NET Core 11 reference packs.
-         Remove this pin once those references are replaced with matching ASP.NET Core 12 assemblies. -->
-    <AssemblyVersion Condition=" '$(PinAspNetCoreAssemblyVersionToPreviousMajor)' != 'false' ">11.0.0.0</AssemblyVersion>
   </PropertyGroup>
 
   <PropertyGroup>
@@ -158,7 +155,6 @@
       '$(IsPackable)' != 'true' AND
       $([MSBuild]::IsTargetFrameworkCompatible('$(TargetFramework)', 'net11.0')) AND
       '$(UseRuntimeAsync)' != 'false' AND
-      '$(DotNetBuildUseMonoRuntime)' != 'true' AND
       '$(TargetOS)' != 'browser' AND
       !$(RuntimeIdentifier.StartsWith('browser-'))">
     <Features>$(Features);runtime-async=on</Features>
@@ -168,7 +164,6 @@
   <PropertyGroup Condition="'$(IsTestProject)' == 'true' AND
       $([MSBuild]::IsTargetFrameworkCompatible('$(TargetFramework)', 'net11.0')) AND
       '$(UseRuntimeAsync)' != 'false' AND
-      '$(DotNetBuildUseMonoRuntime)' != 'true' AND
       '$(TargetOS)' != 'browser' AND
       !$(RuntimeIdentifier.StartsWith('browser-'))">
     <Features>$(Features);runtime-async=on</Features>
@@ -178,7 +173,6 @@
        so that subprocess dotnet invocations can forward them and avoid recompiling
        framework projects with different properties. -->
   <ItemGroup Condition="'$(IsTestProject)' == 'true'">
-    <RuntimeHostConfigurationOption Include="DotNetBuildUseMonoRuntime" Value="$(DotNetBuildUseMonoRuntime)" Condition="'$(DotNetBuildUseMonoRuntime)' != ''" />
     <RuntimeHostConfigurationOption Include="ContinuousIntegrationBuild" Value="$(ContinuousIntegrationBuild)" Condition="'$(ContinuousIntegrationBuild)' != ''" />
   </ItemGroup>
 

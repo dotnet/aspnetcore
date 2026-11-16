@@ -478,6 +478,12 @@ public class DefaultModelMetadata : ModelMetadata
             return defaultModelMetadata._hasValidators.Value;
         }
 
+        if (typeof(IUnion).IsAssignableFrom(Nullable.GetUnderlyingType(metadata.ModelType) ?? metadata.ModelType))
+        {
+            // The active case's validators are determined from its runtime type.
+            return true;
+        }
+
         if (defaultModelMetadata.ValidationMetadata.HasValidators != false)
         {
             // Either the ModelMetadata instance has some validators (HasValidators = true) or it is non-deterministic (HasValidators = null).
@@ -554,6 +560,26 @@ public class DefaultModelMetadata : ModelMetadata
     public override Func<object?[], object>? BoundConstructorInvoker => _details.BoundConstructorInvoker;
 
     internal DefaultMetadataDetails Details => _details;
+
+    internal ModelMetadata GetMetadataForRuntimeType(Type modelType)
+    {
+        return _provider is ModelMetadataProvider provider && _details.Key.PropertyInfo is { } propertyInfo
+            ? provider.GetMetadataForProperty(propertyInfo, modelType)
+            : this;
+    }
+
+    internal ModelMetadata CreateUnionValueMetadata()
+    {
+        var propertyInfo = typeof(IUnion).GetProperty(nameof(IUnion.Value))!;
+        var details = new DefaultMetadataDetails(
+            ModelMetadataIdentity.ForProperty(propertyInfo, typeof(object), ModelType),
+            ModelAttributes.GetAttributesForProperty(ModelType, propertyInfo))
+        {
+            ContainerMetadata = this,
+        };
+
+        return new DefaultModelMetadata(_provider, _detailsProvider, details, _modelBindingMessageProvider);
+    }
 
     /// <inheritdoc />
     public override ModelMetadata GetMetadataForType(Type modelType)

@@ -5,6 +5,7 @@ using Microsoft.AspNetCore.Components.E2ETest.Infrastructure;
 using Microsoft.AspNetCore.Components.E2ETest.Infrastructure.ServerFixtures;
 using Components.TestServer.RazorComponents;
 using Microsoft.AspNetCore.E2ETesting;
+using Microsoft.AspNetCore.InternalTesting;
 using Xunit.Abstractions;
 using OpenQA.Selenium;
 using TestServer;
@@ -138,12 +139,13 @@ public class TempDataSessionStorageTest : ServerTestBase<BasicTestAppServerSiteF
     }
 
     [Fact]
+    [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/69996")]
     public void TempDataPersistWithoutAccessing()
     {
         Navigate($"{ServerPathBase}/tempdata");
         Browser.Equal("No message", () => Browser.FindElement(By.Id("message")).Text);
         Browser.FindElement(By.Id("set-values-not-read")).Click();
-        Browser.FindElement(By.Id("redirect-button")).Click();
+        Browser.Exists(By.Id("redirect-without-read-button")).Click();
         Browser.Equal("Message", () => Browser.FindElement(By.Id("message")).Text);
     }
 

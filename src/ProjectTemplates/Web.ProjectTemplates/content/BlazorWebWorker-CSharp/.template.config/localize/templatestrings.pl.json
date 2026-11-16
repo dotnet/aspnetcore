@@ -1,4 +1,4 @@
-﻿{
+{
   "author": "Microsoft",
   "name": "Proces roboczy usługi Blazor",
   "description": "Projekt tworzący bibliotekę klas, która uruchamia kod .NET w procesie roboczym sieci Web z aplikacji internetowej Blazor WebAssembly lub Blazor.",
