@@ -71,4 +71,16 @@
       <StaticWebAssetEndpoint Include="@(_BlazorWebViewModulesFallbackEndpoint)" />
     </ItemGroup>
   </Target>
+  <!-- RCLs contribute precompressed .gz/.br copies of their assets as Alternative
+       static web assets. Blazor Hybrid disables compression above, but those items
+       still reach the publish pipeline and are copied next to the uncompressed files.
+       Drop them before the publish manifest and the Brotli publish pass run. -->
+  <Target Name="_RemoveBlazorWebViewPrecompressedAssets"
+          BeforeTargets="GenerateStaticWebAssetsPublishManifest;ResolvePublishStaticWebAssets;GeneratePublishCompressedStaticWebAssets"
+          Condition="'$(CompressionEnabled)' == 'false'">
+    <ItemGroup>
+      <StaticWebAsset Remove="@(StaticWebAsset)"
+        Condition="'%(StaticWebAsset.AssetRole)' == 'Alternative' and ('%(StaticWebAsset.Extension)' == '.gz' or '%(StaticWebAsset.Extension)' == '.br')" />
+    </ItemGroup>
+  </Target>
 </Project>
