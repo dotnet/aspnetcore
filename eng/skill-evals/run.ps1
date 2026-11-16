@@ -520,7 +520,7 @@ switch ($Action) {
             Invoke-VallyIsolated $vallyArguments -TolerateExitOne:$assertsResults
             $invocationCompleted = $true
         } finally {
-            if ($selectedSuite -eq 'review-candidate-verifier') {
+            if ($selectedSuite -eq 'review-candidate-verifier' -and $assertsResults) {
                 $runDirectories = @(
                     Get-ChildItem -LiteralPath $output -Directory -ErrorAction SilentlyContinue |
                         Where-Object { -not $existingRunDirectoryNames.Contains($_.Name) }

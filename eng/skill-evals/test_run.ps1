@@ -92,7 +92,7 @@ if ($args[0] -eq 'experiment' -and $args -notcontains '--dry-run') {
             Set-Content (Join-Path $run "$variant/results.jsonl")
     }
 }
-if ($args[0] -eq 'eval' -and ($args -join ' ') -like '*review-candidate-verifier*') {
+if ($args[0] -eq 'eval' -and ($args -join ' ') -like '*review-candidate-verifier*' -and $args -notcontains '--dry-run') {
     $output = $args[([array]::IndexOf($args, '--output-dir') + 1)]
     $run = Join-Path $output '2026-01-01T00-00-00'
     New-Item -ItemType Directory -Path $run -Force | Out-Null
@@ -362,6 +362,20 @@ stimuli:
             'Component plan lost its per-case 4/5 disposition gate.'
         )
     }
+    $componentDryRunOutput = Join-Path $testRoot 'component-dry-run'
+    $previousComponentRun = Join-Path $componentDryRunOutput 'previous-run'
+    New-Item -ItemType Directory -Path $previousComponentRun -Force | Out-Null
+    Set-Content (Join-Path $previousComponentRun 'results.jsonl') 'previous results'
+    $previousPlanPath = Join-Path $previousComponentRun 'plan-snapshot.json'
+    Set-Content $previousPlanPath 'previous plan'
+    $previousPlan = Get-Content $previousPlanPath -Raw
+    & $runner Run -Suite review-candidate-verifier -Vally $fakeVally -VallyPrefix @() `
+        -OutputDirectory $componentDryRunOutput -Arguments @('--dry-run')
+    Assert-True ((Get-Content $previousPlanPath -Raw) -eq $previousPlan) (
+        'Component dry-run overwrote an existing plan snapshot.'
+    )
+    Write-Host 'ComponentDryRunPreservesExistingPlan passed.'
+
     function Assert-CustomComponentPlan {
         param(
             [string]$Scenario,
