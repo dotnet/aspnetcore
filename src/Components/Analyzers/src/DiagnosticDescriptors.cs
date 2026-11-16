@@ -174,7 +174,7 @@ internal static class DiagnosticDescriptors
         DiagnosticSeverity.Warning,
         isEnabledByDefault: true,
         description: CreateLocalizableResourceString(nameof(Resources.ComponentHasDisposeAsyncWithoutIAsyncDisposable_Description)));
-  
+
     public static readonly DiagnosticDescriptor VirtualizeSpacerElementIsInvalid = new(
         "BL0019",
         CreateLocalizableResourceString(nameof(Resources.VirtualizeSpacerElementIsInvalid_Title)),
@@ -183,4 +183,13 @@ internal static class DiagnosticDescriptors
         DiagnosticSeverity.Warning,
         isEnabledByDefault: true,
         description: CreateLocalizableResourceString(nameof(Resources.VirtualizeSpacerElementIsInvalid_Description)));
+
+    public static readonly DiagnosticDescriptor JsInteropUsageWithoutIsInteractiveCheck = new(
+        "BL0020",
+        CreateLocalizableResourceString(nameof(Resources.JsInteropUsageWithoutIsInteractiveCheck_Title)),
+        CreateLocalizableResourceString(nameof(Resources.JsInteropUsageWithoutIsInteractiveCheck_Format)),
+        Usage,
+        DiagnosticSeverity.Warning,
+        isEnabledByDefault: true,
+        description: CreateLocalizableResourceString(nameof(Resources.JsInteropUsageWithoutIsInteractiveCheck_Description)));
 }
