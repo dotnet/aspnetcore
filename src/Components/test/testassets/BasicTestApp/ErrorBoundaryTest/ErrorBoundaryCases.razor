@@ -2,6 +2,17 @@
 <p>These errors will be caught by the closest error boundary ancestor.</p>
 <button id="event-sync" @onclick="@EventHandlerErrorSync">Synchronous</button>
 <button id="event-async" @onclick="@EventHandlerErrorAsync">Asynchronous</button>
+<button id="event-nonrendering-sync" @onclick="@NonRenderingEventHandler.Wrap(EventHandlerErrorSync)">Non-rendering synchronous</button>
+<button id="event-nonrendering-async" @onclick="@NonRenderingEventHandler.Wrap(EventHandlerErrorAsync)">Non-rendering asynchronous</button>
+
+<div id="nonrendering-error-after-disposal-test">
+    <CustomErrorBoundary>
+        @if (showNonRenderingChild)
+        {
+            <NonRenderingErrorCausingChild OnRemove="@(() => showNonRenderingChild = false)" AfterRemoval="@nonRenderingChildRemoved.Task" />
+        }
+    </CustomErrorBoundary>
+</div>
 
 <hr />
 <h2>Lifecycle methods</h2>
@@ -139,6 +150,16 @@
     private bool disposalTestBeginDelayedError;
     private bool multipleChildrenBeginDelayedError;
     private bool twoErrorsInChild;
+    private bool showNonRenderingChild = true;
+    private readonly TaskCompletionSource nonRenderingChildRemoved = new();
+
+    protected override void OnAfterRender(bool firstRender)
+    {
+        if (!showNonRenderingChild)
+        {
+            nonRenderingChildRemoved.TrySetResult();
+        }
+    }
 
     void EventHandlerErrorSync()
         => throw new InvalidTimeZoneException("Synchronous error from event handler");
