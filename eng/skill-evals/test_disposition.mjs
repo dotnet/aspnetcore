@@ -159,6 +159,26 @@ test('ReviewDispositionToleratesSingleUnderscoreEmphasis', async context =>
   }
 });
 
+test('ReviewDispositionRecognizesUnderscoreEmphasizedCandidateIds', async context =>
+{
+  for (const [name, caseName, output, expected] of [
+    ['single-underscore', 'case-06', review('UNRESOLVED', 'unresolved')
+      .replace('C1 missing target-base contract.', '- _C1_: missing target-base contract.'), 1],
+    ['double-underscore', 'case-06', review('UNRESOLVED', 'unresolved')
+      .replace('C1 missing target-base contract.', '- __C1__: missing target-base contract.'), 1],
+    ['contradictory-placement', 'case-02', review('NEW_FINDINGS', 'verified')
+      .replace('DISCARDED\nNone.', 'DISCARDED\n_C1_: old and head match.'), 0],
+    ['extra-candidate', 'case-02', review('NEW_FINDINGS', 'verified')
+      .replace('DISCARDED\nNone.', 'DISCARDED\n_C2_: another concern.'), 0],
+  ])
+  {
+    await context.test(name, () =>
+    {
+      assert.equal(score(caseName, output), expected);
+    });
+  }
+});
+
 test('ReviewDispositionDistinguishesNoProseFromSectionAbsence', async context =>
 {
   for (const [name, caseName, output, expected] of [

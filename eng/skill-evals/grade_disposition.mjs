@@ -116,7 +116,7 @@ function hasPositiveC1(sectionText)
 {
   return sectionText
     .split(/\r?\n/)
-    .some(line => /\bC1\b/.test(line) && !isNegativeC1Line(line));
+    .some(line => /\bC1\b/.test(stripMarkdown(line)) && !isNegativeC1Line(line));
 }
 
 function gradeReview(name, output)
@@ -160,7 +160,7 @@ function gradeReview(name, output)
   {
     return false;
   }
-  if ([...sections.values()].some(text => /\bC(?!1\b)\d+\b/.test(text)))
+  if ([...sections.values()].some(text => /\bC(?!1\b)\d+\b/.test(stripMarkdown(text))))
   {
     return false;
   }
