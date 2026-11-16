@@ -436,6 +436,38 @@ public class StatePersistenceTest : ServerTestBase<BasicTestAppServerSiteFixture
         }
     }
 
+    [Fact]
+    public async Task EnhancedNavigationDisposesComponentAwaitingInitialRender()
+    {
+        var testId = Guid.NewGuid();
+        Navigate($"subdir/persistent-state/startup-navigation-slow?test-id={testId}&cancel-on-dispose=true&suppress-autostart");
+        var js = (IJavaScriptExecutor)Browser;
+        using var client = new HttpClient();
+        var releaseUri = new Uri(new Uri((string)js.ExecuteScript("return document.baseURI")), $"autopause-test/release/{testId}");
+        try
+        {
+            js.ExecuteScript("sessionStorage.setItem('keep-circuit-alive', 'true')");
+            Browser.Click(By.Id("call-blazor-start"));
+            Browser.Equal("loading", () => Browser.FindElement(By.Id("startup-slow-status")).Text);
+
+            Browser.Click(By.Id("startup-state-link"));
+            Browser.Exists(By.Id("startup-state-value"));
+            var prerenderedState = Browser.FindElement(By.Id("startup-state-value")).Text;
+            Assert.True(Guid.TryParse(prerenderedState, out _));
+            Browser.Equal("interactive", () => Browser.FindElement(By.Id("startup-state-status")).Text);
+            Browser.Equal(prerenderedState, () => Browser.FindElement(By.Id("startup-state-value")).Text);
+            Browser.True(() => _serverFixture.Host.Services.GetRequiredService<AutoPauseTestStreamGate>().IsCompleted(testId.ToString()));
+            Browser.Click(By.Id("startup-state-click"));
+            Browser.Equal("1", () => Browser.FindElement(By.Id("startup-state-click")).Text);
+        }
+        finally
+        {
+            js.ExecuteScript("sessionStorage.removeItem('keep-circuit-alive')");
+            using var release = await client.PostAsync(releaseUri, null);
+            release.EnsureSuccessStatusCode();
+        }
+    }
+
     private void BlockWebAssemblyResourceLoad()
     {
         // Clear local storage so that the resource hash is not found

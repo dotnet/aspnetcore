@@ -1,21 +1,43 @@
 @using TestServer
+@implements IDisposable
 @inject AutoPauseTestStreamGate Gate
 
 <p id="startup-slow-status">@_status</p>
 
 @code {
     private string _status = "static";
+    private readonly CancellationTokenSource _disposeCancellation = new();
 
     [Parameter]
     public Guid TestId { get; set; }
+
+    [Parameter]
+    public bool CancelOnDispose { get; set; }
 
     protected override async Task OnParametersSetAsync()
     {
         if (RendererInfo.IsInteractive)
         {
             _status = "loading";
-            await Gate.WaitAsync(TestId.ToString(), CancellationToken.None);
+            try
+            {
+                await Gate.WaitAsync(TestId.ToString(), CancelOnDispose ? _disposeCancellation.Token : CancellationToken.None);
+            }
+            catch (OperationCanceledException) when (_disposeCancellation.IsCancellationRequested)
+            {
+                return;
+            }
             _status = "interactive";
+        }
+    }
+
+    public void Dispose()
+    {
+        _disposeCancellation.Cancel();
+        _disposeCancellation.Dispose();
+        if (RendererInfo.IsInteractive && CancelOnDispose)
+        {
+            Gate.MarkCompleted(TestId.ToString());
         }
     }
 }

@@ -1,8 +1,12 @@
 @page "/persistent-state/startup-navigation-slow"
 
-<InitialCircuitSlowRenderComponent TestId="TestId" @rendermode="@(new InteractiveServerRenderMode(prerender: true))" />
+<InitialCircuitSlowRenderComponent TestId="TestId" CancelOnDispose="CancelOnDispose" @rendermode="@(new InteractiveServerRenderMode(prerender: true))" />
+<a id="startup-state-link" href="@($"persistent-state/startup-navigation?test-id={TestId}")">Persistent state island</a>
 
 @code {
     [SupplyParameterFromQuery(Name = "test-id")]
     public Guid TestId { get; set; }
+
+    [SupplyParameterFromQuery(Name = "cancel-on-dispose")]
+    public bool CancelOnDispose { get; set; }
 }

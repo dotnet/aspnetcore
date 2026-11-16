@@ -31,7 +31,9 @@ internal partial class CircuitHost : IAsyncDisposable
     private CircuitHandler[] _circuitHandlers;
     private bool _initialized;
     private bool _isFirstUpdate = true;
-    private Task<bool> _rootComponentUpdateTask = Task.FromResult(true);
+    private Task _rootComponentOperationsTask = Task.CompletedTask;
+    private Task _rootComponentStateTask = Task.CompletedTask;
+    private bool _rootComponentUpdateFailed;
     private bool _onConnectionUpFired;
     private bool _onConnectionDownFired;
     private bool _disposed;
@@ -775,128 +777,153 @@ internal partial class CircuitHost : IAsyncDisposable
 
         return Renderer.Dispatcher.InvokeAsync(async () =>
         {
-            // The dispatcher can accept another batch while this one awaits initial rendering or state restoration.
-            // Keep each batch's state alive until its consumers have finished before restoring the next batch.
-            var previousUpdateTask = _rootComponentUpdateTask;
-            var updateCompletionSource = new TaskCompletionSource<bool>(TaskCreationOptions.RunContinuationsAsynchronously);
-            _rootComponentUpdateTask = updateCompletionSource.Task;
-            var succeeded = false;
+            // Removals must be able to dispose components whose initialization is keeping the previous state alive.
+            var previousOperationsTask = _rootComponentOperationsTask;
+            var previousStateTask = _rootComponentStateTask;
+            var operationsCompletionSource = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+            var stateCompletionSource = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+            _rootComponentOperationsTask = operationsCompletionSource.Task;
+            _rootComponentStateTask = stateCompletionSource.Task;
             var shouldClearStore = false;
             var shouldWaitForQuiescence = false;
             var operations = operationBatch.Operations;
             var batchId = operationBatch.BatchId;
             var postRemovalTask = Task.CompletedTask;
-            TaskCompletionSource? taskCompletionSource = null;
             try
             {
-                if (!await previousUpdateTask || _disposed)
+                try
+                {
+                    await previousOperationsTask;
+                    if (_rootComponentUpdateFailed || _disposed)
+                    {
+                        return;
+                    }
+
+                    if (Descriptors.Count > 0)
+                    {
+                        // Block updating components if they were provided during StartCircuit. This keeps
+                        // the footprint for Blazor Server closer to what it was before.
+                        throw new InvalidOperationException("UpdateRootComponents is not supported when components have" +
+                            " been provided during circuit start up.");
+                    }
+
+                    if (store != null)
+                    {
+                        shouldClearStore = true;
+                        // We only do this if we have no root components. Otherwise, the state would have been
+                        // provided during the start up process
+                        var persistenceManager = _scope.ServiceProvider.GetRequiredService<ComponentStatePersistenceManager>();
+                        if (_isFirstUpdate)
+                        {
+                            persistenceManager.SetPlatformRenderMode(RenderMode.InteractiveServer);
+                        }
+
+                        // Use the appropriate scenario based on whether this is a restore operation
+                        var context = (isRestore, _isFirstUpdate) switch
+                        {
+                            (_, false) => RestoreContext.ValueUpdate,
+                            (true, _) => RestoreContext.LastSnapshot,
+                            (false, _) => RestoreContext.InitialValue
+                        };
+                        if (context != RestoreContext.ValueUpdate)
+                        {
+                            // Trigger the restore of the state right away.
+                            await persistenceManager.RestoreStateAsync(store, context);
+                        }
+                    }
+
+                    if (!_isFirstUpdate)
+                    {
+                        postRemovalTask = EnqueueRestore(operationsCompletionSource.Task, previousStateTask, store);
+                    }
+
+                    if (_isFirstUpdate)
+                    {
+                        _isFirstUpdate = false;
+                        shouldWaitForQuiescence = true;
+
+                        // Retrieve the circuit handlers at this point.
+                        _circuitHandlers = [.. _scope.ServiceProvider.GetServices<CircuitHandler>().OrderBy(h => h.Order)];
+                        _dispatchInboundActivity = BuildInboundActivityDispatcher(_circuitHandlers, Circuit);
+                        await OnCircuitOpenedAsync(cancellation);
+                        await OnConnectionUpAsync(cancellation);
+
+                        for (var i = 0; i < operations.Length; i++)
+                        {
+                            var operation = operations[i];
+                            if (operation.Type != RootComponentOperationType.Add)
+                            {
+                                throw new InvalidOperationException($"The first set of update operations must always be of type {nameof(RootComponentOperationType.Add)}");
+                            }
+                        }
+                    }
+
+                    var operationsTask = PerformRootComponentOperations(operations, shouldWaitForQuiescence, postRemovalTask, operationsCompletionSource);
+
+                    await Task.WhenAll(operationsTask.AsTask(), postRemovalTask);
+                }
+                catch (RootComponentUpdateAbortedException)
                 {
                     return;
                 }
-
-                if (Descriptors.Count > 0)
+                catch
                 {
-                    // Block updating components if they were provided during StartCircuit. This keeps
-                    // the footprint for Blazor Server closer to what it was before.
-                    throw new InvalidOperationException("UpdateRootComponents is not supported when components have" +
-                        " been provided during circuit start up.");
+                    _rootComponentUpdateFailed = true;
+                    throw;
                 }
-
-                if (store != null)
+                finally
                 {
-                    shouldClearStore = true;
-                    // We only do this if we have no root components. Otherwise, the state would have been
-                    // provided during the start up process
-                    var persistenceManager = _scope.ServiceProvider.GetRequiredService<ComponentStatePersistenceManager>();
-                    if (_isFirstUpdate)
+                    try
                     {
-                        persistenceManager.SetPlatformRenderMode(RenderMode.InteractiveServer);
-                    }
-
-                    // Use the appropriate scenario based on whether this is a restore operation
-                    var context = (isRestore, _isFirstUpdate) switch
-                    {
-                        (_, false) => RestoreContext.ValueUpdate,
-                        (true, _) => RestoreContext.LastSnapshot,
-                        (false, _) => RestoreContext.InitialValue
-                    };
-                    if (context == RestoreContext.ValueUpdate)
-                    {
-                        taskCompletionSource = new();
-                        postRemovalTask = EnqueueRestore(taskCompletionSource, persistenceManager, context, store);
-                    }
-                    else
-                    {
-                        // Trigger the restore of the state right away.
-                        await persistenceManager.RestoreStateAsync(store, context);
-                    }
-                }
-
-                if (_isFirstUpdate)
-                {
-                    _isFirstUpdate = false;
-                    shouldWaitForQuiescence = true;
-
-                    // Retrieve the circuit handlers at this point.
-                    _circuitHandlers = [.. _scope.ServiceProvider.GetServices<CircuitHandler>().OrderBy(h => h.Order)];
-                    _dispatchInboundActivity = BuildInboundActivityDispatcher(_circuitHandlers, Circuit);
-                    await OnCircuitOpenedAsync(cancellation);
-                    await OnConnectionUpAsync(cancellation);
-
-                    for (var i = 0; i < operations.Length; i++)
-                    {
-                        var operation = operations[i];
-                        if (operation.Type != RootComponentOperationType.Add)
+                        if (shouldClearStore)
                         {
-                            throw new InvalidOperationException($"The first set of update operations must always be of type {nameof(RootComponentOperationType.Add)}");
+                            store.Clear();
                         }
                     }
+                    finally
+                    {
+                        operationsCompletionSource.TrySetResult();
+                        stateCompletionSource.SetResult();
+                    }
                 }
-
-                var operationsTask = PerformRootComponentOperations(operations, shouldWaitForQuiescence, postRemovalTask);
-                taskCompletionSource?.SetResult();
-
-                await Task.WhenAll(operationsTask.AsTask(), postRemovalTask);
 
                 await Client.SendAsync("JS.EndUpdateRootComponents", batchId);
 
                 Log.UpdateRootComponentsSucceeded(_logger);
-                succeeded = true;
             }
             catch (Exception ex)
             {
                 // Report errors asynchronously. UpdateRootComponents is designed not to throw.
+                _rootComponentUpdateFailed = true;
                 await ReportRootComponentUpdateFailureAsync(ex);
-            }
-            finally
-            {
-                if (shouldClearStore)
-                {
-                    // At this point all components have successfully produced an initial render and we can clear the contents of the component
-                    // application state store. This ensures the memory that was not used during the initial render of these components gets
-                    // reclaimed since no-one else is holding on to it any longer.
-                    store.Clear();
-                }
-
-                updateCompletionSource.SetResult(succeeded);
             }
         });
     }
 
-    private static async Task EnqueueRestore(
-        TaskCompletionSource taskCompletionSource,
-        ComponentStatePersistenceManager manager,
-        RestoreContext context,
+    private async Task EnqueueRestore(
+        Task operationsTask,
+        Task previousStateTask,
         IPersistentComponentStateStore store)
     {
-        await taskCompletionSource.Task;
-        await manager.RestoreStateAsync(store, context);
+        await operationsTask;
+        await previousStateTask;
+        if (_rootComponentUpdateFailed || _disposed)
+        {
+            throw new RootComponentUpdateAbortedException();
+        }
+
+        if (store is not null)
+        {
+            var manager = _scope.ServiceProvider.GetRequiredService<ComponentStatePersistenceManager>();
+            await manager.RestoreStateAsync(store, RestoreContext.ValueUpdate);
+        }
     }
 
     private async ValueTask PerformRootComponentOperations(
         RootComponentOperation[] operations,
         bool shouldWaitForQuiescence,
-        Task postStateTask)
+        Task postStateTask,
+        TaskCompletionSource operationsCompletionSource)
     {
         var webRootComponentManager = Renderer.GetOrCreateWebRootComponentManager();
         webRootComponentManager.SetCurrentUpdateTask(postStateTask);
@@ -907,45 +934,57 @@ internal partial class CircuitHost : IAsyncDisposable
 
         // The inbound activity pipeline needs to be awaited because it populates
         // the pending tasks used to wait for quiescence.
-        await HandleInboundActivityAsync(() =>
+        try
         {
-            for (var i = 0; i < operations.Length; i++)
+            await HandleInboundActivityAsync(() =>
             {
-                var operation = operations[i];
-                switch (operation.Type)
+                for (var i = 0; i < operations.Length; i++)
                 {
-                    case RootComponentOperationType.Add:
-                        var task = webRootComponentManager.AddRootComponentAsync(
-                            operation.SsrComponentId,
-                            operation.Descriptor.ComponentType,
-                            operation.Marker.Value.Key,
-                            operation.Descriptor.Parameters);
+                    var operation = operations[i];
+                    switch (operation.Type)
+                    {
+                        case RootComponentOperationType.Add:
+                            var task = webRootComponentManager.AddRootComponentAsync(
+                                operation.SsrComponentId,
+                                operation.Descriptor.ComponentType,
+                                operation.Marker.Value.Key,
+                                operation.Descriptor.Parameters);
 
-                        if (pendingTasks is not null)
-                        {
-                            pendingTasks[i] = task;
-                        }
-                        else
-                        {
-                            _ = ObserveRootComponentOperation(task, postStateTask);
-                        }
-                        break;
-                    case RootComponentOperationType.Update:
-                        var updateTask = webRootComponentManager.UpdateRootComponentAsync(
-                            operation.SsrComponentId,
-                            operation.Descriptor.ComponentType,
-                            operation.Marker.Value.Key,
-                            operation.Descriptor.Parameters);
-                        _ = ObserveRootComponentOperation(updateTask, postStateTask);
-                        break;
-                    case RootComponentOperationType.Remove:
-                        webRootComponentManager.RemoveRootComponent(operation.SsrComponentId);
-                        break;
+                            if (pendingTasks is not null)
+                            {
+                                pendingTasks[i] = task;
+                            }
+                            else
+                            {
+                                _ = ObserveRootComponentOperation(task, postStateTask);
+                            }
+                            break;
+                        case RootComponentOperationType.Update:
+                            var updateTask = webRootComponentManager.UpdateRootComponentAsync(
+                                operation.SsrComponentId,
+                                operation.Descriptor.ComponentType,
+                                operation.Marker.Value.Key,
+                                operation.Descriptor.Parameters);
+                            _ = ObserveRootComponentOperation(updateTask, postStateTask);
+                            break;
+                        case RootComponentOperationType.Remove:
+                            webRootComponentManager.RemoveRootComponent(operation.SsrComponentId);
+                            break;
+                    }
                 }
-            }
 
-            return Task.CompletedTask;
-        });
+                return Task.CompletedTask;
+            });
+        }
+        catch
+        {
+            _rootComponentUpdateFailed = true;
+            throw;
+        }
+        finally
+        {
+            operationsCompletionSource.SetResult();
+        }
 
         if (pendingTasks != null)
         {
@@ -974,6 +1013,10 @@ internal partial class CircuitHost : IAsyncDisposable
         Log.UpdateRootComponentsFailed(_logger, exception);
         UnhandledException?.Invoke(this, new UnhandledExceptionEventArgs(exception, isTerminating: false));
         await TryNotifyClientErrorAsync(Client, GetClientErrorMessage(exception), exception);
+    }
+
+    private sealed class RootComponentUpdateAbortedException : OperationCanceledException
+    {
     }
 
     internal void AttachPersistedState(ResumedPersistedCircuitState persistedCircuitState)

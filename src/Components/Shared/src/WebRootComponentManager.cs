@@ -53,8 +53,7 @@ internal partial class WebAssemblyRenderer
 
             var component = WebRootComponent.Create(renderer, componentType, ssrComponentId, key, parameters);
             _webRootComponents.Add(ssrComponentId, component);
-            await _currentUpdateTask;
-            await component.RenderAsync(renderer);
+            await component.RenderAsync(renderer, _currentUpdateTask);
         }
 
         public Task UpdateRootComponentAsync(
@@ -122,6 +121,7 @@ internal partial class WebAssemblyRenderer
 
             private WebRootComponentParameters _latestParameters;
             private int _interactiveComponentId;
+            private bool _removed;
 
             public static WebRootComponent Create(
                 Renderer renderer,
@@ -219,19 +219,19 @@ internal partial class WebAssemblyRenderer
                 }
             }
 
-            public Task RenderAsync(Renderer renderer)
-            {
-                return renderer.RenderRootComponentAsync(_interactiveComponentId, _latestParameters.Parameters);
-            }
-
             public async Task RenderAsync(Renderer renderer, Task updateTask)
             {
+                var componentId = _interactiveComponentId;
                 await updateTask;
-                await renderer.RenderRootComponentAsync(_interactiveComponentId, _latestParameters.Parameters);
+                if (!_removed && componentId == _interactiveComponentId)
+                {
+                    await renderer.RenderRootComponentAsync(componentId, _latestParameters.Parameters);
+                }
             }
 
             public void Remove(Renderer renderer)
             {
+                _removed = true;
                 renderer.RemoveRootComponent(_interactiveComponentId);
             }
         }
