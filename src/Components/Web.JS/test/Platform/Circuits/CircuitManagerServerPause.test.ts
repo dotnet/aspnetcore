@@ -113,9 +113,9 @@ describe('CircuitManager pause deferral', () => {
       };
       const handler = kind === 'default'
         ? new DefaultReconnectionHandler(logger, display, async () => true, async () => true)
-        : { onConnectionDown: jest.fn(), onConnectionUp: jest.fn(), dispose: jest.fn() };
+        : { onConnectionDown: jest.fn(), onConnectionUp: jest.fn(), onPausedCircuitDisposed: jest.fn() };
       options.reconnectionHandler = handler;
-      return { display, onConnectionUp: jest.spyOn(handler, 'onConnectionUp'), dispose: jest.spyOn(handler, 'dispose') };
+      return { display, onConnectionUp: jest.spyOn(handler, 'onConnectionUp'), onPausedCircuitDisposed: jest.spyOn(handler, 'onPausedCircuitDisposed') };
     }
 
     function configureResumeConnection() {
@@ -484,7 +484,7 @@ describe('CircuitManager pause deferral', () => {
     });
 
     test.each(['default', 'custom'])('disposal clears an outstanding pause display once (%s)', async kind => {
-      const { display, onConnectionUp, dispose } = configureHandler(kind);
+      const { display, onConnectionUp, onPausedCircuitDisposed } = configureHandler(kind);
       await circuit.start();
       expect(await circuit.pauseCircuit()).toBe(true);
 
@@ -493,11 +493,45 @@ describe('CircuitManager pause deferral', () => {
       await disposal;
 
       expect(onConnectionUp).not.toHaveBeenCalled();
-      expect(dispose).toHaveBeenCalledTimes(1);
+      expect(onPausedCircuitDisposed).toHaveBeenCalledTimes(1);
       if (kind === 'default') {
         expect(display.show).toHaveBeenCalledWith({ type: 'pause', remote: false, currentAttempt: 0, secondsToNextAttempt: 0 });
         expect(display.hide).toHaveBeenCalledTimes(1);
       }
+    });
+
+    test('paused circuit disposal does not call an unrelated custom handler dispose method', async () => {
+      const handler = { onConnectionDown: jest.fn(), onConnectionUp: jest.fn(), dispose: jest.fn() };
+      options.reconnectionHandler = handler;
+      await circuit.start();
+      expect(await circuit.pauseCircuit()).toBe(true);
+
+      await circuit.dispose();
+
+      expect(handler.dispose).not.toHaveBeenCalled();
+      expect(handler.onConnectionUp).not.toHaveBeenCalled();
+    });
+
+    test.each(['default', 'custom'])('paused circuit cleanup leaves the handler reusable by a replacement (%s)', async kind => {
+      const { display, onConnectionUp, onPausedCircuitDisposed } = configureHandler(kind);
+      await circuit.start();
+      expect(await circuit.pauseCircuit()).toBe(true);
+      await circuit.dispose();
+      expect(onPausedCircuitDisposed).toHaveBeenCalledTimes(1);
+
+      const replacement = new CircuitManager(componentManager, '', options, logger, new JSEventRegistry());
+      await replacement.start();
+      expect(await replacement.pauseCircuit()).toBe(true);
+      expect(await replacement.resume()).toBe(true);
+
+      expect(onConnectionUp).toHaveBeenCalledTimes(1);
+      expect(onPausedCircuitDisposed).toHaveBeenCalledTimes(1);
+      if (kind === 'default') {
+        expect(display.show).toHaveBeenCalledTimes(2);
+        expect(display.hide).toHaveBeenCalledTimes(2);
+      }
+      await replacement.dispose();
+      expect(onPausedCircuitDisposed).toHaveBeenCalledTimes(1);
     });
 
     test.each(['default', 'custom'])('connection loss after resuming does not retain pause UI ownership (%s)', async kind => {
@@ -542,9 +576,9 @@ describe('CircuitManager pause deferral', () => {
     });
 
     test('cleanup callback errors are logged without preventing transport disposal', async () => {
-      const { onConnectionUp, dispose } = configureHandler('custom');
+      const { onConnectionUp, onPausedCircuitDisposed } = configureHandler('custom');
       const error = new Error('Custom cleanup failed');
-      dispose.mockImplementation(() => { throw error; });
+      onPausedCircuitDisposed.mockImplementation(() => { throw error; });
       await circuit.start();
       expect(await circuit.pauseCircuit()).toBe(true);
       jest.mocked(connection.stop).mockClear();
@@ -566,7 +600,7 @@ describe('CircuitManager pause deferral', () => {
         .toEqual([[LogLevel.Error, `Failed to clean up the paused circuit UI: ${error}`]]);
       expect(result).toEqual([{ status: 'fulfilled', value: undefined }]);
       expect(onConnectionUp).not.toHaveBeenCalled();
-      expect(dispose).toHaveBeenCalledTimes(1);
+      expect(onPausedCircuitDisposed).toHaveBeenCalledTimes(1);
     });
   });
 
