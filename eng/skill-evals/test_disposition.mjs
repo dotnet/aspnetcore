@@ -139,6 +139,12 @@ test('ReviewDispositionResetsAtUnindentedTopLevelMetadata', async context =>
       assert.equal(score('case-02', output), 0);
     });
   }
+  await context.test('bullet-before-trailing-text', () =>
+  {
+    const output = review('NEW_FINDINGS', 'verified')
+      .replace('DISCARDED\nNone.', 'DISCARDED\nNone.\n- PATH: per-guide\nC1 was reviewed through the per-guide path.');
+    assert.equal(score('case-02', output), 1);
+  });
 });
 
 test('ReviewDispositionToleratesSingleUnderscoreEmphasis', async context =>
@@ -256,6 +262,16 @@ test('ReviewDispositionDistinguishesSubstantiveNoneFromAbsenceMarkers', async co
     ['absence-in-one-section-only', 'case-02', review('NEW_FINDINGS', 'verified')
       .replace('UNRESOLVED\nNone.', 'UNRESOLVED\nC1: None.')
       .replace('DISCARDED\nNone.', 'DISCARDED\nC1 omitted.'), 1],
+    ['conflicting-no-findings-prose', 'case-02', review('NEW_FINDINGS', 'verified')
+      .replace('UNRESOLVED\nNone.', 'UNRESOLVED\nC1: No findings warranted because propagation is unknown.'), 0],
+    ['conflicting-none-applicable-comma-prose', 'case-02', review('NEW_FINDINGS', 'verified')
+      .replace('UNRESOLVED\nNone.', 'UNRESOLVED\nC1: None applicable, but propagation is unknown.'), 0],
+    ['conflicting-none-applicable-colon-prose', 'case-02', review('NEW_FINDINGS', 'verified')
+      .replace('UNRESOLVED\nNone.', 'UNRESOLVED\nC1: None applicable: propagation is unknown.'), 0],
+    ['conflicting-na-comma-prose', 'case-02', review('NEW_FINDINGS', 'verified')
+      .replace('UNRESOLVED\nNone.', 'UNRESOLVED\nC1: N/A, but propagation is unknown.'), 0],
+    ['conflicting-na-colon-prose', 'case-02', review('NEW_FINDINGS', 'verified')
+      .replace('UNRESOLVED\nNone.', 'UNRESOLVED\nC1: N/A: the propagation contract is unknown.'), 0],
   ])
   {
     await context.test(name, () =>
