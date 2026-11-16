@@ -5174,8 +5174,13 @@ public class VirtualizationTest : ServerTestBase<ToggleExecutionModeServerFixtur
         var scrollYBefore = (long)js.ExecuteScript("return Math.round(window.scrollY)");
 
         var input = Browser.Exists(By.Id("scroll-target-index"));
-        input.Click();
-        input.SendKeys(Keys.End);
+        // Dispatch the key on the input itself. A native End on a number input can
+        // also scroll the page, which is not the Virtualize handler this test covers.
+        js.ExecuteScript(@"
+            var input = arguments[0];
+            input.focus();
+            input.dispatchEvent(new KeyboardEvent('keydown', { key: 'End', bubbles: true }));
+        ", input);
 
         // End belongs to the focused input. If the list starts following the end of the
         // list, the scroll position reaches the bottom; give it a bounded window to do so.
