@@ -71,10 +71,35 @@ const findings = count => ({
   items: [...Array.from({ length: count }, comment), review()],
   errors: [],
 });
+const findingWithBody = body => ({
+  items: [{ ...comment(), body }, review()],
+  errors: [],
+});
 
 const cases = [
   ['one finding', findings(1), true],
   ['five findings', findings(5), true],
+  ['unresolved finding unchanged', findingWithBody(
+    '[UNRESOLVED] External behavior.\nConfidence: unresolved\nWhy unresolved: Missing version-bound evidence.'), true],
+  ['discarded heading', findingWithBody('[DISCARDED] Pre-existing behavior.'), false],
+  ['discarded reason', findingWithBody('**Why discarded:** Old and head match.'), false],
+  ['discarded confidence', findingWithBody('**Confidence:** `discarded`'), false],
+  ['discarded marker case insensitive', findingWithBody('[discarded] Pre-existing behavior.'), false],
+  ['mixed real and discarded findings', {
+    items: [
+      { ...comment(), body: 'Real regression.\nConfidence: verified' },
+      { ...comment(), body: '[DISCARDED] Pre-existing behavior.\nWhy discarded: Old and head match.' },
+      review(),
+    ],
+    errors: [],
+  }, false],
+  ['discarded audit summary with real finding', {
+    items: [
+      { ...comment(), body: 'Real regression.\nConfidence: verified' },
+      { ...review(), body: '<details><summary>DISCARDED</summary>\n[DISCARDED] Old and head match.\n</details>' },
+    ],
+    errors: [],
+  }, true],
   ['clean noop without errors property', { items: [{ type: 'noop' }] }, true],
   ['clean noop with empty errors', { items: [{ type: 'noop' }], errors: [] }, true],
   ['report incomplete', stopped('report_incomplete', 'The review could not complete.', 'BLOCKED'), true],

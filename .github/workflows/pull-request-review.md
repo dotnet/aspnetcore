@@ -507,18 +507,9 @@ post-steps:
           event.data?.toolName === 'safeoutputs-submit_pull_request_review');
         const hasFindingsPublication =
           reviewComments.length > 0 || reviewSubmissions.length > 0;
-        const isDiscardedOnlyFindingsPublication =
-          reviewComments.length > 0 &&
-          reviewComments.every(event => {
-            const body = toolInput(event)?.body;
-            return typeof body === 'string' &&
-              /(?:^|\n)\s*(?:[-*]\s+|\d+\.\s+|#+\s+|\*\*)?\[DISCARDED\]\s+\S/.test(body) &&
-              (/\bconfidence\s*:\s*`?discarded`?\b/i.test(body) ||
-                /\bWhy discarded\s*:/i.test(body));
-          });
-        if (hasFindingsPublication && !isDiscardedOnlyFindingsPublication && verifiers.size !== 1) {
+        if (hasFindingsPublication && verifiers.size !== 1) {
           violations.push(
-            `Findings publication requires 1 '${verifierAgentName}' subagent unless every inline comment is a pre-verification [DISCARDED] candidate, but recorded ${verifiers.size}.`);
+            `Findings publication requires 1 '${verifierAgentName}' subagent, but recorded ${verifiers.size}.`);
         }
 
         const latestWorkerPreVerifierIndex = Math.max(
@@ -758,6 +749,14 @@ jobs:
               core.setFailed('The agent output contains an unsupported item type.');
               return;
             }
+            if (output.items.some(item =>
+              item.type === 'create_pull_request_review_comment' &&
+              typeof item.body === 'string' &&
+              /\[DISCARDED\]|\bWhy\s+discarded\s*:|\bconfidence\s*:\s*discarded\b/i.test(
+                item.body.replace(/[*_`]/g, '')))) {
+              core.setFailed('Discarded candidates belong only in the review summary, never inline.');
+              return;
+            }
             const count = type => output.items.filter(item => item.type === type).length;
             const comments = count('create_pull_request_review_comment');
             const reviews = count('submit_pull_request_review');
@@ -939,7 +938,8 @@ Map only the skill's exact structured status:
 
 - `FINDINGS`: require one to five `NEW_FINDINGS` entries, then use the review outputs below.
 - `NO_FINDINGS`: invoke `noop` exactly once, with no review or status-comment output.
-  Disclosed existing feedback and unresolved candidates do not change this mapping.
+  Disclosed existing feedback and unresolved or discarded summary candidates do not change this mapping.
+  When every candidate is discarded, require `NO_FINDINGS` and this `noop` path.
 - `BLOCKED` or `INCOMPLETE`: use the incomplete-publication path below, with no review or `noop`.
 
 A missing or unknown status, missing required result fields, contradictory status/payload,
@@ -965,12 +965,14 @@ supported `jobs.safe_outputs.pre-steps` hook rechecks the live head inside that 
 publication. Neither read is atomic with publication; the trusted `commit-id` pins
 attribution to the reviewed SHA if a push races the in-job check.
 
+Never publish a `DISCARDED` candidate as an inline comment or count it in `NEW_FINDINGS`.
 For `FINDINGS`, emit one `create_pull_request_review_comment` per selected entry, preserving
 the skill's format and order, then exactly one `submit_pull_request_review` with event `COMMENT`. Use only
 the triggering PR and include the frozen SHA in the review text. Both handlers are pinned by
 trusted configuration to that SHA; never override their target or commit. The final review
 summarizes the validated new findings, existing-feedback coverage, unresolved
-candidates, per-guide completion, immutable provenance, test boundary, uncovered areas
+candidates, discarded candidates in a `<details>` section headed `DISCARDED`,
+per-guide completion, immutable provenance, test boundary, uncovered areas
 and limitations, and identifies the proof as source-only.
 Each RIGHT-side line, including every line in a range, must be added or modified in the
 frozen diff; never anchor a comment to a nearby unchanged line.

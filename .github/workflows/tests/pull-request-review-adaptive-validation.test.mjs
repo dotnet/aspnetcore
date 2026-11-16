@@ -1065,7 +1065,7 @@ try {
     reviewOnlyWithoutVerifierRejected.stderr,
     /Findings publication requires 1 'review-candidate-verifier' subagent/);
 
-  const discardedOnlyFindingsWithoutVerifierAccepted = runVerifier([
+  const discardedOnlyFindingsWithoutVerifierRejected = runVerifier([
     ...initialReport,
     ...safeOutputCall('finding-discarded', 'safeoutputs-create_pull_request_review_comment', {
       path: 'example.cs',
@@ -1076,10 +1076,29 @@ try {
       event: 'COMMENT', body: 'One pre-verification discarded candidate.',
     }),
   ], '1');
-  assert.equal(
-    discardedOnlyFindingsWithoutVerifierAccepted.status,
-    0,
-    discardedOnlyFindingsWithoutVerifierAccepted.stderr);
+  assert.notEqual(discardedOnlyFindingsWithoutVerifierRejected.status, 0);
+  assert.match(
+    discardedOnlyFindingsWithoutVerifierRejected.stderr,
+    /Findings publication requires 1 'review-candidate-verifier' subagent/);
+
+  const discardedOnlyNoopWithoutVerifierAccepted = runVerifier([
+    ...initialReport,
+    ...safeOutputCall('noop-discarded', 'safeoutputs-noop', {
+      message: 'No new findings; pre-verification disproofs remain in the DISCARDED summary.',
+    }),
+  ], '1');
+  assert.equal(discardedOnlyNoopWithoutVerifierAccepted.status, 0,
+    discardedOnlyNoopWithoutVerifierAccepted.stderr);
+
+  const discardedOnlyNoopWithVerifierAccepted = runVerifier([
+    ...initialReport,
+    ...hostedCandidateVerifier(),
+    ...safeOutputCall('noop-discarded', 'safeoutputs-noop', {
+      message: 'No new findings; verifier disproofs remain in the DISCARDED summary.',
+    }),
+  ], '1');
+  assert.equal(discardedOnlyNoopWithVerifierAccepted.status, 0,
+    discardedOnlyNoopWithVerifierAccepted.stderr);
 
   const verifierDisallowedSkill = runVerifier([
     ...initialReport,

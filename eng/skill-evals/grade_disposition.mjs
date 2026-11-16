@@ -5,10 +5,10 @@ import { readFileSync } from 'node:fs';
 import { pathToFileURL } from 'node:url';
 
 const reviewCases = {
-  'case-01': { section: 'DISCARDED', confidence: 'discarded' },
+  'case-01': { section: 'DISCARDED' },
   'case-02': { section: 'NEW_FINDINGS', confidence: 'verified' },
-  'case-03': { section: 'DISCARDED', confidence: 'discarded' },
-  'case-04': { section: 'DISCARDED', confidence: 'discarded' },
+  'case-03': { section: 'DISCARDED' },
+  'case-04': { section: 'DISCARDED' },
   'case-05': { section: 'EXISTING_FEEDBACK_COVERAGE', thread: 'discussion_r4487936812' },
   'case-06': { section: 'UNRESOLVED', confidence: 'unresolved' },
 };
@@ -183,6 +183,10 @@ function gradeReview(name, output)
       hasCandidate('EXISTING_FEEDBACK_COVERAGE'))
   {
     return false;
+  }
+  if (expected.section === 'DISCARDED')
+  {
+    return !hasCandidate('NEW_FINDINGS') && statusLine === 'STATUS: NO_FINDINGS';
   }
   if (!hasCandidate('NEW_FINDINGS') || statusLine !== 'STATUS: FINDINGS')
   {

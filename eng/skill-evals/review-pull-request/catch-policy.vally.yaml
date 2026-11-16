@@ -57,7 +57,7 @@ stimuli:
 
     Begin with Before (old source:line and observable behavior) and After
     (head source:line and observable behavior) for the selected scenario.
-    Then return NEW_FINDINGS, UNRESOLVED, EXISTING_FEEDBACK_COVERAGE, and
+    Then return STATUS, NEW_FINDINGS, UNRESOLVED, EXISTING_FEEDBACK_COVERAGE, and
     DISCARDED separately (empty sections are allowed). Trace the selected
     producer through its observable effect and name any missing evidence.
     Distinguish source evidence, target-base contracts,
@@ -135,7 +135,7 @@ stimuli:
   graders: *graders
   rubric:
   - All criteria are mandatory. Required staged criteria and source must actually be read; BLOCKED, unavailable-input, generic-advice, or invented-evidence responses fail. Source citations must support the claimed behavior, not merely list filenames.
-  - UNRESOLVED is empty for this suppression concern. DISCARDED explains that the explicit target-base best-effort contract authorizes the changed catch, with the primary error retained and status observers notified when the selected sink throws. Do not report a verified defect, intent question, or unresolved entry. If the discarded candidate is surfaced inline in NEW_FINDINGS, mark it with discarded confidence, prefix its claim with [DISCARDED], and cite the contract in its Why discarded field.
+  - UNRESOLVED is empty for this suppression concern. DISCARDED explains that the explicit target-base best-effort contract authorizes the changed catch, with the primary error retained and status observers notified when the selected sink throws. Return STATUS: NO_FINDINGS with no NEW_FINDINGS entry. Do not report a verified defect, intent question, unresolved entry, or inline discarded candidate.
   - Distinguish the two failures, trace old/head behavior, and use the explicit contract rather than the PR rationale, primary-error preservation alone, or the new test as authority. Do not demand a second logging call to report a failed logger.
   - Do not invent a defect, missing contract, or optional nit merely because the catch is empty. Do not propose posting, replying, resolving, approving, or requesting changes.
 - name: nonthrowing-producer
@@ -147,6 +147,6 @@ stimuli:
   graders: *graders
   rubric:
   - All criteria are mandatory. Required staged criteria and source must actually be read; BLOCKED, unavailable-input, generic-advice, or invented-evidence responses fail. Source citations must support the claimed behavior, not merely list filenames.
-  - UNRESOLVED is empty for sink-failure suppression in the bounded scenario. DISCARDED traces RecordingDiagnosticSink.Write, which records the primary exception and returns, so the inner catch is not entered and no secondary sink failure is established. Do not report a verified defect, intent question, or unresolved entry. If this disproven candidate is surfaced inline in NEW_FINDINGS, mark it with discarded confidence, prefix its claim with [DISCARDED], and cite the source line that rules out the secondary failure in its Why discarded field.
+  - UNRESOLVED is empty for sink-failure suppression in the bounded scenario. DISCARDED traces RecordingDiagnosticSink.Write, which records the primary exception and returns, so the inner catch is not entered and no secondary sink failure is established. Return STATUS: NO_FINDINGS with no NEW_FINDINGS entry. Do not report a verified defect, intent question, unresolved entry, or inline discarded candidate.
   - Recognize that ThrowingDiagnosticSink exists in the source but is not selected by this case and cannot be substituted into the producer path. The propagation contract does not create an exception producer. Do not invent unprovided failures such as out-of-memory.
   - Compare the old behavior to the head's added diagnostic record while retaining the primary error and notifying observers; do not report the lack of a record on the old side as a new head defect. Do not propose nits or GitHub actions.

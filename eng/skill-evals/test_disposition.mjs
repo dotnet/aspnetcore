@@ -21,7 +21,7 @@ ${section === 'UNRESOLVED' ? 'C1 missing target-base contract.' : 'None.'}
 DISCARDED
 ${section === 'DISCARDED' ? 'C1 old and head match.' : 'None.'}`;
 
-test('ReviewDispositionAcceptsExpectedSections', () =>
+test('ReviewDispositionAcceptsExpectedSections', async context =>
 {
   for (const [name, section, confidence] of [
     ['case-01', 'DISCARDED', 'discarded'],
@@ -31,11 +31,18 @@ test('ReviewDispositionAcceptsExpectedSections', () =>
     ['case-06', 'UNRESOLVED', 'unresolved'],
   ])
   {
-    assert.equal(score(name, review(section, confidence)), 1, name);
+    await context.test(name, () =>
+    {
+      assert.equal(score(name, review(section, confidence, section !== 'DISCARDED')), 1);
+    });
   }
   for (const name of ['case-01', 'case-03', 'case-04'])
   {
-    assert.equal(score(name, review('DISCARDED', 'discarded', false)), 0, name);
+    assert.equal(score(name, review('DISCARDED', 'discarded')), 0, name);
+    assert.equal(score(name, review('DISCARDED', 'discarded', false)
+      .replace('STATUS: NO_FINDINGS', 'STATUS: FINDINGS')), 0, name);
+    assert.equal(score(name, review('DISCARDED', 'discarded', false)
+      .replace('C1 old and head match.', 'None.')), 0, name);
   }
 });
 
@@ -147,7 +154,6 @@ test('ReviewDispositionToleratesSingleUnderscoreEmphasis', async context =>
     ['confidence-label', 'case-02', 'NEW_FINDINGS', 'verified', 'confidence: verified', '_Confidence:_ verified'],
     ['confidence-value', 'case-02', 'NEW_FINDINGS', 'verified', 'confidence: verified', 'confidence: _verified_'],
     ['unresolved-reason', 'case-06', 'UNRESOLVED', 'unresolved', 'Why unresolved:', '_Why unresolved:_'],
-    ['discarded-reason', 'case-01', 'DISCARDED', 'discarded', 'Why discarded:', '_Why discarded:_'],
   ])
   {
     await context.test(name, () =>
@@ -164,7 +170,7 @@ test('ReviewDispositionDistinguishesNoProseFromSectionAbsence', async context =>
   for (const [name, caseName, output, expected] of [
     ['unresolved-policy', 'case-06', review('UNRESOLVED', 'unresolved')
       .replace('C1 missing target-base contract.', '- C1: No binding target-base contract specifies diagnostic sink failure propagation.'), 1],
-    ['discarded-behavior', 'case-01', review('DISCARDED', 'discarded')
+    ['discarded-behavior', 'case-01', review('DISCARDED', 'discarded', false)
       .replace('C1 old and head match.', '- C1: No behavior change on the pending request between mergeBase and head.'), 1],
     ['contradictory-unresolved', 'case-02', review('NEW_FINDINGS', 'verified')
       .replace('UNRESOLVED\nNone.', 'UNRESOLVED\n- C1: No binding target-base contract specifies diagnostic sink failure propagation.'), 0],
@@ -192,7 +198,7 @@ test('ReviewDispositionDistinguishesSubstantiveNoneFromAbsenceMarkers', async co
   for (const [name, caseName, output, expected] of [
     ['unresolved-none-of', 'case-06', review('UNRESOLVED', 'unresolved')
       .replace('C1 missing target-base contract.', 'C1: None of the frozen contracts establishes whether failures propagate.'), 1],
-    ['discarded-none-of', 'case-01', review('DISCARDED', 'discarded')
+    ['discarded-none-of', 'case-01', review('DISCARDED', 'discarded', false)
       .replace('C1 old and head match.', 'C1: None of the compared lines changes request behavior.'), 1],
     ['conflicting-none-of', 'case-02', review('NEW_FINDINGS', 'verified')
       .replace('UNRESOLVED\nNone.', 'UNRESOLVED\nC1: None of the frozen contracts establishes whether failures propagate.'), 0],
