@@ -25,7 +25,8 @@ public static class RazorComponentsEndpointRouteBuilderExtensions
     /// <remarks>
     /// The opaque redirection and browser tools settings endpoints use the conventions of each mapped root component.
     /// When multiple instances of the same framework endpoint match a request with equal routing priority,
-    /// one matching instance is selected.
+    /// one matching instance is selected with its own metadata and route values. The selected instance is unspecified
+    /// and is not guaranteed to follow root registration order.
     /// </remarks>
     public static RazorComponentsEndpointConventionBuilder MapRazorComponents<[DynamicallyAccessedMembers(Component)] TRootComponent>(this IEndpointRouteBuilder endpoints)
     {

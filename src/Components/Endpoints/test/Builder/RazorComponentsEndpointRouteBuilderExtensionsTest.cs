@@ -151,6 +151,76 @@ public class RazorComponentsEndpointRouteBuilderExtensionsTest
         }
     }
 
+    [Theory]
+    [InlineData(BrowserToolsHotReloadSettings.Path, false, false)]
+    [InlineData(BrowserToolsHotReloadSettings.Path, true, false)]
+    [InlineData(BrowserToolsHotReloadSettings.Path, false, true)]
+    [InlineData(BrowserToolsHotReloadSettings.Path, true, true)]
+    [InlineData("/_framework/opaque-redirect", false, false)]
+    [InlineData("/_framework/opaque-redirect", true, false)]
+    [InlineData("/_framework/opaque-redirect", false, true)]
+    [InlineData("/_framework/opaque-redirect", true, true)]
+    public async Task MapRazorComponents_PreservesSelectedFrameworkEndpointMetadataAndRouteValues(
+        string frameworkPath, bool reverse, bool useRouteValues)
+    {
+        using var services = CreateServices();
+        var application = new ApplicationBuilder(services);
+        application.UseRouting();
+        application.UseEndpoints(endpoints =>
+        {
+            if (reverse)
+            {
+                MapSecond();
+                MapFirst();
+            }
+            else
+            {
+                MapFirst();
+                MapSecond();
+            }
+
+            void MapFirst() => endpoints.MapGroup(useRouteValues ? "/{first}" : "")
+                .MapRazorComponents<FirstApp>().WithMetadata(new RootMetadata("first"));
+
+            void MapSecond() => endpoints.MapGroup(useRouteValues ? "/{second}" : "")
+                .MapRazorComponents<SecondApp>().WithMetadata(new RootMetadata("second"));
+        });
+        var pipeline = application.Build();
+        var prefix = useRouteValues ? "/overlap" : "";
+        var context = CreateHttpContext(services, prefix + frameworkPath, "localhost");
+        if (frameworkPath == "/_framework/opaque-redirect")
+        {
+            var redirectUrl = OpaqueRedirection.CreateProtectedRedirectionUrl(context, "/destination");
+            context.Request.QueryString = new QueryString(new Uri($"http://localhost/{redirectUrl}").Query);
+        }
+
+        await pipeline(context);
+
+        if (frameworkPath == BrowserToolsHotReloadSettings.Path)
+        {
+            Assert.Equal(StatusCodes.Status200OK, context.Response.StatusCode);
+            Assert.Equal("""{ "hotReload": false }""", Encoding.UTF8.GetString(((MemoryStream)context.Response.Body).ToArray()));
+        }
+        else
+        {
+            Assert.Equal(StatusCodes.Status302Found, context.Response.StatusCode);
+            Assert.Equal("/destination", context.Response.Headers.Location);
+        }
+
+        var metadata = Assert.Single(context.GetEndpoint()!.Metadata.GetOrderedMetadata<RootMetadata>());
+        Assert.Contains(metadata.RouteParameter, new[] { "first", "second" });
+        if (useRouteValues)
+        {
+            var routeValue = Assert.Single(context.Request.RouteValues);
+            Assert.Equal(metadata.RouteParameter, routeValue.Key);
+            Assert.Equal("overlap", routeValue.Value);
+        }
+        else
+        {
+            Assert.Empty(context.Request.RouteValues);
+        }
+    }
+
     private static void AssertHost(HttpContext context, string host)
     {
         if (host != "localhost")
@@ -252,6 +322,11 @@ public class RazorComponentsEndpointRouteBuilderExtensionsTest
 
     private sealed class FirstApp : ComponentBase;
     private sealed class SecondApp : ComponentBase;
+
+    private sealed class RootMetadata(string routeParameter)
+    {
+        public string RouteParameter { get; } = routeParameter;
+    }
 
     public enum MappingScenario
     {
