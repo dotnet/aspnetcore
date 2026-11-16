@@ -425,6 +425,36 @@ public class VirtualizationTest : ServerTestBase<ToggleExecutionModeServerFixtur
         Assert.Equal(0, nestedTrCountAfterScroll);
     }
 
+    [Fact]
+    public void FilterGrowth_BackToTopShowsFirstRows()
+    {
+        Browser.MountTestComponent<VirtualizationFilterGrowth>();
+        var js = (IJavaScriptExecutor)Browser;
+
+        Browser.True(() => Browser.Exists(By.Id("filter-row-0")).Displayed, TimeSpan.FromSeconds(10));
+
+        var input = Browser.Exists(By.Id("filter-input"));
+        input.SendKeys("fizz");
+        Browser.Contains("334 rows", () => Browser.Exists(By.Id("visible-count")).Text);
+
+        js.ExecuteScript("document.getElementById('filter-list').scrollTop = 3000;");
+        Browser.True(
+            () => (long)js.ExecuteScript("return Math.round(document.getElementById('filter-list').scrollTop)") >= 2900,
+            TimeSpan.FromSeconds(10));
+
+        // Clearing the filter grows the list. Regardless of the growth handling, a
+        // scripted scroll back to the top must move the rendered window with it.
+        Browser.Exists(By.Id("clear-filter")).Click();
+        Browser.Contains("1000 rows", () => Browser.Exists(By.Id("visible-count")).Text);
+
+        Browser.Exists(By.Id("back-to-top")).Click();
+
+        Browser.True(
+            () => Browser.Exists(By.Id("filter-row-0")).Displayed,
+            TimeSpan.FromSeconds(10),
+            "Back to top should render the first rows instead of leaving the viewport blank");
+    }
+
     [Theory]
     [InlineData(true)]
     [InlineData(false)]

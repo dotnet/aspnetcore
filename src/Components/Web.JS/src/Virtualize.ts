@@ -486,6 +486,8 @@ function init(dotNetHelper: DotNet.DotNetObject, spacerBefore: HTMLElement, spac
 
   // Corrects scrollTop after a render that shifted content, using the snapshot
   // saved by updateAnchorSnapshot() during the previous render cycle.
+  let restoreSequence = 0;
+
   function restoreAnchorForShift(): void {
     // Apply styles before we read layout
     flushPendingStyleMutations();
@@ -549,6 +551,15 @@ function init(dotNetHelper: DotNet.DotNetObject, spacerBefore: HTMLElement, spac
     if (preserveWasAtBottom) {
       bottomTracking.wasAtBottomLastRender = true;
     }
+
+    // Release the restore latch after this restore's scroll has been delivered so a
+    // later scripted scroll or scrollbar drag is not reported as this restore.
+    const sequence = ++restoreSequence;
+    setTimeout(() => {
+      if (restoreSequence === sequence && scrollActivity.source === ScrollSource.RestoreSnapshot) {
+        scrollActivity.source = ScrollSource.None;
+      }
+    }, 0);
   }
 
   function startConvergenceObserving(direction: 'top' | 'bottom'): void {
@@ -610,6 +621,11 @@ function init(dotNetHelper: DotNet.DotNetObject, spacerBefore: HTMLElement, spac
     }
   }
 
+  function handleUserPointerDown(): void {
+    // A native scrollbar drag dispatches pointerdown but no pointermove.
+    handleUserScrollInput();
+  }
+
   function isUserScrollKey(key: string): boolean {
     return ['ArrowUp', 'ArrowDown', 'PageUp', 'PageDown', ' '].includes(key);
   }
@@ -652,6 +668,7 @@ function init(dotNetHelper: DotNet.DotNetObject, spacerBefore: HTMLElement, spac
     keydownTarget.addEventListener('keydown', handleJumpKeys);
     scrollEventTarget.addEventListener('wheel', handleUserScrollInput, { passive: true });
     scrollEventTarget.addEventListener('touchmove', handleUserScrollInput, { passive: true });
+    scrollEventTarget.addEventListener('pointerdown', handleUserPointerDown, { passive: true });
     scrollEventTarget.addEventListener('pointermove', handleUserPointerMove, { passive: true });
   }
 
@@ -659,6 +676,7 @@ function init(dotNetHelper: DotNet.DotNetObject, spacerBefore: HTMLElement, spac
     keydownTarget.removeEventListener('keydown', handleJumpKeys);
     scrollEventTarget.removeEventListener('wheel', handleUserScrollInput);
     scrollEventTarget.removeEventListener('touchmove', handleUserScrollInput);
+    scrollEventTarget.removeEventListener('pointerdown', handleUserPointerDown);
     scrollEventTarget.removeEventListener('pointermove', handleUserPointerMove);
   }
 
