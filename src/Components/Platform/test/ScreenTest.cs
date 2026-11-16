@@ -108,6 +108,32 @@ public class ScreenTest
         Assert.Equal(0, jsRuntime.GetValueCallCount);
     }
 
+    [Fact]
+    public async Task GetOrAddFeature_CreatesOnceWithContextAndDisposesWithScope()
+    {
+        var jsRuntime = new RecordingJSRuntime();
+        var provider = CreateServiceProvider(jsRuntime);
+        var window = provider.GetRequiredService<IBrowserPlatform>().Window;
+        var screen = window.Screen;
+        var created = 0;
+
+        var feature = screen.GetOrAddFeature(context =>
+        {
+            created++;
+            return new TestFeature(context);
+        });
+
+        Assert.Same(feature, screen.GetOrAddFeature(context => new TestFeature(context)));
+        Assert.Equal(1, created);
+        Assert.Same(jsRuntime, feature.Context.JSRuntime);
+        Assert.Same(window.GetOrAddFeature("window", context => new TestFeature(context)).Context, feature.Context);
+
+        await provider.DisposeAsync();
+
+        Assert.True(feature.Disposed);
+        Assert.Throws<ObjectDisposedException>(() => screen.GetOrAddFeature(context => new TestFeature(context)));
+    }
+
     private static ServiceProvider CreateServiceProvider(IJSRuntime jsRuntime)
     {
         var services = new ServiceCollection();
@@ -115,6 +141,20 @@ public class ScreenTest
         services.AddBrowserPlatform();
 
         return services.BuildServiceProvider();
+    }
+
+    private sealed class TestFeature(FeatureContext context) : IInternalAsyncDisposal
+    {
+        public FeatureContext Context { get; } = context;
+
+        public bool Disposed { get; private set; }
+
+        ValueTask IInternalAsyncDisposal.InternalDisposeAsync()
+        {
+            Disposed = true;
+
+            return ValueTask.CompletedTask;
+        }
     }
 
     private sealed class RecordingJSRuntime : IJSRuntime

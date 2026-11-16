@@ -11,6 +11,7 @@ namespace Microsoft.AspNetCore.Http.Connections.Client.Internal;
 
 internal static class Constants
 {
+    public const string ConnectionTokenHeaderName = "X-SignalR-Connection-Token";
     public static readonly string UserAgent = OperatingSystem.IsBrowser() ? "X-SignalR-User-Agent" : "User-Agent";
     public static readonly string UserAgentHeader = GetUserAgentHeader();
 
