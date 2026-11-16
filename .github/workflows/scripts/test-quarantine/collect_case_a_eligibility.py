@@ -2607,13 +2607,15 @@ def namespace_rename_detected(root, relative_path, type_name, history_ref):
 
 
 def quarantine_event_issues(events):
-    return {
-        event["issue"]
-        for event in events
-        if event.get("status") in ("added", "removed")
-        and isinstance(event.get("issue"), int)
-        and not isinstance(event.get("issue"), bool)
-    }
+    issues = set()
+    for event in events:
+        candidates = [event.get("issue")]
+        candidates.extend(event.get("issues", []))
+        issues.update(
+            issue for issue in candidates
+            if isinstance(issue, int) and not isinstance(issue, bool)
+        )
+    return issues
 
 
 def method_quarantine_transitions(
@@ -2688,6 +2690,19 @@ def method_quarantine_transitions(
         current = target in current_index["method_quarantines"]
         previous = target in parent_index["method_quarantines"]
         if current == previous:
+            if current:
+                previous_issue = parent_index["method_quarantine_issues"].get(target)
+                current_issue = current_index["method_quarantine_issues"].get(target)
+                if previous_issue != current_issue:
+                    events.append({
+                        "status": "modified",
+                        "commit": sha,
+                        "utc": timestamp,
+                        "scope": "method",
+                        "type": type_name,
+                        "method": method,
+                        "issues": [previous_issue, current_issue],
+                    })
             continue
         events.append({
             "status": "added" if current else "removed",
@@ -2779,6 +2794,20 @@ def data_quarantine_transitions(
         current = target in current_index["data_quarantines"]
         previous = target in parent_index["data_quarantines"]
         if current == previous:
+            if current:
+                previous_issue = parent_index["data_quarantine_issues"].get(target)
+                current_issue = current_index["data_quarantine_issues"].get(target)
+                if previous_issue != current_issue:
+                    events.append({
+                        "status": "modified",
+                        "commit": sha,
+                        "utc": timestamp,
+                        "scope": "data",
+                        "type": type_name,
+                        "method": method,
+                        "data": data_values,
+                        "issues": [previous_issue, current_issue],
+                    })
             continue
         events.append({
             "status": "added" if current else "removed",
