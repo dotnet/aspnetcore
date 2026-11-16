@@ -16,7 +16,7 @@ import { Blazor } from './GlobalExports';
 import { WebStartOptions } from './Platform/WebStartOptions';
 import { attachStreamingRenderingListener } from './Rendering/StreamingRendering';
 import { resetScrollIfNeeded, ScrollResetSchedule } from './Rendering/Renderer';
-import { NavigationEnhancementCallbacks, attachProgressivelyEnhancedNavigationListener, detachProgressivelyEnhancedNavigationListener } from './Services/NavigationEnhancement';
+import { NavigationEnhancementCallbacks, attachProgressivelyEnhancedNavigationListener } from './Services/NavigationEnhancement';
 import { WebRootComponentManager } from './Services/WebRootComponentManager';
 import { hasProgrammaticEnhancedNavigationHandler, performProgrammaticEnhancedNavigation } from './Services/NavigationUtils';
 import { attachComponentDescriptorHandler, registerAllComponentDescriptors } from './Rendering/DomMerging/DomSync';
@@ -33,6 +33,12 @@ import { createBlazorValidation, ensureNovalidateOnForms } from './Validation';
 
 let started = false;
 let rootComponentManager: WebRootComponentManager;
+let initialOptions: {
+  logLevel?: LogLevel;
+  circuitLogLevel?: LogLevel;
+  circuitInactivityTimeoutMs?: number;
+  reconnectionRetryIntervalMilliseconds?: ReconnectionOptions['retryIntervalMilliseconds'];
+};
 
 function boot(options?: Partial<WebStartOptions>) : Promise<void> {
   if (started) {
@@ -41,6 +47,13 @@ function boot(options?: Partial<WebStartOptions>) : Promise<void> {
 
   started = true;
   options = options || {};
+  // Resolved options also contain defaults and values from previous enhanced navigations.
+  initialOptions = {
+    logLevel: options.logLevel,
+    circuitLogLevel: options.circuit?.logLevel,
+    circuitInactivityTimeoutMs: options.ssr?.circuitInactivityTimeoutMs,
+    reconnectionRetryIntervalMilliseconds: options.circuit?.reconnectionOptions?.retryIntervalMilliseconds,
+  };
   options.logLevel ??= LogLevel.Error;
   options.ssr ??= {};
   Blazor._internal.isBlazorWeb = true;
@@ -61,7 +74,7 @@ function boot(options?: Partial<WebStartOptions>) : Promise<void> {
       jsEventRegistry.dispatchEvent('enhancednavigationstart', {});
     },
     beforeDomUpdate: (source) => {
-      updateOptionsFromBrowserConfiguration(options, navigationEnhancementCallbacks, source);
+      updateOptionsFromBrowserConfiguration(options, source);
     },
     documentUpdated: () => {
       rootComponentManager.onDocumentUpdated();
@@ -73,8 +86,6 @@ function boot(options?: Partial<WebStartOptions>) : Promise<void> {
       jsEventRegistry.dispatchEvent('enhancednavigationend', {});
     },
   };
-
-  updateOptionsFromBrowserConfiguration(options, navigationEnhancementCallbacks);
 
   attachComponentDescriptorHandler(rootComponentManager);
   attachStreamingRenderingListener(options?.ssr, navigationEnhancementCallbacks);
@@ -96,16 +107,16 @@ function boot(options?: Partial<WebStartOptions>) : Promise<void> {
   // If stream rendering is used, this helps to ensure that only the final set of interactive
   // components produced by the stream render actually get activated for interactivity.
   if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', onInitialDomContentLoaded.bind(null, options, navigationEnhancementCallbacks));
+    document.addEventListener('DOMContentLoaded', onInitialDomContentLoaded.bind(null, options));
   } else {
-    onInitialDomContentLoaded(options, navigationEnhancementCallbacks);
+    onInitialDomContentLoaded(options);
   }
 
   return Promise.resolve();
 }
 
-function onInitialDomContentLoaded(options: Partial<WebStartOptions>, navigationEnhancementCallbacks: NavigationEnhancementCallbacks) {
-  updateOptionsFromBrowserConfiguration(options, navigationEnhancementCallbacks);
+function onInitialDomContentLoaded(options: Partial<WebStartOptions>) {
+  updateOptionsFromBrowserConfiguration(options);
 
   // Retrieve and start invoking the initializers.
   // Blazor server options get defaults that are configured before we invoke the initializers
@@ -125,13 +136,13 @@ function onInitialDomContentLoaded(options: Partial<WebStartOptions>, navigation
   callAfterStartedCallbacks(initializersPromise);
 }
 
-function updateOptionsFromBrowserConfiguration(options: Partial<WebStartOptions>, navigationEnhancementCallbacks: NavigationEnhancementCallbacks, source: Node = document): void {
+function updateOptionsFromBrowserConfiguration(options: Partial<WebStartOptions>, source: Node = document): void {
   const browserConfig = discoverBrowserConfiguration(source);
   if (browserConfig) {
     if (browserConfig.logLevel !== undefined) {
-      options.logLevel = browserConfig.logLevel;
+      options.logLevel = initialOptions.logLevel ?? browserConfig.logLevel;
       options.circuit ??= {} as CircuitStartOptions;
-      options.circuit.logLevel = browserConfig.logLevel;
+      options.circuit.logLevel = initialOptions.circuitLogLevel ?? browserConfig.logLevel;
     }
 
     // SSR options
@@ -139,14 +150,9 @@ function updateOptionsFromBrowserConfiguration(options: Partial<WebStartOptions>
       options.ssr = options.ssr || {};
       if (browserConfig.ssr.disableDomPreservation !== undefined) {
         options.ssr.disableDomPreservation = browserConfig.ssr.disableDomPreservation;
-        if (options.ssr.disableDomPreservation) {
-          detachProgressivelyEnhancedNavigationListener();
-        } else {
-          attachProgressivelyEnhancedNavigationListener(navigationEnhancementCallbacks);
-        }
       }
       if (browserConfig.ssr.circuitInactivityTimeoutMs !== undefined) {
-        options.ssr.circuitInactivityTimeoutMs = browserConfig.ssr.circuitInactivityTimeoutMs;
+        options.ssr.circuitInactivityTimeoutMs = initialOptions.circuitInactivityTimeoutMs ?? browserConfig.ssr.circuitInactivityTimeoutMs;
       }
     }
 
@@ -161,7 +167,7 @@ function updateOptionsFromBrowserConfiguration(options: Partial<WebStartOptions>
         reconnOpts.maxRetries = browserConfig.server.reconnectionMaxRetries;
       }
       if (browserConfig.server.reconnectionRetryIntervalMilliseconds !== undefined) {
-        reconnOpts.retryIntervalMilliseconds = browserConfig.server.reconnectionRetryIntervalMilliseconds;
+        reconnOpts.retryIntervalMilliseconds = initialOptions.reconnectionRetryIntervalMilliseconds ?? browserConfig.server.reconnectionRetryIntervalMilliseconds;
       }
       if (browserConfig.server.reconnectionDialogId !== undefined) {
         reconnOpts.dialogId = browserConfig.server.reconnectionDialogId;

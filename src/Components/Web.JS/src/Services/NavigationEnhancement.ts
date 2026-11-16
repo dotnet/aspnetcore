@@ -70,7 +70,6 @@ export function detachProgressivelyEnhancedNavigationListener() {
   document.removeEventListener('click', onDocumentClick);
   document.removeEventListener('submit', onDocumentSubmit);
   window.removeEventListener('popstate', onPopState);
-  attachProgrammaticEnhancedNavigationHandler(undefined);
 }
 
 function performProgrammaticEnhancedNavigation(absoluteInternalHref: string, replace: boolean) : void {

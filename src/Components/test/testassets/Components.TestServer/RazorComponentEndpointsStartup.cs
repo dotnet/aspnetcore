@@ -264,7 +264,6 @@ public class RazorComponentEndpointsStartup<TRootComponent>
                 .WithBrowserOptions(config =>
                 {
                     config.LogLevel = Configuration.GetValue<Microsoft.Extensions.Logging.LogLevel?>("BrowserConfigurationLogLevel");
-                    config.StaticServer.PreserveDom = Configuration.GetValue<bool?>("BrowserConfigurationPreserveDom");
                     if (Configuration.GetValue<double?>("BrowserConfigurationCircuitInactivityTimeoutMs") is { } inactivityTimeout)
                     {
                         config.StaticServer.CircuitInactivityTimeout = TimeSpan.FromMilliseconds(inactivityTimeout);

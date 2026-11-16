@@ -2,7 +2,6 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Globalization;
-using System.Net.Http;
 using Components.TestServer.RazorComponents;
 using Microsoft.AspNetCore.Components.E2ETest;
 using Microsoft.AspNetCore.Components.E2ETest.Infrastructure;
@@ -25,10 +24,14 @@ public class ServerBrowserConfigurationTest(
     public override Task InitializeAsync()
         => InitializeAsync(BrowserFixture.StreamingContext);
 
-    [Fact]
-    public void CircuitInactivityTimeoutAppliesAfterRemovingLastServerComponent()
+    [Theory]
+    [InlineData(3000, null)]
+    [InlineData(3000, 500)]
+    [InlineData(500, 3000)]
+    [InlineData(3000, 0)]
+    public void CircuitInactivityTimeoutAppliesAfterRemovingLastServerComponent(int serverTimeout, int? javaScriptTimeout)
     {
-        using var fixture = CreateFixture("--BrowserConfigurationCircuitInactivityTimeoutMs=3000");
+        using var fixture = CreateFixture($"--BrowserConfigurationCircuitInactivityTimeoutMs={serverTimeout}");
         NavigateToStartPage(fixture);
 
         var javascript = (IJavaScriptExecutor)Browser;
@@ -41,7 +44,7 @@ public class ServerBrowserConfigurationTest(
                 }
             };
             """);
-        StartCounter();
+        StartCounter(javaScriptTimeout is { } timeout ? $$"""{ ssr: { circuitInactivityTimeoutMs: {{timeout}} } }""" : "{}");
 
         javascript.ExecuteScript("window.componentRemovedAt = performance.now()");
         Browser.Click(By.Id("remove-counter-link-0"));
@@ -49,80 +52,42 @@ public class ServerBrowserConfigurationTest(
         Browser.True(() => (bool)javascript.ExecuteScript("return window.socketClosedAt !== undefined"));
 
         var elapsed = Convert.ToDouble(javascript.ExecuteScript("return window.socketClosedAt - window.componentRemovedAt"), CultureInfo.InvariantCulture);
-        Assert.InRange(elapsed, 2500, 10000);
+        var expectedTimeout = javaScriptTimeout ?? serverTimeout;
+        Assert.InRange(elapsed, Math.Max(0, expectedTimeout - 500), expectedTimeout + 1500);
     }
 
-    [Fact]
-    public void DisablingPreserveDomUsesFullPageNavigation()
+    [Theory]
+    [InlineData(BrowserLogLevel.Trace, null, true)]
+    [InlineData(BrowserLogLevel.Trace, BrowserLogLevel.Error, false)]
+    [InlineData(BrowserLogLevel.Error, BrowserLogLevel.Trace, true)]
+    public void CircuitLogLevelControlsEventMessages(BrowserLogLevel serverLogLevel, BrowserLogLevel? javaScriptLogLevel, bool expectEventMessages)
     {
-        using var fixture = CreateFixture("--BrowserConfigurationPreserveDom=false");
+        using var fixture = CreateFixture($"--BrowserConfigurationLogLevel={serverLogLevel}");
         NavigateToStartPage(fixture);
-        StartCounter();
-        var javascript = (IJavaScriptExecutor)Browser;
-        javascript.ExecuteScript("window.originalDocument = document");
-
-        Browser.Click(By.Id("add-server-counter-prerendered-link"));
-        Browser.Equal("True", () => Browser.Exists(By.Id("is-interactive-1")).Text);
-
-        Browser.False(() => (bool)javascript.ExecuteScript("return window.originalDocument === document"));
-        Browser.Click(By.Id("increment-1"));
-        Browser.Equal("1", () => Browser.Exists(By.Id("count-1")).Text);
-    }
-
-    [Fact]
-    public async Task DisablingPreserveDomReplacesElementsDuringStreamingUpdates()
-    {
-        using var fixture = CreateFixture("--BrowserConfigurationPreserveDom=false");
-        NavigateToStartPage(fixture);
-        StartCounter();
-        Browser.Click(By.Id("start-streaming-link"));
-        Browser.Equal("Streaming", () => Browser.Exists(By.Id("status")).Text);
-
-        var javascript = (IJavaScriptExecutor)Browser;
-        javascript.ExecuteScript("window.originalStatus = document.getElementById('status')");
-        using var httpClient = new HttpClient();
-        try
-        {
-            var updateUri = Browser.Exists(By.Id("add-server-counter-prerendered-link")).GetAttribute("href");
-            using var response = await httpClient.GetAsync(updateUri);
-            response.EnsureSuccessStatusCode();
-            Browser.Exists(By.Id("count-1"));
-
-            Browser.False(() => (bool)javascript.ExecuteScript("return window.originalStatus === document.getElementById('status')"));
-        }
-        finally
-        {
-            var endUri = Browser.Exists(By.Id("stop-streaming-link")).GetAttribute("href");
-            using var response = await httpClient.GetAsync(endUri);
-            response.EnsureSuccessStatusCode();
-        }
-        Browser.Equal("Not streaming", () => Browser.Exists(By.Id("status")).Text);
-        Browser.Equal("True", () => Browser.Exists(By.Id("is-interactive-1")).Text);
-    }
-
-    [Fact]
-    public void TraceLogLevelIncludesCircuitEventMessages()
-    {
-        using var fixture = CreateFixture($"--BrowserConfigurationLogLevel={BrowserLogLevel.Trace}");
-        NavigateToStartPage(fixture);
-        StartCounter();
+        StartCounter(javaScriptLogLevel is { } logLevel ? $$"""{ circuit: { logLevel: {{(int)logLevel}} } }""" : "{}");
         Browser.Manage().Logs.GetLog(LogType.Browser);
 
         Browser.Click(By.Id("increment-0"));
         Browser.Equal("1", () => Browser.Exists(By.Id("count-0")).Text);
 
         var entries = Browser.Manage().Logs.GetLog(LogType.Browser);
-        Assert.Contains(entries, entry => entry.Message.Contains("Dispatching event with handler id", StringComparison.Ordinal));
+        Assert.Equal(expectEventMessages, entries.Any(entry => entry.Message.Contains("Dispatching event with handler id", StringComparison.Ordinal)));
     }
 
-    [Fact]
-    public void ReconnectionRetryIntervalControlsTransportAttempts()
+    [Theory]
+    [InlineData(200, null)]
+    [InlineData(null, "200")]
+    [InlineData(1000, "200")]
+    [InlineData(1000, "() => 200")]
+    public void ReconnectionRetryIntervalControlsTransportAttempts(int? serverRetryInterval, string javaScriptRetryInterval)
     {
-        using var fixture = CreateFixture(
-            "--BrowserConfigurationReconnectionMaxRetries=2",
-            "--BrowserConfigurationReconnectionRetryIntervalMs=200");
+        using var fixture = CreateFixture("--BrowserConfigurationReconnectionMaxRetries=2");
+        if (serverRetryInterval is { } retryInterval)
+        {
+            fixture.AdditionalArguments.Add($"--BrowserConfigurationReconnectionRetryIntervalMs={retryInterval}");
+        }
         NavigateToStartPage(fixture);
-        StartCounter();
+        StartCounter(javaScriptRetryInterval is not null ? $$"""{ circuit: { reconnectionOptions: { retryIntervalMilliseconds: {{javaScriptRetryInterval}} } } }""" : "{}");
 
         var javascript = (IJavaScriptExecutor)Browser;
         javascript.ExecuteScript("""
@@ -166,10 +131,9 @@ public class ServerBrowserConfigurationTest(
         Browser.Equal("Not streaming", () => Browser.Exists(By.Id("status")).Text);
     }
 
-    private void StartCounter()
+    private void StartCounter(string options = "{}")
     {
-        Browser.Click(By.Id("call-blazor-start"));
-        Browser.Exists(By.Id("blazor-started"));
+        ((IJavaScriptExecutor)Browser).ExecuteScript($"Blazor.start({options})");
         Browser.Click(By.Id("add-server-counter-prerendered-link"));
         Browser.Equal("True", () => Browser.Exists(By.Id("is-interactive-0")).Text);
     }
