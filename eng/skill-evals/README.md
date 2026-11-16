@@ -45,10 +45,12 @@ Its baseline is a diagnostic control, not a competitor. Skill lift requires
 end-to-end evidence.
 All six L1 oracles (`case-01`, `case-02`, `case-03`, `case-04`, `case-05`, and
 `case-06`) are provisional pending an independent two-reviewer audit.
-The agent-relabelled `DISCARDED` oracle for `case-04` remains disputed, not
-independently proven. The `case-06` notification-order confound is corrected,
-its `UNRESOLVED` oracle is retained, and cold GPT-5.6 and Opus-5.5 adjudications
-agree. That model agreement is not a human audit.
+The original `case-04` claim mixed an unestablished timing link with a
+contradicted effect link, so reviewers split between `DISCARDED` and
+`UNRESOLVED`. The case was narrowed to the ordering of the flag and sign-in call.
+The `case-06` notification-order confound is corrected, its `UNRESOLVED` oracle
+is retained, and two cold reviewers from different model families agree. That
+agreement is not a human audit.
 Both arms share frozen source and both guidance documents. Only the skilled arm
 receives the skill and verifier/worker instructions. Baseline does not receive
 `SKILL.md` or either agent profile. `tool-calls.required` matches both read arguments and
@@ -67,7 +69,7 @@ disposition scores are reported, not threshold-gated.
 
 The zero-weight LLM rubrics remain secondary diagnostics, not semantic quality
 gates. They still incur judge calls during a model-bearing run. The subject and
-judge both use `gpt-5.6-sol`; the judge is not independent-model corroboration.
+judge use the same model; the judge is not independent-model corroboration.
 These public development cases are not held-out evidence. Five repeats do not
 create five independent PR lineages.
 
@@ -87,10 +89,39 @@ policy-only head-test scenario (close to @maraf's 3/10 `DROP(unestablished)` /
 7/10 `DOWNGRADE(intent)` synthetic fixture) was omitted from the component gate;
 `SKILL.md` retains the coordinator backstop mapping `DOWNGRADE(intent)` with
 `contract: "n/a"` to `UNRESOLVED`, which has not been measured end to end.
-The fresh 30-trial-per-arm L1 regression scored 27/30 for the diagnostic baseline
-and 29/30 for skilled. Skilled `case-04` scored 4/5, below its configured 5/5
-gate. Every other skilled case scored 5/5. These results are against the
-provisional oracles and do not establish skill lift.
+The earlier 30-trial-per-arm L1 run scored 27/30 for the diagnostic baseline
+and 29/30 for skilled, with skilled `case-04` at 4/5. A subsequent 30-trial
+skilled-only run with the current skill also scored 29/30, with `case-02` at
+4/5 and every other case at 5/5. Both skilled runs failed the configured 5/5
+per-case gate. Both measured the original `case-04` claim, before it was
+narrowed. The baseline was not rerun. These results are against provisional
+oracles and do not establish skill lift.
+
+Red means "read the misses": inspect each decision and its reason against the
+provisional oracle. In the earlier run, baseline `case-02` trial 3 discarded the
+claim because it treated required-parameter behavior and the converter test as
+sufficient intent; baseline `case-04` trials 0 and 3 and skilled `case-04`
+trial 3 were unresolved because browser or MSAL timing evidence was missing.
+In the later run, skilled `case-02` trial 4 discarded the claim, treating the
+target-base required-parameter rule and the lower-layer head converter test as
+evidence of intent.
+
+A separate skilled run of the narrowed `case-04` scored 10/10, with all read
+receipts passing. Each decision cited the flag assignment before delegation to
+`signIn`. Some responses also asserted browser observation timing that the
+frozen source does not establish; that timing is not needed for this claim.
+
+A 20-trial skilled diagnostic of `case-02` scored 19/20. Its only miss,
+trial 3, discarded the claim: it treated the target-base required-parameter
+rule as dispositive and the lower-layer head converter test as supporting intent.
+All read receipts passed. The result assertion failed because 19/20 is below
+the configured threshold of 1. Together with the earlier 4/5, current-skill
+`case-02` scored 23/25. Both misses warrant review in the pending two-reviewer
+audit of its provisional oracle.
+
+At an assumed independent per-trial pass rate of 0.92, a 5/5 gate goes red
+about one run in three. The 23/25 sample does not establish a population rate.
+The full six-case suite was not rerun after narrowing `case-04`.
 
 Model-free validation checks layout, schema, source hashes, read-guard coverage,
 and experiment selection. It does not establish adjudication quality. A
