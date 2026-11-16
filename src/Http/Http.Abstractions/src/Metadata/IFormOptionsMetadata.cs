@@ -53,8 +53,8 @@ public interface IFormOptionsMetadata
     int? MultipartBoundaryLengthLimit { get; }
 
     /// <summary>
-    /// A limit for the number of headers to allow in each multipart section.
-    /// Headers with the same name will be combined. Form sections that exceed
+    /// A limit for the number of header lines to allow in each multipart section.
+    /// Headers with the same name count separately. Form sections that exceed
     /// this limit will throw an InvalidDataException when parsed. Defaults to 16.
     /// </summary>
     int? MultipartHeadersCountLimit { get; }

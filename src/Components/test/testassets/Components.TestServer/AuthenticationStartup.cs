@@ -80,6 +80,11 @@ public class AuthenticationStartupBase
                         }
                         return await next(context);
                     });
+                endpoints.MapBlazorHub("/_blazor-long-polling-auth-refresh", options =>
+                {
+                    options.Transports = Microsoft.AspNetCore.Http.Connections.HttpTransportType.LongPolling;
+                    options.LongPolling.PollTimeout = TimeSpan.FromSeconds(1);
+                });
                 _configureMode(endpoints);
             });
         });

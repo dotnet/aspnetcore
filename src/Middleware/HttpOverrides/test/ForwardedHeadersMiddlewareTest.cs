@@ -1395,6 +1395,8 @@ public class ForwardedHeadersMiddlewareTests
     [InlineData("/foo?bar?", "/foo?bar?")]
     [InlineData("/foo%2F", "/foo%2F")]
     [InlineData("/foo%2F/", "/foo%2F/")]
+    [InlineData("/a;b", "/a;b")]
+    [InlineData("/a%3Bb", "/a;b")]
     public async Task XForwardedPrefixReplaceEmptyPathBase(
         string forwardedPrefix,
         string expectedUnescapedPathBase)
