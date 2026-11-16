@@ -80,6 +80,33 @@ public class Http2StreamTests : Http2TestBase
     }
 
     [Theory]
+    [InlineData(3)]
+    [InlineData(7)]
+    public async Task HEADERS_Received_NonAsciiMethodStart_Reset(int length)
+    {
+        var method = "\u0100" + new string('A', length - 1);
+        var headers = new[]
+        {
+            new KeyValuePair<string, string>(InternalHeaderNames.Method, method),
+            new KeyValuePair<string, string>(InternalHeaderNames.Path, "/"),
+            new KeyValuePair<string, string>(InternalHeaderNames.Scheme, "http"),
+            new KeyValuePair<string, string>(InternalHeaderNames.Authority, "localhost:80"),
+        };
+        var headersEnumerator = GetHeadersEnumerator(headers);
+        headersEnumerator.EncodingSelector = _ => Encoding.UTF8;
+        var buffer = new byte[1024];
+        Assert.Equal(HeaderWriteResult.Done, HPackHeaderWriter.BeginEncodeHeaders(_hpackEncoder, headersEnumerator, buffer, out var headerLength));
+
+        await InitializeConnectionAsync(_noopApplication);
+
+        await StartStreamAsync(1, buffer.AsSpan(0, headerLength), endStream: true);
+
+        await WaitForStreamErrorAsync(expectedStreamId: 1, Http2ErrorCode.PROTOCOL_ERROR, CoreStrings.FormatHttp2ErrorMethodInvalid(method));
+
+        await StopConnectionAsync(expectedLastStreamId: 1, ignoreNonGoAwayFrames: false);
+    }
+
+    [Theory]
     [InlineData("GET")]
     [InlineData("POST")]
     [InlineData("PUT")]

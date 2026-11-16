@@ -464,10 +464,10 @@ public class MediaTypeHeaderValue
     /// <inheritdoc />
     public override string ToString()
     {
-        var builder = new StringBuilder();
+        var builder = StringBuilderCache.Acquire();
         builder.Append(_mediaType.AsSpan());
         NameValueHeaderValue.ToString(_parameters, separator: ';', leadingSeparator: true, destination: builder);
-        return builder.ToString();
+        return StringBuilderCache.GetStringAndRelease(builder);
     }
 
     /// <inheritdoc />

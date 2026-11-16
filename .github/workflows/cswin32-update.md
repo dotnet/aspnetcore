@@ -26,7 +26,7 @@ mcp-servers:
     container: "mcr.microsoft.com/dotnet/sdk:10.0"
     entrypoint: "dnx"
     entrypointArgs: ["NuGet.Mcp.Server", "--source", "https://api.nuget.org/v3/index.json", "--yes"]
-    allowed: ["get-latest-package-version"]
+    allowed: ["get_latest_package_version"]
 safe-outputs:
   report-failure-as-issue: false
   create-pull-request:
@@ -101,11 +101,10 @@ Perform these checks and apply changes:
 
 ### Step 1: Check for a newer CsWin32 version
 
-Use the NuGet MCP server's `get-latest-package-version` tool to look up the latest stable version
+Use the NuGet MCP server's `get_latest_package_version` tool to look up the latest stable version
 of `Microsoft.Windows.CsWin32`.
 
-Do NOT use `curl`, `web-fetch`, or any direct HTTP requests to the NuGet API — they are blocked
-by the network firewall.
+Use the configured NuGet MCP server rather than direct HTTP requests to the NuGet API. If the tool is unavailable, report the tool discovery failure; do not assume the firewall blocked it.
 
 Compare with the current version in `eng/Versions.props` under `<MicrosoftWindowsCsWin32Version>`.
 

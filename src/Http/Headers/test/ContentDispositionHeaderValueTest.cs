@@ -154,6 +154,26 @@ public class ContentDispositionHeaderValueTest
         Assert.Null(contentDisposition.FileName.Value);
     }
 
+    [Theory]
+    [InlineData("\"=?utf-8?b?Zm9vLmh0bWw=?=\"", "foo.html")] // lowercase encoding type
+    [InlineData("\"=?utf-8?B??=\"", "")] // empty data
+    [InlineData("\"=?utf-8?B?Zm9v?Lmh0bWw=?=\"", "=?utf-8?B?Zm9v?Lmh0bWw=?=")] // too many separators
+    [InlineData("\"=?utf-8?BZm9vLmh0bWw=?=\"", "=?utf-8?BZm9vLmh0bWw=?=")] // too few separators
+    [InlineData("\"=?utf-8?Q?Zm9vLmh0bWw=?=\"", "=?utf-8?Q?Zm9vLmh0bWw=?=")] // unsupported encoding type
+    [InlineData("\"=?utf-8?BB?Zm9vLmh0bWw=?=\"", "=?utf-8?BB?Zm9vLmh0bWw=?=")] // unsupported encoding type
+    [InlineData("\"x=?utf-8?B?Zm9vLmh0bWw=?=\"", "x=?utf-8?B?Zm9vLmh0bWw=?=")] // bad prefix
+    [InlineData("\"=?utf-8?B?Zm9vLmh0bWw=?=x\"", "=?utf-8?B?Zm9vLmh0bWw=?=x")] // bad suffix
+    [InlineData("\"=??B?Zm9vLmh0bWw=?=\"", "=??B?Zm9vLmh0bWw=?=")] // empty encoding name
+    [InlineData("\"=?utf-8?B?Zm9v!?=\"", "=?utf-8?B?Zm9v!?=")] // invalid base64
+    [InlineData("\"attachment\"", "attachment")] // not encoded
+    public void FileName_MimeEncodedVariants_DecodedOrReturnedUnquoted(string value, string expected)
+    {
+        var contentDisposition = new ContentDispositionHeaderValue("inline");
+        contentDisposition.Parameters.Add(new NameValueHeaderValue("filename", value));
+
+        Assert.Equal(expected, contentDisposition.FileName.ToString());
+    }
+
     [Fact]
     public void FileName_UnknownOrBadEncoding_PropertyFails()
     {
@@ -296,6 +316,33 @@ public class ContentDispositionHeaderValueTest
         contentDisposition.SetHttpFileName(httpFileName);
         Assert.Equal(expectedFileName.AsSpan(), contentDisposition.FileName);
         Assert.Equal(httpFileName.AsSpan(), contentDisposition.FileNameStar); // Should roundtrip through FileNameStar encoding
+    }
+
+    [Theory]
+    [InlineData("report-2024.pdf", "attachment; filename=report-2024.pdf; filename*=UTF-8''report-2024.pdf")]
+    [InlineData("Quarterly Report.pdf", "attachment; filename=\"Quarterly Report.pdf\"; filename*=UTF-8''Quarterly%20Report.pdf")]
+    [InlineData("a\"b\\c.txt", "attachment; filename=\"a\\\"b\\\\c.txt\"; filename*=UTF-8''a%22b%5Cc.txt")]
+    [InlineData("na\u00EFve.txt", "attachment; filename=na_ve.txt; filename*=UTF-8''na%C3%AFve.txt")]
+    [InlineData("\u20AC.txt", "attachment; filename=_.txt; filename*=UTF-8''%E2%82%AC.txt")]
+    [InlineData("\U0001F600 x.txt", "attachment; filename=\"__ x.txt\"; filename*=UTF-8''%F0%9F%98%80%20x.txt")]
+    [InlineData("a \u00FC b\U0001F600c", "attachment; filename=\"a _ b__c\"; filename*=UTF-8''a%20%C3%BC%20b%F0%9F%98%80c")]
+    public void SetHttpFileName_ToString_FormatsExpectedHeader(string httpFileName, string expected)
+    {
+        var contentDisposition = new ContentDispositionHeaderValue("attachment");
+        contentDisposition.SetHttpFileName(httpFileName);
+        Assert.Equal(expected, contentDisposition.ToString());
+    }
+
+    [Fact]
+    public void SetHttpFileName_ToString_LoneSurrogatesEncodedAsReplacementChar()
+    {
+        var contentDisposition = new ContentDispositionHeaderValue("attachment");
+        contentDisposition.SetHttpFileName("a" + (char)0xD800 + "b");
+        Assert.Equal("attachment; filename=a_b; filename*=UTF-8''a%EF%BF%BDb", contentDisposition.ToString());
+
+        contentDisposition = new ContentDispositionHeaderValue("attachment");
+        contentDisposition.SetHttpFileName(((char)0xDC00).ToString());
+        Assert.Equal("attachment; filename=_; filename*=UTF-8''%EF%BF%BD", contentDisposition.ToString());
     }
 
     [Fact]

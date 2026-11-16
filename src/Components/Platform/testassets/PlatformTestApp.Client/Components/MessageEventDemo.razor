@@ -1,0 +1,45 @@
+@using System.Text.Json
+@implements IAsyncDisposable
+@inject IBrowserPlatform Browser
+
+<h2>Message event data</h2>
+
+<button id="listen-message" @onclick="ListenAsync">Listen to message events</button>
+<p id="message-result" role="status" data-run="@run">@result</p>
+
+@code {
+    // A test-only key built with the internal helper. Its shape copies "data", which can hold any value, whole.
+    private static readonly EventType<Window, MessageData> MessageEvent =
+        EventTypes.Create<Window, MessageData>("message", """[{"data":null}]""");
+
+    private string result = "No message has been reported.";
+    private int run;
+    private IAsyncDisposable? listener;
+
+    private async Task ListenAsync()
+    {
+        listener = await Browser.Window.AddEventListenerAsync(MessageEvent, OnMessageAsync);
+        result = "Listening.";
+    }
+
+    private Task OnMessageAsync(MessageData e)
+    {
+        result = e.Data.GetRawText();
+        run++;
+        StateHasChanged();
+        return Task.CompletedTask;
+    }
+
+    public async ValueTask DisposeAsync()
+    {
+        if (listener is not null)
+        {
+            await listener.DisposeAsync();
+        }
+    }
+
+    public sealed class MessageData
+    {
+        public JsonElement Data { get; set; }
+    }
+}

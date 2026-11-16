@@ -7,7 +7,7 @@ import { WebRendererId } from '../Rendering/WebRendererId';
 import { DescriptorHandler } from '../Rendering/DomMerging/DomSync';
 import { disposeCircuit, hasStartedServer, isCircuitAvailable, startCircuit, startServer, updateServerRootComponents } from '../Boot.Server.Common';
 import { hasLoadedWebAssemblyPlatform, hasStartedLoadingWebAssemblyPlatform, hasStartedWebAssembly, isFirstUpdate, loadWebAssemblyPlatformIfNotStarted, resolveInitialUpdate, setWaitForRootComponents, startWebAssembly, updateWebAssemblyRootComponents, waitForBootConfigLoaded } from '../Boot.WebAssembly.Common';
-import { MonoConfig } from '@microsoft/dotnet-runtime';
+import { LoaderConfig } from '@microsoft/dotnet-runtime';
 import { RootComponentManager } from './RootComponentManager';
 import { getRendererer } from '../Rendering/Renderer';
 import { isPageLoading } from './NavigationEnhancement';
@@ -527,7 +527,7 @@ function areAnyWebAssemblyResourcesLikelyCached(): boolean {
   return !!window.localStorage.getItem(cacheKey);
 }
 
-function areWebAssemblyResourcesLikelyCached(config: MonoConfig): boolean {
+function areWebAssemblyResourcesLikelyCached(config: LoaderConfig): boolean {
   const hash = getWebAssemblyResourceHash(config);
   if (!hash) {
     return false;
@@ -537,7 +537,7 @@ function areWebAssemblyResourcesLikelyCached(config: MonoConfig): boolean {
   return hash.value === existingHash;
 }
 
-function cacheWebAssemblyResourceHash(config: MonoConfig) {
+function cacheWebAssemblyResourceHash(config: LoaderConfig) {
   const hash = getWebAssemblyResourceHash(config);
   if (hash) {
     window.localStorage.setItem(cacheKey, hash.value);
@@ -545,7 +545,7 @@ function cacheWebAssemblyResourceHash(config: MonoConfig) {
   }
 }
 
-function getWebAssemblyResourceHash(config: MonoConfig): { key: string, value: string } | null {
+function getWebAssemblyResourceHash(config: LoaderConfig): { key: string, value: string } | null {
   const hash = config.resources?.hash;
   const mainAssemblyName = config.mainAssemblyName;
   if (!hash || !mainAssemblyName) {
