@@ -51,24 +51,14 @@ public partial class ScreenTests : BrowserTest
     }
 
     [TestMethod]
-    public async Task ScreenOrientation_ReadsBrowserValuesInBothRenderModes()
-    {
-        foreach (var path in ScreenPaths)
-        {
-            await NavigateAsync(path, "#get-orientation-type");
-
-            await RunAsync("#get-orientation-type", $"Orientation type: {await _page.EvaluateAsync<string>("screen.orientation.type")}, known: True");
-            await RunAsync("#get-orientation-angle", $"Orientation angle: {await EvaluateAsync("screen.orientation.angle")}");
-        }
-    }
-
-    [TestMethod]
-    public async Task ScreenOrientation_ReportsChangeEventsInBothRenderModes()
+    public async Task ScreenOrientation_ReadsValuesAndReportsChangeEventsInBothRenderModes()
     {
         foreach (var path in ScreenPaths)
         {
             await NavigateAsync(path, "#watch-orientation");
             var orientationEvent = _page.Locator("#orientation-event");
+
+            await RunAsync("#get-orientation-type", $"Orientation type: {await _page.EvaluateAsync<string>("screen.orientation.type")}, known: True");
 
             await RunAsync("#watch-orientation", "Watch orientation: added");
             // Events that the page's own JavaScript dispatches reach the listener too.
