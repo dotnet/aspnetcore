@@ -502,10 +502,15 @@ switch ($Action) {
                 }
             }
         }
-        $assertsResults = ($selectedSuite -eq 'review-candidate-verifier' -or $vallyArguments[0] -eq 'experiment') -and
+        $assertsResults = ($selectedSuite -eq 'review-candidate-verifier' -or
+            ($vallyArguments[0] -eq 'experiment' -and $resolvedEval -and
+                -not ($Arguments -match '^--(?:eval-filter|shard)(?:=|$)'))) -and
             $Arguments -notcontains '--dry-run'
+        if ($vallyArguments[0] -eq 'experiment' -and -not $assertsResults -and $Arguments -notcontains '--dry-run') {
+            Write-Warning "Result-set checks were not applied; Vally's exit status is returned. Use -Suite to check one eval; if --compare reports conflicting judge models, add --judge-model."
+        }
         $existingRunDirectoryNames = [Collections.Generic.HashSet[string]]::new([StringComparer]::Ordinal)
-        if (($selectedSuite -eq 'review-candidate-verifier' -or $assertsResults) -and (Test-Path -LiteralPath $output -PathType Container)) {
+        if ($assertsResults -and (Test-Path -LiteralPath $output -PathType Container)) {
             foreach ($directory in Get-ChildItem -LiteralPath $output -Directory -ErrorAction SilentlyContinue) {
                 [void]$existingRunDirectoryNames.Add($directory.Name)
             }

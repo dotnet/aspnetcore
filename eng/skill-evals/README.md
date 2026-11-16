@@ -158,7 +158,7 @@ Run these commands from any directory:
 
 Without a suite or explicit experiment, `Run` dispatches each standard suite into
 its own output subdirectory. This includes the direct verifier component suite.
-Each experiment or direct component `Run` checks its own new run directory with
+Each single-eval experiment or direct component `Run` checks its own new run directory with
 `assert_results.ps1` before it returns. A Vally exit code of 1 is accepted only
 after those checks pass; any failed check stops the run, including in the
 all-suite dispatch. A direct component run writes a plan beside Vally's
@@ -169,6 +169,7 @@ completion, grader scores, and read-integrity receipts without enforcing the
 multi-trial per-stimulus disposition threshold.
 Experiment runs with `--variant skilled` or `--variant=skilled` check only the
 selected variant; without this option, both baseline and skilled are required.
+Experiments without `-Suite`/`-Eval`, or with `--eval-filter` or `--shard`, skip result-set checks and return Vally's exit status.
 
 ## Hosted entry point
 

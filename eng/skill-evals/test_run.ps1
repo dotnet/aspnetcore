@@ -82,7 +82,7 @@ if ($args[0] -eq 'experiment' -and $args -notcontains '--dry-run') {
     }
     @{
         evals = @($variants | ForEach-Object {
-            @{ variant = $_; plannedStimulusNames = @('s'); plannedStimulusCount = 1; runs = 1; threshold = 0 }
+            @{ variant = $_; plannedStimulusNames = @('s'); plannedStimulusCount = 1; runs = 1; threshold = $(if ($env:SKILL_EVAL_FAKE_EXPERIMENT_INVALID) { 'invalid' } else { 0 }) }
         })
     } | ConvertTo-Json -Depth 10 | Set-Content (Join-Path $run 'plan-snapshot.json')
     foreach ($variant in $variants) {
@@ -236,6 +236,50 @@ stimuli:
         }
         Write-Host "SelectedVariant${syntax}Syntax passed."
     }
+
+    $experimentCheckFailures = [Collections.Generic.List[string]]::new()
+    foreach ($case in @(
+        @{ Name = 'UnselectedExperiment'; Selection = ''; Arguments = '@()' },
+        @{ Name = 'SeparateEvalFilter'; Selection = '-Suite review-public-api'; Arguments = "@('--eval-filter', 'other/eval.vally.yaml')" },
+        @{ Name = 'EqualsEvalFilter'; Selection = '-Suite review-public-api'; Arguments = "@('--eval-filter=other/eval.vally.yaml')" },
+        @{ Name = 'SeparateShard'; Selection = '-Suite review-public-api'; Arguments = "@('--shard', '1/2', '--run-id', 'test')" },
+        @{ Name = 'EqualsShard'; Selection = '-Suite review-public-api'; Arguments = "@('--shard=1/2', '--run-id=test')" },
+        @{ Name = 'DryRunExperiment'; Selection = '-Suite review-public-api'; Arguments = "@('--dry-run')" },
+        @{ Name = 'SelectedExperimentChecked'; Selection = '-Suite review-public-api'; Arguments = '@()'; Checked = $true },
+        @{ Name = 'SelectedEvalChecked'; Selection = "-Eval 'eng/skill-evals/review-public-api/eval.vally.yaml'"; Arguments = '@()'; Checked = $true }
+    )) {
+        foreach ($exitCode in @(0, 1)) {
+            $env:SKILL_EVAL_FAKE_EXPERIMENT_INVALID = 'true'
+            $env:SKILL_EVAL_FAKE_EXIT_CODE = "$exitCode"
+            try {
+                $caseOutput = Join-Path $testRoot "$($case.Name)-$exitCode"
+                $command = "& '$runner' Run -Experiment '$customExperiment' $($case.Selection) " +
+                    "-Vally '$fakeVally' -VallyPrefix @() -OutputDirectory '$caseOutput' " +
+                    "-Arguments $($case.Arguments); exit `$LASTEXITCODE"
+                $messages = (& pwsh -NoProfile -Command $command 2>&1 | Out-String)
+                $actualExitCode = $LASTEXITCODE
+            } finally {
+                Remove-Item Env:SKILL_EVAL_FAKE_EXPERIMENT_INVALID
+                Remove-Item Env:SKILL_EVAL_FAKE_EXIT_CODE
+            }
+            $checked = $case.ContainsKey('Checked')
+            $expectedExitCode = if ($checked) { 1 } else { $exitCode }
+            $hasCheckFailure = $messages -like "*plan has an invalid threshold*"
+            $hasWarning = $messages -like '*result-set checks were not applied*'
+            $expectsWarning = -not $checked -and $case.Name -ne 'DryRunExperiment'
+            if ($actualExitCode -ne $expectedExitCode -or $hasCheckFailure -ne $checked -or
+                $hasWarning -ne $expectsWarning) {
+                $experimentCheckFailures.Add(
+                    "$($case.Name)Exit$exitCode expected exit $expectedExitCode, checked=$checked, warning=$expectsWarning; " +
+                    "got exit $actualExitCode, checked=$hasCheckFailure, warning=$hasWarning. $messages"
+                )
+                Write-Host "$($case.Name)Exit$exitCode failed."
+            } else {
+                Write-Host "$($case.Name)Exit$exitCode passed."
+            }
+        }
+    }
+    Assert-True ($experimentCheckFailures.Count -eq 0) ($experimentCheckFailures -join "`n")
 
     $validationRoot = Join-Path $testRoot 'validation-root'
     $validationEvalRoot = Join-Path $validationRoot 'eng/skill-evals'
