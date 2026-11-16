@@ -14,7 +14,7 @@ public class MultipartSectionReadAsStringBenchmark
     [Params(1, 5)]
     public int FieldCount { get; set; }
 
-    [Params(16, 2000, 10000, 100000)]
+    [Params(1, 2, 16, 2000, 10000, 100000)]
     public int ValueLength { get; set; }
 
     [GlobalSetup]

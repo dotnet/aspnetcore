@@ -1,6 +1,7 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Buffers;
 using System.Text;
 using Microsoft.Extensions.Primitives;
 
@@ -12,6 +13,8 @@ public class MultipartSectionStreamExtensionsTests
     {
         { "a", 0 },
         { "a", 1 },
+        { "a", 2 },
+        { "a", 3 },
         { "a", 16 },
         { "a", 4095 },
         { "a", 4096 },
@@ -66,6 +69,11 @@ public class MultipartSectionStreamExtensionsTests
         new byte[] { 0xEF, 0xBB },
         new byte[] { 0xFE },
         new byte[] { 0, (byte)'h' },
+        // Values shorter than 3 bytes.
+        new byte[] { (byte)'1' },
+        new byte[] { (byte)'o', (byte)'n' },
+        new byte[] { 0xC3 },
+        new byte[] { 0xC3, 0xA9 },
         // Invalid UTF-8.
         new byte[] { (byte)'a', 0xC3 },
         new byte[] { (byte)'a', 0xFF, (byte)'b' },
@@ -75,6 +83,15 @@ public class MultipartSectionStreamExtensionsTests
         new byte[] { (byte)'a', 0xFE, 0xFF, 0, (byte)'h' },
         new byte[] { (byte)'a', 0xEF, 0xBB, 0xBF, (byte)'h' },
         new byte[] { (byte)'a', (byte)'b', 0xFF, 0xFE, (byte)'h', 0 },
+        new byte[] { (byte)'a', 0xFF, 0xFE, (byte)'h', 0, (byte)'i', 0 },
+        new byte[] { (byte)'a', (byte)'b', 0xEF, 0xBB, 0xBF, (byte)'h' },
+        new byte[] { (byte)'a', 0, 0, 0xFE, 0xFF, 0, 0, 0, (byte)'h' },
+        // Short first reads followed by more data: MultipartReader returns the bytes before a possible boundary first.
+        new byte[] { (byte)'a', (byte)'\r', 0xFF, 0xFE, (byte)'h', 0 },
+        new byte[] { (byte)'a', (byte)'\r', (byte)'\n', 0xFF, 0xFE, (byte)'h', 0 },
+        new byte[] { (byte)'a', (byte)'\r', (byte)'\n', (byte)'-', 0xFF, 0xFE, (byte)'h', 0 },
+        new byte[] { (byte)'a', (byte)'b', (byte)'\r', (byte)'\n', (byte)'-', (byte)'-', 0xFE, 0xFF, 0, (byte)'h' },
+        new byte[] { (byte)'a', (byte)'\r', (byte)'\n', (byte)'-', (byte)'-', (byte)'9', (byte)'0', 0xEF, 0xBB, 0xBF, (byte)'h' },
         // Byte order mark followed by a large value.
         new byte[] { 0xEF, 0xBB, 0xBF }.Concat(Enumerable.Repeat((byte)'x', 70_000)).ToArray(),
     };
@@ -85,7 +102,7 @@ public class MultipartSectionStreamExtensionsTests
     {
         foreach (var contentType in new[] { null, "text/plain; charset=utf-8" })
         {
-            foreach (var readSizes in new int[]?[] { null, [1], [1, 1024], [2, 1024], [3, 1024], [1, 2, 4096] })
+            foreach (var readSizes in new int[]?[] { null, [1], [1, 1024], [2, 1024], [3, 1024], [1, 2, 4096], [1, 1, 2, 1024] })
             {
                 // ReadAsStringAsync verifies the result matches what StreamReader produces when reading the same
                 // stream, including its read-size dependent byte order mark detection.
@@ -143,6 +160,75 @@ public class MultipartSectionStreamExtensionsTests
         // section bodies complete without checking it. The UTF-8 fast path must behave the same as the
         // StreamReader path used for other charsets.
         Assert.Equal("text default", await section.ReadAsStringAsync(cts.Token));
+    }
+
+    [Theory]
+    [InlineData("1")]
+    [InlineData("on")]
+    [InlineData("\u00e9")]
+    [InlineData("value")]
+    public async Task ReadAsStringAsync_SmallUtf8Value_OnlyAllocatesResult(string text)
+    {
+        var bytes = Encoding.UTF8.GetBytes(text);
+        var drainBuffer = new byte[4096];
+        var minExtraAllocated = long.MaxValue;
+        for (var i = 0; i < 5; i++)
+        {
+            // Reading the section body allocates on its own, so compare with draining an identical section.
+            var drainedSection = await ReadMultipartSectionAsync(bytes, contentType: null, readSizes: null);
+            var before = GC.GetAllocatedBytesForCurrentThread();
+            while (drainedSection.Body.ReadAsync(drainBuffer.AsMemory(), CancellationToken.None) is { IsCompletedSuccessfully: true, Result: > 0 })
+            {
+            }
+            var drainAllocated = GC.GetAllocatedBytesForCurrentThread() - before;
+
+            var section = await ReadMultipartSectionAsync(bytes, contentType: null, readSizes: null);
+            before = GC.GetAllocatedBytesForCurrentThread();
+            var task = section.ReadAsStringAsync(CancellationToken.None);
+            var allocated = GC.GetAllocatedBytesForCurrentThread() - before;
+
+            // The section is buffered, so the read completes synchronously.
+            Assert.True(task.IsCompletedSuccessfully);
+            Assert.Equal(text, await task);
+            minExtraAllocated = Math.Min(minExtraAllocated, allocated - drainAllocated);
+        }
+
+        // Only the result string is allocated. A StreamReader and its buffers would allocate several kilobytes.
+        Assert.InRange(minExtraAllocated, 0, 256);
+    }
+
+    [Theory]
+    [InlineData(1)]
+    [InlineData(2)]
+    [InlineData(16)]
+    [InlineData(2000)]
+    [InlineData(5000)]
+    [InlineData(64 * 1024 - 1)]
+    [InlineData(70_000)]
+    public async Task ReadAsStringAsync_ClearsPooledBuffer(int length)
+    {
+        var text = new string('\u007F', length);
+        var bytes = Encoding.UTF8.GetBytes(text);
+        var section = await ReadMultipartSectionAsync(bytes, contentType: null, readSizes: null);
+
+        Assert.Equal(text, await section.ReadAsStringAsync(CancellationToken.None));
+
+        // The section completes synchronously, so the buffers it returned are in this thread's pool cache, with the
+        // value read into the start of each buffer. MultipartReaderStream also copies the value through temporary
+        // pooled arrays of up to 4 KB, so only check the 4 KB buffer when the value is too small to use one.
+        for (var size = length <= 2048 ? 4096 : 8192; size <= 64 * 1024; size *= 2)
+        {
+            var buffer = ArrayPool<byte>.Shared.Rent(size);
+            try
+            {
+                var prefixLength = Math.Min(length, buffer.Length);
+                Assert.False(buffer.AsSpan(0, prefixLength).SequenceEqual(bytes.AsSpan(0, prefixLength)), $"Buffer of size {buffer.Length} was not cleared.");
+            }
+            finally
+            {
+                ArrayPool<byte>.Shared.Return(buffer);
+            }
+        }
     }
 
     // Reads the bytes as a section created by MultipartReader, which uses the UTF-8 fast path, and as a section

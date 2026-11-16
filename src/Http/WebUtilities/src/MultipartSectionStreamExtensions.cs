@@ -3,6 +3,7 @@
 
 using System.Buffers;
 using System.Text;
+using Microsoft.AspNetCore.Internal;
 using Microsoft.Net.Http.Headers;
 
 namespace Microsoft.AspNetCore.WebUtilities;
@@ -58,9 +59,11 @@ public static class MultipartSectionStreamExtensions
         // Fast path: most section values are small UTF-8 strings. Read them into a pooled buffer and decode
         // them directly instead of allocating a StreamReader and its buffers.
         var buffer = ArrayPool<byte>.Shared.Rent(InitialBufferSize);
+        var length = 0;
+        var firstReadLength = 0;
+        var readPending = false;
         try
         {
-            var length = 0;
             while (true)
             {
                 if (length == buffer.Length)
@@ -72,11 +75,13 @@ public static class MultipartSectionStreamExtensions
 
                     var newBuffer = ArrayPool<byte>.Shared.Rent(buffer.Length * 2);
                     buffer.AsSpan(0, length).CopyTo(newBuffer);
-                    ArrayPool<byte>.Shared.Return(buffer);
+                    ReturnBuffer(buffer, length);
                     buffer = newBuffer;
                 }
 
+                readPending = true;
                 var read = await section.Body.ReadAsync(buffer.AsMemory(length), cancellationToken);
+                readPending = false;
                 if (read == 0)
                 {
                     return length == 0 ? string.Empty : streamEncoding.GetString(buffer, 0, length);
@@ -84,23 +89,42 @@ public static class MultipartSectionStreamExtensions
 
                 length += read;
 
-                // StreamReader detects byte order marks based on the first read. When the first read could start
-                // with a byte order mark, or is too short for StreamReader to rule one out, let StreamReader
-                // process the data exactly as it is read. Otherwise no detection happens and decoding the bytes
-                // directly is equivalent.
-                if (length == read && (read < 3 || MayStartWithByteOrderMark(buffer[0])))
+                if (length == read)
                 {
+                    firstReadLength = read;
+
+                    // StreamReader detects byte order marks based on the first read. When the first read could
+                    // start with a byte order mark, let StreamReader process the data exactly as it is read.
+                    if (MayStartWithByteOrderMark(buffer[0]))
+                    {
+                        break;
+                    }
+                }
+                else if (firstReadLength < 3)
+                {
+                    // StreamReader can't rule out a byte order mark from a first read shorter than 3 bytes and
+                    // checks the next read instead. A short first read that is followed by the end of the body
+                    // (for example "1" or "on") is decoded directly above; otherwise let StreamReader process
+                    // the data with the same read boundaries.
                     break;
                 }
             }
 
             // Let StreamReader handle the bytes read so far followed by the rest of the section body.
-            return await ReadToEndAsync(new PrefixedReadStream(buffer, length, section.Body), streamEncoding, cancellationToken);
+            return await ReadToEndAsync(new PrefixedReadStream(buffer, firstReadLength, length, section.Body), streamEncoding, cancellationToken);
         }
         finally
         {
-            ArrayPool<byte>.Shared.Return(buffer);
+            // A read that failed may have written past the bytes counted so far.
+            ReturnBuffer(buffer, readPending ? buffer.Length : length);
         }
+    }
+
+    private static void ReturnBuffer(byte[] buffer, int length)
+    {
+        // Section values can be sensitive, so don't leave them in the shared pool.
+        buffer.AsSpan(0, length).Clear();
+        ArrayPool<byte>.Shared.Return(buffer);
     }
 
     private static async Task<string> ReadToEndAsync(Stream stream, Encoding encoding, CancellationToken cancellationToken)
@@ -116,77 +140,4 @@ public static class MultipartSectionStreamExtensions
 
     // Lead bytes of the byte order marks StreamReader detects (UTF-8, UTF-16 LE/BE and UTF-32 LE/BE).
     private static bool MayStartWithByteOrderMark(byte firstByte) => firstByte is 0xEF or 0xFE or 0xFF or 0x00;
-
-    private sealed class PrefixedReadStream : Stream
-    {
-        private readonly byte[] _prefix;
-        private readonly int _prefixLength;
-        private readonly Stream _inner;
-        private int _prefixPosition;
-
-        public PrefixedReadStream(byte[] prefix, int prefixLength, Stream inner)
-        {
-            _prefix = prefix;
-            _prefixLength = prefixLength;
-            _inner = inner;
-        }
-
-        public override bool CanRead => true;
-        public override bool CanSeek => false;
-        public override bool CanWrite => false;
-        public override long Length => throw new NotSupportedException();
-        public override long Position
-        {
-            get => throw new NotSupportedException();
-            set => throw new NotSupportedException();
-        }
-
-        public override int Read(byte[] buffer, int offset, int count) => Read(buffer.AsSpan(offset, count));
-
-        public override int Read(Span<byte> buffer)
-        {
-            if (TryReadPrefix(buffer, out var read))
-            {
-                return read;
-            }
-
-            return _inner.Read(buffer);
-        }
-
-        public override Task<int> ReadAsync(byte[] buffer, int offset, int count, CancellationToken cancellationToken)
-            => ReadAsync(buffer.AsMemory(offset, count), cancellationToken).AsTask();
-
-        public override ValueTask<int> ReadAsync(Memory<byte> buffer, CancellationToken cancellationToken = default)
-        {
-            if (TryReadPrefix(buffer.Span, out var read))
-            {
-                return new ValueTask<int>(read);
-            }
-
-            return _inner.ReadAsync(buffer, cancellationToken);
-        }
-
-        private bool TryReadPrefix(Span<byte> buffer, out int read)
-        {
-            var remaining = _prefixLength - _prefixPosition;
-            if (remaining == 0 || buffer.IsEmpty)
-            {
-                read = 0;
-                return false;
-            }
-
-            read = Math.Min(remaining, buffer.Length);
-            _prefix.AsSpan(_prefixPosition, read).CopyTo(buffer);
-            _prefixPosition += read;
-            return true;
-        }
-
-        public override void Flush()
-        {
-        }
-
-        public override long Seek(long offset, SeekOrigin origin) => throw new NotSupportedException();
-        public override void SetLength(long value) => throw new NotSupportedException();
-        public override void Write(byte[] buffer, int offset, int count) => throw new NotSupportedException();
-    }
 }
