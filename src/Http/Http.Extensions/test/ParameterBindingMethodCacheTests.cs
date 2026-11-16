@@ -6,6 +6,8 @@
 using System.Globalization;
 using System.Linq.Expressions;
 using System.Reflection;
+using System.Reflection.Emit;
+using System.Runtime.CompilerServices;
 using Microsoft.Extensions.Internal;
 
 namespace Microsoft.AspNetCore.Http.Extensions.Tests;
@@ -145,6 +147,33 @@ public class ParameterBindingMethodCacheTests
     public void HasTryParseStringMethod_ReturnsTrueWhenMethodExists(ParameterInfo parameterInfo)
     {
         Assert.True(new ParameterBindingMethodCache().HasTryParseMethod(parameterInfo.ParameterType));
+    }
+
+    [Fact]
+    public void FindTryParseMethod_DoesNotRootCollectibleTypes()
+    {
+        var weakReference = CallFindTryParseOnCollectibleType();
+
+        for (var i = 0; i < 10 && weakReference.IsAlive; i++)
+        {
+            GC.Collect();
+            GC.WaitForPendingFinalizers();
+        }
+
+        Assert.False(weakReference.IsAlive, "The collectible type was rooted by the process-wide cache.");
+    }
+
+    [MethodImpl(MethodImplOptions.NoInlining)]
+    private static WeakReference CallFindTryParseOnCollectibleType()
+    {
+        var assemblyBuilder = AssemblyBuilder.DefineDynamicAssembly(new AssemblyName("CollectibleTestAssembly"), AssemblyBuilderAccess.RunAndCollect);
+        var moduleBuilder = assemblyBuilder.DefineDynamicModule("CollectibleTestModule");
+        var type = moduleBuilder.DefineType("CollectibleType", TypeAttributes.Public).CreateType();
+        Assert.True(type.IsCollectible);
+
+        Assert.Null(ParameterBindingMethodCache.NonThrowingInstance.FindTryParseMethod(type));
+
+        return new WeakReference(type);
     }
 
     [Fact]
