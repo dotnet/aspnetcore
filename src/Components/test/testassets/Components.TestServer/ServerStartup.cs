@@ -30,6 +30,11 @@ public class ServerStartup
             options.RootComponents.RegisterForJavaScript<BasicTestApp.JavaScriptRootComponentParameterTypes>(
                 "component-with-many-parameters",
                 javaScriptInitializer: "myJsRootComponentInitializers.testInitializer");
+
+            if (Configuration.GetValue<int?>("JSInteropDefaultCallTimeoutMilliseconds") is { } timeoutMilliseconds)
+            {
+                options.JSInteropDefaultCallTimeout = TimeSpan.FromMilliseconds(timeoutMilliseconds);
+            }
         });
         services.AddSingleton<ResourceRequestLog>();
         services.AddTransient<BasicTestApp.FormsTest.ValidationComponentDI.SaladChef>();
