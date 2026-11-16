@@ -6,6 +6,7 @@ using Microsoft.AspNetCore.Components.E2ETest.Infrastructure.ServerFixtures;
 using Components.TestServer.RazorComponents;
 using Microsoft.AspNetCore.E2ETesting;
 using Microsoft.AspNetCore.InternalTesting;
+using Microsoft.AspNetCore.Localization;
 using Xunit.Abstractions;
 using OpenQA.Selenium;
 using TestServer;
@@ -33,18 +34,27 @@ public class QuickGridNoInteractivityTest : ServerTestBase<BasicTestAppServerSit
     [Fact]
     public void PaginatorUsesLocalizedText()
     {
-        Navigate($"{ServerPathBase}/Culture/SetCulture?culture=es-ES&uiCulture=es-ES&redirectUri={Uri.EscapeDataString($"{ServerPathBase}/quickgrid")}");
-        Browser.Exists(By.ClassName("return-from-culture-setter")).Click();
+        try
+        {
+            Navigate($"{ServerPathBase}/Culture/SetCulture?culture=es-ES&uiCulture=es-ES&redirectUri={Uri.EscapeDataString($"{ServerPathBase}/quickgrid")}");
+            Browser.Exists(By.ClassName("return-from-culture-setter")).Click();
 
-        Browser.Equal("43 elementos", () => Browser.FindElement(By.CssSelector(".first-paginator .summary")).Text);
-        Browser.Equal("Página 1 de 5", () => Browser.FindElement(By.CssSelector(".first-paginator .pagination-text")).Text);
-        Assert.Equal("Ir a la página siguiente", Browser.FindElement(By.CssSelector(".first-paginator .go-next")).GetDomAttribute("title"));
-        Assert.Equal("Ir a la página siguiente", Browser.FindElement(By.CssSelector(".first-paginator .go-next")).GetDomAttribute("aria-label"));
+            Browser.Equal("43 elementos", () => Browser.FindElement(By.CssSelector(".first-paginator .summary")).Text);
+            Browser.Equal("Página 1 de 5", () => Browser.FindElement(By.CssSelector(".first-paginator .pagination-text")).Text);
+            Browser.Equal("Ir a la página siguiente", () => Browser.FindElement(By.CssSelector(".first-paginator .go-next")).GetDomAttribute("title"));
+            Browser.Equal("Ir a la página siguiente", () => Browser.FindElement(By.CssSelector(".first-paginator .go-next")).GetDomAttribute("aria-label"));
 
-        Browser.FindElement(By.CssSelector(".first-paginator .go-next")).Click();
+            Browser.FindElement(By.CssSelector(".first-paginator .go-next")).Click();
 
-        Browser.Equal("Página 2 de 5", () => Browser.FindElement(By.CssSelector(".first-paginator .pagination-text")).Text);
-        Assert.Contains("page=2", Browser.Url);
+            Browser.Equal("Página 2 de 5", () => Browser.FindElement(By.CssSelector(".first-paginator .pagination-text")).Text);
+            Assert.Contains("page=2", Browser.Url);
+        }
+        finally
+        {
+            Browser.Manage().Cookies.DeleteCookieNamed(CookieRequestCultureProvider.DefaultCookieName);
+        }
+
+        Assert.Null(Browser.Manage().Cookies.GetCookieNamed(CookieRequestCultureProvider.DefaultCookieName));
     }
 	
 	[Fact]

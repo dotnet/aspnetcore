@@ -42,7 +42,6 @@ public class RazorComponentEndpointsNoInteractivityStartup<TRootComponent>
         services.AddValidation(options =>
             options.Resolvers.Add(new BasicTestApp.FormsTest.AsyncValidationResolver()));
 #pragma warning restore ASP0029
-        services.AddValidationLocalization();
 
         services.AddRazorComponents(options =>
         {
@@ -195,7 +194,11 @@ public class RazorComponentEndpointsNoInteractivityStartup<TRootComponent>
         app.UseAntiforgery();
         app.UseEndpoints(endpoints =>
         {
-            endpoints.MapControllers();
+            if (Configuration.GetValue<bool>("EnableCultureTesting"))
+            {
+                endpoints.MapControllers();
+            }
+
             endpoints.MapRazorComponents<TRootComponent>()
                 .AddAdditionalAssemblies(Assembly.Load("TestContentPackage"));
         });
