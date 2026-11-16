@@ -5158,6 +5158,46 @@ public class VirtualizationTest : ServerTestBase<ToggleExecutionModeServerFixtur
         }, TimeSpan.FromSeconds(10),
             $"Window AnchorMode {anchorMode}: Home key should jump to the top");
     }
+
+    [Theory]
+    [InlineData("0")]
+    [InlineData("1")]
+    [InlineData("2")]
+    public void AnchorMode_WindowScroll_EndKeyInInputDoesNotJump(string anchorMode)
+    {
+        MountWindowScrollAnchorModeComponent(anchorMode);
+
+        var js = (IJavaScriptExecutor)Browser;
+
+        WindowScrollMidListAndWaitForRender(js);
+
+        var scrollYBefore = (long)js.ExecuteScript("return Math.round(window.scrollY)");
+
+        var input = Browser.Exists(By.Id("scroll-target-index"));
+        input.Click();
+        input.SendKeys(Keys.End);
+
+        // End belongs to the focused input. Sample the scroll position across frames so
+        // a delayed convergence jump is still detected.
+        var maxDeviation = (long)js.ExecuteAsyncScript(@"
+            var start = window.scrollY;
+            var max = 0;
+            var frames = 0;
+            function step() {
+                max = Math.max(max, Math.abs(window.scrollY - start));
+                if (++frames < 120) {
+                    requestAnimationFrame(step);
+                } else {
+                    arguments[arguments.length - 1](max);
+                }
+            }
+            requestAnimationFrame(step);
+        ");
+
+        Assert.True(maxDeviation <= 2,
+            $"Window AnchorMode {anchorMode}: End in a text input should not move the list (moved {maxDeviation}px from {scrollYBefore})");
+    }
+
     private static (string index, double relTop, long scrollTop) GetItemPositionInContainer(
         IJavaScriptExecutor js, IWebElement container, string itemSelector, string dataIndex = null)
     {

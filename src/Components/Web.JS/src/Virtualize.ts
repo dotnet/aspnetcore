@@ -614,9 +614,25 @@ function init(dotNetHelper: DotNet.DotNetObject, spacerBefore: HTMLElement, spac
     return ['ArrowUp', 'ArrowDown', 'PageUp', 'PageDown', ' '].includes(key);
   }
 
+  function isEditableTarget(target: EventTarget | null): boolean {
+    if (!(target instanceof HTMLElement)) {
+      return false;
+    }
+    if (target.isContentEditable) {
+      return true;
+    }
+    const tagName = target.tagName;
+    return tagName === 'INPUT' || tagName === 'TEXTAREA' || tagName === 'SELECT';
+  }
+
   const keydownTarget: EventTarget = scrollContainer || document;
   function handleJumpKeys(e: Event): void {
     const ke = e as KeyboardEvent;
+    // Home and End belong to the focused control (for example, moving the caret in
+    // a text input) unless the list itself is handling the key.
+    if (ke.defaultPrevented || isEditableTarget(ke.target)) {
+      return;
+    }
     if (ke.key === 'End') {
       interruptProgrammaticScroll();
       scrollActivity.source = ScrollSource.UserScroll;
