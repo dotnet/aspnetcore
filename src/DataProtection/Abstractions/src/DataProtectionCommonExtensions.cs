@@ -2,6 +2,9 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
+#if NET
+using System.Buffers;
+#endif
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
@@ -160,6 +163,13 @@ public static class DataProtectionCommonExtensions
 
         try
         {
+#if NET
+            if (protector is ISpanDataProtector spanProtector)
+            {
+                return ProtectWithSpanProtector(spanProtector, plaintext);
+            }
+#endif
+
             byte[] plaintextAsBytes = EncodingUtil.SecureUtf8Encoding.GetBytes(plaintext);
             byte[] protectedDataAsBytes = protector.Protect(plaintextAsBytes);
             return WebEncoders.Base64UrlEncode(protectedDataAsBytes);
@@ -188,6 +198,13 @@ public static class DataProtectionCommonExtensions
         try
         {
             byte[] protectedDataAsBytes = WebEncoders.Base64UrlDecode(protectedData);
+#if NET
+            if (protector is ISpanDataProtector spanProtector)
+            {
+                return UnprotectWithSpanProtector(spanProtector, protectedDataAsBytes);
+            }
+#endif
+
             byte[] plaintextAsBytes = protector.Unprotect(protectedDataAsBytes);
             return EncodingUtil.SecureUtf8Encoding.GetString(plaintextAsBytes);
         }
@@ -197,4 +214,44 @@ public static class DataProtectionCommonExtensions
             throw Error.CryptCommon_GenericError(ex);
         }
     }
+
+#if NET
+    // Avoids the intermediate plaintext and protected byte[] allocations of the byte[]-based path. The payload is identical:
+    // ISpanDataProtector.Protect/Unprotect produce/consume the same format as IDataProtector.Protect/Unprotect.
+    private static string ProtectWithSpanProtector(ISpanDataProtector protector, string plaintext)
+    {
+        var plaintextByteCount = EncodingUtil.SecureUtf8Encoding.GetByteCount(plaintext);
+        var plaintextBuffer = ArrayPool<byte>.Shared.Rent(plaintextByteCount);
+        var destination = new RefPooledArrayBufferWriter<byte>(stackalloc byte[256]);
+        try
+        {
+            var plaintextBytesWritten = EncodingUtil.SecureUtf8Encoding.GetBytes(plaintext, plaintextBuffer);
+            protector.Protect(plaintextBuffer.AsSpan(0, plaintextBytesWritten), ref destination);
+            return WebEncoders.Base64UrlEncode(destination.WrittenSpan);
+        }
+        finally
+        {
+            // The rented buffer holds plaintext, so it must be cleared before it goes back to the pool.
+            ArrayPool<byte>.Shared.Return(plaintextBuffer, clearArray: true);
+            destination.Dispose();
+        }
+    }
+
+    private static string UnprotectWithSpanProtector(ISpanDataProtector protector, byte[] protectedData)
+    {
+        Span<byte> initialBuffer = stackalloc byte[256];
+        var destination = new RefPooledArrayBufferWriter<byte>(initialBuffer);
+        try
+        {
+            protector.Unprotect(protectedData, ref destination);
+            return EncodingUtil.SecureUtf8Encoding.GetString(destination.WrittenSpan);
+        }
+        finally
+        {
+            destination.Dispose();
+            // The stack buffer may hold plaintext; the writer clears any rented buffer itself.
+            initialBuffer.Clear();
+        }
+    }
+#endif
 }

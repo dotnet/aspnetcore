@@ -3,6 +3,7 @@
 
 using System.Diagnostics;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Internal;
 using Microsoft.Extensions.Options;
 using Microsoft.Extensions.Primitives;
 
@@ -92,7 +93,7 @@ internal sealed class DefaultAntiforgeryTokenStore : IAntiforgeryTokenStore
             var pathBase = httpContext.Request.PathBase.ToString();
             if (!string.IsNullOrEmpty(pathBase))
             {
-                options.Path = pathBase;
+                options.Path = CookiePathEscaper.Escape(pathBase);
             }
         }
 

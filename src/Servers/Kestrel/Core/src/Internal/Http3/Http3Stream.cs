@@ -388,20 +388,11 @@ internal abstract partial class Http3Stream : HttpProtocol, IHttp3Stream, IHttpS
                         OnHeader(staticTableIndex.GetValueOrDefault(), indexOnly: false, name, value);
                         break;
                     case HeaderType.Dynamic:
-                        // It is faster to set a header using a static table index than a name.
-                        if (staticTableIndex != null)
-                        {
-                            UpdateHeaderParsingState(value, GetPseudoHeaderField(staticTableIndex.GetValueOrDefault()));
-
-                            OnHeader(staticTableIndex.GetValueOrDefault(), indexOnly: false, name, value);
-                        }
-                        else
-                        {
-                            UpdateHeaderParsingState(value, GetPseudoHeaderField(name));
-
-                            OnHeader(name, value, checkForNewlineChars: false);
-                        }
-                        break;
+                        // Dynamic tables aren't currently implemented for HTTP/3
+                        // Let's make sure this code is tested if we add dynamic table support in the future
+                        // Make sure checkForNewlineChars is correct when adding support for dynamic table
+                        // Consider using Http2Connection's dynamic table implementation as a reference if we add support for dynamic table in the future.
+                        throw new UnreachableException();
                     case HeaderType.NameAndValue:
                         UpdateHeaderParsingState(value, GetPseudoHeaderField(name));
 

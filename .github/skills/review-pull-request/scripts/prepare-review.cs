@@ -26,12 +26,12 @@ internal static partial class PrepareReviewProgram
     private const string TargetMovedDuringPreparationMessage =
         "The target or base branch moved during preparation; no ready manifest was written.";
     private const string ExecutionExclusionScope =
-        "Per-guide workers running PR code or tests, and coordinator validation that requires unavailable external CI, infrastructure, credentials, or services";
+        "Running PR code, tests, CI, browser workflows, or implementation samples, except an optional minimal test or repro by a native local coordinator without a supplied bundle in a temporary detached worktree";
     private const string ExecutionExclusionReason =
-        "Per-guide workers remain source-only. After collecting every worker result, a hosted coordinator may use a caller-supplied worktree at manifest.target.head " +
-        "to run targeted restore, build, test, browser, or temporary-repro validation under SKILL.md's coordinator rules. Native local validation follows the skill's detached-worktree rules. " +
-        "Never execute target code in the frozen bundle or developer checkout; record exact commands and results, keep temporary edits diagnostic-only, and clean native-local scratch worktrees. " +
-        "If validation is unavailable, record the reason and continue without reporting INCOMPLETE.";
+        "Workers, hosted runs, and supplied-bundle runs remain source-only; assess changed tests and contracts from source. " +
+        "Only a native local coordinator without a supplied bundle may optionally run a minimal test or repro under SKILL.md's detached-worktree validation rules: " +
+        "use a temporary detached worktree at manifest.target.head, never execute target code in the developer checkout or bundle, record the exact command and result, " +
+        "and remove the temporary worktree and scratch files afterwards. If optional validation is unavailable, record the reason and remain source-only without reporting INCOMPLETE.";
     private static readonly UTF8Encoding Utf8NoBom = new(false);
 
     internal sealed record Options(
@@ -132,6 +132,28 @@ internal static partial class PrepareReviewProgram
     }
 
     internal static string[] GitArguments(params string[] args) => ["-c", "core.longpaths=true", .. args];
+
+    internal static byte[] ExpandBinaryIndexLines(byte[] diff, IReadOnlySet<string> knownIds)
+    {
+        return Encoding.Latin1.GetBytes(BinaryIndexLine().Replace(Encoding.Latin1.GetString(diff), match =>
+            $"index {Expand(match.Groups[1].Value)}..{Expand(match.Groups[2].Value)}{match.Groups[3].Value}{match.Groups[4].Value}"));
+
+        string Expand(string prefix)
+        {
+            if (prefix.Length == 40)
+            {
+                return prefix;
+            }
+            if (prefix.All(character => character == '0'))
+            {
+                return new string('0', 40);
+            }
+            var matches = knownIds.Where(id => id.StartsWith(prefix, StringComparison.Ordinal)).Take(2).ToArray();
+            Require(matches.Length == 1,
+                $"The authoritative binary diff has an {(matches.Length == 0 ? "unknown" : "ambiguous")} object prefix: {prefix}");
+            return matches[0];
+        }
+    }
 
     private static byte[] Git(string directory, params string[] args) =>
         Run("git", GitArguments(["-C", directory, .. args]));
@@ -1499,7 +1521,13 @@ internal static partial class PrepareReviewProgram
             Objects(store, "read-tree", frozen.Identity["mergeBase"]!.GetValue<string>());
             if (diff.Length > 0)
             {
-                Objects(store, "apply", "--cached", "--binary", "--whitespace=nowarn", Path.Combine(output, "diff.patch"));
+                // REST omits binary payloads; resolve its prefixes against the frozen changed objects, not supplied bytes.
+                var knownIds = Utf8NoBom.GetString(Objects(store, "diff", "--raw", "--no-abbrev", "-z", "--no-renames",
+                    "--no-ext-diff", "--no-textconv", frozen.Identity["mergeBase"]!.GetValue<string>(), frozen.Identity["head"]!.GetValue<string>()))
+                    .Split('\0').Where((_, index) => index % 2 == 0)
+                    .SelectMany(entry => entry.Split(' ').Skip(2).Take(2)).ToHashSet(StringComparer.Ordinal);
+                Run("git", GitArguments(["--git-dir", store, "apply", "--cached", "--binary", "--whitespace=nowarn", "-"]),
+                    input: ExpandBinaryIndexLines(diff, knownIds));
             }
             Require(Utf8NoBom.GetString(Objects(store, "write-tree")).Trim()
                 == Utf8NoBom.GetString(Objects(store, "rev-parse", $"{frozen.Identity["head"]!.GetValue<string>()}^{{tree}}")).Trim(),
@@ -2214,6 +2242,8 @@ internal static partial class PrepareReviewProgram
         return true;
     }
 
+    [GeneratedRegex("^index ([a-f0-9]{4,40})\\.\\.([a-f0-9]{4,40})( [0-7]{6})?(\\r?\\n)(?=Binary files [^\\r\\n]* differ(?:\\r?\\n|$))", RegexOptions.Multiline | RegexOptions.CultureInvariant)]
+    private static partial Regex BinaryIndexLine();
     [GeneratedRegex("^[a-f0-9]{40}$", RegexOptions.CultureInvariant)]
     private static partial Regex FullShaRegex();
     [GeneratedRegex("^[a-z0-9_.-]+/[a-z0-9_.-]+$", RegexOptions.IgnoreCase | RegexOptions.CultureInvariant)]
