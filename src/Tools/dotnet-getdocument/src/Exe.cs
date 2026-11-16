@@ -16,8 +16,14 @@ internal static class Exe
         IReadOnlyList<string> args,
         IReporter reporter,
         string workingDirectory = null,
-        bool interceptOutput = false)
+        bool interceptOutput = false,
+        TimeSpan timeout = default)
     {
+        if (timeout == default)
+        {
+            timeout = TimeSpan.FromMinutes(2);
+        }
+
         reporter.WriteVerbose(executable + " " + string.Join(" ", args));
 
         var startInfo = new ProcessStartInfo
@@ -49,12 +55,12 @@ internal static class Exe
         // Follow precedent set in Razor integration tests and ensure process events and output are complete.
         // https://github.com/aspnet/Razor/blob/d719920fdcc7d1db3a6f74cd5404d66fa098f057/test/Microsoft.NET.Sdk.Razor.Test/IntegrationTests/MSBuildProcessManager.cs#L91-L102
         // Timeout is double how long the inside man waits for the IDocumentProcessor to wrap up.
-        if (!process.WaitForExit((int)(TimeSpan.FromMinutes(2).TotalMilliseconds)))
+        if (!process.WaitForExit((int)timeout.TotalMilliseconds))
         {
             process.Kill();
 
             // Should be unreachable in almost every case.
-            throw new TimeoutException($"Process {executable} timed out after 2 minutes.");
+            throw new TimeoutException($"Process {executable} timed out after {(int)timeout.TotalSeconds} seconds.");
         }
 
         process.WaitForExit();

@@ -21,6 +21,7 @@ internal sealed class GetDocumentCommand : ProjectCommandBase
     private CommandOption _documentName;
     private CommandOption _fileName;
     private CommandOption _environment;
+    private CommandOption _timeout;
 
     public GetDocumentCommand(IConsole console) : base(console)
     {
@@ -36,6 +37,7 @@ internal sealed class GetDocumentCommand : ProjectCommandBase
         _documentName = command.Option("--document-name <Name>", Resources.DocumentNameDescription);
         _fileName = command.Option("--file-name <Name>", Resources.FileNameDescription);
         _environment = command.Option("--environment <Name>", Resources.EnvironmentDescription);
+        _timeout = command.Option("--timeout <seconds>", "Timeout for each document generation in seconds. Defaults to 60.", CommandOptionType.SingleValue);
     }
 
     protected override void Validate()
@@ -147,7 +149,8 @@ internal sealed class GetDocumentCommand : ProjectCommandBase
                 ProjectName = ProjectName.Value(),
                 Reporter = Reporter,
                 FileName = _fileName.Value(),
-                Environment = _environment.Value()
+                Environment = _environment.Value(),
+                Timeout = GetTimeout()
             };
 
             return new GetDocumentCommandWorker(context).Process();
@@ -157,6 +160,22 @@ internal sealed class GetDocumentCommand : ProjectCommandBase
             Reporter.WriteError(ex.ToString());
             return 2;
         }
+    }
+
+    private TimeSpan GetTimeout()
+    {
+        var value = _timeout.Value();
+        if (string.IsNullOrEmpty(value))
+        {
+            return TimeSpan.FromMinutes(1);
+        }
+
+        if (!int.TryParse(value, out var seconds) || seconds <= 0)
+        {
+            throw new CommandException("The --timeout option must be a positive integer number of seconds.");
+        }
+
+        return TimeSpan.FromSeconds(seconds);
     }
 
     private sealed class AssemblyInfo
