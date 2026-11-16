@@ -13,8 +13,8 @@
     "type": "item"
   },
   "groupIdentity": "Microsoft.Web.Grpc.Protobuf",
-  "precedence": "11000",
-  "identity": "Microsoft.Web.Grpc.Protobuf.11.0",
+  "precedence": "12000",
+  "identity": "Microsoft.Web.Grpc.Protobuf.12.0",
   "shortname": "proto",
   "sourceName": "protobuf",
   "primaryOutputs": [

@@ -2859,7 +2859,7 @@ public class RendererTest
         rootComponent.TriggerRender();
         var origBatchReferenceFrames = renderer.Batches.Single().ReferenceFrames;
         var childComponentFrame = origBatchReferenceFrames
-            .Single(f => f.Component is EventComponent);
+            .Single(f => f.FrameType == RenderTreeFrameType.Component && f.Component is EventComponent);
         var childComponentId = childComponentFrame.ComponentId;
         childComponent = (EventComponent)childComponentFrame.Component;
         var origEventHandlerId = origBatchReferenceFrames

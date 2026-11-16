@@ -25,18 +25,19 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\test\IISExpress.FunctionalTests\IISExpress.FunctionalTests.csproj" />
-    <ProjectReference Include="..\..\test\IIS.Tests\IIS.Tests.csproj" />
-    <ProjectReference Include="..\..\test\testassets\InProcessWebSite\InProcessWebSite.csproj"
+    <ProjectReference Include="$(RepoRoot)src\Hosting\Server.IntegrationTesting\src\Microsoft.AspNetCore.Server.IntegrationTesting.csproj" />
+    <ProjectReference Include="$(RepoRoot)src\Servers\IIS\IIS\test\IIS.Tests\IIS.Tests.csproj" />
+    <ProjectReference Include="$(RepoRoot)src\Servers\IIS\IIS\test\IISExpress.FunctionalTests\IISExpress.FunctionalTests.csproj" />
+    <ProjectReference Include="$(RepoRoot)src\Servers\IIS\IIS\test\testassets\InProcessWebSite\InProcessWebSite.csproj"
       Private="false"
       ReferenceOutputAssembly="false"
       SkipGetTargetFrameworkProperties="true" />
-    <ProjectReference Include="$(RepoRoot)src\Hosting\Server.IntegrationTesting\src\Microsoft.AspNetCore.Server.IntegrationTesting.csproj" />
   </ItemGroup>
 
   <ItemGroup>
-    <Reference Include="BenchmarkDotNet" />
-    <Reference Include="Microsoft.AspNetCore.Server.IISIntegration" />
+    <PackageReference Include="BenchmarkDotNet" />
+
+    <ProjectReference Include="$(RepoRoot)src\Servers\IIS\IISIntegration\src\Microsoft.AspNetCore.Server.IISIntegration.csproj" />
 
     <Compile Include="$(SharedSourceRoot)BenchmarkRunner\*.cs" />
   </ItemGroup>

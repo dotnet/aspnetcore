@@ -15,13 +15,13 @@
 
     <Compile Include="$(SharedSourceRoot)HttpClient\HttpEventSourceListener.cs" />
 
-    <Reference Include="CommandLineParser" />
-    <Reference Include="Google.Protobuf" />
-    <Reference Include="Grpc.Auth" />
-    <Reference Include="Grpc.Net.Client" />
-    <Reference Include="Grpc.Tools" PrivateAssets="All" />
-    <Reference Include="Microsoft.Extensions.DependencyInjection" />
-    <Reference Include="Microsoft.Extensions.Logging.Console" />
+    <PackageReference Include="CommandLineParser" />
+    <PackageReference Include="Google.Protobuf" />
+    <PackageReference Include="Grpc.Auth" />
+    <PackageReference Include="Grpc.Net.Client" />
+    <PackageReference Include="Grpc.Tools" PrivateAssets="All" />
+    <PackageReference Include="Microsoft.Extensions.DependencyInjection" />
+    <PackageReference Include="Microsoft.Extensions.Logging.Console" />
   </ItemGroup>
 
 </Project>

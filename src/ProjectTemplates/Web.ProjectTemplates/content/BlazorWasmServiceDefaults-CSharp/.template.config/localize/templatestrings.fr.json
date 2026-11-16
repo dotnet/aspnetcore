@@ -1,4 +1,4 @@
-﻿{
+{
   "author": "Microsoft",
   "name": "Paramètres par défaut du service Blazor WebAssembly",
   "description": "Modèle de projet pour créer une bibliothèque de valeurs par défaut de service pour les applications Blazor WebAssembly. Inclut OpenTelemetry, la découverte de services et la prise en charge de la résilience pour l’intégration Aspire.",

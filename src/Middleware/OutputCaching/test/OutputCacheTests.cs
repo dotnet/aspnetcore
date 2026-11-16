@@ -1218,6 +1218,74 @@ public class OutputCacheTests
         }
     }
 
+    [Theory]
+    [InlineData(true)]
+    [InlineData(false)]
+    public async Task AuthenticatedRequests_CustomPolicyAllowingStorage_CachedOnlyIfAuthenticatedBeforeCaching(bool authMiddlewareBeforeCache)
+    {
+        int finalEndpointHitCount = 0;
+        var builder = new HostBuilder()
+            .ConfigureWebHost(webHostBuilder =>
+            {
+                webHostBuilder
+                .UseTestServer()
+                .ConfigureServices(services =>
+                {
+                    services.AddOutputCache(outputCachingOptions =>
+                    {
+                        outputCachingOptions.BasePolicies = [new OutputCachePolicyBuilder().AddPolicy<AllowTestPolicy>().Build()];
+                    });
+                })
+                .Configure(app =>
+                {
+                    if (authMiddlewareBeforeCache)
+                    {
+                        AddAuth(app);
+                    }
+
+                    app.UseOutputCache();
+
+                    if (!authMiddlewareBeforeCache)
+                    {
+                        AddAuth(app);
+                    }
+
+                    app.Run(async context =>
+                    {
+                        finalEndpointHitCount++;
+                        await context.Response.WriteAsync(context.User.Identity?.Name ?? "anonymous");
+                    });
+                });
+            });
+
+        using var host = builder.Build();
+
+        await host.StartAsync();
+
+        using var server = host.GetTestServer();
+        var client = server.CreateClient();
+
+        var resp = await client.SendAsync(new HttpRequestMessage(HttpMethod.Get, "") { Headers = { { "name", "user" } } });
+        Assert.Equal("user", await resp.Content.ReadAsStringAsync());
+
+        var resp2 = await client.SendAsync(new HttpRequestMessage(HttpMethod.Get, "") { Headers = { { "name", "user" } } });
+        Assert.Equal("user", await resp2.Content.ReadAsStringAsync());
+
+        // A policy explicitly allowing storage for an already authenticated request is honored,
+        // but a request that becomes authenticated after the output cache middleware is never stored.
+        Assert.Equal(authMiddlewareBeforeCache, resp2.Headers.Contains(HeaderNames.Age));
+        Assert.Equal(authMiddlewareBeforeCache ? 1 : 2, finalEndpointHitCount);
+
+        static void AddAuth(IApplicationBuilder app)
+        {
+            app.Use((c, n) =>
+            {
+                c.User = new ClaimsPrincipal(new ClaimsIdentity(new[] { new Claim(ClaimTypes.Name, c.Request.Headers["name"]) }, authenticationType: "custom"));
+                return n(c);
+            });
+        }
+    }
+
     private static void Assert304Headers(HttpResponseMessage initialResponse, HttpResponseMessage subsequentResponse)
     {
         // https://tools.ietf.org/html/rfc7232#section-4.1

@@ -1,0 +1,23 @@
+name: skills-smoke
+
+# Infrastructure smoke test only. One trial per stimulus is not enough to draw a
+# quality conclusion; use skills-vs-baseline.experiment.yaml for full runs.
+evals:
+  - "*/eval.vally.yaml"
+
+overrides:
+  runs: 1
+
+vary:
+  - /environment/skills
+
+baseline: baseline
+
+variants:
+  baseline:
+    environment:
+      skills: []
+  skilled:
+    environment:
+      skills:
+        - "../../.github/skills/${eval.parent}"

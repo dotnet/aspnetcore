@@ -4,6 +4,7 @@
 using System.Diagnostics;
 using System.Security.Cryptography;
 using System.Text.Encodings.Web;
+using Microsoft.AspNetCore.Antiforgery;
 using Microsoft.AspNetCore.WebUtilities;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
@@ -79,6 +80,11 @@ public abstract class RemoteAuthenticationHandler<TOptions> : AuthenticationHand
             return false;
         }
 
+        return await RemoteAuthenticationAntiforgery.HandleWithoutAntiforgeryVerdictAsync(Context, HandleRequestCoreAsync);
+    }
+
+    private async Task<bool> HandleRequestCoreAsync()
+    {
         AuthenticationTicket? ticket = null;
         Exception? exception = null;
         AuthenticationProperties? properties = null;

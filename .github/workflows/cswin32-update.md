@@ -1,40 +1,32 @@
 ---
 if: ${{ github.event_name == 'workflow_dispatch' || !github.event.repository.fork }}
-
 on:
   permissions: {}
   schedule: every 1mo
   workflow_dispatch:
-
 description: >
-  Monthly workflow that checks for a newer Microsoft.Windows.CsWin32 package version,
-  updates it, and removes any workarounds that are no longer necessary.
+  Monthly workflow that checks for a newer Microsoft.Windows.CsWin32 package version, updates it, and removes any workarounds that are no longer necessary.
 
 permissions:
   contents: read
   pull-requests: read
   issues: read
-
 network:
   allowed:
     - defaults
     - dotnet
     - containers
     - github
-
 tools:
   github:
   edit:
   bash: ["grep", "sed", "jq", "git", "cat", "ls", "find", "bash", "head", "tail", "dotnet", "source", "chmod"]
-  web-fetch:
-
 mcp-servers:
   nuget:
     container: "mcr.microsoft.com/dotnet/sdk:10.0"
     entrypoint: "dnx"
     entrypointArgs: ["NuGet.Mcp.Server", "--source", "https://api.nuget.org/v3/index.json", "--yes"]
-    allowed: ["get-latest-package-version"]
-
+    allowed: ["get_latest_package_version"]
 safe-outputs:
   report-failure-as-issue: false
   create-pull-request:
@@ -45,9 +37,7 @@ safe-outputs:
   add-comment:
     max: 1
     target: "*"
-
 timeout-minutes: 90
-
 # ###############################################################
 # Select a PAT from the pool and override COPILOT_GITHUB_TOKEN.
 # Run agentic jobs in an isolated `copilot-pat-pool` environment.
@@ -59,9 +49,7 @@ imports:
   - uses: shared/pat_pool.md
     with:
       environment: copilot-pat-pool
-
 environment: copilot-pat-pool
-
 engine:
   id: copilot
   env:
@@ -113,11 +101,10 @@ Perform these checks and apply changes:
 
 ### Step 1: Check for a newer CsWin32 version
 
-Use the NuGet MCP server's `get-latest-package-version` tool to look up the latest stable version
+Use the NuGet MCP server's `get_latest_package_version` tool to look up the latest stable version
 of `Microsoft.Windows.CsWin32`.
 
-Do NOT use `curl`, `web-fetch`, or any direct HTTP requests to the NuGet API — they are blocked
-by the network firewall.
+Use the configured NuGet MCP server rather than direct HTTP requests to the NuGet API. If the tool is unavailable, report the tool discovery failure; do not assume the firewall blocked it.
 
 Compare with the current version in `eng/Versions.props` under `<MicrosoftWindowsCsWin32Version>`.
 

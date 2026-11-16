@@ -4,16 +4,23 @@
 using System;
 using System.Net;
 using System.Net.Http;
+using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.Http.Features.Authentication;
 using Microsoft.AspNetCore.TestHost;
 using Microsoft.AspNetCore.InternalTesting;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging.Abstractions;
+using Microsoft.Extensions.Logging.Testing;
+using Microsoft.Extensions.Options;
 using Xunit;
 
 namespace Microsoft.AspNetCore.Server.IISIntegration;
@@ -61,6 +68,7 @@ public class IISMiddlewareTests
     public async Task MiddlewareRejectsRequestIfTokenHeaderIsMissing()
     {
         var assertsExecuted = false;
+        var testSink = new TestSink(TestSink.EnableWithTypeName<IISMiddleware>);
 
         using var host = new HostBuilder()
             .ConfigureWebHost(webHostBuilder =>
@@ -82,6 +90,7 @@ public class IISMiddlewareTests
                     })
                     .UseTestServer();
             })
+            .ConfigureLogging(logging => logging.AddProvider(new TestLoggerProvider(testSink)))
             .Build();
 
         var server = host.GetTestServer();
@@ -92,6 +101,46 @@ public class IISMiddlewareTests
         var response = await server.CreateClient().SendAsync(req);
         Assert.False(assertsExecuted);
         Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
+        var log = Assert.Single(testSink.Writes);
+        Assert.Equal(LogLevel.Error, log.LogLevel);
+        Assert.Equal("'MS-ASPNETCORE-TOKEN' does not match the expected pairing token, request rejected.", log.Message);
+    }
+
+    [Fact]
+    public async Task MiddlewareRemovesPairingTokenBeforeCallingNextMiddleware()
+    {
+        var assertsExecuted = false;
+
+        using var host = new HostBuilder()
+            .ConfigureWebHost(webHostBuilder =>
+            {
+                webHostBuilder
+                    .UseSetting("TOKEN", "TestToken")
+                    .UseSetting("PORT", "12345")
+                    .UseSetting("APPL_PATH", "/")
+                    .UseIISIntegration()
+                    .Configure(app =>
+                    {
+                        app.Run(context =>
+                        {
+                            Assert.False(context.Request.Headers.ContainsKey("MS-ASPNETCORE-TOKEN"));
+                            assertsExecuted = true;
+                            return Task.CompletedTask;
+                        });
+                    })
+                    .UseTestServer();
+            })
+            .Build();
+
+        var server = host.GetTestServer();
+
+        await host.StartAsync();
+
+        var req = new HttpRequestMessage(HttpMethod.Get, "");
+        req.Headers.TryAddWithoutValidation("MS-ASPNETCORE-TOKEN", "TestToken");
+        var response = await server.CreateClient().SendAsync(req);
+        Assert.True(assertsExecuted);
+        response.EnsureSuccessStatusCode();
     }
 
     [Theory]
@@ -527,5 +576,80 @@ public class IISMiddlewareTests
         await server.CreateClient().SendAsync(req);
 
         Assert.True(assertsExecuted);
+    }
+
+    [Fact]
+    public async Task DoesNotClearMaxRequestBodySizeByDefault()
+    {
+        var nextInvoked = false;
+        var feature = new FakeMaxRequestBodySizeFeature { MaxRequestBodySize = 1000 };
+        var context = CreateContextWithFeature(feature);
+
+        var middleware = CreateMiddleware(_ =>
+        {
+            nextInvoked = true;
+            return Task.CompletedTask;
+        });
+
+        await middleware.Invoke(context);
+
+        Assert.Equal(1000, feature.MaxRequestBodySize);
+        Assert.True(nextInvoked);
+    }
+
+    [Fact]
+    public async Task DoesNotThrowWhenMaxRequestBodySizeFeatureAbsent()
+    {
+        var nextInvoked = false;
+        var context = new DefaultHttpContext();
+        context.Request.Headers["MS-ASPNETCORE-TOKEN"] = "TestToken";
+
+        var middleware = CreateMiddleware(_ =>
+        {
+            nextInvoked = true;
+            return Task.CompletedTask;
+        });
+
+        await middleware.Invoke(context);
+
+        Assert.True(nextInvoked);
+    }
+
+    private static DefaultHttpContext CreateContextWithFeature(IHttpMaxRequestBodySizeFeature feature)
+    {
+        var context = new DefaultHttpContext();
+        context.Request.Headers["MS-ASPNETCORE-TOKEN"] = "TestToken";
+        context.Features.Set(feature);
+        return context;
+    }
+
+    private static IISMiddleware CreateMiddleware(RequestDelegate next)
+    {
+        return new IISMiddleware(
+            next,
+            NullLoggerFactory.Instance,
+            Options.Create(new IISOptions()),
+            pairingToken: "TestToken",
+            isWebsocketsSupported: true,
+            new AuthenticationSchemeProvider(Options.Create(new AuthenticationOptions())),
+            new TestHostApplicationLifetime());
+    }
+
+    private sealed class FakeMaxRequestBodySizeFeature : IHttpMaxRequestBodySizeFeature
+    {
+        public bool IsReadOnly { get; init; }
+
+        public long? MaxRequestBodySize { get; set; }
+    }
+
+    private sealed class TestHostApplicationLifetime : IHostApplicationLifetime
+    {
+        public CancellationToken ApplicationStarted => CancellationToken.None;
+
+        public CancellationToken ApplicationStopping => CancellationToken.None;
+
+        public CancellationToken ApplicationStopped => CancellationToken.None;
+
+        public void StopApplication() { }
     }
 }

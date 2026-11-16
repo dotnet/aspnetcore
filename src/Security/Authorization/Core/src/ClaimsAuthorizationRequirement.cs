@@ -4,6 +4,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Security.Claims;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Shared;
 
@@ -50,32 +51,39 @@ public class ClaimsAuthorizationRequirement : AuthorizationHandler<ClaimsAuthori
     /// <param name="requirement">The requirement to evaluate.</param>
     protected override Task HandleRequirementAsync(AuthorizationHandlerContext context, ClaimsAuthorizationRequirement requirement)
     {
-        if (context.User != null)
+        var user = context.User;
+        if (user != null)
         {
             var found = false;
-            if (requirement._emptyAllowedValues)
+            if (user.GetType() == typeof(ClaimsPrincipal))
             {
-                foreach (var claim in context.User.Claims)
+                // ClaimsPrincipal.Claims flattens the claims of every identity through an iterator. When it isn't overridden,
+                // enumerate the identities' claims directly to avoid allocating the iterator and its nested enumerators.
+                var identities = user.Identities;
+                if (identities is IList<ClaimsIdentity> identityList)
                 {
-                    if (string.Equals(claim.Type, requirement.ClaimType, StringComparison.OrdinalIgnoreCase))
+                    for (var i = 0; i < identityList.Count && !found; i++)
                     {
-                        found = true;
-                        break;
+                        found = HasMatchingClaim(identityList[i].Claims, requirement);
+                    }
+                }
+                else
+                {
+                    foreach (var identity in identities)
+                    {
+                        if (HasMatchingClaim(identity.Claims, requirement))
+                        {
+                            found = true;
+                            break;
+                        }
                     }
                 }
             }
             else
             {
-                foreach (var claim in context.User.Claims)
-                {
-                    if (string.Equals(claim.Type, requirement.ClaimType, StringComparison.OrdinalIgnoreCase)
-                        && requirement.AllowedValues!.Contains(claim.Value, StringComparer.Ordinal))
-                    {
-                        found = true;
-                        break;
-                    }
-                }
+                found = HasMatchingClaim(user.Claims, requirement);
             }
+
             if (found)
             {
                 context.Succeed(requirement);
@@ -83,6 +91,36 @@ public class ClaimsAuthorizationRequirement : AuthorizationHandler<ClaimsAuthori
         }
         return Task.CompletedTask;
     }
+
+    private static bool HasMatchingClaim(IEnumerable<Claim> claims, ClaimsAuthorizationRequirement requirement)
+    {
+        if (claims is IList<Claim> claimList)
+        {
+            for (var i = 0; i < claimList.Count; i++)
+            {
+                if (IsMatch(claimList[i], requirement))
+                {
+                    return true;
+                }
+            }
+        }
+        else
+        {
+            foreach (var claim in claims)
+            {
+                if (IsMatch(claim, requirement))
+                {
+                    return true;
+                }
+            }
+        }
+
+        return false;
+    }
+
+    private static bool IsMatch(Claim claim, ClaimsAuthorizationRequirement requirement)
+        => string.Equals(claim.Type, requirement.ClaimType, StringComparison.OrdinalIgnoreCase)
+            && (requirement._emptyAllowedValues || requirement.AllowedValues!.Contains(claim.Value, StringComparer.Ordinal));
 
     /// <summary>
     /// Returns a string representation of the requirement.

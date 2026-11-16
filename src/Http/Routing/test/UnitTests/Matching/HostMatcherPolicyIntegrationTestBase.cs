@@ -225,6 +225,30 @@ public abstract class HostMatcherPolicyIntegrationTestBase
         MatcherAssert.AssertMatch(httpContext, endpoint);
     }
 
+    [Theory]
+    [InlineData("contoso.com", "CONTOSO.COM", "contoso.com")]
+    [InlineData("contoso.com:5000", "CONTOSO.COM:5000", "contoso.com:5000")]
+    [InlineData("*.contoso.com", "*.CONTOSO.COM", "www.contoso.com")]
+    [InlineData("*.contoso.com:5000", "*.CONTOSO.COM:5000", "www.contoso.com:5000")]
+    public async Task Match_EquivalentHostsWithDifferentCasing_PreservesCandidatesForLaterPolicies(
+        string firstHost,
+        string secondHost,
+        string requestHost)
+    {
+        var encodedEndpoint = CreateEndpoint(
+            "/hello",
+            hosts: new[] { firstHost },
+            contentEncoding: "gzip");
+        var fallbackEndpoint = CreateEndpoint("/hello", hosts: new[] { secondHost });
+
+        var matcher = CreateMatcher(encodedEndpoint, fallbackEndpoint);
+        var httpContext = CreateContext("/hello", requestHost);
+
+        await matcher.MatchAsync(httpContext);
+
+        MatcherAssert.AssertMatch(httpContext, fallbackEndpoint);
+    }
+
     [Fact]
     public async Task Match_HostWithPort_InferHttpPort()
     {
@@ -423,12 +447,18 @@ public abstract class HostMatcherPolicyIntegrationTestBase
         object defaults = null,
         object constraints = null,
         int order = 0,
-        string[] hosts = null)
+        string[] hosts = null,
+        string contentEncoding = null)
     {
         var metadata = new List<object>();
         if (hosts != null)
         {
             metadata.Add(new HostAttribute(hosts ?? Array.Empty<string>()));
+        }
+
+        if (contentEncoding != null)
+        {
+            metadata.Add(new ContentEncodingMetadata(contentEncoding, quality: 1.0));
         }
 
         if (HasDynamicMetadata)

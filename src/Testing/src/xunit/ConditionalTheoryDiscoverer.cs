@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using Xunit.Abstractions;
 using Xunit.Sdk;
 
@@ -45,6 +46,13 @@ internal sealed class ConditionalTheoryDiscoverer : TheoryDiscoverer
 
     protected override IEnumerable<IXunitTestCase> CreateTestCasesForDataRow(ITestFrameworkDiscoveryOptions discoveryOptions, ITestMethod testMethod, IAttributeInfo theoryAttribute, object[] dataRow)
     {
+        QuarantinedTestData quarantinedTestData = null;
+        if (dataRow?.FirstOrDefault() is QuarantinedTestData quarantine)
+        {
+            quarantinedTestData = quarantine;
+            dataRow = dataRow.Skip(1).ToArray();
+        }
+
         var skipReason = testMethod.EvaluateSkipConditions();
         if (skipReason == null && dataRow?.Length > 0)
         {
@@ -60,9 +68,35 @@ internal sealed class ConditionalTheoryDiscoverer : TheoryDiscoverer
             }
         }
 
-        return skipReason != null ?
+        var testCases = (skipReason != null ?
             base.CreateTestCasesForSkippedDataRow(discoveryOptions, testMethod, theoryAttribute, dataRow, skipReason)
-            : base.CreateTestCasesForDataRow(discoveryOptions, testMethod, theoryAttribute, dataRow);
+            : base.CreateTestCasesForDataRow(discoveryOptions, testMethod, theoryAttribute, dataRow)).ToArray();
+
+        if (quarantinedTestData is not null)
+        {
+            foreach (var testCase in testCases)
+            {
+                AddQuarantinedTrait(testCase.Traits, quarantinedTestData.Attribute);
+            }
+        }
+
+        return testCases;
+    }
+
+    internal static void AddQuarantinedTrait(IDictionary<string, List<string>> traits, QuarantinedTestAttribute attribute)
+    {
+        if (!QuarantinedTestTraitDiscoverer.IsQuarantined(attribute))
+        {
+            return;
+        }
+
+        if (!traits.TryGetValue("Quarantined", out var values))
+        {
+            values = new List<string>();
+            traits.Add("Quarantined", values);
+        }
+
+        values.Add("true");
     }
 
     protected override IEnumerable<IXunitTestCase> CreateTestCasesForSkippedDataRow(

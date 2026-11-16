@@ -6,7 +6,7 @@ import { shouldAutoStart } from './BootCommon';
 import { CircuitStartOptions, resolveOptions } from './Platform/Circuits/CircuitStartOptions';
 import { setCircuitOptions, startServer } from './Boot.Server.Common';
 import { ServerComponentDescriptor, discoverComponents } from './Services/ComponentDescriptorDiscovery';
-import { DotNet } from '@microsoft/dotnet-js-interop';
+import * as DotNet from './JSInterop/Microsoft.JSInterop';
 import { InitialRootComponentsList } from './Services/InitialRootComponentsList';
 import { JSEventRegistry } from './Services/JSEventRegistry';
 

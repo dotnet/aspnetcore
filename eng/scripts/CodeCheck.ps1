@@ -164,7 +164,7 @@ try {
             $filePath = Resolve-Path "${repoRoot}/${file}"
             LogError  -filepath $filePath `
                 ("Generated code is not up to date in $file. You might need to regenerate the reference " +
-                 "assemblies or project list (see docs/ReferenceResolution.md)")
+                 "assemblies or project list (see docs/AddingNewProjects.md)")
             & git --no-pager diff --ignore-space-change $filePath
         }
     }
@@ -229,12 +229,12 @@ try {
             }
         }
 
-        # Check that the Dependabot discovery project stays in sync with eng/Dependencies.props, but
+        # Check that the Dependabot discovery project stays in sync with Directory.Packages.props, but
         # only for packages that aren't excluded from DependabotDiscovery.csproj (i.e. aren't Maestro-
-        # managed, IdentityModel-managed, mapped to an in-repo ProjectReferenceProvider, or one of the
+        # managed, IdentityModel-managed, an in-repo shipping assembly, or one of the
         # two hard-coded exclusions - see eng/tools/DependabotDiscovery/README.md for details on each).
         # Renaming a Maestro-managed package (e.g. #68014) shows up as an add + remove in
-        # eng/Dependencies.props but doesn't need a DependabotDiscovery.csproj update.
+        # Directory.Packages.props but doesn't need a DependabotDiscovery.csproj update.
         $allChangedFilesFromTarget = git --no-pager diff origin/$targetBranch --ignore-space-change --name-only
         $dependencyDiscoveryProject = "eng/tools/DependabotDiscovery/DependabotDiscovery.csproj"
 
@@ -252,9 +252,10 @@ try {
         # single string first so an Include/Version pair split across lines is still matched. Always
         # wrap calls to this function in @(...) at the call site — PowerShell can otherwise unwrap a
         # single-element (or empty) array result into a scalar (or $null).
-        function Get-LatestPackageReferenceNames([string[]]$fileContent) {
+        function Get-CentralPackageNames([string[]]$fileContent) {
             $text = $fileContent -join "`n"
-            return [regex]::Matches($text, '<LatestPackageReference\b[^<>]*?\bInclude="([^"]+)"') |
+            # Accept the old catalog for branch comparisons, but ignore computed item and property expressions.
+            return [regex]::Matches($text, '<(?:PackageVersion|LatestPackageReference)\b[^<>]*?\bInclude="([^"$@]+)"') |
                 ForEach-Object { $_.Groups[1].Value } |
                 Sort-Object -Unique
         }
@@ -277,12 +278,10 @@ try {
                 Sort-Object -Unique
         }
 
-        # Returns the set of names mapped to an in-repo project via ProjectReferenceProvider (see
-        # eng/ProjectReferences.props) - these aren't real external packages and have no version to
-        # bump. As above, always wrap calls in @(...) at the call site.
-        function Get-ProjectReferenceProviderNames([string[]]$fileContent) {
+        # In-repo shipping assemblies are built from source; historical package pins are not updated here.
+        function Get-ShippingAssemblyNames([string[]]$fileContent) {
             $text = $fileContent -join "`n"
-            return [regex]::Matches($text, '<ProjectReferenceProvider\b[^<>]*?\bInclude="([^"]+)"') |
+            return [regex]::Matches($text, '<AspNetCoreShippingAssembly\b[^<>]*?\bInclude="([^"]+)"') |
                 ForEach-Object { $_.Groups[1].Value } |
                 Sort-Object -Unique
         }
@@ -291,9 +290,15 @@ try {
         # IdentityModel - see eng/tools/DependabotDiscovery/README.md for why each is hard-coded here.
         $hardCodedDiscoveryExclusions = @('NETStandard.Library', 'Microsoft.CodeAnalysis.PublicApiAnalyzers')
 
-        if ($allChangedFilesFromTarget -contains "eng/Dependencies.props") {
-            $oldPackageNames = @(Get-LatestPackageReferenceNames (Get-TargetBranchFileContent "eng/Dependencies.props"))
-            $newPackageNames = @(Get-LatestPackageReferenceNames (Get-Content "$repoRoot/eng/Dependencies.props"))
+        if ($allChangedFilesFromTarget -contains "Directory.Packages.props" -or $allChangedFilesFromTarget -contains "eng/Dependencies.props") {
+            # The target branch may still keep its catalog in eng/Dependencies.props.
+            $targetCatalogFiles = @(git ls-tree --name-only "origin/$targetBranch" -- Directory.Packages.props eng/Dependencies.props)
+            if ($LASTEXITCODE -ne 0) {
+                throw "Unable to locate the package catalog in origin/${targetBranch}."
+            }
+            $targetCatalog = if ($targetCatalogFiles -contains "eng/Dependencies.props") { "eng/Dependencies.props" } else { "Directory.Packages.props" }
+            $oldPackageNames = @(Get-CentralPackageNames (Get-TargetBranchFileContent $targetCatalog))
+            $newPackageNames = @(Get-CentralPackageNames (Get-Content "$repoRoot/Directory.Packages.props"))
 
             # Packages added or removed (a rename shows up as one of each) since the target branch.
             $changedPackageNames = @(Compare-Object -ReferenceObject $oldPackageNames -DifferenceObject $newPackageNames -PassThru)
@@ -306,20 +311,20 @@ try {
                     @(Get-IdentityModelManagedVersionProperties (Get-TargetBranchFileContent "eng/Versions.props")) +
                     @(Get-IdentityModelManagedVersionProperties (Get-Content "$repoRoot/eng/Versions.props"))
 
-                $projectReferenceProviderNames = @(Get-ProjectReferenceProviderNames (Get-TargetBranchFileContent "eng/ProjectReferences.props")) +
-                    @(Get-ProjectReferenceProviderNames (Get-Content "$repoRoot/eng/ProjectReferences.props"))
+                $shippingAssemblyNames = @(Get-ShippingAssemblyNames (Get-TargetBranchFileContent "eng/ShippingAssemblies.props")) +
+                    @(Get-ShippingAssemblyNames (Get-Content "$repoRoot/eng/ShippingAssemblies.props"))
 
                 $unmanagedPackageNames = @($changedPackageNames | Where-Object {
                     $versionProperty = "$($_.Replace('.', ''))Version"
                     ($managedVersionProperties -notcontains $versionProperty) -and
-                        ($projectReferenceProviderNames -notcontains $_) -and
+                        ($shippingAssemblyNames -notcontains $_) -and
                         ($hardCodedDiscoveryExclusions -notcontains $_)
                 })
 
                 if ($unmanagedPackageNames.Count -gt 0 -and ($allChangedFilesFromTarget -notcontains $dependencyDiscoveryProject)) {
-                    LogError ("eng/Dependencies.props changed but $dependencyDiscoveryProject was not updated. " +
+                    LogError ("Directory.Packages.props changed but $dependencyDiscoveryProject was not updated. " +
                         "The following added or removed packages aren't excluded from $dependencyDiscoveryProject " +
-                        "(not Maestro- or IdentityModel-managed, not a ProjectReferenceProvider, not hard-coded): " +
+                        "(not Maestro- or IdentityModel-managed, not an in-repo shipping assembly, not hard-coded): " +
                         "$($unmanagedPackageNames -join ', '). Update $dependencyDiscoveryProject to match. " +
                         "See eng/tools/DependabotDiscovery/README.md for details.")
                 }

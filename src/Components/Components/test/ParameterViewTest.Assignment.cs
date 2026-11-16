@@ -366,6 +366,48 @@ public partial class ParameterViewTest
     }
 
     [Fact]
+    public void CaptureUnmatchedValues_IsResetToNull_WhenNoUnmatchedValuesAreSupplied()
+    {
+        // Regression for issue #56463: a render that supplies only direct parameters (no unmatched)
+        // must reset the previously-captured CaptureUnmatchedValues to null so the renderer emits
+        // RemoveAttribute edits for the omitted attributes.
+        var target = new HasCaptureUnmatchedValuesProperty
+        {
+            CaptureUnmatchedValues = new Dictionary<string, object> { { "old", "value" } }
+        };
+        var parameters = new ParameterViewBuilder
+        {
+            { nameof(HasCaptureUnmatchedValuesProperty.StringProp), "hi" },
+        }.Build();
+
+        parameters.SetParameterProperties(target);
+
+        Assert.Equal("hi", target.StringProp);
+        Assert.Null(target.CaptureUnmatchedValues);
+    }
+
+    [Fact]
+    public void CaptureUnmatchedValues_IsPreserved_WhenOnlyCascadingParametersAreSupplied()
+    {
+        // Regression for: when a re-render supplies only cascading values (e.g. a parent cascading
+        // value that did not change) and no direct parameters, we must not clear previously-captured
+        // unmatched attributes, because the parent did not actually stop supplying them.
+        var target = new HasCaptureUnmatchedValuesPropertyAndCascadingParameter
+        {
+            CaptureUnmatchedValues = new Dictionary<string, object> { { "class", "kept" } }
+        };
+        var builder = new ParameterViewBuilder();
+        builder.Add(nameof(HasCaptureUnmatchedValuesPropertyAndCascadingParameter.Cascading), "hi", cascading: true);
+        var parameters = builder.Build();
+
+        parameters.SetParameterProperties(target);
+
+        Assert.Equal("hi", target.Cascading);
+        Assert.NotNull(target.CaptureUnmatchedValues);
+        Assert.Equal("kept", target.CaptureUnmatchedValues["class"]);
+    }
+
+    [Fact]
     public void SettingCaptureUnmatchedValuesParameterExplicitlyAndImplicitly_Throws()
     {
         // Arrange

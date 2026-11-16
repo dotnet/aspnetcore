@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
+using System.Buffers;
 using System.Security.Cryptography;
 using System.Threading.Tasks;
 
@@ -54,30 +55,58 @@ public class AuthenticatorTokenProvider<TUser> : IUserTwoFactorTokenProvider<TUs
             return false;
         }
 
+#if NET6_0_OR_GREATER
+        var maxKeyByteCount = (int)((long)key.Length * 5 / 8);
+        byte[]? rentedKeyBuffer = null;
+        Span<byte> keyBuffer = maxKeyByteCount <= 128
+            ? stackalloc byte[128]
+            : (rentedKeyBuffer = ArrayPool<byte>.Shared.Rent(maxKeyByteCount));
+        try
+        {
+            if (!Base32.TryFromBase32(key, keyBuffer, out var keyByteCount))
+            {
+                throw new FormatException();
+            }
+            ReadOnlySpan<byte> keyBytes = keyBuffer.Slice(0, keyByteCount);
+
+            var unixTimestamp = DateTimeOffset.UtcNow.ToUnixTimeSeconds();
+#else
         var keyBytes = Base32.FromBase32(key);
 
-#if NET6_0_OR_GREATER
-        var unixTimestamp = DateTimeOffset.UtcNow.ToUnixTimeSeconds();
-#else
         using var hash = new HMACSHA1(keyBytes);
         var unixTimestamp = Convert.ToInt64(Math.Round((DateTime.UtcNow - new DateTime(1970, 1, 1, 0, 0, 0)).TotalSeconds));
-#endif
 
-        var timestep = Convert.ToInt64(unixTimestamp / 30);
-        // Allow codes from 90s in each direction (we could make this configurable?)
-        for (int i = -2; i <= 2; i++)
+        try
+        {
+#endif
+            var timestep = Convert.ToInt64(unixTimestamp / 30);
+            // Allow codes from 90s in each direction (we could make this configurable?)
+            for (int i = -2; i <= 2; i++)
+            {
+#if NET6_0_OR_GREATER
+                var expectedCode = Rfc6238AuthenticationService.ComputeTotp(keyBytes, (ulong)(timestep + i), modifierBytes: null);
+#else
+                var expectedCode = Rfc6238AuthenticationService.ComputeTotp(hash, (ulong)(timestep + i), modifierBytes: null);
+#endif
+                if (expectedCode == code)
+                {
+                    return true;
+                }
+            }
+
+            return false;
+        }
+        finally
         {
 #if NET6_0_OR_GREATER
-            var expectedCode = Rfc6238AuthenticationService.ComputeTotp(keyBytes, (ulong)(timestep + i), modifierBytes: null);
-#else
-            var expectedCode = Rfc6238AuthenticationService.ComputeTotp(hash, (ulong)(timestep + i), modifierBytes: null);
-#endif
-            if (expectedCode == code)
+            CryptographicOperations.ZeroMemory(keyBuffer);
+            if (rentedKeyBuffer is not null)
             {
-                return true;
+                ArrayPool<byte>.Shared.Return(rentedKeyBuffer);
             }
+#else
+            Array.Clear(keyBytes, 0, keyBytes.Length);
+#endif
         }
-
-        return false;
     }
 }

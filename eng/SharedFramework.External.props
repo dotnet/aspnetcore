@@ -84,7 +84,7 @@
     <_CompilationOnlyReference Include="System.Text.Json" />
   </ItemGroup>
 
-  <ItemGroup Condition="!$([MSBuild]::IsTargetFrameworkCompatible('$(TargetFramework)', 'net11.0'))">
+  <ItemGroup Condition="!$([MSBuild]::IsTargetFrameworkCompatible('$(TargetFramework)', 'net12.0'))">
     <_CompilationOnlyReference Include="Microsoft.Extensions.Caching.Abstractions" />
     <_CompilationOnlyReference Include="Microsoft.Extensions.Configuration.Abstractions" />
     <_CompilationOnlyReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" />

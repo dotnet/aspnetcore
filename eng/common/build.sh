@@ -43,6 +43,7 @@ usage()
   echo "  --pipelinesLog           Promote msbuild errors/warnings to Azure Pipelines timeline issues; defaults to on in CI (short: -pl)"
   echo "  --prepareMachine         Prepare machine for CI run, clean up processes after build"
   echo "  --nodeReuse <value>      Sets nodereuse msbuild parameter ('true' or 'false')"
+  echo "  --msbuildMultiThreaded <value> Sets MSBuild's multi-threaded mode, i.e. the -mt switch ('true' or 'false') (short: --mt)"
   echo "  --warnAsError <value>    Sets warnaserror msbuild parameter ('true' or 'false')"
   echo "  --warnNotAsError <value> Sets a semi-colon delimited list of warning codes that should not be treated as errors"
   echo "  --buildCheck <value>     Sets /check msbuild parameter"
@@ -84,7 +85,9 @@ clean=false
 
 warn_as_error=true
 warn_not_as_error=''
-node_reuse=true
+# Empty means "not specified"; tools.sh defaults these to on for local builds and off on CI.
+node_reuse=''
+msbuild_multi_threaded=''
 build_check=false
 binary_log=false
 binary_log_name=''
@@ -199,6 +202,10 @@ while [[ $# -gt 0 ]]; do
       node_reuse=$2
       shift
       ;;
+    -msbuildmultithreaded|-mt)
+      msbuild_multi_threaded=$2
+      shift
+      ;;
     -buildcheck)
       build_check=true
       ;;
@@ -224,11 +231,6 @@ fi
 
 if [[ "$ci" == true ]]; then
   pipelines_log=true
-  # Disable node reuse on CI unless explicitly opted in via MSBUILD_NODEREUSE_ENABLED.
-  # Internal testing only; this env var will be replaced with a switch (https://github.com/dotnet/arcade/issues/17013) and must not be depended on.
-  if [[ "${MSBUILD_NODEREUSE_ENABLED:-}" != "1" ]]; then
-    node_reuse=false
-  fi
   if [[ "$exclude_ci_binary_log" == false ]]; then
     binary_log=true
   fi
@@ -252,7 +254,7 @@ function Build {
     properties+=("/p:Projects=$projects")
   fi
 
-  local bl=""
+  local bl=()
   if [[ "$binary_log" == true ]]; then
     local binary_log_path=""
     if [[ -z "$binary_log_name" ]]; then
@@ -264,7 +266,7 @@ function Build {
     fi
 
     mkdir -p "$(dirname "$binary_log_path")"
-    bl="/bl:\"$binary_log_path\""
+    bl=("/bl:$binary_log_path")
   fi
 
   local check=""
@@ -272,8 +274,8 @@ function Build {
     check="/check"
   fi
 
-  MSBuild $_InitializeToolset \
-    $bl \
+  MSBuild "$_InitializeToolset" \
+    ${bl[@]+"${bl[@]}"} \
     $check \
     /p:Configuration=$configuration \
     /p:RepoRoot="$repo_root" \
@@ -297,7 +299,7 @@ function Build {
 
 if [[ "$clean" == true ]]; then
   if [ -d "$artifacts_dir" ]; then
-    rm -rf $artifacts_dir
+    rm -rf "$artifacts_dir"
     echo "Artifacts directory deleted."
   fi
   exit 0

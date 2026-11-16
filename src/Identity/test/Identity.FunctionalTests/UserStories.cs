@@ -44,13 +44,13 @@ public class UserStories
         return await login.LoginValidUserAsync(userName, password);
     }
 
-    internal static async Task LoginFailsWithWrongPasswordAsync(HttpClient client, string userName, string password)
+    internal static async Task LoginFailsAsync(HttpClient client, string userName, string password)
     {
         var index = await Index.CreateAsync(client);
 
         var login = await index.ClickLoginLinkAsync();
 
-        await login.LoginWrongPasswordAsync(userName, password);
+        await login.LoginFailsAsync(userName, password);
     }
 
     internal static async Task<DefaultUIPage> LockoutExistingUserAsync(HttpClient client, string userName, string password)

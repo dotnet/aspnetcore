@@ -3,6 +3,8 @@
   <PropertyGroup>
     <Description>Additional functionality for Xdt transforms.</Description>
     <TargetFramework>$(DefaultNetFxTargetFramework)</TargetFramework>
+    <!-- App Service loads this transform in a process whose architecture can differ from the site. -->
+    <PlatformTarget>AnyCPU</PlatformTarget>
     <CopySymbolsToArtifacts>true</CopySymbolsToArtifacts>
     <IsPackable>false</IsPackable>
     <IsShippingPackage>false</IsShippingPackage>
@@ -12,7 +14,7 @@
 
   <ItemGroup>
     <!-- We need to reference the same version (or lower maybe) as App Service otherwise the custom transform cannot be loaded -->
-    <PackageReference Include="Microsoft.Web.Xdt" Version="1.4.0" AllowExplicitReference="true" />
+    <PackageReference Include="Microsoft.Web.Xdt" VersionOverride="1.4.0" />
   </ItemGroup>
 
   <ItemGroup>

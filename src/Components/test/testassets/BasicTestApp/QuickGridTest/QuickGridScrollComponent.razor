@@ -21,6 +21,7 @@
         @if (useItemsProvider)
         {
             <QuickGrid @ref="providerGrid" ItemsProvider="@itemsProvider" Virtualize="true" ItemSize="50"
+                       OnRowClick="@((Row row) => statusMessage = $"Activated: {row.Index}")"
                        InitialItemIndex="@initialItemIndex">
                 <TemplateColumn Title="Item" Class="qg-scroll-cell">
                     <div class="item" data-index="@context.Index" style="min-height: @(context.Height)px; line-height: @(context.Height)px;">Item @context.Index</div>
@@ -30,6 +31,7 @@
         else
         {
             <QuickGrid @ref="itemsGrid" Items="@rows.AsQueryable()" Virtualize="true" ItemSize="50"
+                       OnRowClick="@((Row row) => statusMessage = $"Activated: {row.Index}")"
                        InitialItemIndex="@initialItemIndex">
                 <TemplateColumn Title="Item" Class="qg-scroll-cell">
                     <div class="item" data-index="@context.Index" style="min-height: @(context.Height)px; line-height: @(context.Height)px;">Item @context.Index</div>
@@ -143,7 +145,7 @@
         await Task.Yield();
         if (useProviderDelay)
         {
-            await Task.Delay(150);
+            await Task.Delay(150, request.CancellationToken);
         }
 
         var count = request.Count ?? rows.Count;

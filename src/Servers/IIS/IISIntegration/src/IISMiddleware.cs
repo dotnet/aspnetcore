@@ -25,6 +25,7 @@ public class IISMiddleware
     private const string MSAspNetCoreEvent = "MS-ASPNETCORE-EVENT";
     private const string MSAspNetCoreWinAuthToken = "MS-ASPNETCORE-WINAUTHTOKEN";
     private const string ANCMShutdownEventHeaderValue = "shutdown";
+    internal const string ClearMaxRequestBodySizeSwitch = "Microsoft.AspNetCore.Server.IISIntegration.ClearMaxRequestBodySize";
     private static readonly PathString ANCMRequestPath = new PathString("/iisintegration");
     private static readonly Func<object, Task> ClearUserDelegate = ClearUser;
 
@@ -34,6 +35,7 @@ public class IISMiddleware
     private readonly string _pairingToken;
     private readonly IHostApplicationLifetime _applicationLifetime;
     private readonly bool _isWebsocketsSupported;
+    private readonly bool _clearMaxRequestBodySize;
 
     /// <summary>
     /// The middleware that enables IIS Out-Of-Process to work.
@@ -91,6 +93,7 @@ public class IISMiddleware
         _applicationLifetime = applicationLifetime;
         _logger = loggerFactory.CreateLogger<IISMiddleware>();
         _isWebsocketsSupported = isWebsocketsSupported;
+        _clearMaxRequestBodySize = AppContext.TryGetSwitch(ClearMaxRequestBodySizeSwitch, out var clear) && clear;
     }
 
     /// <summary>
@@ -102,10 +105,12 @@ public class IISMiddleware
     {
         if (!string.Equals(_pairingToken, httpContext.Request.Headers[MSAspNetCoreToken], StringComparison.Ordinal))
         {
-            _logger.LogError($"'{MSAspNetCoreToken}' does not match the expected pairing token '{_pairingToken}', request rejected.");
+            _logger.LogError("'MS-ASPNETCORE-TOKEN' does not match the expected pairing token, request rejected.");
             httpContext.Response.StatusCode = StatusCodes.Status400BadRequest;
             return Task.CompletedTask;
         }
+
+        httpContext.Request.Headers.Remove(MSAspNetCoreToken);
 
         // Handle shutdown from ANCM
         if (HttpMethods.IsPost(httpContext.Request.Method) &&
@@ -125,11 +130,16 @@ public class IISMiddleware
             return Task.CompletedTask;
         }
 
-        var bodySizeFeature = httpContext.Features.Get<IHttpMaxRequestBodySizeFeature>();
-        if (bodySizeFeature != null && !bodySizeFeature.IsReadOnly)
+        if (_clearMaxRequestBodySize)
         {
-            // IIS already limits this, no need to do it twice.
-            bodySizeFeature.MaxRequestBodySize = null;
+            var bodySizeFeature = httpContext.Features.Get<IHttpMaxRequestBodySizeFeature>();
+            if (bodySizeFeature != null && !bodySizeFeature.IsReadOnly)
+            {
+                // Opt-in legacy behavior: clear the server's max request body size so the IIS
+                // maxAllowedContentLength limit applies on its own. Disabled by default so the
+                // server's configured limit remains in effect.
+                bodySizeFeature.MaxRequestBodySize = null;
+            }
         }
 
         if (_options.ForwardClientCertificate)

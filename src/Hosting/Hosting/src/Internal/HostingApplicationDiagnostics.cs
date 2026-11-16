@@ -38,6 +38,9 @@ internal sealed class HostingApplicationDiagnostics
     // Internal for testing purposes only
     internal bool SuppressActivityOpenTelemetryData { get; set; }
 
+    // Internal for testing purposes only
+    internal bool SuppressActivityUrlQuery { get; set; }
+
     public HostingApplicationDiagnostics(
         ILogger logger,
         DiagnosticListener diagnosticListener,
@@ -54,12 +57,24 @@ internal sealed class HostingApplicationDiagnostics
         _metrics = metrics;
 
         SuppressActivityOpenTelemetryData = GetSuppressActivityOpenTelemetryData();
+        SuppressActivityUrlQuery = GetSuppressActivityUrlQuery();
     }
 
     private static bool GetSuppressActivityOpenTelemetryData()
     {
         // Default to false if the switch isn't set.
         if (!AppContext.TryGetSwitch("Microsoft.AspNetCore.Hosting.SuppressActivityOpenTelemetryData", out var enabled))
+        {
+            return false;
+        }
+
+        return enabled;
+    }
+
+    private static bool GetSuppressActivityUrlQuery()
+    {
+        // Default to false if the switch isn't set.
+        if (!AppContext.TryGetSwitch("Microsoft.AspNetCore.Hosting.SuppressActivityUrlQuery", out var enabled))
         {
             return false;
         }
@@ -165,7 +180,7 @@ internal sealed class HostingApplicationDiagnostics
         if (startTimestamp != 0)
         {
             currentTimestamp = Stopwatch.GetTimestamp();
-            var reachedPipelineEnd = httpContext.Items.ContainsKey(RequestUnhandledKey);
+            var reachedPipelineEnd = TryGetItem(httpContext, RequestUnhandledKey, out _);
 
             // Non-inline
             LogRequestFinished(context, startTimestamp, currentTimestamp);
@@ -174,7 +189,7 @@ internal sealed class HostingApplicationDiagnostics
             {
                 Debug.Assert(context.MetricsTagsFeature != null, "MetricsTagsFeature should be set if MetricsEnabled is true.");
 
-                var endpoint = HttpExtensions.GetOriginalEndpoint(httpContext);
+                var endpoint = GetOriginalEndpoint(httpContext);
                 var disableHttpRequestDurationMetric = endpoint?.Metadata.GetMetadata<IDisableHttpMetricsMetadata>() != null || context.MetricsTagsFeature.MetricsDisabled;
                 var route = endpoint?.Metadata.GetMetadata<IRouteDiagnosticsMetadata>()?.Route;
 
@@ -254,6 +269,35 @@ internal sealed class HostingApplicationDiagnostics
 
         // Logging Scope is finished with
         context.Scope?.Dispose();
+    }
+
+    private static Endpoint? GetOriginalEndpoint(HttpContext httpContext)
+    {
+        // Same as HttpExtensions.GetOriginalEndpoint, but avoids allocating HttpContext.Items.
+        var endpoint = httpContext.GetEndpoint();
+        if (endpoint == null && TryGetItem(httpContext, HttpExtensions.OriginalEndpointKey, out var e) && e is Endpoint originalEndpoint)
+        {
+            endpoint = originalEndpoint;
+        }
+        return endpoint;
+    }
+
+    private static bool TryGetItem(HttpContext httpContext, object key, out object? value)
+    {
+        if (httpContext.GetType() == typeof(DefaultHttpContext))
+        {
+            // DefaultHttpContext.Items is backed by IItemsFeature and creates it on first access.
+            // Read the feature directly so a request that never used Items doesn't allocate it here.
+            if (httpContext.Features.Get<IItemsFeature>() is not { } itemsFeature)
+            {
+                value = null;
+                return false;
+            }
+
+            return itemsFeature.Items.TryGetValue(key, out value);
+        }
+
+        return httpContext.Items.TryGetValue(key, out value);
     }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -457,19 +501,32 @@ internal sealed class HostingApplicationDiagnostics
         return activity;
     }
 
-    private static TagList CreateInitializeActivityTags(HttpContext httpContext)
+    private TagList CreateInitializeActivityTags(HttpContext httpContext)
     {
         // The tags here are set when the activity is created. They can be used in sampling decisions.
         // Most values in semantic conventions that are present at creation are specified:
         // https://github.com/open-telemetry/semantic-conventions/blob/27735ccca3746d7bb7fa061dfb73d93bcbae2b6e/docs/http/http-spans.md#L581-L592
         // Missing values recommended by the spec are:
-        // - url.query (need configuration around redaction to do properly)
-        // - http.request.header.<key>
+        // - http.request.header.<key> (opt-in)
+        // - client.port (opt-in)
+        // - network.protocol.name (only required if not "http", which is never the case here)
         //
         // Note that these tags are added even if Activity.IsAllDataRequested is false, as they may be used in sampling decisions.
 
         var request = httpContext.Request;
         var creationTags = new TagList();
+
+        if (httpContext.Connection.RemoteIpAddress is { } remoteIpAddress)
+        {
+            var remoteIpAddressString = remoteIpAddress.ToString();
+            creationTags.Add(HostingTelemetryHelpers.AttributeClientAddress, remoteIpAddressString);
+            creationTags.Add(HostingTelemetryHelpers.AttributeNetworkPeerAddress, remoteIpAddressString);
+
+            if (httpContext.Connection.RemotePort is { } remotePort && remotePort > 0)
+            {
+                creationTags.Add(HostingTelemetryHelpers.AttributeNetworkPeerPort, remotePort);
+            }
+        }
 
         if (request.Host.HasValue)
         {
@@ -496,6 +553,11 @@ internal sealed class HostingApplicationDiagnostics
 
         var path = (request.PathBase.HasValue || request.Path.HasValue) ? (request.PathBase + request.Path).ToString() : "/";
         creationTags.Add(HostingTelemetryHelpers.AttributeUrlPath, path);
+
+        if (!SuppressActivityUrlQuery && request.QueryString.Value is { Length: > 0 } queryString)
+        {
+            creationTags.Add(HostingTelemetryHelpers.AttributeUrlQuery, HostingTelemetryHelpers.GetRedactedQueryString(queryString));
+        }
 
         return creationTags;
     }
@@ -529,7 +591,7 @@ internal sealed class HostingApplicationDiagnostics
             activity.SetTag(HostingTelemetryHelpers.AttributeNetworkProtocolVersion, httpVersion);
         }
 
-        var endpoint = HttpExtensions.GetOriginalEndpoint(httpContext);
+        var endpoint = GetOriginalEndpoint(httpContext);
         var route = endpoint?.Metadata.GetMetadata<IRouteDiagnosticsMetadata>()?.Route;
         if (route is not null)
         {
@@ -547,6 +609,15 @@ internal sealed class HostingApplicationDiagnostics
         {
             activity.SetTag(HostingTelemetryHelpers.AttributeErrorType, response.StatusCode.ToString(CultureInfo.InvariantCulture));
             activity.SetStatus(ActivityStatusCode.Error);
+        }
+
+        if (httpContext.Connection.RemoteIpAddress is { } remoteIpAddress)
+        {
+            var remoteIpAddressString = remoteIpAddress.ToString();
+
+            // `client.address` is set again (see CreateInitializeActivityTags) in case of
+            // other middleware rewriting it (like ForwardedHeadersMiddleware)
+            activity.SetTag(HostingTelemetryHelpers.AttributeClientAddress, remoteIpAddressString);
         }
     }
 

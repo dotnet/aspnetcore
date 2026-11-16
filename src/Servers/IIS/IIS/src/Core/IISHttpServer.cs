@@ -29,7 +29,6 @@ internal sealed class IISHttpServer : IServer
     private readonly IISServerOptions _options;
     private readonly IISNativeApplication _nativeApplication;
     private readonly ServerAddressesFeature _serverAddressesFeature;
-    private string? _virtualPath;
 
     private readonly TaskCompletionSource _shutdownSignal = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
     private bool? _websocketAvailable;
@@ -91,7 +90,7 @@ internal sealed class IISHttpServer : IServer
         }
     }
 
-    public string? VirtualPath => _virtualPath;
+    public string? VirtualPath => _options.VirtualPath;
 
     public unsafe Task StartAsync<TContext>(IHttpApplication<TContext> application, CancellationToken cancellationToken) where TContext : notnull
     {
@@ -106,9 +105,6 @@ internal sealed class IISHttpServer : IServer
             &OnRequestsDrained,
             (IntPtr)_httpServerHandle,
             (IntPtr)_httpServerHandle);
-
-        var iisConfigData = NativeMethods.HttpGetApplicationProperties();
-        _virtualPath = iisConfigData.pwzVirtualApplicationPath;
 
         _serverAddressesFeature.Addresses = _options.ServerAddresses;
 

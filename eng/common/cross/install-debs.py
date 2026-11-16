@@ -36,6 +36,8 @@ async def download_file(session, url, dest_path, max_retries=3, retry_delay=2, t
                         f.write(content)
                     print(f"Downloaded {url} at {dest_path}")
                     return
+                elif response.status >= 500 or response.status in (408, 429):
+                    response.raise_for_status()
                 else:
                     raise Exception(f"Failed to download {url}, Status Code: {response.status}")
         except (asyncio.CancelledError, asyncio.TimeoutError, aiohttp.ClientError) as e:

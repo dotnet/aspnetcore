@@ -104,7 +104,7 @@ public abstract class ManagementTests<TStartup, TContext> : IClassFixture<Server
 
         // Verify can login with new email, fails with old
         await UserStories.LoginExistingUserAsync(newClient, newEmail, password);
-        await UserStories.LoginFailsWithWrongPasswordAsync(failedClient, userName, password);
+        await UserStories.LoginFailsAsync(failedClient, userName, password);
 
     }
 

@@ -43,4 +43,15 @@ internal static class SecurityHelper
         }
         return newPrincipal;
     }
+
+    /// <summary>
+    /// Determines whether the <paramref name="user"/> is authenticated.
+    /// Uses the same aggregate semantics as authorization's
+    /// <c>DenyAnonymousAuthorizationRequirement</c>: the principal is authenticated when it has an
+    /// identity and at least one of its identities is authenticated (not only the primary identity).
+    /// </summary>
+    /// <param name="user">The <see cref="ClaimsPrincipal"/> to inspect.</param>
+    /// <returns><see langword="true"/> if the principal is authenticated; otherwise <see langword="false"/>.</returns>
+    public static bool IsAuthenticated(ClaimsPrincipal? user)
+        => user?.Identity is not null && user.Identities.Any(static identity => identity.IsAuthenticated);
 }

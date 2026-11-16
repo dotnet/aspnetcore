@@ -19,7 +19,6 @@
          which contains the correct framework version. -->
     <GenerateRuntimeConfigurationFiles>false</GenerateRuntimeConfigurationFiles>
     <!-- Allow direct PackageReference for external packages not in the shared framework -->
-    <DisablePackageReferenceRestrictions>true</DisablePackageReferenceRestrictions>
     <!-- Use the shared ASP.NET Core runtime from the SDK targeting pack instead of requiring
          the local shared framework build (Microsoft.AspNetCore.App.Runtime.sfxproj).
          UseAspNetCoreSharedRuntime prevents removal of the KnownFrameworkReference.
@@ -29,14 +28,14 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <Reference Include="Yarp.ReverseProxy" />
-    <Reference Include="Microsoft.Extensions.ServiceDiscovery" />
-    <Reference Include="Microsoft.Extensions.ServiceDiscovery.Yarp" />
-    <PackageReference Include="OpenTelemetry.Exporter.OpenTelemetryProtocol" Version="$(OpenTelemetryExporterOpenTelemetryProtocolVersion)" />
-    <PackageReference Include="OpenTelemetry.Extensions.Hosting" Version="$(OpenTelemetryExtensionsHostingVersion)" />
-    <PackageReference Include="OpenTelemetry.Instrumentation.AspNetCore" Version="$(OpenTelemetryInstrumentationAspNetCoreVersion)" />
-    <PackageReference Include="OpenTelemetry.Instrumentation.Http" Version="$(OpenTelemetryInstrumentationHttpVersion)" />
-    <PackageReference Include="OpenTelemetry.Instrumentation.Runtime" Version="$(OpenTelemetryInstrumentationRuntimeVersion)" />
+    <PackageReference Include="Microsoft.Extensions.ServiceDiscovery" />
+    <PackageReference Include="Microsoft.Extensions.ServiceDiscovery.Yarp" />
+    <PackageReference Include="OpenTelemetry.Exporter.OpenTelemetryProtocol" />
+    <PackageReference Include="OpenTelemetry.Extensions.Hosting" />
+    <PackageReference Include="OpenTelemetry.Instrumentation.AspNetCore" />
+    <PackageReference Include="OpenTelemetry.Instrumentation.Http" />
+    <PackageReference Include="OpenTelemetry.Instrumentation.Runtime" />
+    <PackageReference Include="Yarp.ReverseProxy" />
   </ItemGroup>
 
   <Target Name="_CreateRuntimeConfig" BeforeTargets="CoreBuild">
@@ -66,7 +65,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="Microsoft.DotNet.Build.Tasks.Templating" PrivateAssets="All" Version="$(MicrosoftDotNetBuildTasksTemplatingVersion)" IsImplicitlyDefined="true" AllowExplicitReference="true" />
+    <PackageReference Include="Microsoft.DotNet.Build.Tasks.Templating" PrivateAssets="All" />
   </ItemGroup>
 
   <ItemGroup>
