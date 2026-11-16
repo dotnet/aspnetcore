@@ -365,6 +365,15 @@ switch ($Action) {
         }
 
         if (-not $resolvedEval -and -not $hasExplicitExperiment) {
+            $experimentOnlyOptions = @(
+                $Arguments |
+                    Where-Object { $_ -match '^--(?:variant|eval-filter|shard|shard-strategy|compare|dry-run)(?:=|$)' } |
+                    ForEach-Object { ($_ -split '=', 2)[0] } |
+                    Select-Object -Unique
+            )
+            if ($experimentOnlyOptions.Count -gt 0) {
+                throw "Options $($experimentOnlyOptions -join ', ') require -Suite or -Experiment."
+            }
             foreach ($directory in Get-ChildItem $evalRoot -Directory) {
                 if (Test-Path (Join-Path $directory.FullName 'eval.vally.yaml')) {
                     $suiteOutput = Join-Path $output $directory.Name

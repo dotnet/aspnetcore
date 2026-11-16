@@ -158,6 +158,7 @@ Run these commands from any directory:
 
 Without a suite or explicit experiment, `Run` dispatches each standard suite into
 its own output subdirectory. This includes the direct verifier component suite.
+Experiment-only options require `-Suite` or `-Experiment` and are rejected before all-suite dispatch.
 Each single-eval experiment or direct component `Run` checks its own new run directory with
 `assert_results.ps1` before it returns. A Vally exit code of 1 is accepted only
 after those checks pass; any failed check stops the run, including in the

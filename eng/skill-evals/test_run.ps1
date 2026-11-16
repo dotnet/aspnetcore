@@ -237,6 +237,70 @@ stimuli:
         Write-Host "SelectedVariant${syntax}Syntax passed."
     }
 
+    $allOptionsRoot = Join-Path $testRoot 'all-options-root'
+    $allOptionsEvalRoot = Join-Path $allOptionsRoot 'eng/skill-evals'
+    foreach ($suite in @('port-components-platform-api', 'review-candidate-verifier')) {
+        New-Item -ItemType Directory -Path (Join-Path $allOptionsEvalRoot $suite) -Force | Out-Null
+    }
+    Set-Content (Join-Path $allOptionsEvalRoot 'port-components-platform-api/eval.vally.yaml') 'name: port-components-platform-api'
+    Copy-Item (Join-Path $allComponentDirectory 'eval.vally.yaml') (
+        Join-Path $allOptionsEvalRoot 'review-candidate-verifier/eval.vally.yaml'
+    )
+    $allOptionsFailures = [Collections.Generic.List[string]]::new()
+    foreach ($option in @(
+        @{ Name = 'variant'; Value = 'skilled' },
+        @{ Name = 'eval-filter'; Value = 'other/eval.vally.yaml' },
+        @{ Name = 'shard'; Value = '1/2' },
+        @{ Name = 'shard-strategy'; Value = 'by-stimulus' },
+        @{ Name = 'compare'; Value = $null },
+        @{ Name = 'dry-run'; Value = $null }
+    )) {
+        foreach ($syntax in @('Separate', 'Equals')) {
+            $optionArguments = if ($syntax -eq 'Equals') {
+                @("--$($option.Name)=$(if ($null -eq $option.Value) { 'true' } else { $option.Value })")
+            } elseif ($null -eq $option.Value) {
+                @("--$($option.Name)")
+            } else {
+                @("--$($option.Name)", $option.Value)
+            }
+            Remove-Item $record -ErrorAction SilentlyContinue
+            $message = ''
+            try {
+                & $runner Run -Root $allOptionsRoot -Vally $fakeVally -VallyPrefix @() `
+                    -OutputDirectory (Join-Path $testRoot "all-options-$($option.Name)-$syntax") `
+                    -Arguments $optionArguments
+            } catch {
+                $message = $_.Exception.Message
+            }
+            $caseName = "AllSuiteRejects$($option.Name)${syntax}Syntax"
+            if ($message -notlike "*--$($option.Name)*" -or
+                $message -notlike '*-Suite*' -or $message -notlike '*-Experiment*' -or
+                (Test-Path $record)) {
+                $allOptionsFailures.Add("$caseName did not reject the option before invoking Vally. Error: $message")
+                Write-Host "$caseName failed."
+            } else {
+                Write-Host "$caseName passed."
+            }
+        }
+    }
+    Assert-True ($allOptionsFailures.Count -eq 0) ($allOptionsFailures -join "`n")
+
+    Remove-Item $record -ErrorAction SilentlyContinue
+    & $runner Run -Root $allOptionsRoot -Vally $fakeVally -VallyPrefix @() `
+        -OutputDirectory (Join-Path $testRoot 'all-options-allowed') `
+        -Arguments @('--judge-model', 'test-model')
+    $allOptionsInvocations = @(Read-Invocations)
+    Assert-True ($allOptionsInvocations.Count -eq 2 -and
+        $allOptionsInvocations[0].Arguments[0] -eq 'experiment' -and
+        $allOptionsInvocations[1].Arguments[0] -eq 'eval') (
+        'An allowed all-suite option did not reach both the experiment and component suites.'
+    )
+    foreach ($invocation in $allOptionsInvocations) {
+        Assert-True ($invocation.Arguments -contains '--judge-model' -and
+            $invocation.Arguments -contains 'test-model') 'The allowed all-suite option was not forwarded.'
+    }
+    Write-Host 'AllSuiteAllowsJudgeModel passed.'
+
     $experimentCheckFailures = [Collections.Generic.List[string]]::new()
     foreach ($case in @(
         @{ Name = 'UnselectedExperiment'; Selection = ''; Arguments = '@()' },
