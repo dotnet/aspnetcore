@@ -47,6 +47,9 @@ internal sealed class WebViewJSRuntime : JSRuntime
     internal void MarkAsDisconnected()
     {
         _disconnected = true;
+        FailPendingTasks(new JSDisconnectedException(
+            "JavaScript interop calls cannot be issued at this time. This is because the WebView has been disposed " +
+            "or the page has navigated away."));
     }
 
     protected override void BeginInvokeJS(in JSInvocationInfo invocationInfo)
