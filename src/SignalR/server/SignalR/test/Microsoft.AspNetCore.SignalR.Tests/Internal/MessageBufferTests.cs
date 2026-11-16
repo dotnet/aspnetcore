@@ -546,6 +546,31 @@ public class MessageBufferTests
     }
 
     [Fact]
+    public async Task AckBackpressureTimesOutReleasesWriteLockAndAbortsConnection()
+    {
+        var protocol = new JsonHubProtocol();
+        var connection = new TestConnectionContext();
+        var pipes = DuplexPipe.CreateConnectionPair(new PipeOptions(), new PipeOptions());
+        var writer = new BlockingFlushPipeWriter(pipes.Transport.Output);
+        connection.Transport = new DuplexPipe(pipes.Transport.Input, writer);
+        var timeProvider = new FakeTimeProvider();
+        using var messageBuffer = new MessageBuffer(connection, protocol, bufferLimit: 100_000, NullLogger.Instance, timeProvider);
+
+        Assert.True(messageBuffer.ShouldProcessMessage(new StreamItemMessage("1", null)));
+
+        timeProvider.Advance(MessageBuffer.AckRate);
+        await writer.FlushStarted.DefaultTimeout();
+
+        var ackTask = messageBuffer.AckAsync(new AckMessage(0));
+        Assert.False(ackTask.IsCompleted);
+
+        timeProvider.Advance(TimeSpan.FromSeconds(5) + TimeSpan.FromMilliseconds(1));
+
+        await connection.Aborted.DefaultTimeout();
+        await ackTask.DefaultTimeout();
+    }
+
+    [Fact]
     public async Task ReceiveAckDuringResendStillSendsAllMessages()
     {
         var cancelableToken = new CancellationTokenSource().Token;
@@ -643,6 +668,114 @@ public class MessageBufferTests
         pipes.Application.Input.AdvanceTo(buffer.Start);
 
         Assert.False(pipes.Application.Input.TryRead(out res));
+    }
+
+    [Fact]
+    public async Task ResendBackpressureTimesOutAndUnblocksPendingWrites()
+    {
+        var protocol = new JsonHubProtocol();
+        var connection = new TestConnectionContext();
+        var pipes = DuplexPipe.CreateConnectionPair(
+            new PipeOptions(),
+            new PipeOptions(pauseWriterThreshold: 200, resumeWriterThreshold: 100));
+        connection.Transport = pipes.Transport;
+        var timeProvider = new FakeTimeProvider();
+        using var messageBuffer = new MessageBuffer(connection, protocol, bufferLimit: 100_000, NullLogger.Instance, timeProvider);
+
+        for (var i = 0; i < 2; i++)
+        {
+            await messageBuffer.WriteAsync(new InvocationMessage("t", [new byte[40]]), CancellationToken.None);
+
+            var result = await pipes.Application.Input.ReadAsync();
+            pipes.Application.Input.AdvanceTo(result.Buffer.End);
+        }
+
+        DuplexPipe.UpdateConnectionPair(
+            ref pipes,
+            connection,
+            new PipeOptions(pauseWriterThreshold: 100, resumeWriterThreshold: 50));
+        var resendTask = messageBuffer.ResendAsync(pipes.Transport.Output);
+        var writeTask = messageBuffer.WriteAsync(PingMessage.Instance, CancellationToken.None).AsTask();
+
+        Assert.False(resendTask.IsCompleted);
+        Assert.False(writeTask.IsCompleted);
+
+        timeProvider.Advance(TimeSpan.FromSeconds(5) + TimeSpan.FromMilliseconds(1));
+
+        await resendTask.DefaultTimeout();
+        await connection.Aborted.DefaultTimeout();
+        await Assert.ThrowsAnyAsync<OperationCanceledException>(async () => await writeTask).DefaultTimeout();
+    }
+
+    [Theory]
+    [InlineData(true)]
+    [InlineData(false)]
+    public async Task ResendStopsWhenFlushIsCanceledOrCompleted(bool isCanceled)
+    {
+        var protocol = new JsonHubProtocol();
+        var connection = new TestConnectionContext();
+        var pipes = DuplexPipe.CreateConnectionPair(new PipeOptions(), new PipeOptions());
+        connection.Transport = pipes.Transport;
+        using var messageBuffer = new MessageBuffer(connection, protocol, bufferLimit: 100_000, NullLogger.Instance);
+
+        for (var i = 0; i < 3; i++)
+        {
+            await messageBuffer.WriteAsync(new InvocationMessage("t", [i]), CancellationToken.None);
+
+            var result = await pipes.Application.Input.ReadAsync();
+            pipes.Application.Input.AdvanceTo(result.Buffer.End);
+        }
+
+        var reconnectPipe = new Pipe();
+        var writer = new FlushResultPipeWriter(
+            reconnectPipe.Writer,
+            new FlushResult(isCanceled: isCanceled, isCompleted: !isCanceled));
+
+        await messageBuffer.ResendAsync(writer);
+
+        Assert.Equal(1, writer.FlushCount);
+        Assert.False(connection.Aborted.IsCompleted);
+    }
+
+    [Fact]
+    public async Task ResendBackpressureTimeoutResetsAfterProgress()
+    {
+        var protocol = new JsonHubProtocol();
+        var connection = new TestConnectionContext();
+        var pipes = DuplexPipe.CreateConnectionPair(
+            new PipeOptions(),
+            new PipeOptions(pauseWriterThreshold: 1_000, resumeWriterThreshold: 500));
+        connection.Transport = pipes.Transport;
+        var timeProvider = new FakeTimeProvider();
+        using var messageBuffer = new MessageBuffer(connection, protocol, bufferLimit: 100_000, NullLogger.Instance, timeProvider);
+
+        for (var i = 0; i < 3; i++)
+        {
+            await messageBuffer.WriteAsync(new InvocationMessage("t", [new byte[100]]), CancellationToken.None);
+
+            var result = await pipes.Application.Input.ReadAsync();
+            pipes.Application.Input.AdvanceTo(result.Buffer.End);
+        }
+
+        DuplexPipe.UpdateConnectionPair(
+            ref pipes,
+            connection,
+            new PipeOptions(pauseWriterThreshold: 100, resumeWriterThreshold: 50));
+        var resendTask = messageBuffer.ResendAsync(pipes.Transport.Output);
+
+        for (var i = 0; i < 3; i++)
+        {
+            var result = await pipes.Application.Input.ReadAsync().DefaultTimeout();
+            Assert.False(result.Buffer.IsEmpty);
+
+            timeProvider.Advance(TimeSpan.FromSeconds(4));
+            Assert.False(resendTask.IsCompleted);
+
+            pipes.Application.Input.AdvanceTo(result.Buffer.End);
+        }
+
+        await resendTask.DefaultTimeout();
+        await messageBuffer.WriteAsync(PingMessage.Instance, CancellationToken.None).AsTask().DefaultTimeout();
     }
 
     [Fact]
@@ -780,12 +913,107 @@ public class MessageBufferTests
     }
 }
 
+internal sealed class BlockingFlushPipeWriter(PipeWriter inner) : PipeWriter
+{
+    private readonly TaskCompletionSource _flushStarted = new(TaskCreationOptions.RunContinuationsAsynchronously);
+
+    public Task FlushStarted => _flushStarted.Task;
+
+    public override void Advance(int bytes)
+    {
+        inner.Advance(bytes);
+    }
+
+    public override void CancelPendingFlush()
+    {
+        inner.CancelPendingFlush();
+    }
+
+    public override void Complete(Exception exception = null)
+    {
+        inner.Complete(exception);
+    }
+
+    public override ValueTask<FlushResult> FlushAsync(CancellationToken cancellationToken = default)
+    {
+        _flushStarted.TrySetResult();
+        return new(WaitForCancellationAsync(cancellationToken));
+    }
+
+    public override Memory<byte> GetMemory(int sizeHint = 0)
+    {
+        return inner.GetMemory(sizeHint);
+    }
+
+    public override Span<byte> GetSpan(int sizeHint = 0)
+    {
+        return inner.GetSpan(sizeHint);
+    }
+
+    private static async Task<FlushResult> WaitForCancellationAsync(CancellationToken cancellationToken)
+    {
+        await Task.Delay(Timeout.InfiniteTimeSpan, cancellationToken);
+        return default;
+    }
+}
+
+internal sealed class FlushResultPipeWriter(PipeWriter inner, FlushResult flushResult) : PipeWriter
+{
+    public int FlushCount { get; private set; }
+
+    public override void Advance(int bytes)
+    {
+        inner.Advance(bytes);
+    }
+
+    public override void CancelPendingFlush()
+    {
+        inner.CancelPendingFlush();
+    }
+
+    public override void Complete(Exception exception = null)
+    {
+        inner.Complete(exception);
+    }
+
+    public override ValueTask<FlushResult> FlushAsync(CancellationToken cancellationToken = default)
+    {
+        FlushCount++;
+        return new(flushResult);
+    }
+
+    public override Memory<byte> GetMemory(int sizeHint = 0)
+    {
+        return inner.GetMemory(sizeHint);
+    }
+
+    public override Span<byte> GetSpan(int sizeHint = 0)
+    {
+        return inner.GetSpan(sizeHint);
+    }
+
+    public override ValueTask<FlushResult> WriteAsync(ReadOnlyMemory<byte> source, CancellationToken cancellationToken = default)
+    {
+        FlushCount++;
+        return new(flushResult);
+    }
+}
+
 internal sealed class TestConnectionContext : ConnectionContext
 {
+    private readonly TaskCompletionSource _aborted = new(TaskCreationOptions.RunContinuationsAsynchronously);
+
+    public Task Aborted => _aborted.Task;
+
     public override string ConnectionId { get; set; }
     public override IFeatureCollection Features { get; } = new FeatureCollection();
     public override IDictionary<object, object> Items { get; set; }
     public override IDuplexPipe Transport { get; set; }
+
+    public override void Abort()
+    {
+        _aborted.TrySetResult();
+    }
 }
 
 internal sealed class DuplexPipe : IDuplexPipe

@@ -301,7 +301,7 @@ stages:
 
       - task: UseDotNet@2
         inputs:
-          version: 8.0.x
+          version: 10.0.x
 
       - task: AzureCLI@2
         displayName: Publish Using Darc
@@ -312,7 +312,7 @@ stages:
           scriptPath: $(System.DefaultWorkingDirectory)/eng/common/post-build/publish-using-darc.ps1
           arguments: >
               -BuildId $(BARBuildId)
-              -PublishingInfraVersion 3
+              -PublishingInfraVersion ${{ parameters.publishingInfraVersion }}
               -AzdoToken '$(System.AccessToken)'
               -WaitPublishingFinish true
               -RequireDefaultChannels ${{ parameters.requireDefaultChannels }}

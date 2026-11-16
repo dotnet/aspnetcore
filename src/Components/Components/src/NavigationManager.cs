@@ -514,6 +514,8 @@ public abstract class NavigationManager
         }
         catch (TaskCanceledException ex)
         {
+            cts.Cancel();
+
             if (ex.CancellationToken == cancellationToken)
             {
                 // This navigation was in progress when a successive navigation occurred.
@@ -523,9 +525,17 @@ public abstract class NavigationManager
 
             throw;
         }
-        finally
+        catch
         {
             cts.Cancel();
+            throw;
+        }
+        finally
+        {
+            if (context.DidPreventNavigation)
+            {
+                cts.Cancel();
+            }
             cts.Dispose();
 
             if (_locationChangingCts == cts)

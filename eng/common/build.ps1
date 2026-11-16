@@ -181,10 +181,6 @@ try {
     if (-not $PSBoundParameters.ContainsKey('nodeReuse')) {
       $nodeReuse = $false
     }
-    # MSBuild's multi-threaded mode isn't run on CI unless it was explicitly requested via -msbuildMultiThreaded.
-    if (-not $PSBoundParameters.ContainsKey('msbuildMultiThreaded')) {
-      $msbuildMultiThreaded = $false
-    }
   }
 
   if (-not [string]::IsNullOrEmpty($binaryLogName)) {
