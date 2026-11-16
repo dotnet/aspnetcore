@@ -110,11 +110,24 @@ public class QueryHelperTests
     [InlineData("#", "k", "v")]
     [InlineData("/path", "k", "LONG")]
     [InlineData("/path?x=y#a", "LONG", "LONG")]
+    [InlineData("/path", "\ud800", "a\udc00b")]
+    [InlineData("/path", "k", "HEAVY")]
+    [InlineData("/path?k=", "k", "SPLIT")]
+    [InlineData("LONG#frag", "k", "v")]
     public void AddQueryStringMatchesReferenceImplementation(string uri, string name, string value)
     {
         var longValue = string.Concat(Enumerable.Repeat("x y&z/\u00e9", 200));
+        uri = uri.Replace("LONG", longValue);
         name = name == "LONG" ? longValue : name;
-        value = value == "LONG" ? longValue : value;
+        value = value switch
+        {
+            "LONG" => longValue,
+            // Every char expands to nine chars, forcing several buffer growths.
+            "HEAVY" => new string('\u4e2d', 300),
+            // Surrogate pairs that straddle the end of the initial 256-char buffer.
+            "SPLIT" => new string('a', 240) + string.Concat(Enumerable.Repeat("\ud83d\ude00", 10)),
+            _ => value,
+        };
 
         Assert.Equal(ReferenceAddQueryString(uri, [new(name, value)]), QueryHelpers.AddQueryString(uri, name, value));
 

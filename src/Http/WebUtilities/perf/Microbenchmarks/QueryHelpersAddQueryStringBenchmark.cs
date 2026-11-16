@@ -19,11 +19,19 @@ public class QueryHelpersAddQueryStringBenchmark
         ["code_challenge_method"] = "S256",
     };
 
+    private readonly string _longValue = string.Concat(Enumerable.Repeat("CfDJ8Abcdefghijklmnopqrstuvwxyz0123456789-_", 14));
+
     [Benchmark]
     public string ReturnUrl() => QueryHelpers.AddQueryString("/Account/Login", "ReturnUrl", "/orders/details?id=42");
 
     [Benchmark]
     public string Simple() => QueryHelpers.AddQueryString("/api/items", "page", "2");
+
+    [Benchmark]
+    public string LongValue() => QueryHelpers.AddQueryString("/signin-oidc", "state", _longValue);
+
+    [Benchmark]
+    public string EncodeHeavy() => QueryHelpers.AddQueryString("/search", "q", "caf\u00e9 & cr\u00e8me br\u00fbl\u00e9e / \u4e2d\u6587?#");
 
     [Benchmark]
     public string OAuth() => QueryHelpers.AddQueryString("https://login.example.com/oauth2/v2.0/authorize", _oauth);

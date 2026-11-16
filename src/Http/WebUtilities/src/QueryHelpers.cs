@@ -2,7 +2,9 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Buffers;
+using System.Diagnostics;
 using System.Linq;
+using System.Text;
 using System.Text.Encodings.Web;
 using Microsoft.Extensions.Primitives;
 
@@ -13,6 +15,8 @@ namespace Microsoft.AspNetCore.WebUtilities;
 /// </summary>
 public static class QueryHelpers
 {
+    private const int StackallocCharThreshold = 256;
+
     /// <summary>
     /// Append the given query key and value to the URI.
     /// </summary>
@@ -31,24 +35,24 @@ public static class QueryHelpers
 
         var anchorIndex = uri.IndexOf('#');
         var baseLength = anchorIndex < 0 ? uri.Length : anchorIndex;
-        var separator = uri.AsSpan(0, baseLength).Contains('?') ? '&' : '?';
-        var encodedName = UrlEncoder.Default.Encode(name);
-        var encodedValue = UrlEncoder.Default.Encode(value);
-        var length = uri.Length + encodedName.Length + encodedValue.Length + 2;
+        var separator = uri.AsSpan(0, baseLength).Contains('?') ? "&" : "?";
 
-        return string.Create(length, (uri, baseLength, separator, encodedName, encodedValue), static (destination, state) =>
+        var builder = new ValueStringBuilder(stackalloc char[StackallocCharThreshold]);
+        char[]? rentedBuffer = null;
+        try
         {
-            var (uri, baseLength, separator, encodedName, encodedValue) = state;
-            uri.AsSpan(0, baseLength).CopyTo(destination);
-            var position = baseLength;
-            destination[position++] = separator;
-            encodedName.CopyTo(destination.Slice(position));
-            position += encodedName.Length;
-            destination[position++] = '=';
-            encodedValue.CopyTo(destination.Slice(position));
-            position += encodedValue.Length;
-            uri.AsSpan(baseLength).CopyTo(destination.Slice(position));
-        });
+            Append(ref builder, ref rentedBuffer, uri.AsSpan(0, baseLength));
+            Append(ref builder, ref rentedBuffer, separator);
+            AppendUrlEncoded(ref builder, ref rentedBuffer, name);
+            Append(ref builder, ref rentedBuffer, "=");
+            AppendUrlEncoded(ref builder, ref rentedBuffer, value);
+            Append(ref builder, ref rentedBuffer, uri.AsSpan(baseLength));
+            return builder.AsSpan().ToString();
+        }
+        finally
+        {
+            ReturnRentedBuffer(builder.Length, rentedBuffer);
+        }
     }
 
     /// <summary>
@@ -111,10 +115,11 @@ public static class QueryHelpers
         var queryIndex = uriToBeAppended.IndexOf('?');
         var hasQuery = queryIndex != -1;
 
-        var builder = new PooledCharBuilder(uri.Length + 256);
+        var builder = new ValueStringBuilder(stackalloc char[StackallocCharThreshold]);
+        char[]? rentedBuffer = null;
         try
         {
-            builder.Append(uriToBeAppended);
+            Append(ref builder, ref rentedBuffer, uriToBeAppended);
             foreach (var parameter in queryString)
             {
                 if (parameter.Value is null)
@@ -122,79 +127,69 @@ public static class QueryHelpers
                     continue;
                 }
 
-                builder.Append(hasQuery ? '&' : '?');
-                builder.Append(UrlEncoder.Default.Encode(parameter.Key));
-                builder.Append('=');
-                builder.Append(UrlEncoder.Default.Encode(parameter.Value));
+                Append(ref builder, ref rentedBuffer, hasQuery ? "&" : "?");
+                AppendUrlEncoded(ref builder, ref rentedBuffer, parameter.Key);
+                Append(ref builder, ref rentedBuffer, "=");
+                AppendUrlEncoded(ref builder, ref rentedBuffer, parameter.Value);
                 hasQuery = true;
             }
 
-            builder.Append(anchorText);
-            return builder.ToString();
+            Append(ref builder, ref rentedBuffer, anchorText);
+            return builder.AsSpan().ToString();
         }
         finally
         {
-            builder.Dispose();
+            ReturnRentedBuffer(builder.Length, rentedBuffer);
         }
     }
 
-    // Minimal ArrayPool-backed char builder; the rented buffer never escapes this type.
-    private struct PooledCharBuilder
+    // ValueStringBuilder's own growth returns pooled arrays without clearing them, and query values may
+    // contain sensitive data, so growth is done here and the builder only ever writes into a buffer it does not own.
+    private static void Append(ref ValueStringBuilder builder, ref char[]? rentedBuffer, ReadOnlySpan<char> value)
     {
-        private char[] _buffer;
-        private int _length;
-
-        public PooledCharBuilder(int initialCapacity)
+        if (value.Length > builder.Capacity - builder.Length)
         {
-            _buffer = ArrayPool<char>.Shared.Rent(initialCapacity);
-            _length = 0;
+            Grow(ref builder, ref rentedBuffer, value.Length);
         }
 
-        public void Append(char value)
+        builder.Append(value);
+    }
+
+    private static void AppendUrlEncoded(ref ValueStringBuilder builder, ref char[]? rentedBuffer, string value)
+    {
+        var source = value.AsSpan();
+        while (true)
         {
-            if (_length == _buffer.Length)
+            var status = UrlEncoder.Default.Encode(source, builder.RawChars.Slice(builder.Length), out var charsConsumed, out var charsWritten, isFinalBlock: true);
+            builder.Length += charsWritten;
+            if (status != OperationStatus.DestinationTooSmall)
             {
-                Grow(1);
+                Debug.Assert(status == OperationStatus.Done);
+                return;
             }
 
-            _buffer[_length++] = value;
+            source = source.Slice(charsConsumed);
+            Grow(ref builder, ref rentedBuffer, source.Length);
         }
+    }
 
-        public void Append(ReadOnlySpan<char> value)
+    private static void Grow(ref ValueStringBuilder builder, ref char[]? rentedBuffer, int additionalCapacity)
+    {
+        var length = builder.Length;
+        var newBuffer = ArrayPool<char>.Shared.Rent((int)Math.Max((uint)(length + additionalCapacity), (uint)builder.Capacity * 2));
+        builder.AsSpan().CopyTo(newBuffer);
+        ReturnRentedBuffer(length, rentedBuffer);
+        rentedBuffer = newBuffer;
+        builder = new ValueStringBuilder(newBuffer);
+        builder.Length = length;
+    }
+
+    private static void ReturnRentedBuffer(int length, char[]? rentedBuffer)
+    {
+        if (rentedBuffer is not null)
         {
-            if (value.Length > _buffer.Length - _length)
-            {
-                Grow(value.Length);
-            }
-
-            value.CopyTo(_buffer.AsSpan(_length));
-            _length += value.Length;
-        }
-
-        public override readonly string ToString() => new string(_buffer, 0, _length);
-
-        public void Dispose()
-        {
-            var buffer = _buffer;
-            var length = _length;
-            _buffer = Array.Empty<char>();
-            _length = 0;
-            if (buffer.Length > 0)
-            {
-                // Query values may contain sensitive data.
-                buffer.AsSpan(0, length).Clear();
-                ArrayPool<char>.Shared.Return(buffer);
-            }
-        }
-
-        private void Grow(int additional)
-        {
-            var newBuffer = ArrayPool<char>.Shared.Rent(Math.Max(_buffer.Length * 2, _length + additional));
-            _buffer.AsSpan(0, _length).CopyTo(newBuffer);
-            // Query values may contain sensitive data.
-            _buffer.AsSpan(0, _length).Clear();
-            ArrayPool<char>.Shared.Return(_buffer);
-            _buffer = newBuffer;
+            rentedBuffer.AsSpan(0, length).Clear();
+            ArrayPool<char>.Shared.Return(rentedBuffer);
         }
     }
 
