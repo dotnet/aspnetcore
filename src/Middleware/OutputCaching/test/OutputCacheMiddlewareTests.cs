@@ -1023,6 +1023,31 @@ public abstract class OutputCacheMiddlewareTests
     }
 
     [Fact]
+    public async Task Locking_BodyLargerThanMaximumBodySizeIsStillSentToLeader()
+    {
+        var cache = GetStore();
+
+        var options = new OutputCacheOptions { MaximumBodySize = 4 };
+        options.AddBasePolicy(build => build.Cache());
+
+        var middleware = TestUtils.CreateTestMiddleware(options: options, cache: cache, next: c =>
+        {
+            c.Response.Write("Hello");
+            return Task.CompletedTask;
+        });
+
+        var context = TestUtils.CreateTestContext(cache: cache);
+        context.HttpContext.Request.Method = "GET";
+        context.HttpContext.Request.Path = "/";
+        var responseBody = new MemoryStream();
+        context.HttpContext.Response.Body = responseBody;
+
+        await middleware.Invoke(context.HttpContext);
+
+        Assert.Equal("Hello", Encoding.UTF8.GetString(responseBody.ToArray()));
+    }
+
+    [Fact]
     public async Task Locking_IgnoresNonCacheableResponses()
     {
         var responseCounter = 0;

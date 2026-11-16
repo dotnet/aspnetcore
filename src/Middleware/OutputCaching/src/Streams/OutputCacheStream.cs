@@ -59,6 +59,26 @@ internal sealed class OutputCacheStream : Stream
         _segmentWriteStream.Dispose();
     }
 
+    // The buffered body is never sent to the client while buffering is enabled. Flush it
+    // before disabling buffering so a response that exceeds MaximumBodySize is not lost.
+    private void FlushBufferedResponseBody()
+    {
+        var buffered = _segmentWriteStream.DetachAndReset();
+        foreach (var segment in buffered)
+        {
+            _innerStream.Write(segment.Span);
+        }
+    }
+
+    private async ValueTask FlushBufferedResponseBodyAsync(CancellationToken cancellationToken)
+    {
+        var buffered = _segmentWriteStream.DetachAndReset();
+        foreach (var segment in buffered)
+        {
+            await _innerStream.WriteAsync(segment, cancellationToken);
+        }
+    }
+
     public override void SetLength(long value)
     {
         DisableBuffering();
@@ -112,6 +132,13 @@ internal sealed class OutputCacheStream : Stream
             {
                 _innerStream.Write(buffer, offset, count);
             }
+            else if (_segmentWriteStream.Length + count > _maxBufferSize)
+            {
+                FlushBufferedResponseBody();
+                _innerStream.Write(buffer, offset, count);
+                DisableBuffering();
+                return;
+            }
         }
         catch
         {
@@ -140,6 +167,13 @@ internal sealed class OutputCacheStream : Stream
             if (!_bufferResponseBody || !BufferingEnabled)
             {
                 _innerStream.Write(buffer);
+            }
+            else if (_segmentWriteStream.Length + buffer.Length > _maxBufferSize)
+            {
+                FlushBufferedResponseBody();
+                _innerStream.Write(buffer);
+                DisableBuffering();
+                return;
             }
         }
         catch
@@ -173,6 +207,13 @@ internal sealed class OutputCacheStream : Stream
             {
                 await _innerStream.WriteAsync(buffer, cancellationToken);
             }
+            else if (_segmentWriteStream.Length + buffer.Length > _maxBufferSize)
+            {
+                await FlushBufferedResponseBodyAsync(cancellationToken);
+                await _innerStream.WriteAsync(buffer, cancellationToken);
+                DisableBuffering();
+                return;
+            }
         }
         catch
         {
@@ -200,6 +241,13 @@ internal sealed class OutputCacheStream : Stream
             if (!_bufferResponseBody || !BufferingEnabled)
             {
                 _innerStream.WriteByte(value);
+            }
+            else if (_segmentWriteStream.Length + 1 > _maxBufferSize)
+            {
+                FlushBufferedResponseBody();
+                _innerStream.WriteByte(value);
+                DisableBuffering();
+                return;
             }
         }
         catch
