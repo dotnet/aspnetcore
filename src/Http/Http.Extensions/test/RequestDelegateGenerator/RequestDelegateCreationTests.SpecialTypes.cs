@@ -176,6 +176,8 @@ app.MapGet("/", TestAction);
                 ["double", "double.E", double.E, true],
                 ["double", "double.Epsilon", double.Epsilon, true],
                 ["double", "double.NegativeZero", double.NegativeZero, true],
+                ["double", "-0.0", -0.0, true],
+                ["double?", "-0.0", -0.0, false],
                 ["double", "double.MaxValue", double.MaxValue, true],
                 ["double", "double.MinValue", double.MinValue, true],
                 ["double", "double.Pi", double.Pi, true],
@@ -195,6 +197,9 @@ app.MapGet("/", TestAction);
                 ["decimal", "decimal.MinValue", decimal.MinValue, true],
                 ["decimal", "decimal.One", decimal.One, true],
                 ["decimal", "decimal.Zero", decimal.Zero, true],
+                ["decimal", "-0.0m", -0.0m, true],
+                ["decimal", "-0.00m", -0.00m, true],
+                ["decimal?", "-0.0m", -0.0m, false],
                 ["long", "long.MaxValue", long.MaxValue, true],
                 ["long", "long.MinValue", long.MinValue, true],
                 ["long", "(long)3.14", (long)3, true],
@@ -258,10 +263,27 @@ app.MapPost("/", TestAction);
 
         await endpoint.RequestDelegate(httpContext);
 
-        Assert.Equal(expectedValue, httpContext.Items["parameterWithDefault"]);
+        AssertDefaultValue(expectedValue, httpContext.Items["parameterWithDefault"]);
         if (declareConst)
         {
-            Assert.Equal(expectedValue, httpContext.Items["parameterWithConst"]);
+            AssertDefaultValue(expectedValue, httpContext.Items["parameterWithConst"]);
+        }
+    }
+
+    private static void AssertDefaultValue(object expectedValue, object actualValue)
+    {
+        Assert.Equal(expectedValue, actualValue);
+        switch (expectedValue)
+        {
+            case double d:
+                Assert.Equal(BitConverter.DoubleToInt64Bits(d), BitConverter.DoubleToInt64Bits(Assert.IsType<double>(actualValue)));
+                break;
+            case float f:
+                Assert.Equal(BitConverter.SingleToInt32Bits(f), BitConverter.SingleToInt32Bits(Assert.IsType<float>(actualValue)));
+                break;
+            case decimal d:
+                Assert.Equal(decimal.GetBits(d), decimal.GetBits(Assert.IsType<decimal>(actualValue)));
+                break;
         }
     }
 
