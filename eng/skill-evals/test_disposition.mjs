@@ -176,6 +176,26 @@ test('ReviewDispositionRecognizesUnderscoreEmphasizedCandidateIds', async contex
       .replace('DISCARDED\nNone.', 'DISCARDED\n_C1_: old and head match.'), 0],
     ['extra-candidate', 'case-02', review('NEW_FINDINGS', 'verified')
       .replace('DISCARDED\nNone.', 'DISCARDED\n_C2_: another concern.'), 0],
+   ['code-span-extra-candidate', 'case-02', review('NEW_FINDINGS', 'verified')
+     .replace('DISCARDED\nNone.', 'DISCARDED\n`C2`: another concern.'), 0],
+   ['code-span-path-is-not-extra-candidate', 'case-02', review('NEW_FINDINGS', 'verified')
+     .replace('Why verified: source reason.', 'Why verified: `src/_C2_/File.cs` is unchanged.'), 1],
+   ['code-span-path-is-not-c1', 'case-02', review('NEW_FINDINGS', 'verified')
+     .replace('DISCARDED\nNone.', 'DISCARDED\nOnly `src/_C1_/File.cs` moved.'), 1],
+    ['emphasis-wrapping-code-span', 'case-06', review('UNRESOLVED', 'unresolved')
+     .replace('C1 missing target-base contract.', '- _C1 (`AgentContext.cs`): missing target-base contract._'), 1],
+    ['emphasis-wrapping-code-span-extra-candidate', 'case-02', review('NEW_FINDINGS', 'verified')
+     .replace('DISCARDED\nNone.', 'DISCARDED\n- _C2 (`File.cs`): another concern._'), 0],
+    ['emphasis-between-double-backtick-spans', 'case-06', review('UNRESOLVED', 'unresolved')
+     .replace('C1 missing target-base contract.', '``a`` _C1_ ``b``'), 1],
+    ['double-backtick-code-span-path', 'case-02', review('NEW_FINDINGS', 'verified')
+     .replace('Why verified: source reason.', 'Why verified: ``code ` src/_C2_/File.cs`` is unchanged.'), 1],
+    ['escaped-backticks-are-not-code-span', 'case-02', review('NEW_FINDINGS', 'verified')
+     .replace('DISCARDED\nNone.', 'DISCARDED\n\\` _C2_: another concern. \\`'), 0],
+    ['multiline-code-span-path', 'case-02', review('NEW_FINDINGS', 'verified')
+     .replace('Why verified: source reason.', 'Why verified: `unchanged\nsrc/_C2_/File.cs` source.'), 1],
+    ['snake-case-identifier', 'case-02', review('NEW_FINDINGS', 'verified')
+     .replace('DISCARDED\nNone.', 'DISCARDED\nOnly snake_C1_name moved.'), 1],
   ])
   {
     await context.test(name, () =>

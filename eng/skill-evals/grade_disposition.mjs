@@ -86,6 +86,16 @@ function stripMarkdown(text)
     .replace(/(?<!\w)_([^_\r\n]+)_(?!\w)/g, '$1');
 }
 
+// Accept word-bounded IDs, plus IDs wrapped in underscore emphasis (_C1_, __C1__) that are not
+// part of a word or path such as src/_C2_/File.cs.
+function candidateIdPattern(id)
+{
+  return new RegExp(String.raw`(?:\b|(?<=(?:^|[^\w/\\.])__?))${id}(?:\b|(?=__?(?:$|[^\w/\\.])))`, 'm');
+}
+
+const c1Pattern = candidateIdPattern('C1');
+const otherCandidatePattern = candidateIdPattern(String.raw`C(?!1(?!\d))\d+`);
+
 function normalizeHeading(line)
 {
   return stripMarkdown(line.trim())
@@ -140,7 +150,7 @@ function hasPositiveC1(sectionText, section)
 {
   return sectionText
     .split(/\r?\n/)
-    .some(line => /\bC1\b/.test(stripMarkdown(line)) && !isNegativeC1Line(line) && !isCrossSectionNegation(line, section));
+    .some(line => c1Pattern.test(line) && !isNegativeC1Line(line) && !isCrossSectionNegation(line, section));
 }
 
 function gradeReview(name, output)
@@ -184,7 +194,7 @@ function gradeReview(name, output)
   {
     return false;
   }
-  if ([...sections.values()].some(text => /\bC(?!1\b)\d+\b/.test(stripMarkdown(text))))
+  if ([...sections.values()].some(text => otherCandidatePattern.test(text)))
   {
     return false;
   }
