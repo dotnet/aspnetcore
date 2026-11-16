@@ -5177,25 +5177,28 @@ public class VirtualizationTest : ServerTestBase<ToggleExecutionModeServerFixtur
         input.Click();
         input.SendKeys(Keys.End);
 
-        // End belongs to the focused input. Sample the scroll position across frames so
-        // a delayed convergence jump is still detected.
-        var maxDeviation = (long)js.ExecuteAsyncScript(@"
-            var start = window.scrollY;
-            var max = 0;
-            var frames = 0;
-            function step() {
-                max = Math.max(max, Math.abs(window.scrollY - start));
-                if (++frames < 120) {
-                    requestAnimationFrame(step);
-                } else {
-                    arguments[arguments.length - 1](max);
-                }
-            }
-            requestAnimationFrame(step);
-        ");
+        // End belongs to the focused input. If the list starts following the end of the
+        // list, the scroll position reaches the bottom; give it a bounded window to do so.
+        try
+        {
+            new WebDriverWait(Browser, TimeSpan.FromSeconds(2)).Until(_ =>
+            {
+                var scrollY = (long)js.ExecuteScript("return Math.round(window.scrollY)");
+                var scrollHeight = (long)js.ExecuteScript("return document.documentElement.scrollHeight");
+                var innerHeight = (long)js.ExecuteScript("return window.innerHeight");
+                return scrollHeight - scrollY - innerHeight < 2;
+            });
 
-        Assert.True(maxDeviation <= 2,
-            $"Window AnchorMode {anchorMode}: End in a text input should not move the list (moved {maxDeviation}px from {scrollYBefore})");
+            Assert.Fail($"Window AnchorMode {anchorMode}: End in a text input should not move the list");
+        }
+        catch (WebDriverTimeoutException)
+        {
+            // Expected: the list stays where it was.
+        }
+
+        var scrollYAfter = (long)js.ExecuteScript("return Math.round(window.scrollY)");
+        Assert.True(Math.Abs(scrollYAfter - scrollYBefore) <= 2,
+            $"Window AnchorMode {anchorMode}: End in a text input should not move the list (moved {scrollYAfter - scrollYBefore}px)");
     }
 
     private static (string index, double relTop, long scrollTop) GetItemPositionInContainer(
