@@ -452,6 +452,27 @@ public class JSRuntimeTest
         }
     }
 
+    [Fact]
+    public async Task FailPendingTasks_FaultsAllPendingCalls()
+    {
+        // Arrange
+        var runtime = new TestJSRuntime();
+        var first = runtime.InvokeAsync<string>("first call", Array.Empty<object>());
+        var second = runtime.InvokeAsync<string>("second call", Array.Empty<object>());
+        Assert.False(first.IsCompleted);
+        Assert.False(second.IsCompleted);
+
+        // Act
+        var exception = new JSDisconnectedException("Disconnected");
+        runtime.FailPendingTasks(exception);
+
+        // Assert
+        var firstException = await Assert.ThrowsAsync<JSDisconnectedException>(async () => await first);
+        var secondException = await Assert.ThrowsAsync<JSDisconnectedException>(async () => await second);
+        Assert.Same(exception, firstException);
+        Assert.Same(exception, secondException);
+    }
+
     private class TestPoco
     {
         public int Id { get; set; }
