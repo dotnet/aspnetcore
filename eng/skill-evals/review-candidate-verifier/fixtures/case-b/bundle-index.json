@@ -1,0 +1,25 @@
+{
+  "candidate": "candidate.json",
+  "diff": "changes.diff",
+  "changedFiles": "changed-files.json",
+  "sourceRoots": {
+    "head": "source/head",
+    "mergeBase": "source/mergeBase",
+    "baseTip": "source/baseTip"
+  },
+  "sourceRevisions": {
+    "head": "c0f86a6d725473f7a6f4c56d816ef941591053d2",
+    "mergeBase": "80ce68b5280ef01757bdf9d94b653da62e5724d5",
+    "baseTip": "2e792d799058bf25990ce0c8e2b416c736431ca3"
+  },
+  "primarySource": "src/Components/AI/src/Engine/AgentContext.cs",
+  "producerSources": [
+    "src/Components/AI/src/Engine/UIAgent.cs",
+    "src/Components/AI/src/Engine/UIAgentLog.cs",
+    "src/Components/AI/src/Pipeline/BlockMappingPipeline.cs"
+  ],
+  "contractPaths": [
+    "source/baseTip/docs/CrossCuttingGuidance.md",
+    "contracts/api-behavior.txt"
+  ]
+}
