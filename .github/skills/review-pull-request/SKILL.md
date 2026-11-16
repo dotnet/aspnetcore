@@ -1,11 +1,26 @@
 ---
 name: review-pull-request
 description: >-
-  Review an identified ASP.NET Core pull request against a complete, frozen, trusted
-  source-and-guidance bundle. Return source-supported findings without publishing.
+  Review an identified ASP.NET Core pull request only through an explicit entry point:
+  a coordinator supplied a version-2 manifest.json bundle (/review hosted workflow or campaign runner);
+  a native local coordinator was explicitly asked to use this repository's PR review skill
+  (including review-pull-request or /review-pull-request) to bootstrap with prepare-review.cs;
+  an assigned review-guide-worker received its
+  bundle root and guides[].assignment; or a caller explicitly requested an offline
+  source-review adjudication using staged criteria and named evidence. Review frozen source and guidance; return
+  source-supported findings without publishing. DO NOT USE FOR automated GitHub Copilot Code Review
+  (copilot-pull-request-reviewer) or general PR diff review outside those explicit entry points.
 ---
 
 # Source-only pull request review
+
+For automated GitHub Copilot Code Review (`copilot-pull-request-reviewer`), stop using this skill and continue under the reviewer's normal instructions. Do not bootstrap or report a missing frozen bundle, `manifest.json`, or `feedback.json` as a PR defect or review blocker.
+
+For an explicitly requested offline source-review adjudication using staged criteria and named evidence without a supplied bundle, apply only the requested review criteria in one context; do not require a bundle, bootstrap, or spawn agents (an offline one-pass comparison with a supplied bundle still follows the bundle path below).
+
+For other explicit entry points (a supplied version-2 `manifest.json` bundle, an explicit request to run this repository's PR review skill locally, or an assigned `review-guide-worker` with its bundle root and `guides[].assignment`), follow the coordinator or `PATH: per-guide-worker` procedures below. Workers do not receive `manifest.json` directly.
+
+For any unsolicited or general PR diff review outside those entry points, stop using this skill and continue under the reviewer's normal instructions without applying this skill's bundle requirements.
 
 You are the reviewer, not an implementer. The trusted caller supplies a ready version-2
 `manifest.json` bundle. A native local invocation without a supplied bundle has exactly
@@ -207,7 +222,9 @@ Independently check every returned candidate before acceptance. Require:
 3. Frozen old-side behavior, frozen head behavior, and the actual called overload,
    producer-to-consumer path, and any required target-base or primary contract. A
    sibling helper is not evidence about the called helper. Read its full body and
-   return path before accepting **or discarding** a claim.
+   return path before accepting **or discarding** a claim. If diff and source appear
+   inconsistent, re-read the exact old/head files and verify their roles before
+   reporting an evidence mismatch.
 4. No equivalent earlier issue, review, resolved inline comment, or current
    feedback; no speculative, stylistic, or otherwise unsupported clause.
 
@@ -215,6 +232,28 @@ For an incomplete-fix or new-feature omission, require a binding issue, API, or
 repository contract; a missing test or unclear intent alone is not a material
 behavioral finding. Do not create a candidate that merely requests a test or a
 rationale without a concrete effect.
+
+For new or broadened exception suppression, independently check the failure policy:
+separate the original operation error from secondary logging, cleanup, callback, or
+recovery errors. Preserving the former does not prove that the latter is handled.
+Compare the exact old/new failure path and verify any expected or best-effort policy
+against the target contract, not just the PR rationale or new tests. If the reachable
+suppression and observable effect are established but the required policy is not,
+retain that concrete candidate in `UNRESOLVED` with the missing contract; do not
+silently convert it to LGTM or invent a defect. Documented best-effort handling is
+counterevidence, and an empty catch alone is not a finding.
+Policy uncertainty does not establish a failure producer: when the selected source
+path rules out the secondary failure, discard that claim rather than inventing a
+missing contract or retaining a hypothetical failure in `UNRESOLVED`.
+
+The coordinator must assess existing feedback before deduplicating publication.
+Record supported duplicates in `EXISTING_FEEDBACK_COVERAGE`; record a concrete
+unsettled failure-policy concern in `UNRESOLVED` with its existing thread reference
+and missing evidence, even when the thread already covers the concern.
+Deduplication prevents repeat publication; it does not settle the failure policy.
+Do not re-emit the duplicate as a new finding or an optional nit. Never treat a review
+comment as contract authority. Keep coordinator-only feedback inputs out of guide
+worker assignments.
 
 Reject a candidate when source disproves it, with the precise called edge and full
 return path. A discard that argues behavior is unchanged must compare the old and new
@@ -258,8 +297,8 @@ coordinator-owned post-gate verifier, not a routed guide worker; it does not cha
 one-worker-per-guide count or any per-guide worker invariant. Use the same explicitly
 selected model and reasoning effort as the guide workers. Give it the trusted bundle
 root; the role-to-root mapping for the frozen `source/<sha>` roots; the exact diff and
-changed-file references; every provisional finding (identifying any incomplete-fix or
-new-feature omission claim); the exact assigned issue, API, base-tip, or
+changed-file references; every provisional finding (identifying any incomplete-fix,
+new-feature omission, or policy-only secondary-failure suppression claim); the exact assigned issue, API, base-tip, or
 primary-repository contract paths; and, when validation was used, the immutable
 source-bound validation artifacts and their paths, not an assertion that tests passed.
 It may read and search only those assigned frozen inputs, must verify only the supplied
@@ -297,7 +336,10 @@ check recorded only in a worker's own `DISCARDED` section, without being propose
 when a contradicted `DROP` names `contradictedLink: contract` but its cited contract is
 head-side, keep the candidate in `NEW_FINDINGS` as an intent question with `confidence:
 question` instead of discarding it. This is an intentional adaptation of the verifier
-contract for skill output. External behavior that remains unestablished is
+contract for skill output. When `DOWNGRADE(intent)` reports `contract: "n/a"` for a
+contract-dependent candidate, record it in `UNRESOLVED` with the missing binding contract,
+not as an intent question. Apply the same unresolved inline rule above. Intent cannot
+supply or waive a mandatory contract. External behavior that remains unestablished is
 `UNRESOLVED`.
 
 For a `KEEP` or an intent question, accept a verifier-corrected changed-line anchor or

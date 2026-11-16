@@ -161,6 +161,541 @@ public partial class HttpConnectionDispatcherTests : VerifiableLoggedTest
         }
     }
 
+    [Theory]
+    [InlineData(HttpTransportType.LongPolling, 0)]
+    [InlineData(HttpTransportType.LongPolling, 1)]
+    [InlineData(HttpTransportType.ServerSentEvents, 0)]
+    [InlineData(HttpTransportType.ServerSentEvents, 1)]
+    [InlineData(HttpTransportType.WebSockets, 0)]
+    [InlineData(HttpTransportType.WebSockets, 1)]
+    public async Task NegotiatedConnectionRejectsDifferentUserOnFirstGet(HttpTransportType transportType, int negotiateVersion)
+    {
+        using (StartVerifiableLog())
+        {
+            var manager = CreateConnectionManager(LoggerFactory);
+            var dispatcher = CreateDispatcher(manager, LoggerFactory);
+            var services = new ServiceCollection();
+            services.AddOptions();
+            services.AddLogging();
+
+            var negotiateContext = new DefaultHttpContext();
+            negotiateContext.Request.Path = "/foo";
+            negotiateContext.Request.Method = HttpMethods.Post;
+            negotiateContext.Request.QueryString = negotiateVersion > 0
+                ? new QueryString($"?negotiateVersion={negotiateVersion}")
+                : QueryString.Empty;
+            negotiateContext.Response.Body = new MemoryStream();
+            negotiateContext.RequestServices = services.BuildServiceProvider();
+            negotiateContext.User = MakeUserWithClaim("employeeId", "attacker");
+
+            await dispatcher.ExecuteNegotiateAsync(negotiateContext, new HttpConnectionDispatcherOptions());
+
+            var negotiateResponse = JsonConvert.DeserializeObject<JObject>(
+                Encoding.UTF8.GetString(((MemoryStream)negotiateContext.Response.Body).ToArray()));
+            var connectionToken = negotiateResponse.Value<string>("connectionToken")
+                ?? negotiateResponse.Value<string>("connectionId");
+            Assert.True(manager.TryGetConnection(connectionToken, out var connection));
+
+            var connectContext = MakeRequest("/foo", connection, services);
+            SetTransport(connectContext, transportType);
+            connectContext.User = MakeUserWithClaim("employeeId", "victim");
+
+            await dispatcher.ExecuteAsync(
+                connectContext,
+                new HttpConnectionDispatcherOptions(),
+                _ => Task.CompletedTask).DefaultTimeout();
+
+            Assert.Equal(StatusCodes.Status403Forbidden, connectContext.Response.StatusCode);
+            Assert.True(connection.HasNegotiatedUser);
+        }
+    }
+
+    [Theory]
+    [InlineData(HttpTransportType.LongPolling)]
+    [InlineData(HttpTransportType.ServerSentEvents)]
+    [InlineData(HttpTransportType.WebSockets)]
+    public async Task NegotiatedConnectionRejectsDifferentAuthenticatedUserWhenUnauthenticatedIdentitySharesSub(HttpTransportType transportType)
+    {
+        using (StartVerifiableLog())
+        {
+            var manager = CreateConnectionManager(LoggerFactory);
+            var dispatcher = CreateDispatcher(manager, LoggerFactory);
+            var services = new ServiceCollection();
+            services.AddOptions();
+            services.AddLogging();
+
+            var negotiateContext = new DefaultHttpContext();
+            negotiateContext.Request.Path = "/foo";
+            negotiateContext.Request.Method = HttpMethods.Post;
+            negotiateContext.Request.QueryString = new QueryString("?negotiateVersion=1");
+            negotiateContext.Response.Body = new MemoryStream();
+            negotiateContext.RequestServices = services.BuildServiceProvider();
+            negotiateContext.User = MakeUserWithSharedUnauthenticatedSub("attacker");
+
+            await dispatcher.ExecuteNegotiateAsync(negotiateContext, new HttpConnectionDispatcherOptions());
+
+            var negotiateResponse = JsonConvert.DeserializeObject<JObject>(
+                Encoding.UTF8.GetString(((MemoryStream)negotiateContext.Response.Body).ToArray()));
+            var connectionToken = negotiateResponse.Value<string>("connectionToken");
+            Assert.True(manager.TryGetConnection(connectionToken, out var connection));
+
+            var connectContext = MakeRequest("/foo", connection, services);
+            SetTransport(connectContext, transportType);
+            connectContext.User = MakeUserWithSharedUnauthenticatedSub("victim");
+
+            await dispatcher.ExecuteAsync(
+                connectContext,
+                new HttpConnectionDispatcherOptions(),
+                _ => Task.CompletedTask).DefaultTimeout();
+
+            Assert.Equal(StatusCodes.Status403Forbidden, connectContext.Response.StatusCode);
+        }
+    }
+
+    // A ClaimsIdentity subclass may override IsAuthenticated (GenericIdentity is authenticated by virtue of
+    // having a Name, despite an empty AuthenticationType). The negotiate snapshot must evaluate the principal
+    // with its own behavior, otherwise the same user is rejected on their own first transport request.
+    [Theory]
+    [InlineData(HttpTransportType.LongPolling)]
+    [InlineData(HttpTransportType.ServerSentEvents)]
+    [InlineData(HttpTransportType.WebSockets)]
+    public async Task NegotiatedConnectionAllowsSameGenericIdentityUserOnFirstGet(HttpTransportType transportType)
+    {
+        await AssertFirstGetStatusAsync(
+            transportType,
+            MakeGenericIdentityUser(),
+            MakeGenericIdentityUser(),
+            StatusCodes.Status200OK);
+    }
+
+    [Theory]
+    [InlineData(HttpTransportType.LongPolling)]
+    [InlineData(HttpTransportType.ServerSentEvents)]
+    [InlineData(HttpTransportType.WebSockets)]
+    public async Task NegotiatedConnectionRejectsDifferentGenericIdentityUserOnFirstGet(HttpTransportType transportType)
+    {
+        await AssertFirstGetStatusAsync(
+            transportType,
+            MakeGenericIdentityUser("alice"),
+            MakeGenericIdentityUser("mallory"),
+            StatusCodes.Status403Forbidden);
+    }
+
+    // The general form of the problem: any identity type that decides IsAuthenticated for itself.
+    [Fact]
+    public async Task NegotiatedConnectionAllowsSameCustomAuthenticatedIdentityOnFirstGet()
+    {
+        await AssertFirstGetStatusAsync(
+            HttpTransportType.LongPolling,
+            new ClaimsPrincipal(new AlwaysAuthenticatedIdentity("alice")),
+            new ClaimsPrincipal(new AlwaysAuthenticatedIdentity("alice")),
+            StatusCodes.Status200OK);
+    }
+
+    [Fact]
+    public async Task NegotiatedConnectionRejectsDifferentCustomAuthenticatedIdentityOnFirstGet()
+    {
+        await AssertFirstGetStatusAsync(
+            HttpTransportType.LongPolling,
+            new ClaimsPrincipal(new AlwaysAuthenticatedIdentity("alice")),
+            new ClaimsPrincipal(new AlwaysAuthenticatedIdentity("mallory")),
+            StatusCodes.Status403Forbidden);
+    }
+
+    // Authenticated identities that carry none of the preferred identity claims fall back to comparing the
+    // full authenticated claim set.
+    [Fact]
+    public async Task NegotiatedConnectionAllowsSameUserWithoutPreferredIdentityClaimOnFirstGet()
+    {
+        await AssertFirstGetStatusAsync(
+            HttpTransportType.LongPolling,
+            MakeUserWithClaim("employeeId", "1"),
+            MakeUserWithClaim("employeeId", "1"),
+            StatusCodes.Status200OK);
+    }
+
+    [Fact]
+    public async Task NegotiatedConnectionFallbackIgnoresAuthenticatedClaimOrdering()
+    {
+        var negotiated = new ClaimsPrincipal(new ClaimsIdentity(
+            [new Claim("employeeId", "1"), new Claim("department", "eng")], "Test"));
+        var connecting = new ClaimsPrincipal(new ClaimsIdentity(
+            [new Claim("department", "eng"), new Claim("employeeId", "1")], "Test"));
+
+        await AssertFirstGetStatusAsync(
+            HttpTransportType.LongPolling, negotiated, connecting, StatusCodes.Status200OK);
+    }
+
+    [Fact]
+    public async Task NegotiatedConnectionFallbackIgnoresUnauthenticatedIdentities()
+    {
+        var negotiated = new ClaimsPrincipal(
+        [
+            new ClaimsIdentity([new Claim("employeeId", "1")], "Test"),
+        ]);
+        var connecting = new ClaimsPrincipal(
+        [
+            new ClaimsIdentity([new Claim("employeeId", "1")], "Test"),
+            new ClaimsIdentity([new Claim("employeeId", "2")]),
+        ]);
+
+        await AssertFirstGetStatusAsync(
+            HttpTransportType.LongPolling, negotiated, connecting, StatusCodes.Status200OK);
+    }
+
+    [Fact]
+    public async Task NegotiatedConnectionFallbackRejectsChangedAuthenticatedClaims()
+    {
+        await AssertFirstGetStatusAsync(
+            HttpTransportType.LongPolling,
+            MakeUserWithClaim("employeeId", "1"),
+            MakeUserWithClaim("employeeId", "2"),
+            StatusCodes.Status403Forbidden);
+    }
+
+    [Fact]
+    public async Task NegotiatedConnectionRejectsSamePreferredClaimFromDifferentIssuerOnFirstGet()
+    {
+        var negotiated = new ClaimsPrincipal(new ClaimsIdentity(
+            [new Claim(ClaimTypes.NameIdentifier, "alice", ClaimValueTypes.String, "issuer-a")],
+            "Test"));
+        var connecting = new ClaimsPrincipal(new ClaimsIdentity(
+            [new Claim(ClaimTypes.NameIdentifier, "alice", ClaimValueTypes.String, "issuer-b")],
+            "Test"));
+
+        await AssertFirstGetStatusAsync(
+            HttpTransportType.LongPolling, negotiated, connecting, StatusCodes.Status403Forbidden);
+    }
+
+    [Fact]
+    public async Task NegotiatedConnectionRejectsSameFallbackClaimFromDifferentIssuerOnFirstGet()
+    {
+        var negotiated = new ClaimsPrincipal(new ClaimsIdentity(
+            [new Claim("employeeId", "1", ClaimValueTypes.String, "issuer-a")],
+            "Test"));
+        var connecting = new ClaimsPrincipal(new ClaimsIdentity(
+            [new Claim("employeeId", "1", ClaimValueTypes.String, "issuer-b")],
+            "Test"));
+
+        await AssertFirstGetStatusAsync(
+            HttpTransportType.LongPolling, negotiated, connecting, StatusCodes.Status403Forbidden);
+    }
+
+    // A principal with no authenticated claims has no identity to bind to, so it is treated like an
+    // anonymous negotiate regardless of the scheme name on the identity.
+    [Fact]
+    public async Task NegotiatedConnectionAllowsClaimlessAuthenticatedIdentityOnFirstGet()
+    {
+        await AssertFirstGetStatusAsync(
+            HttpTransportType.LongPolling,
+            new ClaimsPrincipal(new ClaimsIdentity("SchemeA")),
+            new ClaimsPrincipal(new ClaimsIdentity("SchemeB")),
+            StatusCodes.Status200OK);
+    }
+
+    [Fact]
+    public async Task NegotiatedConnectionRejectsClaimlessAuthenticatedIdentityReplacingRealUser()
+    {
+        await AssertFirstGetStatusAsync(
+            HttpTransportType.LongPolling,
+            MakeUserWithClaim("employeeId", "1"),
+            new ClaimsPrincipal(new ClaimsIdentity("SchemeA")),
+            StatusCodes.Status403Forbidden);
+    }
+
+    [Fact]
+    public async Task NegotiatedConnectionRejectsAuthenticatedUserAfterNullUserNegotiate()
+    {
+        using (StartVerifiableLog())
+        {
+            var manager = CreateConnectionManager(LoggerFactory);
+            var options = new HttpConnectionDispatcherOptions();
+            var connection = manager.CreateConnection(options, negotiatedUser: null);
+            var dispatcher = CreateDispatcher(manager, LoggerFactory);
+            var services = new ServiceCollection();
+            services.AddOptions();
+            services.AddLogging();
+            var context = MakeRequest("/foo", connection, services);
+            var connectingUser = MakeUser("alice");
+            context.User = connectingUser;
+
+            await dispatcher.ExecuteAsync(
+                context,
+                options,
+                _ => Task.CompletedTask).DefaultTimeout();
+
+            Assert.Equal(StatusCodes.Status403Forbidden, context.Response.StatusCode);
+            Assert.Equal(HttpTransportType.None, connection.TransportType);
+            Assert.Null(connection.User);
+            Assert.True(connection.HasNegotiatedUser);
+        }
+    }
+
+    [Fact]
+    public async Task NonNegotiatedConnectionAllowsAuthenticatedUserOnFirstGet()
+    {
+        using (StartVerifiableLog())
+        {
+            var manager = CreateConnectionManager(LoggerFactory);
+            var options = new HttpConnectionDispatcherOptions();
+            var connection = manager.CreateConnection(options);
+            var dispatcher = CreateDispatcher(manager, LoggerFactory);
+            var services = new ServiceCollection();
+            services.AddOptions();
+            services.AddLogging();
+            var context = MakeRequest("/foo", connection, services);
+            var connectingUser = MakeUser("alice");
+            context.User = connectingUser;
+
+            await dispatcher.ExecuteAsync(
+                context,
+                options,
+                _ => Task.CompletedTask).DefaultTimeout();
+
+            Assert.Equal(StatusCodes.Status200OK, context.Response.StatusCode);
+            Assert.Equal(HttpTransportType.LongPolling, connection.TransportType);
+            Assert.Same(connectingUser, connection.User);
+            Assert.False(connection.HasNegotiatedUser);
+        }
+    }
+
+    [Fact]
+    public async Task NegotiatedConnectionAllowsSameClaimlessNamedIdentityUserOnFirstGet()
+    {
+        var negotiatedIdentity = new ClaimlessNamedIdentity("alice");
+        var connectingIdentity = new ClaimlessNamedIdentity("alice");
+        var negotiatedUser = new ClaimsPrincipal(negotiatedIdentity);
+        var connectingUser = new ClaimsPrincipal(connectingIdentity);
+
+        Assert.True(negotiatedIdentity.IsAuthenticated);
+        Assert.True(connectingIdentity.IsAuthenticated);
+        Assert.Equal("alice", negotiatedIdentity.Name);
+        Assert.Equal("alice", connectingIdentity.Name);
+        Assert.Empty(negotiatedIdentity.Claims);
+        Assert.Empty(connectingIdentity.Claims);
+
+        await AssertFirstGetStatusAsync(
+            HttpTransportType.LongPolling,
+            negotiatedUser,
+            connectingUser,
+            StatusCodes.Status200OK);
+    }
+
+    [Fact]
+    public async Task NegotiatedConnectionAllowsCaseInsensitiveClaimlessNamedIdentityUserOnFirstGet()
+    {
+        await AssertFirstGetStatusAsync(
+            HttpTransportType.LongPolling,
+            new ClaimsPrincipal(new ClaimlessNamedIdentity("ALICE")),
+            new ClaimsPrincipal(new ClaimlessNamedIdentity("alice")),
+            StatusCodes.Status200OK);
+    }
+
+    [Fact]
+    public async Task NegotiatedConnectionRejectsCaseChangedUriClaimlessNamedIdentityUserOnFirstGet()
+    {
+        await AssertFirstGetStatusAsync(
+            HttpTransportType.LongPolling,
+            new ClaimsPrincipal(new ClaimlessNamedIdentity("https://example.com/users/alice")),
+            new ClaimsPrincipal(new ClaimlessNamedIdentity("https://example.com/users/ALICE")),
+            StatusCodes.Status403Forbidden);
+    }
+
+    [Fact]
+    public async Task NegotiatedConnectionRejectsClaimIdentityAndNameFallbackIdentityWithSameName()
+    {
+        await AssertFirstGetStatusAsync(
+            HttpTransportType.LongPolling,
+            new ClaimsPrincipal(new ClaimsIdentity(
+                [new Claim(ClaimTypes.Name, "alice")],
+                "Test")),
+            new ClaimsPrincipal(new ClaimlessNamedIdentity("alice")),
+            StatusCodes.Status403Forbidden);
+    }
+
+    [Fact]
+    public async Task NegotiatedConnectionRejectsDifferentClaimlessNamedIdentityUserOnFirstGet()
+    {
+        var negotiatedIdentity = new ClaimlessNamedIdentity("alice");
+        var connectingIdentity = new ClaimlessNamedIdentity("mallory");
+        var negotiatedUser = new ClaimsPrincipal(negotiatedIdentity);
+        var connectingUser = new ClaimsPrincipal(connectingIdentity);
+
+        Assert.True(negotiatedIdentity.IsAuthenticated);
+        Assert.True(connectingIdentity.IsAuthenticated);
+        Assert.Equal("alice", negotiatedIdentity.Name);
+        Assert.Equal("mallory", connectingIdentity.Name);
+        Assert.Empty(negotiatedIdentity.Claims);
+        Assert.Empty(connectingIdentity.Claims);
+
+        await AssertFirstGetStatusAsync(
+            HttpTransportType.LongPolling,
+            negotiatedUser,
+            connectingUser,
+            StatusCodes.Status403Forbidden);
+    }
+
+    [Fact]
+    public async Task NegotiatedConnectionAllowsClaimlessAuthenticatedIdentityWithNullOrEmptyNameOnFirstGet()
+    {
+        var negotiatedIdentity = new ClaimsIdentity("SchemeA");
+        var connectingIdentity = new ClaimlessNamedIdentity(string.Empty);
+        var negotiatedUser = new ClaimsPrincipal(negotiatedIdentity);
+        var connectingUser = new ClaimsPrincipal(connectingIdentity);
+
+        Assert.True(negotiatedIdentity.IsAuthenticated);
+        Assert.True(connectingIdentity.IsAuthenticated);
+        Assert.Null(negotiatedIdentity.Name);
+        Assert.Equal(string.Empty, connectingIdentity.Name);
+        Assert.Empty(negotiatedIdentity.Claims);
+        Assert.Empty(connectingIdentity.Claims);
+
+        await AssertFirstGetStatusAsync(
+            HttpTransportType.LongPolling,
+            negotiatedUser,
+            connectingUser,
+            StatusCodes.Status200OK);
+    }
+
+    private sealed class ClaimlessNamedIdentity : ClaimsIdentity
+    {
+        private readonly string _name;
+
+        public ClaimlessNamedIdentity(string name)
+        {
+            _name = name;
+        }
+
+        public override bool IsAuthenticated => true;
+
+        public override string Name => _name;
+    }
+
+    private async Task AssertFirstGetStatusAsync(
+        HttpTransportType transportType,
+        ClaimsPrincipal negotiateUser,
+        ClaimsPrincipal connectUser,
+        int expectedStatusCode)
+    {
+        using (StartVerifiableLog())
+        {
+            var manager = CreateConnectionManager(LoggerFactory);
+            var dispatcher = CreateDispatcher(manager, LoggerFactory);
+            var services = new ServiceCollection();
+            services.AddOptions();
+            services.AddLogging();
+
+            var negotiateContext = new DefaultHttpContext();
+            negotiateContext.Request.Path = "/foo";
+            negotiateContext.Request.Method = HttpMethods.Post;
+            negotiateContext.Request.QueryString = new QueryString("?negotiateVersion=1");
+            negotiateContext.Response.Body = new MemoryStream();
+            negotiateContext.RequestServices = services.BuildServiceProvider();
+            negotiateContext.User = negotiateUser;
+
+            await dispatcher.ExecuteNegotiateAsync(negotiateContext, new HttpConnectionDispatcherOptions());
+
+            var negotiateResponse = JsonConvert.DeserializeObject<JObject>(
+                Encoding.UTF8.GetString(((MemoryStream)negotiateContext.Response.Body).ToArray()));
+            var connectionToken = negotiateResponse.Value<string>("connectionToken");
+            Assert.True(manager.TryGetConnection(connectionToken, out var connection));
+
+            var connectContext = MakeRequest("/foo", connection, services);
+            SetTransport(connectContext, transportType);
+            connectContext.User = connectUser;
+
+            var options = new HttpConnectionDispatcherOptions();
+            // An accepted WebSocket request otherwise waits the full default CloseTimeout for a close frame
+            // the test client never sends.
+            options.WebSockets.CloseTimeout = TimeSpan.FromMilliseconds(50);
+
+            await dispatcher.ExecuteAsync(
+                connectContext,
+                options,
+                _ => Task.CompletedTask).DefaultTimeout();
+
+            Assert.Equal(expectedStatusCode, connectContext.Response.StatusCode);
+        }
+    }
+
+    private static ClaimsPrincipal MakeGenericIdentityUser(string name = "alice")
+    {
+        var identity = new GenericIdentity(name);
+        identity.AddClaim(new Claim(ClaimTypes.NameIdentifier, $"{name}-id"));
+
+        return new ClaimsPrincipal(identity);
+    }
+
+    private sealed class AlwaysAuthenticatedIdentity : ClaimsIdentity
+    {
+        public AlwaysAuthenticatedIdentity(string userId)
+        {
+            AddClaim(new Claim(ClaimTypes.NameIdentifier, userId));
+        }
+
+        public override bool IsAuthenticated => true;
+    }
+
+    [Fact]
+    public void UserIdentityKeyUsesFirstAuthenticatedIdentity()
+    {
+        var user = new ClaimsPrincipal(
+        [
+            new ClaimsIdentity(
+                [new Claim(ClaimTypes.NameIdentifier, "primary-user")],
+                "Primary"),
+            new ClaimsIdentity(
+                [new Claim("sub", "secondary-user")],
+                "Secondary"),
+        ]);
+
+        var identityKey = UserIdentitySnapshot.GetUserIdentityKey(user);
+
+        Assert.Equal((ClaimTypes.NameIdentifier, "primary-user", ClaimsIdentity.DefaultIssuer), identityKey);
+    }
+
+    [Theory]
+    [InlineData(HttpTransportType.LongPolling)]
+    [InlineData(HttpTransportType.ServerSentEvents)]
+    public async Task NegotiatedConnectionAllowsSameUserOnFirstGet(HttpTransportType transportType)
+    {
+        using (StartVerifiableLog())
+        {
+            var manager = CreateConnectionManager(LoggerFactory);
+            var dispatcher = CreateDispatcher(manager, LoggerFactory);
+            var services = new ServiceCollection();
+            services.AddOptions();
+            services.AddLogging();
+
+            var negotiateContext = new DefaultHttpContext();
+            negotiateContext.Request.Path = "/foo";
+            negotiateContext.Request.Method = HttpMethods.Post;
+            negotiateContext.Request.QueryString = new QueryString("?negotiateVersion=1");
+            negotiateContext.Response.Body = new MemoryStream();
+            negotiateContext.RequestServices = services.BuildServiceProvider();
+            negotiateContext.User = MakeUserWithClaim("employeeId", "user");
+
+            await dispatcher.ExecuteNegotiateAsync(negotiateContext, new HttpConnectionDispatcherOptions());
+
+            var negotiateResponse = JsonConvert.DeserializeObject<JObject>(
+                Encoding.UTF8.GetString(((MemoryStream)negotiateContext.Response.Body).ToArray()));
+            var connectionToken = negotiateResponse.Value<string>("connectionToken");
+            Assert.True(manager.TryGetConnection(connectionToken, out var connection));
+
+            var connectContext = MakeRequest("/foo", connection, services);
+            SetTransport(connectContext, transportType);
+            connectContext.User = MakeUserWithClaim("employeeId", "user");
+
+            await dispatcher.ExecuteAsync(
+                connectContext,
+                new HttpConnectionDispatcherOptions(),
+                _ => Task.CompletedTask).DefaultTimeout();
+
+            Assert.Equal(StatusCodes.Status200OK, connectContext.Response.StatusCode);
+            Assert.False(connection.HasNegotiatedUser);
+        }
+    }
+
     [Fact]
     public async Task CheckThatThresholdValuesAreEnforced()
     {
@@ -2885,18 +3420,153 @@ public partial class HttpConnectionDispatcherTests : VerifiableLoggedTest
             await connection.Transport.Output.WriteAsync(Encoding.UTF8.GetBytes("Unblock")).AsTask().DefaultTimeout();
             await pollTask.DefaultTimeout();
 
-            Assert.NotEqual(StatusCodes.Status403Forbidden, reconnectContext.Response.StatusCode);
+            Assert.Equal(StatusCodes.Status200OK, reconnectContext.Response.StatusCode);
+        }
+    }
+
+    [Fact]
+    public async Task SendBeforeGetIsRejected()
+    {
+        using (StartVerifiableLog())
+        {
+            var manager = CreateConnectionManager(LoggerFactory);
+            var connection = manager.CreateConnection();
+            var dispatcher = CreateDispatcher(manager, LoggerFactory);
+
+            var services = new ServiceCollection();
+            services.AddOptions();
+            services.AddSingleton<TestConnectionHandler>();
+            services.AddLogging();
+
+            var builder = new ConnectionBuilder(services.BuildServiceProvider());
+            builder.UseConnectionHandler<TestConnectionHandler>();
+            var app = builder.Build();
+            var options = new HttpConnectionDispatcherOptions();
+
+            // Make a POST (send) before the transport has been set (i.e. before a Poll or EventSource)
+            var context = MakeRequest("/foo", connection, services);
+            context.Request.Method = HttpMethods.Post;
+            var requestBody = new MemoryStream();
+            var bytes = Encoding.UTF8.GetBytes("EXTRADATA Hi");
+            requestBody.Write(bytes, 0, bytes.Length);
+            requestBody.Seek(0, SeekOrigin.Begin);
+            context.Request.Body = requestBody;
+
+            await dispatcher.ExecuteAsync(context, options, app).DefaultTimeout();
+            Assert.Equal(StatusCodes.Status400BadRequest, context.Response.StatusCode);
+
+            // GET should still work after a failed send, the send didn't do anything to the connection state
+            var reconnectContext = MakeRequest("/foo", connection, services);
+            reconnectContext.User = MakeUserWithClaim("employeeId", "1");
+
+            var pollTask = dispatcher.ExecuteAsync(reconnectContext, options, app);
+            await connection.Transport.Output.WriteAsync(Encoding.UTF8.GetBytes("Unblock")).AsTask().DefaultTimeout();
+            await pollTask.DefaultTimeout();
+
+            Assert.Equal(StatusCodes.Status200OK, reconnectContext.Response.StatusCode);
+        }
+    }
+
+    [Fact]
+    public async Task SendWithDifferentAuthIsRejected()
+    {
+        using (StartVerifiableLog())
+        {
+            var manager = CreateConnectionManager(LoggerFactory);
+            var connection = manager.CreateConnection();
+            connection.TransportType = HttpTransportType.LongPolling;
+            // Connection started with an authenticated user (i.e. via Poll or EventSource)
+            connection.User = MakeUserWithClaim("employeeId", "1");
+            var dispatcher = CreateDispatcher(manager, LoggerFactory);
+
+            var services = new ServiceCollection();
+            services.AddOptions();
+            services.AddSingleton<TestConnectionHandler>();
+            services.AddLogging();
+
+            var builder = new ConnectionBuilder(services.BuildServiceProvider());
+            builder.UseConnectionHandler<TestConnectionHandler>();
+            var app = builder.Build();
+            var options = new HttpConnectionDispatcherOptions();
+
+            // Make a POST (send) request with a different user
+            var context = MakeRequest("/foo", connection, services);
+            context.Request.Method = HttpMethods.Post;
+            var requestBody = new MemoryStream();
+            var bytes = Encoding.UTF8.GetBytes("EXTRADATA Hi");
+            requestBody.Write(bytes, 0, bytes.Length);
+            requestBody.Seek(0, SeekOrigin.Begin);
+            context.Request.Body = requestBody;
+
+            await dispatcher.ExecuteAsync(context, options, app).DefaultTimeout();
+            Assert.Equal(StatusCodes.Status403Forbidden, context.Response.StatusCode);
+
+            // GET should still work after a failed send, the send didn't do anything to the connection state
+            var reconnectContext = MakeRequest("/foo", connection, services);
+            reconnectContext.User = MakeUserWithClaim("employeeId", "1");
+
+            var pollTask = dispatcher.ExecuteAsync(reconnectContext, options, app);
+            await connection.Transport.Output.WriteAsync(Encoding.UTF8.GetBytes("Unblock")).AsTask().DefaultTimeout();
+            await pollTask.DefaultTimeout();
+
+            Assert.Equal(StatusCodes.Status200OK, reconnectContext.Response.StatusCode);
+        }
+    }
+
+    [Theory]
+    [InlineData(HttpTransportType.LongPolling)]
+    [InlineData(HttpTransportType.ServerSentEvents)]
+    public async Task SendWithDifferentAuthIsRejectedWhileFirstGetIsInitializing(HttpTransportType transportType)
+    {
+        using (StartVerifiableLog())
+        {
+            var manager = CreateConnectionManager(LoggerFactory);
+            var connection = manager.CreateConnection(
+                new HttpConnectionDispatcherOptions(),
+                negotiatedUser: MakeUserWithClaim("employeeId", "attacker"));
+            connection.TransportType = transportType;
+            var dispatcher = CreateDispatcher(manager, LoggerFactory);
+
+            var services = new ServiceCollection();
+            services.AddOptions();
+            services.AddLogging();
+
+            var context = MakeRequest("/foo", connection, services);
+            context.Request.Method = HttpMethods.Post;
+            context.Request.Body = new MemoryStream(Encoding.UTF8.GetBytes("EXTRADATA Hi"));
+            context.User = MakeUserWithClaim("employeeId", "victim");
+
+            await dispatcher.ExecuteAsync(
+                context,
+                new HttpConnectionDispatcherOptions(),
+                _ => Task.CompletedTask).DefaultTimeout();
+
+            Assert.Equal(StatusCodes.Status403Forbidden, context.Response.StatusCode);
+            Assert.False(connection.Transport.Input.TryRead(out _));
         }
     }
 
     private static ClaimsPrincipal MakeUser(string nameIdentifier)
     {
-        return new ClaimsPrincipal(new ClaimsIdentity(new[] { new Claim(ClaimTypes.NameIdentifier, nameIdentifier) }));
+        return new ClaimsPrincipal(new ClaimsIdentity(
+            [new Claim(ClaimTypes.NameIdentifier, nameIdentifier)],
+            "Test"));
     }
 
     private static ClaimsPrincipal MakeUserWithClaim(string claimType, string value)
     {
         return new ClaimsPrincipal(new ClaimsIdentity(new[] { new Claim(claimType, value) }, "Test"));
+    }
+
+    private static ClaimsPrincipal MakeUserWithSharedUnauthenticatedSub(string nameIdentifier)
+    {
+        return new ClaimsPrincipal(
+        [
+            new ClaimsIdentity([new Claim("sub", "shared")]),
+            new ClaimsIdentity(
+                [new Claim(ClaimTypes.NameIdentifier, nameIdentifier)],
+                "Test"),
+        ]);
     }
 
     [Fact]
@@ -3067,6 +3737,7 @@ public partial class HttpConnectionDispatcherTests : VerifiableLoggedTest
             };
             var connection = manager.CreateConnection(options);
             connection.TransportType = HttpTransportType.LongPolling;
+            connection.User = new ClaimsPrincipal(new ClaimsIdentity());
 
             var dispatcher = CreateDispatcher(manager, LoggerFactory);
 
