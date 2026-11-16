@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using Microsoft.AspNetCore.Authentication;
+using Microsoft.AspNetCore.Authorization.Infrastructure;
 using Microsoft.AspNetCore.Authorization.Policy;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Features.Authentication;
@@ -33,6 +34,11 @@ public class AuthorizationMiddleware
     // Property key is used by Endpoint routing to determine if Authorization has run
     private const string AuthorizationMiddlewareInvokedWithEndpointKey = "__AuthorizationMiddlewareWithEndpointInvoked";
     private static readonly object AuthorizationMiddlewareWithEndpointInvokedValue = new object();
+
+    // Marker stored in the policy cache for endpoints without authorization metadata. It is never evaluated.
+    private static readonly AuthorizationPolicy NoAuthorizationMetadataPolicy = new(
+        new[] { new AssertionRequirement(static _ => false) },
+        Array.Empty<string>());
 
     private readonly RequestDelegate _next;
     private readonly IAuthorizationPolicyProvider _policyProvider;
@@ -106,12 +112,25 @@ public class AuthorizationMiddleware
         // Use the computed policy for this endpoint if we can
         AuthorizationPolicy? policy = null;
         var canCachePolicy = _canCache && endpoint != null;
+        var hasNoAuthorizationMetadata = false;
         if (canCachePolicy)
         {
             policy = _policyCache!.Lookup(endpoint!);
+
+            if (ReferenceEquals(policy, NoAuthorizationMetadataPolicy))
+            {
+                // The endpoint has no authorization metadata, so the combined policy is just the fallback policy.
+                // The fallback policy isn't cached while it is null so that it can still be picked up if it changes.
+                hasNoAuthorizationMetadata = true;
+                policy = await _policyProvider.GetFallbackPolicyAsync();
+                if (policy != null)
+                {
+                    _policyCache.Store(endpoint!, policy);
+                }
+            }
         }
 
-        if (policy == null)
+        if (policy == null && !hasNoAuthorizationMetadata)
         {
             // The middleware evaluates all the authorization metadata associated with the endpoint at once.
             // IMPORTANT: Changes to authorization logic should be mirrored in MVC's AuthorizeFilter
@@ -120,9 +139,19 @@ public class AuthorizationMiddleware
             policy = await AuthorizationPolicy.CombineAsync(_policyProvider, metadata);
 
             // Cache the computed policy
-            if (policy != null && canCachePolicy)
+            if (canCachePolicy)
             {
-                _policyCache!.Store(endpoint!, policy);
+                if (policy != null)
+                {
+                    _policyCache!.Store(endpoint!, policy);
+                }
+                else
+                {
+                    // A null policy means the endpoint has no authorization metadata and there is no fallback policy.
+                    // Remember that the endpoint has no authorization metadata to avoid rescanning its metadata on every request.
+                    // Only add the marker if nothing is cached yet so a policy cached by a concurrent request isn't replaced.
+                    _policyCache!.TryAdd(endpoint!, NoAuthorizationMetadataPolicy);
+                }
             }
         }
 

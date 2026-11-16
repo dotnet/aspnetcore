@@ -78,6 +78,8 @@ Microsoft.AspNetCore.Identity.UserStoreBase<TUser, TRole, TKey, TUserClaim, TUse
 Microsoft.AspNetCore.Identity.UserStoreBase<TUser, TRole, TKey, TUserClaim, TUserRole, TUserLogin, TUserToken, TRoleClaim>.UserStoreBase(Microsoft.AspNetCore.Identity.IdentityErrorDescriber! describer) -> void
 override Microsoft.AspNetCore.Identity.IdentityRole<TKey>.ToString() -> string!
 override Microsoft.AspNetCore.Identity.IdentityUser<TKey>.ToString() -> string!
+virtual Microsoft.AspNetCore.Identity.IdentityPasskeyData.Aaguid.get -> byte[]?
+virtual Microsoft.AspNetCore.Identity.IdentityPasskeyData.Aaguid.set -> void
 virtual Microsoft.AspNetCore.Identity.IdentityPasskeyData.AttestationObject.get -> byte[]!
 virtual Microsoft.AspNetCore.Identity.IdentityPasskeyData.AttestationObject.set -> void
 virtual Microsoft.AspNetCore.Identity.IdentityPasskeyData.ClientDataJson.get -> byte[]!

@@ -1,4 +1,4 @@
-﻿{
+{
   "author": "Microsoft",
   "name": "Blazor worker",
   "description": "Blazor WebAssembly または Blazor Web アプリから worker 上で .NET コードを実行するクラス ライブラリを作成するためのプロジェクト。",

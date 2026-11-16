@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Diagnostics;
+using System.Globalization;
 using System.IO.Pipelines;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
@@ -170,22 +171,24 @@ internal static class BufferExtensions
     [MethodImpl(MethodImplOptions.NoInlining)]
     private static void WriteNumericMultiWrite(ref this BufferWriter<PipeWriter> buffer, ulong number)
     {
-        const byte AsciiDigitStart = (byte)'0';
-
-        var value = number;
-        var position = _maxULongByteLength;
-        var byteBuffer = NumericBytesScratch;
-        do
+        // Fast path, format directly into the available memory
+        if (number.TryFormat(buffer.Span, out var bytesWritten, provider: CultureInfo.InvariantCulture))
         {
-            // Consider using Math.DivRem() if available
-            var quotient = value / 10;
-            byteBuffer[--position] = (byte)(AsciiDigitStart + (value - quotient * 10)); // 0x30 = '0'
-            value = quotient;
+            buffer.Advance(bytesWritten);
+            return;
         }
-        while (value != 0);
 
-        var length = _maxULongByteLength - position;
-        buffer.Write(new ReadOnlySpan<byte>(byteBuffer, position, length));
+        WriteNumericAcrossSpans(ref buffer, number);
+    }
+
+    [MethodImpl(MethodImplOptions.NoInlining)]
+    private static void WriteNumericAcrossSpans(ref BufferWriter<PipeWriter> buffer, ulong number)
+    {
+        // Not enough space left in the current span, format to a scratch buffer and write it across spans
+        var byteBuffer = NumericBytesScratch;
+        var formatted = number.TryFormat(byteBuffer, out var bytesWritten, provider: CultureInfo.InvariantCulture);
+        Debug.Assert(formatted);
+        buffer.Write(new ReadOnlySpan<byte>(byteBuffer, 0, bytesWritten));
     }
 
     internal static void WriteEncoded(ref this BufferWriter<PipeWriter> buffer, string data, Encoding encoding)
