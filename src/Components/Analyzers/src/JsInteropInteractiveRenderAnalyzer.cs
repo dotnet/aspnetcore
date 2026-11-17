@@ -123,6 +123,10 @@ public sealed class JsInteropInteractiveRenderAnalyzer : DiagnosticAnalyzer
             var isInteractiveChecked = AnalyzeCondition(condition, state);
             state.UpdateIsInteractiveChecked(isInteractiveChecked);
         }
+        else if (operation is ITryOperation tryOperation)
+        {
+            AnalyzeTry(tryOperation, state);
+        }
         else if (operation is IInvocationOperation invocation)
         {
             // Analyze if we have JSInterop calls.
@@ -253,6 +257,38 @@ public sealed class JsInteropInteractiveRenderAnalyzer : DiagnosticAnalyzer
             }
         }
         return false;
+    }
+
+    private static void AnalyzeTry(ITryOperation tryOperation, JSInteropAnalyzerState state)
+    {
+        var bodyState = state.Clone();
+        AnalyzeOperationsTree(tryOperation.Body, bodyState);
+        var isInteractiveChecked = IsCheckedOrNeverCompletes(tryOperation.Body, bodyState);
+
+        // An exception can enter a catch handler before any statement of the try body completes, so handlers start from the state before the try.
+        foreach (var catchClause in tryOperation.Catches)
+        {
+            var catchState = state.Clone();
+            if (catchClause.Filter is not null)
+            {
+                AnalyzeOperationsTree(catchClause.Filter, catchState);
+            }
+
+            AnalyzeOperationsTree(catchClause.Handler, catchState);
+            isInteractiveChecked = isInteractiveChecked && IsCheckedOrNeverCompletes(catchClause.Handler, catchState);
+        }
+
+        if (tryOperation.Finally is not null)
+        {
+            AnalyzeOperationsTree(tryOperation.Finally, state.Clone());
+        }
+
+        state.UpdateIsInteractiveChecked(isInteractiveChecked);
+    }
+
+    private static bool IsCheckedOrNeverCompletes(IOperation path, JSInteropAnalyzerState pathState)
+    {
+        return pathState.IsInteractiveChecked || ConditionBlockReturnsOnIsInteractive(path);
     }
 
     /// <summary>

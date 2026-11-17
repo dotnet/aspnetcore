@@ -2046,4 +2046,24 @@ namespace ConsoleApplication1
             new DiagnosticResult { Locations = new[] { new DiagnosticResultLocation("Test0.cs", 21, 68) }, Id = id, Message = messageInvokeVoidAsync, Severity = DiagnosticSeverity.Warning, }
         );
     }
+
+    [Theory]
+    [InlineData("try { if (!RendererInfo.IsInteractive) return; } finally { } await JS.InvokeVoidAsync(Identifier);")]
+    [InlineData("try { if (!RendererInfo.IsInteractive) return; } catch (InvalidOperationException) { return; } await JS.InvokeVoidAsync(Identifier);")]
+    [InlineData("try { if (!RendererInfo.IsInteractive) return; } catch (InvalidOperationException) { if (!RendererInfo.IsInteractive) return; } await JS.InvokeVoidAsync(Identifier);")]
+    public void JSInvokeAfterTryWithIsInteractiveCheckOnEveryCompletingPathShouldNotThrowWarning(string statements)
+    {
+        VerifyCSharpDiagnostic(CreateOnInitializedAsyncTest(statements));
+    }
+
+    [Theory]
+    [InlineData("try { if (!RendererInfo.IsInteractive) return; } catch (InvalidOperationException) { } await JS.InvokeVoidAsync(Identifier);", 106)]
+    [InlineData("try { } catch (InvalidOperationException) { if (!RendererInfo.IsInteractive) return; } await JS.InvokeVoidAsync(Identifier);", 106)]
+    [InlineData("try { if (!RendererInfo.IsInteractive) return; } finally { await JS.InvokeVoidAsync(Identifier); }", 78)]
+    public void JSInvokeAfterTryWithoutIsInteractiveCheckOnEveryCompletingPathShouldThrowWarning(string statements, int column)
+    {
+        VerifyCSharpDiagnostic(CreateOnInitializedAsyncTest(statements),
+            new DiagnosticResult { Locations = new[] { new DiagnosticResultLocation("Test0.cs", 21, column) }, Id = id, Message = messageInvokeVoidAsync, Severity = DiagnosticSeverity.Warning, }
+        );
+    }
 }
