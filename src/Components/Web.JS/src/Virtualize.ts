@@ -17,6 +17,7 @@ export const Virtualize = {
 };
 
 const dispatcherObserversByDotNetIdPropname = Symbol();
+const nativeAnchoringByScrollElement = new WeakMap<HTMLElement, { count: number; value: string; priority: string }>();
 const THROTTLE_MS = 50;
 const SpacerVisibilityReason = {
   UserScroll: 0,
@@ -193,7 +194,7 @@ function init(dotNetHelper: DotNet.DotNetObject, spacerBefore: HTMLElement, spac
     },
   };
 
-  let savedOverflowAnchor: { value: string; priority: string } | undefined;
+  let savedOverflowAnchor: { count: number; value: string; priority: string } | undefined;
   const nativeAnchoring = {
     suspendedFor: new Set<'convergence' | 'slide'>(),
     resumeFrame: 0,
@@ -201,10 +202,15 @@ function init(dotNetHelper: DotNet.DotNetObject, spacerBefore: HTMLElement, spac
       this.suspendedFor.add(reason);
       if (useNativeAnchoring) {
         cancelAnimationFrame(this.resumeFrame);
-        savedOverflowAnchor ??= {
-          value: scrollElement.style.overflowAnchor,
-          priority: scrollElement.style.getPropertyPriority('overflow-anchor'),
-        };
+        if (!savedOverflowAnchor) {
+          savedOverflowAnchor = nativeAnchoringByScrollElement.get(scrollElement) ?? {
+            count: 0,
+            value: scrollElement.style.overflowAnchor,
+            priority: scrollElement.style.getPropertyPriority('overflow-anchor'),
+          };
+          savedOverflowAnchor.count++;
+          nativeAnchoringByScrollElement.set(scrollElement, savedOverflowAnchor);
+        }
         scrollElement.style.overflowAnchor = 'none';
       }
     },
@@ -224,8 +230,11 @@ function init(dotNetHelper: DotNet.DotNetObject, spacerBefore: HTMLElement, spac
     },
     restore(): void {
       if (savedOverflowAnchor) {
-        if (scrollElement.style.overflowAnchor === 'none') {
-          scrollElement.style.setProperty('overflow-anchor', savedOverflowAnchor.value, savedOverflowAnchor.priority);
+        if (--savedOverflowAnchor.count === 0) {
+          if (scrollElement.style.overflowAnchor === 'none') {
+            scrollElement.style.setProperty('overflow-anchor', savedOverflowAnchor.value, savedOverflowAnchor.priority);
+          }
+          nativeAnchoringByScrollElement.delete(scrollElement);
         }
         savedOverflowAnchor = undefined;
       }
