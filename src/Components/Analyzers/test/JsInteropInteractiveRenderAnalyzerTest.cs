@@ -1974,6 +1974,22 @@ namespace ConsoleApplication1
         VerifyCSharpDiagnostic(CreateOnInitializedAsyncTest(statements));
     }
 
+    [Fact]
+    public void JSInvokeInDelegateAssignedToParameterAndInvokedShouldThrowWarning()
+    {
+        VerifyCSharpDiagnostic(CreateOnInitializedAsyncTest("Run(() => { }); void Run(Action work) { work = () => JS.InvokeVoidAsync(Identifier); work(); }"),
+            new DiagnosticResult { Locations = new[] { new DiagnosticResultLocation("Test0.cs", 21, 66) }, Id = id, Message = messageInvokeVoidAsync, Severity = DiagnosticSeverity.Warning, }
+        );
+    }
+
+    [Theory]
+    [InlineData("Run(() => { }); void Run(Action work) { work = () => JS.InvokeVoidAsync(Identifier); }")]
+    [InlineData("Run(() => { }); void Run(Action work) { work = () => JS.InvokeVoidAsync(Identifier); work = () => { }; work(); }")]
+    public void JSInvokeInDelegateAssignedToParameterNotInvokedShouldNotThrowWarning(string statements)
+    {
+        VerifyCSharpDiagnostic(CreateOnInitializedAsyncTest(statements));
+    }
+
     [Theory]
     [InlineData("if (RendererInfo.IsInteractive == false)|{|    await JS.InvokeVoidAsync(Identifier);|}", 23)]
     [InlineData("if (RendererInfo.IsInteractive != true)|{|    await JS.InvokeVoidAsync(Identifier);|}", 23)]

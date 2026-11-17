@@ -191,16 +191,15 @@ public sealed class JsInteropInteractiveRenderAnalyzer : DiagnosticAnalyzer
             return;
         }
 
-        var reassignedLocal = (assignment.Target as ILocalReferenceOperation)?.Local;
-        if (reassignedLocal is not null)
+        if (assignment.Target is ILocalReferenceOperation reassignedLocal)
         {
-            state.SymbolChecks.Remove(reassignedLocal);
+            state.SymbolChecks.Remove(reassignedLocal.Local);
         }
 
-        AnalyzeAssignedValue(reassignedLocal, assignment.Value, state);
+        AnalyzeAssignedValue(GetReferencedLocalOrParameter(assignment.Target), assignment.Value, state);
     }
 
-    private static void AnalyzeAssignedValue(ILocalSymbol? assignedLocal, IOperation value, JSInteropAnalyzerState state)
+    private static void AnalyzeAssignedValue(ISymbol? assignedLocal, IOperation value, JSInteropAnalyzerState state)
     {
         if (assignedLocal is not null)
         {
@@ -527,11 +526,21 @@ public sealed class JsInteropInteractiveRenderAnalyzer : DiagnosticAnalyzer
         }
     }
 
+    private static ISymbol? GetReferencedLocalOrParameter(IOperation? operation)
+    {
+        return operation switch
+        {
+            ILocalReferenceOperation localReference => localReference.Local,
+            IParameterReferenceOperation parameterReference => parameterReference.Parameter,
+            _ => null,
+        };
+    }
+
     private static IOperation? FindInvokedStoredDelegate(IInvocationOperation invocation, JSInteropAnalyzerState state)
     {
         if (invocation.TargetMethod.MethodKind == MethodKind.DelegateInvoke
-            && GetInvokedDelegate(invocation) is ILocalReferenceOperation localReference
-            && state.StoredDelegates.TryGetValue(localReference.Local, out var storedDelegate))
+            && GetReferencedLocalOrParameter(GetInvokedDelegate(invocation)) is ISymbol delegateVariable
+            && state.StoredDelegates.TryGetValue(delegateVariable, out var storedDelegate))
         {
             return storedDelegate;
         }
@@ -720,7 +729,8 @@ public sealed class JsInteropInteractiveRenderAnalyzer : DiagnosticAnalyzer
 
         public HashSet<ILocalSymbol> SymbolChecks { get; private set; } = new HashSet<ILocalSymbol>();
 
-        public Dictionary<ILocalSymbol, IOperation> StoredDelegates { get; private set; } = new Dictionary<ILocalSymbol, IOperation>();
+        // Delegates held by locals or parameters, keyed by the variable, analyzed where the variable is invoked.
+        public Dictionary<ISymbol, IOperation> StoredDelegates { get; private set; } = new Dictionary<ISymbol, IOperation>(SymbolEqualityComparer.Default);
 
         public JSInteropAnalyzerState(OperationBlockAnalysisContext blockContext, Dictionary<string, INamedTypeSymbol?> availableTypes)
         {
@@ -735,7 +745,7 @@ public sealed class JsInteropInteractiveRenderAnalyzer : DiagnosticAnalyzer
                 CurrentDepth = this.CurrentDepth,
                 IsInteractiveChecked = this.IsInteractiveChecked,
                 SymbolChecks = new (this.SymbolChecks),
-                StoredDelegates = new (this.StoredDelegates)
+                StoredDelegates = new (this.StoredDelegates, SymbolEqualityComparer.Default)
             };
         }
 
