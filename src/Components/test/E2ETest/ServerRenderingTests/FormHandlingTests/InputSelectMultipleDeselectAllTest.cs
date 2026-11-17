@@ -21,8 +21,7 @@ namespace Microsoft.AspNetCore.Components.E2ETests.ServerRenderingTests.FormHand
 // rendered as a <select multiple> inside an <EditForm>, and on POST the bound
 // [SupplyParameterFromForm] property is deserialized from the form data. When all
 // options are deselected, the form posts no value for the multi-select key, and the
-// bound array must be received as an empty array (not null) so that re-rendering the
-// page does not throw a NullReferenceException on accessing .Length.
+// bound array is null. Re-rendering the InputSelect must tolerate that null value.
 public class InputSelectMultipleDeselectAllTest : ServerTestBase<BasicTestAppServerSiteFixture<RazorComponentEndpointsNoInteractivityStartup<App>>>
 {
     public InputSelectMultipleDeselectAllTest(
@@ -37,7 +36,7 @@ public class InputSelectMultipleDeselectAllTest : ServerTestBase<BasicTestAppSer
         => InitializeAsync(BrowserFixture.StreamingContext);
 
     [Fact]
-    public void InputSelectMultiple_EditForm_DeselectingAll_Ssr_DeserializesAsEmptyArray()
+    public void InputSelectMultiple_EditForm_DeselectingAll_Ssr_DeserializesAsNull()
     {
         Navigate($"{ServerPathBase}/forms/input-select-multiple-deselect-all");
 
@@ -53,16 +52,14 @@ public class InputSelectMultipleDeselectAllTest : ServerTestBase<BasicTestAppSer
         Browser.Equal(2, () => citiesSelect.AllSelectedOptions.Count);
 
         // In SSR the resulting POST has no entry for the multi-select, so
-        // [SupplyParameterFromForm] must resolve SelectedCities to an empty
-        // array. If it resolves to null, re-rendering would NRE on
-        // SelectedCities.Length (or fall back to -1 via the `?? -1` in markup).
+        // [SupplyParameterFromForm] must resolve SelectedCities to null.
         citiesSelect.DeselectByText("San Francisco");
         citiesSelect.DeselectByText("Tokyo");
         Browser.Equal(0, () => citiesSelect.AllSelectedOptions.Count);
 
         Browser.FindElement(By.Id("send")).Click();
 
-        Browser.Equal("Submitted. Length: 0", () => Browser.FindElement(By.Id("result")).Text);
-        Browser.Equal("Submitted. IsNull: False", () => Browser.FindElement(By.Id("result-null")).Text);
+        Browser.Equal("Submitted. Length: -1", () => Browser.FindElement(By.Id("result")).Text);
+        Browser.Equal("Submitted. IsNull: True", () => Browser.FindElement(By.Id("result-null")).Text);
     }
 }

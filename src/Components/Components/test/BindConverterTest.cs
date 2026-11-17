@@ -552,14 +552,43 @@ public class BindConverterTest
     }
 
     [Fact]
-    public void FormatValue_Array_Null()
+    public void FormatValue_NullableDateTimeNull_Generic()
     {
-        string[] value = null;
-        string expected = "[]";
+        var actual = BindConverter.FormatValue<DateTime?>(null);
 
-        var actual = BindConverter.FormatValue(value);
+        Assert.Equal(string.Empty, actual);
+    }
 
-        Assert.Equal(expected, actual);
+    [Fact]
+    public void FormatValue_NullableDateTimeOffsetNull_Generic()
+    {
+        var actual = BindConverter.FormatValue<DateTimeOffset?>(null);
+
+        Assert.Equal(string.Empty, actual);
+    }
+
+    [Fact]
+    public void FormatValue_NullableDateOnlyNull_Generic()
+    {
+        var actual = BindConverter.FormatValue<DateOnly?>(null);
+
+        Assert.Equal(string.Empty, actual);
+    }
+
+    [Fact]
+    public void FormatValue_NullableTimeOnlyNull_Generic()
+    {
+        var actual = BindConverter.FormatValue<TimeOnly?>(null);
+
+        Assert.Equal(string.Empty, actual);
+    }
+
+    [Fact]
+    public void FormatValue_TypeConverter_Null()
+    {
+        var actual = BindConverter.FormatValue<Person>(null);
+
+        Assert.Equal("null", actual);
     }
 
     [Fact]

@@ -284,7 +284,7 @@ public class FormDataMapperTests
 #nullable disable
 
     [Fact]
-    public void Deserialize_Array_NoElements_ReturnsEmptyArray()
+    public void Deserialize_StringArray_NoElements_ReturnsNull()
     {
         // Arrange
         var data = new Dictionary<string, StringValues>() { };
@@ -296,8 +296,7 @@ public class FormDataMapperTests
         var result = FormDataMapper.Map<string[]>(reader, options);
 
         // Assert
-        Assert.NotNull(result);
-        Assert.Empty(result);
+        Assert.Null(result);
     }
 
     [Fact]

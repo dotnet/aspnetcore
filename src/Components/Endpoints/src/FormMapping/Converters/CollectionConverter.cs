@@ -251,15 +251,7 @@ internal class CollectionConverter<TCollection, TCollectionPolicy, TBuffer, TEle
         }
         else
         {
-            if (typeof(TCollection).IsArray)
-            {
-                buffer = TCollectionPolicy.CreateBuffer();
-                result = TCollectionPolicy.ToResult(buffer);
-            }
-            else
-            {
-                result = default;
-            }
+            result = default;
         }
 
         return succeeded;
