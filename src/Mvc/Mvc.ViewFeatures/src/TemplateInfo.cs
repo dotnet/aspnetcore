@@ -9,7 +9,8 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures;
 public class TemplateInfo
 {
     // Keep a collection of visited objects to prevent infinite recursion.
-    private readonly HashSet<object> _visitedObjects;
+    // Lazily allocated: most ViewDataDictionary instances never render templates.
+    private HashSet<object> _visitedObjects;
 
     private object _formattedModelValue;
     private string _htmlFieldPrefix;
@@ -21,7 +22,6 @@ public class TemplateInfo
     {
         _htmlFieldPrefix = string.Empty;
         _formattedModelValue = string.Empty;
-        _visitedObjects = new HashSet<object>();
     }
 
     /// <summary>
@@ -32,7 +32,10 @@ public class TemplateInfo
     {
         FormattedModelValue = original.FormattedModelValue;
         HtmlFieldPrefix = original.HtmlFieldPrefix;
-        _visitedObjects = new HashSet<object>(original._visitedObjects);
+        if (original._visitedObjects is { Count: > 0 } visitedObjects)
+        {
+            _visitedObjects = new HashSet<object>(visitedObjects);
+        }
     }
 
     /// <summary>
@@ -67,7 +70,7 @@ public class TemplateInfo
     /// </summary>
     public int TemplateDepth
     {
-        get { return _visitedObjects.Count; }
+        get { return _visitedObjects?.Count ?? 0; }
     }
 
     /// <summary>
@@ -77,6 +80,7 @@ public class TemplateInfo
     /// <returns>If this object is newly visited.</returns>
     public bool AddVisited(object value)
     {
+        _visitedObjects ??= new HashSet<object>();
         return _visitedObjects.Add(value);
     }
 
@@ -114,6 +118,7 @@ public class TemplateInfo
     /// <returns>Whether the model has been visited.</returns>
     public bool Visited(ModelExplorer modelExplorer)
     {
-        return _visitedObjects.Contains(modelExplorer.Model ?? modelExplorer.Metadata.ModelType);
+        return _visitedObjects is not null &&
+            _visitedObjects.Contains(modelExplorer.Model ?? modelExplorer.Metadata.ModelType);
     }
 }

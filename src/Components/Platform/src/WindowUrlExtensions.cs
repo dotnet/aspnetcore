@@ -14,12 +14,12 @@ public static class WindowUrlExtensions
         /// Gets the browser URL constructor and static operations.
         /// </summary>
         public UrlConstructor Url
-            => window.GetOrAddFeature(static jsRuntime => new UrlConstructor(jsRuntime));
+            => window.GetOrAddFeature(static context => new UrlConstructor(context.JSRuntime));
 
         /// <summary>
         /// Gets the browser URLSearchParams constructor.
         /// </summary>
         public UrlSearchParamsConstructor UrlSearchParams
-            => window.GetOrAddFeature(static jsRuntime => new UrlSearchParamsConstructor(jsRuntime));
+            => window.GetOrAddFeature(static context => new UrlSearchParamsConstructor(context.JSRuntime));
     }
 }

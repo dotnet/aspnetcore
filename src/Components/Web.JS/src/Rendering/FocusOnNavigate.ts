@@ -4,11 +4,23 @@
 import { domFunctions } from '../DomWrapper';
 import { JSEventRegistry } from '../Services/JSEventRegistry';
 import { isForSamePath } from '../Services/NavigationUtils';
+import { depthFirstNodeTreeTraversal, LogicalElement } from './LogicalElements';
 
 const customElementName = 'blazor-focus-on-navigate';
 let currentFocusOnNavigateElement: FocusOnNavigateElement | null = null;
 let locationOnLastNavigation = location.href;
 let allowApplyFocusAfterEnhancedNavigation = false;
+let focusedNavigationElement: NavigationFocus | null = null;
+
+interface NavigationFocus {
+  element: Element;
+  selector: string;
+  owner: FocusOnNavigateElement;
+}
+
+export interface PendingNavigationFocus extends NavigationFocus {
+  root: LogicalElement;
+}
 
 export function enableFocusOnNavigate(jsEventRegistry: JSEventRegistry) {
   customElements.define(customElementName, FocusOnNavigateElement);
@@ -44,6 +56,7 @@ function onEnhancedNavigationStart() {
   // Only move focus when navigating to a new page.
   if (!isForSamePath(locationOnLastNavigation, location.href)) {
     allowApplyFocusAfterEnhancedNavigation = true;
+    focusedNavigationElement = null;
   }
 
   locationOnLastNavigation = location.href;
@@ -62,10 +75,88 @@ function onFocusIn() {
 }
 
 function tryApplyFocus() {
-  const selector = currentFocusOnNavigateElement?.getAttribute('selector');
-  if (selector) {
+  focusedNavigationElement = null;
+  const owner = currentFocusOnNavigateElement;
+  const selector = owner?.getAttribute('selector');
+  if (owner && selector) {
+    const element = document.querySelector(selector);
     domFunctions.focusBySelector(selector);
+    if (element && document.activeElement === element && currentFocusOnNavigateElement === owner && owner.getAttribute('selector') === selector) {
+      focusedNavigationElement = { element, selector, owner };
+    }
   }
+}
+
+export function captureNavigationFocus(root: LogicalElement): PendingNavigationFocus | null {
+  const focus = focusedNavigationElement;
+  if (!focus) {
+    return null;
+  }
+
+  if (document.activeElement !== focus.element) {
+    return null;
+  }
+
+  if (!isInLogicalRoot(getElementsInLogicalRoot(root), focus.element)) {
+    return null;
+  }
+
+  focusedNavigationElement = null;
+  return { ...focus, root };
+}
+
+export function restoreNavigationFocus(focus: PendingNavigationFocus): void {
+  if (!canRestoreFocus(focus)) {
+    return;
+  }
+
+  // Match FocusOnNavigate's document.querySelector order, limited to the replaced root.
+  const rootElements = getElementsInLogicalRoot(focus.root);
+  const replacement = Array.from(document.querySelectorAll(focus.selector)).find(element => isInLogicalRoot(rootElements, element));
+  if (!replacement) {
+    return;
+  }
+
+  if (!('focus' in replacement) || typeof replacement.focus !== 'function'
+    || !('tabIndex' in replacement) || typeof replacement.tabIndex !== 'number') {
+    throw new Error('Unable to focus an invalid element.');
+  }
+
+  if (!replacement.hasAttribute('tabindex')) {
+    replacement.tabIndex = -1;
+  }
+
+  replacement.focus({ preventScroll: true });
+}
+
+function canRestoreFocus(focus: PendingNavigationFocus): boolean {
+  return !focus.element.isConnected
+    && (document.activeElement === null || document.activeElement === document.body)
+    && currentFocusOnNavigateElement === focus.owner
+    && focus.owner.isConnected
+    && focus.owner.getAttribute('selector') === focus.selector;
+}
+
+function getElementsInLogicalRoot(root: LogicalElement): Set<Element> {
+  const elements = new Set<Element>();
+  for (const child of depthFirstNodeTreeTraversal(root)) {
+    if (child !== root && child instanceof Element) {
+      elements.add(child);
+    }
+  }
+
+  return elements;
+}
+
+// Elements inserted from static markup are not part of the logical tree, so check DOM ancestry.
+function isInLogicalRoot(rootElements: Set<Element>, element: Element): boolean {
+  for (let current: Element | null = element; current; current = current.parentElement) {
+    if (rootElements.has(current)) {
+      return true;
+    }
+  }
+
+  return false;
 }
 
 class FocusOnNavigateElement extends HTMLElement {
@@ -77,6 +168,7 @@ class FocusOnNavigateElement extends HTMLElement {
   disconnectedCallback() {
     if (currentFocusOnNavigateElement === this) {
       currentFocusOnNavigateElement = null;
+      focusedNavigationElement = null;
     }
   }
 }

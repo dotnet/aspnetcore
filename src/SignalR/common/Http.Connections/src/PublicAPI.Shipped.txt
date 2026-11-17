@@ -3,6 +3,8 @@ Microsoft.AspNetCore.Builder.ConnectionEndpointRouteBuilder
 Microsoft.AspNetCore.Builder.ConnectionEndpointRouteBuilder.Add(System.Action<Microsoft.AspNetCore.Builder.EndpointBuilder!>! convention) -> void
 Microsoft.AspNetCore.Builder.ConnectionEndpointRouteBuilder.Finally(System.Action<Microsoft.AspNetCore.Builder.EndpointBuilder!>! finalConvention) -> void
 Microsoft.AspNetCore.Builder.ConnectionEndpointRouteBuilderExtensions
+Microsoft.AspNetCore.Http.Connections.AuthenticationRefreshMetadata
+Microsoft.AspNetCore.Http.Connections.AuthenticationRefreshMetadata.AuthenticationRefreshMetadata() -> void
 Microsoft.AspNetCore.Http.Connections.ConnectionOptions
 Microsoft.AspNetCore.Http.Connections.ConnectionOptions.ConnectionOptions() -> void
 Microsoft.AspNetCore.Http.Connections.ConnectionOptions.DisconnectTimeout.get -> System.TimeSpan?
@@ -24,10 +26,16 @@ Microsoft.AspNetCore.Http.Connections.HttpConnectionDispatcherOptions.Applicatio
 Microsoft.AspNetCore.Http.Connections.HttpConnectionDispatcherOptions.AuthorizationData.get -> System.Collections.Generic.IList<Microsoft.AspNetCore.Authorization.IAuthorizeData!>!
 Microsoft.AspNetCore.Http.Connections.HttpConnectionDispatcherOptions.CloseOnAuthenticationExpiration.get -> bool
 Microsoft.AspNetCore.Http.Connections.HttpConnectionDispatcherOptions.CloseOnAuthenticationExpiration.set -> void
+Microsoft.AspNetCore.Http.Connections.HttpConnectionDispatcherOptions.EnableAuthenticationRefresh.get -> bool
+Microsoft.AspNetCore.Http.Connections.HttpConnectionDispatcherOptions.EnableAuthenticationRefresh.set -> void
 Microsoft.AspNetCore.Http.Connections.HttpConnectionDispatcherOptions.HttpConnectionDispatcherOptions() -> void
 Microsoft.AspNetCore.Http.Connections.HttpConnectionDispatcherOptions.LongPolling.get -> Microsoft.AspNetCore.Http.Connections.LongPollingOptions!
+Microsoft.AspNetCore.Http.Connections.HttpConnectionDispatcherOptions.MaximumAuthenticationExpiration.get -> System.TimeSpan?
+Microsoft.AspNetCore.Http.Connections.HttpConnectionDispatcherOptions.MaximumAuthenticationExpiration.set -> void
 Microsoft.AspNetCore.Http.Connections.HttpConnectionDispatcherOptions.MinimumProtocolVersion.get -> int
 Microsoft.AspNetCore.Http.Connections.HttpConnectionDispatcherOptions.MinimumProtocolVersion.set -> void
+Microsoft.AspNetCore.Http.Connections.HttpConnectionDispatcherOptions.OnAuthenticationRefresh.get -> System.Func<Microsoft.AspNetCore.Connections.Features.AuthenticationRefreshContext!, System.Threading.Tasks.Task<bool>!>?
+Microsoft.AspNetCore.Http.Connections.HttpConnectionDispatcherOptions.OnAuthenticationRefresh.set -> void
 Microsoft.AspNetCore.Http.Connections.HttpConnectionDispatcherOptions.TransportMaxBufferSize.get -> long
 Microsoft.AspNetCore.Http.Connections.HttpConnectionDispatcherOptions.TransportMaxBufferSize.set -> void
 Microsoft.AspNetCore.Http.Connections.HttpConnectionDispatcherOptions.Transports.get -> Microsoft.AspNetCore.Http.Connections.HttpTransportType

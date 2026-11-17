@@ -835,6 +835,8 @@ public class KestrelMetricsTests : TestApplicationErrorLoggerLoggedTest
             await shutdownTask;
         }
 
+        await connectionDuration.WaitForMeasurementsAsync(minCount: 1).DefaultTimeout();
+
         Assert.Collection(connectionDuration.GetMeasurementSnapshot(), m => AssertDuration(m, "127.0.0.1", localPort: 0, "tcp", "ipv4", KestrelMetrics.Http2, error: KestrelMetrics.GetErrorType(ConnectionEndReason.AppShutdownTimeout)));
     }
 
