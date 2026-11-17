@@ -14,6 +14,8 @@ sys.path.insert(0, str(Path(__file__).resolve().parent.parent / "scripts"))
 import get_attention_inventory as inv  # noqa: E402
 import check_investigation_plugins as plugins  # noqa: E402
 import retry_ci  # noqa: E402
+import schedule_report  # noqa: E402
+import send_report  # noqa: E402
 import servicing_schedule as schedule  # noqa: E402
 import workflow_failures  # noqa: E402
 
@@ -385,6 +387,68 @@ class InvestigationPluginTests(unittest.TestCase):
         self.assertIn("copilot plugin marketplace add dotnet/skills", result["commands"])
         self.assertIn("copilot plugin enable dotnet-helix@dotnet-arcade-skills", result["commands"])
         self.assertFalse(result["ready"])
+
+
+class ReportTests(unittest.TestCase):
+    def test_failing_category_is_reported_instead_of_aborting(self):
+        with unittest.mock.patch.object(inv, "search_prs", side_effect=RuntimeError("gh: not logged in")):
+            result = inv.collect(["dependabot"], NOW, keep_going=True)
+            with self.assertRaises(RuntimeError):
+                inv.collect(["dependabot"], NOW)
+        self.assertIn("not logged in", result["errors"]["dependabot"])
+        self.assertIn("Dependabot (not collected)", inv.render_markdown(result))
+        summary = send_report.summarize(result)
+        self.assertIn("1 section not collected", send_report.subject(result, summary))
+
+    def test_markdown_renders_to_escaped_html(self):
+        markdown = "\n".join([
+            "## Servicing <PRs> (1)", "",
+            "| PR | Next action |", "|:--|:--|",
+            "| [dotnet/aspnetcore#1](https://github.com/dotnet/aspnetcore/pull/1) | ready-to-merge |", "",
+            "- **bold** `a_b_c` see https://dev.azure.com/dnceng/internal/_componentGovernance/x_y.",
+            "  - nested _note_", "",
+            "_Nothing open._",
+        ])
+        out = send_report.markdown_to_html(markdown)
+        self.assertIn("<h2>Servicing &lt;PRs&gt; (1)</h2>", out)
+        self.assertIn('<a href="https://github.com/dotnet/aspnetcore/pull/1">dotnet/aspnetcore#1</a>', out)
+        self.assertNotIn(":--", out)
+        self.assertIn("<strong>bold</strong>", out)
+        self.assertIn(">a_b_c</code>", out)
+        # Underscores in URLs aren't treated as italics, and trailing punctuation isn't part of the link.
+        self.assertIn('href="https://dev.azure.com/dnceng/internal/_componentGovernance/x_y"', out)
+        self.assertEqual(out.count("<ul>"), 2)
+        self.assertIn("<li>nested <em>note</em></li>", out)
+        self.assertIn("<p><em>Nothing open.</em></p>", out)
+
+    def test_subject_counts_only_actionable_prs(self):
+        result = {"generatedAt": NOW.isoformat(), "categories": ["dependency-updates", "component-governance"],
+                  "items": [{"category": "dependency-updates", "nextAction": "ready-to-merge"},
+                            {"category": "dependency-updates", "nextAction": "wait-for-ci"},
+                            {"category": "component-governance"}]}
+        subject = send_report.subject(result, send_report.summarize(result))
+        self.assertIn("1 PR to act on, 1 CG alert", subject)
+        self.assertNotIn("workflow", subject)
+
+
+class ScheduleTests(unittest.TestCase):
+    def test_cron_expands_to_launchd_intervals(self):
+        fields = schedule_report.parse_cron("30 8 * * mon-fri")
+        self.assertEqual(schedule_report.launchd_intervals(fields),
+                         [{"Minute": 30, "Hour": 8, "Weekday": d} for d in range(1, 6)])
+        self.assertEqual(len(schedule_report.launchd_intervals(schedule_report.parse_cron("0 */4 * * *"))), 6)
+        self.assertEqual(schedule_report.parse_cron("0 9 * * 7")["weekday"], [0])
+        for bad in ("0 8 * *", "0 25 * * *", "0 8 1 * 1"):
+            with self.assertRaises(ValueError):
+                schedule_report.parse_cron(bad)
+
+    def test_windows_supports_daily_weekly_and_hourly(self):
+        sc = lambda e: schedule_report.schtasks_schedule(schedule_report.parse_cron(e))  # noqa: E731
+        self.assertEqual(sc("0 8 * * *"), ["/SC", "DAILY", "/ST", "08:00"])
+        self.assertEqual(sc("15 7 * * 1,3"), ["/SC", "WEEKLY", "/D", "MON,WED", "/ST", "07:15"])
+        self.assertEqual(sc("0 */6 * * *"), ["/SC", "HOURLY", "/MO", "6", "/ST", "00:00"])
+        with self.assertRaises(ValueError):
+            sc("0 8 1 * *")
 
 
 if __name__ == "__main__":

@@ -402,30 +402,44 @@ def classify(category: str, prs: Iterable[dict[str, Any]], now: datetime,
     return items
 
 
-def collect(categories: list[str], now: datetime) -> dict[str, Any]:
+def collect(categories: list[str], now: datetime, keep_going: bool = False) -> dict[str, Any]:
+    """Collect every category. With keep_going, a failing category is recorded in `errors` instead of raising."""
     items: list[dict[str, Any]] = []
     seen: set[tuple[str, int]] = set()
     excluded: dict[str, int] = {}
-    coverage = {}
+    coverage: dict[str, Any] = {}
+    errors: dict[str, str] = {}
     for category in categories:
-        if category == "component-governance":
-            alerts, coverage[category] = component_governance.collect()
-            items += alerts
-            continue
-        if category == "workflow-failures":
-            runs, coverage[category] = workflow_failures.collect(now)
-            items += runs
-            continue
-        extra = {"vmr-pings": DISCUSSION_FIELDS, "servicing": REVIEW_FIELDS}.get(category, "")
-        for query in SEARCHES[category]:
-            items += classify(category, search_prs(query, extra), now, seen, excluded)
-        if category == "servicing":
-            add_target_releases([i for i in items if i["category"] == "servicing"], now)
+        try:
+            items += collect_category(category, now, seen, excluded, coverage)
+        except Exception as error:  # noqa: BLE001 - reported per category
+            if not keep_going:
+                raise
+            errors[category] = f"{type(error).__name__}: {error}"[:500]
     result = {"generatedAt": now.isoformat(timespec="seconds"), "categories": categories,
               "excluded": excluded, "items": items}
     if coverage:
         result["coverage"] = coverage
+    if errors:
+        result["errors"] = errors
     return result
+
+
+def collect_category(category: str, now: datetime, seen: set[tuple[str, int]], excluded: dict[str, int],
+                     coverage: dict[str, Any]) -> list[dict[str, Any]]:
+    if category == "component-governance":
+        alerts, coverage[category] = component_governance.collect()
+        return alerts
+    if category == "workflow-failures":
+        runs, coverage[category] = workflow_failures.collect(now)
+        return runs
+    extra = {"vmr-pings": DISCUSSION_FIELDS, "servicing": REVIEW_FIELDS}.get(category, "")
+    items: list[dict[str, Any]] = []
+    for query in SEARCHES[category]:
+        items += classify(category, search_prs(query, extra), now, seen, excluded)
+    if category == "servicing":
+        add_target_releases(items, now)
+    return items
 
 
 def add_target_releases(items: list[dict[str, Any]], now: datetime) -> None:
@@ -458,6 +472,10 @@ def render_markdown(result: dict[str, Any]) -> str:
     lines = [f"# aspnet-build attention inventory ({result['generatedAt']})", ""]
     for category in result["categories"]:
         items = [i for i in result["items"] if i["category"] == category]
+        error = result.get("errors", {}).get(category)
+        if error:
+            lines += [f"## {CATEGORIES[category]} (not collected)", "", f"_Couldn't collect this section: {error}_", ""]
+            continue
         lines.append(f"## {CATEGORIES[category]} ({len(items)})")
         lines.append("")
         if category == "component-governance":

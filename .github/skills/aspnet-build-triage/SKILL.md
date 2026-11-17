@@ -8,7 +8,8 @@ description: >-
   localization check-ins, and dotnet/dotnet PRs where a human pinged @dotnet/aspnet-build.
   USE FOR "what needs my attention on build duty", "aspnet-build inventory", "show build-ops PRs",
   "which dependency PRs are stuck", "any pings for aspnet-build", "high or critical Component
-  Governance alerts", "which servicing PRs can I merge", "retry CI on a servicing PR". DO NOT USE FOR general code review
+  Governance alerts", "which servicing PRs can I merge", "retry CI on a servicing PR", "email me the
+  build-duty report", "send me this report every weekday morning". DO NOT USE FOR general code review
   queues or reviewing feature PRs.
 ---
 
@@ -30,6 +31,7 @@ team owns, including dependency alerts. Run the bundled collector, then present 
   dashboard. For servicing release dates, access to the `devdiv` wiki; for CI retries, permission
   to rerun `dnceng-public` builds. A Component Governance-only run does not require `gh`.
 - Python 3.9+.
+- For the emailed report, a way to send mail. See [Emailed report](#emailed-report).
 - For investigating failures, the .NET CI investigation plugins from the
   [dotnet/arcade-skills](https://github.com/dotnet/arcade-skills) and
   [dotnet/skills](https://github.com/dotnet/skills) marketplaces. See
@@ -262,6 +264,54 @@ When the plugins are available, use their skills instead of investigating by han
 
 If they aren't installed and the user doesn't want to install them, investigate with `gh`, `az`
 and the build logs directly, and say the plugins would give a deeper analysis.
+
+## Emailed report
+
+The full report (every category, with a summary table) can be emailed to the user once or on any
+cadence they choose. Sending email and installing a scheduled job both act on the user's behalf:
+do them only when the user asks, and confirm the recipient and cadence first.
+
+1. **Choose a transport** with the user and save the settings to their per-user config file
+   (`send_report.py --print-config-path`; never put addresses or secrets in the repository):
+
+   | Transport | Use when | Setup |
+   |:--|:--|:--|
+   | `outlook` (default) | The user has classic Outlook on macOS or Windows. Sends from their own mailbox. | None. On macOS, allow the Automation prompt for Outlook on the first send. New Outlook isn't scriptable. |
+   | `webhook` | New Outlook, Linux, or no desktop client. | Create a Power Automate flow: trigger **When an HTTP request is received** with a JSON body of `to`, `subject` and `html` strings, then **Send an email (V2)** with To, Subject and Body from those fields. Copy the trigger URL into `webhookUrl` in the config file. It's a secret. |
+   | `smtp` | The user has an SMTP server that allows authenticated sends. | `--smtp-host`, `--smtp-port`, `--smtp-username`, `--smtp-from`; password in `ABT_SMTP_PASSWORD`. |
+   | `file` | Just produce the HTML. | None. |
+
+   ```bash
+   python3 .github/skills/aspnet-build-triage/scripts/send_report.py --to <address> --transport outlook --save-config --dry-run
+   ```
+
+   `--dry-run` builds the report and writes the HTML without sending. Show the user the subject
+   line and HTML path so they can check it.
+2. **Send once** when the user asks: run `send_report.py` without `--dry-run`. A category that fails
+   to collect (for example, expired `az` sign-in) is marked "not collected" in the email instead of
+   stopping the send.
+3. **Schedule it** at the cadence the user wants. Translate it into a 5-field cron expression in
+   their local time (for example, every weekday at 8 AM is `"0 8 * * 1-5"`, Mondays at 9 AM is
+   `"0 9 * * 1"`, every 4 hours is `"0 */4 * * *"`), show it to them, then:
+
+   ```bash
+   python3 .github/skills/aspnet-build-triage/scripts/schedule_report.py install --cron "<expression>" --dry-run
+   python3 .github/skills/aspnet-build-triage/scripts/schedule_report.py install --cron "<expression>"
+   python3 .github/skills/aspnet-build-triage/scripts/schedule_report.py status     # schedule, config, recent log
+   python3 .github/skills/aspnet-build-triage/scripts/schedule_report.py uninstall
+   ```
+
+   Installing copies the scripts to a per-user directory, so later branch switches don't break the
+   job; rerun `install` to pick up script updates or change the cadence. On macOS it's a launchd
+   LaunchAgent; a run missed while the Mac sleeps happens on wake. On Linux it's a crontab entry.
+   On Windows it's a Task Scheduler task, which supports daily, weekly-on-some-days and every-N-hours
+   cadences.
+   The job runs unattended, so `gh` and `az` must stay signed in. If the report shows sections that
+   weren't collected, have the user sign in again.
+
+The emailed report is the collector's raw output. It doesn't include agent follow-up such as
+confirming which candidate PR fixes a workflow failure, so tell the user to bring anything they
+want investigated back to this skill.
 
 ## Acting on items
 
