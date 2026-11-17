@@ -486,8 +486,6 @@ function init(dotNetHelper: DotNet.DotNetObject, spacerBefore: HTMLElement, spac
 
   // Corrects scrollTop after a render that shifted content, using the snapshot
   // saved by updateAnchorSnapshot() during the previous render cycle.
-  let restoreSequence = 0;
-
   function restoreAnchorForShift(): void {
     // Apply styles before we read layout
     flushPendingStyleMutations();
@@ -524,19 +522,17 @@ function init(dotNetHelper: DotNet.DotNetObject, spacerBefore: HTMLElement, spac
     }
     const delta = newOffset - snapshot.anchorOffset;
 
-    // Save anchor for drift correction.
-    scrollActivity.source = ScrollSource.RestoreSnapshot;
-    scrollActivity.ignoreNextScroll();
-    if (Math.abs(delta) > 1) {
-      scrollCorrectionItemIndex = snapshot.anchorItemIndex;
-      pendingScrollCorrection = true;
-    }
-
     // End mode: only carry the at-bottom state forward if the viewport is actually at the bottom right now.
     // Don't rely on the cached wasAtBottomLastRender — it may be stale if the user scrolled away.
     const preserveWasAtBottom = anchorModeIs.end && isViewportAtBottom();
 
     if (Math.abs(delta) > 1) {
+      // Save anchor for drift correction. The latch is released when this scroll
+      // event is consumed by handleScroll.
+      scrollActivity.source = ScrollSource.RestoreSnapshot;
+      scrollActivity.ignoreNextScroll();
+      scrollCorrectionItemIndex = snapshot.anchorItemIndex;
+      pendingScrollCorrection = true;
       scrollElement.scrollTop += delta;
     }
 
@@ -551,15 +547,6 @@ function init(dotNetHelper: DotNet.DotNetObject, spacerBefore: HTMLElement, spac
     if (preserveWasAtBottom) {
       bottomTracking.wasAtBottomLastRender = true;
     }
-
-    // Release the restore latch after this restore's scroll has been delivered so a
-    // later scripted scroll or scrollbar drag is not reported as this restore.
-    const sequence = ++restoreSequence;
-    setTimeout(() => {
-      if (restoreSequence === sequence && scrollActivity.source === ScrollSource.RestoreSnapshot) {
-        scrollActivity.source = ScrollSource.None;
-      }
-    }, 0);
   }
 
   function startConvergenceObserving(direction: 'top' | 'bottom'): void {
@@ -689,7 +676,15 @@ function init(dotNetHelper: DotNet.DotNetObject, spacerBefore: HTMLElement, spac
   }
 
   function handleScroll(): void {
-    if (convergence.isConverging() || scrollActivity.consumeIgnoreScroll()) {
+    if (convergence.isConverging()) {
+      return;
+    }
+    if (scrollActivity.consumeIgnoreScroll()) {
+      // The restore's own scroll has been delivered; release its latch so a later
+      // scripted scroll or scrollbar drag is not reported as this restore.
+      if (scrollActivity.source === ScrollSource.RestoreSnapshot) {
+        scrollActivity.source = ScrollSource.None;
+      }
       return;
     }
 
