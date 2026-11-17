@@ -166,19 +166,23 @@ public class FormFeature : IFormFeature
     public Task<IFormCollection> ReadFormAsync(CancellationToken cancellationToken)
     {
         HandleUncheckedAntiforgeryValidationFeature();
+        // InnerReadFormAsync sets Form when it completes, which clears _parsedFormTask. That can happen
+        // on another thread at any point, so read the field once and return the local.
+        var parsedFormTask = _parsedFormTask;
         // Avoid state machine and task allocation for repeated reads
-        if (_parsedFormTask == null)
+        if (parsedFormTask is null)
         {
             if (Form != null)
             {
-                _parsedFormTask = Task.FromResult(Form);
+                parsedFormTask = Task.FromResult(Form);
             }
             else
             {
-                _parsedFormTask = InnerReadFormAsync(cancellationToken);
+                parsedFormTask = InnerReadFormAsync(cancellationToken);
             }
+            _parsedFormTask = parsedFormTask;
         }
-        return _parsedFormTask;
+        return parsedFormTask;
     }
 
     private async Task<IFormCollection> InnerReadFormAsync(CancellationToken cancellationToken)
