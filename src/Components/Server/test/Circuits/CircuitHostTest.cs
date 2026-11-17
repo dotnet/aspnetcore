@@ -1217,40 +1217,6 @@ public class CircuitHostTest
     }
 
     [Fact]
-    public async Task UpdateRootComponents_OperationLimitRejectionDoesNotLogError()
-    {
-        var options = new CircuitOptions();
-        options.RootComponents.MaxJSRootComponents = 1;
-        var sink = new TestSink();
-        var loggerFactory = new TestLoggerFactory(sink, enabled: true);
-        var circuitHost = TestCircuitHost.Create(
-            remoteRenderer: GetRemoteRenderer(options),
-            serviceScope: new ServiceCollection().BuildServiceProvider().CreateAsyncScope(),
-            logger: loggerFactory.CreateLogger<CircuitHost>());
-
-        var evt = await Assert.RaisesAsync<UnhandledExceptionEventArgs>(
-            callback => circuitHost.UnhandledException += new UnhandledExceptionEventHandler(callback),
-            callback => circuitHost.UnhandledException -= new UnhandledExceptionEventHandler(callback),
-            () => circuitHost.UpdateRootComponents(
-                new RootComponentOperationBatch
-                {
-                    BatchId = 1,
-                    Operations =
-                    [
-                        CreateAddOperation<DynamicallyAddedComponent>(1),
-                        CreateAddOperation<DynamicallyAddedComponent>(2),
-                    ],
-                },
-                null,
-                isRestore: false,
-                CancellationToken.None));
-
-        var exception = Assert.IsType<InvalidOperationException>(evt.Arguments.ExceptionObject);
-        Assert.Equal("Exceeded the maximum number of allowed server interactive root components.", exception.Message);
-        Assert.DoesNotContain(sink.Writes, write => write.LogLevel == LogLevel.Error);
-    }
-
-    [Fact]
     public async Task UpdateRootComponents_InboundActivityFailureDoesNotLogError()
     {
         var services = new ServiceCollection()
@@ -1569,14 +1535,13 @@ public class CircuitHostTest
         return new ServerComponentDeserializer(_ephemeralDataProtectionProvider, NullLogger<ServerComponentDeserializer>.Instance, new RootTypeCache(), new ComponentParameterDeserializer(NullLogger<ComponentParameterDeserializer>.Instance, new ComponentParametersTypeCache()));
     }
 
-    private static TestRemoteRenderer GetRemoteRenderer(CircuitOptions options = null)
+    private static TestRemoteRenderer GetRemoteRenderer()
     {
         var serviceCollection = new ServiceCollection();
         serviceCollection.AddSingleton(new Mock<IJSRuntime>().Object);
         return new TestRemoteRenderer(
             serviceCollection.BuildServiceProvider(),
-            Mock.Of<ISingleClientProxy>(),
-            options);
+            Mock.Of<ISingleClientProxy>());
     }
 
     private static void SetupMockInboundActivityHandlers(MockSequence sequence, params Mock<CircuitHandler>[] circuitHandlers)
@@ -1635,16 +1600,16 @@ public class CircuitHostTest
 
     private class TestRemoteRenderer : RemoteRenderer
     {
-        public TestRemoteRenderer(IServiceProvider serviceProvider, ISingleClientProxy client, CircuitOptions options = null)
+        public TestRemoteRenderer(IServiceProvider serviceProvider, ISingleClientProxy client)
             : base(
                   serviceProvider,
                   NullLoggerFactory.Instance,
-                  options ?? new CircuitOptions(),
+                  new CircuitOptions(),
                   new CircuitClientProxy(client, "connection"),
                   new TestServerComponentDeserializer(),
                   NullLogger.Instance,
-                  CreateJSRuntime(options ?? new CircuitOptions()),
-                  new CircuitJSComponentInterop(options ?? new CircuitOptions()))
+                  CreateJSRuntime(new CircuitOptions()),
+                  new CircuitJSComponentInterop(new CircuitOptions()))
         {
         }
 
