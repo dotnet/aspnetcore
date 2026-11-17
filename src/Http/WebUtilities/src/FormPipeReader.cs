@@ -76,9 +76,14 @@ public class FormPipeReader
 
     private static bool EncodesFormEscapeCharactersAsAscii(Encoding encoding)
     {
+        var expected = "=&%+"u8;
+        Span<byte> actual = stackalloc byte[expected.Length];
+
         try
         {
-            return encoding.GetBytes("=&%+").AsSpan().SequenceEqual("=&%+"u8);
+            // TryGetBytes returns false when the encoding needs more bytes than ASCII (e.g. UTF-16), which isn't ASCII-compatible.
+            return encoding.TryGetBytes("=&%+", actual, out var bytesWritten)
+                && actual.Slice(0, bytesWritten).SequenceEqual(expected);
         }
         catch (EncoderFallbackException)
         {
@@ -496,7 +501,7 @@ public class FormPipeReader
                 current = (byte)' ';
             }
             else if (current == (byte)'%'
-                && source + 2 < buffer.Length
+                && source < buffer.Length - 2
                 && byte.TryParse(buffer.Slice(source + 1, 2), NumberStyles.AllowHexSpecifier, CultureInfo.InvariantCulture, out var unescaped))
             {
                 current = unescaped;
