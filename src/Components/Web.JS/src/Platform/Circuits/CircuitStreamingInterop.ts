@@ -1,7 +1,7 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-import { HubConnection, HubConnectionState } from '@microsoft/signalr';
+import { HubConnection } from '@microsoft/signalr';
 import { getNextChunk } from '../../StreamingInterop';
 
 const enum RemoteJSDataStreamResult {
@@ -85,14 +85,7 @@ export function sendJSDataStream(connection: HubConnection, data: ArrayBufferVie
         backoffMilliseconds = initialBackoffMilliseconds;
       }
     } catch (error) {
-      try {
-        await connection.send('ReceiveJSDataChunk', streamId, -1, null, (error as Error).toString());
-      } catch (sendError) {
-        // The connection may have closed while the stream operation was in progress. Any other failure to report the error should surface.
-        if (connection.state === HubConnectionState.Connected) {
-          throw sendError;
-        }
-      }
+      await connection.send('ReceiveJSDataChunk', streamId, -1, null, (error as Error).toString());
     } finally {
       onComplete?.();
     }

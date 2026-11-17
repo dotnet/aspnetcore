@@ -64,7 +64,7 @@ internal sealed class RemoteJSDataStream : Stream
 
         try
         {
-            await runtime.InvokeVoidAsync("Blazor._internal.sendJSDataStream", jsStreamReference, streamId, chunkSize);
+            await runtime.InvokeVoidAsync("Blazor._internal.sendJSDataStream", jsStreamReference, streamId, chunkSize, jsInteropDefaultCallTimeout.TotalMilliseconds);
             return remoteJSDataStream;
         }
         catch
@@ -273,6 +273,13 @@ internal sealed class RemoteJSDataStream : Stream
 
             while (!_disposed)
             {
+                if (_bytesRead == _totalLength)
+                {
+                    // The final flush can remain backpressured, but no more data is expected.
+                    await Task.Delay(Timeout.InfiniteTimeSpan, _timeoutCancellationTokenSource.Token);
+                    return;
+                }
+
                 var remainingTime = _lastDataReceivedTime.Add(_jsInteropDefaultCallTimeout) - DateTimeOffset.UtcNow;
                 if (remainingTime > TimeSpan.Zero)
                 {

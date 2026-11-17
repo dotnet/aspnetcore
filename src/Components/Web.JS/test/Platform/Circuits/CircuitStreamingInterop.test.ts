@@ -7,6 +7,7 @@ import { sendJSDataStream } from '../../../src/Platform/Circuits/CircuitStreamin
 
 describe('CircuitStreamingInterop', () => {
   afterEach(() => {
+    jest.restoreAllMocks();
     jest.useRealTimers();
   });
 
@@ -77,6 +78,36 @@ describe('CircuitStreamingInterop', () => {
     expect(invoke).toHaveBeenCalledTimes(2);
   });
 
+  test('caps exponential retry delays during sustained backpressure', async () => {
+    jest.useFakeTimers();
+    const invoke = jest.fn<HubConnection['invoke']>().mockResolvedValue(2);
+    const send = jest.fn<HubConnection['send']>();
+    const onComplete = jest.fn();
+    const connection = { invoke, send } as unknown as HubConnection;
+
+    sendJSDataStream(connection, new Uint8Array([1]), 7, 1, 500, onComplete);
+    await jest.advanceTimersByTimeAsync(0);
+    expect(invoke).toHaveBeenCalledTimes(1);
+
+    let attempts = 1;
+    for (const delay of [100, 125, 125, 125, 125]) {
+      await jest.advanceTimersByTimeAsync(delay - 1);
+      expect(invoke).toHaveBeenCalledTimes(attempts);
+      await jest.advanceTimersByTimeAsync(1);
+      expect(invoke).toHaveBeenCalledTimes(++attempts);
+    }
+
+    invoke.mockResolvedValue(1);
+    await jest.advanceTimersByTimeAsync(125);
+
+    expect(invoke).toHaveBeenCalledTimes(attempts + 1);
+    for (const call of invoke.mock.calls) {
+      expect(call).toEqual(['ReceiveJSDataChunk', 7, 0, new Uint8Array([1]), null]);
+    }
+    expect(send).not.toHaveBeenCalled();
+    expect(onComplete).toHaveBeenCalledTimes(1);
+  });
+
   test('stops when the stream is disposed', async () => {
     jest.useFakeTimers();
     const invoke = jest.fn<HubConnection['invoke']>().mockResolvedValue(0);
@@ -90,33 +121,24 @@ describe('CircuitStreamingInterop', () => {
     expect(onComplete).toHaveBeenCalledTimes(1);
   });
 
-  test('ignores an error reporting failure after the connection closes', async () => {
-    jest.useFakeTimers();
-    const invoke = jest.fn<HubConnection['invoke']>().mockRejectedValue(new Error('Stream failed.'));
-    const send = jest.fn<HubConnection['send']>().mockRejectedValue(new Error("Cannot send data if the connection is not in the 'Connected' State."));
-    const onComplete = jest.fn();
-    const connection = { invoke, send, state: HubConnectionState.Disconnected } as unknown as HubConnection;
-
-    sendJSDataStream(connection, new Uint8Array([1]), 7, 1, 1000, onComplete);
-    await jest.runAllTimersAsync();
-
-    expect(send).toHaveBeenCalledWith('ReceiveJSDataChunk', 7, -1, null, 'Error: Stream failed.');
-    expect(onComplete).toHaveBeenCalledTimes(1);
-  });
-
-  test('surfaces an error reporting failure while the connection is open', async () => {
+  test.each([
+    HubConnectionState.Connected,
+    HubConnectionState.Disconnected,
+    HubConnectionState.Reconnecting,
+  ])('surfaces an error reporting failure when the connection is %s', async (state) => {
     jest.useFakeTimers();
     const invoke = jest.fn<HubConnection['invoke']>().mockRejectedValue(new Error('Stream failed.'));
     const sendError = new Error('Send failed.');
     const send = jest.fn<HubConnection['send']>().mockRejectedValue(sendError);
     const onComplete = jest.fn();
-    const connection = { invoke, send, state: HubConnectionState.Connected } as unknown as HubConnection;
+    const connection = { invoke, send, state } as unknown as HubConnection;
     const setTimeoutSpy = jest.spyOn(globalThis, 'setTimeout');
 
     sendJSDataStream(connection, new Uint8Array([1]), 7, 1, 1000, onComplete);
     const backgroundWork = setTimeoutSpy.mock.calls[0][0] as () => Promise<void>;
 
     await expect(backgroundWork()).rejects.toBe(sendError);
+    expect(send).toHaveBeenCalledWith('ReceiveJSDataChunk', 7, -1, null, 'Error: Stream failed.');
     expect(onComplete).toHaveBeenCalledTimes(1);
   });
 });

@@ -27,6 +27,26 @@ public class RemoteJSDataStreamTest
         Assert.NotNull(remoteJSDataStream);
     }
 
+    [Theory]
+    [InlineData(500)]
+    [InlineData(-1)]
+    public async Task CreateRemoteJSDataStreamAsync_PassesConfiguredTimeoutToJavaScript(int timeoutMilliseconds)
+    {
+        var jsRuntime = new TestRemoteJSRuntime(Options.Create(new CircuitOptions()), Options.Create(new HubOptions<ComponentHub>()), Mock.Of<ILogger<RemoteJSRuntime>>());
+        var jsStreamReference = Mock.Of<IJSStreamReference>();
+        var timeout = TimeSpan.FromMilliseconds(timeoutMilliseconds);
+        using var remoteJSDataStream = await RemoteJSDataStream.CreateRemoteJSDataStreamAsync(
+            jsRuntime,
+            jsStreamReference,
+            totalLength: 100,
+            signalRMaximumIncomingBytes: 10_000,
+            jsInteropDefaultCallTimeout: timeout,
+            cancellationToken: CancellationToken.None).DefaultTimeout();
+
+        Assert.Equal(4, jsRuntime.LastInvocationArguments.Length);
+        Assert.Equal(timeout.TotalMilliseconds, Assert.IsType<double>(jsRuntime.LastInvocationArguments[3]));
+    }
+
     [Fact]
     public async Task ReceiveData_DoesNotFindStream()
     {
@@ -326,6 +346,53 @@ public class RemoteJSDataStreamTest
     }
 
     [Fact]
+    public async Task ReceiveData_FinalChunkWithBackpressure_DoesNotTimeOutWhileWaitingForReader()
+    {
+        var unhandledExceptionRaisedTask = new TaskCompletionSource<Exception>(TaskCreationOptions.RunContinuationsAsynchronously);
+        var jsRuntime = new TestRemoteJSRuntime(Options.Create(new CircuitOptions()), Options.Create(new HubOptions<ComponentHub>()), Mock.Of<ILogger<RemoteJSRuntime>>());
+        jsRuntime.UnhandledException += (_, ex) => unhandledExceptionRaisedTask.TrySetResult(ex);
+        var jsStreamReference = Mock.Of<IJSStreamReference>();
+        const int chunkSize = 9_488;
+        const int chunkCount = 7;
+        using var remoteJSDataStream = await RemoteJSDataStream.CreateRemoteJSDataStreamAsync(
+            jsRuntime,
+            jsStreamReference,
+            totalLength: chunkSize * chunkCount,
+            signalRMaximumIncomingBytes: 10_000,
+            jsInteropDefaultCallTimeout: TimeSpan.FromSeconds(1),
+            cancellationToken: CancellationToken.None).DefaultTimeout();
+        var streamId = GetStreamId(remoteJSDataStream, jsRuntime);
+        var chunk = Enumerable.Repeat((byte)42, chunkSize).ToArray();
+
+        for (var chunkId = 0; chunkId < chunkCount; chunkId++)
+        {
+            var result = await RemoteJSDataStream.ReceiveData(jsRuntime, streamId, chunkId, chunk, error: null).DefaultTimeout();
+            Assert.Equal(RemoteJSDataStreamResult.ChunkAccepted, result);
+        }
+
+        Assert.Same(remoteJSDataStream, jsRuntime.RemoteJSDataStreamInstances[streamId]);
+
+        // An idle control stream marks the receive-timeout interval without draining the completed stream.
+        using var idleStream = await RemoteJSDataStream.CreateRemoteJSDataStreamAsync(
+            jsRuntime,
+            jsStreamReference,
+            totalLength: 100,
+            signalRMaximumIncomingBytes: 10_000,
+            jsInteropDefaultCallTimeout: TimeSpan.FromSeconds(1),
+            cancellationToken: CancellationToken.None).DefaultTimeout();
+        var idleStreamId = GetStreamId(idleStream, jsRuntime);
+        var exception = await unhandledExceptionRaisedTask.Task.DefaultTimeout();
+
+        Assert.IsType<TimeoutException>(exception);
+        Assert.False(jsRuntime.RemoteJSDataStreamInstances.ContainsKey(idleStreamId));
+        Assert.Same(remoteJSDataStream, jsRuntime.RemoteJSDataStreamInstances[streamId]);
+
+        using var receivedData = new MemoryStream();
+        await remoteJSDataStream.CopyToAsync(receivedData).DefaultTimeout();
+        Assert.Equal(Enumerable.Repeat((byte)42, chunkSize * chunkCount).ToArray(), receivedData.ToArray());
+    }
+
+    [Fact]
     public async Task ReceiveData_NoDataProvidedBeforeTimeout_StreamDisposed()
     {
         // Arrange
@@ -482,6 +549,8 @@ public class RemoteJSDataStreamTest
 
     class TestRemoteJSRuntime : RemoteJSRuntime, IJSRuntime
     {
+        public object[] LastInvocationArguments { get; private set; }
+
         public TestRemoteJSRuntime(IOptions<CircuitOptions> circuitOptions, IOptions<HubOptions<ComponentHub>> hubOptions, ILogger<RemoteJSRuntime> logger) : base(circuitOptions, hubOptions, logger)
         {
         }
@@ -489,6 +558,7 @@ public class RemoteJSDataStreamTest
         public new ValueTask<TValue> InvokeAsync<TValue>(string identifier, object[] args)
         {
             Assert.Equal("Blazor._internal.sendJSDataStream", identifier);
+            LastInvocationArguments = args;
             return ValueTask.FromResult<TValue>(default);
         }
     }
