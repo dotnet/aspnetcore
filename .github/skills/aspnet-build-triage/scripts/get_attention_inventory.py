@@ -333,7 +333,7 @@ def render_markdown(result: dict[str, Any]) -> str:
         items.sort(key=lambda i: (ACTION_ORDER.index(i["nextAction"]), -i["ageDays"]))
         lines += ["| PR | Base | Age | Next action |", "|:--|:--|--:|:--|"]
         for i in items:
-            ref = f"#{i['number']}" if i["repo"] == ASPNETCORE else f"{i['repo']}#{i['number']}"
+            ref = f"{i['repo']}#{i['number']}"
             kind = f" ({i['subcategory']})" if i["subcategory"] else ""
             lines.append(f"| [{ref}]({i['url']}){kind} | {i['base']} | {i['ageDays']}d | {i['nextAction']} |")
         lines.append("")
@@ -349,7 +349,7 @@ def render_markdown(result: dict[str, Any]) -> str:
                 details.append(f"pinged by @{p['pingedBy']} on {p['pingedAt'][:10]} ({replied})")
             if i["requiresAdminElevation"]:
                 details.append("release branch: elevate to admin before acting")
-            ref = f"#{i['number']}" if i["repo"] == ASPNETCORE else f"{i['repo']}#{i['number']}"
+            ref = f"{i['repo']}#{i['number']}"
             lines.append(f"- {ref}: " + " — ".join(details))
         lines.append("")
     if any(i.get("requiresAdminElevation") for i in result["items"]):

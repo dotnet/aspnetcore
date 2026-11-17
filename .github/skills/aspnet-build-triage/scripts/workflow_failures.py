@@ -79,7 +79,7 @@ def failed_jobs(run_id):
 
 def pr_summary(pr, user):
     author = (pr.get("author") or pr.get("user") or {}).get("login")
-    return {"number": pr["number"], "title": pr["title"], "url": pr.get("html_url") or pr["url"],
+    return {"number": pr["number"], "title": pr["title"], "url": f"https://github.com/{REPO}/pull/{pr['number']}",
             "author": author, "authoredByUser": bool(user) and author == user,
             "mergedAt": pr.get("mergedAt") or pr.get("merged_at")}
 
@@ -191,7 +191,7 @@ def render_markdown(items, coverage):
         for kind, key in (("Merged", "mergedFixCandidates"), ("Open", "openFixCandidates")):
             for pr in item.get(key, []):
                 mine = " (yours)" if pr["authoredByUser"] else ""
-                lines.append(f"- {item['runId']} possible fix, {kind.lower()}: [#{pr['number']}]({pr['url']}) "
+                lines.append(f"- {item['runId']} possible fix, {kind.lower()}: [{REPO}#{pr['number']}](https://github.com/{REPO}/pull/{pr['number']}) "
                              f"{cell(pr['title'])} by @{pr['author']}{mine}")
     lines += ["", "Candidate fix PRs touch the workflow's files; confirm each one addresses the failure.",
               "A later successful run doesn't mean the failed run's work was done. Investigate each failure's impact.", ""]
