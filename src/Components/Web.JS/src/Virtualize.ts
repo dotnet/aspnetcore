@@ -72,13 +72,17 @@ function getScaleFactor(spacerBefore: HTMLElement, spacerAfter: HTMLElement): nu
     return 1;
   }
   const measuredHeight = el.getBoundingClientRect().height;
+  const offsetHeight = el.offsetHeight;
   const declaredHeight = parseFloat(el.style.height);
   // offsetHeight is rounded to whole pixels. For fractional row heights the ratio then
   // drifts from 1 even without a zoom or transform, so use the fractional declared height
-  // when the spacer has one.
-  const scale = Number.isFinite(declaredHeight) && declaredHeight > 0
+  // when the spacer has one. A content-box padding or border makes the rendered box larger
+  // than the declared content height; fall back to the rendered box in that case.
+  const useDeclaredHeight = Number.isFinite(declaredHeight) && declaredHeight > 0 &&
+    Math.abs(declaredHeight - offsetHeight) <= 1;
+  const scale = useDeclaredHeight
     ? measuredHeight / declaredHeight
-    : measuredHeight / el.offsetHeight;
+    : measuredHeight / offsetHeight;
   return (Number.isFinite(scale) && scale > 0) ? scale : 1;
 }
 
