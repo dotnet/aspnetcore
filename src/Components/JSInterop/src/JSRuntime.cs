@@ -196,7 +196,7 @@ public abstract partial class JSRuntime : IJSRuntime, IDisposable
     /// <summary>
     /// Fails all pending asynchronous calls with the given exception.
     /// </summary>
-    protected internal void FailPendingTasks(Exception exception)
+    protected void FailPendingTasks(Exception exception)
     {
         foreach (var taskId in _pendingTasks.Keys)
         {
