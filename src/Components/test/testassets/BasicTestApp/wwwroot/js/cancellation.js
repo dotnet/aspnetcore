@@ -95,6 +95,15 @@ export function initialize(target) {
                 DotNet.disposeJSObjectReference(reference);
             }
         },
+        sync() {
+            const controller = new AbortController();
+            references.set("sync", { controller });
+            const aborted = new AbortController();
+            aborted.abort();
+            const live = target.invokeMethod("ReceiveSync", controller.signal);
+            const preAborted = target.invokeMethod("Inspect", aborted.signal);
+            document.getElementById("sync-js").textContent = `${live}:${preAborted}`;
+        },
         releaseControl() {
             releaseControl();
         }

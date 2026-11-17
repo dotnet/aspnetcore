@@ -175,6 +175,23 @@ public class InteropCancellationTest(
         Equal("control-js", "JS completed normally");
     }
 
+    [Fact]
+    public void SynchronousCallsReceiveRawSignalsInWebAssembly()
+    {
+        // Interactive Server does not support synchronous calls from JS to .NET.
+        if (_serverFixture.ExecutionMode != ExecutionMode.Client)
+        {
+            return;
+        }
+
+        Click("start-sync");
+        Equal("sync-js", "True:False:true");
+        Browser.Equal(1, ProjectionCount);
+        Click("abort-sync");
+        Equal("sync-managed", "canceled after return");
+        Browser.Equal(0, ProjectionCount);
+    }
+
     private void Click(string id) => Browser.Exists(By.Id(id)).Click();
 
     private void Equal(string id, string expected) => Browser.Equal(expected, () => Browser.FindElement(By.Id(id)).Text);

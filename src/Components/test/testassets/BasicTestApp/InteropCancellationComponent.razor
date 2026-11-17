@@ -24,6 +24,8 @@
 <button id="start-snapshot" onclick="cancellationTests.snapshot()">Snapshot arguments</button>
 <button id="start-concurrent" onclick="cancellationTests.concurrent()">Concurrent shared signal</button>
 <button id="start-wrapped" onclick="cancellationTests.wrapped()">Generic signal reference</button>
+<button id="start-sync" onclick="cancellationTests.sync()">Synchronous calls</button>
+<button id="abort-sync" onclick="cancellationTests.abort('sync')">Abort synchronous signal</button>
 <p id="static-js"></p>
 <p id="snapshot-js"></p>
 <p id="concurrent-js"></p>
@@ -32,7 +34,7 @@
 <button id="cancel-control" @onclick="() => controlSource.Cancel()">Cancel managed wait</button>
 <button id="release-control" onclick="cancellationTests.releaseControl()">Complete JS function</button>
 <p id="cancellation-ready">@(module is null ? "loading" : "ready")</p>
-@foreach (var id in new[] { "first", "second", "ignored", "preaborted", "retained", "failure", "outgoing", "control" })
+@foreach (var id in new[] { "first", "second", "ignored", "preaborted", "retained", "failure", "outgoing", "control", "sync" })
 {
     <p id="@($"{id}-managed")">@(states.GetValueOrDefault(id, "not started"))</p>
     <p id="@($"{id}-js")"></p>
@@ -118,6 +120,17 @@
 
     [JSInvokable]
     public bool Inspect(CancellationToken cancellationToken) => cancellationToken.IsCancellationRequested;
+
+    [JSInvokable]
+    public string ReceiveSync(CancellationToken cancellationToken)
+    {
+        registrations.Add(cancellationToken.Register(() => _ = InvokeAsync(() =>
+        {
+            states["sync"] = "canceled after return";
+            StateHasChanged();
+        })));
+        return $"{cancellationToken.CanBeCanceled}:{cancellationToken.IsCancellationRequested}";
+    }
 
     [JSInvokable]
     public bool SameTokens(CancellationToken first, CancellationToken second) => first == second;
