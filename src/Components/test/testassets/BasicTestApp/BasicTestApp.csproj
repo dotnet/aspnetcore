@@ -14,6 +14,8 @@
 
     <EmitCompilerGeneratedFiles>true</EmitCompilerGeneratedFiles>
 
+    <_WasmFilesystemUsageDetected>false</_WasmFilesystemUsageDetected>
+
     <InterceptorsNamespaces>$(InterceptorsNamespaces);Microsoft.Extensions.Validation.Generated</InterceptorsNamespaces>
 
   </PropertyGroup>

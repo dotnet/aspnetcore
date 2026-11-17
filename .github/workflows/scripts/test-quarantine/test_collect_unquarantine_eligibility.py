@@ -105,6 +105,18 @@ class UnquarantineTests(unittest.TestCase):
         self.assertEqual(set(receipt["pipelines"]), {"84", "87"})
         self.assertEqual(receipt["targets"], [])
 
+    def test_project_move_preserves_first_quarantine_and_passing_evidence(self):
+        project = self.path.parent
+        moved = self.root / "src/Moved.Tests"
+        FIXTURES.run(self.root, "git", "mv", project, moved)
+        self.path = moved / self.path.name
+        FIXTURES.commit(self.root, "Move test project", "2026-07-02T00:00:00Z")
+        self.history = MODULE.SOURCE.collect_requarantine_history(self.root, "HEAD")
+        self.assertEqual(self.history["targets"][0]["status"], "first-quarantine", self.history)
+        receipt = self.collect()
+        self.assertEqual(len(receipt["targets"]), 1, receipt)
+        self.assertEqual(receipt["targets"][0]["introduced_utc"], "2026-07-01T00:00:00Z")
+
     def test_unresolved_consumer_blocks_even_a_first_quarantine_receipt(self):
         (self.path.parent / "Sample.Tests.csproj").write_text(
             "<Project><PropertyGroup><DefineConstants>IIS_FUNCTIONALS</DefineConstants>"
@@ -401,6 +413,35 @@ public class SampleTests : BaseTests
                 self.assertIs(record["case_b_issue_verified"], verified)
                 self.assertIs(record["case_b_eligible"], verified)
 
+    def test_case_b_collector_records_verified_issues_from_earlier_quarantines(self):
+        self.path.write_text(FIXTURES.source(), encoding="utf-8")
+        FIXTURES.commit(self.root, "Unquarantine", "2026-07-02T00:00:00Z")
+        self.path.write_text(FIXTURES.source(
+            FIXTURES.QUARANTINE_ATTRIBUTE.replace("/issues/1", "/issues/2"),
+        ), encoding="utf-8")
+        FIXTURES.commit(self.root, "Quarantine again", "2026-07-03T00:00:00Z")
+        self.path.write_text(FIXTURES.source(), encoding="utf-8")
+        FIXTURES.commit(self.root, "Unquarantine again", "2026-07-04T00:00:00Z")
+        for missing, expected in ((set(), [1, 2]), ({1}, [2]), ({2}, [])):
+            with self.subTest(missing=missing):
+                receipt = FIXTURES.collect(
+                    self.root, FIXTURES.evidence(),
+                    issue_exists_provider=lambda issue: issue not in missing,
+                )
+                record = receipt["tests"][NAME]
+                self.assertEqual(record["case_b_issue"], 2)
+                self.assertIs(record["case_b_eligible"], 2 not in missing)
+                self.assertEqual(record["case_b_verified_issues"], expected)
+
+        def flaky_older_issue(issue):
+            if issue == 1:
+                raise OSError("unavailable")
+            return True
+        receipt = FIXTURES.collect(
+            self.root, FIXTURES.evidence(), issue_exists_provider=flaky_older_issue,
+        )
+        self.assertEqual(receipt["tests"][NAME]["case_b_verified_issues"], [2])
+
     def test_requarantine_pr_does_not_block_an_unrelated_issue_in_the_same_file(self):
         for issue, truncated, expected_count in ((2, False, 1), (1, False, 0), (2, True, 0)):
             with self.subTest(issue=issue, truncated=truncated):
@@ -455,6 +496,26 @@ class TrackingIssueTests(unittest.TestCase):
             with self.assertRaisesRegex(OSError, "unavailable"):
                 MODULE.SOURCE.github_issue_exists("dotnet/aspnetcore", 1, "token")
         self.assertEqual(urlopen.call_count, 3)
+
+    def test_validator_accepts_verified_earlier_case_b_issues(self):
+        record = {**PATCHES.case_b_record(issue=2), "case_b_verified_issues": [1, 2]}
+        target = {"scope": "method", "path": PATCHES.TEST_PATH, "type": PATCHES.TYPE_NAME,
+                  "method": "ReturnsExpectedResponse",
+                  "operating_systems": record["quarantine_operating_systems"]}
+        eligibility = {"tests": {NAME: record}}
+        for reference in ("1", "2"):
+            with self.subTest(reference=reference):
+                self.assertEqual(
+                    PATCHES.MODULE.validate_addition(
+                        {**target, "reference": reference}, eligibility, []),
+                    ("case-b", NAME),
+                )
+        for verified_issues, reference in (([1, 2], "3"), ([True, 2], "1"), ("1", "1")):
+            with self.subTest(verified_issues=verified_issues, reference=reference):
+                record["case_b_verified_issues"] = verified_issues
+                with self.assertRaisesRegex(PATCHES.MODULE.ValidationError, "Case B addition"):
+                    PATCHES.MODULE.validate_addition(
+                        {**target, "reference": reference}, eligibility, [])
 
     def test_validator_requires_case_b_verification(self):
         record = PATCHES.case_b_record()

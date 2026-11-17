@@ -1333,7 +1333,6 @@ public class VirtualizeTest
     }
 
     [Fact]
-    [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/68852")]
     public async Task ScrollToIndexAsync_CancellationCancelsProviderRequest()
     {
         var blockProvider = false;

@@ -2185,6 +2185,7 @@ public class VirtualizationTest : ServerTestBase<ToggleExecutionModeServerFixtur
     [InlineData("0", true)]
     [InlineData("1", true)]
     [InlineData("2", true)]
+    [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/68726")]
     public void QuickGrid_AnchorMode_NearTop_AppendKeepsViewportStable(string anchorMode, bool useItemsProvider)
     {
         MountQuickGridAnchorModeComponent(anchorMode, useItemsProvider);
@@ -6261,7 +6262,6 @@ public class VirtualizationTest : ServerTestBase<ToggleExecutionModeServerFixtur
     }
 
     [Fact]
-    [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/69093")]
     public void InitialIndex_PendingGrowth_TallItemsBeforeTarget_KeepsTargetAligned()
     {
         const int initialItemIndex = 100;
