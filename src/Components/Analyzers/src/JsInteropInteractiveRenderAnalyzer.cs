@@ -197,7 +197,8 @@ public sealed class JsInteropInteractiveRenderAnalyzer : DiagnosticAnalyzer
         if (value is IConditionalOperation conditionalOperation)
         {
             // Check for JSInterop usage in ternary operator assignment.
-            AnalyzeCondition(conditionalOperation, state.Clone());
+            var isInteractiveChecked = AnalyzeCondition(conditionalOperation, state.Clone());
+            state.UpdateIsInteractiveChecked(isInteractiveChecked);
         }
         else if (value is IDelegateCreationOperation delegateCreation)
         {
@@ -354,6 +355,12 @@ public sealed class JsInteropInteractiveRenderAnalyzer : DiagnosticAnalyzer
 
     private static bool OperationAlwaysTerminates(IOperation operation)
     {
+        // A throw expression in a conditional expression is converted to the type of the other branch.
+        while (operation is IConversionOperation conversion)
+        {
+            operation = conversion.Operand;
+        }
+
         if (operation is IReturnOperation || operation is IThrowOperation)
         {
             return true;

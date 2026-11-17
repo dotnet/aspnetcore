@@ -2030,4 +2030,20 @@ namespace ConsoleApplication1
 
         VerifyCSharpDiagnostic(new[] { component, codeBehind }, expected);
     }
+
+    [Theory]
+    [InlineData("var value = !RendererInfo.IsInteractive ? throw new InvalidOperationException() : 0; await JS.InvokeVoidAsync(Identifier);")]
+    [InlineData("var value = RendererInfo.IsInteractive ? 0 : throw new InvalidOperationException(); await JS.InvokeVoidAsync(Identifier);")]
+    public void JSInvokeAfterTernaryThatThrowsWhenNotInteractiveShouldNotThrowWarning(string statements)
+    {
+        VerifyCSharpDiagnostic(CreateOnInitializedAsyncTest(statements));
+    }
+
+    [Fact]
+    public void JSInvokeAfterTernaryThatDoesNotThrowShouldThrowWarning()
+    {
+        VerifyCSharpDiagnostic(CreateOnInitializedAsyncTest("var value = !RendererInfo.IsInteractive ? 1 : 0; await JS.InvokeVoidAsync(Identifier);"),
+            new DiagnosticResult { Locations = new[] { new DiagnosticResultLocation("Test0.cs", 21, 68) }, Id = id, Message = messageInvokeVoidAsync, Severity = DiagnosticSeverity.Warning, }
+        );
+    }
 }
