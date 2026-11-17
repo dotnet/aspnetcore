@@ -79,8 +79,8 @@ If WebDriver cannot perform or observe one operation, keep the permanent C# Sele
 
 For regression fixes, require strict red/green evidence on the permanent test surface selected above: the identical assertion must fail for the expected reason without the fix and pass with it. Keep test scope proportional to the fix:
 
-- Default to one focused regression test (or an additional assertion or `[Theory]` row in an existing test) rather than adding multiple standalone test methods for a localized bug fix.
-- Add a nearest-opposite control assertion only when the fix narrows or flips a branch whose opposite path is not already covered by existing tests; when needed, prefer asserting it inside the same test or parameterized `[Theory]` rather than creating a multi-test control matrix.
+- Default to one focused regression test (or an additional assertion in an existing test, or a `[Theory]` only when every row exercises the regression and fails without the fix) rather than adding multiple standalone test methods for a localized bug fix.
+- Add a nearest-opposite control assertion only when the fix narrows or flips a branch whose opposite path is not already covered by existing tests; when needed, put it as an assertion inside the same test (or a separate single case), not as a row in the regression `[Theory]` or a multi-test control matrix.
 - When a real-browser E2E test is required by the boundary above, Jest alone is not sufficient regression proof; conversely, when a focused .NET unit test or `Web.JS` `.test.ts` test faithfully covers the owning contract, do not also add or request a Selenium E2E test.
 - Do not add test-only optional parameters, fields, properties, or hooks to production types when the behavior can be exercised through existing entry points.
 
