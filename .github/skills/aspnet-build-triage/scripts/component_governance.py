@@ -93,12 +93,37 @@ def alert_summaries(branch):
         alert for alert in alerts
         if alert["alertState"] == "active" and not alert["isDismissed"]
         and alert["severity"] in {"critical", "high"}
+        # Legal/license alerts are not owned by aspnet-build.
+        and alert["type"] == "security"
     ]
 
 
-def alert_ecosystem(alert_id):
-    component = azure_get(f"Alerts/{alert_id}")["component"]
-    return component["type"].casefold()
+def alert_details(alert_id):
+    detail = azure_get(f"Alerts/{alert_id}")
+    # actionItems is CG's remediation hint, e.g. "Upgrade X from 1.0 to 1.1 to fix the vulnerability."
+    return detail["component"]["type"].casefold(), " ".join(str(detail.get("actionItems") or "").split())
+
+
+def summarize_remediations(hints):
+    """Collapse CG actionItems into one hint, keeping the highest 'Upgrade X from A to B' target."""
+    upgrades = {}
+    other = []
+    for hint in hints:
+        match = re.fullmatch(r"Upgrade (\S+) from (\S+) to (\S+) to fix the vulnerability\.", hint)
+        if match:
+            target = upgrades.get(match[1])
+            if target is None or version_key(match[3]) > version_key(target):
+                upgrades[match[1]] = match[3]
+        elif "has not been provided" in hint:
+            other.append("No fix version in Component Governance; check the advisory")
+        elif hint:
+            other.append(hint)
+    parts = [f"Upgrade {package} to at least {version}" for package, version in upgrades.items()]
+    return "; ".join(list(dict.fromkeys(parts + other))) or "No remediation hint; check the advisory"
+
+
+def version_key(version):
+    return [int(part) if part.isdigit() else part for part in re.split(r"[.-]", version)]
 
 
 def collect():
@@ -111,6 +136,7 @@ def collect():
 
     summaries = {}
     ecosystems = {}
+    remediations = {}
     with ThreadPoolExecutor(max_workers=6) as pool:
         branch_requests = {branch: pool.submit(alert_summaries, branch) for branch in branches}
         for branch, request in branch_requests.items():
@@ -120,10 +146,10 @@ def collect():
                 errors[branch] = str(error)
 
         ids = sorted({alert["alertId"] for alerts in summaries.values() for alert in alerts})
-        detail_requests = {alert_id: pool.submit(alert_ecosystem, alert_id) for alert_id in ids}
+        detail_requests = {alert_id: pool.submit(alert_details, alert_id) for alert_id in ids}
         for alert_id, request in detail_requests.items():
             try:
-                ecosystems[alert_id] = request.result()
+                ecosystems[alert_id], remediations[alert_id] = request.result()
             except (ValueError, KeyError, TypeError, AttributeError) as error:
                 errors[f"alert {alert_id} ecosystem"] = str(error)
 
@@ -136,10 +162,7 @@ def collect():
             if ecosystem not in {"npm", "nuget", "unknown"}:
                 other_ecosystems += 1
                 continue
-            alert_type = alert["type"]
-            if alert_type != "security":
-                action = "Review the policy finding; request license review for legal alerts"
-            elif ecosystem == "npm":
+            if ecosystem == "npm":
                 action = "Use update-npm-dependencies for a targeted fix"
             elif ecosystem == "nuget":
                 action = "Open a dependency-update PR after checking quarantine and dotnet-public"
@@ -147,9 +170,9 @@ def collect():
                 action = "Confirm package ecosystem in Component Governance"
             items.append({
                 "category": "component-governance", "id": alert_id, "base": branch,
-                "severity": alert["severity"], "type": alert_type, "ecosystem": ecosystem,
+                "severity": alert["severity"], "ecosystem": ecosystem,
                 "package": alert["componentName"], "version": alert["componentVersion"],
-                "title": alert["title"], "nextAction": action,
+                "title": alert["title"], "remediation": remediations.get(alert_id, ""), "nextAction": action,
                 "requiresAdminElevation": branch.startswith("release/"),
                 "url": f"{DASHBOARD}?{urlencode({'branch': branch, 'alertId': alert_id})}",
             })
@@ -161,7 +184,7 @@ def render_markdown(items, coverage):
     def cell(value):
         return str(value).replace("|", r"\|").replace("\r", " ").replace("\n", " ")
 
-    lines = ["Scope: active, non-dismissed high and critical alerts across all build phases.",
+    lines = ["Scope: active, non-dismissed high and critical security alerts across all build phases (legal alerts excluded).",
              f"[Support policy]({SUPPORT_POLICY}) · [Component Governance]({DASHBOARD})", ""]
     if coverage["errors"]:
         lines += ["**Incomplete Component Governance results:**"] + [
@@ -179,9 +202,19 @@ def render_markdown(items, coverage):
             lines.append(f"| [{item['id']}]({item['url']}) | {item['severity']} | "
                          f"{cell(package)} | {item['nextAction']} |")
         lines.append("")
+        packages = {}
+        for item in alerts:
+            entry = packages.setdefault((item["package"], item["version"]), {"titles": [], "fixes": []})
+            for key, value in (("titles", item["title"]), ("fixes", item["remediation"])):
+                if value and value not in entry[key]:
+                    entry[key].append(value)
+        for (package, version), entry in packages.items():
+            fixes = summarize_remediations(entry["fixes"])
+            lines.append(f"- {cell(package)} {cell(version)} ({cell(', '.join(entry['titles']))}): {cell(fixes)}")
+        lines.append("")
     if coverage["otherEcosystemAlertOccurrences"]:
         lines += [f"Other ecosystem alert occurrences omitted: {coverage['otherEcosystemAlertOccurrences']}.", ""]
-    if any(item["ecosystem"] == "nuget" and item["type"] == "security" for item in items):
+    if any(item["ecosystem"] == "nuget" for item in items):
         lines += ["**NuGet:** Verify the patched version's publish time. Wait until it is at least "
                   "seven days old and verify the exact version is on `dotnet-public` before updating. "
                   f"If missing, use the [mirroring pipeline]({MIRROR_PIPELINE}); never queue it without an explicit request.", ""]

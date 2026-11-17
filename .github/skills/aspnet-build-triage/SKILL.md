@@ -55,7 +55,7 @@ to find Component Governance alerts. It never changes PRs, alerts or pipelines.
 | `dependabot` | PRs by `app/dependabot`. Subcategory is the ecosystem from the branch name (`github_actions`, `submodules`, `npm_and_yarn`, `nuget`, …). |
 | `localization` | PRs by `app/dotnet-oneloc-localization`. |
 | `vmr-pings` | Open `dotnet/dotnet` PRs where a **human** mentioned `@dotnet/aspnet-build` in the PR body, a comment, a review or a review comment. Candidates come from two searches: a broad text search for `aspnet-build` in titles, bodies and comments, which finds mention-only PRs, and `team:dotnet/aspnet-build`, which finds PRs with a team review request. The results are deduplicated, then each PR's body, comments, reviews and review comments are inspected. PRs without a human-authored mention, such as bot-only mentions on Maestro codeflow PRs or plain review requests, are counted under `Excluded`. Each item reports who pinged, when, and which humans replied afterwards. |
-| `component-governance` | Active, non-dismissed high and critical npm and NuGet alerts from the [ASP.NET Core dashboard](https://dev.azure.com/dnceng/internal/_componentGovernance/dotnet-aspnetcore), aggregated across build phases on `main` and supported `release/*` branches. |
+| `component-governance` | Active, non-dismissed high and critical npm and NuGet **security** alerts from the [ASP.NET Core dashboard](https://dev.azure.com/dnceng/internal/_componentGovernance/dotnet-aspnetcore), aggregated across build phases on `main` and supported `release/*` branches. |
 
 ## Component Governance remediation
 
@@ -66,7 +66,7 @@ Report results per branch. The same alert ID can affect multiple branches and ea
 own assessment. Preserve incomplete-scan warnings; if access is missing, link the dashboard
 and explain what could not be checked rather than claiming there are no alerts.
 
-- **npm:** For a security alert, follow the sibling
+- **npm:** Follow the sibling
   [update-npm-dependencies skill](../update-npm-dependencies/SKILL.md) for a targeted fix on
   the affected branch. Identify the owning lockfile and confirm every affected resolved copy
   is fixed. Do not perform the update or open a remediation PR unless requested.
@@ -83,8 +83,8 @@ and explain what could not be checked rather than claiming there are no alerts.
   select **New or non-Microsoft**, and supply the exact package ID and version. Only queue a run
   if the user explicitly asks you to mirror that package version and you have permission;
   otherwise give them the inputs. Verify the package is on the feed before proceeding.
-- **Legal or other policy findings:** Review the actual policy issue rather than assuming a
-  version bump will fix it. Report missing fixes or legal review as blockers, not as resolved alerts.
+
+Legal (license) alerts are out of scope for aspnet-build. The collector drops them; don't report them.
 
 ## Next-action hints
 

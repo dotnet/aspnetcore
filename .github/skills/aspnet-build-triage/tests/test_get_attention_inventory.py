@@ -105,7 +105,7 @@ class ComponentGovernanceTests(unittest.TestCase):
                 dict(base, alertId=3, severity="medium"), dict(base, alertId=4, isDismissed=True),
             ],
             "Branches/release%252F11.0/AlertSummary": [
-                dict(base, alertId=1), dict(base, alertId=5, severity="critical", type="legal"),
+                dict(base, alertId=1), dict(base, alertId=5, severity="critical"), dict(base, alertId=7, type="legal"),
                 dict(base, alertId=6),
             ],
         }
@@ -115,7 +115,8 @@ class ComponentGovernanceTests(unittest.TestCase):
                 return {"count": len(responses[path]), "value": responses[path]}
             if path in {"Alerts/1", "Alerts/5", "Alerts/6"}:
                 return {"component": {"type": {"Alerts/1": "nuGet", "Alerts/5": "npm",
-                                               "Alerts/6": "Maven"}[path]}}
+                                               "Alerts/6": "Maven"}[path]},
+                        "actionItems": "Upgrade Example from 1.0 to 1.1 to fix the vulnerability."}
             raise ValueError("not available")
 
         with patch.object(cg, "fetch_support_policy"), \
@@ -126,13 +127,21 @@ class ComponentGovernanceTests(unittest.TestCase):
         self.assertEqual([(i["base"], i["id"]) for i in result["items"]],
                          [("main", 1), ("release/11.0", 5), ("release/11.0", 1)])
         self.assertEqual(sum(call.args == ("Alerts/1",) for call in api.call_args_list), 1)
-        self.assertIn("license review", result["items"][1]["nextAction"])
+        self.assertIn("update-npm-dependencies", result["items"][1]["nextAction"])
         self.assertIn("release/10.0", result["coverage"]["component-governance"]["errors"])
         output = inv.render_markdown(result)
         self.assertIn("Incomplete Component Governance results", output)
         self.assertNotIn("### `release/10.0`", output)
         self.assertIn(cg.MIRROR_PIPELINE, output)
+        self.assertIn("Upgrade Example to at least 1.1", output)
         self.assertIn(inv.ADMIN_ELEVATION_URL, output)
+
+
+class RemediationTests(unittest.TestCase):
+    def test_keeps_highest_upgrade_target(self):
+        cg = inv.component_governance
+        hints = [f"Upgrade A.B from 10.0.0 to 10.0.{n} to fix the vulnerability." for n in (8, 13, 10)]
+        self.assertEqual(cg.summarize_remediations(hints), "Upgrade A.B to at least 10.0.13")
 
 
 class AdminElevationTests(unittest.TestCase):
