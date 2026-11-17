@@ -41,6 +41,7 @@ public abstract class ModelMetadata : IEquatable<ModelMetadata?>, IModelMetadata
     private static bool IsEnhancedModelMetadataSupported { get; } =
         AppContext.TryGetSwitch("Microsoft.AspNetCore.Mvc.ApiExplorer.IsEnhancedModelMetadataSupported", out var isEnhancedModelMetadataSupported) ? isEnhancedModelMetadataSupported : true;
 
+    private readonly int _hashCode;
     private IReadOnlyList<ModelMetadata>? _boundProperties;
     private IReadOnlyDictionary<ModelMetadata, ModelMetadata>? _parameterMapping;
     private IReadOnlyDictionary<ModelMetadata, ModelMetadata>? _boundConstructorPropertyMapping;
@@ -54,6 +55,7 @@ public abstract class ModelMetadata : IEquatable<ModelMetadata?>, IModelMetadata
     protected ModelMetadata(ModelMetadataIdentity identity)
     {
         Identity = identity;
+        _hashCode = identity.GetHashCode();
 
         InitializeTypeInformation();
         if (IsEnhancedModelMetadataSupported)
@@ -732,10 +734,7 @@ public abstract class ModelMetadata : IEquatable<ModelMetadata?>, IModelMetadata
     }
 
     /// <inheritdoc />
-    public override int GetHashCode()
-    {
-        return Identity.GetHashCode();
-    }
+    public override int GetHashCode() => _hashCode;
 
     private void InitializeTypeInformation()
     {
