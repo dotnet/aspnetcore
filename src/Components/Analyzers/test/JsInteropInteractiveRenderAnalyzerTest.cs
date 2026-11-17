@@ -145,6 +145,17 @@ namespace Microsoft.JSInterop
         public static ValueTask InvokeVoidAsync(this IJSObjectReference jsObjectReference, string identifier, CancellationToken cancellationToken, params object[] args)
             => default;
     }
+
+    public static class DotNetObjectReference
+    {
+        public static DotNetObjectReference<TValue> Create<TValue>(TValue value) where TValue : class
+            => default;
+    }
+
+    public sealed class DotNetObjectReference<TValue> : System.IDisposable where TValue : class
+    {
+        public void Dispose() { }
+    }
 }
 ";
 
@@ -2065,5 +2076,13 @@ namespace ConsoleApplication1
         VerifyCSharpDiagnostic(CreateOnInitializedAsyncTest(statements),
             new DiagnosticResult { Locations = new[] { new DiagnosticResultLocation("Test0.cs", 21, column) }, Id = id, Message = messageInvokeVoidAsync, Severity = DiagnosticSeverity.Warning, }
         );
+    }
+
+    [Theory]
+    [InlineData("var reference = DotNetObjectReference.Create(this);")]
+    [InlineData("DotNetObjectReference.Create(this).Dispose();")]
+    public void DotNetObjectReferenceUsageShouldNotThrowWarning(string statements)
+    {
+        VerifyCSharpDiagnostic(CreateOnInitializedAsyncTest(statements));
     }
 }

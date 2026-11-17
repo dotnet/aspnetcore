@@ -18,6 +18,25 @@ public sealed class JsInteropInteractiveRenderAnalyzer : DiagnosticAnalyzer
 {
     private const int MaxNestedMethodDepth = 2;
     private static readonly string[] JSInteropParts = new[] { "JSInterop", "Microsoft", };
+
+    // Types in Microsoft.JSInterop whose methods call into JavaScript. Other JSInterop APIs, such as DotNetObjectReference, do not.
+    private static readonly HashSet<string> JSInteropCallTypeNames = new(StringComparer.Ordinal)
+    {
+        "IJSRuntime",
+        "IJSInProcessRuntime",
+        "JSRuntime",
+        "JSInProcessRuntime",
+        "JSRuntimeExtensions",
+        "JSInProcessRuntimeExtensions",
+        "IJSObjectReference",
+        "IJSInProcessObjectReference",
+        "JSObjectReference",
+        "JSInProcessObjectReference",
+        "JSObjectReferenceExtensions",
+        "JSInProcessObjectReferenceExtensions",
+        "IJSStreamReference",
+        "JSStreamReference",
+    };
     public override ImmutableArray<DiagnosticDescriptor> SupportedDiagnostics =>
         ImmutableArray.Create(DiagnosticDescriptors.JsInteropUsageWithoutIsInteractiveCheck);
 
@@ -449,12 +468,13 @@ public sealed class JsInteropInteractiveRenderAnalyzer : DiagnosticAnalyzer
 
     private static bool IsJSInteropInvocation(IInvocationOperation invocation)
     {
-        if (invocation.TargetMethod.ContainingNamespace is null)
-        {
-            return false;
-        }
+        var containingType = invocation.TargetMethod.ContainingType;
+        return JSInteropCallTypeNames.Contains(containingType.Name)
+            && IsInJSInteropNamespaceOrNested(containingType.ContainingNamespace);
+    }
 
-        var containingNamespace = invocation.TargetMethod.ContainingNamespace;
+    private static bool IsInJSInteropNamespaceOrNested(INamespaceSymbol? containingNamespace)
+    {
         while (containingNamespace is not null)
         {
             if (IsInJSInteropNamespace(containingNamespace))
