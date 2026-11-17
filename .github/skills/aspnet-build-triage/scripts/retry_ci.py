@@ -61,9 +61,9 @@ def failed_builds(checks: list[dict[str, Any]]) -> tuple[dict[str, dict[str, Any
     return builds, other
 
 
-def build_api(build: dict[str, Any], query: str = "") -> str:
-    return (f"https://dev.azure.com/{build['org']}/{build['project']}/_apis/build/builds/"
-            f"{build['buildId']}?api-version=7.1{query}")
+def build_api(build: dict[str, Any]) -> str:
+    # No query string: '&' would split the command when az.cmd runs through cmd.exe on Windows.
+    return f"https://dev.azure.com/{build['org']}/{build['project']}/_apis/build/builds/{build['buildId']}"
 
 
 def main(argv: list[str] | None = None) -> int:
@@ -83,7 +83,7 @@ def main(argv: list[str] | None = None) -> int:
         print("No failed Azure DevOps builds to retry.")
     status = 0
     for build in builds.values():
-        info = json.loads(run(["az", "rest", "--method", "get", "--url", build_api(build),
+        info = json.loads(run(["az", "rest", "--method", "get", "--url", build_api(build), "--uri-parameters", "api-version=7.1",
                                "--resource", AZDO_RESOURCE, "-o", "json"]))
         link = info.get("_links", {}).get("web", {}).get("href", build_api(build))
         label = f"{build['pipeline']} build {build['buildId']} ({info.get('status')}/{info.get('result')}): {link}"
@@ -94,7 +94,8 @@ def main(argv: list[str] | None = None) -> int:
             print(f"would retry failed jobs in {label}")
             continue
         try:
-            run(["az", "rest", "--method", "patch", "--url", build_api(build, "&retry=true"),
+            run(["az", "rest", "--method", "patch", "--url", build_api(build),
+                 "--uri-parameters", "api-version=7.1", "retry=true",
                  "--resource", AZDO_RESOURCE, "--body", "{}", "-o", "none"])
             print(f"retried failed jobs in {label}")
         except RuntimeError as error:

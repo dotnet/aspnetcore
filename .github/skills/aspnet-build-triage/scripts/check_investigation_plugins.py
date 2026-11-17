@@ -87,11 +87,12 @@ def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--format", choices=["markdown", "json"], default="markdown")
     args = parser.parse_args(argv)
-    if not shutil.which("copilot"):
+    copilot = shutil.which("copilot")
+    if not copilot:
         print("GitHub Copilot CLI (`copilot`) isn't on PATH; can't check installed plugins.", file=sys.stderr)
         return 2
-    result = check(parse_plugins(run(["copilot", "plugin", "list"])),
-                   parse_marketplaces(run(["copilot", "plugin", "marketplace", "list"])))
+    result = check(parse_plugins(run([copilot, "plugin", "list"])),
+                   parse_marketplaces(run([copilot, "plugin", "marketplace", "list"])))
     print(json.dumps(result, indent=2) if args.format == "json" else render(result), end="")
     return 0
 
