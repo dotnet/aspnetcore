@@ -60,8 +60,9 @@ never change checked-in `.npmrc` files, and don't echo or log the token.
 - For a targeted security fix, keep the lockfiles and use package-manager update commands.
   Prefer a compatible update to the package or its direct parent; use an override only when
   needed and verify every nested copy. Never use `npm audit fix --force` for routine updates.
-- For a full npm refresh, run `npm install --prefer-online --include optional` in the root and
-  each selected independent npm project. Regenerate with the owning package manager; do not
+- For a full npm refresh, do what the repo script does: delete `package-lock.json`, then run
+  `npm install --prefer-online --include optional` in the root and each selected independent npm
+  project. `npm install` alone keeps existing lockfile resolutions. Regenerate with the owning package manager; do not
   hand-edit lockfiles or run blanket cleanup in a shared checkout.
 - Check the seven-day feed quarantine using the exact version's registry publish time.
   Prefer a compatible patched version already eligible for ingestion. If none is eligible,

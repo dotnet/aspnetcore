@@ -291,7 +291,7 @@ class ServicingTests(unittest.TestCase):
         return pr
 
     def action(self, pr, required=("aspnetcore-ci",)):
-        states = inv.required_check_states(pr, list(required))
+        states = inv.required_check_states(pr, None if required is None else list(required))
         return inv.servicing_next_action(pr, inv.summarize_checks(pr), states)
 
     def test_requires_release_base_and_label(self):
@@ -306,6 +306,11 @@ class ServicingTests(unittest.TestCase):
         self.assertEqual(self.action(self.servicing_pr(green, [(HUMAN, "APPROVED"), (MAESTRO, "APPROVED")])),
                          "needs-approval")
         self.assertEqual(self.action(self.servicing_pr(green, [(OTHER, "CHANGES_REQUESTED")])), "address-feedback")
+        # An approval made stale by a later push leaves GitHub's review decision unapproved.
+        self.assertEqual(self.action(self.servicing_pr(green, [(OTHER, "APPROVED")], review="REVIEW_REQUIRED")),
+                         "needs-approval")
+        # Unknown required checks mean CI can't be confirmed green.
+        self.assertEqual(self.action(self.servicing_pr([], [(OTHER, "APPROVED")]), required=None), "check-merge-state")
 
     def test_any_failing_check_is_retried_and_missing_required_one_is_awaited(self):
         approved = [(OTHER, "APPROVED")]
@@ -447,8 +452,10 @@ class ScheduleTests(unittest.TestCase):
         self.assertEqual(sc("0 8 * * *"), ["/SC", "DAILY", "/ST", "08:00"])
         self.assertEqual(sc("15 7 * * 1,3"), ["/SC", "WEEKLY", "/D", "MON,WED", "/ST", "07:15"])
         self.assertEqual(sc("0 */6 * * *"), ["/SC", "HOURLY", "/MO", "6", "/ST", "00:00"])
-        with self.assertRaises(ValueError):
-            sc("0 8 1 * *")
+        # Evenly spaced hours that don't cover the whole day can't become an hourly task.
+        for expression in ("0 8 1 * *", "0 1,5 * * *", "0 0,1 * * *", "0 0-12/6 * * *"):
+            with self.assertRaises(ValueError):
+                sc(expression)
 
 
 if __name__ == "__main__":

@@ -8,14 +8,14 @@ from __future__ import annotations
 
 import json
 import re
+import shutil
 import subprocess
 from datetime import datetime
 from typing import Any, Callable
-from zoneinfo import ZoneInfo
+from zoneinfo import ZoneInfo, ZoneInfoNotFoundError
 
 SCHEDULE_URL = "https://devdiv.visualstudio.com/DevDiv/_wiki/wikis/DevDiv.wiki/8694/NET-Servicing-Schedule"
 WIKI_PATH = "/dot.NET Wiki/NET Core/Product Lifecycle and Release/NET Servicing/NET Servicing Schedule"
-PACIFIC = ZoneInfo("America/Los_Angeles")
 MONTHS = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"]
 MONTH_NAMES = ["January", "February", "March", "April", "May", "June", "July", "August",
                "September", "October", "November", "December"]
@@ -73,6 +73,13 @@ def code_complete_rows(content: str) -> list[dict[str, Any]]:
     return rows
 
 
+def pacific() -> ZoneInfo:
+    try:
+        return ZoneInfo("America/Los_Angeles")
+    except ZoneInfoNotFoundError:
+        raise RuntimeError("No time zone data; run `python -m pip install tzdata` (needed on Windows)") from None
+
+
 def code_complete_cutoff(content: str, release_year: int, release_month: int, major: int) -> datetime | None:
     """Cut-off for `major` in a release page, or None if the page has no usable code-complete row.
 
@@ -88,14 +95,17 @@ def code_complete_cutoff(content: str, release_year: int, release_month: int, ma
         month, day = row["date"]
         year = release_year if month <= release_month else release_year - 1
         hour, minute = row["time"]
-        cutoffs.append(datetime(year, month, day, hour, minute, tzinfo=PACIFIC))
+        cutoffs.append(datetime(year, month, day, hour, minute, tzinfo=pacific()))
     return max(cutoffs)
 
 
 def fetch_page(title: str) -> dict[str, Any] | None:
     """Fetch a schedule sub-page (for example 'January 2027'); None if it doesn't exist."""
+    az = shutil.which("az")
+    if not az:
+        raise RuntimeError("Azure CLI (az) is required to read the servicing schedule")
     result = subprocess.run(
-        ["az", "devops", "invoke", "--org", "https://dev.azure.com/devdiv", "--area", "wiki",
+        [az, "devops", "invoke", "--org", "https://dev.azure.com/devdiv", "--area", "wiki",
          "--resource", "pages", "--route-parameters", "project=DevDiv", "wikiIdentifier=DevDiv.wiki",
          "--query-parameters", f"path={WIKI_PATH}/{title}", "includeContent=true",
          "--api-version", "7.1", "-o", "json"],

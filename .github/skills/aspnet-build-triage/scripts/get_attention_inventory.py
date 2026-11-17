@@ -214,12 +214,12 @@ def servicing_next_action(pr: dict[str, Any], checks: dict[str, Any],
     """Servicing PRs are merged on green CI plus another dev's approval; failures are just retried.
 
     CI is green only when no check is failing or pending and every branch-protection required
-    check (when known) has reported success.
+    check has reported success. If the required checks couldn't be read, CI can't be called green.
+    GitHub's reviewDecision must also be APPROVED, so approvals made stale by later pushes don't count.
     """
     approved, changes = approvers(pr)
-    required = required or []
-    failing = bool(checks["failing"]) or any(r["state"] == "FAILING" for r in required)
-    pending = bool(checks["pending"]) or any(r["state"] in ("PENDING", "MISSING") for r in required)
+    failing = bool(checks["failing"]) or any(r["state"] == "FAILING" for r in required or [])
+    pending = bool(checks["pending"]) or any(r["state"] in ("PENDING", "MISSING") for r in required or [])
     if pr["isDraft"]:
         return "draft"
     if pr["mergeable"] == "CONFLICTING":
@@ -230,8 +230,10 @@ def servicing_next_action(pr: dict[str, Any], checks: dict[str, Any],
         return "wait-for-ci"
     if changes:
         return "address-feedback"
-    if not approved:
+    if not approved or pr.get("reviewDecision") != "APPROVED":
         return "needs-approval"
+    if required is None:
+        return "check-merge-state"
     return "ready-to-merge"
 
 

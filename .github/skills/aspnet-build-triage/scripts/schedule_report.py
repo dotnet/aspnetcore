@@ -102,7 +102,9 @@ def schtasks_schedule(fields: dict[str, list[int] | None]) -> list[str]:
             return ["/SC", "DAILY", *start]
         return ["/SC", "WEEKLY", "/D", ",".join(DAY_NAMES[d].upper() for d in weekday), *start]
     steps = {b - a for a, b in zip(hour, hour[1:])} if hour else {1}
-    if weekday is None and (hour is None or (len(steps) == 1 and hour[0] < min(steps) and 24 % min(steps) == 0)):
+    full_day = hour is None or (len(steps) == 1 and hour[0] < min(steps) and 24 % min(steps) == 0
+                                and len(hour) == 24 // min(steps))
+    if weekday is None and full_day:
         every = min(steps)
         first = hour[0] if hour else 0
         return ["/SC", "HOURLY", "/MO", str(every), "/ST", f"{first:02d}:{minute[0]:02d}"]
@@ -176,7 +178,11 @@ def install(expression: str, dry_run: bool) -> None:
     target = install_dir()
     script = target / "scripts" / "send_report.py"
     config = send_report.config_path()
-    if not send_report.load_config().get("to"):
+    settings = send_report.load_config()
+    if settings.get("transport") == "smtp":
+        raise ValueError("Scheduled runs can't read ABT_SMTP_PASSWORD from your shell; "
+                         "use the outlook or webhook transport for scheduled reports.")
+    if not settings.get("to"):
         print(f"Warning: no recipient configured in {config}. Run send_report.py --to <address> --save-config first.")
     if system == "Darwin":
         plan = plistlib.dumps(launchd_plist(script, fields)).decode()

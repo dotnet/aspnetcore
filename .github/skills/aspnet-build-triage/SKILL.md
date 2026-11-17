@@ -30,7 +30,7 @@ team owns, including dependency alerts. Run the bundled collector, then present 
 - For Component Governance, Azure CLI (`az`) signed in with access to the `dnceng/internal`
   dashboard. For servicing release dates, access to the `devdiv` wiki; for CI retries, permission
   to rerun `dnceng-public` builds. A Component Governance-only run does not require `gh`.
-- Python 3.9+.
+- Python 3.9+. On Windows, also run `python -m pip install tzdata` (needed for servicing release dates).
 - For the emailed report, a way to send mail. See [Emailed report](#emailed-report).
 - For investigating failures, the .NET CI investigation plugins from the
   [dotnet/arcade-skills](https://github.com/dotnet/arcade-skills) and
@@ -109,10 +109,12 @@ that belongs to the PR author.
 
 - **Merge** when all of these hold: the `Servicing-approved` or `tell-mode` label is on the PR, CI
   is green, and another developer (not the author, not a bot) approved it in a code review
-  (`approvedBy`). Green CI means no check is failing or still running (only the derived
+  (`approvedBy`), with GitHub's review decision still `APPROVED` (a push after the approval makes it
+  stale, and it doesn't count). Green CI means no check is failing or still running (only the derived
   `Maestro auto-merge - All Checks Successful` check is ignored), and every branch-protection
   required check (`requiredChecks`; currently `aspnetcore-ci` and `aspnetcore-components-e2e`) has
-  reported success. The collector reports these as `ready-to-merge`. Tell the user to elevate at
+  reported success. If the required checks couldn't be read, the collector reports
+  `check-merge-state` instead; verify them on the PR. The collector reports these as `ready-to-merge`. Tell the user to elevate at
   https://repos.opensource.microsoft.com/orgs/dotnet/repos/aspnetcore and then merge it themselves.
   Don't merge on their behalf.
 - **Retry** (`retry-ci`) when any check failed. Don't investigate the failure; just offer to
@@ -227,7 +229,9 @@ installed:
 python3 .github/skills/aspnet-build-triage/scripts/check_investigation_plugins.py
 ```
 
-The check is read-only and works with GitHub Copilot CLI. If anything is missing or disabled, show
+The check is read-only and only works with GitHub Copilot CLI. In other agents, check whether
+skills such as `ci-analysis` and `helix-investigation` are already available to you; if not, point
+the user to their agent's plugin documentation and the two repositories above. If anything is missing or disabled, show
 the user the commands it prints and ask them to run them and restart their session; don't install
 plugins for them. To install everything by hand in Copilot CLI:
 
@@ -311,6 +315,8 @@ cadence they choose. Only do this when the user explicitly asks for an emailed o
    LaunchAgent; a run missed while the Mac sleeps happens on wake. On Linux it's a crontab entry.
    On Windows it's a Task Scheduler task, which supports daily, weekly-on-some-days and every-N-hours
    cadences.
+   The `smtp` transport can't be scheduled, because unattended runs can't read `ABT_SMTP_PASSWORD`
+   from the user's shell; use `outlook` or `webhook` for scheduled reports.
    The job runs unattended, so `gh` and `az` must stay signed in. If the report shows sections that
    weren't collected, have the user sign in again.
 

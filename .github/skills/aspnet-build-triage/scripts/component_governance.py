@@ -2,6 +2,7 @@
 
 import json
 import re
+import shutil
 import subprocess
 from concurrent.futures import ThreadPoolExecutor
 from html.parser import HTMLParser
@@ -75,9 +76,12 @@ def fetch_support_policy():
 
 
 def azure_get(path):
+    az = shutil.which("az")
+    if not az:
+        raise ValueError("Azure CLI is required for Component Governance")
     try:
         result = subprocess.run(
-            ["az", "rest", "--resource", AZURE_DEVOPS_RESOURCE, "--method", "get",
+            [az, "rest", "--resource", AZURE_DEVOPS_RESOURCE, "--method", "get",
              "--url", f"{API}/{path}?api-version=7.1-preview.1",
              "--only-show-errors", "-o", "json"],
             check=True, capture_output=True, text=True, timeout=30,

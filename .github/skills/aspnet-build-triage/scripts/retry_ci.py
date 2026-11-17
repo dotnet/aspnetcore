@@ -10,6 +10,7 @@ from __future__ import annotations
 import argparse
 import json
 import re
+import shutil
 import subprocess
 import sys
 from typing import Any
@@ -22,6 +23,8 @@ RETRYABLE_RESULTS = {"failed", "partiallySucceeded", "canceled"}
 
 
 def run(args: list[str]) -> str:
+    # Resolve az.cmd/gh.exe on Windows, where bare names without extensions aren't found.
+    args = [shutil.which(args[0]) or args[0], *args[1:]]
     result = subprocess.run(args, capture_output=True, text=True)
     if result.returncode != 0:
         raise RuntimeError(f"{' '.join(args[:3])} failed: {result.stderr.strip()[:500]}")
