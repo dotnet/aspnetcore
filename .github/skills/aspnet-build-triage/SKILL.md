@@ -268,8 +268,13 @@ and the build logs directly, and say the plugins would give a deeper analysis.
 ## Emailed report
 
 The full report (every category, with a summary table) can be emailed to the user once or on any
-cadence they choose. Sending email and installing a scheduled job both act on the user's behalf:
-do them only when the user asks, and confirm the recipient and cadence first.
+cadence they choose. Only do this when the user explicitly asks for an emailed or scheduled report:
+
+- Don't offer, suggest or set up scheduled emails on your own initiative, and don't install a
+  schedule unless the user asked for one and gave (or confirmed) the cadence.
+- Don't send test emails. Use `--dry-run` to check the report; send only when the user asks for a
+  send.
+- Confirm the recipient before saving it.
 
 1. **Choose a transport** with the user and save the settings to their per-user config file
    (`send_report.py --print-config-path`; never put addresses or secrets in the repository):
@@ -287,10 +292,10 @@ do them only when the user asks, and confirm the recipient and cadence first.
 
    `--dry-run` builds the report and writes the HTML without sending. Show the user the subject
    line and HTML path so they can check it.
-2. **Send once** when the user asks: run `send_report.py` without `--dry-run`. A category that fails
+2. **Send once** only when the user explicitly asks for it: run `send_report.py` without `--dry-run`. A category that fails
    to collect (for example, expired `az` sign-in) is marked "not collected" in the email instead of
    stopping the send.
-3. **Schedule it** at the cadence the user wants. Translate it into a 5-field cron expression in
+3. **Schedule it** only when the user explicitly asks, at the cadence they want. Translate it into a 5-field cron expression in
    their local time (for example, every weekday at 8 AM is `"0 8 * * 1-5"`, Mondays at 9 AM is
    `"0 9 * * 1"`, every 4 hours is `"0 */4 * * *"`), show it to them, then:
 
