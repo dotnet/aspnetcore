@@ -244,7 +244,7 @@ catch
             WorkingDirectory = Path.Combine(AppContext.BaseDirectory, _options.WorkingDirectory)
         };
 
-        var stopProcess = Process.Start(stopScriptInfo)!;
+        using var stopProcess = Process.Start(stopScriptInfo)!;
         if (stopProcess.TryWaitForExitStatus(TimeSpan.Zero, out ProcessExitStatus? status))
         {
             if (_logger.IsEnabled(LogLevel.Warning))
@@ -307,7 +307,7 @@ rm {scriptPath};
             WorkingDirectory = Path.Combine(AppContext.BaseDirectory, _options.WorkingDirectory)
         };
 
-        var stopProcess = Process.Start(stopScriptInfo)!;
+        using var stopProcess = Process.Start(stopScriptInfo)!;
         if (stopProcess.TryWaitForExitStatus(TimeSpan.Zero, out ProcessExitStatus? status))
         {
             _logger.LogWarning($"The SPA process shutdown script '{stopProcess.Id}' exited unexpectedly with exit code {status.ExitCode}. The SPA proxy might" +

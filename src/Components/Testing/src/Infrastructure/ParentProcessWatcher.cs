@@ -32,8 +32,11 @@ internal class ParentProcessWatcher : BackgroundService
         {
             if (Process.TryGetProcessById(_parentPid, out var parent))
             {
-                // Exit-status waits cannot monitor a non-child process on Unix.
-                await parent.WaitForExitAsync(stoppingToken).ConfigureAwait(false);
+                using (parent)
+                {
+                    // Exit-status waits cannot monitor a non-child process on Unix.
+                    await parent.WaitForExitAsync(stoppingToken).ConfigureAwait(false);
+                }
             }
 
             _lifetime.StopApplication();
