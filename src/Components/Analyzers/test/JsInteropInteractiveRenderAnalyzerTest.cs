@@ -83,6 +83,7 @@ namespace Microsoft.AspNetCore.Components
             public void AddMarkupContent(int sequence, string markupContent) { }
             public void SetUpdatesAttributeName(string name) { }
             public void AddContent(int sequence, object textContent) { }
+            public void AddContent<TValue>(int sequence, RenderFragment<TValue> fragment, TValue value) { }
             public void OpenComponent<T>(int sequence) where T : IComponent { }
             public void AddComponentParameter(int sequence, string name, object value) { }
             public void CloseComponent() { }
@@ -2097,6 +2098,61 @@ namespace ConsoleApplication1
     public void JSInvokeAfterIsInteractiveVariableNotReplacedByCalleeShouldNotThrowWarning(string statements)
     {
         VerifyCSharpDiagnostic(CreateOnInitializedAsyncTest(statements));
+    }
+
+    [Theory]
+    [InlineData(@"JS.Invoke<string>(""getValue"");", 20, 13)]
+    [InlineData(@"__builder.AddContent(1, JS.Invoke<string>(""getValue""));", 20, 37)]
+    [InlineData(@"__builder.AddContent<Action>(1, item => b => JS.Invoke<string>(""getValue""), () => { });", 20, 58)]
+    [InlineData(@"if (RendererInfo.IsInteractive) { } else { __builder.AddComponentParameter(1, ""OnClick"", EventCallback.Factory.Create<object>(this, () => JS.Invoke<string>(""getValue""))); }", 20, 151)]
+    [InlineData(@"if (RendererInfo.IsInteractive) { } else { __builder.AddComponentParameter(1, ""OnClick"", EventCallback.Factory.Create<object>(this, InvokeJS)); }", 15, 13)]
+    public void JSInvokeInBuildRenderTreeWithoutIsInteractiveCheckShouldThrowWarning(string statements, int line, int column)
+    {
+        VerifyCSharpDiagnostic(CreateBuildRenderTreeTest(statements),
+            new DiagnosticResult { Locations = new[] { new DiagnosticResultLocation("Test0.cs", line, column) }, Id = id, Message = messageInvoke, Severity = DiagnosticSeverity.Warning, }
+        );
+    }
+
+    [Theory]
+    [InlineData(@"if (RendererInfo.IsInteractive) { JS.Invoke<string>(""getValue""); }")]
+    [InlineData(@"if (RendererInfo.IsInteractive) { __builder.AddContent(1, JS.Invoke<string>(""getValue"")); }")]
+    [InlineData(@"if (!RendererInfo.IsInteractive) { return; } JS.Invoke<string>(""getValue"");")]
+    [InlineData(@"if (RendererInfo.IsInteractive) { __builder.AddComponentParameter(1, ""OnClick"", EventCallback.Factory.Create<object>(this, () => JS.Invoke<string>(""getValue""))); }")]
+    [InlineData(@"if (RendererInfo.IsInteractive) { __builder.AddComponentParameter(1, ""OnClick"", EventCallback.Factory.Create<object>(this, InvokeJS)); }")]
+    [InlineData(@"var interactive = RendererInfo.IsInteractive; if (interactive) { __builder.AddComponentParameter(1, ""OnClick"", EventCallback.Factory.Create<object>(this, InvokeJS)); }")]
+    [InlineData(@"if (RendererInfo.IsInteractive) { __builder.AddComponentParameter(1, ""ChildContent"", (RenderFragment)((__builder2) => { __builder2.AddComponentParameter(2, ""OnClick"", EventCallback.Factory.Create<object>(this, InvokeJS)); })); }")]
+    [InlineData(@"__builder.AddAttribute(1, ""onclick"", EventCallback.Factory.Create<object>(this, InvokeJS));")]
+    public void JSInvokeInBuildRenderTreeWithIsInteractiveCheckShouldNotThrowWarning(string statements)
+    {
+        VerifyCSharpDiagnostic(CreateBuildRenderTreeTest(statements));
+    }
+
+    private static string CreateBuildRenderTreeTest(string statements)
+    {
+        var body = string.Join(Environment.NewLine, statements.Split('|').Select(statement => "            " + statement));
+        return @"
+namespace ConsoleApplication1
+{
+    using System;
+    using Microsoft.AspNetCore.Components;
+    using Microsoft.AspNetCore.Components.Rendering;
+    using Microsoft.JSInterop;
+
+    class TestComponent : ComponentBase
+    {
+        private IJSInProcessRuntime JS = default!;
+
+        private void InvokeJS()
+        {
+            JS.Invoke<string>(""getValue"");
+        }
+
+        protected override void BuildRenderTree(RenderTreeBuilder __builder)
+        {
+" + body + @"
+        }
+    }
+}" + BaseComponentDeclarations;
     }
 
     [Theory]

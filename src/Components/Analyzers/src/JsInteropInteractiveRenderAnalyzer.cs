@@ -85,24 +85,14 @@ public sealed class JsInteropInteractiveRenderAnalyzer : DiagnosticAnalyzer
 
             context.RegisterOperationBlockAction(context =>
             {
-                if (context.OwningSymbol is IMethodSymbol owningMethod)
+                if (context.OwningSymbol is IMethodSymbol owningMethod
+                    && (IsImplementationOfNotSafeMethod(owningMethod, availableTypes)
+                        || ComponentFacts.IsBuildRenderTree(owningMethod, availableTypes[ComponentsApi.ComponentBase.MetadataName])))
                 {
-                    if (IsImplementationOfNotSafeMethod(owningMethod, availableTypes))
+                    foreach (var childBlock in context.OperationBlocks)
                     {
-                        foreach (var childBlock in context.OperationBlocks)
-                        {
-                            // Should be one but could be more than one if there are multiple partial class definitions.
-                            AnalyzeOperationsTree(childBlock, new JSInteropAnalyzerState(context, availableTypes));
-                        }
-                    }
-                    else if (ComponentFacts.IsBuildRenderTree(owningMethod, availableTypes[ComponentsApi.ComponentBase.MetadataName]))
-                    {
-                        
-                        foreach (var childBlock in context.OperationBlocks)
-                        {
-                            // Should be one but could be more than one if there are multiple partial class definitions.
-                            AnalyzeRendererForHandlers(childBlock, new JSInteropAnalyzerState(context, availableTypes));
-                        }
+                        // Should be one but could be more than one if there are multiple partial class definitions.
+                        AnalyzeOperationsTree(childBlock, new JSInteropAnalyzerState(context, availableTypes));
                     }
                 }
             });
@@ -488,6 +478,14 @@ public sealed class JsInteropInteractiveRenderAnalyzer : DiagnosticAnalyzer
 
     private static void AnalyzeInvocation(IInvocationOperation invocation, JSInteropAnalyzerState state)
     {
+        if (TryAnalyzeRenderTreeCallbackRegistration(invocation, state))
+        {
+            // RenderTreeBuilder AddAttribute/AddComponentParameter call that registers a callback was already analyzed in the context where it is registered.
+            // Interactive-only DOM event attributes are skipped
+            return;
+        }
+
+        // Any other invocation, including RenderTreeBuilder calls without a callback, is analyzed as part of the normal flow.
         if (!state.IsInteractiveChecked && IsJSInteropInvocation(invocation))
         {
             state.BlockContext.ReportDiagnostic(Diagnostic.Create(
@@ -609,107 +607,70 @@ public sealed class JsInteropInteractiveRenderAnalyzer : DiagnosticAnalyzer
         }
     }
 
-    private static void AnalyzeRendererForHandlers(IOperation operation, JSInteropAnalyzerState state)
+    /// <summary>
+    /// Attribute and parameter callbacks registered on the render tree run when they are invoked, not while the tree is built.
+    /// Their bodies are analyzed with the flow state where they are registered, and the registration itself is not treated as a call.
+    /// </summary>
+    private static bool TryAnalyzeRenderTreeCallbackRegistration(IInvocationOperation invocation, JSInteropAnalyzerState state)
     {
-        if (operation is IInvocationOperation invocation)
-        {
-            // Analyze if we have event handler, so we can check it for JSInterop calls.
-            AnalyzeInvocationForHandler(invocation, state);
-        }
-        else
-        {
-            // Expression statements, blocks, switch, cases etc. that have children.
-#pragma warning disable CS0618
-            foreach (var childOperation in operation.Children)
-#pragma warning restore CS0618
-            {
-                AnalyzeRendererForHandlers(childOperation, state);
-            }
-        }
-    }
-
-    private static void AnalyzeInvocationForHandler(IInvocationOperation invocation, JSInteropAnalyzerState state)
-    {
-        if (invocation.Instance?.Type is not null
-            && invocation.Arguments.Length >= 3)
-        {
-            var targetMethod = invocation.TargetMethod;
-            if (targetMethod.Name != "AddAttribute" && targetMethod.Name != "AddComponentParameter")
-            {
-                return;
-            }
-
-            if (targetMethod.Name == "AddAttribute" && IsInteractiveOnlyDomEventAttribute(invocation.Arguments[1].Value))
-            {
-                return;
-            }
-
-            // Get the third argument, which is the value of the attribute/parameter. If it's a delegate, we need to analyze it for JSInterop calls.
-            IOperation? suspectOperation = null;
-            var valueArgument = invocation.Arguments[2].Value;
-            if (valueArgument is IInvocationOperation invocationOperation)
-            {
-                if (SymbolEqualityComparer.Default.Equals(invocationOperation.TargetMethod.ContainingType, state.AvailableTypes[ComponentsApi.EventCallbackFactory.MetadataName])
-                    && invocationOperation.TargetMethod.Name != "CreateBinder"
-                    && invocationOperation.Arguments.Length >= 2
-                    && invocationOperation.Arguments[1].Value is IDelegateCreationOperation delegateCreation)
-                {
-                    suspectOperation = delegateCreation.Target;
-                }
-            }
-            else if (valueArgument is IDelegateCreationOperation delegateCreation
-                && (delegateCreation.Target is IAnonymousFunctionOperation || delegateCreation.Target is IMethodReferenceOperation))
-            {
-                suspectOperation = delegateCreation.Target;
-            }
-            else if (valueArgument is IConversionOperation conversionOperation
-                && conversionOperation.Operand.Type is not null && conversionOperation.Operand.Type.ContainingNamespace is not null
-                && conversionOperation.Operand.Type.ContainingNamespace.ToString().StartsWith(ComponentsApi.AssemblyName, StringComparison.Ordinal))
-            {
-                // If the value is a conversion operation, search if a delegate is created like RenderFragment or an EventCallback.
-                // Multiple delegates at once shouldn't be possible.
-                var delegateResult = FindFirstDelegateChild(conversionOperation.Operand);
-                if (delegateResult is not null
-                    && (delegateResult.Target is IAnonymousFunctionOperation || delegateResult.Target is IMethodReferenceOperation))
-                {
-                    suspectOperation = delegateResult.Target;
-                }
-            }
-
-            if (suspectOperation is IAnonymousFunctionOperation renderFragment
-                && IsRenderFragment(renderFragment.Symbol, state.AvailableTypes))
-            {
-                AnalyzeRendererForHandlers(renderFragment.Body, state);
-            }
-            else if (suspectOperation is IAnonymousFunctionOperation anonymousFunction)
-            {
-                AnalyzeOperationsTree(anonymousFunction.Body, state.Clone());
-            }
-            else if (suspectOperation is IMethodReferenceOperation methodReference)
-            {
-                AnalyzeMethodReference(methodReference.Method, state);
-            }
-        }
-    }
-
-    private static bool IsRenderFragment(IMethodSymbol function, Dictionary<string, INamedTypeSymbol?> availableTypes)
-    {
-        var renderTreeBuilderType = availableTypes[ComponentsApi.RenderTreeBuilder.MetadataName];
-        if (renderTreeBuilderType is null)
+        var targetMethod = invocation.TargetMethod;
+        if ((targetMethod.Name != "AddAttribute" && targetMethod.Name != "AddComponentParameter")
+            || invocation.Arguments.Length < 3
+            || !SymbolEqualityComparer.Default.Equals(targetMethod.ContainingType, state.AvailableTypes[ComponentsApi.RenderTreeBuilder.MetadataName]))
         {
             return false;
         }
 
-        // RenderFragment<TValue> lambdas return the RenderFragment lambda that builds the content.
-        return TakesRenderTreeBuilder(function, renderTreeBuilderType)
-            || (function.ReturnType is INamedTypeSymbol { DelegateInvokeMethod: { } returnedFunction }
-                && TakesRenderTreeBuilder(returnedFunction, renderTreeBuilderType));
+        if (targetMethod.Name == "AddAttribute" && IsInteractiveOnlyDomEventAttribute(invocation.Arguments[1].Value))
+        {
+            return true;
+        }
+
+        var callback = FindRegisteredCallback(invocation.Arguments[2].Value, state);
+        if (callback is IAnonymousFunctionOperation anonymousFunction)
+        {
+            AnalyzeOperationsTree(anonymousFunction.Body, state.Clone());
+        }
+        else if (callback is IMethodReferenceOperation methodReference)
+        {
+            AnalyzeMethodReference(methodReference.Method, state);
+        }
+        else
+        {
+            return false;
+        }
+
+        return true;
     }
 
-    private static bool TakesRenderTreeBuilder(IMethodSymbol function, INamedTypeSymbol renderTreeBuilderType)
+    private static IOperation? FindRegisteredCallback(IOperation valueArgument, JSInteropAnalyzerState state)
     {
-        return function.Parameters.Length == 1
-            && SymbolEqualityComparer.Default.Equals(function.Parameters[0].Type, renderTreeBuilderType);
+        IDelegateCreationOperation? delegateCreation = null;
+        if (valueArgument is IInvocationOperation invocationOperation)
+        {
+            if (SymbolEqualityComparer.Default.Equals(invocationOperation.TargetMethod.ContainingType, state.AvailableTypes[ComponentsApi.EventCallbackFactory.MetadataName])
+                && invocationOperation.TargetMethod.Name != "CreateBinder"
+                && invocationOperation.Arguments.Length >= 2)
+            {
+                delegateCreation = invocationOperation.Arguments[1].Value as IDelegateCreationOperation;
+            }
+        }
+        else if (valueArgument is IDelegateCreationOperation directDelegateCreation)
+        {
+            delegateCreation = directDelegateCreation;
+        }
+        else if (valueArgument is IConversionOperation conversionOperation
+            && conversionOperation.Operand.Type is not null && conversionOperation.Operand.Type.ContainingNamespace is not null
+            && conversionOperation.Operand.Type.ContainingNamespace.ToString().StartsWith(ComponentsApi.AssemblyName, StringComparison.Ordinal))
+        {
+            // If the value is a conversion operation, search if a delegate is created like RenderFragment or an EventCallback.
+            // Multiple delegates at once shouldn't be possible.
+            delegateCreation = FindFirstDelegateChild(conversionOperation.Operand);
+        }
+
+        return delegateCreation?.Target is IAnonymousFunctionOperation || delegateCreation?.Target is IMethodReferenceOperation
+            ? delegateCreation.Target
+            : null;
     }
 
     private static bool IsInteractiveOnlyDomEventAttribute(IOperation attributeNameOperation)
