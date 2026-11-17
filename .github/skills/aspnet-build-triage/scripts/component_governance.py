@@ -1,0 +1,188 @@
+"""Read the .NET support policy and Azure DevOps Component Governance."""
+
+import json
+import re
+import subprocess
+from concurrent.futures import ThreadPoolExecutor
+from html.parser import HTMLParser
+from urllib.parse import quote, urlencode
+from urllib.request import urlopen
+
+SUPPORT_POLICY = "https://dotnet.microsoft.com/en-us/platform/support/policy"
+DASHBOARD = "https://dev.azure.com/dnceng/internal/_componentGovernance/dotnet-aspnetcore"
+API = "https://governance.dev.azure.com/dnceng/internal/_apis/ComponentGovernance/GovernedRepositories/102242"
+AZURE_DEVOPS_RESOURCE = "499b84ac-1321-427f-aa17-267ca6975798"
+MIRROR_PIPELINE = "https://dev.azure.com/dnceng/internal/_build?definitionId=931&_a=summary"
+
+
+class SupportedVersions(HTMLParser):
+    def __init__(self):
+        super().__init__()
+        self.in_table = False
+        self.cell = None
+        self.rows = []
+
+    def handle_starttag(self, tag, attrs):
+        if tag == "table":
+            self.in_table = dict(attrs).get("aria-labelledby") == "supported-versions"
+        elif self.in_table and tag == "tr":
+            self.rows.append([])
+        elif self.in_table and tag in ("td", "th"):
+            self.cell = []
+
+    def handle_data(self, data):
+        if self.cell is not None:
+            self.cell.append(data)
+
+    def handle_endtag(self, tag):
+        if tag == "table":
+            self.in_table = False
+        elif tag in ("td", "th") and self.cell is not None:
+            self.rows[-1].append(" ".join("".join(self.cell).split()))
+            self.cell = None
+
+
+def supported_release_branches(html):
+    parser = SupportedVersions()
+    parser.feed(html)
+    if not parser.rows or not {"Version", "Support phase"}.issubset(parser.rows[0]):
+        raise ValueError("Could not read the supported versions table")
+    version_index = parser.rows[0].index("Version")
+    phase_index = parser.rows[0].index("Support phase")
+    branches = []
+    for row in parser.rows[1:]:
+        if len(row) != len(parser.rows[0]):
+            raise ValueError("Unexpected row in the supported versions table")
+        if row[phase_index].casefold() not in {"active", "maintenance"}:
+            continue
+        match = re.fullmatch(r"\.NET(?: Core)? (\d+)(?:\.(\d+))?", row[version_index])
+        if not match:
+            raise ValueError("Unrecognized in-support .NET version")
+        branches.append(f"release/{match[1]}.{match[2] or '0'}")
+    return list(dict.fromkeys(branches))
+
+
+def fetch_support_policy():
+    with urlopen(SUPPORT_POLICY, timeout=20) as response:
+        return response.read().decode("utf-8")
+
+
+def azure_get(path):
+    try:
+        result = subprocess.run(
+            ["az", "rest", "--resource", AZURE_DEVOPS_RESOURCE, "--method", "get",
+             "--url", f"{API}/{path}?api-version=7.1-preview.1",
+             "--only-show-errors", "-o", "json"],
+            check=True, capture_output=True, text=True, timeout=30,
+        )
+    except FileNotFoundError:
+        raise ValueError("Azure CLI is required for Component Governance") from None
+    except (subprocess.CalledProcessError, subprocess.TimeoutExpired):
+        raise ValueError("Azure DevOps request failed; verify Azure CLI login and Component Governance access") from None
+    return json.loads(result.stdout)
+
+
+def alert_summaries(branch):
+    # The CG route decodes a branch name containing '/' twice.
+    encoded = quote(quote(branch, safe=""), safe="")
+    data = azure_get(f"Branches/{encoded}/AlertSummary")
+    alerts = data["value"]
+    if not isinstance(alerts, list) or data["count"] != len(alerts):
+        raise ValueError("Component Governance returned an incomplete alert summary")
+    return [
+        alert for alert in alerts
+        if alert["alertState"] == "active" and not alert["isDismissed"]
+        and alert["severity"] in {"critical", "high"}
+    ]
+
+
+def alert_ecosystem(alert_id):
+    component = azure_get(f"Alerts/{alert_id}")["component"]
+    return component["type"].casefold()
+
+
+def collect():
+    errors = {}
+    branches = ["main"]
+    try:
+        branches += supported_release_branches(fetch_support_policy())
+    except (OSError, ValueError) as error:
+        errors["release branch discovery"] = str(error)
+
+    summaries = {}
+    ecosystems = {}
+    with ThreadPoolExecutor(max_workers=6) as pool:
+        branch_requests = {branch: pool.submit(alert_summaries, branch) for branch in branches}
+        for branch, request in branch_requests.items():
+            try:
+                summaries[branch] = request.result()
+            except (ValueError, KeyError, TypeError) as error:
+                errors[branch] = str(error)
+
+        ids = sorted({alert["alertId"] for alerts in summaries.values() for alert in alerts})
+        detail_requests = {alert_id: pool.submit(alert_ecosystem, alert_id) for alert_id in ids}
+        for alert_id, request in detail_requests.items():
+            try:
+                ecosystems[alert_id] = request.result()
+            except (ValueError, KeyError, TypeError, AttributeError) as error:
+                errors[f"alert {alert_id} ecosystem"] = str(error)
+
+    items = []
+    other_ecosystems = 0
+    for branch, alerts in summaries.items():
+        for alert in sorted(alerts, key=lambda a: (a["severity"], a["componentName"].casefold(), a["alertId"])):
+            alert_id = alert["alertId"]
+            ecosystem = ecosystems.get(alert_id, "unknown")
+            if ecosystem not in {"npm", "nuget", "unknown"}:
+                other_ecosystems += 1
+                continue
+            alert_type = alert["type"]
+            if alert_type != "security":
+                action = "Review the policy finding; request license review for legal alerts"
+            elif ecosystem == "npm":
+                action = "Use update-npm-dependencies for a targeted fix"
+            elif ecosystem == "nuget":
+                action = "Open a dependency-update PR after checking quarantine and dotnet-public"
+            else:
+                action = "Confirm package ecosystem in Component Governance"
+            items.append({
+                "category": "component-governance", "id": alert_id, "base": branch,
+                "severity": alert["severity"], "type": alert_type, "ecosystem": ecosystem,
+                "package": alert["componentName"], "version": alert["componentVersion"],
+                "title": alert["title"], "nextAction": action,
+                "requiresAdminElevation": branch.startswith("release/"),
+                "url": f"{DASHBOARD}?{urlencode({'branch': branch, 'alertId': alert_id})}",
+            })
+    return items, {"branches": branches, "checkedBranches": list(summaries), "errors": errors,
+                   "otherEcosystemAlertOccurrences": other_ecosystems}
+
+
+def render_markdown(items, coverage):
+    def cell(value):
+        return str(value).replace("|", r"\|").replace("\r", " ").replace("\n", " ")
+
+    lines = ["Scope: active, non-dismissed high and critical alerts across all build phases.",
+             f"[Support policy]({SUPPORT_POLICY}) · [Component Governance]({DASHBOARD})", ""]
+    if coverage["errors"]:
+        lines += ["**Incomplete Component Governance results:**"] + [
+            f"- {scope}: {cell(error)}" for scope, error in coverage["errors"].items()
+        ] + [""]
+    for branch in coverage["checkedBranches"]:
+        alerts = [item for item in items if item["base"] == branch]
+        lines += [f"### `{branch}` ({len(alerts)})", ""]
+        if not alerts:
+            lines += ["_No matching alerts found._", ""]
+            continue
+        lines += ["| Alert | Severity | Package | Next action |", "|:--|:--|:--|:--|"]
+        for item in alerts:
+            package = f"{item['package']} {item['version']} ({item['ecosystem']})"
+            lines.append(f"| [{item['id']}]({item['url']}) | {item['severity']} | "
+                         f"{cell(package)} | {item['nextAction']} |")
+        lines.append("")
+    if coverage["otherEcosystemAlertOccurrences"]:
+        lines += [f"Other ecosystem alert occurrences omitted: {coverage['otherEcosystemAlertOccurrences']}.", ""]
+    if any(item["ecosystem"] == "nuget" and item["type"] == "security" for item in items):
+        lines += ["**NuGet:** Verify the patched version's publish time. Wait until it is at least "
+                  "seven days old and verify the exact version is on `dotnet-public` before updating. "
+                  f"If missing, use the [mirroring pipeline]({MIRROR_PIPELINE}); never queue it without an explicit request.", ""]
+    return lines

@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
-"""Collect the aspnet-build team's pull request inventory.
+"""Collect the aspnet-build team's pull request and Component Governance inventory.
 
-Read-only: this script only queries GitHub through the authenticated `gh` CLI.
+Read-only: queries GitHub, the .NET support policy and Azure DevOps.
 """
 
 from __future__ import annotations
@@ -13,6 +13,8 @@ import subprocess
 import sys
 from datetime import datetime, timezone
 from typing import Any, Iterable
+
+import component_governance
 
 ASPNETCORE = "dotnet/aspnetcore"
 ADMIN_ELEVATION_URL = "https://repos.opensource.microsoft.com/orgs/dotnet/repos/aspnetcore"
@@ -39,6 +41,7 @@ CATEGORIES = {
     "dependabot": "Dependabot",
     "localization": "Localization",
     "vmr-pings": "dotnet/dotnet PRs pinging @dotnet/aspnet-build",
+    "component-governance": "Component Governance",
 }
 
 # Search queries per category. Results are re-validated by `matches_category`.
@@ -290,12 +293,20 @@ def collect(categories: list[str], now: datetime) -> dict[str, Any]:
     items: list[dict[str, Any]] = []
     seen: set[tuple[str, int]] = set()
     excluded: dict[str, int] = {}
+    coverage = {}
     for category in categories:
+        if category == "component-governance":
+            alerts, coverage[category] = component_governance.collect()
+            items += alerts
+            continue
         for query in SEARCHES[category]:
             prs = search_prs(query, with_discussion=category == "vmr-pings")
             items += classify(category, prs, now, seen, excluded)
-    return {"generatedAt": now.isoformat(timespec="seconds"), "categories": categories,
-            "excluded": excluded, "items": items}
+    result = {"generatedAt": now.isoformat(timespec="seconds"), "categories": categories,
+              "excluded": excluded, "items": items}
+    if coverage:
+        result["coverage"] = coverage
+    return result
 
 
 def render_markdown(result: dict[str, Any]) -> str:
@@ -304,6 +315,9 @@ def render_markdown(result: dict[str, Any]) -> str:
         items = [i for i in result["items"] if i["category"] == category]
         lines.append(f"## {CATEGORIES[category]} ({len(items)})")
         lines.append("")
+        if category == "component-governance":
+            lines += component_governance.render_markdown(items, result["coverage"][category])
+            continue
         if not items:
             lines += ["_Nothing open._", ""]
             continue

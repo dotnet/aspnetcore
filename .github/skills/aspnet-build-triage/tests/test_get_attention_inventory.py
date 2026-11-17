@@ -79,6 +79,62 @@ class CategoryTests(unittest.TestCase):
             title="Bump inter-branch-merge-base.yml (Merge branch)", head="dependabot/github_actions/x")))
 
 
+class ComponentGovernanceTests(unittest.TestCase):
+    def test_policy_uses_only_supported_dotnet_versions(self):
+        html = """
+        <table><tr><td>.NET 99</td><td>Active</td></tr></table>
+        <table aria-labelledby="supported-versions">
+          <tr><th>Version</th><th>Support phase</th></tr>
+          <tr><td><a>.NET 11</a></td><td>Active</td></tr>
+          <tr><td>.NET 10</td><td>Maintenance</td></tr>
+          <tr><td>.NET 9</td><td>Out of support</td></tr>
+        </table>
+        """
+        self.assertEqual(inv.component_governance.supported_release_branches(html),
+                         ["release/11.0", "release/10.0"])
+
+    def test_inventory_preserves_branch_scope_and_reports_partial_results(self):
+        from unittest.mock import patch
+
+        cg = inv.component_governance
+        base = {"alertState": "active", "isDismissed": False, "severity": "high",
+                "title": "Alert", "componentName": "Example", "componentVersion": "1.0", "type": "security"}
+        responses = {
+            "Branches/main/AlertSummary": [
+                dict(base, alertId=1), dict(base, alertId=2, alertState="fixed"),
+                dict(base, alertId=3, severity="medium"), dict(base, alertId=4, isDismissed=True),
+            ],
+            "Branches/release%252F11.0/AlertSummary": [
+                dict(base, alertId=1), dict(base, alertId=5, severity="critical", type="legal"),
+                dict(base, alertId=6),
+            ],
+        }
+
+        def azure_get(path):
+            if path in responses:
+                return {"count": len(responses[path]), "value": responses[path]}
+            if path in {"Alerts/1", "Alerts/5", "Alerts/6"}:
+                return {"component": {"type": {"Alerts/1": "nuGet", "Alerts/5": "npm",
+                                               "Alerts/6": "Maven"}[path]}}
+            raise ValueError("not available")
+
+        with patch.object(cg, "fetch_support_policy"), \
+             patch.object(cg, "supported_release_branches", return_value=["release/11.0", "release/10.0"]), \
+             patch.object(cg, "azure_get", side_effect=azure_get) as api:
+            result = inv.collect(["component-governance"], NOW)
+
+        self.assertEqual([(i["base"], i["id"]) for i in result["items"]],
+                         [("main", 1), ("release/11.0", 5), ("release/11.0", 1)])
+        self.assertEqual(sum(call.args == ("Alerts/1",) for call in api.call_args_list), 1)
+        self.assertIn("license review", result["items"][1]["nextAction"])
+        self.assertIn("release/10.0", result["coverage"]["component-governance"]["errors"])
+        output = inv.render_markdown(result)
+        self.assertIn("Incomplete Component Governance results", output)
+        self.assertNotIn("### `release/10.0`", output)
+        self.assertIn(cg.MIRROR_PIPELINE, output)
+        self.assertIn(inv.ADMIN_ELEVATION_URL, output)
+
+
 class AdminElevationTests(unittest.TestCase):
     def test_only_aspnetcore_release_branches_require_elevation(self):
         self.assertTrue(inv.requires_admin_elevation(make_pr(base="release/10.0")))
