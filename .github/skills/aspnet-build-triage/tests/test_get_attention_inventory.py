@@ -87,7 +87,14 @@ class PingTests(unittest.TestCase):
     def test_bot_only_mentions_are_excluded(self):
         items, excluded = self.classify(make_pr(repo="dotnet/dotnet", author=MAESTRO, body="cc @dotnet/aspnet-build"))
         self.assertEqual(items, [])
-        self.assertEqual(excluded, {"vmr-pings-bot-only-mentions": 1})
+        self.assertEqual(excluded, {"vmr-pings-no-human-mention": 1})
+
+    def test_pr_found_by_both_vmr_searches_is_counted_once(self):
+        pr = make_pr(repo="dotnet/dotnet", author=MAESTRO, body="cc @dotnet/aspnet-build")
+        seen, excluded = set(), {}
+        for _ in inv.SEARCHES["vmr-pings"]:
+            self.assertEqual(inv.classify("vmr-pings", [pr], NOW, seen, excluded), [])
+        self.assertEqual(excluded, {"vmr-pings-no-human-mention": 1})
 
     def test_similar_team_slug_is_not_a_ping(self):
         pr = make_pr(repo="dotnet/dotnet", comments=[comment(HUMAN, "@dotnet/aspnet-build-infra ptal", "2026-11-12T00:00:00Z")])

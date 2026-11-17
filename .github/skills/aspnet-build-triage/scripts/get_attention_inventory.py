@@ -50,7 +50,12 @@ SEARCHES = {
     "test-quarantine": [f"repo:{ASPNETCORE} is:pr is:open author:app/github-actions test-quarantine in:title"],
     "dependabot": [f"repo:{ASPNETCORE} is:pr is:open author:app/dependabot"],
     "localization": [f"repo:{ASPNETCORE} is:pr is:open author:app/dotnet-oneloc-localization"],
-    "vmr-pings": [f"repo:{VMR} is:pr is:open team:{TEAM}"],
+    # `team:` only finds PRs where the team is a requested reviewer. Text search also finds
+    # mention-only PRs; both result sets are filtered later for human-authored mentions.
+    "vmr-pings": [
+        f'repo:{VMR} is:pr is:open "aspnet-build" in:title,body,comments',
+        f"repo:{VMR} is:pr is:open team:{TEAM}",
+    ],
 }
 
 PR_FIELDS = """
@@ -265,11 +270,11 @@ def classify(category: str, prs: Iterable[dict[str, Any]], now: datetime,
         key = (pr["repository"]["nameWithOwner"], pr["number"])
         if key in seen or not matches_category(category, pr):
             continue
+        seen.add(key)
         item = build_item(category, pr, now)
         if category == "vmr-pings" and item["ping"] is None:
-            excluded["vmr-pings-bot-only-mentions"] = excluded.get("vmr-pings-bot-only-mentions", 0) + 1
+            excluded["vmr-pings-no-human-mention"] = excluded.get("vmr-pings-no-human-mention", 0) + 1
             continue
-        seen.add(key)
         items.append(item)
     return items
 
