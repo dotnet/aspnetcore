@@ -147,7 +147,7 @@ function gradeReview(name, output)
       section = heading;
       sections.set(section, '');
     }
-    else if ((!/^\s/.test(line) && topLevelFields.includes(fieldName)) || (/^#{1,6}\s+/.test(line.trim()) && !/\bC1\b/.test(heading)))
+    else if (!/^\s/.test(line) && topLevelFields.includes(fieldName))
     {
       section = undefined;
     }
@@ -165,28 +165,29 @@ function gradeReview(name, output)
     return false;
   }
   const hasCandidate = key => hasPositiveC1(sections.get(key));
+  const isAbsent = key => sections.get(key).split(/\r?\n/).every(isNegativeC1Line);
   if (!hasCandidate(expected.section))
   {
     return false;
   }
   if (expected.thread)
   {
-    return !hasCandidate('NEW_FINDINGS') &&
-      !hasCandidate('DISCARDED') &&
+    return isAbsent('NEW_FINDINGS') &&
+      isAbsent('DISCARDED') &&
       hasCandidate('UNRESOLVED') &&
       sections.get(expected.section).includes(expected.thread) &&
       sections.get('UNRESOLVED').includes(expected.thread) &&
       statusLine === 'STATUS: NO_FINDINGS';
   }
-  if (expected.section !== 'UNRESOLVED' && hasCandidate('UNRESOLVED') ||
-      expected.section !== 'DISCARDED' && hasCandidate('DISCARDED') ||
-      hasCandidate('EXISTING_FEEDBACK_COVERAGE'))
+  if (expected.section !== 'UNRESOLVED' && !isAbsent('UNRESOLVED') ||
+      expected.section !== 'DISCARDED' && !isAbsent('DISCARDED') ||
+      !isAbsent('EXISTING_FEEDBACK_COVERAGE'))
   {
     return false;
   }
   if (expected.section === 'DISCARDED')
   {
-    return !hasCandidate('NEW_FINDINGS') && statusLine === 'STATUS: NO_FINDINGS';
+    return isAbsent('NEW_FINDINGS') && statusLine === 'STATUS: NO_FINDINGS';
   }
   if (!hasCandidate('NEW_FINDINGS') || statusLine !== 'STATUS: FINDINGS')
   {

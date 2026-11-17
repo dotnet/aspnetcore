@@ -101,6 +101,84 @@ LIMITATIONS
 C1 has no runtime repro.`), 1);
 });
 
+test('ReviewDispositionRejectsIdentifierFreeInlineForDiscardedCases', async context =>
+{
+  for (const name of ['case-01', 'case-03', 'case-04'])
+  {
+    for (const [format, prefix] of [['plain', ''], ['heading', '### ']])
+    {
+      await context.test(`${name}-${format}`, () =>
+      {
+        const output = review('DISCARDED', 'discarded', false)
+          .replace('NEW_FINDINGS\nNone.', `NEW_FINDINGS\n${prefix}[DISCARDED] Old behavior.\nConfidence: discarded\nWhy discarded: old and head match.`);
+        assert.equal(score(name, output), 0);
+      });
+    }
+  }
+});
+
+test('ReviewDispositionAcceptsAbsenceOnlyInlineForDiscardedCases', async context =>
+{
+  for (const name of ['case-01', 'case-03', 'case-04'])
+  {
+    await context.test(name, () =>
+    {
+      for (const marker of ['', 'None', 'None.', '_None_', '- **None.**', 'C1 omitted.'])
+      {
+        const output = review('DISCARDED', 'discarded', false)
+          .replace('NEW_FINDINGS\nNone.', `NEW_FINDINGS\n${marker}`);
+        assert.equal(score(name, output), 1, marker);
+      }
+    });
+  }
+});
+
+test('ReviewDispositionRejectsInlineEntryAfterAbsenceMarker', async context =>
+{
+  for (const name of ['case-01', 'case-03', 'case-04'])
+  {
+    await context.test(name, () =>
+    {
+      const output = review('DISCARDED', 'discarded', false)
+        .replace('NEW_FINDINGS\nNone.', 'NEW_FINDINGS\nNone.\n[DISCARDED] Old behavior.');
+      assert.equal(score(name, output), 0);
+    });
+  }
+});
+
+test('ReviewDispositionRejectsIdentifierFreeConflictingSections', async context =>
+{
+  for (const [name, section, confidence, conflicting] of [
+    ['case-02', 'NEW_FINDINGS', 'verified', 'UNRESOLVED'],
+    ['case-02', 'NEW_FINDINGS', 'verified', 'DISCARDED'],
+    ['case-06', 'UNRESOLVED', 'unresolved', 'DISCARDED'],
+    ['case-06', 'UNRESOLVED', 'unresolved', 'EXISTING_FEEDBACK_COVERAGE'],
+    ['case-01', 'DISCARDED', 'discarded', 'UNRESOLVED'],
+  ])
+  {
+    await context.test(`${name}-${conflicting}`, () =>
+    {
+      const output = review(section, confidence, section !== 'DISCARDED')
+        .replace(`${conflicting}\nNone.`, `${conflicting}\nThe candidate has a conflicting disposition.`);
+      assert.equal(score(name, output), 0);
+    });
+  }
+});
+
+test('ReviewDispositionRejectsIdentifierFreeExtraInlineConfidence', () =>
+{
+  for (const [name, section, confidence] of [
+    ['case-02', 'NEW_FINDINGS', 'verified'],
+    ['case-06', 'UNRESOLVED', 'unresolved'],
+  ])
+  {
+    const output = review(section, confidence)
+      .replace('EXISTING_FEEDBACK_COVERAGE',
+        '[DISCARDED] Old behavior.\nConfidence: discarded\nWhy discarded: old and head match.\nEXISTING_FEEDBACK_COVERAGE');
+    assert.equal(score(name, output), 0, name);
+  }
+});
+
 test('ReviewDispositionRejectsWrongStatusSectionConfidenceAndOmission', () =>
 {
   const good = review('UNRESOLVED', 'unresolved');
@@ -268,6 +346,9 @@ None.`;
   assert.equal(score('case-05', good), 1);
   assert.equal(score('case-05', good.replace('discussion_r4487936812', 'other-thread')), 0);
   assert.equal(score('case-05', good.replace('NEW_FINDINGS\nNone.', 'NEW_FINDINGS\nC1')), 0);
+  assert.equal(score('case-05', good.replace('NEW_FINDINGS\nNone.', 'NEW_FINDINGS\n[UNRESOLVED] Duplicate concern.')), 0);
+  assert.equal(score('case-05', good.replace('NEW_FINDINGS\nNone.', 'NEW_FINDINGS\n### [UNRESOLVED] Duplicate concern.')), 0);
+  assert.equal(score('case-05', good.replace('DISCARDED\nNone.', 'DISCARDED\nOld behavior.')), 0);
   assert.equal(score('case-05', good.replace('UNRESOLVED\nC1 discussion_r4487936812 browser mode remains unestablished.', 'UNRESOLVED\nNone.')), 0);
   assert.equal(score('case-05', good.replace('UNRESOLVED\nC1 discussion_r4487936812', 'UNRESOLVED\nC1')), 0);
 });
