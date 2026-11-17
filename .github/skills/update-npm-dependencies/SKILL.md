@@ -30,8 +30,7 @@ change unrelated pins and overrides.
 ## 2. Configure the Azure Artifacts npm feed
 
 Use the branch's supported Node and package-manager versions and follow
-[`eng/scripts/update-npm-dependencies.ps1`](../../../eng/scripts/update-npm-dependencies.ps1)
-where applicable. Use an account authorized to save upstream packages in `dotnet-public-npm`.
+`eng/scripts/update-npm-dependencies.ps1` where applicable. Use an account authorized to save upstream packages in `dotnet-public-npm`.
 If interactive `vsts-npm-auth` is not available, use Azure CLI authentication instead.
 Sign in first (`az login --use-device-code` if needed). Use a private temporary config,
 never change checked-in `.npmrc` files, and don't echo or log the token.

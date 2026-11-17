@@ -76,9 +76,8 @@ Report results per branch. The same alert ID can affect multiple branches and ea
 own assessment. Preserve incomplete-scan warnings; if access is missing, link the dashboard
 and explain what could not be checked rather than claiming there are no alerts.
 
-- **npm:** Follow the sibling
-  [update-npm-dependencies skill](../update-npm-dependencies/SKILL.md) for a targeted fix on
-  the affected branch. Identify the owning lockfile and confirm every affected resolved copy
+- **npm:** Follow the sibling `update-npm-dependencies` skill for a targeted fix on the affected
+  branch. Identify the owning lockfile and confirm every affected resolved copy
   is fixed. Do not perform the update or open a remediation PR unless requested.
 - **NuGet managed by dotnet/dotnet:** If the package is an SDK-provided pack (for example
   `Microsoft.WindowsDesktop.App.Runtime.*` or `Microsoft.NETCore.App.Runtime.*`, which come from the
