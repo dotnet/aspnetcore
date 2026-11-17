@@ -136,6 +136,23 @@ describe("CallDispatcher", () => {
         expect(result).toMatch("__jsObjectId");
     });
 
+    test("FunctionCall: URLSearchParams record keys survive argument revivers", () => {
+        let receivedEntries: string[][] | undefined;
+        const entries = [["hasOwnProperty", "property"], ["__jsObjectId", "value"]];
+        window["testFunc"] = function (args: string[][]) {
+            receivedEntries = args;
+        };
+        dispatcher.invokeJSFromDotNet(
+            "testFunc",
+            JSON.stringify([entries]),
+            DotNet.JSCallResultType.JSVoidResult,
+            0,
+            DotNet.JSCallType.FunctionCall
+        );
+
+        expect(receivedEntries).toEqual(entries);
+    });
+
     test("GetValue: Simple property value is retrieved", () => {
         const testObject = { a: 10 };
         const objectId = getObjectReferenceId(testObject);

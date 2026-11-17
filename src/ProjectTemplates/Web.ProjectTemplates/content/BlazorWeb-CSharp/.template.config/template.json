@@ -92,7 +92,15 @@
         {
           "condition": "(!(UseServer && !UseWebAssembly))",
           "exclude": [
-            "BlazorWebCSharp.1/Components/Pages/Counter.razor"
+            "BlazorWebCSharp.1/Components/Pages/Counter.razor",
+            "BlazorWebCSharp.1/Components/Pages/CounterContent.razor"
+          ]
+        },
+        {
+          "condition": "(InteractiveAtRoot)",
+          "exclude": [
+            "BlazorWebCSharp.1/Components/Pages/CounterContent.razor",
+            "BlazorWebCSharp.1.Client/Pages/CounterContent.razor"
           ]
         },
         {
@@ -117,6 +125,7 @@
           "exclude": [
             "BlazorWebCSharp.1/Components/Pages/Auth.*",
             "BlazorWebCSharp.1/Components/Pages/Counter.*",
+            "BlazorWebCSharp.1/Components/Pages/CounterContent.razor",
             "BlazorWebCSharp.1/Components/Pages/Weather.*",
             "BlazorWebCSharp.1/Components/Layout/NavMenu.*",
             "BlazorWebCSharp.1/wwwroot/lib/**",
