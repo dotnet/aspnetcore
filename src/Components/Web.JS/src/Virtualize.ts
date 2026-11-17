@@ -608,8 +608,13 @@ function init(dotNetHelper: DotNet.DotNetObject, spacerBefore: HTMLElement, spac
     }
   }
 
-  function handleUserPointerDown(): void {
-    // A native scrollbar drag dispatches pointerdown but no pointermove.
+  function handleUserPointerDown(event: PointerEvent): void {
+    // A native scrollbar drag dispatches pointerdown on the scroll target but no
+    // pointermove. Ignore bubbled pointerdown events from unrelated controls.
+    const target = event.target as Node | null;
+    if (!target || (target !== scrollElement && target !== document.documentElement && target !== document.body)) {
+      return;
+    }
     handleUserScrollInput();
   }
 
