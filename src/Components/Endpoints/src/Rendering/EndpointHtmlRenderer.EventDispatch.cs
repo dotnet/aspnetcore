@@ -146,7 +146,8 @@ internal partial class EndpointHtmlRenderer
         if (renderBatch.NamedEventChanges is { } changes)
         {
             ProcessNamedSubmitEventRemovals(changes);
-            ProcessNamedSubmitEventAdditions(changes);
+            var disposedComponentIds = renderBatch.DisposedComponentIDs;
+            ProcessNamedSubmitEventAdditions(changes, disposedComponentIds.Array.AsSpan(0, disposedComponentIds.Count));
         }
     }
 
@@ -174,7 +175,7 @@ internal partial class EndpointHtmlRenderer
         }
     }
 
-    private void ProcessNamedSubmitEventAdditions(ArrayRange<NamedEventChange> changes)
+    private void ProcessNamedSubmitEventAdditions(ArrayRange<NamedEventChange> changes, ReadOnlySpan<int> disposedComponentIds)
     {
         var changesCount = changes.Count;
         var changesArray = changes.Array;
@@ -184,6 +185,12 @@ internal partial class EndpointHtmlRenderer
             if (change.ChangeType == NamedEventChangeType.Added
                 && string.Equals(change.EventType, "onsubmit", StringComparison.Ordinal))
             {
+                // An error boundary can dispose a component in the same batch that added its named events.
+                if (disposedComponentIds.Contains(change.ComponentId))
+                {
+                    continue;
+                }
+
                 if (TryCreateScopeQualifiedEventName(change.ComponentId, change.AssignedName, out var scopeQualifiedName))
                 {
                     var locationsForName = GetOrAddNewToDictionary(_namedSubmitEventsByScopeQualifiedName, scopeQualifiedName);

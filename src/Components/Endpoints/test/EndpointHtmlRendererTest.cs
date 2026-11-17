@@ -1139,6 +1139,109 @@ public class EndpointHtmlRendererTest
     }
 
     [Fact]
+    public async Task CanRender_ErrorBoundaryDisposesNamedFormInSameBatch()
+    {
+        var httpContext = GetHttpContext();
+        var component = new TestComponent(builder =>
+        {
+            builder.OpenComponent<ErrorBoundary>(0);
+            builder.AddAttribute(1, nameof(ErrorBoundary.ChildContent), (RenderFragment)(childBuilder =>
+            {
+                childBuilder.OpenComponent<NamedFormWithException>(0);
+                childBuilder.CloseComponent();
+            }));
+            builder.AddAttribute(2, nameof(ErrorBoundary.ErrorContent),
+                (RenderFragment<Exception>)(exception => errorBuilder => errorBuilder.AddContent(0, exception.Message)));
+            builder.CloseComponent();
+        });
+
+        await renderer.Dispatcher.InvokeAsync(async () =>
+        {
+            await renderer.PrerenderComponentAsync(httpContext, typeof(EmptyComponent), null, ParameterView.Empty);
+            var result = renderer.BeginRenderingComponent(component, ParameterView.Empty);
+            await result.QuiescenceTask;
+
+            Assert.Equal("Threw an exception synchronously", result.ToHtmlString());
+            Assert.Equal(StatusCodes.Status200OK, httpContext.Response.StatusCode);
+
+            await renderer.DispatchSubmitEventAsync("default", out var isBadRequest);
+            Assert.True(isBadRequest);
+            Assert.Equal(StatusCodes.Status400BadRequest, httpContext.Response.StatusCode);
+        });
+    }
+
+    [Fact]
+    public async Task CanDispatchNamedEvent_ErrorBoundaryFallbackReusesDisposedFormName()
+    {
+        var httpContext = GetHttpContext();
+        var invoked = false;
+        var component = new TestComponent(builder =>
+        {
+            builder.OpenComponent<ErrorBoundary>(0);
+            builder.AddAttribute(1, nameof(ErrorBoundary.ChildContent), (RenderFragment)(childBuilder =>
+            {
+                childBuilder.OpenComponent<NamedFormWithException>(0);
+                childBuilder.CloseComponent();
+            }));
+            builder.AddAttribute(2, nameof(ErrorBoundary.ErrorContent), (RenderFragment<Exception>)(_ => errorBuilder =>
+            {
+                errorBuilder.OpenComponent<NamedEventHandlerComponent>(0);
+                errorBuilder.AddAttribute(1, nameof(NamedEventHandlerComponent.Handler), (Action)(() => invoked = true));
+                errorBuilder.CloseComponent();
+            }));
+            builder.CloseComponent();
+        });
+
+        await renderer.Dispatcher.InvokeAsync(async () =>
+        {
+            await renderer.PrerenderComponentAsync(httpContext, typeof(EmptyComponent), null, ParameterView.Empty);
+            var result = renderer.BeginRenderingComponent(component, ParameterView.Empty);
+            await result.QuiescenceTask;
+
+            Assert.Equal("<form action=\"/base/path?query=value\"><input type=\"hidden\" name=\"_handler\" value=\"default\" /></form>", result.ToHtmlString());
+            await renderer.DispatchSubmitEventAsync("default", out var isBadRequest);
+            Assert.False(isBadRequest);
+        });
+
+        Assert.True(invoked);
+    }
+
+    [Fact]
+    public async Task CanDispatchNamedEvent_OutsideErrorBoundaryWithDisposedNamedForm()
+    {
+        var httpContext = GetHttpContext();
+        var invoked = false;
+        var component = new TestComponent(builder =>
+        {
+            builder.OpenComponent<NamedEventHandlerComponent>(0);
+            builder.AddAttribute(1, nameof(NamedEventHandlerComponent.Handler), (Action)(() => invoked = true));
+            builder.CloseComponent();
+            builder.OpenComponent<ErrorBoundary>(2);
+            builder.AddAttribute(3, nameof(ErrorBoundary.ChildContent), (RenderFragment)(childBuilder =>
+            {
+                childBuilder.OpenComponent<NamedFormWithException>(0);
+                childBuilder.CloseComponent();
+            }));
+            builder.AddAttribute(4, nameof(ErrorBoundary.ErrorContent),
+                (RenderFragment<Exception>)(_ => errorBuilder => errorBuilder.AddContent(0, "Error handled")));
+            builder.CloseComponent();
+        });
+
+        await renderer.Dispatcher.InvokeAsync(async () =>
+        {
+            await renderer.PrerenderComponentAsync(httpContext, typeof(EmptyComponent), null, ParameterView.Empty);
+            var result = renderer.BeginRenderingComponent(component, ParameterView.Empty);
+            await result.QuiescenceTask;
+
+            Assert.Equal("<form action=\"/base/path?query=value\"><input type=\"hidden\" name=\"_handler\" value=\"default\" /></form>Error handled", result.ToHtmlString());
+            await renderer.DispatchSubmitEventAsync("default", out var isBadRequest);
+            Assert.False(isBadRequest);
+        });
+
+        Assert.True(invoked);
+    }
+
+    [Fact]
     public async Task CanDispatchNamedEvent_ToComponent()
     {
         // Arrange
@@ -1821,6 +1924,19 @@ public class EndpointHtmlRendererTest
         return content;
     }
 
+    private class NamedFormWithException : ComponentBase
+    {
+        protected override void BuildRenderTree(RenderTreeBuilder builder)
+        {
+            builder.OpenElement(0, "form");
+            builder.AddAttribute(1, "onsubmit", () => { });
+            builder.AddNamedEvent("onsubmit", "default");
+            builder.CloseElement();
+            builder.OpenComponent<ExceptionComponent>(2);
+            builder.CloseComponent();
+        }
+    }
+
     private class NamedEventHandlerComponent : ComponentBase
     {
         [Parameter]
@@ -2016,6 +2132,7 @@ public class EndpointHtmlRendererTest
         services.AddSingleton<IJSRuntime, UnsupportedJavaScriptRuntime>();
         services.AddSingleton<NavigationManager, HttpNavigationManager>();
         services.AddSingleton<ILoggerFactory, NullLoggerFactory>();
+        services.AddSingleton(Mock.Of<IErrorBoundaryLogger>());
         services.AddSingleton<ILogger<ComponentStatePersistenceManager>, NullLogger<ComponentStatePersistenceManager>>();
         services.AddSingleton<ComponentStatePersistenceManager>();
         services.AddSingleton(sp => sp.GetRequiredService<ComponentStatePersistenceManager>().State);
