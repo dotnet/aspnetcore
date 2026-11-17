@@ -53,6 +53,7 @@ internal abstract partial class Http3Stream : HttpProtocol, IHttp3Stream, IHttpS
     private IStreamClosedFeature _streamClosedFeature = default!;
     private PseudoHeaderFields _parsedPseudoHeaderFields;
     private StreamCompletionFlags _completionState;
+    private readonly Http3RawFrame _incomingFrame = new Http3RawFrame();
     private int _isClosed;
     private int _totalParsedHeaderSize;
     private bool _isMethodConnect;
@@ -671,7 +672,10 @@ internal abstract partial class Http3Stream : HttpProtocol, IHttp3Stream, IHttpS
 
         try
         {
-            var incomingFrame = new Http3RawFrame();
+            // Reuse the frame across requests when the stream is pooled. TryReadFrame overwrites its state for each new frame.
+            var incomingFrame = _incomingFrame;
+            incomingFrame.Type = default;
+            incomingFrame.RemainingLength = 0;
             var isContinuedFrame = false;
             while (_isClosed == 0)
             {
@@ -1155,6 +1159,12 @@ internal abstract partial class Http3Stream : HttpProtocol, IHttp3Stream, IHttpS
         }
 
         // https://www.rfc-editor.org/rfc/rfc9114#section-4.3.1
+        if (!ServerOptions.AllowFragmentInRequestTarget && path.Contains('#'))
+        {
+            Abort(new ConnectionAbortedException(CoreStrings.FormatHttp3StreamErrorPathInvalid(RawTarget)), Http3ErrorCode.MessageError);
+            return false;
+        }
+
         var queryIndex = path.IndexOf('?');
         QueryString = queryIndex == -1 ? string.Empty : path.Substring(queryIndex);
 

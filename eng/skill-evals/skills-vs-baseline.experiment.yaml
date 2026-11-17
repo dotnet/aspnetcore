@@ -1,8 +1,9 @@
 name: skills-vs-baseline
 
-# Controlled A/B for every skill that ships a Vally eval: the same stimuli run with
+# Controlled A/B for skills without additional reviewer treatment files: the same stimuli run with
 # no skill (baseline) and with that skill loaded (skilled). Only /environment/skills
-# varies. Each eng/skill-evals/<skill>/eval.vally.yaml is picked up automatically, and
+# varies. The reviewer has its own experiment. Verifier components are not skills.
+# Each other eng/skill-evals/<skill>/eval.vally.yaml is picked up automatically, and
 # the skilled variant loads .github/skills/<skill> (via ${eval.parent}).
 #
 # NOTE: `vally experiment run` executes the agent in the current working directory, and
@@ -13,7 +14,7 @@ name: skills-vs-baseline
 #   vally experiment run <repo>/eng/skill-evals/skills-vs-baseline.experiment.yaml --output-dir .
 # Run a single skill with: --variant skilled and a glob that matches one eval, or filter by tag.
 evals:
-  - "*/eval.vally.yaml"
+  - "!(review-pull-request|review-candidate-verifier)/eval.vally.yaml"
 
 vary:
   - /environment/skills
