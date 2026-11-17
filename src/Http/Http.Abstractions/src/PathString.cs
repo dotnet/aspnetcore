@@ -355,7 +355,7 @@ public readonly struct PathString : IEquatable<PathString>
     {
         if (HasValue &&
             other.HasValue &&
-            Value[^1] == '/')
+            Value[^1] is '/')
         {
             // If the path string has a trailing slash and the other string has a leading slash, we need
             // to trim one of them.

@@ -1,0 +1,29 @@
+<Project Sdk="Microsoft.NET.Sdk.Web">
+
+  <PropertyGroup>
+    <TargetFramework>$(PackageConsumerTargetFramework)</TargetFramework>
+    <Nullable>enable</Nullable>
+    <EmitCompilerGeneratedFiles>true</EmitCompilerGeneratedFiles>
+    <CompilerGeneratedFilesOutputPath Condition="'$(E2ECompileTestHarness)' == 'true'">$(BaseIntermediateOutputPath)generated-nativeaot</CompilerGeneratedFilesOutputPath>
+    <CompilerGeneratedFilesOutputPath Condition="'$(E2ECompileTestHarness)' != 'true'">$(BaseIntermediateOutputPath)generated-normal</CompilerGeneratedFilesOutputPath>
+  </PropertyGroup>
+
+  <PropertyGroup>
+    <!-- The app is also used by non-AOT package tests; only skip the AOT harness variant. -->
+    <ExcludeFromBuild Condition="'$(E2ECompileTestHarness)' == 'true' and '$(NativeAotSupported)' != 'true'">true</ExcludeFromBuild>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(E2ECompileTestHarness)' == 'true'">
+    <!-- E2E NativeAOT harness follows the repo-wide NativeAOT support switch. -->
+    <PublishAot Condition="'$(NativeAotSupported)' == 'true'">true</PublishAot>
+    <SelfContained>true</SelfContained>
+    <RuntimeIdentifiers>$(PackageConsumerRuntimeIdentifiers)</RuntimeIdentifiers>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.AspNetCore.Components.Testing.NativeAot"
+                      Version="$(PackageConsumerVersion)"
+                      PrivateAssets="all" />
+  </ItemGroup>
+
+</Project>

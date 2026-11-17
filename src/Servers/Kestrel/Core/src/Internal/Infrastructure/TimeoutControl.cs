@@ -91,9 +91,9 @@ internal sealed class TimeoutControl : ITimeoutControl, IConnectionTimeoutFeatur
         // This isn't (currently) checked. Reasons:
         // - We're not sure how often people in the real-world run into this. If it
         //   becomes a problem then we'll need to revisit.
-        // - There isn't a way to get this information easily and efficently from msquic.
+        // - There isn't a way to get this information easily and efficiently from msquic.
         // - With QUIC, bytes can be received out of order. The connection window could
-        //   be filled up out of order so that availablility is low but there is still
+        //   be filled up out of order so that availability is low but there is still
         //   no data available to use. Would need a smarter way to handle this situation.
         if (_connectionInputFlowControl?.IsAvailabilityLow == true)
         {

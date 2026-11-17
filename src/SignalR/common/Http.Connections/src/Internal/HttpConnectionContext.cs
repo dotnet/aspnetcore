@@ -5,6 +5,7 @@ using System.Collections.Concurrent;
 using System.Diagnostics;
 using System.IO.Pipelines;
 using System.Security.Claims;
+using System.Security.Principal;
 using Microsoft.AspNetCore.Connections;
 using Microsoft.AspNetCore.Connections.Abstractions;
 using Microsoft.AspNetCore.Connections.Features;
@@ -12,6 +13,7 @@ using Microsoft.AspNetCore.Http.Connections.Features;
 using Microsoft.AspNetCore.Http.Connections.Internal.Transports;
 using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.Http.Timeouts;
+using Microsoft.AspNetCore.Internal;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
@@ -23,7 +25,7 @@ internal sealed partial class HttpConnectionContext : ConnectionContext,
                                      IConnectionItemsFeature,
                                      IConnectionTransportFeature,
                                      IConnectionUserFeature,
-                                     IConnectionUserRefreshFeature,
+                                     IConnectionAuthenticationRefreshFeature,
                                      IConnectionHeartbeatFeature,
                                      ITransferFormatFeature,
                                      IHttpContextFeature,
@@ -52,9 +54,20 @@ internal sealed partial class HttpConnectionContext : ConnectionContext,
     private bool _activeSend;
     private TimeSpan _startedSendTime;
     private bool _useStatefulReconnect;
-    // Guards User swaps in UpdateUser so concurrent /refresh requests (or long-polling polls racing
+    // Snapshot of the negotiate principal's identity, captured while that principal is still intact so that
+    // identity types deciding IsAuthenticated for themselves are evaluated with their own behavior.
+    private UserIdentitySnapshot? _negotiatedUserIdentity;
+    // The negotiate principal itself, surfaced as AuthenticationRefreshContext.PreviousUser until the first
+    // transport request establishes User.
+    private ClaimsPrincipal? _negotiatedUser;
+    // Tracks whether this connection was negotiated independently of whether that negotiate principal was null.
+    private bool _hasNegotiatedUser;
+    // True only when _negotiatedUser is a clone this connection must dispose.
+    private bool _ownsNegotiatedUserIdentities;
+    // Guards User swaps in UpdateUserAsync so concurrent /refresh requests (or long-polling polls racing
     // explicit /refresh requests) can't roll the connection back to an older identity.
     private readonly object _userLock = new object();
+    private Func<AuthenticationRefreshContext, Task<bool>> _onAuthenticationRefresh = DefaultOnAuthenticationRefreshAsync;
     // True only for the WindowsIdentity user clone created by the first long-polling request.
     private bool _ownsUserIdentities;
     private readonly object _userRefreshCallbackLock = new object();
@@ -73,11 +86,15 @@ internal sealed partial class HttpConnectionContext : ConnectionContext,
     /// The caller is expected to set the <see cref="Transport"/> and <see cref="Application"/> pipes manually.
     /// </summary>
     public HttpConnectionContext(string connectionId, string connectionToken, ILogger logger, MetricsContext metricsContext,
-        IDuplexPipe transport, IDuplexPipe application, HttpConnectionDispatcherOptions options, bool useStatefulReconnect)
+        IDuplexPipe transport, IDuplexPipe application, HttpConnectionDispatcherOptions options, bool useStatefulReconnect,
+        ClaimsPrincipal? negotiatedUser = null, bool hasNegotiatedUser = false)
     {
         Transport = transport;
         _applicationStream = new PipeWriterStream(application.Output);
         _application = application;
+        _hasNegotiatedUser = hasNegotiatedUser || negotiatedUser is not null;
+        _negotiatedUser = negotiatedUser is null ? null : CloneUserIfNeeded(negotiatedUser, out _ownsNegotiatedUserIdentities);
+        _negotiatedUserIdentity = UserIdentitySnapshot.Capture(negotiatedUser);
 
         ConnectionId = connectionId;
         ConnectionToken = connectionToken;
@@ -94,7 +111,7 @@ internal sealed partial class HttpConnectionContext : ConnectionContext,
         // PERF: This type could just implement IFeatureCollection
         Features = new FeatureCollection();
         Features.Set<IConnectionUserFeature>(this);
-        Features.Set<IConnectionUserRefreshFeature>(this);
+        Features.Set<IConnectionAuthenticationRefreshFeature>(this);
         Features.Set<IConnectionItemsFeature>(this);
         Features.Set<IConnectionIdFeature>(this);
         Features.Set<IConnectionTransportFeature>(this);
@@ -137,6 +154,8 @@ internal sealed partial class HttpConnectionContext : ConnectionContext,
 
     // Used for LongPolling because we need to create a scope that spans the lifetime of multiple requests on the cloned HttpContext
     internal AsyncServiceScope? ServiceScope { get; set; }
+
+    internal HttpConnectionEndpointMetadata? EndpointMetadata { get; init; }
 
     internal DateTimeOffset AuthenticationExpiration { get; set; }
 
@@ -253,7 +272,27 @@ internal sealed partial class HttpConnectionContext : ConnectionContext,
         }
     }
 
-    public IDisposable OnUserRefreshed(Action<ClaimsPrincipal, object?> callback, object? state)
+    public Func<AuthenticationRefreshContext, Task<bool>> OnAuthenticationRefresh
+    {
+        get
+        {
+            lock (_userLock)
+            {
+                return _onAuthenticationRefresh;
+            }
+        }
+        set
+        {
+            ArgumentNullException.ThrowIfNull(value);
+
+            lock (_userLock)
+            {
+                _onAuthenticationRefresh = value;
+            }
+        }
+    }
+
+    public IDisposable OnAuthenticationRefreshed(Action<AuthenticationRefreshContext, object?> callback, object? state)
     {
         ArgumentNullException.ThrowIfNull(callback);
 
@@ -280,26 +319,82 @@ internal sealed partial class HttpConnectionContext : ConnectionContext,
     /// </summary>
     /// <param name="user">The refreshed principal to apply to the connection.</param>
     /// <param name="authenticationExpiration">The expiration of the refreshed authentication.</param>
+    /// <param name="userRefreshHttpContext">The request context exposed to <see cref="OnAuthenticationRefresh"/> while validating the refreshed principal.</param>
+    /// <param name="additionalAuthenticationRefresh">An optional additional policy invoked after <see cref="OnAuthenticationRefresh"/> accepts the refresh.</param>
+    /// <param name="replacementHttpContext">The request context to associate with the connection when publishing the refreshed principal.</param>
     /// <remarks>
-    /// The update is skipped if <paramref name="authenticationExpiration"/> is older than the currently
-    /// applied <see cref="AuthenticationExpiration"/>. This makes the staleness check and the swap atomic
-    /// so a caller racing a concurrent refresh that already applied a newer token can't roll the connection
-    /// back to an older identity.
+    /// This uses a two-phase validate-then-publish strategy: <see cref="OnAuthenticationRefresh"/> is awaited
+    /// without holding <see cref="_userLock"/> (it may run arbitrary, possibly slow, application code), and the
+    /// staleness/identity checks are then re-validated atomically with the swap under the lock. This prevents a
+    /// concurrent refresh (for example the /refresh endpoint racing a long-polling poll) that already published
+    /// a newer or different identity while the callback was running from being rolled back by this update.
+    /// The update is skipped as <see cref="UserUpdateResult.Stale"/> if <paramref name="authenticationExpiration"/>
+    /// is older than the currently applied <see cref="AuthenticationExpiration"/>, or if the connection's user
+    /// advanced past the snapshot this update's acceptance decision was based on.
     /// </remarks>
-    internal void UpdateUser(ClaimsPrincipal user, DateTimeOffset authenticationExpiration)
+    internal async Task<UserUpdateResult> UpdateUserAsync(
+        ClaimsPrincipal user,
+        DateTimeOffset authenticationExpiration,
+        HttpContext? userRefreshHttpContext = null,
+        Func<AuthenticationRefreshContext, Task<bool>>? additionalAuthenticationRefresh = null,
+        HttpContext? replacementHttpContext = null)
     {
+        ClaimsPrincipal? previousUserReference;
+        ClaimsPrincipal previousUserSnapshot;
+        Func<AuthenticationRefreshContext, Task<bool>> callback;
+        lock (_userLock)
+        {
+            // A concurrent refresh (for example the /refresh endpoint racing a long-polling poll) may have
+            // already applied a newer token. Don't roll the connection back to an older one.
+            if (IsStale(authenticationExpiration))
+            {
+                return UserUpdateResult.Stale;
+            }
+
+            previousUserReference = User;
+            previousUserSnapshot = previousUserReference ?? _negotiatedUser ?? new ClaimsPrincipal(new ClaimsIdentity());
+            callback = _onAuthenticationRefresh;
+        }
+
+        // Phase 1: validate without holding _userLock. The callback is application code and may be async/slow;
+        // it must never run while the lock is held.
+        var refreshContext = new AuthenticationRefreshContext
+        {
+            HttpContext = userRefreshHttpContext ?? HttpContext ?? throw new InvalidOperationException("An HttpContext is required to refresh authentication."),
+            ConnectionId = ConnectionId,
+            PreviousUser = previousUserSnapshot,
+            NewUser = user,
+            NewExpiration = authenticationExpiration == DateTimeOffset.MaxValue ? null : authenticationExpiration,
+        };
+
+        if (!await InvokeOnAuthenticationRefreshAsync(callback, refreshContext).ConfigureAwait(false))
+        {
+            return GetRejectionResult(
+                authenticationExpiration,
+                previousUserReference,
+                callback,
+                UserUpdateResult.Rejected);
+        }
+
+        if (additionalAuthenticationRefresh is not null
+            && !await additionalAuthenticationRefresh(refreshContext).ConfigureAwait(false))
+        {
+            return GetRejectionResult(
+                authenticationExpiration,
+                previousUserReference,
+                callback,
+                UserUpdateResult.AdditionalPolicyRejected);
+        }
+
+        // Phase 2: revalidate and publish atomically under the lock. The acceptance decision above was made
+        // against a snapshot; re-check it still reflects the connection's current state before swapping.
         ClaimsPrincipal? previouslyOwnedUser = null;
 
         lock (_userLock)
         {
-            // A concurrent refresh (for example the /refresh endpoint racing a long-polling poll) may have
-            // already applied a newer token. Don't roll the connection back to an older one. Checking this
-            // under _userLock makes the decision atomic with the swap below.
-            if (authenticationExpiration != DateTimeOffset.MaxValue
-                && AuthenticationExpiration != DateTimeOffset.MaxValue
-                && authenticationExpiration < AuthenticationExpiration)
+            if (HasValidationStateChanged(authenticationExpiration, previousUserReference, callback))
             {
-                return;
+                return UserUpdateResult.Stale;
             }
 
             if (_ownsUserIdentities && !ReferenceEquals(User, user))
@@ -311,8 +406,12 @@ internal sealed partial class HttpConnectionContext : ConnectionContext,
             User = user;
             AuthenticationExpiration = authenticationExpiration;
 
-            // Also update the HttpContext's user if available
-            if (HttpContext is { } httpContext)
+            if (replacementHttpContext is not null)
+            {
+                replacementHttpContext.User = user;
+                HttpContext = replacementHttpContext;
+            }
+            else if (HttpContext is { } httpContext)
             {
                 httpContext.User = user;
             }
@@ -331,11 +430,11 @@ internal sealed partial class HttpConnectionContext : ConnectionContext,
 
         if (callbacks is not null)
         {
-            foreach (var callback in callbacks)
+            foreach (var registration in callbacks)
             {
                 try
                 {
-                    callback.Invoke(user);
+                    registration.Invoke(refreshContext);
                 }
                 catch (Exception ex)
                 {
@@ -347,6 +446,240 @@ internal sealed partial class HttpConnectionContext : ConnectionContext,
         if (previouslyOwnedUser is not null)
         {
             DisposeOwnedIdentities(previouslyOwnedUser);
+        }
+
+        return UserUpdateResult.Updated;
+    }
+
+    private bool IsStale(DateTimeOffset authenticationExpiration)
+    {
+        return authenticationExpiration != DateTimeOffset.MaxValue
+            && AuthenticationExpiration != DateTimeOffset.MaxValue
+            && authenticationExpiration < AuthenticationExpiration;
+    }
+
+    private UserUpdateResult GetRejectionResult(
+        DateTimeOffset authenticationExpiration,
+        ClaimsPrincipal? previousUser,
+        Func<AuthenticationRefreshContext, Task<bool>> callback,
+        UserUpdateResult rejectionResult)
+    {
+        lock (_userLock)
+        {
+            return HasValidationStateChanged(authenticationExpiration, previousUser, callback)
+                ? UserUpdateResult.Stale
+                : rejectionResult;
+        }
+    }
+
+    private bool HasValidationStateChanged(
+        DateTimeOffset authenticationExpiration,
+        ClaimsPrincipal? previousUser,
+        Func<AuthenticationRefreshContext, Task<bool>> callback)
+        => IsStale(authenticationExpiration)
+            || !ReferenceEquals(User, previousUser)
+            || !ReferenceEquals(_onAuthenticationRefresh, callback);
+
+    private async Task<bool> InvokeOnAuthenticationRefreshAsync(Func<AuthenticationRefreshContext, Task<bool>> callback, AuthenticationRefreshContext context)
+    {
+        try
+        {
+            return await callback(context).ConfigureAwait(false);
+        }
+        catch (Exception ex)
+        {
+            Log.UserRefreshingCallbackFailed(_logger, ex);
+            return false;
+        }
+    }
+
+    internal bool IsUserAssociatedWithConnection(ClaimsPrincipal user)
+    {
+        lock (_userLock)
+        {
+            if (User is not null)
+            {
+                return IsUserRefreshAcceptedByDefault(User, user);
+            }
+
+            if (!_hasNegotiatedUser)
+            {
+                // No identity has been associated with this connection yet.
+                return true;
+            }
+
+            return UserIdentitySnapshot.Matches(_negotiatedUserIdentity, UserIdentitySnapshot.Capture(user));
+        }
+    }
+
+    internal bool HasNegotiatedUser => _hasNegotiatedUser;
+
+    // Before the first transport request, the negotiate principal is the connection identity. /refresh refuses
+    // Windows identities, and this keeps that refusal from being bypassed pre-transport - which also means a
+    // refresh callback can never hold the negotiate clone while a transport request disposes it.
+    internal bool HasWindowsIdentityUser
+    {
+        get
+        {
+            lock (_userLock)
+            {
+                return HasWindowsIdentity(User) || HasWindowsIdentity(_negotiatedUser);
+            }
+        }
+    }
+
+    private static bool HasWindowsIdentity(ClaimsPrincipal? user)
+    {
+        if (user is null)
+        {
+            return false;
+        }
+
+        foreach (var identity in user.Identities)
+        {
+            if (identity is WindowsIdentity)
+            {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    internal void SetUserAndReleaseNegotiatedUser(ClaimsPrincipal? user)
+    {
+        ClaimsPrincipal? ownedNegotiatedUser;
+        lock (_userLock)
+        {
+            User = user;
+            ownedNegotiatedUser = ReleaseNegotiatedUser();
+        }
+
+        if (ownedNegotiatedUser is not null)
+        {
+            DisposeOwnedIdentities(ownedNegotiatedUser);
+        }
+    }
+
+    // Must be called while holding _userLock. Returns the negotiate principal only when this connection owns
+    // its identities and is therefore responsible for disposing them.
+    private ClaimsPrincipal? ReleaseNegotiatedUser()
+    {
+        var owned = _ownsNegotiatedUserIdentities ? _negotiatedUser : null;
+        _ownsNegotiatedUserIdentities = false;
+        _hasNegotiatedUser = false;
+        _negotiatedUser = null;
+        _negotiatedUserIdentity = null;
+
+        return owned;
+    }
+
+    /// <summary>
+    /// Retains <paramref name="user"/> for longer than the request that produced it. Ordinary principals are
+    /// returned as-is; only <see cref="WindowsIdentity"/> instances are cloned, because their SafeHandles are
+    /// disposed when the request ends. <paramref name="ownsIdentities"/> is <see langword="true"/> when the
+    /// caller is responsible for disposing the returned principal's identities.
+    /// </summary>
+    internal static ClaimsPrincipal CloneUserIfNeeded(ClaimsPrincipal user, out bool ownsIdentities)
+    {
+        if (user.Identity is not WindowsIdentity windowsIdentity)
+        {
+            ownsIdentities = false;
+            return user;
+        }
+
+        ClaimsPrincipal clone;
+        var skipFirstIdentity = false;
+        if (OperatingSystem.IsWindows() && user is WindowsPrincipal)
+        {
+            // We want to explicitly create a WindowsPrincipal instead of a ClaimsPrincipal
+            // so methods that WindowsPrincipal overrides like 'IsInRole', work as expected.
+            clone = new WindowsPrincipal((WindowsIdentity)windowsIdentity.Clone());
+            skipFirstIdentity = true;
+        }
+        else
+        {
+            clone = new ClaimsPrincipal();
+        }
+
+        foreach (var identity in user.Identities)
+        {
+            if (skipFirstIdentity)
+            {
+                skipFirstIdentity = false;
+                continue;
+            }
+            clone.AddIdentity(identity.Clone());
+        }
+
+        ownsIdentities = true;
+        return clone;
+    }
+
+    private static Task<bool> DefaultOnAuthenticationRefreshAsync(AuthenticationRefreshContext context)
+        => IsUserRefreshAcceptedByDefault(context.PreviousUser, context.NewUser) ? TaskCache.True : TaskCache.False;
+
+    private static bool IsUserRefreshAcceptedByDefault(ClaimsPrincipal? currentUser, ClaimsPrincipal user)
+    {
+        if (currentUser is null || ReferenceEquals(currentUser, user))
+        {
+            return true;
+        }
+
+        return UserIdentitySnapshot.Matches(
+            UserIdentitySnapshot.Capture(currentUser),
+            UserIdentitySnapshot.Capture(user));
+    }
+
+    internal static bool ClaimsPrincipalContentEquals(ClaimsPrincipal current, ClaimsPrincipal incoming)
+    {
+        return SequenceEqual(current.Identities, incoming.Identities, ClaimsIdentityContentEquals);
+    }
+
+    private static bool ClaimsIdentityContentEquals(ClaimsIdentity current, ClaimsIdentity incoming)
+    {
+        if (!string.Equals(current.AuthenticationType, incoming.AuthenticationType, StringComparison.Ordinal)
+            || !string.Equals(current.NameClaimType, incoming.NameClaimType, StringComparison.Ordinal)
+            || !string.Equals(current.RoleClaimType, incoming.RoleClaimType, StringComparison.Ordinal)
+            || !string.Equals(current.Label, incoming.Label, StringComparison.Ordinal))
+        {
+            return false;
+        }
+
+        return SequenceEqual(current.Claims, incoming.Claims, ClaimContentEquals);
+    }
+
+    private static bool ClaimContentEquals(Claim current, Claim incoming)
+    {
+        return string.Equals(current.Type, incoming.Type, StringComparison.Ordinal)
+            && string.Equals(current.Value, incoming.Value, StringComparison.Ordinal)
+            && string.Equals(current.ValueType, incoming.ValueType, StringComparison.Ordinal)
+            && string.Equals(current.Issuer, incoming.Issuer, StringComparison.Ordinal)
+            && string.Equals(current.OriginalIssuer, incoming.OriginalIssuer, StringComparison.Ordinal);
+    }
+
+    private static bool SequenceEqual<T>(IEnumerable<T> current, IEnumerable<T> incoming, Func<T, T, bool> equals)
+    {
+        using var currentEnumerator = current.GetEnumerator();
+        using var incomingEnumerator = incoming.GetEnumerator();
+
+        while (true)
+        {
+            var currentHasValue = currentEnumerator.MoveNext();
+            if (currentHasValue != incomingEnumerator.MoveNext())
+            {
+                return false;
+            }
+
+            if (!currentHasValue)
+            {
+                return true;
+            }
+
+            if (!equals(currentEnumerator.Current, incomingEnumerator.Current))
+            {
+                return false;
+            }
         }
     }
 
@@ -386,6 +719,7 @@ internal sealed partial class HttpConnectionContext : ConnectionContext,
         finally
         {
             ClaimsPrincipal? ownedUser = null;
+            ClaimsPrincipal? ownedNegotiatedUser;
             lock (_userLock)
             {
                 if (_ownsUserIdentities)
@@ -393,11 +727,20 @@ internal sealed partial class HttpConnectionContext : ConnectionContext,
                     ownedUser = User;
                     _ownsUserIdentities = false;
                 }
+
+                // Covers a connection that negotiated but never established a transport, so
+                // SetUserAndReleaseNegotiatedUser never ran.
+                ownedNegotiatedUser = ReleaseNegotiatedUser();
             }
 
             if (ownedUser is not null)
             {
                 DisposeOwnedIdentities(ownedUser);
+            }
+
+            if (ownedNegotiatedUser is not null)
+            {
+                DisposeOwnedIdentities(ownedNegotiatedUser);
             }
 
             Cancellation?.Dispose();
@@ -883,16 +1226,16 @@ internal sealed partial class HttpConnectionContext : ConnectionContext,
 
     private sealed class UserRefreshedCallbackRegistration(
         HttpConnectionContext connection,
-        Action<ClaimsPrincipal, object?> callback,
+        Action<AuthenticationRefreshContext, object?> callback,
         object? state) : IDisposable
     {
         private HttpConnectionContext? _connection = connection;
 
-        public void Invoke(ClaimsPrincipal user)
+        public void Invoke(AuthenticationRefreshContext context)
         {
             if (_connection is not null)
             {
-                callback(user, state);
+                callback(context, state);
             }
         }
 
@@ -908,6 +1251,14 @@ internal sealed partial class HttpConnectionContext : ConnectionContext,
         Success,
         AlreadyActive,
         CannotChange,
+    }
+
+    internal enum UserUpdateResult
+    {
+        Updated,
+        Stale,
+        Rejected,
+        AdditionalPolicyRejected,
     }
 
     private static partial class Log
@@ -939,7 +1290,10 @@ internal sealed partial class HttpConnectionContext : ConnectionContext,
         [LoggerMessage(9, LogLevel.Trace, "{Timeout}ms elapsed attempting to send a message to the transport. Closing connection {TransportConnectionId}.", EventName = "TransportSendTimeout")]
         public static partial void TransportSendTimeout(ILogger logger, TimeSpan timeout, string transportConnectionId);
 
-        [LoggerMessage(10, LogLevel.Error, "An IConnectionUserRefreshFeature.OnUserRefreshed callback threw an exception.", EventName = "UserRefreshedCallbackFailed")]
+        [LoggerMessage(10, LogLevel.Error, "An IConnectionAuthenticationRefreshFeature.OnAuthenticationRefreshed callback threw an exception.", EventName = "UserRefreshedCallbackFailed")]
         public static partial void UserRefreshedCallbackFailed(ILogger logger, Exception exception);
+
+        [LoggerMessage(11, LogLevel.Error, "The IConnectionAuthenticationRefreshFeature.OnAuthenticationRefresh callback threw an exception. The user update was rejected.", EventName = "UserRefreshingCallbackFailed")]
+        public static partial void UserRefreshingCallbackFailed(ILogger logger, Exception exception);
     }
 }

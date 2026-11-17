@@ -217,7 +217,7 @@ WEBSOCKET_HANDLER::IndicateCompletionToIIS(
     //
     // close Websocket handle. This will triger a WinHttp callback
     // on handle close, then let IIS pipeline continue.
-    // Make sure no pending IO as there is no IIS websocket cancelation,
+    // Make sure no pending IO as there is no IIS websocket cancellation,
     // any unexpected callback will lead to AV. Revisit it once CanelOutGoingIO works
     //
     if (_hWebSocketRequest != nullptr && _dwOutstandingIo == 0)
@@ -246,7 +246,7 @@ Routine Description:
 
     This routine is called after the 101 response was successfully sent to
     the client.
-    This routine get's a websocket handle to winhttp,
+    This routine gets a websocket handle to winhttp,
     websocket handle to IIS's websocket context, and initiates IO
     in these two endpoints.
 

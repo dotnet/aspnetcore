@@ -1,0 +1,27 @@
+@page "/persistent-state/auto-pause-websocket"
+@rendermode RenderMode.InteractiveServer
+
+<h1>Auto-pause — WebSocket survives pause</h1>
+<script src="/subdir/auto-pause-log-capture.js"></script>
+
+@if (RendererInfo.IsInteractive)
+{
+    <span id="render-mode-interactive">True</span>
+}
+
+<button id="start-ws" data-token="@_token" onclick="window.startGatedWebSocket('@_token')">Start WebSocket</button>
+
+<script>
+    window.__wsResult = window.__wsResult || 'idle';
+
+    window.startGatedWebSocket = function (token) {
+        window.__wsResult = 'pending';
+        var protocol = location.protocol === 'https:' ? 'wss:' : 'ws:';
+        var ws = new WebSocket(protocol + '//' + location.host + '/subdir/autopause-test/ws-gate/' + token);
+        ws.onmessage = function (e) { window.__wsResult = e.data; };
+    };
+</script>
+
+@code {
+    private readonly string _token = Guid.NewGuid().ToString("N");
+}

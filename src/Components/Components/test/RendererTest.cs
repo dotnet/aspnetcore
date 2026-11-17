@@ -2859,7 +2859,7 @@ public class RendererTest
         rootComponent.TriggerRender();
         var origBatchReferenceFrames = renderer.Batches.Single().ReferenceFrames;
         var childComponentFrame = origBatchReferenceFrames
-            .Single(f => f.Component is EventComponent);
+            .Single(f => f.FrameType == RenderTreeFrameType.Component && f.Component is EventComponent);
         var childComponentId = childComponentFrame.ComponentId;
         childComponent = (EventComponent)childComponentFrame.Component;
         var origEventHandlerId = origBatchReferenceFrames
@@ -6089,6 +6089,40 @@ public class RendererTest
 
             return tcs.Task;
         }
+    }
+
+    [Fact]
+    public async Task DispatchExceptionAsync_AfterRendererIsDisposed_DoesNotThrow()
+    {
+        var renderer = new TestRenderer();
+        var component = new DispatchExceptionComponent();
+        var componentId = renderer.AssignRootComponentId(component);
+        await renderer.RenderRootComponentAsync(componentId);
+        renderer.Dispose();
+
+        await component.DispatchAsync(new InvalidTimeZoneException("Test exception"));
+
+        Assert.Empty(renderer.HandledExceptions);
+    }
+
+    [Fact]
+    public async Task DispatchExceptionAsync_AfterComponentIsRemoved_Throws()
+    {
+        var renderer = new TestRenderer();
+        var component = new DispatchExceptionComponent();
+        var componentId = renderer.AssignRootComponentId(component);
+        await renderer.RenderRootComponentAsync(componentId);
+        await renderer.Dispatcher.InvokeAsync(() => renderer.RemoveRootComponent(componentId));
+
+        var exception = await Assert.ThrowsAsync<ArgumentException>(() => component.DispatchAsync(new InvalidTimeZoneException("Test exception")));
+
+        Assert.Equal($"The renderer does not have a component with ID {componentId}.", exception.Message);
+        Assert.Empty(renderer.HandledExceptions);
+    }
+
+    private class DispatchExceptionComponent : ComponentBase
+    {
+        public Task DispatchAsync(Exception exception) => DispatchExceptionAsync(exception);
     }
 
     private class ComponentThatAwaitsTask : ComponentBase

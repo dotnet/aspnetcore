@@ -1,0 +1,22 @@
+@page "/persistence"
+@rendermode InteractiveServer
+
+<NativeAotStatus />
+<h1>Persistent component state</h1>
+
+<p id="persistence-phase">@(_restored ? "circuit (restored)" : "prerender (fresh)")</p>
+<p id="persistence-token">@State?.Token</p>
+<p id="persistence-serializer">@PersistenceSnapshotSerializer.PersistCount|@PersistenceSnapshotSerializer.RestoreCount</p>
+
+@code {
+    private bool _restored;
+
+    [PersistentState]
+    public PersistenceSnapshot? State { get; set; }
+
+    protected override void OnInitialized()
+    {
+        _restored = State is not null;
+        State ??= new PersistenceSnapshot(Guid.NewGuid().ToString("N"));
+    }
+}

@@ -20,10 +20,11 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Reference Include="Microsoft.AspNetCore.Components" />
-    <Reference Include="Microsoft.AspNetCore.Components.Forms" />
-    <Reference Include="Microsoft.Extensions.DependencyInjection" />
-    <Reference Include="Microsoft.JSInterop" />
+    <PackageReference Include="Microsoft.Extensions.DependencyInjection" />
+
+    <ProjectReference Include="$(RepoRoot)src\Components\Components\src\Microsoft.AspNetCore.Components.csproj" />
+    <ProjectReference Include="$(RepoRoot)src\Components\Forms\src\Microsoft.AspNetCore.Components.Forms.csproj" />
+    <ProjectReference Include="$(RepoRoot)src\Components\JSInterop\src\Microsoft.JSInterop.csproj" />
   </ItemGroup>
 
   <ItemGroup>

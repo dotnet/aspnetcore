@@ -133,3 +133,22 @@ internal class Manager : Employee
     public required string Department { get; set; }
 }
 
+// Type hierarchy for validating that dictionary-valued properties on the derived
+// types of a polymorphic base produce a complete schema for every derived type.
+// Regression test for https://github.com/dotnet/aspnetcore/issues/65759 where the
+// JSON pointers emitted by the STJ schema exporter (e.g. "#/anyOf/0/properties/...")
+// failed to resolve, leaving the second and subsequent derived types with an empty
+// `additionalProperties` schema.
+[JsonPolymorphic(TypeDiscriminatorPropertyName = "$type")]
+[JsonDerivedType(typeof(DictionaryContainerAlpha), typeDiscriminator: "alpha")]
+[JsonDerivedType(typeof(DictionaryContainerBeta), typeDiscriminator: "beta")]
+[JsonDerivedType(typeof(DictionaryContainerGamma), typeDiscriminator: "gamma")]
+internal abstract class DictionaryContainerBase
+{
+    public required Dictionary<string, string> Tags { get; set; }
+    public required Dictionary<string, string[]> Labels { get; set; }
+}
+
+internal class DictionaryContainerAlpha : DictionaryContainerBase { }
+internal class DictionaryContainerBeta : DictionaryContainerBase { }
+internal class DictionaryContainerGamma : DictionaryContainerBase { }

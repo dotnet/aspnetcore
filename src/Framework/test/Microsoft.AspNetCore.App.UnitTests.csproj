@@ -76,8 +76,8 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Reference Include="Newtonsoft.Json" />
-    <Reference Include="NuGet.Versioning" />
+    <PackageReference Include="Newtonsoft.Json" />
+    <PackageReference Include="NuGet.Versioning" />
   </ItemGroup>
 
   <ItemGroup>

@@ -7,22 +7,22 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <Reference Include="Microsoft.AspNetCore.Routing" />
-    <Reference Include="Microsoft.AspNetCore.Routing.Abstractions" />
-    <Reference Include="Microsoft.AspNetCore.Authorization" />
-    <Reference Include="Microsoft.AspNetCore.Authorization.Policy" />
-    <Reference Include="Microsoft.AspNetCore.Mvc" />
-    <Reference Include="Microsoft.AspNetCore.Mvc.Razor" />
-    <Reference Include="Microsoft.AspNetCore.Mvc.RazorPages" />
-    <Reference Include="Microsoft.AspNetCore.Mvc.Abstractions" />
-    <Reference Include="Microsoft.AspNetCore.Mvc.Core" />
-    <Reference Include="Microsoft.AspNetCore.Mvc.ApiExplorer" />
-    <Reference Include="Microsoft.AspNetCore.Mvc.Cors" />
-    <Reference Include="Microsoft.AspNetCore.Cors" />
-    <Reference Include="Microsoft.AspNetCore.Antiforgery" />
-    <Reference Include="Microsoft.AspNetCore.Mvc.NewtonsoftJson" />
-    <ProjectReference Include="..\..\shared\Mvc.Core.TestCommon\Microsoft.AspNetCore.Mvc.Core.TestCommon.csproj" />
+    <ProjectReference Include="$(RepoRoot)src\Antiforgery\src\Microsoft.AspNetCore.Antiforgery.csproj" />
+    <ProjectReference Include="$(RepoRoot)src\Http\Routing.Abstractions\src\Microsoft.AspNetCore.Routing.Abstractions.csproj" />
+    <ProjectReference Include="$(RepoRoot)src\Http\Routing\src\Microsoft.AspNetCore.Routing.csproj" />
+    <ProjectReference Include="$(RepoRoot)src\Middleware\CORS\src\Microsoft.AspNetCore.Cors.csproj" />
+    <ProjectReference Include="$(RepoRoot)src\Mvc\Mvc.Abstractions\src\Microsoft.AspNetCore.Mvc.Abstractions.csproj" />
+    <ProjectReference Include="$(RepoRoot)src\Mvc\Mvc.ApiExplorer\src\Microsoft.AspNetCore.Mvc.ApiExplorer.csproj" />
+    <ProjectReference Include="$(RepoRoot)src\Mvc\Mvc.Core\src\Microsoft.AspNetCore.Mvc.Core.csproj" />
+    <ProjectReference Include="$(RepoRoot)src\Mvc\Mvc.Cors\src\Microsoft.AspNetCore.Mvc.Cors.csproj" />
+    <ProjectReference Include="$(RepoRoot)src\Mvc\Mvc.NewtonsoftJson\src\Microsoft.AspNetCore.Mvc.NewtonsoftJson.csproj" />
+    <ProjectReference Include="$(RepoRoot)src\Mvc\Mvc.Razor\src\Microsoft.AspNetCore.Mvc.Razor.csproj" />
+    <ProjectReference Include="$(RepoRoot)src\Mvc\Mvc.RazorPages\src\Microsoft.AspNetCore.Mvc.RazorPages.csproj" />
+    <ProjectReference Include="$(RepoRoot)src\Mvc\Mvc\src\Microsoft.AspNetCore.Mvc.csproj" />
+    <ProjectReference Include="$(RepoRoot)src\Mvc\shared\Mvc.Core.TestCommon\Microsoft.AspNetCore.Mvc.Core.TestCommon.csproj" />
+    <ProjectReference Include="$(RepoRoot)src\Security\Authorization\Core\src\Microsoft.AspNetCore.Authorization.csproj" />
+    <ProjectReference Include="$(RepoRoot)src\Security\Authorization\Policy\src\Microsoft.AspNetCore.Authorization.Policy.csproj" />
 
-    <Reference Include="Microsoft.Extensions.Logging" />
+    <PackageReference Include="Microsoft.Extensions.Logging" />
   </ItemGroup>
 </Project>

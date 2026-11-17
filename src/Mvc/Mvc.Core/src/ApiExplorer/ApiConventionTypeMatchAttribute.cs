@@ -16,7 +16,7 @@ namespace Microsoft.AspNetCore.Mvc.ApiExplorer;
 public sealed class ApiConventionTypeMatchAttribute : Attribute
 {
     /// <summary>
-    /// Initialzes a new instance of <see cref="ApiConventionTypeMatchAttribute"/> with the specified <paramref name="matchBehavior"/>.
+    /// Initializes a new instance of <see cref="ApiConventionTypeMatchAttribute"/> with the specified <paramref name="matchBehavior"/>.
     /// </summary>
     /// <param name="matchBehavior">The <see cref="ApiConventionTypeMatchBehavior"/>.</param>
     public ApiConventionTypeMatchAttribute(ApiConventionTypeMatchBehavior matchBehavior)

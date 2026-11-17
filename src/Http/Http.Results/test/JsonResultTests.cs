@@ -139,7 +139,7 @@ public class JsonResultTests
         stream.Position = 0;
         var responseDetails = JsonSerializer.Deserialize<ProblemDetails>(stream, JsonSerializerOptions.Web);
         Assert.Equal("https://tools.ietf.org/html/rfc9110#section-15.6.1", responseDetails.Type);
-        Assert.Equal("An error occurred while processing your request.", responseDetails.Title);
+        Assert.Equal("Internal Server Error", responseDetails.Title);
         Assert.Equal(StatusCodes.Status500InternalServerError, responseDetails.Status);
     }
 

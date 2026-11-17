@@ -72,9 +72,11 @@ internal sealed class JwtIssuer
     public bool IsValid(string encodedToken)
     {
         var handler = new JwtSecurityTokenHandler();
+        // codeql[SM04554] - By design: this local dev tool validates only its own self-minted tokens, so no external issuer is configured. codeql[SM04555] - By design: issuer validation is intentionally disabled for the dev tool.
         var tokenValidationParameters = new TokenValidationParameters
         {
             IssuerSigningKey = _signingKey,
+            // codeql[SM04387] - By design: dotnet-user-jwts mints and validates its own tokens with a key it owns, so this override is safe. codeql[SM04284] - By design: the dev tool intentionally disables audience/issuer validation for its self-issued tokens.
             ValidateAudience = false,
             ValidateIssuer = false,
             ValidateIssuerSigningKey = true

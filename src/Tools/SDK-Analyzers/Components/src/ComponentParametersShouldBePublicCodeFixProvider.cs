@@ -65,23 +65,23 @@ public class ComponentParametersShouldBePublicCodeFixProvider : CodeFixProvider
             return null;
         }
 
-        var newModifiers = node.Modifiers;
-        for (var i = 0; i < node.Modifiers.Count; i++)
+        var newModifiers = SyntaxFactory.TokenList(
+            SyntaxFactory.Token(SyntaxKind.PublicKeyword)
+        );
+
+        foreach (var modifier in node.Modifiers)
         {
-            var modifier = node.Modifiers[i];
+            // Skip all existing access modifiers, including 'public' just in case the fix is ran on invalid code with multiple access modifiers (e.g. private public)
             if (modifier.IsKind(SyntaxKind.PrivateKeyword) ||
                 modifier.IsKind(SyntaxKind.ProtectedKeyword) ||
                 modifier.IsKind(SyntaxKind.InternalKeyword) ||
-
-                // We also remove public in case the user has written something totally backwards such as private public protected Foo
                 modifier.IsKind(SyntaxKind.PublicKeyword))
             {
-                newModifiers = newModifiers.Remove(modifier);
+                continue;
             }
+            newModifiers = newModifiers.Add(modifier);
         }
 
-        var publicModifier = SyntaxFactory.Token(SyntaxKind.PublicKeyword);
-        newModifiers = newModifiers.Insert(0, publicModifier);
         node = node.WithModifiers(newModifiers);
         return node;
     }

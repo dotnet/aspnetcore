@@ -10,11 +10,11 @@ Route tooling is applied to strings used on APIs annotated with `[StringSyntax("
 
 ## Roslyn integration
 
-Route tooling uses public Roslyn APIs where possible and internal Roslyn APIs where necessary. Internal APIs are accessed via `Microsoft.CodeAnalysis.ExternalAccess.AspNetCore`, which follows Roslyn's standard external access pattern.
+Route tooling uses public Roslyn APIs where possible and internal Roslyn APIs where necessary. Internal APIs are accessed via `Microsoft.CodeAnalysis.Features.ExternalAccess`, which follows Roslyn's standard external access pattern.
 
 The classifier, brace matcher, and highlighter currently use internal APIs. The analyzer is a standard Roslyn analyzer, and the completion provider is a standard Roslyn completion provider.
 
-The analyzer can be run from an editor or from the SDK command-line. Because of this, the analyzer avoids any dependency on `Microsoft.CodeAnalysis.ExternalAccess.AspNetCore`.
+The analyzer can be run from an editor or from the SDK command-line. Because of this, the analyzer avoids any dependency on `Microsoft.CodeAnalysis.Features.ExternalAccess`.
 
 ## Route pattern tree
 
@@ -26,7 +26,7 @@ Route parsing uses `IVirtualCharService`. This service provides a uniform view o
 
 ### Dependencies
 
-Route tooling pushes Roslyn boundaries by being the first external project to use string syntax features. Ideally `Microsoft.CodeAnalysis.ExternalAccess.AspNetCore` is a temporary workaround. Making these features part of Roslyn's public API would allow ASP.NET Core to remove the external access dependency and source code copying.
+Route tooling pushes Roslyn boundaries by being the first external project to use string syntax features. Ideally `Microsoft.CodeAnalysis.Features.ExternalAccess` is a temporary workaround. Making these features part of Roslyn's public API would allow ASP.NET Core to remove the external access dependency and source code copying.
 
 - Reduce the amount of source copied from Roslyn.
   - String syntax detector
@@ -39,7 +39,7 @@ Route tooling pushes Roslyn boundaries by being the first external project to us
 
 ### Splitting projects
 
-Splitting editor specific features out into a different assembly which references `Microsoft.CodeAnalysis.ExternalAccess.AspNetCore` would prevent analyzers accidentally using editor APIs.
+Splitting editor specific features out into a different assembly which references `Microsoft.CodeAnalysis.Features.ExternalAccess` would prevent analyzers accidentally using editor APIs.
 
 ### Completion provider
 

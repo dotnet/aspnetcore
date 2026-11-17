@@ -1,0 +1,95 @@
+@page "/persistent-state/auto-pause-typing"
+@rendermode RenderMode.InteractiveServer
+@using Microsoft.AspNetCore.Components.Forms
+@using Microsoft.JSInterop
+
+<h1>Auto-pause typing/editable veto test</h1>
+
+@* Captures Blazor console output so the E2E tests can wait for specific log messages. *@
+<script src="/subdir/auto-pause-log-capture.js"></script>
+
+@if (RendererInfo.IsInteractive)
+{
+    <span id="render-mode-interactive">True</span>
+}
+
+<p>Each scenario isolates a distinct DOM/Blazor code path that the focused-editable
+veto must (or must not) recognize.</p>
+
+<hr />
+
+<h3>Native &lt;input&gt; with @("@bind") (used by both deferral and preservation tests)</h3>
+<input id="native-input" type="text" @bind="NativeInput" />
+
+<h3>Native &lt;input&gt; with server-provided default value (dirty-tracking)</h3>
+<input id="server-default-input" type="text" value="server-value" />
+
+<h3>Native &lt;textarea&gt; focused</h3>
+<textarea id="native-textarea" @bind="NativeTextarea"></textarea>
+
+<h3>contenteditable &lt;div&gt; focused</h3>
+<div id="content-editable" contenteditable="true" tabindex="0">edit me</div>
+
+<h3>Blazor &lt;InputText&gt; focused</h3>
+<EditForm Model="_model" FormName="typing-form">
+    <InputText id="blazor-input-text" @bind-Value="_model.Text" />
+</EditForm>
+
+<h3>&lt;button&gt; focused (non-editable, must not defer)</h3>
+<button id="focusable-button" type="button">Focusable button</button>
+
+<h3>Radio button selected then blurred</h3>
+<input id="radio-a" type="radio" name="radio-group" value="a"
+       checked="@(Radio == "a")" @onchange='() => Radio = "a"' />
+<input id="radio-b" type="radio" name="radio-group" value="b"
+       checked="@(Radio == "b")" @onchange='() => Radio = "b"' />
+
+<h3>Checkbox checked then blurred</h3>
+<input id="checkbox" type="checkbox" @bind="Checkbox" />
+
+<h3>&lt;select&gt; changed then blurred</h3>
+<select id="select" @bind="Select">
+    <option value="x">X</option>
+    <option value="y">Y</option>
+</select>
+
+<h3>Range slider dragged then released</h3>
+<input id="range" type="range" min="0" max="100" @bind="Range" />
+
+<h3>Native &lt;input type=file&gt; — captured filename persisted via [PersistentState]</h3>
+<input id="persist-upload" type="file" @onchange="HandlePersistedUpload" />
+<span id="persist-upload-label">@PersistedUploadName</span>
+
+<h3>Date picker — date set then blurred</h3>
+<input id="date" type="date" @bind="Date" />
+
+<h3>Color picker — color set then blurred</h3>
+<input id="color" type="color" @bind="Color" />
+
+@code {
+    private readonly TypingModel _model = new();
+
+    [Inject] private IJSRuntime JS { get; set; } = default!;
+
+    [PersistentState(AllowUpdates = true)] public string NativeInput { get; set; } = "";
+    [PersistentState(AllowUpdates = true)] public string NativeTextarea { get; set; } = "";
+    [PersistentState(AllowUpdates = true)] public string Radio { get; set; } = "";
+    [PersistentState(AllowUpdates = true)] public bool Checkbox { get; set; }
+    [PersistentState(AllowUpdates = true)] public string Select { get; set; } = "x";
+    [PersistentState(AllowUpdates = true)] public int Range { get; set; } = 50;
+    [PersistentState(AllowUpdates = true)] public DateTime? Date { get; set; }
+    [PersistentState(AllowUpdates = true)] public string Color { get; set; } = "#000000";
+    [PersistentState(AllowUpdates = true)] public string? PersistedUploadName { get; set; }
+
+    private async Task HandlePersistedUpload(ChangeEventArgs _)
+    {
+        // Blazor's @onchange on a native <input type=file> does not expose the filename (security).
+        // Read it from the DOM via a tiny JS helper.
+        PersistedUploadName = await JS.InvokeAsync<string>("autoPauseTest.getFileName", "persist-upload");
+    }
+
+    private sealed class TypingModel
+    {
+        public string Text { get; set; } = "";
+    }
+}

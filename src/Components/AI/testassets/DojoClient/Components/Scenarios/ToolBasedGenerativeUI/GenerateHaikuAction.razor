@@ -1,0 +1,27 @@
+<div class="haiku-action">
+    @if (_haiku is not null)
+    {
+        <HaikuCard Haiku="_haiku" />
+    }
+
+    <span class="haiku-action-status" role="status">
+        @(Block.IsComplete ? "Haiku ready" : "Generating haiku...")
+    </span>
+</div>
+
+@code {
+    private HaikuData? _haiku;
+
+    [Parameter, EditorRequired]
+    public UIActionBlock Block { get; set; } = default!;
+
+    protected override async Task OnInitializedAsync()
+    {
+        _haiku = HaikuData.FromCall(Block.Call);
+
+        if (!Block.IsComplete)
+        {
+            await Block.InvokeAsync();
+        }
+    }
+}

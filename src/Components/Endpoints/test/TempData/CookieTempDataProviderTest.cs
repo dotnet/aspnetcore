@@ -24,7 +24,7 @@ public class CookieTempDataProviderTest
         _cookieTempDataProvider = new CookieTempDataProvider(
             new EphemeralDataProtectionProvider(),
             Options.Create<RazorComponentsServiceOptions>(new()),
-            new JsonTempDataSerializer(),
+            new JsonStoredDataSerializer(),
             NullLogger<CookieTempDataProvider>.Instance);
     }
 
@@ -82,6 +82,19 @@ public class CookieTempDataProviderTest
     }
 
     [Fact]
+    public void Save_EscapesSemicolonInPathBase()
+    {
+        var httpContext = new DefaultHttpContext();
+        httpContext.Request.PathBase = "/a;b";
+        var tempData = CreateTempData();
+        tempData["Key1"] = "Value1";
+
+        _cookieTempDataProvider.SaveTempData(httpContext, tempData.Save());
+
+        Assert.Contains("path=/a%3Bb", httpContext.Response.Headers.SetCookie.ToString(), StringComparison.Ordinal);
+    }
+
+    [Fact]
     public void Save_ThrowsForUnsupportedType()
     {
         var httpContext = CreateHttpContext();
@@ -104,7 +117,7 @@ public class CookieTempDataProviderTest
         var loadedTempData = _cookieTempDataProvider.LoadTempData(httpContext);
 
         Assert.Equal("StringValue", loadedTempData["StringKey"]);
-        Assert.Equal(42, Assert.IsType<int>(loadedTempData["IntKey"]));
+        Assert.Equal(42, loadedTempData["IntKey"]);
     }
 
     private static DefaultHttpContext CreateHttpContext()

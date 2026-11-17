@@ -1,0 +1,25 @@
+@page "/persistent-state/auto-pause-file-bind-with-persistent-state"
+@rendermode RenderMode.InteractiveServer
+
+<h1>Auto-pause &lt;input type=file&gt; + @("@bind") + [PersistentState] — broken-by-design</h1>
+
+<script src="/subdir/auto-pause-log-capture.js"></script>
+
+@if (RendererInfo.IsInteractive)
+{
+    <span id="render-mode-interactive">True</span>
+}
+
+<p>This page deliberately combines @("@bind") on a native &lt;input type=file&gt; with a
+[PersistentState] backing field. On resume the framework writes the persisted string back
+to <code>input.value</code>, which browsers reject for file inputs with
+<code>InvalidStateError</code>. The test asserts that crash is observable.</p>
+
+<input id="broken-file" type="file" @bind="BrokenUploadValue" />
+<span id="broken-file-value">@BrokenUploadValue</span>
+
+@code {
+    // Marking a @bind'd <input type=file> field as [PersistentState] is not a supported pattern.
+    // On resume the renderer tries to write persisted value - the browser refuses it by throwing.
+    [PersistentState(AllowUpdates = true)] public string? BrokenUploadValue { get; set; }
+}

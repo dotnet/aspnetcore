@@ -1,0 +1,37 @@
+@page "/storage"
+@rendermode InteractiveServer
+@inject ProtectedSessionStorage SessionStorage
+
+<NativeAotStatus />
+<h1>Protected browser storage</h1>
+
+<button id="storage-save" @onclick="SaveAsync">Save</button>
+<p id="storage-value">@_value</p>
+<p id="storage-instance">@_instanceId</p>
+<p id="storage-converter">@StorageProfileConverter.WriteCount|@StorageProfileConverter.ReadCount</p>
+
+@code {
+    private const string Key = "native-aot-profile";
+    private static int s_nextInstanceId;
+    private readonly int _instanceId = Interlocked.Increment(ref s_nextInstanceId);
+    private string _value = "(missing)";
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            var result = await SessionStorage.GetAsync<StorageProfile>(Key);
+            if (result is { Success: true, Value: { } profile })
+            {
+                _value = $"{profile.Name}:{profile.Age}";
+                StateHasChanged();
+            }
+        }
+    }
+
+    private async Task SaveAsync()
+    {
+        await SessionStorage.SetAsync(Key, new StorageProfile("ada", 36));
+        _value = "saved";
+    }
+}

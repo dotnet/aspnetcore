@@ -146,4 +146,98 @@ public partial class OpenApiSchemaServiceTests : OpenApiDocumentServiceTestBase
             Assert.Equal(2, unionComponent.AnyOf.Count);
         });
     }
+
+    [Fact]
+    public async Task GetOpenApiResponse_UnionWithPolymorphicCase_ReturnedDirectly_BranchesRefPolymorphicBase()
+    {
+        var builder = CreateBuilder();
+
+        builder.MapGet("/api/beasts", () => new OneOrManyBeast(new Dachshund("Chili")));
+
+        await VerifyOpenApiDocument(builder, document =>
+        {
+            Assert.True(document.Components.Schemas.TryGetValue(nameof(OneOrManyBeast), out var unionComponent));
+            Assert.NotNull(unionComponent.AnyOf);
+            Assert.Equal(2, unionComponent.AnyOf.Count);
+
+            var objectBranch = Assert.IsType<OpenApiSchemaReference>(unionComponent.AnyOf[0]);
+            Assert.Equal(nameof(Beast), objectBranch.Reference.Id);
+
+            var arrayItems = Assert.IsType<OpenApiSchemaReference>(unionComponent.AnyOf[1].Items);
+            Assert.Equal(nameof(Beast), arrayItems.Reference.Id);
+
+            Assert.DoesNotContain(nameof(OneOrManyBeast) + nameof(Beast), document.Components.Schemas.Keys);
+        });
+    }
+
+    [Fact]
+    public async Task GetOpenApiResponse_NestedUnionWithPolymorphicCase_DoesNotDuplicatePolymorphicComponent()
+    {
+        var builder = CreateBuilder();
+
+        builder.MapGet("/api/beasts", () => new BeastEnvelope(new OneOrManyBeast(new Dachshund("Chili"))));
+
+        await VerifyOpenApiDocument(builder, document =>
+        {
+            Assert.True(document.Components.Schemas.TryGetValue(nameof(OneOrManyBeast), out var unionComponent));
+            Assert.NotNull(unionComponent.AnyOf);
+            Assert.Equal(2, unionComponent.AnyOf.Count);
+
+            // Both branches must reference the polymorphic base component `Beast`; the object
+            // case must not be lifted into a duplicate `OneOrManyBeastBeast` component.
+            var objectBranch = Assert.IsType<OpenApiSchemaReference>(unionComponent.AnyOf[0]);
+            Assert.Equal(nameof(Beast), objectBranch.Reference.Id);
+
+            var arrayItems = Assert.IsType<OpenApiSchemaReference>(unionComponent.AnyOf[1].Items);
+            Assert.Equal(nameof(Beast), arrayItems.Reference.Id);
+
+            Assert.DoesNotContain(nameof(OneOrManyBeast) + nameof(Beast), document.Components.Schemas.Keys);
+        });
+    }
+
+    [Fact]
+    public async Task GetOpenApiResponse_NestedNonNullableUnionWithPolymorphicCase_DoesNotDuplicatePolymorphicComponent()
+    {
+        var builder = CreateBuilder();
+
+        builder.MapGet("/api/beasts", () => new BeastContainer(new OneOrManyBeast(new Dachshund("Chili"))));
+
+        await VerifyOpenApiDocument(builder, document =>
+        {
+            Assert.True(document.Components.Schemas.TryGetValue(nameof(OneOrManyBeast), out var unionComponent));
+            Assert.NotNull(unionComponent.AnyOf);
+            Assert.Equal(2, unionComponent.AnyOf.Count);
+
+            var objectBranch = Assert.IsType<OpenApiSchemaReference>(unionComponent.AnyOf[0]);
+            Assert.Equal(nameof(Beast), objectBranch.Reference.Id);
+
+            var arrayItems = Assert.IsType<OpenApiSchemaReference>(unionComponent.AnyOf[1].Items);
+            Assert.Equal(nameof(Beast), arrayItems.Reference.Id);
+
+            Assert.DoesNotContain(nameof(OneOrManyBeast) + nameof(Beast), document.Components.Schemas.Keys);
+        });
+    }
+
+    [Fact]
+    public async Task GetOpenApiResponse_TopLevelNullableUnionWithPolymorphicCase_DoesNotDuplicatePolymorphicComponent()
+    {
+        var builder = CreateBuilder();
+
+        builder.MapGet("/api/beasts", OneOrManyBeast? () => new OneOrManyBeast(new Dachshund("Chili")));
+
+        await VerifyOpenApiDocument(builder, document =>
+        {
+            Assert.True(document.Components.Schemas.TryGetValue(nameof(OneOrManyBeast), out var unionComponent));
+            Assert.NotNull(unionComponent.AnyOf);
+            Assert.Equal(2, unionComponent.AnyOf.Count);
+
+            var objectBranch = Assert.IsType<OpenApiSchemaReference>(unionComponent.AnyOf[0]);
+            Assert.Equal(nameof(Beast), objectBranch.Reference.Id);
+
+            var arrayItems = Assert.IsType<OpenApiSchemaReference>(unionComponent.AnyOf[1].Items);
+            Assert.Equal(nameof(Beast), arrayItems.Reference.Id);
+
+            Assert.DoesNotContain(nameof(OneOrManyBeast) + nameof(Beast), document.Components.Schemas.Keys);
+        });
+    }
 }

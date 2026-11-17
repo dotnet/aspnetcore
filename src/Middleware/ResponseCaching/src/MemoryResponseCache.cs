@@ -36,6 +36,8 @@ internal sealed class MemoryResponseCache : IResponseCache
 
     public void Set(string key, IResponseCacheEntry entry, TimeSpan validFor)
     {
+        var keySize = EstimateKeySize(key);
+
         if (entry is CachedResponse cachedResponse)
         {
             _cache.Set(
@@ -50,7 +52,7 @@ internal sealed class MemoryResponseCache : IResponseCache
                 new MemoryCacheEntryOptions
                 {
                     AbsoluteExpirationRelativeToNow = validFor,
-                    Size = CacheEntryHelpers.EstimateCachedResponseSize(cachedResponse)
+                    Size = checked(CacheEntryHelpers.EstimateCachedResponseSize(cachedResponse) + keySize)
                 });
         }
         else
@@ -61,8 +63,11 @@ internal sealed class MemoryResponseCache : IResponseCache
                 new MemoryCacheEntryOptions
                 {
                     AbsoluteExpirationRelativeToNow = validFor,
-                    Size = CacheEntryHelpers.EstimateCachedVaryByRulesySize(entry as CachedVaryByRules)
+                    Size = checked(CacheEntryHelpers.EstimateCachedVaryByRulesySize(entry as CachedVaryByRules) + keySize)
                 });
         }
     }
+
+    private static long EstimateKeySize(string? key)
+        => (long)(key?.Length ?? 0) * sizeof(char);
 }

@@ -22,10 +22,11 @@
     <Compile Include="$(ComponentsSharedSourceRoot)src\QueryParameterNameComparer.cs" LinkBase="Infrastructure" />
     <Compile Include="$(ComponentsSharedSourceRoot)src\UrlValueConstraint.cs" LinkBase="Infrastructure" />
     <Compile Include="$(SharedSourceRoot)QueryStringEnumerable.cs" LinkBase="Infrastructure" />
+    <Compile Include="$(SharedSourceRoot)QueryStringDecoder.cs" LinkBase="Infrastructure" />
   </ItemGroup>
 
   <ItemGroup>
-    <Reference Include="Microsoft.AspNetCore.Components.Web" />
+    <ProjectReference Include="$(RepoRoot)src\Components\Web\src\Microsoft.AspNetCore.Components.Web.csproj" />
   </ItemGroup>
 
   <ItemGroup>

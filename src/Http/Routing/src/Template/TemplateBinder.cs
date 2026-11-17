@@ -159,6 +159,26 @@ public class TemplateBinder
     /// <returns>A <see cref="TemplateValuesResult"/> instance. Can be null.</returns>
     public TemplateValuesResult? GetValues(RouteValueDictionary? ambientValues, RouteValueDictionary values)
     {
+        var acceptedValues = GetAcceptedValues(ambientValues, values);
+        if (acceptedValues == null)
+        {
+            return null;
+        }
+
+        return new TemplateValuesResult()
+        {
+            AcceptedValues = acceptedValues,
+            CombinedValues = GetCombinedValues(ambientValues, acceptedValues),
+        };
+    }
+
+    // True if there are constraints that need to be evaluated by TryProcessConstraints.
+    internal bool HasConstraints => _constraints.Length > 0;
+
+    // Computes the accepted values only. The combined values (needed only for constraints) can be
+    // computed separately with GetCombinedValues, which avoids copying the dictionary when there are no constraints.
+    internal RouteValueDictionary? GetAcceptedValues(RouteValueDictionary? ambientValues, RouteValueDictionary values)
+    {
         // Make a new copy of the slots array, we'll use this as 'scratch' space
         // and then the RVD will take ownership of it.
         var slots = new KeyValuePair<string, object?>[_slots.Length];
@@ -257,7 +277,7 @@ public class TemplateBinder
             var key = slots[i].Key;
             var value = slots[i].Value;
 
-            // Whether or not the value was explicitly provided is signficant when comparing
+            // Whether or not the value was explicitly provided is significant when comparing
             // ambient values. Remember that we're using a special sentinel value so that we
             // can tell the difference between an omitted value and an explicitly specified null.
             var hasExplicitValue = value != null;
@@ -402,6 +422,11 @@ public class TemplateBinder
             }
         }
 
+        return acceptedValues;
+    }
+
+    internal RouteValueDictionary GetCombinedValues(RouteValueDictionary? ambientValues, RouteValueDictionary acceptedValues)
+    {
         // Currently this copy is required because BindValues will mutate the accepted values :(
         var combinedValues = new RouteValueDictionary(acceptedValues);
 
@@ -412,11 +437,7 @@ public class TemplateBinder
             acceptedValues: acceptedValues,
             combinedValues: combinedValues);
 
-        return new TemplateValuesResult()
-        {
-            AcceptedValues = acceptedValues,
-            CombinedValues = combinedValues,
-        };
+        return combinedValues;
     }
 
     // Step 1.5: Process constraints
@@ -427,7 +448,7 @@ public class TemplateBinder
     /// <param name="combinedValues">A dictionary that contains the parameters for the route.</param>
     /// <param name="parameterName">The name of the parameter.</param>
     /// <param name="constraint">The constraint object.</param>
-    /// <returns><see langword="true"/> if constraints were processed succesfully and false otherwise.</returns>
+    /// <returns><see langword="true"/> if constraints were processed successfully and false otherwise.</returns>
     public bool TryProcessConstraints(HttpContext? httpContext, RouteValueDictionary combinedValues, out string? parameterName, out IRouteConstraint? constraint)
     {
         var constraints = _constraints;
@@ -565,11 +586,11 @@ public class TemplateBinder
                     {
                         // If the value is not accepted, it is null or empty value in the
                         // middle of the segment. We accept this if the parameter is an
-                        // optional parameter and it is preceded by an optional seperator.
-                        // In this case, we need to remove the optional seperator that we
+                        // optional parameter and it is preceded by an optional separator.
+                        // In this case, we need to remove the optional separator that we
                         // have added to the URI
                         // Example: template = {id}.{format?}. parameters: id=5
-                        // In this case after we have generated "5.", we wont find any value
+                        // In this case after we have generated "5.", we won't find any value
                         // for format, so we remove '.' and generate 5.
                         if (!context.Accept(converted, parameterPart.EncodeSlashes))
                         {

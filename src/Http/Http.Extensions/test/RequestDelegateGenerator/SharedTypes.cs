@@ -818,6 +818,10 @@ public class ParameterListClassWithParameterizedContructor
     public int Value { get; set; }
 }
 
+public record ParameterListRecordWithValidationAttributes(
+    HttpContext HttpContext,
+    [FromRoute][Required][property: Required] string Id);
+
 public class ParameterListWitDefaultValue
 {
     public ParameterListWitDefaultValue(HttpContext httpContext, [FromRoute] int value = 42)
@@ -1101,6 +1105,24 @@ public struct BindableStructWithNullReturn
     {
         await Task.CompletedTask;
         return null;
+    }
+}
+
+public struct BindableStructWithSingleArgumentNullableReturn
+{
+    public BindableStructWithSingleArgumentNullableReturn(string value)
+    {
+        Value = value;
+    }
+
+    public string Value { get; }
+
+    public static ValueTask<BindableStructWithSingleArgumentNullableReturn?> BindAsync(HttpContext httpContext)
+    {
+        return ValueTask.FromResult<BindableStructWithSingleArgumentNullableReturn?>(
+            httpContext.Request.Query.TryGetValue("value", out var value)
+                ? new BindableStructWithSingleArgumentNullableReturn(value.ToString())
+                : null);
     }
 }
 

@@ -18,12 +18,12 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Reference Include="Microsoft.AspNetCore.Connections.Abstractions" />
+    <ProjectReference Include="$(RepoRoot)src\Servers\Connections.Abstractions\src\Microsoft.AspNetCore.Connections.Abstractions.csproj" />
   </ItemGroup>
 
   <ItemGroup
       Condition="'$(TargetFramework)' == 'netstandard2.0' OR '$(TargetFramework)' == '$(DefaultNetFxTargetFramework)' OR '$(MSBuildRestoreSessionId)' == ''">
-    <Reference Include="System.Text.Json" />
+    <PackageReference Include="System.Text.Json" />
   </ItemGroup>
 
   <ItemGroup>

@@ -5,16 +5,16 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <Reference Include="Microsoft.AspNetCore.Mvc" />
-    <Reference Include="Microsoft.AspNetCore.Cors" />
-    <Reference Include="Microsoft.AspNetCore.Mvc.Cors" />
-    <Reference Include="Microsoft.AspNetCore.Mvc.Abstractions" />
-    <Reference Include="Microsoft.AspNetCore.Mvc.Core" />
-    <Reference Include="Microsoft.AspNetCore.Mvc.DataAnnotations" />
-    <Reference Include="Microsoft.AspNetCore.Mvc.Razor" />
-    <Reference Include="Microsoft.AspNetCore.Mvc.TagHelpers" />
-    <Reference Include="Microsoft.AspNetCore.Mvc.ViewFeatures" />
-    <ProjectReference Include="..\..\shared\Mvc.Core.TestCommon\Microsoft.AspNetCore.Mvc.Core.TestCommon.csproj" />
+    <ProjectReference Include="$(RepoRoot)src\Middleware\CORS\src\Microsoft.AspNetCore.Cors.csproj" />
+    <ProjectReference Include="$(RepoRoot)src\Mvc\Mvc.Abstractions\src\Microsoft.AspNetCore.Mvc.Abstractions.csproj" />
+    <ProjectReference Include="$(RepoRoot)src\Mvc\Mvc.Core\src\Microsoft.AspNetCore.Mvc.Core.csproj" />
+    <ProjectReference Include="$(RepoRoot)src\Mvc\Mvc.Cors\src\Microsoft.AspNetCore.Mvc.Cors.csproj" />
+    <ProjectReference Include="$(RepoRoot)src\Mvc\Mvc.DataAnnotations\src\Microsoft.AspNetCore.Mvc.DataAnnotations.csproj" />
+    <ProjectReference Include="$(RepoRoot)src\Mvc\Mvc.Razor\src\Microsoft.AspNetCore.Mvc.Razor.csproj" />
+    <ProjectReference Include="$(RepoRoot)src\Mvc\Mvc.TagHelpers\src\Microsoft.AspNetCore.Mvc.TagHelpers.csproj" />
+    <ProjectReference Include="$(RepoRoot)src\Mvc\Mvc.ViewFeatures\src\Microsoft.AspNetCore.Mvc.ViewFeatures.csproj" />
+    <ProjectReference Include="$(RepoRoot)src\Mvc\Mvc\src\Microsoft.AspNetCore.Mvc.csproj" />
+    <ProjectReference Include="$(RepoRoot)src\Mvc\shared\Mvc.Core.TestCommon\Microsoft.AspNetCore.Mvc.Core.TestCommon.csproj" />
   </ItemGroup>
 
 </Project>

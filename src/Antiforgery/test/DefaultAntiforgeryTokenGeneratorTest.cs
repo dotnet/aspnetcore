@@ -485,6 +485,100 @@ public class DefaultAntiforgeryTokenGeneratorProviderTest
     }
 
     [Fact]
+    public void TryValidateTokenSet_UnauthenticatedUser_WithClaimUidToken_ReturnsUnauthenticatedMessage()
+    {
+        // Arrange
+        var httpContext = new DefaultHttpContext();
+        var identity = new ClaimsIdentity(); // Not authenticated.
+        httpContext.User = new ClaimsPrincipal(identity);
+
+        var cookieToken = new AntiforgeryToken() { IsCookieToken = true };
+        var fieldtoken = new AntiforgeryToken()
+        {
+            SecurityToken = cookieToken.SecurityToken,
+            IsCookieToken = false,
+            ClaimUid = new BinaryBlob(256) // Token was generated for an authenticated user.
+        };
+
+        var claimUidExtractor = new DummyClaimUidExtractor(identity, null, failsExtraction: true);
+        var tokenProvider = new DefaultAntiforgeryTokenGenerator(claimUidExtractor, additionalDataProvider: null);
+
+        var expectedMessage =
+            "The provided antiforgery token was meant for an authenticated user, " +
+            "but the current request is not authenticated.";
+
+        // Act
+        var result = tokenProvider.TryValidateTokenSet(httpContext, cookieToken, fieldtoken, out var message);
+
+        // Assert
+        Assert.False(result);
+        Assert.Equal(expectedMessage, message);
+    }
+
+    [Fact]
+    public void TryValidateTokenSet_UnauthenticatedUser_WithUsernameToken_ReturnsUnauthenticatedMessage()
+    {
+        // Arrange
+        var httpContext = new DefaultHttpContext();
+        var identity = new ClaimsIdentity(); // Not authenticated.
+        httpContext.User = new ClaimsPrincipal(identity);
+
+        var cookieToken = new AntiforgeryToken() { IsCookieToken = true };
+        var fieldtoken = new AntiforgeryToken()
+        {
+            SecurityToken = cookieToken.SecurityToken,
+            IsCookieToken = false,
+            Username = "the-user" // Token was generated for an authenticated user.
+        };
+
+        var claimUidExtractor = new DummyClaimUidExtractor(identity, null, failsExtraction: true);
+        var tokenProvider = new DefaultAntiforgeryTokenGenerator(claimUidExtractor, additionalDataProvider: null);
+
+        var expectedMessage =
+            "The provided antiforgery token was meant for an authenticated user, " +
+            "but the current request is not authenticated.";
+
+        // Act
+        var result = tokenProvider.TryValidateTokenSet(httpContext, cookieToken, fieldtoken, out var message);
+
+        // Assert
+        Assert.False(result);
+        Assert.Equal(expectedMessage, message);
+    }
+
+    [Fact]
+    public void TryValidateTokenSet_AuthenticatedUser_ClaimUidMismatch_StillUsesClaimUidMismatchMessage()
+    {
+        // Arrange
+        var httpContext = new DefaultHttpContext();
+        var identity = GetAuthenticatedIdentity("the-user"); // Authenticated.
+        httpContext.User = new ClaimsPrincipal(identity);
+
+        var cookieToken = new AntiforgeryToken() { IsCookieToken = true };
+        var fieldtoken = new AntiforgeryToken()
+        {
+            SecurityToken = cookieToken.SecurityToken,
+            IsCookieToken = false,
+            ClaimUid = new BinaryBlob(256)
+        };
+
+        var differentToken = new BinaryBlob(256);
+        var dummyClaimUidExtractor = new DummyClaimUidExtractor(identity, differentToken);
+        var tokenProvider = new DefaultAntiforgeryTokenGenerator(claimUidExtractor: dummyClaimUidExtractor, additionalDataProvider: null);
+
+        var expectedMessage =
+            "The provided antiforgery token was meant for a different " +
+            "claims-based user than the current user.";
+
+        // Act
+        var result = tokenProvider.TryValidateTokenSet(httpContext, cookieToken, fieldtoken, out var message);
+
+        // Assert
+        Assert.False(result);
+        Assert.Equal(expectedMessage, message);
+    }
+
+    [Fact]
     public void TryValidateTokenSet_AdditionalDataRejected()
     {
         // Arrange

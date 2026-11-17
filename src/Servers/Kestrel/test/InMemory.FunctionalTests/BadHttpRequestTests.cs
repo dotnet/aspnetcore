@@ -100,6 +100,10 @@ public class BadHttpRequestTests : LoggedTest
     [Theory]
     [InlineData("NaN")]
     [InlineData("-1")]
+    [InlineData("+1")]
+    [InlineData("+0")]
+    [InlineData("-0")]
+    [InlineData("")]
     public Task BadRequestIfContentLengthInvalid(string contentLength)
     {
         return TestBadRequest(
@@ -561,6 +565,31 @@ public class BadHttpRequestTests : LoggedTest
         Assert.False(badRequestEventListener.EventFired);
 
         Assert.Collection(connectionDuration.GetMeasurementSnapshot(), m => MetricsAssert.NoError(m.Tags));
+    }
+
+    [Theory]
+    [MemberData(nameof(HttpParsingData.FragmentRequestTargetData), MemberType = typeof(HttpParsingData))]
+    public async Task BadRequestForFragmentInOriginFormTarget(string target, string version)
+    {
+        await TestBadRequest(
+            $"GET {target} {version}\r\nHost: localhost\r\n\r\n",
+            "400 Bad Request",
+            CoreStrings.FormatBadRequest_InvalidRequestTarget_Detail(target),
+            ConnectionEndReason.InvalidRequestLine);
+    }
+
+    [Theory]
+    [MemberData(nameof(HttpParsingData.FragmentRequestTargetData), MemberType = typeof(HttpParsingData))]
+    [InlineData("#", "HTTP/1.0")]
+    [InlineData("#", "HTTP/1.1")]
+    public async Task BadRequestForFragmentInAbsoluteFormTarget(string target, string version)
+    {
+        var absoluteTarget = $"http://localhost{target}";
+        await TestBadRequest(
+            $"GET {absoluteTarget} {version}\r\nHost: localhost\r\nConnection: close\r\n\r\n",
+            "400 Bad Request",
+            CoreStrings.FormatBadRequest_InvalidRequestTarget_Detail(absoluteTarget),
+            ConnectionEndReason.InvalidRequestLine);
     }
 
     private async Task ReceiveBadRequestResponse(InMemoryConnection connection, string expectedResponseStatusCode, string expectedDateHeaderValue, string expectedAllowHeader = null)

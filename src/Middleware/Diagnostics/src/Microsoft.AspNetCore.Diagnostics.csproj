@@ -21,16 +21,17 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Reference Include="Microsoft.AspNetCore.Connections.Abstractions" />
-    <Reference Include="Microsoft.AspNetCore.Diagnostics.Abstractions" />
-    <Reference Include="Microsoft.AspNetCore.Hosting.Abstractions" />
-    <Reference Include="Microsoft.AspNetCore.Http.Abstractions" />
-    <Reference Include="Microsoft.AspNetCore.Http.Extensions" />
-    <Reference Include="Microsoft.AspNetCore.Http.Features" />
-    <Reference Include="Microsoft.AspNetCore.Routing" />
-    <Reference Include="Microsoft.AspNetCore.Routing.Abstractions" />
-    <Reference Include="Microsoft.AspNetCore.WebUtilities" />
-    <Reference Include="Microsoft.Extensions.FileProviders.Physical" />
+    <PackageReference Include="Microsoft.Extensions.FileProviders.Physical" />
+
+    <ProjectReference Include="$(RepoRoot)src\Hosting\Abstractions\src\Microsoft.AspNetCore.Hosting.Abstractions.csproj" />
+    <ProjectReference Include="$(RepoRoot)src\Http\Http.Abstractions\src\Microsoft.AspNetCore.Http.Abstractions.csproj" />
+    <ProjectReference Include="$(RepoRoot)src\Http\Http.Extensions\src\Microsoft.AspNetCore.Http.Extensions.csproj" />
+    <ProjectReference Include="$(RepoRoot)src\Http\Http.Features\src\Microsoft.AspNetCore.Http.Features.csproj" />
+    <ProjectReference Include="$(RepoRoot)src\Http\Routing.Abstractions\src\Microsoft.AspNetCore.Routing.Abstractions.csproj" />
+    <ProjectReference Include="$(RepoRoot)src\Http\Routing\src\Microsoft.AspNetCore.Routing.csproj" />
+    <ProjectReference Include="$(RepoRoot)src\Http\WebUtilities\src\Microsoft.AspNetCore.WebUtilities.csproj" />
+    <ProjectReference Include="$(RepoRoot)src\Middleware\Diagnostics.Abstractions\src\Microsoft.AspNetCore.Diagnostics.Abstractions.csproj" />
+    <ProjectReference Include="$(RepoRoot)src\Servers\Connections.Abstractions\src\Microsoft.AspNetCore.Connections.Abstractions.csproj" />
   </ItemGroup>
 
   <ItemGroup>

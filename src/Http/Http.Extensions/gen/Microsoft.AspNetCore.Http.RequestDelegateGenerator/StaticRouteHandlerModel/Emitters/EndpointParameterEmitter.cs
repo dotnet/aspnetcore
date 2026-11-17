@@ -289,7 +289,7 @@ internal static class EndpointParameterEmitter
         codeWriter.WriteLine("return;");
         codeWriter.EndBlock();
 
-        // Required parameters are guranteed to be set by the time we reach this point
+        // Required parameters are guaranteed to be set by the time we reach this point
         // because they are either associated with a service that existed in DI or
         // the appropriate checks have already happened when binding from the JSON body.
         codeWriter.WriteLine(!endpointParameter.IsOptional

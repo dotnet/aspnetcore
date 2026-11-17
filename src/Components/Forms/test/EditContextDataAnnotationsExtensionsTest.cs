@@ -1,6 +1,9 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+// This file intentionally tests the obsolete synchronous EditContext.Validate() API.
+#pragma warning disable CS0618 // Type or member is obsolete
+
 using System.ComponentModel.DataAnnotations;
 using Microsoft.AspNetCore.Components.Test.Helpers;
 
@@ -170,6 +173,222 @@ public class EditContextDataAnnotationsExtensionsTest
         Assert.Empty(editContext.GetValidationMessages());
     }
 
+    [Fact]
+    public void ValidatesHiddenPropertiesWithoutAmbiguousMatchException()
+    {
+        var model = new DerivedModelWithHiddenProperty { OrderID = 150 };
+        var editContext = new EditContext(model);
+        editContext.EnableDataAnnotationsValidation(_serviceProvider);
+
+        Assert.False(editContext.Validate());
+        Assert.Equal(new[] { "OrderID:range" }, editContext.GetValidationMessages());
+
+        var orderIdIdentifier = new FieldIdentifier(model, nameof(DerivedModelWithHiddenProperty.OrderID));
+        editContext.NotifyFieldChanged(orderIdIdentifier);
+        model.OrderID = 50;
+        editContext.NotifyFieldChanged(orderIdIdentifier);
+        Assert.Empty(editContext.GetValidationMessages());
+    }
+
+    [Fact]
+    public void ValidatesHiddenPropertiesWithPropertyCaching()
+    {
+        var model = new DerivedModelWithHiddenProperty { OrderID = 150 };
+        var editContext = new EditContext(model);
+        editContext.EnableDataAnnotationsValidation(_serviceProvider);
+        var orderIdIdentifier = new FieldIdentifier(model, nameof(DerivedModelWithHiddenProperty.OrderID));
+
+        var sequence = new[] { 150, 50, 200, 75, 99, 101, 1 };
+        var expected = new[] { "OrderID:range" };
+        foreach (var value in sequence)
+        {
+            model.OrderID = value;
+            editContext.NotifyFieldChanged(orderIdIdentifier);
+            var expectedMessages = (value < 1 || value > 100) ? expected : Array.Empty<string>();
+            Assert.Equal(expectedMessages, editContext.GetValidationMessages());
+        }
+    }
+
+    [Fact]
+    public void MatchesPropertyByExactName()
+    {
+        var model = new DerivedModelWithHiddenProperty { OrderID = 150 };
+        var editContext = new EditContext(model);
+        editContext.EnableDataAnnotationsValidation(_serviceProvider);
+
+        var field = new FieldIdentifier(model, "OrderID");
+        editContext.NotifyFieldChanged(field);
+        Assert.Equal(new[] { "OrderID:range" }, editContext.GetValidationMessages());
+    }
+
+    [Fact]
+    public void ValidatesInheritedPropertyFromBaseClass()
+    {
+        var model = new DerivedModelWithInheritedOnly { Description = "x" };
+        var editContext = new EditContext(model);
+        editContext.EnableDataAnnotationsValidation(_serviceProvider);
+
+        var field = new FieldIdentifier(model, nameof(DerivedModelWithInheritedOnly.BaseName));
+        editContext.NotifyFieldChanged(field);
+        Assert.Equal(new[] { "BaseName:required" }, editContext.GetValidationMessages());
+
+        model.BaseName = "ok";
+        editContext.NotifyFieldChanged(field);
+        Assert.Empty(editContext.GetValidationMessages());
+    }
+
+    [Fact]
+    public void ValidatesPropertyHiddenAtMultipleInheritanceLevels()
+    {
+        var model = new DeepDerivedModel { Tag = 150 };
+        var editContext = new EditContext(model);
+        editContext.EnableDataAnnotationsValidation(_serviceProvider);
+
+        var field = new FieldIdentifier(model, nameof(DeepDerivedModel.Tag));
+        editContext.NotifyFieldChanged(field);
+        Assert.Equal(new[] { "Tag:range" }, editContext.GetValidationMessages());
+
+        model.Tag = 5;
+        editContext.NotifyFieldChanged(field);
+        Assert.Empty(editContext.GetValidationMessages());
+    }
+
+    [Fact]
+    public void SkipsValidationWhenDerivedShadowHasNoAttributes()
+    {
+        var model = new DerivedModelWithUnattributedHiddenProperty { Name = null };
+        var editContext = new EditContext(model);
+        editContext.EnableDataAnnotationsValidation(_serviceProvider);
+
+        var field = new FieldIdentifier(model, nameof(DerivedModelWithUnattributedHiddenProperty.Name));
+        editContext.NotifyFieldChanged(field);
+        Assert.Empty(editContext.GetValidationMessages());
+    }
+
+    [Fact]
+    public void IgnoresStaticProperty()
+    {
+        var model = new ModelWithStaticProperty { Value = 0 };
+        var editContext = new EditContext(model);
+        editContext.EnableDataAnnotationsValidation(_serviceProvider);
+
+        var field = new FieldIdentifier(model, nameof(ModelWithStaticProperty.StaticValue));
+        editContext.NotifyFieldChanged(field);
+        Assert.Empty(editContext.GetValidationMessages());
+    }
+
+    [Fact]
+    public Task FormLevelAsyncValidationProducesMessages() => RunOnDispatcher(async () =>
+    {
+        var model = new AsyncTestModel();
+        var editContext = new EditContext(model);
+        editContext.EnableDataAnnotationsValidation(_serviceProvider);
+
+        var isValid = await editContext.ValidateAsync();
+
+        Assert.False(isValid);
+        Assert.Equal(new[] { "AsyncString:asyncnonempty" }, editContext.GetValidationMessages());
+    });
+
+    [Fact]
+    public void FormLevelAsyncOnlyValidation_ValidateInvokesSyncFallbackAndThrows()
+    {
+        // Synchronous Validate() runs DataAnnotations through the synchronous Validator.TryValidateObject,
+        // which invokes the synchronous IsValid fallback of an async-only attribute. AsyncNonEmptyAttribute's
+        // fallback is not supported, so the exception it throws propagates out of Validate().
+        var model = new AsyncTestModel();
+        var editContext = new EditContext(model);
+        editContext.EnableDataAnnotationsValidation(_serviceProvider);
+
+        var ex = Assert.Throws<NotSupportedException>(() => editContext.Validate());
+        Assert.Contains("only supports asynchronous validation", ex.Message);
+    }
+
+    [Fact]
+    public Task FieldLevelAsyncValidationBecomesPendingThenSettles() => RunOnDispatcher(async () =>
+    {
+        var model = new AsyncTestModel();
+        var editContext = new EditContext(model);
+        editContext.EnableDataAnnotationsValidation(_serviceProvider);
+        var field = editContext.Field(nameof(AsyncTestModel.AsyncString));
+
+        editContext.NotifyFieldChanged(field);
+
+        Assert.True(editContext.IsValidationPending(field));
+        await WaitUntilAsync(() => !editContext.IsValidationPending(field));
+
+        Assert.False(editContext.IsValidationFaulted(field));
+        Assert.Equal(new[] { "AsyncString:asyncnonempty" }, editContext.GetValidationMessages(field));
+    });
+
+    [Fact]
+    public Task FieldLevelAsyncValidationThrowing_MarksFieldFaulted() => RunOnDispatcher(async () =>
+    {
+        var model = new AsyncThrowingModel();
+        var editContext = new EditContext(model);
+        editContext.EnableDataAnnotationsValidation(_serviceProvider);
+        var field = editContext.Field(nameof(AsyncThrowingModel.ThrowingString));
+
+        editContext.NotifyFieldChanged(field);
+        await WaitUntilAsync(() => !editContext.IsValidationPending(field));
+
+        Assert.True(editContext.IsValidationFaulted(field));
+    });
+
+    private static Task RunOnDispatcher(Func<Task> body)
+        => Dispatcher.CreateDefault().InvokeAsync(body);
+
+    private static async Task WaitUntilAsync(Func<bool> condition)
+    {
+        var timeout = TimeSpan.FromSeconds(5);
+        var start = DateTime.UtcNow;
+        while (!condition())
+        {
+            if (DateTime.UtcNow - start > timeout)
+            {
+                throw new TimeoutException("The expected condition was not reached before the timeout.");
+            }
+
+            await Task.Yield();
+        }
+    }
+
+    private sealed class AsyncNonEmptyAttribute : AsyncValidationAttribute
+    {
+        protected override async Task<ValidationResult> IsValidAsync(object value, ValidationContext validationContext, CancellationToken cancellationToken)
+        {
+            await Task.Yield();
+            return value is string s && s.Length > 0
+                ? ValidationResult.Success
+                : new ValidationResult($"{validationContext.MemberName}:asyncnonempty", new[] { validationContext.MemberName });
+        }
+
+        protected override ValidationResult IsValid(object value, ValidationContext validationContext)
+            => throw new NotSupportedException("This attribute only supports asynchronous validation.");
+    }
+
+    private sealed class AsyncThrowingAttribute : AsyncValidationAttribute
+    {
+        protected override async Task<ValidationResult> IsValidAsync(object value, ValidationContext validationContext, CancellationToken cancellationToken)
+        {
+            await Task.Yield();
+            throw new InvalidOperationException("Async validation failed");
+        }
+
+        protected override ValidationResult IsValid(object value, ValidationContext validationContext)
+            => throw new NotSupportedException("This attribute only supports asynchronous validation.");
+    }
+
+    private sealed class AsyncTestModel
+    {
+        [AsyncNonEmpty] public string AsyncString { get; set; }
+    }
+
+    private sealed class AsyncThrowingModel
+    {
+        [AsyncThrowing] public string ThrowingString { get; set; }
+    }
+
     class TestModel
     {
         [Required(ErrorMessage = "RequiredString:required")] public string RequiredString { get; set; }
@@ -181,5 +400,59 @@ public class EditContextDataAnnotationsExtensionsTest
         [Required] string ThisWillNotBeValidatedBecauseItIsPrivate { get; set; }
         [Required] internal string ThisWillNotBeValidatedBecauseItIsInternal { get; set; }
 #pragma warning restore 649
+    }
+
+    class DerivedModelWithHiddenProperty : ModelWithHiddenBaseProperty
+    {
+        [Range(1, 100, ErrorMessage = "OrderID:range")]
+        public new int OrderID { get; set; }
+    }
+
+    class ModelWithHiddenBaseProperty
+    {
+        public object OrderID { get; set; }
+
+        public object Tag { get; set; }
+    }
+
+    class MidLevelModelWithShadow : ModelWithHiddenBaseProperty
+    {
+        public new string Tag { get; set; }
+    }
+
+    class DeepDerivedModel : MidLevelModelWithShadow
+    {
+        [Range(1, 100, ErrorMessage = "Tag:range")]
+        public new int Tag { get; set; }
+    }
+
+    class DerivedModelWithUnattributedHiddenProperty : ModelWithNamedBase
+    {
+        public new string Name { get; set; }
+    }
+
+    class ModelWithNamedBase
+    {
+        [Required(ErrorMessage = "Name:required")]
+        public object Name { get; set; }
+    }
+
+    class ModelWithStaticProperty
+    {
+        [Range(1, 100, ErrorMessage = "StaticValue:range")]
+        public static int StaticValue { get; set; }
+
+        public int Value { get; set; }
+    }
+
+    class DerivedModelWithInheritedOnly : ModelWithBaseName
+    {
+        public string Description { get; set; }
+    }
+
+    class ModelWithBaseName
+    {
+        [Required(ErrorMessage = "BaseName:required")]
+        public string BaseName { get; set; }
     }
 }

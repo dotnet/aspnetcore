@@ -324,6 +324,11 @@ public class HttpParsingData
             data.Add("GET", "http://user@/abc");
             data.Add("GET", "http://abc%20xyz/abc");
             data.Add("GET", "http://%20/abc?query=%0A");
+            // Backslash is not a valid URI path character (RFC 3986); it must not be
+            // silently normalized by System.Uri (https://github.com/dotnet/aspnetcore/issues/68636)
+            data.Add("GET", "http://host/foo\\..\\bar");
+            data.Add("GET", "http://host/foo\\bar");
+            data.Add("GET", "http://host/\\");
             // Valid absolute-form but with unsupported schemes
             data.Add("GET", "otherscheme://host/");
             data.Add("GET", "ws://host/");
@@ -546,4 +551,9 @@ public class HttpParsingData
             return data;
         }
     }
+
+    public static IEnumerable<object[]> FragmentRequestTargetData =>
+        from target in new[] { "/#", "/a#b?q=v", "/a?q=v#", "/%61#b", "/%61?q=v#" }
+        from version in new[] { "HTTP/1.0", "HTTP/1.1" }
+        select new object[] { target, version };
 }

@@ -1,0 +1,47 @@
+@page "/persistent-state/auto-pause-closed-shadow-risk"
+@rendermode RenderMode.InteractiveServer
+
+<h1>Auto-pause — Closed shadow DOM state risk</h1>
+
+<script src="/subdir/auto-pause-log-capture.js"></script>
+
+@if (RendererInfo.IsInteractive)
+{
+    <span id="render-mode-interactive">True</span>
+}
+
+<closed-form id="closed-form"></closed-form>
+
+<script>
+    class ClosedForm extends HTMLElement {
+        #shadow;
+        constructor() {
+            super();
+            this.#shadow = this.attachShadow({ mode: 'closed' });
+            this.#shadow.innerHTML =
+                '<input id="f1" type="text" placeholder="Field 1">' +
+                '<input id="f2" type="text" placeholder="Field 2">';
+        }
+        setValues(v1, v2) {
+            this.#shadow.getElementById('f1').value = v1;
+            this.#shadow.getElementById('f2').value = v2;
+        }
+        getValues() {
+            return this.#shadow.getElementById('f1').value + ',' + this.#shadow.getElementById('f2').value;
+        }
+    }
+    if (!customElements.get('closed-form')) {
+        customElements.define('closed-form', ClosedForm);
+    }
+
+    if (!window.__closedFormHookInitialized) {
+        window.__closedFormHookInitialized = true;
+        window.__savedClosedFormValues = null;
+
+        if (new URLSearchParams(location.search).get('use-mitigation') === 'true') {
+            window.__mitigationHandler = function () {
+                window.__savedClosedFormValues = document.getElementById('closed-form').getValues();
+            };
+        }
+    }
+</script>

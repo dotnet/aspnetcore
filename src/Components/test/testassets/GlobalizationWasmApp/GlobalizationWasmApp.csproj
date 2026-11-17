@@ -17,8 +17,8 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <Reference Include="Microsoft.AspNetCore.Components.WebAssembly" />
-    <Reference Include="Microsoft.Extensions.Localization" />
+    <ProjectReference Include="$(RepoRoot)src\Components\WebAssembly\WebAssembly\src\Microsoft.AspNetCore.Components.WebAssembly.csproj" />
+    <ProjectReference Include="$(RepoRoot)src\Localization\Localization\src\Microsoft.Extensions.Localization.csproj" />
   </ItemGroup>
 
   <PropertyGroup>

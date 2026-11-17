@@ -122,7 +122,7 @@ internal sealed unsafe class RequestStreamAsyncResult : IAsyncResult, IDisposabl
 
     internal void Fail(Exception ex)
     {
-        // Make sure the Abort state is set before signaling the callback so we can avoid race condtions with user code.
+        // Make sure the Abort state is set before signaling the callback so we can avoid race conditions with user code.
         Dispose();
         _requestStream.Abort();
         if (_tcs.TrySetException(ex) && _callback != null)

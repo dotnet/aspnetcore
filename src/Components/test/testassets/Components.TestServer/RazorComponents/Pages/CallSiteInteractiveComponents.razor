@@ -15,6 +15,13 @@
     <hr />
 }
 
+@if (ShowUnion)
+{
+    <TestContentPackage.UnionParameterCounter @key="@("union")" @rendermode="UnionRenderMode" Value="@SelectedUnionValue" />
+    <a id="set-union-value" href="@($"interactive-callsite?suppress-autostart&prerender={Prerender}&union=true&unionMode={UnionMode ?? "wasm"}&unionValue=42")">Set union value to 42</a>
+    <a id="clear-union-value" href="@($"interactive-callsite?suppress-autostart&prerender={Prerender}&union=true&unionMode={UnionMode ?? "wasm"}")">Set union value to null</a>
+}
+
 @code {
     [Parameter, SupplyParameterFromQuery(Name = "server")]
     public int? ServerIncrementAmount { get; set; }
@@ -22,6 +29,28 @@
     [Parameter, SupplyParameterFromQuery(Name = "wasm")]
     public int? WebAssemblyIncrementAmount { get; set; }
 
+    [Parameter, SupplyParameterFromQuery(Name = "union")]
+    public bool ShowUnion { get; set; }
+
+    [Parameter, SupplyParameterFromQuery(Name = "unionValue")]
+    public int? UnionValue { get; set; }
+
+    [Parameter, SupplyParameterFromQuery(Name = "unionText")]
+    public string? UnionText { get; set; }
+
+    [Parameter, SupplyParameterFromQuery(Name = "unionMode")]
+    public string? UnionMode { get; set; }
+
     [Parameter, SupplyParameterFromQuery(Name = "prerender")]
     public bool Prerender { get; set; }
+
+    private TestContentPackage.UnionParameterCounter.NullableIntOrString SelectedUnionValue
+        => UnionText is not null ? UnionText : UnionValue;
+
+    private IComponentRenderMode UnionRenderMode => UnionMode switch
+    {
+        "server" => new InteractiveServerRenderMode(Prerender),
+        null or "wasm" => new InteractiveWebAssemblyRenderMode(Prerender),
+        _ => throw new InvalidOperationException($"Unknown union render mode '{UnionMode}'."),
+    };
 }

@@ -2,7 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Net.Http;
-using AngleSharp.Dom.Html;
+using AngleSharp.Html.Dom;
 using Identity.DefaultUI.WebSite;
 using Microsoft.AspNetCore.Identity.FunctionalTests.Account;
 using Microsoft.AspNetCore.Identity.FunctionalTests.Account.Manage;
@@ -44,13 +44,13 @@ public class UserStories
         return await login.LoginValidUserAsync(userName, password);
     }
 
-    internal static async Task LoginFailsWithWrongPasswordAsync(HttpClient client, string userName, string password)
+    internal static async Task LoginFailsAsync(HttpClient client, string userName, string password)
     {
         var index = await Index.CreateAsync(client);
 
         var login = await index.ClickLoginLinkAsync();
 
-        await login.LoginWrongPasswordAsync(userName, password);
+        await login.LoginFailsAsync(userName, password);
     }
 
     internal static async Task<DefaultUIPage> LockoutExistingUserAsync(HttpClient client, string userName, string password)

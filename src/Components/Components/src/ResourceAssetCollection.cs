@@ -53,7 +53,7 @@ public sealed class ResourceAssetCollection : IReadOnlyList<ResourceAsset>
     /// Gets the unique content-based URL for the specified static asset.
     /// </summary>
     /// <param name="key">The asset name.</param>
-    /// <returns>The unique URL if availabe, the same <paramref name="key"/> if not available.</returns>
+    /// <returns>The unique URL if available, the same <paramref name="key"/> if not available.</returns>
     public string this[string key] => _uniqueUrlMappings.TryGetValue(key, out var value) ? value.Url : key;
 
     /// <summary>

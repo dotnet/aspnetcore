@@ -1,0 +1,48 @@
+using System;
+using System.Threading.Tasks;
+
+public sealed class FailingClient
+{
+    public Exception Failure { get; } = new InvalidOperationException("Processing failed");
+
+    public async Task ProcessAsync()
+    {
+        await Task.Yield();
+        throw Failure;
+    }
+}
+
+public interface IDiagnosticSink
+{
+    void Write(Exception error);
+}
+
+public sealed class ThrowingDiagnosticSink : IDiagnosticSink
+{
+    public Exception Failure { get; } = new InvalidOperationException("Diagnostic sink failed");
+
+    public void Write(Exception error)
+    {
+        throw Failure;
+    }
+}
+
+public sealed class RecordingDiagnosticSink : IDiagnosticSink
+{
+    public Exception? Recorded { get; private set; }
+
+    public void Write(Exception error)
+    {
+        Recorded = error;
+    }
+}
+
+public sealed class StatusObserver
+{
+    public int NotificationCount { get; private set; }
+
+    public void OnStatusChanged(string status)
+    {
+        NotificationCount++;
+    }
+}

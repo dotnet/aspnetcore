@@ -99,8 +99,9 @@ export function toLogicalElement(element: Node, allowExistingContents?: boolean)
   }
 
   const childrenArray: LogicalElement[] = [];
+  const domContainer = getLogicalDomNodeContainer(element);
 
-  if (element.childNodes.length > 0) {
+  if (domContainer.childNodes.length > 0) {
     // Normally it's good to assert that the element has started empty, because that's the usual
     // situation and we probably have a bug if it's not. But for the elements that contain prerendered
     // root components, we want to let them keep their content until we replace it.
@@ -108,7 +109,7 @@ export function toLogicalElement(element: Node, allowExistingContents?: boolean)
       throw new Error('New logical elements must start empty, or allowExistingContents must be true');
     }
 
-    element.childNodes.forEach(child => {
+    domContainer.childNodes.forEach(child => {
       // Skip metadata comments that will be consumed during discovery
       // These are not components and should not be part of the logical tree
       if (isMetadataComment(child)) {
@@ -368,7 +369,8 @@ function appendDomNode(child: Node, parent: LogicalElement) {
   // This function only puts 'child' into the DOM in the right place relative to 'parent'
   // It does not update the logical children array of anything
   if (parent instanceof Element || parent instanceof DocumentFragment) {
-    parent.appendChild(child);
+    const domContainer = getLogicalDomNodeContainer(parent);
+    domContainer.appendChild(child);
   } else if (parent instanceof Comment) {
     const parentLogicalNextSibling = getLogicalNextSibling(parent) as any as Node;
     if (parentLogicalNextSibling) {
@@ -383,6 +385,13 @@ function appendDomNode(child: Node, parent: LogicalElement) {
     // Should never happen
     throw new Error(`Cannot append node because the parent is not a valid logical element. Parent: ${parent}`);
   }
+}
+
+function getLogicalDomNodeContainer(parent: Node): Element | DocumentFragment {
+  if (parent instanceof HTMLTemplateElement) {
+    return parent.content;
+  }
+  return parent as Element | DocumentFragment;
 }
 
 // Returns the final node (in depth-first evaluation order) that is a descendant of the logical element.
@@ -401,7 +410,7 @@ function findLastDomNodeInRange(element: LogicalElement): Node {
     // a logical ancestor that does have one, or a physical element
     const logicalParent = getLogicalParent(element)!;
     return logicalParent instanceof Element || logicalParent instanceof DocumentFragment
-      ? logicalParent.lastChild!
+      ? getLogicalDomNodeContainer(logicalParent).lastChild!
       : findLastDomNodeInRange(logicalParent);
   }
 }

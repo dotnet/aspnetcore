@@ -1,0 +1,42 @@
+<div class="plan-suggestions" aria-label="Suggested prompts">
+    <button type="button"
+            class="plan-suggestion"
+            disabled="@_isSending"
+            @onclick="() => SendAsync(SimplePlanPrompt)">
+        <span class="plan-suggestion__title">Simple plan</span>
+    </button>
+    <button type="button"
+            class="plan-suggestion"
+            disabled="@_isSending"
+            @onclick="() => SendAsync(ComplexPlanPrompt)">
+        <span class="plan-suggestion__title">Complex plan</span>
+    </button>
+</div>
+
+@code {
+    internal const string SimplePlanPrompt = "Please build a plan to go to mars in 5 steps.";
+    internal const string ComplexPlanPrompt = "Please build a plan to go to make pizza in 10 steps.";
+
+    private bool _isSending;
+
+    [CascadingParameter]
+    private AgentContext AgentContext { get; set; } = default!;
+
+    private async Task SendAsync(string prompt)
+    {
+        if (_isSending)
+        {
+            return;
+        }
+
+        _isSending = true;
+        try
+        {
+            await AgentContext.SendMessageAsync(prompt);
+        }
+        finally
+        {
+            _isSending = false;
+        }
+    }
+}

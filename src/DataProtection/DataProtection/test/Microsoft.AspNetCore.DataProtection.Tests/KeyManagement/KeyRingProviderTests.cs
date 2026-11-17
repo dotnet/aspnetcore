@@ -854,6 +854,189 @@ public class KeyRingProviderTests
         Assert.Equal(callingThreadId, refreshThreadId);
     }
 
+    // Regression test for https://github.com/dotnet/aspnetcore/issues/66380.
+    // The cold-start starvation was fixed, but a second variant remained: when a valid key
+    // ring is already cached and a caller forces a refresh (e.g. during the two-minute startup
+    // auto-refresh window, an incoming cookie names a key that isn't in the current ring), the
+    // new async-refresh path scheduled the refresh to TaskScheduler.Default and then blocked
+    // on Task.Wait(). With every thread-pool thread parked on that wait, the queued refresh
+    // could not be picked up, reproducing the same starvation and multi-second freeze.
+    //
+    // As with the cold-start test above, we verify the invariant that makes starvation
+    // impossible by construction rather than the (non-deterministic) timing: a forced refresh
+    // must perform the refresh on the calling thread, not on a pool worker.
+    [Fact]
+    public void GetCurrentKeyRing_ForceRefreshWithCachedRing_RefreshRunsOnCallingThread()
+    {
+        var now = StringToDateTime("2015-03-01 00:00:00Z");
+        var refreshTime = now.AddMinutes(1);
+        var initialKeyRing = new Mock<IKeyRing>().Object;
+        var refreshedKeyRing = new Mock<IKeyRing>().Object;
+
+        int? refreshThreadId = null;
+
+        var mockCacheableKeyRingProvider = new Mock<ICacheableKeyRingProvider>();
+        mockCacheableKeyRingProvider
+            .Setup(o => o.GetCacheableKeyRing(now))
+            .Returns(new CacheableKeyRing(
+                expirationToken: CancellationToken.None,
+                expirationTime: now.AddDays(1),
+                keyRing: initialKeyRing));
+        mockCacheableKeyRingProvider
+            .Setup(o => o.GetCacheableKeyRing(refreshTime))
+            .Returns(() =>
+            {
+                refreshThreadId = Environment.CurrentManagedThreadId;
+                return new CacheableKeyRing(
+                    expirationToken: CancellationToken.None,
+                    expirationTime: refreshTime.AddDays(1),
+                    keyRing: refreshedKeyRing);
+            });
+
+        var keyRingProvider = CreateKeyRingProvider(mockCacheableKeyRingProvider.Object);
+
+        // Populate the cache with a valid ring.
+        Assert.Same(initialKeyRing, keyRingProvider.GetCurrentKeyRingCore(now));
+
+        // Force a refresh even though the cached ring is still valid.
+        var callingThreadId = Environment.CurrentManagedThreadId;
+        var keyRing = keyRingProvider.GetCurrentKeyRingCore(refreshTime, forceRefresh: true);
+
+        Assert.Same(refreshedKeyRing, keyRing);
+        Assert.Equal(callingThreadId, refreshThreadId);
+    }
+
+    // When a forced refresh fails while the cached key ring is still valid, the cached ring must be left completely intact.
+    [Fact]
+    public async Task GetCurrentKeyRing_ForcedRefreshFailsOverValidRing_DoesNotDowngradeCachedRing()
+    {
+        var now = StringToDateTime("2015-03-01 00:00:00Z");
+        var throwTime = StringToDateTime("2015-03-01 00:01:00Z");
+        var readTime = StringToDateTime("2015-03-01 00:01:05Z"); // within the buggy two-minute extension window
+
+        var validCts = new CancellationTokenSource();
+        var initialKeyRing = new Mock<IKeyRing>().Object;
+        var refreshedKeyRing = new Mock<IKeyRing>().Object;
+
+        var mockCacheableKeyRingProvider = new Mock<ICacheableKeyRingProvider>();
+        mockCacheableKeyRingProvider
+            .Setup(o => o.GetCacheableKeyRing(now))
+            .Returns(new CacheableKeyRing(
+                expirationToken: validCts.Token,
+                expirationTime: now.AddDays(1),
+                keyRing: initialKeyRing));
+        mockCacheableKeyRingProvider
+            .Setup(o => o.GetCacheableKeyRing(throwTime))
+            .Throws(new Exception("Refresh failed."));
+        mockCacheableKeyRingProvider
+            .Setup(o => o.GetCacheableKeyRing(readTime))
+            .Returns(new CacheableKeyRing(
+                expirationToken: CancellationToken.None,
+                expirationTime: now.AddDays(1),
+                keyRing: refreshedKeyRing));
+
+        var keyRingProvider = CreateKeyRingProvider(mockCacheableKeyRingProvider.Object);
+
+        Assert.Same(initialKeyRing, keyRingProvider.GetCurrentKeyRingCore(now));
+
+        // A forced refresh over the still-valid ring fails; the ring must be left untouched.
+        ExceptionAssert.Throws<Exception>(
+            () => keyRingProvider.GetCurrentKeyRingCore(throwTime, forceRefresh: true), "Refresh failed.");
+
+        // Simulate a key change by cancelling the ring's original expiration token. If the failed forced
+        // refresh had downgraded the ring, this token would have been disconnected and the cancellation
+        // ignored, so the stale ring would keep being served for the duration of the extended lifetime.
+        validCts.Cancel();
+
+        var refreshed = false;
+        for (var i = 0; i < 20 && !refreshed; i++)
+        {
+            var observed = keyRingProvider.GetCurrentKeyRingCore(readTime);
+            if (ReferenceEquals(refreshedKeyRing, observed))
+            {
+                refreshed = true;
+                break;
+            }
+
+            Assert.Same(initialKeyRing, observed); // stale ring is served only while the async refresh is in flight
+            await Task.Delay(100);
+        }
+
+        Assert.True(refreshed, "The cancelled expiration token was ignored; a downgraded ring was served instead of refreshing.");
+    }
+
+    // A non-forced caller that finds a stale ring schedules an asynchronous refresh.
+    // If a forced caller then produces a fresh ring inline while that async refresh is still running,
+    // the async result (an older read) must not later overwrite the fresher inline ring.
+    [Fact]
+    public void GetCurrentKeyRing_InlineForcedRefresh_DiscardsInFlightAsyncRefresh()
+    {
+        var now = StringToDateTime("2015-03-01 00:00:00Z");
+        var staleReadTime = StringToDateTime("2015-03-01 00:01:00Z");
+        var forceTime = StringToDateTime("2015-03-01 00:02:00Z");
+        var probeTime = StringToDateTime("2015-03-01 00:03:00Z");
+
+        var initialCts = new CancellationTokenSource();
+        var initialKeyRing = new Mock<IKeyRing>().Object;   // seeds the cache
+        var asyncKeyRing = new Mock<IKeyRing>().Object;      // the older async read that must not win
+        var inlineKeyRing = new Mock<IKeyRing>().Object;     // the authoritative inline forced result
+        var probeKeyRing = new Mock<IKeyRing>().Object;      // produced by later forced probes
+
+        using var asyncEntered = new ManualResetEventSlim(false);
+        using var releaseAsync = new ManualResetEventSlim(false);
+        using var asyncCompleted = new ManualResetEventSlim(false);
+
+        var mockCacheableKeyRingProvider = new Mock<ICacheableKeyRingProvider>();
+        mockCacheableKeyRingProvider
+            .Setup(o => o.GetCacheableKeyRing(now))
+            .Returns(new CacheableKeyRing(initialCts.Token, now.AddDays(1), initialKeyRing));
+        mockCacheableKeyRingProvider
+            .Setup(o => o.GetCacheableKeyRing(staleReadTime))
+            .Returns(() =>
+            {
+                asyncEntered.Set();
+                Assert.True(releaseAsync.Wait(TimeSpan.FromSeconds(10)));
+                try
+                {
+                    return new CacheableKeyRing(CancellationToken.None, now.AddDays(1), asyncKeyRing);
+                }
+                finally
+                {
+                    asyncCompleted.Set();
+                }
+            });
+        mockCacheableKeyRingProvider
+            .Setup(o => o.GetCacheableKeyRing(forceTime))
+            .Returns(new CacheableKeyRing(CancellationToken.None, now.AddDays(1), inlineKeyRing));
+        mockCacheableKeyRingProvider
+            .Setup(o => o.GetCacheableKeyRing(probeTime))
+            .Returns(new CacheableKeyRing(CancellationToken.None, now.AddDays(1), probeKeyRing));
+
+        var keyRingProvider = CreateKeyRingProvider(mockCacheableKeyRingProvider.Object);
+
+        Assert.Same(initialKeyRing, keyRingProvider.GetCurrentKeyRingCore(now));
+        initialCts.Cancel(); // make the cached ring stale-but-present
+
+        // Non-forced caller schedules the (slow) async refresh and returns the stale ring without waiting.
+        Assert.Same(initialKeyRing, keyRingProvider.GetCurrentKeyRingCore(staleReadTime));
+        Assert.True(asyncEntered.Wait(TimeSpan.FromSeconds(10))); // the async refresh is now in flight
+
+        // Forced caller produces a fresh ring inline while the async refresh is still blocked.
+        Assert.Same(inlineKeyRing, keyRingProvider.GetCurrentKeyRingCore(forceTime, forceRefresh: true));
+
+        // Let the async refresh finish; its result must be discarded, not cached.
+        releaseAsync.Set();
+        Assert.True(asyncCompleted.Wait(TimeSpan.FromSeconds(10)));
+
+        // A later caller entering the critical section must never observe the discarded async ring.
+        for (var i = 0; i < 20; i++)
+        {
+            var observed = keyRingProvider.GetCurrentKeyRingCore(probeTime, forceRefresh: true);
+            Assert.NotSame(asyncKeyRing, observed);
+            Thread.Sleep(10);
+        }
+    }
+
     [Fact]
     public async Task MultipleThreadsSeeExpiredCachedValue()
     {

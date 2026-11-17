@@ -239,8 +239,8 @@ public class KeyPerFileTests
         Assert.Equal("Foo", options.Text);
     }
 
-    [Fact]
-    public void ReloadConfigWhenReloadOnChangeIsTrue()
+    [Fact(Timeout = 2000)]
+    public async Task ReloadConfigWhenReloadOnChangeIsTrue()
     {
         var testFileProvider = new TestFileProvider(
            new TestFile("Secret1", "SecretValue1"),
@@ -256,12 +256,19 @@ public class KeyPerFileTests
         Assert.Equal("SecretValue1", config["Secret1"]);
         Assert.Equal("SecretValue2", config["Secret2"]);
 
+        var changeToken = config.GetReloadToken();
+        var changeTaskCompletion = new TaskCompletionSource<object>();
+        changeToken.RegisterChangeCallback(state =>
+            ((TaskCompletionSource<object>)state).TrySetResult(null), changeTaskCompletion);
+
         testFileProvider.ChangeFiles(
             new TestFile("Secret1", "NewSecretValue1"),
             new TestFile("Secret3", "NewSecretValue3"));
 
+        await changeTaskCompletion.Task;
+
         Assert.Equal("NewSecretValue1", config["Secret1"]);
-        Assert.Null(config["NewSecret2"]);
+        Assert.Null(config["Secret2"]);
         Assert.Equal("NewSecretValue3", config["Secret3"]);
     }
 
@@ -290,8 +297,8 @@ public class KeyPerFileTests
         Assert.Equal("SecretValue2", config["Secret2"]);
     }
 
-    [Fact]
-    public void NoFilesReloadWhenAddedFiles()
+    [Fact(Timeout = 2000)]
+    public async Task NoFilesReloadWhenAddedFiles()
     {
         var testFileProvider = new TestFileProvider();
 
@@ -305,9 +312,16 @@ public class KeyPerFileTests
 
         Assert.Empty(config.AsEnumerable());
 
+        var changeToken = config.GetReloadToken();
+        var changeTaskCompletion = new TaskCompletionSource<object>();
+        changeToken.RegisterChangeCallback(state =>
+            ((TaskCompletionSource<object>)state).TrySetResult(null), changeTaskCompletion);
+
         testFileProvider.ChangeFiles(
             new TestFile("Secret1", "SecretValue1"),
             new TestFile("Secret2", "SecretValue2"));
+
+        await changeTaskCompletion.Task;
 
         Assert.Equal("SecretValue1", config["Secret1"]);
         Assert.Equal("SecretValue2", config["Secret2"]);
@@ -339,7 +353,7 @@ public class KeyPerFileTests
         await changeTaskCompletion.Task;
 
         Assert.Equal("NewSecretValue1", config["Secret1"]);
-        Assert.Null(config["NewSecret2"]);
+        Assert.Null(config["Secret2"]);
         Assert.Equal("NewSecretValue3", config["Secret3"]);
     }
 

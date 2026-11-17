@@ -40,6 +40,7 @@ public abstract partial class ColumnBase<TGridItem>
     /// <summary>
     /// If specified, indicates that this column has this associated options UI. A button to display this
     /// UI will be included in the header cell by default.
+    /// The default button exposes whether the options content is expanded.
     ///
     /// If <see cref="HeaderTemplate" /> is used, it is left up to that template to render any relevant
     /// "show options" UI and invoke the grid's <see cref="QuickGrid{TGridItem}.ShowColumnOptionsAsync(ColumnBase{TGridItem})" />).
@@ -57,7 +58,7 @@ public abstract partial class ColumnBase<TGridItem>
     /// filter indicator.
     /// </summary>
     [Parameter] public string? ColumnOptionsButtonClass { get; set; }
-    
+
     /// <summary>
     /// Indicates whether the data should be sortable by this column.
     ///
@@ -123,6 +124,15 @@ public abstract partial class ColumnBase<TGridItem>
     public ColumnBase()
     {
         HeaderContent = RenderDefaultHeaderContent;
+    }
+
+    private void EnsureColumnMatchesGrid()
+    {
+        if (InternalGridContext is null)
+        {
+            string displayName = string.IsNullOrWhiteSpace(Title) ? "(unnamed)" : Title;
+            throw new InvalidOperationException($"Column '{displayName}' expects item type '{typeof(TGridItem).FullName}', which does not match the parent QuickGrid's item type.");
+        }
     }
 
     internal string ColumnOptionsButtonCssClass

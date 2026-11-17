@@ -6,7 +6,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\MockHostTypes\MockHostTypes.csproj" />
+    <ProjectReference Include="$(RepoRoot)src\Shared\test\testassets\MockHostTypes\MockHostTypes.csproj" />
   </ItemGroup>
 
 </Project>

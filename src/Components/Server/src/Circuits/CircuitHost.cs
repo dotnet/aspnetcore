@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Diagnostics;
+using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using System.Linq;
 using System.Security.Claims;
@@ -399,7 +400,7 @@ internal partial class CircuitHost : IAsyncDisposable
 
     // BeginInvokeDotNetFromJS is used in a fire-and-forget context, so it's responsible for its own
     // error handling.
-    public async Task BeginInvokeDotNetFromJS(string callId, string assemblyName, string methodIdentifier, long dotNetObjectId, string argsJson)
+    public async Task BeginInvokeDotNetFromJS(string callId, string assemblyName, string methodIdentifier, long dotNetObjectId, [StringSyntax(StringSyntaxAttribute.Json)] string argsJson)
     {
         AssertInitialized();
         AssertNotDisposed();
@@ -631,6 +632,9 @@ internal partial class CircuitHost : IAsyncDisposable
         // This can be called before the circuit is initialized.
         AssertNotDisposed();
 
+        // Update the circuit's authentication state when the provider supports it.
+        // Existing component data is not cleared. Applications must handle user changes
+        // and check current permissions before using that data or performing an operation.
         var authenticationStateProvider = Services.GetService<AuthenticationStateProvider>() as IHostEnvironmentAuthenticationStateProvider;
         if (authenticationStateProvider != null)
         {
@@ -971,7 +975,7 @@ internal partial class CircuitHost : IAsyncDisposable
         // Dispatch the send onto the dispatcher to serialize with any sync work
         // (renders, event handlers) that may be in progress.
         // The client receives the message and decides when to actually pause via
-        // an optional onPauseRequested callback in CircuitStartOptions.
+        // any registered pause deferral participants (CircuitHandler.onCircuitPausing).
         return Renderer.Dispatcher.InvokeAsync(async () =>
         {
             if (_disposed || !Client.Connected)
@@ -1012,13 +1016,13 @@ internal partial class CircuitHost : IAsyncDisposable
     {
         try
         {
-            var succeded = await Client.InvokeAsync<bool>(
+            var succeeded = await Client.InvokeAsync<bool>(
                 "JS.SavePersistedState",
                 CircuitId.Secret,
                 rootComponents,
                 applicationState,
                 cancellationToken: cancellation);
-            return succeded;
+            return succeeded;
         }
         catch (Exception ex)
         {
@@ -1132,7 +1136,7 @@ internal partial class CircuitHost : IAsyncDisposable
         [LoggerMessage(210, LogLevel.Debug, "Location change to '{URI}' in circuit '{CircuitId}' failed.", EventName = "LocationChangeFailed")]
         public static partial void LocationChangeFailed(ILogger logger, string uri, CircuitId circuitId, Exception exception);
 
-        [LoggerMessage(211, LogLevel.Debug, "Location is about to change to {URI} in ciruit '{CircuitId}'.", EventName = "LocationChanging")]
+        [LoggerMessage(211, LogLevel.Debug, "Location is about to change to {URI} in circuit '{CircuitId}'.", EventName = "LocationChanging")]
         public static partial void LocationChanging(ILogger logger, string uri, CircuitId circuitId);
 
         [LoggerMessage(212, LogLevel.Debug, "Failed to complete render batch '{RenderId}' in circuit host '{CircuitId}'.", EventName = "OnRenderCompletedFailed")]

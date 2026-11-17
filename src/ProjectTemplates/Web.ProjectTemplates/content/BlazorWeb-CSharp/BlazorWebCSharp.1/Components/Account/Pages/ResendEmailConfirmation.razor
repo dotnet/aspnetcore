@@ -19,10 +19,12 @@
 <hr />
 <StatusMessage Message="@message" />
 <div class="row">
-    <div class="col-md-4">
+    <div class="col-lg-6">
         <EditForm Model="Input" FormName="resend-email-confirmation" OnValidSubmit="OnValidSubmitAsync" method="post">
             <DataAnnotationsValidator />
-            <ValidationSummary class="text-danger" role="alert" />
+            <div role="alert" aria-atomic="true">
+                <ValidationSummary class="text-danger" />
+            </div>
             <div class="form-floating mb-3">
                 <InputText @bind-Value="Input.Email" id="Input.Email" class="form-control" aria-required="true" placeholder="name@example.com" />
                 <label for="Input.Email" class="form-label">Email</label>
@@ -59,7 +61,13 @@
         var callbackUrl = NavigationManager.GetUriWithQueryParameters(
             NavigationManager.ToAbsoluteUri("Account/ConfirmEmail").AbsoluteUri,
             new Dictionary<string, object?> { ["userId"] = userId, ["code"] = code });
-        await EmailSender.SendConfirmationLinkAsync(user, Input.Email, HtmlEncoder.Default.Encode(callbackUrl));
+        var storedEmail = await UserManager.GetEmailAsync(user);
+        if (string.IsNullOrEmpty(storedEmail))
+        {
+            throw new InvalidOperationException("Users must have an email.");
+        }
+
+        await EmailSender.SendConfirmationLinkAsync(user, storedEmail, HtmlEncoder.Default.Encode(callbackUrl));
 
         message = "Verification email sent. Please check your email.";
     }

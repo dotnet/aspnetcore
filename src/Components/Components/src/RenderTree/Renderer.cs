@@ -10,6 +10,7 @@ using Microsoft.AspNetCore.Components.HotReload;
 using Microsoft.AspNetCore.Components.Infrastructure;
 using Microsoft.AspNetCore.Components.Reflection;
 using Microsoft.AspNetCore.Components.Rendering;
+using Microsoft.AspNetCore.Components.Sections;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using static Microsoft.AspNetCore.Internal.LinkerFlags;
@@ -37,6 +38,8 @@ public abstract partial class Renderer : IDisposable, IAsyncDisposable
     private readonly Dictionary<ulong, (int RenderedByComponentId, EventCallback Callback, string? attributeName)> _eventBindings = new();
     private readonly Dictionary<ulong, ulong> _eventHandlerIdReplacements = new Dictionary<ulong, ulong>();
     private readonly ILogger _logger;
+    private readonly ILoggerFactory _loggerFactory;
+    private SectionRegistry? _sectionRegistry;
     private readonly ComponentFactory _componentFactory;
     private readonly ComponentsMetrics? _componentsMetrics;
     private readonly ComponentsActivitySource? _componentsActivitySource;
@@ -100,6 +103,7 @@ public abstract partial class Renderer : IDisposable, IAsyncDisposable
         // has always taken ILoggerFactory so to avoid the per-instance string allocation of the logger name we just pass the
         // logger name in here as a string literal.
         _logger = loggerFactory.CreateLogger("Microsoft.AspNetCore.Components.RenderTree.Renderer");
+        _loggerFactory = loggerFactory;
         _componentFactory = new ComponentFactory(componentActivator, GetComponentPropertyActivatorOrDefault(serviceProvider), this);
         if (ComponentsMetrics.IsSupported)
         {
@@ -118,6 +122,8 @@ public abstract partial class Renderer : IDisposable, IAsyncDisposable
 
     internal ComponentsMetrics? ComponentMetrics => _componentsMetrics;
     internal ComponentsActivitySource? ComponentActivitySource => _componentsActivitySource;
+
+    internal SectionRegistry SectionRegistry => _sectionRegistry ??= new SectionRegistry(_loggerFactory);
 
     internal ICascadingValueSupplier[] ServiceProviderCascadingValueSuppliers { get; }
 
@@ -209,6 +215,7 @@ public abstract partial class Renderer : IDisposable, IAsyncDisposable
     private async void RenderRootComponentsOnHotReload()
     {
         // Before re-rendering the root component, also clear any well-known caches in the framework
+        CascadingParameterState.ClearCache();
         ComponentFactory.ClearCache();
         ComponentProperties.ClearCache();
         DefaultComponentActivator.ClearCache();
@@ -506,7 +513,7 @@ public abstract partial class Renderer : IDisposable, IAsyncDisposable
         // receives the callback" (i.e., callback.Receiver) is that if parent A passes a RenderFragment with events to child B,
         // and then child B is disposed, we don't want to dispatch the events (because the developer considers them removed
         // from the UI) even though the receiver A is still alive.
-        if (!_componentStateById.ContainsKey(renderedByComponentId))
+        if (!_componentStateById.TryGetValue(renderedByComponentId, out var renderingComponentState))
         {
             // This is not an error since it can happen legitimately (in Blazor Server, the user might click a button at the same
             // moment that the component is disposed remotely, and then the click event will arrive after disposal).
@@ -525,6 +532,10 @@ public abstract partial class Renderer : IDisposable, IAsyncDisposable
             // We can only route errors to error boundaries if the receiver is known and not yet disposed at this stage
             _componentStateByComponent.TryGetValue(receiverComponent, out receiverComponentState);
         }
+
+        // Non-component receivers have no component ancestry, so use the rendering component for error routing.
+        // Keep receiverComponentState separate because it also determines pending-task ownership.
+        var errorHandlingComponentState = callback.Receiver is IComponent ? receiverComponentState : renderingComponentState;
 
         if (fieldInfo != null)
         {
@@ -569,7 +580,7 @@ public abstract partial class Renderer : IDisposable, IAsyncDisposable
                 ComponentActivitySource.StopHandleEventActivity(activityHandle, e);
             }
 
-            HandleExceptionViaErrorBoundary(e, receiverComponentState);
+            HandleExceptionViaErrorBoundary(e, errorHandlingComponentState);
             return Task.CompletedTask;
         }
         finally
@@ -583,7 +594,7 @@ public abstract partial class Renderer : IDisposable, IAsyncDisposable
 
         // Task completed synchronously or is still running. We already processed all of the rendering
         // work that was queued so let our error handler deal with it.
-        var errorHandledTask = GetErrorHandledTask(task, receiverComponentState);
+        var errorHandledTask = GetErrorHandledTask(task, errorHandlingComponentState);
 
         if (waitForQuiescence)
         {
@@ -1173,7 +1184,14 @@ public abstract partial class Renderer : IDisposable, IAsyncDisposable
     }
 
     internal void HandleComponentException(Exception exception, int componentId)
-        => HandleExceptionViaErrorBoundary(exception, GetRequiredComponentState(componentId));
+    {
+        if (_rendererIsDisposed)
+        {
+            return;
+        }
+
+        HandleExceptionViaErrorBoundary(exception, GetRequiredComponentState(componentId));
+    }
 
     /// <summary>
     /// If the exception can be routed to an error boundary around <paramref name="errorSourceOrNull"/>, do so.
