@@ -193,6 +193,7 @@ function init(dotNetHelper: DotNet.DotNetObject, spacerBefore: HTMLElement, spac
     },
   };
 
+  let savedOverflowAnchor: { value: string; priority: string } | undefined;
   const nativeAnchoring = {
     suspendedFor: new Set<'convergence' | 'slide'>(),
     resumeFrame: 0,
@@ -200,6 +201,10 @@ function init(dotNetHelper: DotNet.DotNetObject, spacerBefore: HTMLElement, spac
       this.suspendedFor.add(reason);
       if (useNativeAnchoring) {
         cancelAnimationFrame(this.resumeFrame);
+        savedOverflowAnchor ??= {
+          value: scrollElement.style.overflowAnchor,
+          priority: scrollElement.style.getPropertyPriority('overflow-anchor'),
+        };
         scrollElement.style.overflowAnchor = 'none';
       }
     },
@@ -212,9 +217,17 @@ function init(dotNetHelper: DotNet.DotNetObject, spacerBefore: HTMLElement, spac
         this.resumeFrame = requestAnimationFrame(() => {
           this.resumeFrame = requestAnimationFrame(() => {
             this.resumeFrame = 0;
-            scrollElement.style.overflowAnchor = '';
+            this.restore();
           });
         });
+      }
+    },
+    restore(): void {
+      if (savedOverflowAnchor) {
+        if (scrollElement.style.overflowAnchor === 'none') {
+          scrollElement.style.setProperty('overflow-anchor', savedOverflowAnchor.value, savedOverflowAnchor.priority);
+        }
+        savedOverflowAnchor = undefined;
       }
     },
   };
@@ -851,9 +864,7 @@ function init(dotNetHelper: DotNet.DotNetObject, spacerBefore: HTMLElement, spac
       mutationObserver.disconnect();
       stopConvergenceObserving();
       cancelAnimationFrame(nativeAnchoring.resumeFrame);
-      if (useNativeAnchoring) {
-        scrollElement.style.overflowAnchor = '';
-      }
+      nativeAnchoring.restore();
       anchoredItems.clear();
       resizeObserver.disconnect();
       unsubscribeFromUserScroll();

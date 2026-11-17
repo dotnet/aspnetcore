@@ -40,6 +40,46 @@ public class VirtualizationTest : ServerTestBase<ToggleExecutionModeServerFixtur
         => container.FindElements(By.CssSelector(cssSelector)).Count;
 
     [Fact]
+    public void DisposingConditionalVirtualize_PreservesContainerOverflowAnchor()
+    {
+        Browser.MountTestComponent<VirtualizationHover>();
+        var container = Browser.Exists(By.Id("hover-container"));
+        var js = (IJavaScriptExecutor)Browser;
+        Browser.Exists(By.CssSelector("#hover-container .hover-row"));
+        WaitForRenderToSettle(container, js, ".hover-row");
+        Browser.Equal("auto", () => (string)js.ExecuteScript("return getComputedStyle(arguments[0]).overflowAnchor", container));
+
+        js.ExecuteScript("""
+            const originalDispose = Blazor._internal.Virtualize.dispose;
+            window.__originalVirtualizeDispose = originalDispose;
+            window.__virtualizeDisposed = false;
+            Blazor._internal.Virtualize.dispose = (...args) => {
+                const result = originalDispose(...args);
+                window.__virtualizeDisposed = true;
+                return result;
+            };
+            arguments[0].style.setProperty('overflow-anchor', 'none', 'important');
+            """, container);
+
+        try
+        {
+            Browser.Exists(By.Id("remove-hover-list")).Click();
+            Browser.True(() => (bool)js.ExecuteScript("return window.__virtualizeDisposed"));
+            Assert.Empty(container.FindElements(By.ClassName("hover-row")));
+            Assert.Equal("none", (string)js.ExecuteScript("return arguments[0].style.overflowAnchor", container));
+            Assert.Equal("important", (string)js.ExecuteScript("return arguments[0].style.getPropertyPriority('overflow-anchor')", container));
+        }
+        finally
+        {
+            js.ExecuteScript("""
+                Blazor._internal.Virtualize.dispose = window.__originalVirtualizeDispose;
+                delete window.__originalVirtualizeDispose;
+                delete window.__virtualizeDisposed;
+                """);
+        }
+    }
+
+    [Fact]
     public void HoveredRows_AsyncScrollDoesNotJump()
     {
         Browser.MountTestComponent<VirtualizationHover>();

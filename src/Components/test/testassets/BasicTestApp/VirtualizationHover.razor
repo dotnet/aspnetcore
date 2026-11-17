@@ -1,5 +1,6 @@
 <button id="pause-hover-loads" @onclick="PauseLoads">Pause loads</button>
 <button id="release-hover-loads" @onclick="ReleaseLoads">Release loads</button>
+<button id="remove-hover-list" @onclick="() => showList = false">Remove list</button>
 <span id="hover-load-status">@(pendingLoads is null ? "Running" : "Paused")</span>
 
 <style>
@@ -9,17 +10,21 @@
 </style>
 
 <div id="hover-container" style="height: 630px; overflow-y: auto;">
-    <Virtualize ItemsProvider="LoadAsync" Context="item" OverscanCount="6">
-        <ItemContent>
-            <div class="hover-row"><span>Row @item</span><button>More</button></div>
-        </ItemContent>
-        <Placeholder>
-            <div class="hover-row hover-placeholder">Loading</div>
-        </Placeholder>
-    </Virtualize>
+    @if (showList)
+    {
+        <Virtualize ItemsProvider="LoadAsync" Context="item" OverscanCount="6">
+            <ItemContent>
+                <div class="hover-row"><span>Row @item</span><button>More</button></div>
+            </ItemContent>
+            <Placeholder>
+                <div class="hover-row hover-placeholder">Loading</div>
+            </Placeholder>
+        </Virtualize>
+    }
 </div>
 
 @code {
+    private bool showList = true;
     private TaskCompletionSource pendingLoads;
 
     private void PauseLoads() => pendingLoads = new(TaskCreationOptions.RunContinuationsAsynchronously);
