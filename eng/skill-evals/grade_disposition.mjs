@@ -102,7 +102,7 @@ function isNegativeC1Line(line)
     .trim()
     .replace(/^(?:[-*+]|\d+[.)])\s+/, '')
     .trim();
-  const explicitAbsence = /^(?:none(?:\s+(?:applicable|covered|found|reported|identified))?[.!]?\s*$|n\/a[.!]?\s*$|no(?:\s+(?:findings|items|candidates|entries|unresolved|discarded|existing\s+feedback)[.!]?\s*$|\s+C1[.!]?\s*$|[.!]?\s*$))/i;
+  const explicitAbsence = /^(?:none(?:\s+(?:applicable|covered|found|reported|identified))?[.!]?\s*$|n\/a[.!]?\s*$|no(?:\s+(?:(?:new\s+)?findings|items|(?:(?:unresolved|discarded)\s+)?candidates|entries|unresolved|discarded|existing\s+feedback)[.!]?\s*$|\s+C1[.!]?\s*$|[.!]?\s*$))/i;
   if (!clean || explicitAbsence.test(clean))
   {
     return true;

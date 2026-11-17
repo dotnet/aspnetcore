@@ -146,6 +146,72 @@ test('ReviewDispositionRejectsInlineEntryAfterAbsenceMarker', async context =>
   }
 });
 
+const absencePhrases = ['No new findings', 'No unresolved candidates', 'No discarded candidates', 'No existing feedback'];
+
+test('ReviewDispositionAcceptsAnchoredAbsenceProse', async context =>
+{
+  for (const name of ['case-01', 'case-03', 'case-04'])
+  {
+    for (const phrase of absencePhrases)
+    {
+      await context.test(`${name}-${phrase}`, () =>
+      {
+        for (const marker of [phrase, `${phrase}.`, `**${phrase}.**`, `_${phrase}._`])
+        {
+          const output = review('DISCARDED', 'discarded', false)
+            .replace('NEW_FINDINGS\nNone.', `NEW_FINDINGS\n${marker}`);
+          assert.equal(score(name, output), 1, marker);
+        }
+      });
+    }
+    await context.test(`${name}-section-phrases`, () =>
+    {
+      const output = review('DISCARDED', 'discarded', false)
+        .replace('NEW_FINDINGS\nNone.', 'NEW_FINDINGS\nNo new findings.')
+        .replace('UNRESOLVED\nNone.', 'UNRESOLVED\nNo unresolved candidates.')
+        .replace('EXISTING_FEEDBACK_COVERAGE\nNone.', 'EXISTING_FEEDBACK_COVERAGE\nNo existing feedback.');
+      assert.equal(score(name, output), 1);
+    });
+  }
+  for (const [name, section, confidence] of [
+    ['case-02', 'NEW_FINDINGS', 'verified'],
+    ['case-06', 'UNRESOLVED', 'unresolved'],
+  ])
+  {
+    await context.test(`${name}-discarded-phrase`, () =>
+    {
+      const output = review(section, confidence)
+        .replace('DISCARDED\nNone.', 'DISCARDED\nNo discarded candidates.');
+      assert.equal(score(name, output), 1);
+    });
+  }
+});
+
+test('ReviewDispositionRejectsSubstantiveAbsenceProse', async context =>
+{
+  for (const name of ['case-01', 'case-03', 'case-04'])
+  {
+    for (const phrase of absencePhrases)
+    {
+      await context.test(`${name}-${phrase}`, () =>
+      {
+        for (const extra of [
+          ' [DISCARDED] Old behavior.',
+          '\n[DISCARDED] Old behavior.\nConfidence: discarded\nWhy discarded: old and head match.',
+          '\n### [DISCARDED] Old behavior.\nConfidence: discarded\nWhy discarded: old and head match.',
+          '\nThe candidate still changes behavior.',
+          ' because the old implementation behaves the same.',
+        ])
+        {
+          const output = review('DISCARDED', 'discarded', false)
+            .replace('NEW_FINDINGS\nNone.', `NEW_FINDINGS\n${phrase}.${extra}`);
+          assert.equal(score(name, output), 0, extra);
+        }
+      });
+    }
+  }
+});
+
 test('ReviewDispositionRejectsIdentifierFreeConflictingSections', async context =>
 {
   for (const [name, section, confidence, conflicting] of [
