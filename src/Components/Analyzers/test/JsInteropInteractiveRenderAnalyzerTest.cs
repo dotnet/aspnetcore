@@ -2127,6 +2127,41 @@ namespace ConsoleApplication1
         VerifyCSharpDiagnostic(CreateBuildRenderTreeTest(statements));
     }
 
+    [Theory]
+    [InlineData(@"_store.AddAttribute(1, ""onclick"", JS.Invoke<string>(""getValue""));", 47)]
+    [InlineData(@"_store.AddAttribute(JS.Invoke<int>(""getValue""), ""OnClick"", EventCallback.Factory.Create<object>(this, () => { }));", 33)]
+    public void JSInvokeInAddAttributeArgumentsOfOtherReceiverShouldThrowWarning(string statement, int column)
+    {
+        var test = @"
+namespace ConsoleApplication1
+{
+    using System;
+    using Microsoft.AspNetCore.Components;
+    using Microsoft.AspNetCore.Components.Rendering;
+    using Microsoft.JSInterop;
+
+    class AttributeStore
+    {
+        public void AddAttribute(int sequence, string name, object value) { }
+    }
+
+    class TestComponent : ComponentBase
+    {
+        private IJSInProcessRuntime JS = default!;
+        private readonly AttributeStore _store = new();
+
+        protected override void BuildRenderTree(RenderTreeBuilder __builder)
+        {
+            " + statement + @"
+        }
+    }
+}" + BaseComponentDeclarations;
+
+        VerifyCSharpDiagnostic(test,
+            new DiagnosticResult { Locations = new[] { new DiagnosticResultLocation("Test0.cs", 21, column) }, Id = id, Message = messageInvoke, Severity = DiagnosticSeverity.Warning, }
+        );
+    }
+
     private static string CreateBuildRenderTreeTest(string statements)
     {
         var body = string.Join(Environment.NewLine, statements.Split('|').Select(statement => "            " + statement));
