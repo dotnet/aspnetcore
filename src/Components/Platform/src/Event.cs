@@ -4,7 +4,7 @@
 namespace Microsoft.AspNetCore.Components.Platform;
 
 /// <summary>
-/// Represents an event that carries no data of its own, such as the <c>online</c> and <c>offline</c> events.
+/// Represents an event that carries no data of its own.
 /// </summary>
 public sealed class Event
 {
