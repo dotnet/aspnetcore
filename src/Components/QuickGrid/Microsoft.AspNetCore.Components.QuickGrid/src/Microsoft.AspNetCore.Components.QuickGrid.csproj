@@ -22,6 +22,7 @@
     <Compile Include="$(ComponentsSharedSourceRoot)src\QueryParameterNameComparer.cs" LinkBase="Infrastructure" />
     <Compile Include="$(ComponentsSharedSourceRoot)src\UrlValueConstraint.cs" LinkBase="Infrastructure" />
     <Compile Include="$(SharedSourceRoot)QueryStringEnumerable.cs" LinkBase="Infrastructure" />
+    <Compile Include="$(SharedSourceRoot)QueryStringDecoder.cs" LinkBase="Infrastructure" />
   </ItemGroup>
 
   <ItemGroup>

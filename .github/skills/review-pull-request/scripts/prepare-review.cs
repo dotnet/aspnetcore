@@ -42,7 +42,10 @@ internal static partial class PrepareReviewProgram
         string? Hostname = null,
         string? Guidance = null,
         string? GuidanceRoot = null,
-        bool Check = false);
+        bool Check = false,
+        string? BaseTip = null,
+        string? MergeBase = null,
+        string? BaseRef = null);
 
     internal sealed record Dependencies(
         Func<string, string?, Task<JsonNode?>>? Api = null,
@@ -98,6 +101,7 @@ internal static partial class PrepareReviewProgram
     private static Options ParseArguments(string[] args)
     {
         string? repo = null, pr = null, output = null, head = null, hostname = null, guidance = null, guidanceRoot = null;
+        string? baseTip = null, mergeBase = null, baseRef = null;
         var check = false;
         for (var index = 0; index < args.Length; index++)
         {
@@ -107,7 +111,7 @@ internal static partial class PrepareReviewProgram
                 check = true;
                 continue;
             }
-            Require(name is "--repo" or "--pr" or "--output" or "--head" or "--hostname" or "--guidance" or "--guidance-root"
+            Require(name is "--repo" or "--pr" or "--output" or "--head" or "--hostname" or "--guidance" or "--guidance-root" or "--base-tip" or "--merge-base" or "--base-ref"
                 && index + 1 < args.Length, $"Unknown or incomplete option: {name}");
             var value = args[++index];
             switch (name)
@@ -119,12 +123,37 @@ internal static partial class PrepareReviewProgram
                 case "--hostname": hostname = value; break;
                 case "--guidance": guidance = value; break;
                 case "--guidance-root": guidanceRoot = value; break;
+                case "--base-tip": baseTip = value; break;
+                case "--merge-base": mergeBase = value; break;
+                case "--base-ref": baseRef = value; break;
             }
         }
-        return new(repo, pr, output ?? string.Empty, head, hostname, guidance, guidanceRoot, check);
+        return new(repo, pr, output ?? string.Empty, head, hostname, guidance, guidanceRoot, check, baseTip, mergeBase, baseRef);
     }
 
     internal static string[] GitArguments(params string[] args) => ["-c", "core.longpaths=true", .. args];
+
+    internal static byte[] ExpandBinaryIndexLines(byte[] diff, IReadOnlySet<string> knownIds)
+    {
+        return Encoding.Latin1.GetBytes(BinaryIndexLine().Replace(Encoding.Latin1.GetString(diff), match =>
+            $"index {Expand(match.Groups[1].Value)}..{Expand(match.Groups[2].Value)}{match.Groups[3].Value}{match.Groups[4].Value}"));
+
+        string Expand(string prefix)
+        {
+            if (prefix.Length == 40)
+            {
+                return prefix;
+            }
+            if (prefix.All(character => character == '0'))
+            {
+                return new string('0', 40);
+            }
+            var matches = knownIds.Where(id => id.StartsWith(prefix, StringComparison.Ordinal)).Take(2).ToArray();
+            Require(matches.Length == 1,
+                $"The authoritative binary diff has an {(matches.Length == 0 ? "unknown" : "ambiguous")} object prefix: {prefix}");
+            return matches[0];
+        }
+    }
 
     private static byte[] Git(string directory, params string[] args) =>
         Run("git", GitArguments(["-C", directory, .. args]));
@@ -1297,6 +1326,11 @@ internal static partial class PrepareReviewProgram
             "Cannot resolve a single target repository; specify --repo OWNER/REPO and --pr NUMBER.");
         Require(options.Output.Length > 0, "Specify a new --output directory, or --check an existing prepared directory.");
         Require(options.Head is null || FullShaRegex().IsMatch(options.Head), "--head must be a full immutable commit.");
+        Require(options.BaseTip is null && options.MergeBase is null && options.BaseRef is null
+            || options.Head is not null && options.BaseTip is not null && FullShaRegex().IsMatch(options.BaseTip)
+                && options.MergeBase is not null && FullShaRegex().IsMatch(options.MergeBase)
+                && !string.IsNullOrEmpty(options.BaseRef),
+            "A frozen base requires --head, --base-tip, --merge-base, and --base-ref with full immutable commits.");
         Require(options.Guidance is null || options.GuidanceRoot is null, "Select either --guidance or --guidance-root.");
         var producer = ProducerHash(dependencies.ProducerSourcePath);
         var host = options.Hostname ?? "github.com";
@@ -1334,14 +1368,21 @@ internal static partial class PrepareReviewProgram
             var head = pull["head"]!["sha"]!.GetValue<string>();
             Require(options.Head is null || options.Head == head, "The live PR head differs from the expected frozen head.");
             var baseRef = pull["base"]!["ref"]!.GetValue<string>();
-            var encodedRef = Uri.EscapeDataString(baseRef);
-            var branch = (await Api($"{endpoint}/git/ref/heads/{encodedRef}"))!.AsObject();
-            var baseTip = branch["object"]?["sha"]?.GetValue<string>() ?? "";
+            Require(options.BaseRef is null || options.BaseRef == baseRef, "The live PR base ref differs from the expected frozen base.");
+            var baseTip = options.BaseTip ?? "";
+            if (options.BaseTip is null)
+            {
+                var encodedRef = Uri.EscapeDataString(baseRef);
+                var branch = (await Api($"{endpoint}/git/ref/heads/{encodedRef}"))!.AsObject();
+                baseTip = branch["object"]?["sha"]?.GetValue<string>() ?? "";
+            }
             Require(FullShaRegex().IsMatch(baseTip), "The base branch did not resolve to a full commit.");
             var comparison = (await Api($"{endpoint}/compare/{baseTip}...{head}"))!.AsObject();
             var mergeBase = comparison["merge_base_commit"]?["sha"]?.GetValue<string>() ?? "";
             Require(comparison["base_commit"]?["sha"]?.GetValue<string>() == baseTip && FullShaRegex().IsMatch(mergeBase),
                 "GitHub did not return the expected immutable comparison identities.");
+            Require(options.MergeBase is null || options.MergeBase == mergeBase,
+                "The comparison differs from the expected frozen merge base.");
             return (new JsonObject
             {
                 ["hostname"] = host,
@@ -1480,7 +1521,13 @@ internal static partial class PrepareReviewProgram
             Objects(store, "read-tree", frozen.Identity["mergeBase"]!.GetValue<string>());
             if (diff.Length > 0)
             {
-                Objects(store, "apply", "--cached", "--binary", "--whitespace=nowarn", Path.Combine(output, "diff.patch"));
+                // REST omits binary payloads; resolve its prefixes against the frozen changed objects, not supplied bytes.
+                var knownIds = Utf8NoBom.GetString(Objects(store, "diff", "--raw", "--no-abbrev", "-z", "--no-renames",
+                    "--no-ext-diff", "--no-textconv", frozen.Identity["mergeBase"]!.GetValue<string>(), frozen.Identity["head"]!.GetValue<string>()))
+                    .Split('\0').Where((_, index) => index % 2 == 0)
+                    .SelectMany(entry => entry.Split(' ').Skip(2).Take(2)).ToHashSet(StringComparer.Ordinal);
+                Run("git", GitArguments(["--git-dir", store, "apply", "--cached", "--binary", "--whitespace=nowarn", "-"]),
+                    input: ExpandBinaryIndexLines(diff, knownIds));
             }
             Require(Utf8NoBom.GetString(Objects(store, "write-tree")).Trim()
                 == Utf8NoBom.GetString(Objects(store, "rev-parse", $"{frozen.Identity["head"]!.GetValue<string>()}^{{tree}}")).Trim(),
@@ -2195,6 +2242,8 @@ internal static partial class PrepareReviewProgram
         return true;
     }
 
+    [GeneratedRegex("^index ([a-f0-9]{4,40})\\.\\.([a-f0-9]{4,40})( [0-7]{6})?(\\r?\\n)(?=Binary files [^\\r\\n]* differ(?:\\r?\\n|$))", RegexOptions.Multiline | RegexOptions.CultureInvariant)]
+    private static partial Regex BinaryIndexLine();
     [GeneratedRegex("^[a-f0-9]{40}$", RegexOptions.CultureInvariant)]
     private static partial Regex FullShaRegex();
     [GeneratedRegex("^[a-z0-9_.-]+/[a-z0-9_.-]+$", RegexOptions.IgnoreCase | RegexOptions.CultureInvariant)]

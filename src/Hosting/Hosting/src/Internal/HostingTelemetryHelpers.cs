@@ -13,7 +13,7 @@ namespace Microsoft.AspNetCore.Hosting;
 
 /// <summary>
 /// Follows OpenTelemetry Semantic Conventions for HTTP
-/// <a href="https://github.com/open-telemetry/semantic-conventions/blob/v1.44.0/docs/http/http-spans.md">v1.44.0</a>
+/// <a href="https://github.com/open-telemetry/semantic-conventions/blob/v1.45.0/docs/http/http-spans.md">v1.45.0</a>
 /// </summary>
 internal static class HostingTelemetryHelpers
 {
@@ -234,6 +234,8 @@ internal static class HostingTelemetryHelpers
             "X-Amz-Signature" or
             "X-Amz-Credential" or
             "X-Amz-Security-Token" or
+            "AWSAccessKeyId" or
+            "Signature" or
             "sig" or
             "X-Goog-Signature" or
             "access_token" // included because SignalR browser transports use it for bearer tokens.

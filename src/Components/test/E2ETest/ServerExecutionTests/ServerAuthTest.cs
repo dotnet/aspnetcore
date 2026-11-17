@@ -109,6 +109,44 @@ public class ServerAuthTest : AuthTest
             Assert.IsType<string>(javascript.ExecuteScript("return authenticationRefreshConnection.connectionId;")));
     }
 
+    [Fact]
+    public void UpdatesAuthenticationStateWhenLongPollingRequestsAuthenticationRefresh()
+    {
+        SignInAs("user-a", "TestRole", includeNameIdentifier: true);
+        var appElement = MountAndNavigateToAuthTest(
+            AuthorizeViewCases,
+            "?captureAuthenticationRefresh&longPollingAuthenticationRefresh");
+        AssertState("Welcome, user-a!");
+
+        var javascript = (IJavaScriptExecutor)Browser;
+        var connectionId = GetConnectionId();
+
+        SignInAs("user-b", "TestRole", useSeparateTab: true, includeNameIdentifier: true);
+        AssertState("Welcome, user-b!");
+        Browser.Equal(connectionId, GetConnectionId);
+        AssertInteractive("Interactions: 1");
+
+        SignInAs(null, null, useSeparateTab: true);
+        AssertState("You're not authorized, anonymous");
+        Browser.Equal(connectionId, GetConnectionId);
+        AssertInteractive("Interactions: 2");
+
+        void AssertState(string expected)
+        {
+            Browser.Equal(expected, () =>
+                appElement.FindElement(By.CssSelector("#authorize-role .authorized, #authorize-role .not-authorized")).Text);
+        }
+
+        void AssertInteractive(string expected)
+        {
+            Browser.Click(By.Id("auth-interactivity"));
+            Browser.Equal(expected, () => appElement.FindElement(By.Id("auth-interactivity")).Text);
+        }
+
+        string GetConnectionId() =>
+            Assert.IsType<string>(javascript.ExecuteScript("return authenticationRefreshConnection.connectionId;"));
+    }
+
     private void SignInAs(
         string userName,
         string roles,

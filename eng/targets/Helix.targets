@@ -19,6 +19,7 @@
       $(HelixQueueAlmaLinux);
       $(HelixQueueAlpine);
       $(HelixQueueAzureLinux);
+      $(HelixQueueAzureLinux3);
       $(HelixQueueDebian);
       $(HelixQueueFedora);
       Ubuntu.2404.Amd64.Open;
