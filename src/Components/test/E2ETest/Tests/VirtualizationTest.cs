@@ -6262,7 +6262,6 @@ public class VirtualizationTest : ServerTestBase<ToggleExecutionModeServerFixtur
     }
 
     [Fact]
-    [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/69093")]
     public void InitialIndex_PendingGrowth_TallItemsBeforeTarget_KeepsTargetAligned()
     {
         const int initialItemIndex = 100;
@@ -6478,6 +6477,7 @@ public class VirtualizationTest : ServerTestBase<ToggleExecutionModeServerFixtur
     }
 
     [Fact]
+    [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/68644")]
     public void ScrollToItem_AfterEndJump_LandsAtTarget()
     {
         const int targetIndex = 200;

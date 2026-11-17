@@ -49,6 +49,9 @@ Microsoft.AspNetCore.Connections.DefaultConnectionContext.DefaultConnectionConte
 Microsoft.AspNetCore.Connections.DefaultConnectionContext.DefaultConnectionContext(string! id) -> void
 Microsoft.AspNetCore.Connections.DefaultConnectionContext.User.get -> System.Security.Claims.ClaimsPrincipal?
 Microsoft.AspNetCore.Connections.DefaultConnectionContext.User.set -> void
+Microsoft.AspNetCore.Connections.Features.IAuthenticationRefreshFeature
+Microsoft.AspNetCore.Connections.Features.IAuthenticationRefreshFeature.InitialTokenLifetime.get -> System.TimeSpan?
+Microsoft.AspNetCore.Connections.Features.IAuthenticationRefreshFeature.RefreshAuthenticationAsync(System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.Task<System.TimeSpan?>!
 Microsoft.AspNetCore.Connections.Features.IConnectionCompleteFeature
 Microsoft.AspNetCore.Connections.Features.IConnectionCompleteFeature.OnCompleted(System.Func<object!, System.Threading.Tasks.Task!>! callback, object! state) -> void
 Microsoft.AspNetCore.Connections.Features.IConnectionEndPointFeature
@@ -106,6 +109,7 @@ Microsoft.AspNetCore.Connections.Features.IStreamIdFeature.StreamId.get -> long
 Microsoft.AspNetCore.Connections.Features.ITlsHandshakeFeature
 Microsoft.AspNetCore.Connections.Features.ITlsHandshakeFeature.CipherAlgorithm.get -> System.Security.Authentication.CipherAlgorithmType
 Microsoft.AspNetCore.Connections.Features.ITlsHandshakeFeature.CipherStrength.get -> int
+Microsoft.AspNetCore.Connections.Features.ITlsHandshakeFeature.Exception.get -> System.Exception?
 Microsoft.AspNetCore.Connections.Features.ITlsHandshakeFeature.HashAlgorithm.get -> System.Security.Authentication.HashAlgorithmType
 Microsoft.AspNetCore.Connections.Features.ITlsHandshakeFeature.HashStrength.get -> int
 Microsoft.AspNetCore.Connections.Features.ITlsHandshakeFeature.HostName.get -> string!

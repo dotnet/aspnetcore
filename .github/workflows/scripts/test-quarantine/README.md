@@ -27,7 +27,11 @@ issue. These correspond to Case A and Case B in
    the unquarantine commit. An authenticated, cached lookup verifies that the
    original Case B tracking number is an issue (open or closed), not a PR.
    `case_b_issue_verified` is required at the safe-output boundary; the agent
-   need not repeat the lookup through integrity-filtered tools. Lookup errors
+   need not repeat the lookup through integrity-filtered tools. For verified
+   Case B tests, `case_b_verified_issues` also lists every verified issue from
+   earlier quarantines of the same exact method or data-row target. The
+   validator accepts `case_b_issue` (the most recently removed issue) or any
+   of these, so reusing an older relevant issue is not rejected. Lookup errors
    abort collection, while a definitive missing issue is ineligible.
    Assembly history is
    reconstructed across the resolved test project, including deleted
