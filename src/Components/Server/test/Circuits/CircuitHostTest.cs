@@ -1159,6 +1159,7 @@ public class CircuitHostTest
         });
 
         await AddComponentAsync<TestComponent>(circuitHost, 2, []);
+        Assert.IsType<TestComponent>(((TestRemoteRenderer)circuitHost.Renderer).GetTestComponentState(1).Component);
 
         Dictionary<string, object> parameters = new()
         {
@@ -1560,6 +1561,83 @@ public class CircuitHostTest
         {
             release.TrySetResult();
             await Task.WhenAll(first, pending, next).WaitAsync(TimeSpan.FromSeconds(10));
+        }
+    }
+
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task UpdateRootComponents_IsolatesReplacementCreationFromPreviousState(bool preserveInstance)
+    {
+        var renderer = GetRemoteRenderer();
+        var circuitHost = TestCircuitHost.Create(remoteRenderer: renderer);
+        var release = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+        var entered = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+        var errors = new List<object>();
+        circuitHost.UnhandledException += (_, args) => errors.Add(args.ExceptionObject);
+        var first = circuitHost.UpdateRootComponents(new()
+        {
+            Operations =
+            [
+                CreateGatedAddOperation(0, release.Task, entered, new()),
+                CreateOperation(RootComponentOperationType.Add, "A"),
+            ],
+        }, null, false, CancellationToken.None);
+        Task second = Task.CompletedTask;
+        Task third = Task.CompletedTask;
+        await entered.Task.WaitAsync(TimeSpan.FromSeconds(10));
+        var original = await renderer.Dispatcher.InvokeAsync(() =>
+            Assert.IsType<DynamicallyAddedComponent>(renderer.GetTestComponentState(1).Component));
+
+        try
+        {
+            second = circuitHost.UpdateRootComponents(new()
+            {
+                Operations = [CreateOperation(RootComponentOperationType.Update, "B")],
+            }, null, false, CancellationToken.None);
+            third = circuitHost.UpdateRootComponents(new()
+            {
+                Operations = [CreateOperation(RootComponentOperationType.Update, "C")],
+            }, null, false, CancellationToken.None);
+
+            await renderer.Dispatcher.InvokeAsync(() =>
+            {
+                Assert.Equal(!preserveInstance, original.WaitForDisposeAsync().IsCompleted);
+                Assert.Throws<ArgumentException>(() => renderer.GetTestComponentState(2));
+            });
+        }
+        finally
+        {
+            release.TrySetResult();
+            await Task.WhenAll(first, second, third).WaitAsync(TimeSpan.FromSeconds(10));
+        }
+
+        await renderer.Dispatcher.InvokeAsync(() =>
+        {
+            var current = Assert.IsType<DynamicallyAddedComponent>(
+                renderer.GetTestComponentState(preserveInstance ? 1 : 2).Component);
+            Assert.Equal("C", current.Message);
+            if (preserveInstance)
+            {
+                Assert.Same(original, current);
+            }
+            else
+            {
+                Assert.NotSame(original, current);
+            }
+        });
+        Assert.Empty(errors);
+
+        RootComponentOperation CreateOperation(RootComponentOperationType type, string message)
+        {
+            var parameters = new Dictionary<string, object> { [nameof(DynamicallyAddedComponent.Message)] = message };
+            return new()
+            {
+                Type = type,
+                SsrComponentId = 1,
+                Marker = CreateMarker(typeof(DynamicallyAddedComponent), "1", parameters, preserveInstance ? "preserved" : ""),
+                Descriptor = new(typeof(DynamicallyAddedComponent), CreateWebRootComponentParameters(parameters)),
+            };
         }
     }
 
@@ -2099,6 +2177,7 @@ public class CircuitHostTest
         }
     }
 
+    [method: ActivatorUtilitiesConstructor]
     private class TestComponent() : IComponent, IHandleAfterRender
     {
         private RenderHandle _renderHandle;

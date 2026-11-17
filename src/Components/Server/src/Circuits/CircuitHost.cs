@@ -789,6 +789,7 @@ internal partial class CircuitHost : IAsyncDisposable
             var operations = operationBatch.Operations;
             var batchId = operationBatch.BatchId;
             var postRemovalTask = Task.CompletedTask;
+            List<Action> pendingRootComponentInitializations = null;
             try
             {
                 try
@@ -834,7 +835,8 @@ internal partial class CircuitHost : IAsyncDisposable
 
                     if (!_isFirstUpdate)
                     {
-                        postRemovalTask = EnqueueRestore(operationsCompletionSource.Task, previousStateTask, store);
+                        pendingRootComponentInitializations = [];
+                        postRemovalTask = EnqueueRestore(operationsCompletionSource.Task, previousStateTask, store, pendingRootComponentInitializations);
                     }
 
                     if (_isFirstUpdate)
@@ -858,7 +860,7 @@ internal partial class CircuitHost : IAsyncDisposable
                         }
                     }
 
-                    var operationsTask = PerformRootComponentOperations(operations, shouldWaitForQuiescence, postRemovalTask, operationsCompletionSource);
+                    var operationsTask = PerformRootComponentOperations(operations, shouldWaitForQuiescence, postRemovalTask, operationsCompletionSource, pendingRootComponentInitializations);
 
                     await Task.WhenAll(operationsTask.AsTask(), postRemovalTask);
                 }
@@ -903,13 +905,20 @@ internal partial class CircuitHost : IAsyncDisposable
     private async Task EnqueueRestore(
         Task operationsTask,
         Task previousStateTask,
-        IPersistentComponentStateStore store)
+        IPersistentComponentStateStore store,
+        List<Action> pendingRootComponentInitializations)
     {
         await operationsTask;
         await previousStateTask;
         if (_rootComponentUpdateFailed || _disposed)
         {
             throw new RootComponentUpdateAbortedException();
+        }
+
+        // New subscriptions must not observe state belonging to an earlier batch.
+        foreach (var initialize in pendingRootComponentInitializations)
+        {
+            initialize();
         }
 
         if (store is not null)
@@ -923,10 +932,11 @@ internal partial class CircuitHost : IAsyncDisposable
         RootComponentOperation[] operations,
         bool shouldWaitForQuiescence,
         Task postStateTask,
-        TaskCompletionSource operationsCompletionSource)
+        TaskCompletionSource operationsCompletionSource,
+        List<Action> pendingRootComponentInitializations)
     {
         var webRootComponentManager = Renderer.GetOrCreateWebRootComponentManager();
-        webRootComponentManager.SetCurrentUpdateTask(postStateTask);
+        webRootComponentManager.SetCurrentUpdateTask(postStateTask, pendingRootComponentInitializations);
 
         var pendingTasks = shouldWaitForQuiescence
             ? new Task[operations.Length]
