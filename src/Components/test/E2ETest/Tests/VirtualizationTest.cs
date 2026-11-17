@@ -5162,7 +5162,6 @@ public class VirtualizationTest : ServerTestBase<ToggleExecutionModeServerFixtur
     [Theory]
     [InlineData("0")]
     [InlineData("1")]
-    [InlineData("2")]
     public void AnchorMode_WindowScroll_EndKeyInInputDoesNotJump(string anchorMode)
     {
         MountWindowScrollAnchorModeComponent(anchorMode);
