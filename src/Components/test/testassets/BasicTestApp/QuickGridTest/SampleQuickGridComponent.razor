@@ -16,6 +16,13 @@
         <PropertyColumn Property="@(p => p.LastName)" Sortable="true" />
         <PropertyColumn Property="@(p => p.BirthDate)" Format="yyyy-MM-dd" Sortable="true" Align="Align.Center" />
         <PropertyColumn Title="Age in years" Property="@(p => ComputeAge(p.BirthDate))" Sortable="true" Align="Align.Right"/>
+        @if (TestConfiguration == "keyboard-controls")
+        {
+            <TemplateColumn Title="Actions">
+                <input class="row-input" aria-label="Row input" @onkeyup="@(() => inputKeyCount++)" />
+                <button class="row-button" @onclick="@(() => buttonClickCount++)" @onclick:stopPropagation>Row action</button>
+            </TemplateColumn>
+        }
     </QuickGrid>
 </div>
 <Paginator State="@pagination" />
@@ -33,13 +40,23 @@
     }
 </div>
 
+@if (TestConfiguration == "keyboard-controls")
+{
+    <p id="input-key-count">@inputKeyCount</p>
+    <p id="button-click-count">@buttonClickCount</p>
+}
+
 @code {
+    [Parameter] public string TestConfiguration { get; set; }
+
     record Person(int PersonId, string FirstName, string LastName, DateOnly BirthDate);
     PaginationState pagination = new PaginationState { ItemsPerPage = 10 };
     string firstNameFilter;
     QuickGrid<Person> quickGridRef;
     Person clickedPerson;
     int clickCount;
+    int inputKeyCount;
+    int buttonClickCount;
 
     void HandleRowClick(Person person)
     {

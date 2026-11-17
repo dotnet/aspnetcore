@@ -21,7 +21,7 @@
         @if (useItemsProvider)
         {
             <QuickGrid @ref="providerGrid" ItemsProvider="@itemsProvider" Virtualize="true" ItemSize="50"
-                       OnRowClick="@((Row row) => statusMessage = $"Activated: {row.Index}")"
+                       OnRowClick="@((Row row) => HandleRowClick(row))"
                        InitialItemIndex="@initialItemIndex">
                 <TemplateColumn Title="Item" Class="qg-scroll-cell">
                     <div class="item" data-index="@context.Index" style="min-height: @(context.Height)px; line-height: @(context.Height)px;">Item @context.Index</div>
@@ -31,7 +31,7 @@
         else
         {
             <QuickGrid @ref="itemsGrid" Items="@rows.AsQueryable()" Virtualize="true" ItemSize="50"
-                       OnRowClick="@((Row row) => statusMessage = $"Activated: {row.Index}")"
+                       OnRowClick="@((Row row) => HandleRowClick(row))"
                        InitialItemIndex="@initialItemIndex">
                 <TemplateColumn Title="Item" Class="qg-scroll-cell">
                     <div class="item" data-index="@context.Index" style="min-height: @(context.Height)px; line-height: @(context.Height)px;">Item @context.Index</div>
@@ -75,11 +75,17 @@
     <button id="toggle-delay" @onclick="ToggleDelay">
         Provider Delay: @(useProviderDelay ? "150ms" : "None")
     </button>
+    @if (TestConfiguration == "refresh-on-row-click")
+    {
+        <button id="refresh-items" @onclick="@(() => ActiveGrid.RefreshDataAsync())">Refresh Items</button>
+    }
 </div>
 
 <p id="status">@statusMessage</p>
 
 @code {
+    [Parameter] public string TestConfiguration { get; set; }
+
     private sealed class Row
     {
         public int Index { get; set; }
@@ -106,6 +112,15 @@
 #nullable restore
 
     private QuickGrid<Row> ActiveGrid => useItemsProvider ? providerGrid : itemsGrid;
+
+    private async Task HandleRowClick(Row row)
+    {
+        statusMessage = $"Activated: {row.Index}";
+        if (TestConfiguration == "refresh-on-row-click")
+        {
+            await ActiveGrid.RefreshDataAsync();
+        }
+    }
 
     protected override void OnInitialized()
     {

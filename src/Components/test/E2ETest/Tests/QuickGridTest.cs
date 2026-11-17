@@ -8,6 +8,7 @@ using Microsoft.AspNetCore.Components.E2ETest.Infrastructure;
 using Microsoft.AspNetCore.Components.E2ETest.Infrastructure.ServerFixtures;
 using Microsoft.AspNetCore.E2ETesting;
 using OpenQA.Selenium;
+using OpenQA.Selenium.Interactions;
 using OpenQA.Selenium.Support.Extensions;
 using Xunit.Abstractions;
 
@@ -228,6 +229,85 @@ public class QuickGridTest : ServerTestBase<ToggleExecutionModeServerFixture<Pro
         Browser.Equal("PersonId: 11898", () => app.FindElement(By.Id("clicked-person-id")).Text);
         Browser.Equal("Name: Jose Hernandez", () => app.FindElement(By.Id("clicked-person-name")).Text);
         Browser.Equal("Click count: 2", () => app.FindElement(By.Id("click-count")).Text);
+    }
+
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public void OnRowClickKeyboardActivation(bool useSpace)
+    {
+        var grid = app.FindElement(By.CssSelector("#grid > table"));
+        var firstRow = grid.FindElement(By.CssSelector("tbody > tr:nth-child(1)"));
+        var secondRow = grid.FindElement(By.CssSelector("tbody > tr:nth-child(2)"));
+        var key = useSpace ? Keys.Space : Keys.Enter;
+
+        grid.FindElement(By.CssSelector("thead th:last-child .col-title")).SendKeys(Keys.Tab);
+        Browser.Equal(firstRow, () => Browser.SwitchTo().ActiveElement());
+
+        new Actions(Browser).SendKeys(key).Perform();
+
+        Browser.Equal("PersonId: 11203", () => app.FindElement(By.Id("clicked-person-id")).Text);
+        Browser.Equal("Click count: 1", () => app.FindElement(By.Id("click-count")).Text);
+
+        new Actions(Browser).SendKeys(Keys.Tab).Perform();
+        Browser.Equal(secondRow, () => Browser.SwitchTo().ActiveElement());
+
+        new Actions(Browser).SendKeys(key).Perform();
+
+        Browser.Equal("PersonId: 11205", () => app.FindElement(By.Id("clicked-person-id")).Text);
+        Browser.Equal("Click count: 2", () => app.FindElement(By.Id("click-count")).Text);
+    }
+
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public void OnRowClickKeyboardActivationIgnoresInteractiveDescendants(bool useSpace)
+    {
+        app = Browser.MountTestComponent<SampleQuickGridComponent>("keyboard-controls");
+        var firstRow = app.FindElement(By.CssSelector("#grid tbody > tr:first-child"));
+        var input = firstRow.FindElement(By.ClassName("row-input"));
+        var button = firstRow.FindElement(By.ClassName("row-button"));
+        var key = useSpace ? Keys.Space : Keys.Enter;
+
+        input.SendKeys(key);
+
+        Browser.Equal("1", () => app.FindElement(By.Id("input-key-count")).Text);
+        Assert.Equal(useSpace ? " " : "", input.GetDomProperty("value"));
+        Browser.Exists(By.Id("no-click"));
+
+        button.SendKeys(key);
+
+        Browser.Equal("1", () => app.FindElement(By.Id("button-click-count")).Text);
+        Browser.Exists(By.Id("no-click"));
+    }
+
+    [Fact]
+    public void VirtualizedRowRetainsFocusWhenItemsAreReplaced()
+    {
+        app = Browser.MountTestComponent<QuickGridScrollComponent>("refresh-on-row-click");
+        app.FindElement(By.Id("toggle-provider")).Click();
+        Browser.Equal("Switched to ItemsProvider", () => app.FindElement(By.Id("status")).Text);
+
+        var rowSelector = By.CssSelector("#scroll-container tr[aria-rowindex='4']");
+        var row = Browser.Exists(rowSelector);
+        row.SendKeys(Keys.Enter);
+
+        Browser.Equal("Activated: 2", () => app.FindElement(By.Id("status")).Text);
+        Browser.True(() => row.IsStale());
+        var replacementRow = Browser.Exists(rowSelector);
+        Browser.Equal(replacementRow, () => Browser.SwitchTo().ActiveElement());
+
+        new Actions(Browser).SendKeys(Keys.Space).Perform();
+
+        Browser.True(() => replacementRow.IsStale());
+        Browser.Equal(Browser.Exists(rowSelector), () => Browser.SwitchTo().ActiveElement());
+
+        var refreshedRow = Browser.Exists(rowSelector);
+        var refreshButton = app.FindElement(By.Id("refresh-items"));
+        refreshButton.Click();
+
+        Browser.True(() => refreshedRow.IsStale());
+        Browser.Equal(refreshButton, () => Browser.SwitchTo().ActiveElement());
     }
 
     [Fact]
