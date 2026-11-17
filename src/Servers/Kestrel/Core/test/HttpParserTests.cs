@@ -126,6 +126,27 @@ public class HttpParserTests : LoggedTest
         Assert.Equal(StatusCodes.Status400BadRequest, exception.StatusCode);
     }
 
+    [Theory]
+    [InlineData("GET /aHTTP/1.1\r\n")]
+    [InlineData("GET /aHTTP/1.1\n")]
+    [InlineData("GET /xHTTP/1.0\n")]
+    [InlineData("CUSTOM /aHTTP/1.1\r\n")]
+    [InlineData("CUSTOM /aHTTP/1.1\n")]
+    public void ParseRequestLineThrowsWhenTargetIsNotFollowedBySpace(string requestLine)
+    {
+        var parser = CreateParser(CreateEnabledTrace(), disableHttp1LineFeedTerminators: false);
+        var buffer = new ReadOnlySequence<byte>(Encoding.ASCII.GetBytes(requestLine));
+        var requestHandler = new RequestHandler();
+
+#pragma warning disable CS0618 // Type or member is obsolete
+        var exception = Assert.Throws<BadHttpRequestException>(() =>
+#pragma warning restore CS0618 // Type or member is obsolete
+            ParseRequestLine(parser, requestHandler, buffer, out var consumed, out var examined));
+
+        Assert.Equal(CoreStrings.FormatBadRequest_InvalidRequestLine_Detail(requestLine[..^1].EscapeNonPrintable()), exception.Message);
+        Assert.Equal(StatusCodes.Status400BadRequest, exception.StatusCode);
+    }
+
     [Fact]
     public void ParseRequestLine_SignalsAcceptedBareLineFeedTerminator()
     {
