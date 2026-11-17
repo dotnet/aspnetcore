@@ -497,6 +497,65 @@ public class EditContextTest
         Assert.True(editContext.IsFormValid);
     }
 
+    [Fact]
+    public void IsFormValid_MessageAddedWithoutNotification_ReturnsFalse()
+    {
+        var editContext = new EditContext(new object());
+        var messages = new ValidationMessageStore(editContext);
+        var notificationCount = 0;
+        editContext.OnValidationStateChanged += (_, _) => notificationCount++;
+        Assert.True(editContext.IsFormValid);
+
+        messages.Add(editContext.Field("field"), "Error");
+
+        Assert.False(editContext.IsFormValid);
+        Assert.Equal(0, notificationCount);
+    }
+
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public void IsFormValid_MessagesClearedWithoutNotification_ReturnsTrue(bool clearField)
+    {
+        var editContext = new EditContext(new object());
+        var messages = new ValidationMessageStore(editContext);
+        var field = editContext.Field("field");
+        messages.Add(field, "Error");
+        editContext.NotifyValidationStateChanged();
+        Assert.False(editContext.IsFormValid);
+        var notificationCount = 0;
+        editContext.OnValidationStateChanged += (_, _) => notificationCount++;
+
+        if (clearField)
+        {
+            messages.Clear(field);
+        }
+        else
+        {
+            messages.Clear();
+        }
+
+        Assert.True(editContext.IsFormValid);
+        Assert.Equal(0, notificationCount);
+    }
+
+    [Fact]
+    public void Validate_HandlerAddsMessagesWithoutNotification_ReturnAndPropertyAreFalse()
+    {
+        var editContext = new EditContext(new object());
+        var messages = new ValidationMessageStore(editContext);
+        var notificationCount = 0;
+        editContext.OnValidationStateChanged += (_, _) => notificationCount++;
+        editContext.OnValidationRequested += (_, _) => messages.Add(editContext.Field("field"), "Error");
+        Assert.True(editContext.IsFormValid);
+
+        var result = editContext.Validate();
+
+        Assert.False(result);
+        Assert.False(editContext.IsFormValid);
+        Assert.Equal(0, notificationCount);
+    }
+
     class EquatableModel : IEquatable<EquatableModel>
     {
         public string Property { get; set; } = "";

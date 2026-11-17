@@ -20,7 +20,6 @@ public sealed class EditContext
     private readonly Dictionary<FieldIdentifier, FieldState> _fieldStates = new Dictionary<FieldIdentifier, FieldState>();
     private bool _isFormValidationFaulted;
     private bool _isFormValidationPending;
-    private bool _isValid = true;
     private static readonly ValidationStateChangedEventArgs _validArgs =
         new ValidationStateChangedEventArgs(true);
 
@@ -29,10 +28,7 @@ public sealed class EditContext
 
     private bool ComputeIsValid()
     {
-        // Uses lazy enumeration + Any()
-        // → O(1) in invalid case (short-circuits)
-        // → Full traversal only when fully valid
-        return !GetValidationMessages().Any();
+        return !_isFormValidationFaulted && !GetValidationMessages().Any();
     }
 
     /// <summary>
@@ -101,7 +97,7 @@ public sealed class EditContext
     /// <summary>
     /// Gets a value indicating whether the <see cref="EditContext"/> is currently valid.
     /// </summary>
-    public bool IsFormValid => _isValid;
+    public bool IsFormValid => ComputeIsValid();
 
     /// <summary>
     /// Signals that the value for the specified field has changed.
@@ -119,9 +115,6 @@ public sealed class EditContext
     public void NotifyValidationStateChanged()
     {
         var isValid = ComputeIsValid();
-        // Track current validity so it can be exposed via IsValid.
-        // The event is intentionally raised every time to preserve existing behavior.
-        _isValid = isValid;
         OnValidationStateChanged?.Invoke(this, isValid ? _validArgs : _invalidArgs);
     }
 
@@ -260,11 +253,20 @@ public sealed class EditContext
     [Obsolete("Validate is obsolete. Use ValidateAsync instead.")]
     public bool Validate()
     {
-        // Sync pass: args.IsAsync is false, so AddAsyncValidator throws. A handler exception propagates.
-        OnValidationRequested?.Invoke(this, new ValidationRequestedEventArgs());
-
-        // A clean sync pass produced no infrastructure fault.
+        var wasFormValidationFaulted = _isFormValidationFaulted;
         _isFormValidationFaulted = false;
+
+        try
+        {
+            // Sync pass: args.IsAsync is false, so AddAsyncValidator throws. A handler exception propagates.
+            OnValidationRequested?.Invoke(this, new ValidationRequestedEventArgs());
+        }
+        catch
+        {
+            // Only a completed validation pass clears the previous form-level fault.
+            _isFormValidationFaulted = wasFormValidationFaulted;
+            throw;
+        }
 
         return !GetValidationMessages().Any();
     }
