@@ -24,11 +24,11 @@ def check(name, conclusion="SUCCESS", status="COMPLETED"):
 
 def make_pr(number=1, title="t", head="h", body="", author=HUMAN, contexts=(), rollup="SUCCESS",
             review="APPROVED", merge_state="CLEAN", mergeable="MERGEABLE", draft=False,
-            repo="dotnet/aspnetcore", comments=()):
+            repo="dotnet/aspnetcore", comments=(), base="main"):
     return {
         "number": number, "title": title, "url": f"https://github.com/{repo}/pull/{number}",
         "isDraft": draft, "createdAt": "2026-11-10T00:00:00Z", "updatedAt": "2026-11-16T00:00:00Z",
-        "body": body, "baseRefName": "main", "headRefName": head, "mergeable": mergeable,
+        "body": body, "baseRefName": base, "headRefName": head, "mergeable": mergeable,
         "mergeStateStatus": merge_state, "reviewDecision": review,
         "repository": {"nameWithOwner": repo}, "author": author, "labels": {"nodes": []},
         "commits": {"nodes": [{"commit": {"committedDate": "2026-11-16T00:00:00Z", "statusCheckRollup": {
@@ -77,6 +77,18 @@ class CategoryTests(unittest.TestCase):
             title="[automated] Merge branch 'release/11.0' => 'main'", head="merge/release/11.0-to-main")))
         self.assertFalse(inv.matches_category("inter-branch-merges", make_pr(
             title="Bump inter-branch-merge-base.yml (Merge branch)", head="dependabot/github_actions/x")))
+
+
+class AdminElevationTests(unittest.TestCase):
+    def test_only_aspnetcore_release_branches_require_elevation(self):
+        self.assertTrue(inv.requires_admin_elevation(make_pr(base="release/10.0")))
+        self.assertFalse(inv.requires_admin_elevation(make_pr(base="main")))
+        self.assertFalse(inv.requires_admin_elevation(make_pr(base="release/10.0.1xx", repo="dotnet/dotnet")))
+
+    def test_markdown_reminds_user_to_elevate(self):
+        item = inv.build_item("dependency-updates", make_pr(base="release/10.0"), NOW)
+        result = {"generatedAt": "now", "categories": ["dependency-updates"], "excluded": {}, "items": [item]}
+        self.assertIn(inv.ADMIN_ELEVATION_URL, inv.render_markdown(result))
 
 
 class PingTests(unittest.TestCase):

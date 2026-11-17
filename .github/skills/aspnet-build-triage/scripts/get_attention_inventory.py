@@ -15,6 +15,7 @@ from datetime import datetime, timezone
 from typing import Any, Iterable
 
 ASPNETCORE = "dotnet/aspnetcore"
+ADMIN_ELEVATION_URL = "https://repos.opensource.microsoft.com/orgs/dotnet/repos/aspnetcore"
 VMR = "dotnet/dotnet"
 TEAM = "dotnet/aspnet-build"
 TEAM_MENTION = re.compile(r"(?<![\w/-])@dotnet/aspnet-build(?![\w-])", re.IGNORECASE)
@@ -236,6 +237,11 @@ def age_days(timestamp: str, now: datetime) -> int:
     return (now - datetime.fromisoformat(timestamp.replace("Z", "+00:00"))).days
 
 
+def requires_admin_elevation(pr: dict[str, Any]) -> bool:
+    """Changing aspnetcore release/* PRs requires temporarily elevating to repo admin."""
+    return pr["repository"]["nameWithOwner"] == ASPNETCORE and pr["baseRefName"].startswith("release/")
+
+
 def build_item(category: str, pr: dict[str, Any], now: datetime) -> dict[str, Any]:
     checks = summarize_checks(pr)
     item = {
@@ -257,6 +263,7 @@ def build_item(category: str, pr: dict[str, Any], now: datetime) -> dict[str, An
         "labels": [label["name"] for label in pr["labels"]["nodes"]],
         "checks": checks,
         "nextAction": next_action(pr, checks),
+        "requiresAdminElevation": requires_admin_elevation(pr),
     }
     if category == "vmr-pings":
         item["ping"] = find_human_pings(pr)
@@ -317,9 +324,13 @@ def render_markdown(result: dict[str, Any]) -> str:
                 repliers = sorted({r["by"] for r in p["repliedAfterPing"]})
                 replied = "replied by " + ", ".join(repliers) if repliers else "no reply yet"
                 details.append(f"pinged by @{p['pingedBy']} on {p['pingedAt'][:10]} ({replied})")
+            if i["requiresAdminElevation"]:
+                details.append("release branch: elevate to admin before acting")
             ref = f"#{i['number']}" if i["repo"] == ASPNETCORE else f"{i['repo']}#{i['number']}"
             lines.append(f"- {ref}: " + " — ".join(details))
         lines.append("")
+    if any(i["requiresAdminElevation"] for i in result["items"]):
+        lines += [f"Before acting on a `release/*` PR, temporarily elevate to administrator at {ADMIN_ELEVATION_URL}.", ""]
     if result["excluded"]:
         lines.append("Excluded: " + ", ".join(f"{k}={v}" for k, v in result["excluded"].items()))
     return "\n".join(lines).rstrip() + "\n"
