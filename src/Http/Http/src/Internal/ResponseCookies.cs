@@ -87,12 +87,15 @@ internal sealed partial class ResponseCookies : IResponseCookies
             }
         }
 
+        var cookieSuffix = options.CreateCookieHeader(string.Empty, string.Empty).ToString().AsSpan(1);
         var cookies = new string[keyValuePairs.Length];
         var position = 0;
 
         foreach (var keyValuePair in keyValuePairs)
         {
-            cookies[position++] = options.CreateCookieHeader(keyValuePair.Key, Uri.EscapeDataString(keyValuePair.Value)).ToString();
+            CookieHeaderValue.CheckNameFormat(keyValuePair.Key, nameof(keyValuePair.Key));
+            cookies[position] = string.Concat(keyValuePair.Key, "=", Uri.EscapeDataString(keyValuePair.Value), cookieSuffix);
+            position++;
         }
 
         // Can't use += as StringValues does not override operator+
