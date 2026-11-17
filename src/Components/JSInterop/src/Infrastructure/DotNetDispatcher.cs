@@ -24,6 +24,9 @@ namespace Microsoft.JSInterop.Infrastructure;
 public static class DotNetDispatcher
 {
     private const string DisposeDotNetObjectReferenceMethodName = "__Dispose";
+    private const string JSInteropAssemblyName = "Microsoft.JSInterop";
+    private const string AbortSignalAbortedMethodName = "__AbortSignalAborted";
+    private const string AbortSignalReleasedMethodName = "__AbortSignalReleased";
 
     internal static readonly JsonEncodedText DotNetObjectRefKey = JsonEncodedText.Encode("__dotNetObject");
 
@@ -174,6 +177,13 @@ public static class DotNetDispatcher
         Type[] parameterTypes;
         if (objectReference is null)
         {
+            if (string.Equals(JSInteropAssemblyName, assemblyName, StringComparison.Ordinal)
+                && TryInvokeAbortSignalCallback(jsRuntime, methodIdentifier, argsJson, out var callbackResult))
+            {
+                returnType = callbackResult is null ? null : typeof(Task);
+                return callbackResult;
+            }
+
             assemblyKey = new AssemblyKey(assemblyName!);
             (methodInfo, parameterTypes) = GetCachedMethodInfo(assemblyKey, methodIdentifier);
         }
@@ -221,6 +231,36 @@ public static class DotNetDispatcher
             // more data than the .NET data model (like overposting)
             jsRuntime.ByteArraysToBeRevived.Clear();
         }
+    }
+
+    // Messages the JS side sends for an AbortSignal it passed as an argument. Not [JSInvokable] methods, so no public API.
+    private static bool TryInvokeAbortSignalCallback(JSRuntime jsRuntime, string methodIdentifier, string argsJson, out object? result)
+    {
+        result = null;
+        if (!string.Equals(AbortSignalAbortedMethodName, methodIdentifier, StringComparison.Ordinal)
+            && !string.Equals(AbortSignalReleasedMethodName, methodIdentifier, StringComparison.Ordinal))
+        {
+            return false;
+        }
+
+        var reader = new Utf8JsonReader(Encoding.UTF8.GetBytes(argsJson));
+        if (!reader.Read() || reader.TokenType != JsonTokenType.StartArray
+            || !reader.Read() || !reader.TryGetInt64(out var abortSignalId)
+            || !reader.Read() || reader.TokenType != JsonTokenType.EndArray)
+        {
+            throw new JsonException($"'{methodIdentifier}' expects one AbortSignal id.");
+        }
+
+        if (string.Equals(AbortSignalAbortedMethodName, methodIdentifier, StringComparison.Ordinal))
+        {
+            result = jsRuntime.AbortSignalAborted(abortSignalId);
+        }
+        else
+        {
+            jsRuntime.AbortSignalReleased(abortSignalId);
+        }
+
+        return true;
     }
 
     [UnconditionalSuppressMessage("Trimming", "IL2026", Justification = "We expect application code is configured to ensure return types of JSInvokable methods are retained.")]
@@ -284,8 +324,7 @@ public static class DotNetDispatcher
                     jsonReader.ValueTextEquals(DotNetObjectRefKey.EncodedUtf8Bytes))
                 {
                     // The JSON payload has the shape we expect from a DotNetObjectRef instance.
-                    return parameterType != typeof(CancellationToken)
-                        && (!parameterType.IsGenericType || parameterType.GetGenericTypeDefinition() != typeof(DotNetObjectReference<>));
+                    return !parameterType.IsGenericType || parameterType.GetGenericTypeDefinition() != typeof(DotNetObjectReference<>);
                 }
 
                 return false;

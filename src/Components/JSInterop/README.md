@@ -56,11 +56,12 @@ pending or returns normally, and a handler that catches cancellation can return 
 normal result. An already-aborted signal still invokes the method with an already
 canceled token. Browser abort reasons are not translated into .NET exceptions.
 
-The async invocation pipeline establishes any needed reference bridge before
-dispatching the application call. Repeated and concurrent uses of one signal share
-its projection in that runtime. Application getters and `toJSON` run once; byte-array
-snapshots are transmitted only after asynchronous preparation, immediately before
-the application invocation. Explicit generic `createJSObjectReference(signal)` values
+JavaScript gives each signal an id and serializes it as `{"__abortSignal": <id>}`
+(id 0 for a signal that is already aborted), so the call is sent at once, with no
+extra round trip. .NET creates the token's source for that id when it reads the
+arguments. Later, JavaScript sends a one-way "aborted" or "released" message for the
+id. Repeated and concurrent uses of one signal send the same id and share one token
+in that runtime. Explicit generic `createJSObjectReference(signal)` values
 remain generic references, rather than implicitly changing their target type.
 
 ### .NET token to JavaScript signal
@@ -86,8 +87,8 @@ and already-canceled tokens need no live bridge. Each live serialized token occu
 has its own observer, so an earlier signal's cleanup cannot revoke a later in-flight
 projection of the same token.
 
-The runtimes own cleanup. Incoming links are released after abort notification and
-outstanding argument uses; outgoing observers are released after notification.
+The runtimes own cleanup. Incoming token sources are released after the abort
+message; outgoing observers are released after notification.
 `WeakRef` and `FinalizationRegistry` also release links when the browser signal is
 collected without cancellation. Collection is nondeterministic and does not request
 cancellation. Live signals can retain their registrations and interop references.
@@ -99,9 +100,9 @@ arguments: `args: [cts.Token]` is intentional. The separate invocation-control t
 still cancels only the managed wait and does not become an AbortSignal or stop the
 JavaScript function. There is no operation-cancellation mode, forced promise rejection,
 or application-owned reference lifetime. Async bridge notification/cleanup failures
-are reported to the browser console; setup failures reject the invocation normally.
+are reported to the browser console.
 
-The marshalling convention and framework callback surface are experimental and require API review.
+The marshalling convention is experimental and requires API review.
 Both directions have Server and WebAssembly browser scenarios in `InteropCancellationTest`.
 WebView, Native AOT/trimming, multithreaded WebAssembly, multiple attached runtimes,
 Auto activation transitions, and circuit reconnect/resumption require separate

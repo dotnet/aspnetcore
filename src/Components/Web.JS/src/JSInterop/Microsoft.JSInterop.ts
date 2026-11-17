@@ -17,6 +17,7 @@ const dotNetElementRefKey = '__internalId';
 const byteArrayRefKey = '__byte[]';
 const dotNetStreamRefKey = '__dotNetStream';
 const jsStreamReferenceLengthKey = '__jsStreamReferenceLength';
+const abortSignalKey = '__abortSignal';
 
 // If undefined, no dispatcher has been attached yet.
 // If null, this means more than one dispatcher was attached, so no default can be determined.
@@ -97,7 +98,6 @@ let nextJsObjectId = 1; // Start at 1 because zero is reserved for "window"
 
 const signalControllers = new WeakMap<AbortSignal, AbortController>();
 const signalFinalizer = new FinalizationRegistry<AutomaticSignalObservation>(releaseSignalObservation);
-const incomingSignalFinalizer = new FinalizationRegistry<JSAbortSignalReference>(owner => owner.requestRelease());
 
 interface AutomaticSignalObservation {
   reference: DotNetObject;
@@ -137,112 +137,16 @@ function createAbortSignal(reference: DotNetObject | null, isCancellationRequest
   return controller.signal;
 }
 
-class JSAbortSignalReference {
-  private readonly _signal: WeakRef<AbortSignal>;
+interface ObservedAbortSignal {
+  dispatcher: CallDispatcher;
+  id: number;
+}
 
-  private readonly _signalReference: any;
+// Never holds the signal, so a signal its controller has dropped can still be collected.
+const abortSignalFinalizer = new FinalizationRegistry<ObservedAbortSignal>(releaseAbortSignal);
 
-  private _reference?: DotNetObject;
-
-  private _initialization?: Promise<DotNetObject>;
-
-  private _onAbort?: () => void;
-
-  private _notification: Promise<void> = Promise.resolve();
-
-  private _disposal?: Promise<void>;
-
-  private _leases = 0;
-
-  private _releaseRequested = false;
-
-  private _aborted = false;
-
-  private _hasDispatched = false;
-
-  constructor(signal: AbortSignal, private readonly _dispatcher: CallDispatcher) {
-    this._signal = new WeakRef(signal);
-    this._signalReference = createJSObjectReference(this);
-    this._onAbort = this.abort.bind(this);
-    incomingSignalFinalizer.register(signal, this, this);
-  }
-
-  get available(): boolean {
-    return this._disposal === undefined;
-  }
-
-  acquire(): Promise<DotNetObject> {
-    this._leases++;
-    return this._initialization ??= this.initialize();
-  }
-
-  release(failed: boolean): void {
-    this._leases--;
-    this._hasDispatched ||= !failed;
-    if (this._releaseRequested || (failed && !this._hasDispatched && this._leases === 0)) {
-      this.requestRelease();
-    }
-  }
-
-  requestRelease(): void {
-    this._releaseRequested = true;
-    if (this._leases === 0 && !this._disposal) {
-      this._disposal = this.disposeCore();
-      this._disposal.catch(error => console.error(error));
-    }
-  }
-
-  private async initialize(): Promise<DotNetObject> {
-    const signal = this._signal.deref()!;
-    const reference = await this._dispatcher.invokeDotNetStaticMethodAsync<DotNetObject>('Microsoft.JSInterop', 'CreateCancellationTokenReference', this._signalReference, signal.aborted);
-    this._reference = reference;
-    signal.addEventListener('abort', this._onAbort!, { once: true });
-    if (signal.aborted) {
-      this.abort();
-    }
-    await this._notification;
-    return reference;
-  }
-
-  private abort(): void {
-    if (!this._aborted) {
-      this._aborted = true;
-      this._notification = this._reference!.invokeMethodAsync<void>('CancelAsync');
-      this._notification.then(
-        () => this.requestRelease(),
-        error => {
-          console.error(error); this.requestRelease();
-        }
-      );
-    }
-  }
-
-  dispose() {
-    if (this._onAbort) {
-      this._signal.deref()?.removeEventListener('abort', this._onAbort);
-      this._onAbort = undefined;
-    }
-  }
-
-  private async disposeCore(): Promise<void> {
-    try {
-      await this._initialization;
-    } finally {
-      this.dispose();
-      incomingSignalFinalizer.unregister(this);
-      try {
-        await this._notification;
-      } finally {
-        try {
-          if (this._reference) {
-            await this._reference.invokeMethodAsync<void>('DisposeAsync');
-          }
-        } finally {
-          disposeJSObjectReference(this._signalReference);
-        }
-      }
-    }
-  }
+function releaseAbortSignal(observed: ObservedAbortSignal): void {
+  observed.dispatcher.sendAbortSignalMessage('__AbortSignalReleased', observed.id);
 }
 
 /**
@@ -414,7 +318,6 @@ function getDefaultCallDispatcher(): CallDispatcher {
 interface PendingAsyncCall<T> {
   resolve: (value?: T | PromiseLike<T>) => void;
   reject: (reason?: any) => void;
-  cleanup?: () => void;
 }
 
 /**
@@ -545,8 +448,6 @@ export interface ICallDispatcher {
 }
 
 class CallDispatcher implements ICallDispatcher {
-  private readonly _abortSignals = new WeakMap<AbortSignal, JSAbortSignalReference>();
-
   private readonly _byteArraysToBeRevived = new Map<number, Uint8Array>();
 
   private readonly _pendingDotNetToJSStreams = new Map<number, PendingStream>();
@@ -555,12 +456,52 @@ class CallDispatcher implements ICallDispatcher {
 
   private _nextAsyncCallId = 1; // Start at 1 because zero signals "no response needed"
 
+  private readonly _abortSignalIds = new WeakMap<AbortSignal, number>();
+
+  private _nextAbortSignalId = 1; // Start at 1 because zero marks an already aborted signal
+
   // eslint-disable-next-line no-empty-function
   constructor(private readonly _dotNetCallDispatcher: DotNetCallDispatcher) {
   }
 
   getDotNetCallDispatcher(): DotNetCallDispatcher {
     return this._dotNetCallDispatcher;
+  }
+
+  serializeAbortSignal(signal: AbortSignal): object {
+    if (signal.aborted) {
+      return { [abortSignalKey]: 0 };
+    }
+
+    let id = this._abortSignalIds.get(signal);
+    if (id === undefined) {
+      id = this._nextAbortSignalId++;
+      this._abortSignalIds.set(signal, id);
+      this.observeAbortSignal(signal, id);
+    }
+
+    return { [abortSignalKey]: id };
+  }
+
+  sendAbortSignalMessage(methodIdentifier: string, id: number): void {
+    try {
+      // Call id zero asks for no result, so the message is one-way.
+      this._dotNetCallDispatcher.beginInvokeDotNetFromJS(0, 'Microsoft.JSInterop', methodIdentifier, null, JSON.stringify([id]));
+    } catch (error) {
+      console.error(error);
+    }
+  }
+
+  private observeAbortSignal(signal: AbortSignal, id: number): void {
+    const observed: ObservedAbortSignal = { dispatcher: this, id };
+    const onAbort = (event: Event) => {
+      event.target!.removeEventListener('abort', onAbort);
+      abortSignalFinalizer.unregister(observed);
+      // Deferred so that an abort raised while arguments are serialized does not start a nested call.
+      Promise.resolve().then(() => this.sendAbortSignalMessage('__AbortSignalAborted', id));
+    };
+    signal.addEventListener('abort', onAbort);
+    abortSignalFinalizer.register(signal, observed, observed);
   }
 
   invokeJSFromDotNet(identifier: string, argsJson: string, resultType: JSCallResultType, targetInstanceId: number, callType: JSCallType): string | null {
@@ -642,60 +583,14 @@ class CallDispatcher implements ICallDispatcher {
     });
 
     try {
-      const serialization: DotNetArgumentSerialization = { signals: [], signalPaths: [], paths: new WeakMap(), rootSeen: false, byteArrays: [] };
-      const argsJson = stringifyArgs(this, args, serialization);
-      if (serialization.signals.length === 0) {
-        this.dispatchDotNetCall(asyncCallId, assemblyName, methodIdentifier, dotNetObjectId, argsJson, serialization.byteArrays);
-      } else {
-        this.prepareSignalArguments(argsJson, serialization).then(prepared => {
-          this._pendingAsyncCalls[asyncCallId].cleanup = () => prepared.owners.forEach(owner => owner.release(false));
-          try {
-            this.dispatchDotNetCall(asyncCallId, assemblyName, methodIdentifier, dotNetObjectId, prepared.json, serialization.byteArrays);
-          } catch (error) {
-            this._pendingAsyncCalls[asyncCallId].cleanup = () => prepared.owners.forEach(owner => owner.release(true));
-            this.completePendingCall(asyncCallId, false, error);
-          }
-        }, error => this.completePendingCall(asyncCallId, false, error));
-      }
+      const argsJson = stringifyArgs(this, args);
+      this._dotNetCallDispatcher.beginInvokeDotNetFromJS(asyncCallId, assemblyName, methodIdentifier, dotNetObjectId, argsJson);
     } catch (ex) {
       // Synchronous failure
       this.completePendingCall(asyncCallId, false, ex);
     }
 
     return resultPromise;
-  }
-
-  private dispatchDotNetCall(callId: number, assemblyName: string | null, methodIdentifier: string, objectId: number | null, json: string, byteArrays: Uint8Array[]): void {
-    byteArrays.forEach((value, id) => this._dotNetCallDispatcher.sendByteArray(id, value));
-    this._dotNetCallDispatcher.beginInvokeDotNetFromJS(callId, assemblyName, methodIdentifier, objectId, json);
-  }
-
-  private async prepareSignalArguments(json: string, serialization: DotNetArgumentSerialization): Promise<{ json: string, owners: JSAbortSignalReference[] }> {
-    const owners = serialization.signals.map(signal => {
-      let owner = this._abortSignals.get(signal);
-      if (!owner?.available) {
-        owner = new JSAbortSignalReference(signal, this);
-        this._abortSignals.set(signal, owner);
-      }
-      return owner;
-    });
-    try {
-      const references = await Promise.all(owners.map(owner => owner.acquire()));
-      const args = JSON.parse(json);
-      serialization.signalPaths.forEach((path, index) => {
-        let parent = args;
-        for (const part of path.slice(0, -1)) {
-          parent = parent[part];
-        }
-        parent[path[path.length - 1]] = references[index].serializeAsArg();
-      });
-      return { json: JSON.stringify(args), owners };
-    } catch (error) {
-      owners.forEach(owner => owner.release(true));
-      throw error;
-    } finally {
-      serialization.signals.length = 0;
-    }
   }
 
   receiveByteArray(id: number, data: Uint8Array): void {
@@ -752,7 +647,6 @@ class CallDispatcher implements ICallDispatcher {
 
     const asyncCall = this._pendingAsyncCalls[asyncCallId];
     delete this._pendingAsyncCalls[asyncCallId];
-    asyncCall.cleanup?.();
     if (success) {
       asyncCall.resolve(resultOrError);
     } else {
@@ -1007,29 +901,12 @@ function createJSCallResult(returnValue: any, resultType: JSCallResultType) {
 }
 
 let nextByteArrayIndex = 0;
-interface DotNetArgumentSerialization {
-  signals: AbortSignal[];
-  signalPaths: string[][];
-  paths: WeakMap<object, string[]>;
-  rootSeen: boolean;
-  byteArrays: Uint8Array[];
-}
-let currentDotNetArguments: DotNetArgumentSerialization | undefined;
-
-function stringifyArgs(callDispatcher: CallDispatcher, args: any[] | null, serialization?: DotNetArgumentSerialization) {
-  const previousDispatcher = currentCallDispatcher;
-  const previousArguments = currentDotNetArguments;
-  const previousByteArrayIndex = nextByteArrayIndex;
+function stringifyArgs(callDispatcher: CallDispatcher, args: any[] | null) {
   nextByteArrayIndex = 0;
   currentCallDispatcher = callDispatcher;
-  currentDotNetArguments = serialization;
-  try {
-    return JSON.stringify(args, argReplacer);
-  } finally {
-    currentCallDispatcher = previousDispatcher;
-    currentDotNetArguments = previousArguments;
-    nextByteArrayIndex = previousByteArrayIndex;
-  }
+  const result = JSON.stringify(args, argReplacer);
+  currentCallDispatcher = undefined;
+  return result;
 }
 
 function getCaptureIdFromElement(element: Element): string | null {
@@ -1042,35 +919,18 @@ function getCaptureIdFromElement(element: Element): string | null {
   return null;
 }
 
-function argReplacer(this: object, key: string, value: any) {
-  let path: string[] | undefined;
-  if (currentDotNetArguments) {
-    if (value && typeof value === 'object') {
-      path = currentDotNetArguments.rootSeen ? [...(currentDotNetArguments.paths.get(this) ?? []), key] : [];
-      currentDotNetArguments.paths.set(value, path);
-    }
-    currentDotNetArguments.rootSeen = true;
-  }
+function argReplacer(key: string, value: any) {
   if (value instanceof Element) {
     return { [dotNetElementRefKey]: getCaptureIdFromElement(value) };
   }
   if (value instanceof AbortSignal) {
-    if (!currentDotNetArguments) {
-      throw new Error('AbortSignal arguments require asynchronous .NET invocation.');
-    }
-    currentDotNetArguments.signals.push(value);
-    currentDotNetArguments.signalPaths.push(path!);
-    return null;
+    return currentCallDispatcher!.serializeAbortSignal(value);
   }
   if (value instanceof DotNetObject) {
     return value.serializeAsArg();
   } else if (value instanceof Uint8Array) {
     const dotNetCallDispatcher = currentCallDispatcher!.getDotNetCallDispatcher();
-    if (currentDotNetArguments) {
-      currentDotNetArguments.byteArrays.push(value.slice());
-    } else {
-      dotNetCallDispatcher!.sendByteArray(nextByteArrayIndex, value);
-    }
+    dotNetCallDispatcher!.sendByteArray(nextByteArrayIndex, value);
     const jsonValue = { [byteArrayRefKey]: nextByteArrayIndex };
     nextByteArrayIndex++;
     return jsonValue;

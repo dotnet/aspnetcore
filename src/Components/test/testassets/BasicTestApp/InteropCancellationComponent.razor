@@ -133,9 +133,11 @@
     [JSInvokable]
     public int AutomaticProjectionCount()
     {
-        var field = typeof(JSRuntime).GetField("_automaticCancellationReferences",
-            System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.NonPublic);
-        return ((System.Collections.Concurrent.ConcurrentDictionary<long, Action>)field.GetValue(JS)).Count;
+        var flags = System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.NonPublic;
+        var outgoing = typeof(JSRuntime).GetField("_automaticCancellationReferences", flags);
+        var incoming = typeof(JSRuntime).GetField("_abortSignalSources", flags);
+        return ((System.Collections.Concurrent.ConcurrentDictionary<long, Action>)outgoing.GetValue(JS)).Count
+            + ((System.Collections.Concurrent.ConcurrentDictionary<long, CancellationTokenSource>)incoming.GetValue(JS)).Count;
     }
 
     [JSInvokable]

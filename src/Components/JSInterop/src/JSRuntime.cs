@@ -27,13 +27,14 @@ public abstract partial class JSRuntime : IJSRuntime, IDisposable
     // Serialization is synchronous on the owning dispatcher; nested calls restore the previous scope.
     private List<CancellationTokenObserver>? _serializingCancellationReferences;
     private int _automaticCancellationReferencesDisposed;
+    // Keyed by the id the JS side gave the AbortSignal; JS sends "aborted" or "released" for each id.
+    private readonly ConcurrentDictionary<long, CancellationTokenSource> _abortSignalSources = new();
 
     internal readonly ArrayBuilder<byte[]> ByteArraysToBeRevived = new();
 
     /// <summary>
     /// Initializes a new instance of <see cref="JSRuntime"/>.
     /// </summary>
-    [DynamicDependency(nameof(JSCancellationTokenReference.Create), typeof(JSCancellationTokenReference))]
     protected JSRuntime()
     {
         JsonSerializerOptions = new JsonSerializerOptions
@@ -408,10 +409,6 @@ public abstract partial class JSRuntime : IJSRuntime, IDisposable
             {
                 _automaticCancellationReferences[dotNetObjectId] = observer.Dispose;
             }
-            else if (dotNetObjectReference.Value is JSCancellationTokenReference signal)
-            {
-                _automaticCancellationReferences[dotNetObjectId] = signal.DisposeManaged;
-            }
 
             if (Volatile.Read(ref _automaticCancellationReferencesDisposed) != 0
                 && _automaticCancellationReferences.TryGetValue(dotNetObjectId, out var dispose))
@@ -448,6 +445,19 @@ public abstract partial class JSRuntime : IJSRuntime, IDisposable
         _automaticCancellationReferences.TryRemove(dotNetObjectId, out _);
     }
 
+    // Id 0 is an AbortSignal that was already aborted when JS serialized it.
+    internal CancellationToken GetAbortSignalToken(long abortSignalId)
+        => abortSignalId == 0
+            ? new CancellationToken(canceled: true)
+            : _abortSignalSources.GetOrAdd(abortSignalId, static _ => new CancellationTokenSource()).Token;
+
+    internal Task AbortSignalAborted(long abortSignalId)
+        => _abortSignalSources.TryRemove(abortSignalId, out var source) ? source.CancelAsync() : Task.CompletedTask;
+
+    // The source is not disposed, because application code may still hold its token.
+    internal void AbortSignalReleased(long abortSignalId)
+        => _abortSignalSources.TryRemove(abortSignalId, out _);
+
     /// <summary>
     /// Dispose the JSRuntime.
     /// </summary>
@@ -459,6 +469,7 @@ public abstract partial class JSRuntime : IJSRuntime, IDisposable
             dispose();
         }
 
+        _abortSignalSources.Clear();
         ByteArraysToBeRevived.Dispose();
     }
 }
