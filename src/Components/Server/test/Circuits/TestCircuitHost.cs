@@ -29,10 +29,12 @@ internal class TestCircuitHost : CircuitHost
         IReadOnlyList<ComponentDescriptor> descriptors = null,
         CircuitHandler[] handlers = null,
         CircuitClientProxy clientProxy = null,
-        ILogger<CircuitHost> logger = null)
+        ILogger<CircuitHost> logger = null,
+        CircuitOptions options = null)
     {
         clientProxy = clientProxy ?? new CircuitClientProxy(Mock.Of<ISingleClientProxy>(), Guid.NewGuid().ToString());
-        var jsRuntime = new RemoteJSRuntime(Options.Create(new CircuitOptions()), Options.Create(new HubOptions<ComponentHub>()), Mock.Of<ILogger<RemoteJSRuntime>>());
+        options ??= new CircuitOptions();
+        var jsRuntime = new RemoteJSRuntime(Options.Create(options), Options.Create(new HubOptions<ComponentHub>()), Mock.Of<ILogger<RemoteJSRuntime>>());
         var navigationManager = new RemoteNavigationManager(Mock.Of<ILogger<RemoteNavigationManager>>());
         var componentsActivitySource = new ComponentsActivitySource();
         var circuitActivitySource = new CircuitActivitySource();
@@ -55,12 +57,12 @@ internal class TestCircuitHost : CircuitHost
             remoteRenderer = new RemoteRenderer(
                 serviceProvider,
                 NullLoggerFactory.Instance,
-                new CircuitOptions(),
+                options,
                 clientProxy,
                 serverComponentDeserializer,
                 NullLogger.Instance,
                 jsRuntime,
-                new CircuitJSComponentInterop(new CircuitOptions()));
+                new CircuitJSComponentInterop(options));
         }
         var linkstore = new Infrastructure.Server.ComponentsActivityLinkStore(remoteRenderer);
         circuitActivitySource.Init(linkstore);
@@ -69,7 +71,7 @@ internal class TestCircuitHost : CircuitHost
         return new TestCircuitHost(
             circuitId is null ? new CircuitId(Guid.NewGuid().ToString(), Guid.NewGuid().ToString()) : circuitId.Value,
             serviceScope.Value,
-            new CircuitOptions(),
+            options,
             clientProxy,
             remoteRenderer,
             descriptors ?? new List<ComponentDescriptor>(),

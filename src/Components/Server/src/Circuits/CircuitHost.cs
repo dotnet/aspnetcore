@@ -849,18 +849,14 @@ internal partial class CircuitHost : IAsyncDisposable
                     }
                 }
 
-                var operationsTask = PerformRootComponentOperations(operations, shouldWaitForQuiescence, postRemovalTask);
+                var operationsTask = PerformRootComponentOperations(
+                    operations,
+                    shouldWaitForQuiescence,
+                    postRemovalTask,
+                    shouldWaitForQuiescence ? LogRootComponentInitializationFailure : null);
                 taskCompletionSource?.SetResult();
 
-                try
-                {
-                    await operationsTask;
-                }
-                catch (Exception ex) when (shouldWaitForQuiescence)
-                {
-                    Log.RootComponentInitializationFailed(_logger, ex);
-                    throw;
-                }
+                await operationsTask;
 
                 await Client.SendAsync("JS.EndUpdateRootComponents", batchId);
 
@@ -899,7 +895,8 @@ internal partial class CircuitHost : IAsyncDisposable
     private async ValueTask PerformRootComponentOperations(
         RootComponentOperation[] operations,
         bool shouldWaitForQuiescence,
-        Task postStateTask)
+        Task postStateTask,
+        Action<Exception> onComponentInitializationFailed)
     {
         var webRootComponentManager = Renderer.GetOrCreateWebRootComponentManager();
         webRootComponentManager.SetCurrentUpdateTask(postStateTask);
@@ -922,7 +919,8 @@ internal partial class CircuitHost : IAsyncDisposable
                             operation.SsrComponentId,
                             operation.Descriptor.ComponentType,
                             operation.Marker.Value.Key,
-                            operation.Descriptor.Parameters);
+                            operation.Descriptor.Parameters,
+                            onComponentInitializationFailed);
 
                         pendingTasks?[i] = task;
                         break;
@@ -948,6 +946,9 @@ internal partial class CircuitHost : IAsyncDisposable
             await Task.WhenAll(pendingTasks);
         }
     }
+
+    private void LogRootComponentInitializationFailure(Exception exception)
+        => Log.RootComponentInitializationFailed(_logger, exception);
 
     internal void AttachPersistedState(ResumedPersistedCircuitState persistedCircuitState)
     {

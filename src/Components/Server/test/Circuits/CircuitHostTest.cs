@@ -1217,6 +1217,62 @@ public class CircuitHostTest
     }
 
     [Fact]
+    public async Task UpdateRootComponents_OperationLimitRejectionDoesNotLogError()
+    {
+        var options = new CircuitOptions();
+        options.RootComponents.MaxJSRootComponents = 1;
+        var sink = new TestSink();
+        var loggerFactory = new TestLoggerFactory(sink, enabled: true);
+        var circuitHost = TestCircuitHost.Create(
+            remoteRenderer: GetRemoteRenderer(options),
+            serviceScope: new ServiceCollection().BuildServiceProvider().CreateAsyncScope(),
+            logger: loggerFactory.CreateLogger<CircuitHost>());
+
+        var evt = await Assert.RaisesAsync<UnhandledExceptionEventArgs>(
+            callback => circuitHost.UnhandledException += new UnhandledExceptionEventHandler(callback),
+            callback => circuitHost.UnhandledException -= new UnhandledExceptionEventHandler(callback),
+            () => circuitHost.UpdateRootComponents(
+                new RootComponentOperationBatch
+                {
+                    BatchId = 1,
+                    Operations =
+                    [
+                        CreateAddOperation<DynamicallyAddedComponent>(1),
+                        CreateAddOperation<DynamicallyAddedComponent>(2),
+                    ],
+                },
+                null,
+                isRestore: false,
+                CancellationToken.None));
+
+        var exception = Assert.IsType<InvalidOperationException>(evt.Arguments.ExceptionObject);
+        Assert.Equal("Exceeded the maximum number of allowed server interactive root components.", exception.Message);
+        Assert.DoesNotContain(sink.Writes, write => write.LogLevel == LogLevel.Error);
+    }
+
+    [Fact]
+    public async Task UpdateRootComponents_InboundActivityFailureDoesNotLogError()
+    {
+        var services = new ServiceCollection()
+            .AddSingleton<CircuitHandler>(new ThrowingInboundActivityCircuitHandler())
+            .BuildServiceProvider();
+        var sink = new TestSink();
+        var loggerFactory = new TestLoggerFactory(sink, enabled: true);
+        var circuitHost = TestCircuitHost.Create(
+            remoteRenderer: GetRemoteRenderer(),
+            serviceScope: services.CreateAsyncScope(),
+            logger: loggerFactory.CreateLogger<CircuitHost>());
+
+        var evt = await Assert.RaisesAsync<UnhandledExceptionEventArgs>(
+            callback => circuitHost.UnhandledException += new UnhandledExceptionEventHandler(callback),
+            callback => circuitHost.UnhandledException -= new UnhandledExceptionEventHandler(callback),
+            () => AddComponentAsync<TestComponent>(circuitHost, 1));
+
+        Assert.IsType<InvalidTimeZoneException>(evt.Arguments.ExceptionObject);
+        Assert.DoesNotContain(sink.Writes, write => write.LogLevel == LogLevel.Error);
+    }
+
+    [Fact]
     public async Task UpdateRootComponents_CanUpdateExistingRootComponent()
     {
         // Arrange
@@ -1459,7 +1515,13 @@ public class CircuitHostTest
     private async Task AddComponentAsync<TComponent>(CircuitHost circuitHost, int ssrComponentId, Dictionary<string, object> parameters = null, string componentKey = "")
         where TComponent : IComponent
     {
-        var addOperation = new RootComponentOperation
+        // Add component
+        await circuitHost.UpdateRootComponents(new() { Operations = [CreateAddOperation<TComponent>(ssrComponentId, parameters, componentKey)] }, null, false, CancellationToken.None);
+    }
+
+    private RootComponentOperation CreateAddOperation<TComponent>(int ssrComponentId, Dictionary<string, object> parameters = null, string componentKey = "")
+        where TComponent : IComponent
+        => new()
         {
             Type = RootComponentOperationType.Add,
             SsrComponentId = ssrComponentId,
@@ -1468,10 +1530,6 @@ public class CircuitHostTest
                 componentType: typeof(TComponent),
                 parameters: CreateWebRootComponentParameters(parameters)),
         };
-
-        // Add component
-        await circuitHost.UpdateRootComponents(new() { Operations = [addOperation] }, null, false, CancellationToken.None);
-    }
 
     private async Task UpdateComponentAsync<TComponent>(CircuitHost circuitHost, int ssrComponentId, Dictionary<string, object> parameters = null, string componentKey = "")
     {
@@ -1511,13 +1569,14 @@ public class CircuitHostTest
         return new ServerComponentDeserializer(_ephemeralDataProtectionProvider, NullLogger<ServerComponentDeserializer>.Instance, new RootTypeCache(), new ComponentParameterDeserializer(NullLogger<ComponentParameterDeserializer>.Instance, new ComponentParametersTypeCache()));
     }
 
-    private static TestRemoteRenderer GetRemoteRenderer()
+    private static TestRemoteRenderer GetRemoteRenderer(CircuitOptions options = null)
     {
         var serviceCollection = new ServiceCollection();
         serviceCollection.AddSingleton(new Mock<IJSRuntime>().Object);
         return new TestRemoteRenderer(
             serviceCollection.BuildServiceProvider(),
-            Mock.Of<ISingleClientProxy>());
+            Mock.Of<ISingleClientProxy>(),
+            options);
     }
 
     private static void SetupMockInboundActivityHandlers(MockSequence sequence, params Mock<CircuitHandler>[] circuitHandlers)
@@ -1576,16 +1635,16 @@ public class CircuitHostTest
 
     private class TestRemoteRenderer : RemoteRenderer
     {
-        public TestRemoteRenderer(IServiceProvider serviceProvider, ISingleClientProxy client)
+        public TestRemoteRenderer(IServiceProvider serviceProvider, ISingleClientProxy client, CircuitOptions options = null)
             : base(
                   serviceProvider,
                   NullLoggerFactory.Instance,
-                  new CircuitOptions(),
+                  options ?? new CircuitOptions(),
                   new CircuitClientProxy(client, "connection"),
                   new TestServerComponentDeserializer(),
                   NullLogger.Instance,
-                  CreateJSRuntime(new CircuitOptions()),
-                  new CircuitJSComponentInterop(new CircuitOptions()))
+                  CreateJSRuntime(options ?? new CircuitOptions()),
+                  new CircuitJSComponentInterop(options ?? new CircuitOptions()))
         {
         }
 
@@ -1599,6 +1658,13 @@ public class CircuitHostTest
 
         private static RemoteJSRuntime CreateJSRuntime(CircuitOptions options)
             => new RemoteJSRuntime(Options.Create(options), Options.Create(new HubOptions<ComponentHub>()), null);
+    }
+
+    private sealed class ThrowingInboundActivityCircuitHandler : CircuitHandler
+    {
+        public override Func<CircuitInboundActivityContext, Task> CreateInboundActivityHandler(
+            Func<CircuitInboundActivityContext, Task> next)
+            => _ => throw new InvalidTimeZoneException();
     }
 
     private class DispatcherComponent : ComponentBase, IDisposable
