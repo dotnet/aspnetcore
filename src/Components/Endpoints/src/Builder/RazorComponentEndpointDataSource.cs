@@ -193,8 +193,6 @@ internal class RazorComponentEndpointDataSource<[DynamicallyAccessedMembers(Comp
 
         foreach (var endpoint in blazorWebEndpoints)
         {
-            endpoint.Metadata.Add(BlazorWebEndpointMetadata.Instance);
-
             foreach (var convention in _conventions)
             {
                 convention(endpoint);

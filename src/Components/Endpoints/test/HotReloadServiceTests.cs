@@ -146,6 +146,32 @@ public class HotReloadServiceTests
     }
 
     [Fact]
+    public void RecomputesSharedFrameworkEndpointsWhenHotReloadChangesConventions()
+    {
+        var services = CreateServices(typeof(MockEndpointProvider));
+        var first = CreateDataSource<App>(services, ConfigureServerComponentBuilder);
+        var second = CreateDataSource<StaticComponent>(services, ConfigureServerComponentBuilder);
+        var collection = new RazorComponentEndpointDataSourceCollection();
+        collection.DataSources.Add(first);
+        collection.DataSources.Add(second);
+        using var composite = new CompositeEndpointDataSource([collection]);
+        var changeToken = composite.GetChangeToken();
+
+        Assert.Single(composite.Endpoints, endpoint => endpoint.Metadata.GetMetadata<BlazorWebEndpointMetadata>() is not null);
+
+        second.Conventions.Add(builder => builder.Metadata.Add(new TestMetadata()));
+        HotReloadService.UpdateApplication(null);
+
+        Assert.True(changeToken.HasChanged);
+        Assert.Equal(2, composite.Endpoints.Count(endpoint => endpoint.Metadata.GetMetadata<BlazorWebEndpointMetadata>() is not null));
+
+        second.Conventions.Clear();
+        HotReloadService.UpdateApplication(null);
+
+        Assert.Single(composite.Endpoints, endpoint => endpoint.Metadata.GetMetadata<BlazorWebEndpointMetadata>() is not null);
+    }
+
+    [Fact]
     public void ConfirmChangeTokenDisposedHotReload()
     {
         // Arrange

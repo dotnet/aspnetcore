@@ -15,7 +15,6 @@ using Microsoft.AspNetCore.Components.Routing;
 using Microsoft.AspNetCore.Components.Server;
 using Microsoft.AspNetCore.Components.Web;
 using Microsoft.AspNetCore.DataProtection;
-using Microsoft.AspNetCore.Routing;
 using Microsoft.Extensions.Caching.Hybrid;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Options;
@@ -48,7 +47,6 @@ public static class RazorComponentsServiceCollectionExtensions
         // Endpoints
         services.TryAddSingleton<RazorComponentEndpointDataSourceFactory>();
         services.TryAddSingleton<RazorComponentEndpointFactory>();
-        services.TryAddEnumerable(ServiceDescriptor.Singleton<MatcherPolicy, BlazorWebEndpointMatcherPolicy>());
         if (MetadataUpdater.IsSupported)
         {
             services.TryAddSingleton<HotReloadService>();

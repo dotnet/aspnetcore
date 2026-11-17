@@ -22,12 +22,6 @@ public static class RazorComponentsEndpointRouteBuilderExtensions
     /// </summary>
     /// <param name="endpoints">The <see cref="IEndpointRouteBuilder"/>.</param>
     /// <returns>An <see cref="RazorComponentsEndpointConventionBuilder"/> that can be used to further configure the API.</returns>
-    /// <remarks>
-    /// The opaque redirection and browser tools settings endpoints use the conventions of each mapped root component.
-    /// When multiple instances of the same framework endpoint match a request with equal routing priority,
-    /// one matching instance is selected with its own metadata and route values. The selected instance is unspecified
-    /// and is not guaranteed to follow root registration order.
-    /// </remarks>
     public static RazorComponentsEndpointConventionBuilder MapRazorComponents<[DynamicallyAccessedMembers(Component)] TRootComponent>(this IEndpointRouteBuilder endpoints)
     {
         ArgumentNullException.ThrowIfNull(endpoints);
@@ -48,12 +42,19 @@ public static class RazorComponentsEndpointRouteBuilderExtensions
     private static RazorComponentEndpointDataSource<TRootComponent> GetOrCreateDataSource<[DynamicallyAccessedMembers(Component)] TRootComponent>(
         IEndpointRouteBuilder endpoints)
     {
-        var dataSource = endpoints.DataSources.OfType<RazorComponentEndpointDataSource<TRootComponent>>().FirstOrDefault();
+        var collection = endpoints.DataSources.OfType<RazorComponentEndpointDataSourceCollection>().FirstOrDefault();
+        if (collection is null)
+        {
+            collection = new RazorComponentEndpointDataSourceCollection();
+            endpoints.DataSources.Add(collection);
+        }
+
+        var dataSource = collection.DataSources.OfType<RazorComponentEndpointDataSource<TRootComponent>>().FirstOrDefault();
         if (dataSource == null)
         {
             var factory = endpoints.ServiceProvider.GetRequiredService<RazorComponentEndpointDataSourceFactory>();
             dataSource = factory.CreateDataSource<TRootComponent>(endpoints);
-            endpoints.DataSources.Add(dataSource);
+            collection.DataSources.Add(dataSource);
         }
 
         return dataSource;
