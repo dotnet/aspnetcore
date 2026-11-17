@@ -49,6 +49,9 @@ Microsoft.AspNetCore.Connections.DefaultConnectionContext.DefaultConnectionConte
 Microsoft.AspNetCore.Connections.DefaultConnectionContext.DefaultConnectionContext(string! id) -> void
 Microsoft.AspNetCore.Connections.DefaultConnectionContext.User.get -> System.Security.Claims.ClaimsPrincipal?
 Microsoft.AspNetCore.Connections.DefaultConnectionContext.User.set -> void
+Microsoft.AspNetCore.Connections.Features.IAuthenticationRefreshFeature
+Microsoft.AspNetCore.Connections.Features.IAuthenticationRefreshFeature.InitialTokenLifetime.get -> System.TimeSpan?
+Microsoft.AspNetCore.Connections.Features.IAuthenticationRefreshFeature.RefreshAuthenticationAsync(System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.Task<System.TimeSpan?>!
 Microsoft.AspNetCore.Connections.Features.IConnectionCompleteFeature
 Microsoft.AspNetCore.Connections.Features.IConnectionCompleteFeature.OnCompleted(System.Func<object!, System.Threading.Tasks.Task!>! callback, object! state) -> void
 Microsoft.AspNetCore.Connections.Features.IConnectionEndPointFeature
