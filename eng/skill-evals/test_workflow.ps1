@@ -5,6 +5,22 @@ Set-StrictMode -Version 3
 
 $workflowPath = Join-Path $PSScriptRoot '../../.github/workflows/skill-evals.yml'
 $workflow = Get-Content $workflowPath -Raw
+if ($workflow -match 'both variants produced complete successful results and the skilled score met its threshold|Smoke validates the pipeline and skilled thresholds') {
+    throw 'Completion-only review/verifier smoke reporting falsely claims score thresholds were met.'
+}
+$exitOneWarning = [regex]::Match(
+    $workflow,
+    'Write-Warning\s+"(?<message>Vally exited with code 1 for ''\$evalName''\.[^"]+)"'
+)
+if (-not $exitOneWarning.Success) {
+    throw 'Workflow reporting does not retain the selected eval identity in its exit-1 warning.'
+}
+if ($exitOneWarning.Groups['message'].Value -match '(?i)both variants|skilled[^.]*threshold') {
+    throw 'The exit-1 warning makes comparison- or skilled-threshold claims that do not apply to every suite.'
+}
+if ($workflow -notmatch '(?i)Smoke[^.\r\n]*(?:does not|is not|no)[^.\r\n]*accuracy') {
+    throw 'Smoke reporting does not state that smoke completion is not accuracy evidence.'
+}
 
 if ($workflow -match '(?m)^\s{2}pull_request_review:') {
     throw 'The PAT-backed workflow must not activate from pull_request_review.'
@@ -71,6 +87,21 @@ if ($workflow -notmatch [regex]::Escape(
     'cp _trusted-control-plane/eng/skill-evals/evaluation-tools/package.json \'
 )) {
     throw 'The credentialed job does not install the trusted evaluation tool manifest.'
+}
+
+$validateJob = [regex]::Match(
+    $workflow,
+    '(?ms)^  validate:\r?\n(?<job>.*?)(?=^  \S|\z)'
+)
+if (-not $validateJob.Success) {
+    throw 'The workflow does not contain the validate job.'
+}
+$validateJobText = $validateJob.Groups['job'].Value
+if ($validateJobText -notmatch '(?ms)if:\s*github\.event_name != ''workflow_dispatch'' \|\| inputs\.action == ''Validate''\r?\n\s*shell:\s*pwsh\r?\n\s*run:\s*\./eng/skill-evals/run\.ps1 -Action Test') {
+    throw 'The validate job does not run ./eng/skill-evals/run.ps1 -Action Test under the Validate condition.'
+}
+if ($workflow -match 'test_stage_run\.ps1') {
+    throw 'The workflow still contains a standalone test_stage_run.ps1 step.'
 }
 
 $evaluationToolsRoot = Join-Path $PSScriptRoot 'evaluation-tools'

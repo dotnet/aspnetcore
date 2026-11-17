@@ -364,6 +364,21 @@ def exact_source_target(test_name, record):
     )
 
 
+def case_b_issue_allowed(record, issue):
+    if record.get("case_b_issue") == issue:
+        return True
+    # Any verified issue that tracked an earlier quarantine of this exact
+    # target may be reused, not only the most recently removed one.
+    verified_issues = record.get("case_b_verified_issues")
+    return (
+        isinstance(verified_issues, list)
+        and any(
+            type(item) is int and item == issue
+            for item in verified_issues
+        )
+    )
+
+
 def validate_addition(target, eligibility, issue_items):
     reference = target["reference"]
     key = target_key(target)
@@ -416,7 +431,7 @@ def validate_addition(target, eligibility, issue_items):
             and record.get("originating_case") == "case-b"
             and record.get("case_b_eligible") is True
             and record.get("case_b_issue_verified") is True
-            and record.get("case_b_issue") == issue
+            and case_b_issue_allowed(record, issue)
             and record.get("current_quarantine_state") == "not-quarantined"
             and record.get("latest_quarantine_transition") == "removed"
             and exact_source_target(test_name, record) == key
