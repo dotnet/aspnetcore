@@ -10,6 +10,8 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Metadata;
 /// </summary>
 public readonly struct ModelMetadataIdentity : IEquatable<ModelMetadataIdentity>
 {
+    private readonly int _hashCode;
+
     private ModelMetadataIdentity(
         Type modelType,
         string? name = null,
@@ -22,6 +24,7 @@ public readonly struct ModelMetadataIdentity : IEquatable<ModelMetadataIdentity>
         ContainerType = containerType;
         FieldInfo = fieldInfo;
         ConstructorInfo = constructorInfo;
+        _hashCode = ComputeHashCode();
     }
 
     /// <summary>
@@ -177,6 +180,11 @@ public readonly struct ModelMetadataIdentity : IEquatable<ModelMetadataIdentity>
 
     /// <inheritdoc />
     public override int GetHashCode()
+    {
+        return _hashCode;
+    }
+
+    private int ComputeHashCode()
     {
         var hash = new HashCode();
         hash.Add(ContainerType);
