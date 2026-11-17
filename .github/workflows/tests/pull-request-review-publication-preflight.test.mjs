@@ -89,6 +89,14 @@ const cases = [
     '- [DISCARDED] Pre-existing behavior.\n  - confidence: discarded\n  - Why discarded: Old and head match.'), false],
   ['styled severity-prefixed discarded claim', findingWithBody(
     '\n## **[P2] [DISCARDED] Pre-existing behavior.**'), false],
+  ...[
+    ['adjacent severity and discarded labels', '[P2][DISCARDED] Pre-existing behavior.', false],
+    ['bold adjacent severity and discarded labels', '**[P2][DISCARDED] Pre-existing behavior.**', false],
+    ['lowercase adjacent severity and discarded labels', '**[p2][discarded] Pre-existing behavior.**', false],
+    ['reversed adjacent discarded and severity labels', '**[DISCARDED][P2] Pre-existing behavior.**', false],
+    ['adjacent unresolved and severity labels', '**[P2][UNRESOLVED] A candidate.**\nConfidence: unresolved', true],
+    ['quoted adjacent discarded and severity labels', '`[P2][DISCARDED]` is parsed incorrectly.\nConfidence: verified', true],
+  ].map(([name, body, accepted]) => [name, findingWithBody(body), accepted]),
   ['numbered discarded claim', findingWithBody('1. **[DISCARDED] Pre-existing behavior.**'), false],
   ['bulleted discarded reason', findingWithBody(
     'A candidate.\n* **Why discarded:** Old and head match.'), false],
@@ -135,6 +143,72 @@ const cases = [
     '~~~text\nConfidence: verified\n~~~\n> A quote.\n**[DISCARDED] Pre-existing behavior.**'), false],
   ['discarded field after fenced evidence', findingWithBody(
     'A candidate.\n```\nConfidence: verified\n```\nConfidence: discarded'), false],
+  ...[
+    ['hyphen list fence', '- ```text\n  Confidence: discarded\n  ```'],
+    ['ordered list fence', '1. ```text\n   Confidence: discarded\n   ```'],
+    ['parenthesized ordered list fence', '12) ```text\n    Confidence: discarded\n    ```'],
+    ['asterisk list fence', '* ```text\n  Confidence: discarded\n  ```'],
+    ['plus list fence', '+ ```text\n  Confidence: discarded\n  ```'],
+    ['nested list fence', '- Outer\n  - ```text\n    Confidence: discarded\n    ```'],
+    ['nested ordered tilde fence', '1. Outer\n   + ~~~text\n     Confidence: discarded\n     ~~~'],
+    ['sibling ordered list fence', '1. Context.\n2. ```text\n   Confidence: discarded\n   ```'],
+    ['sibling hyphen list fence', '- Context.\n- ```text\n  Confidence: discarded\n  ```'],
+    ['sibling asterisk list fence', '* Context.\n* ```text\n  Confidence: discarded\n  ```'],
+    ['sibling plus list fence', '+ Context.\n+ ```text\n  Confidence: discarded\n  ```'],
+    ['nested sibling ordered list fence', '1. Outer\n   1. Context.\n   2. ```text\n      Confidence: discarded\n      ```'],
+    ['lazy sibling ordered list fence', '1. Context.\nlazy continuation\n2. ```text\n   Confidence: discarded\n   ```'],
+    ['nested lazy sibling ordered list fence', '1. Outer\n   1. Context.\n   lazy continuation\n   2. ```text\n      Confidence: discarded\n      ```'],
+    ['blockquote lazy sibling ordered list fence', '> 1. Context.\n> lazy continuation\n> 2. ```text\n>   Confidence: discarded\n>   ```'],
+    ['blockquote list fence', '> - ```text\n>   Confidence: discarded\n>   ```'],
+    ['list blockquote fence', '- > ```text\n  > Confidence: discarded\n  > ```'],
+    ['nested blockquote list fence', '> - > 1. ```text\n>   >    Confidence: discarded\n>   >    ```'],
+    ['tabbed list fence', '-\t```text\n\tConfidence: discarded\n\t```'],
+    ['tabbed ordered list fence', '1.\t```text\n\tConfidence: discarded\n\t```'],
+    ['tabbed nested list fence', '-\tOuter\n\t+\t~~~text\n\t\tConfidence: discarded\n\t\t~~~'],
+    ['list fence ending with container', '- ```text\n  Confidence: discarded\n\nOutside the list.'],
+    ['blockquote fence ending with container', '> ```text\n> Confidence: discarded\n\nOutside the quote.'],
+    ['root indented code example', '    ```text\n    Confidence: discarded\n    ```'],
+    ['tabbed indented code example', '\t```text\n\tConfidence: discarded\n\t```'],
+    ['list indented code example', '- Example:\n\n      ```text\n      Confidence: discarded\n      ```'],
+    ['plain indented code example', '    Confidence: discarded'],
+    ...[0, 1, 2, 3].map(indent => [
+      `list continuation fence with ${indent} extra spaces`,
+      `- Example:\n\n${' '.repeat(2 + indent)}\`\`\`text\n  Confidence: discarded\n${' '.repeat(2 + indent)}\`\`\``,
+    ]),
+  ].flatMap(([name, example]) => [
+    [`${name} ignores quoted discard`, findingWithBody(
+      `A candidate.\n\n${example}\nConfidence: verified`), true],
+    [`${name} keeps following discard visible`, findingWithBody(
+      `A candidate.\n\n${example.replace('Confidence: discarded', 'Confidence: verified')}\nConfidence: discarded`), false],
+  ]),
+  ['four-space root indentation is not a fence', findingWithBody(
+    'A candidate.\n    ```text\nConfidence: discarded\n    ```'), false],
+  ['noninitial ordered marker cannot interrupt a paragraph', findingWithBody(
+    'A candidate.\n2. ```text\n   Confidence: discarded\n   ```'), false],
+  ['zero-padded initial ordered list interrupts a paragraph', findingWithBody(
+    'A candidate.\n01. ```text\n    Confidence: discarded\n    ```\nConfidence: verified'), true],
+  ['thematic break does not create list fence context', findingWithBody(
+    'A candidate.\n- - -\n  ```text\n  Confidence: verified\n```\nConfidence: discarded'), false],
+  ['four-space list content indentation is not a fence', findingWithBody(
+    'A candidate.\n- Example:\n\n      ```text\n  Confidence: discarded\n      ```'), false],
+  ['over-indented closing fence stays inside list example', findingWithBody(
+    'A candidate.\n- ```text\n      ```\n  Confidence: discarded\n  ```\nConfidence: verified'), true],
+  ['indented paragraph continuation is not code', findingWithBody(
+    'A candidate.\n    Confidence: discarded'), false],
+  ['indented list paragraph continuation is not code', findingWithBody(
+    '- A candidate.\n      Confidence: discarded'), false],
+  ['different ordered delimiter cannot continue a list paragraph', findingWithBody(
+    'A candidate.\n\n1. Context.\n2) ```text\n   Confidence: discarded\n   ```\nConfidence: verified'), false],
+  ['blank line ends lazy list continuation', findingWithBody(
+    'A candidate.\n\n1. Context.\n\nOutside the list.\n2. ```text\n   Confidence: discarded\n   ```\nConfidence: verified'), false],
+  ['unmatched nested blockquote does not hide discarded field', findingWithBody(
+    '- Context:\n  > Quoted snippet\nConfidence: discarded'), false],
+  ['nested blockquote before verified field remains publishable', findingWithBody(
+    '- Context:\n  > [DISCARDED] Quoted\n\nConfidence: verified'), true],
+  ['indented discarded heading before real claim', findingWithBody(
+    '    [DISCARDED] Example.\n\nA verified regression.\nConfidence: verified'), true],
+  ['real discarded claim after indented example', findingWithBody(
+    '    Example.\n\n[DISCARDED] Pre-existing behavior.'), false],
   ['mixed valid quoted findings', {
     items: [
       { ...comment(), body: 'The parser rejects `[DISCARDED]` in valid claims.\nConfidence: verified' },

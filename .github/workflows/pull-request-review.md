@@ -751,29 +751,105 @@ jobs:
             }
             const isDiscardedInline = body => {
               let fence;
-              const lines = body.split(/\r?\n/).filter(line => {
-                if (/^[ \t]*>/.test(line)) {
-                  return false;
+              let paragraph = false;
+              const containers = [];
+              const thematicBreak = /^ {0,3}(?:(?:\* *){3,}|(?:- *){3,}|(?:_ *){3,})$/;
+              const listMarker = /^( {0,3})([-+*]|\d{1,9}[.)])( +|$)/;
+              const lines = body.split(/\r?\n/).map(rawLine => {
+                let tabExpansion = 0;
+                let line = rawLine.replace(/\t/g, (_, index) => {
+                  const width = 4 - (index + tabExpansion) % 4;
+                  tabExpansion += width - 1;
+                  return ' '.repeat(width);
+                });
+                let matched = 0;
+                for (; matched < containers.length; matched++) {
+                  const container = containers[matched];
+                  if (container.quote) {
+                    const marker = line.match(/^ {0,3}> ?/);
+                    if (!marker) {
+                      break;
+                    }
+                    line = line.slice(marker[0].length);
+                  } else if (line.trim().length === 0) {
+                    line = '';
+                  } else if (line.startsWith(' '.repeat(container.indent))) {
+                    line = line.slice(container.indent);
+                  } else {
+                    break;
+                  }
                 }
-                const delimiter = line.match(/^[ \t]*(`{3,}|~{3,})/);
+                if (matched < containers.length) {
+                  const sibling = line.match(listMarker);
+                  const sameList = sibling && containers[matched].marker === sibling[2].replace(/^\d+/, '');
+                  const interruptsParagraph = sibling && line.slice(sibling[0].length).trim().length > 0 &&
+                    (!/^\d/.test(sibling[2]) || Number.parseInt(sibling[2], 10) === 1);
+                  const delimiter = line.match(/^ {0,3}(`{3,}|~{3,})/);
+                  const startsFence = delimiter && (delimiter[1][0] !== '`' ||
+                    !line.slice(delimiter[0].length).includes('`'));
+                  const lazyContinuation = !containers.slice(matched).some(container => container.quote) &&
+                    !fence && paragraph && line.trim().length > 0 &&
+                    !sameList && !interruptsParagraph && !startsFence && !thematicBreak.test(line) &&
+                    !/^ {0,3}(?:>|#{1,6}(?: |$)|(?:=+|-+) *$)/.test(line);
+                  if (!lazyContinuation) {
+                    if (sameList) {
+                      // A sibling item has its own paragraph, even when its number is not one.
+                      paragraph = false;
+                    }
+                    containers.length = matched;
+                    fence = undefined;
+                  }
+                }
+                if (!fence) {
+                  // Fence indentation is relative to each CommonMark container's content.
+                  while (true) {
+                    const quote = line.match(/^ {0,3}> ?/);
+                    if (quote) {
+                      containers.push({ quote: true });
+                      line = line.slice(quote[0].length);
+                      paragraph = false;
+                      continue;
+                    }
+                    const list = line.match(listMarker);
+                    const interruptsParagraph = list && line.slice(list[0].length).trim().length > 0 &&
+                      (!/^\d/.test(list[2]) || Number.parseInt(list[2], 10) === 1);
+                    if (!list || thematicBreak.test(line) || (paragraph && !interruptsParagraph)) {
+                      break;
+                    }
+                    const padding = list[3].length >= 1 && list[3].length <= 4 ? list[3].length : 1;
+                    const indent = list[1].length + list[2].length + padding;
+                    containers.push({ indent, marker: list[2].replace(/^\d+/, '') });
+                    line = line.slice(indent);
+                    paragraph = false;
+                  }
+                }
+                if (!fence && !paragraph && /^ {4}/.test(line)) {
+                  return '';
+                }
+                const delimiter = line.match(/^ {0,3}(`{3,}|~{3,})/);
                 if (fence) {
                   if (delimiter && delimiter[1][0] === fence[0] &&
                       delimiter[1].length >= fence.length &&
                       /^[ \t]*$/.test(line.slice(delimiter[0].length))) {
                     fence = undefined;
                   }
-                  return false;
+                  paragraph = false;
+                  return '';
                 }
                 if (delimiter && (delimiter[1][0] !== '`' ||
                     !line.slice(delimiter[0].length).includes('`'))) {
                   fence = delimiter[1];
-                  return false;
+                  paragraph = false;
+                  return '';
                 }
-                return true;
+                const endsParagraph = thematicBreak.test(line) || /^ {0,3}#{1,6}(?: |$)/.test(line) ||
+                  (paragraph && /^ {0,3}(?:=+|-+) *$/.test(line));
+                paragraph = line.trim().length > 0 && (paragraph || !/^ {4}/.test(line)) && !endsParagraph;
+                return containers.some(container => container.quote) ? '' : line;
               }).map(line => line.replace(/[*_]/g, '')
                 .replace(/^[ \t]*(?:(?:[-+]|[0-9]+[.)]|#{1,6})[ \t]+)+/, '').trim())
                 .filter(line => line.length > 0);
-              return /^(?:\[P[0-3]\][ \t]+)?\[DISCARDED\]/i.test(lines[0] ?? '') ||
+              return /^(?:\[P[0-3]\][ \t]*)?\[DISCARDED\]/i.test(lines[0] ?? '') ||
                 lines.some(line => /^Why[ \t]+discarded[ \t]*:/i.test(line)) ||
                 lines.some(line => /^Confidence[ \t]*:[ \t]*`?discarded`?[ \t]*$/i.test(line));
             };
