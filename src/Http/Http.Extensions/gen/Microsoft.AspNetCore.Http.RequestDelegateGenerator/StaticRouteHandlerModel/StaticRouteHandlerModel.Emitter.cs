@@ -301,10 +301,22 @@ internal static class StaticRouteHandlerModelEmitter
 
         foreach (var parameter in endpoint.Parameters)
         {
+            ProcessParameter(parameter);
+
+            if (parameter is { Source: EndpointParameterSource.AsParameters, EndpointParameters: { } innerParameters })
+            {
+                foreach (var innerParameter in innerParameters)
+                {
+                    ProcessParameter(innerParameter);
+                }
+            }
+        }
+
+        void ProcessParameter(EndpointParameter parameter)
+        {
             if (explicitBodyParameter == null && parameter.Source == EndpointParameterSource.JsonBody)
             {
                 explicitBodyParameter = parameter;
-                break;
             }
             else if (parameter.Source == EndpointParameterSource.JsonBodyOrService || parameter.Source == EndpointParameterSource.JsonBodyOrQuery)
             {
