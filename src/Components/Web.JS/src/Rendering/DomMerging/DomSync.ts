@@ -284,7 +284,7 @@ function domNodeComparer(a: Node, b: Node, options: DomSyncOptions): UpdateCost 
     return UpdateCost.Infinite;
   }
 
-  if (!options.preserveModalState && a instanceof HTMLDialogElement && a.matches(':modal')) {
+  if (!options.preserveModalState && a instanceof HTMLDialogElement && a.matches(':modal') && !isDataPermanentElement(a)) {
     // A cross-page update must not install destination handlers on a modal whose close event is still pending.
     return UpdateCost.Infinite;
   }

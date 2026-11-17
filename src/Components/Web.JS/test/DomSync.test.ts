@@ -1,4 +1,4 @@
-import { expect, test, describe } from '@jest/globals';
+import { expect, test, describe, jest } from '@jest/globals';
 import { CommentBoundedRange, synchronizeDomContent } from '../src/Rendering/DomMerging/DomSync';
 import { toLogicalElement } from '../src/Rendering/LogicalElements';
 
@@ -636,6 +636,20 @@ describe('DomSync', () => {
     // Assert: The expand class should be retained
     expect(newNode).toBe(oldNode);
     expect(newNode.classList.contains('expand')).toBe(true);
+  });
+
+  test('should preserve an active modal dialog marked as data permanent', () => {
+    const destination = makeExistingContent(`<dialog data-permanent="dialog"><span>client content</span></dialog>`);
+    const newContent = makeNewContent(`<dialog data-permanent="dialog"><span>server content</span></dialog>`);
+    const oldDialog = toNodeArray(destination)[0] as HTMLDialogElement;
+    jest.spyOn(oldDialog, 'matches').mockReturnValue(true);
+    oldDialog.close = () => {};
+
+    synchronizeDomContent(destination, newContent, { preserveModalState: false });
+
+    const newDialog = toNodeArray(destination)[0] as HTMLDialogElement;
+    expect(newDialog).toBe(oldDialog);
+    expect(newDialog.textContent).toBe('client content');
   });
 });
 
