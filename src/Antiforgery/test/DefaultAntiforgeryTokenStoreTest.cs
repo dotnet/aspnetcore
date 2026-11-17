@@ -430,6 +430,22 @@ public class DefaultAntiforgeryTokenStoreTest
     }
 
     [Fact]
+    public void SaveCookieToken_EscapesSemicolonInPathBase()
+    {
+        var httpContext = new DefaultHttpContext();
+        httpContext.Request.PathBase = "/a;b";
+        var options = new AntiforgeryOptions
+        {
+            Cookie = { Name = _cookieName }
+        };
+        var tokenStore = new DefaultAntiforgeryTokenStore(new TestOptionsManager(options));
+
+        tokenStore.SaveCookieToken(httpContext, "serialized-value");
+
+        Assert.Contains("path=/a%3Bb", httpContext.Response.Headers.SetCookie.ToString(), StringComparison.Ordinal);
+    }
+
+    [Fact]
     public void SaveCookieToken_NonNullAntiforgeryOptionsConfigureCookieOptionsPath_UsesCookieOptionsPath()
     {
         // Arrange

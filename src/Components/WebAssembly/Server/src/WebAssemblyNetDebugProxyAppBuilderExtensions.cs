@@ -25,6 +25,10 @@ public static class WebAssemblyNetDebugProxyAppBuilderExtensions
             app.Run(async (context) =>
             {
                 var queryParams = HttpUtility.ParseQueryString(context.Request.QueryString.Value!);
+                // The browser query parameter contains the URL that Chrome or Edge exposes
+                // for debugger connections. It is not the URL of the Blazor application.
+                // This route starts or reuses a .NET debug proxy configured to use that URL.
+                // It does not start Chrome or Edge or enable debugging in the browser.
                 var browserParam = queryParams.Get("browser");
                 Uri? browserUrl = null;
                 var devToolsHost = "http://localhost:9222";
