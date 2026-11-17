@@ -12,6 +12,7 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent / "scripts"))
 
 import get_attention_inventory as inv  # noqa: E402
+import check_investigation_plugins as plugins  # noqa: E402
 import retry_ci  # noqa: E402
 import servicing_schedule as schedule  # noqa: E402
 import workflow_failures  # noqa: E402
@@ -367,6 +368,20 @@ class RetryCiTests(unittest.TestCase):
         builds, other = retry_ci.failed_builds(checks, None)
         self.assertEqual(sorted(builds), ["1", "2"])
         self.assertEqual(other, ["Build Analysis"])
+
+
+class InvestigationPluginTests(unittest.TestCase):
+    def test_reports_missing_marketplaces_and_disabled_plugins(self):
+        listing = "Installed plugins:\n  \u2022 dotnet-dnceng@dotnet-arcade-skills (v0.1.0)\n" \
+                  "  \u2022 dotnet-helix@dotnet-arcade-skills (v0.1.0) [disabled]\n"
+        markets = "Registered marketplaces:\n  \u2022 dotnet-arcade-skills (GitHub: dotnet/arcade-skills)\n"
+        result = plugins.check(plugins.parse_plugins(listing), plugins.parse_marketplaces(markets))
+        self.assertEqual(result["missingMarketplaces"], ["dotnet-agent-skills"])
+        self.assertEqual(result["disabledPlugins"], ["dotnet-helix@dotnet-arcade-skills"])
+        self.assertNotIn("dotnet-dnceng@dotnet-arcade-skills", result["missingPlugins"])
+        self.assertIn("copilot plugin marketplace add dotnet/skills", result["commands"])
+        self.assertIn("copilot plugin enable dotnet-helix@dotnet-arcade-skills", result["commands"])
+        self.assertFalse(result["ready"])
 
 
 if __name__ == "__main__":
