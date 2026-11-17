@@ -139,23 +139,17 @@ export function init(tableElement) {
     document.body.addEventListener('keydown', keyDownHandler);
     tableElement.addEventListener('pointerdown', startColumnResize);
     tableElement.addEventListener('keydown', keyDownResizeHandler);
+    tableElement.addEventListener('keydown', tableKeyDownHandler);
 
     return {
         stop: () => {
             stopColumnResize?.();
+            stopFocusRestoration();
             document.body.removeEventListener('click', bodyClickHandler);
             document.body.removeEventListener('mousedown', bodyClickHandler);
             document.body.removeEventListener('keydown', keyDownHandler);
             tableElement.removeEventListener('pointerdown', startColumnResize);
             tableElement.removeEventListener('keydown', keyDownResizeHandler);
-    tableElement.addEventListener('keydown', tableKeyDownHandler);
-
-    return {
-        stop: () => {
-            stopFocusRestoration();
-            document.body.removeEventListener('click', bodyClickHandler);
-            document.body.removeEventListener('mousedown', bodyClickHandler);
-            document.body.removeEventListener('keydown', keyDownHandler);
             tableElement.removeEventListener('keydown', tableKeyDownHandler);
         }
     };
