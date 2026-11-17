@@ -29,7 +29,7 @@ public sealed class RenderTreeBuilder : IDisposable
     // with explicit string values rather than as presence/absence attributes.
     // If rendered as bare attributes (e.g., <div draggable>), browsers may not honor them correctly.
     private static readonly HashSet<string> EnumeratedBoolAttributes =
-        new(StringComparer.OrdinalIgnoreCase) { "draggable", "spellcheck", "contenteditable" };
+        new(StringComparer.OrdinalIgnoreCase) { "draggable", "spellcheck", "contenteditable", "writingsuggestions" };
 
     private static readonly string ComponentReferenceCaptureInvalidParentMessage = $"Component reference captures may only be added as children of frames of type {RenderTreeFrameType.Component}";
 
@@ -181,7 +181,7 @@ public sealed class RenderTreeBuilder : IDisposable
             throw new InvalidOperationException($"Valueless attributes may only be added immediately after frames of type {RenderTreeFrameType.Element}");
         }
 
-        _entries.AppendAttribute(sequence, name, ElementBoolTrueValue);
+        _entries.AppendAttribute(sequence, name, EnumeratedBoolAttributes.Contains(name) ? string.Empty : ElementBoolTrueValue);
     }
 
     /// <summary>

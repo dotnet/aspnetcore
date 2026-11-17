@@ -271,6 +271,30 @@ public class RenderFragmentSerializerTest
     }
 
     [Fact]
+    public void Roundtrip_ValuelessDraggableAttribute_PreservesEmptyValue()
+    {
+        RenderFragment fragment = builder =>
+        {
+            builder.OpenElement(0, "div");
+            builder.AddAttribute(1, "draggable");
+            builder.CloseElement();
+        };
+
+        var serialized = SerializeFragment(fragment);
+        var deserialized = RenderFragmentSerializer.Deserialize(serialized, _jsonOptions, _typeCache);
+        var builder = new RenderTreeBuilder();
+        deserialized(builder);
+
+        var frames = builder.GetFrames();
+        Assert.Equal(2, frames.Count);
+        Assert.Equal(RenderTreeFrameType.Element, frames.Array[0].FrameType);
+        Assert.Equal("div", frames.Array[0].ElementName);
+        Assert.Equal(RenderTreeFrameType.Attribute, frames.Array[1].FrameType);
+        Assert.Equal("draggable", frames.Array[1].AttributeName);
+        Assert.Equal(string.Empty, frames.Array[1].AttributeValue);
+    }
+
+    [Fact]
     public void Deserialize_EmptyList_ProducesEmptyFragment()
     {
         var nodes = new List<RenderTreeNode>();

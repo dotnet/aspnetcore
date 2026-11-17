@@ -937,20 +937,33 @@ public class RenderTreeBuilderTest
     }
 
     [Theory]
-    [InlineData(true, "true")]
-    [InlineData(false, "false")]
-    public void AddAttribute_Element_DraggableBool_AddsFrameWithExplicitStringValue(bool value, string expected)
+    [InlineData("draggable", true, "true")]
+    [InlineData("draggable", false, "false")]
+    [InlineData("writingsuggestions", true, "true")]
+    [InlineData("writingsuggestions", false, "false")]
+    public void AddAttribute_Element_EnumeratedBool_AddsExplicitStringValue(string attributeName, bool value, string expected)
     {
         var builder = new RenderTreeBuilder();
 
         builder.OpenElement(0, "div");
-        builder.AddAttribute(1, "draggable", value);
+        builder.AddAttribute(1, attributeName, value);
         builder.CloseElement();
 
         Assert.Collection(
             builder.GetFrames().AsEnumerable(),
             frame => AssertFrame.Element(frame, "div", 2, 0),
-            frame => AssertFrame.Attribute(frame, "draggable", expected, 1));
+            frame => AssertFrame.Attribute(frame, attributeName, expected, 1));
+
+        var objectBuilder = new RenderTreeBuilder();
+
+        objectBuilder.OpenElement(0, "div");
+        objectBuilder.AddAttribute(1, attributeName, (object)value);
+        objectBuilder.CloseElement();
+
+        Assert.Collection(
+            objectBuilder.GetFrames().AsEnumerable(),
+            frame => AssertFrame.Element(frame, "div", 2, 0),
+            frame => AssertFrame.Attribute(frame, attributeName, expected, 1));
     }
 
     [Theory]
