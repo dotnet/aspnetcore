@@ -142,11 +142,14 @@ function init(dotNetHelper: DotNet.DotNetObject, spacerBefore: HTMLElement, spac
         applyLayoutAttrs(el as HTMLElement);
       }
     }
-    if (scrollTriggeredRender && renderedItemSize > 0 && itemSize > 0 && itemSize !== renderedItemSize) {
+    if (scrollTriggeredRender && renderedItemSize > 0 && itemSize > 0) {
       // Keep the viewport at the same estimated item when recalibration resizes the leading spacer.
       const spacerHeight = Number(spacerBefore.getAttribute('data-blazor-virtualize-reserved-height'));
-      scrollActivity.ignoreNextScroll();
-      scrollElement.scrollTop = scrollTop + spacerHeight * (1 - renderedItemSize / itemSize);
+      const delta = spacerHeight * (1 - renderedItemSize / itemSize);
+      if (Math.abs(delta) > 1) {
+        scrollActivity.ignoreNextScroll();
+        scrollElement.scrollTop = scrollTop + delta;
+      }
     }
     renderedItemSize = itemSize;
   }
