@@ -15,6 +15,7 @@ from datetime import datetime, timezone
 from typing import Any, Iterable
 
 import component_governance
+import workflow_failures
 
 ASPNETCORE = "dotnet/aspnetcore"
 ADMIN_ELEVATION_URL = "https://repos.opensource.microsoft.com/orgs/dotnet/repos/aspnetcore"
@@ -42,6 +43,7 @@ CATEGORIES = {
     "localization": "Localization",
     "vmr-pings": "dotnet/dotnet PRs pinging @dotnet/aspnet-build",
     "component-governance": "Component Governance",
+    "workflow-failures": "Monitored workflow failures",
 }
 
 # Search queries per category. Results are re-validated by `matches_category`.
@@ -299,6 +301,10 @@ def collect(categories: list[str], now: datetime) -> dict[str, Any]:
             alerts, coverage[category] = component_governance.collect()
             items += alerts
             continue
+        if category == "workflow-failures":
+            runs, coverage[category] = workflow_failures.collect(now)
+            items += runs
+            continue
         for query in SEARCHES[category]:
             prs = search_prs(query, with_discussion=category == "vmr-pings")
             items += classify(category, prs, now, seen, excluded)
@@ -317,6 +323,9 @@ def render_markdown(result: dict[str, Any]) -> str:
         lines.append("")
         if category == "component-governance":
             lines += component_governance.render_markdown(items, result["coverage"][category])
+            continue
+        if category == "workflow-failures":
+            lines += workflow_failures.render_markdown(items, result["coverage"][category])
             continue
         if not items:
             lines += ["_Nothing open._", ""]
@@ -343,7 +352,7 @@ def render_markdown(result: dict[str, Any]) -> str:
             ref = f"#{i['number']}" if i["repo"] == ASPNETCORE else f"{i['repo']}#{i['number']}"
             lines.append(f"- {ref}: " + " — ".join(details))
         lines.append("")
-    if any(i["requiresAdminElevation"] for i in result["items"]):
+    if any(i.get("requiresAdminElevation") for i in result["items"]):
         lines += [f"Before acting on a `release/*` PR, temporarily elevate to administrator at {ADMIN_ELEVATION_URL}.", ""]
     if result["excluded"]:
         lines.append("Excluded: " + ", ".join(f"{k}={v}" for k, v in result["excluded"].items()))

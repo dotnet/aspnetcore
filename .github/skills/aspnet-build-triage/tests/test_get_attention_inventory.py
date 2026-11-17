@@ -5,12 +5,14 @@ from __future__ import annotations
 
 import sys
 import unittest
+import unittest.mock
 from datetime import datetime, timezone
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent / "scripts"))
 
 import get_attention_inventory as inv  # noqa: E402
+import workflow_failures  # noqa: E402
 
 NOW = datetime(2026, 11, 17, tzinfo=timezone.utc)
 HUMAN = {"login": "dev", "__typename": "User"}
@@ -202,6 +204,77 @@ class PingTests(unittest.TestCase):
         self.assertEqual((ping["pingedBy"], ping["pingedAt"], ping["pingCount"]), ("dev", "2026-11-14T00:00:00Z", 2))
         self.assertEqual(ping["repliedAfterPing"], [])
 
+
+
+class WorkflowFailureTests(unittest.TestCase):
+    LOG = "\n".join([
+        "2026-11-15T10:00:00.0000000Z  * [new branch]  fix/error-handling -> origin/fix/error-handling",
+        "2026-11-15T10:00:01.0000000Z GH_AW_AGENT_OUTPUT: /tmp/out.json",
+        "2026-11-15T10:00:02.0000000Z FATAL: Case B addition is not bound to one exact eligible test",
+        "2026-11-15T10:00:03.0000000Z ##[error]Process completed with exit code 1.",
+    ])
+
+    def run_collect(self, runs):
+        def gh_api(path, raw=False, args=()):
+            if path == "user":
+                return {"login": "dev"}
+            if path == "graphql":
+                return {"data": {"search": {"nodes": [
+                    {"number": 7, "title": "fix", "url": "pr/7", "author": {"login": "dev"},
+                     "files": {"nodes": [{"path": ".github/workflows/scripts/test-quarantine/validate.py"}]}},
+                    {"number": 8, "title": "other", "url": "pr/8", "author": {"login": "x"},
+                     "files": {"nodes": [{"path": "src/Foo.cs"}]}}]}}}
+            if path.startswith(f"repos/{workflow_failures.REPO}/commits?"):
+                return [{"sha": "abc"}] if "test-quarantine.md" in path else []
+            if path.endswith("/pulls"):
+                return [{"number": 5, "title": "merged fix", "html_url": "pr/5", "user": {"login": "x"},
+                         "merged_at": "2026-11-16T00:00:00Z"},
+                        {"number": 4, "title": "older", "html_url": "pr/4", "user": {"login": "x"},
+                         "merged_at": "2026-11-10T00:00:00Z"}]
+            if path.endswith("/logs"):
+                return self.LOG
+            if "actions/workflows?" in path:
+                return {"workflows": [{"id": 1, "path": ".github/workflows/test-quarantine.lock.yml"},
+                                      {"id": 2, "path": "dynamic/dependabot/dependabot-updates"}]}
+            if "/runs/" in path and path.split("?")[0].endswith("/jobs"):
+                return {"jobs": [{"id": 9, "name": "safe_outputs", "conclusion": "failure", "html_url": "job",
+                                  "steps": [{"name": "Validate", "conclusion": "failure"}]}]}
+            return {"workflow_runs": runs if "/workflows/1/" in path else []}
+
+        with unittest.mock.patch.object(workflow_failures, "gh_api", gh_api):
+            return workflow_failures.collect(NOW)
+
+    @staticmethod
+    def make_run(run_id, conclusion, title="Daily Test Quarantine Management", branch="main", created="2026-11-15T10:00:00Z"):
+        return {"id": run_id, "conclusion": conclusion, "display_title": title, "head_branch": branch,
+                "created_at": created, "html_url": f"run/{run_id}", "event": "schedule"}
+
+    def test_evidence_keeps_errors_and_drops_noise(self):
+        self.assertEqual(workflow_failures.failure_evidence(self.LOG), [
+            "FATAL: Case B addition is not bound to one exact eligible test",
+            "##[error]Process completed with exit code 1.",
+        ])
+
+    def test_only_failed_runs_are_reported_with_later_success(self):
+        items, coverage = self.run_collect([
+            self.make_run(3, "success", created="2026-11-16T10:00:00Z"),
+            self.make_run(2, "failure"),
+            self.make_run(1, "success", created="2026-11-14T10:00:00Z"),
+        ])
+        self.assertEqual([i["runId"] for i in items], [2])
+        self.assertEqual(items[0]["laterSuccessUrl"], "run/3")
+        self.assertEqual(items[0]["failedJobs"][0]["failedSteps"], ["Validate"])
+        self.assertEqual([c["runs"] for c in coverage["checked"]], [3, 0])
+        self.assertEqual([pr["number"] for pr in items[0]["mergedFixCandidates"]], [5])
+        self.assertEqual([(pr["number"], pr["authoredByUser"]) for pr in items[0]["openFixCandidates"]], [(7, True)])
+
+    def test_later_success_must_match_target(self):
+        items, _ = self.run_collect([
+            self.make_run(1, "failure", title="nuget in /. - Update #1"),
+            self.make_run(2, "success", title="npm_and_yarn in /. - Update #2", created="2026-11-16T10:00:00Z"),
+            self.make_run(3, "success", title="nuget in /. - Update #3", branch="release/10.0", created="2026-11-16T11:00:00Z"),
+        ])
+        self.assertIsNone(items[0]["laterSuccessUrl"])
 
 if __name__ == "__main__":
     unittest.main()
