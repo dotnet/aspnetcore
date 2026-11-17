@@ -95,6 +95,8 @@ function init(dotNetHelper: DotNet.DotNetObject, spacerBefore: HTMLElement, spac
   const useNativeAnchoring = !isTable && supportsAnchor;
 
   const rangeBetweenSpacers = document.createRange();
+  let renderedItemSize = Number(spacerBefore.getAttribute('data-blazor-virtualize-item-size'));
+  let scrollTriggeredRender = false;
 
   if (isTable) {
     spacerBefore.style.display = 'table-row';
@@ -131,6 +133,8 @@ function init(dotNetHelper: DotNet.DotNetObject, spacerBefore: HTMLElement, spac
 
   // Apply layout attributes before the MutationObserver starts catching changes.
   function applyLayoutAttrsBetweenSpacers(): void {
+    const scrollTop = scrollElement.scrollTop;
+    const itemSize = Number(spacerBefore.getAttribute('data-blazor-virtualize-item-size'));
     for (let el: Element | null = spacerBefore;
          el && el !== spacerAfter.nextElementSibling;
          el = el.nextElementSibling) {
@@ -138,6 +142,13 @@ function init(dotNetHelper: DotNet.DotNetObject, spacerBefore: HTMLElement, spac
         applyLayoutAttrs(el as HTMLElement);
       }
     }
+    if (scrollTriggeredRender && renderedItemSize > 0 && itemSize > 0 && itemSize !== renderedItemSize) {
+      // Keep the viewport at the same estimated item when recalibration resizes the leading spacer.
+      const spacerHeight = Number(spacerBefore.getAttribute('data-blazor-virtualize-reserved-height'));
+      scrollActivity.ignoreNextScroll();
+      scrollElement.scrollTop = scrollTop + spacerHeight * (1 - renderedItemSize / itemSize);
+    }
+    renderedItemSize = itemSize;
   }
   applyLayoutAttrsBetweenSpacers();
 
@@ -210,7 +221,6 @@ function init(dotNetHelper: DotNet.DotNetObject, spacerBefore: HTMLElement, spac
   };
 
   const anchoredItems: Map<Element, number> = new Map();
-  let scrollTriggeredRender = false;
 
   const scrollActivity = {
     source: ScrollSource.None as ScrollSource,
@@ -390,6 +400,7 @@ function init(dotNetHelper: DotNet.DotNetObject, spacerBefore: HTMLElement, spac
   resizeObserver.observe(spacerAfter);
 
   function refreshObservedElements(isLoading: boolean, refreshViewport: boolean): void {
+    flushPendingStyleMutations();
     if (refreshViewport) {
       pendingCallbacks.clear();
       reobserveSpacers();
