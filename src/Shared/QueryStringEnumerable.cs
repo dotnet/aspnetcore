@@ -3,11 +3,12 @@
 
 using System;
 using System.Buffers;
-using System.Diagnostics;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
+#if NET
 using System.Runtime.Intrinsics;
 using System.Runtime.Intrinsics.X86;
+#endif
 
 #if QueryStringEnumerable_In_WebUtilities
 namespace Microsoft.AspNetCore.WebUtilities;
@@ -80,28 +81,14 @@ internal
         /// </summary>
         /// <returns>Characters representing the decoded name.</returns>
         public ReadOnlyMemory<char> DecodeName()
-            => Decode(EncodedName);
+            => Microsoft.AspNetCore.Internal.QueryStringDecoder.DecodeToMemory(EncodedName);
 
         /// <summary>
         /// Decodes the value from this name/value pair.
         /// </summary>
         /// <returns>Characters representing the decoded value.</returns>
         public ReadOnlyMemory<char> DecodeValue()
-            => Decode(EncodedValue);
-
-        private static ReadOnlyMemory<char> Decode(ReadOnlyMemory<char> chars)
-        {
-            ReadOnlySpan<char> source = chars.Span;
-            if (!source.ContainsAny('%', '+'))
-            {
-                return chars;
-            }
-            var buffer = new char[source.Length];
-            source.Replace(buffer, '+', ' ');
-            var success = Uri.TryUnescapeDataString(buffer, buffer, out var unescapedLength);
-            Debug.Assert(success);
-            return buffer.AsMemory(0, unescapedLength);
-        }
+            => Microsoft.AspNetCore.Internal.QueryStringDecoder.DecodeToMemory(EncodedValue);
     }
 
     /// <summary>

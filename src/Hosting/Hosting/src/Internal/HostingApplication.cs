@@ -24,6 +24,13 @@ internal sealed class HostingApplication : IHttpApplication<HostingApplication.C
         set => _diagnostics.SuppressActivityOpenTelemetryData = value;
     }
 
+    // Internal for testing purposes only
+    internal bool SuppressActivityUrlQuery
+    {
+        get => _diagnostics.SuppressActivityUrlQuery;
+        set => _diagnostics.SuppressActivityUrlQuery = value;
+    }
+
     public HostingApplication(
         RequestDelegate application,
         ILogger logger,

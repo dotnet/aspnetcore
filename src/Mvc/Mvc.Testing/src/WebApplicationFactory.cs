@@ -6,6 +6,7 @@ using System.Net.Http;
 using System.Reflection;
 using System.Text.Json;
 using System.Text.Json.Serialization;
+using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Hosting.Server;
 using Microsoft.AspNetCore.Hosting.Server.Features;
@@ -216,26 +217,10 @@ public partial class WebApplicationFactory<TEntryPoint> : IDisposable, IAsyncDis
 
         var host = builder.Build();
 
-        TryConfigureServerPort(() => GetServerAddressFeature(host));
-
         host.Start();
         return host;
     }
 #pragma warning restore ASPDEPR008 // IWebHost is obsolete
-
-    private void TryConfigureServerPort(Func<IServerAddressesFeature?> serverAddressFeatureAccessor)
-    {
-        if (_kestrelPort.HasValue)
-        {
-            var saf = serverAddressFeatureAccessor();
-            if (saf is not null)
-            {
-                saf.Addresses.Clear();
-                saf.Addresses.Add($"http://127.0.0.1:{_kestrelPort}");
-                saf.PreferHostingUrls = true;
-            }
-        }
-    }
 
     private void ConfigureBuilderToUseKestrel(IWebHostBuilder builder)
     {
@@ -247,11 +232,37 @@ public partial class WebApplicationFactory<TEntryPoint> : IDisposable, IAsyncDis
         {
             builder.UseKestrel();
         }
+
+        if (_kestrelPort is int port)
+        {
+            builder.ConfigureServices(services =>
+            {
+                services.AddSingleton<IStartupFilter>(serviceProvider => new ServerPortStartupFilter(serviceProvider.GetRequiredService<IServer>(), port));
+            });
+        }
     }
 
-    private bool GetIsConfigureHostApplicationBuilderOverridden()
+    private sealed class ServerPortStartupFilter(IServer server, int port) : IStartupFilter
     {
-        var method = this.GetType().GetMethod(nameof(ConfigureHostApplicationBuilder), BindingFlags.NonPublic | BindingFlags.Instance, [typeof(IHostApplicationBuilder)]);
+        public Action<IApplicationBuilder> Configure(Action<IApplicationBuilder> next)
+        {
+            // Configure addresses during the app's startup, before Kestrel binds, including
+            // when a minimal app starts on its own thread.
+            var serverAddressFeature = server.Features.Get<IServerAddressesFeature>();
+            if (serverAddressFeature is not null)
+            {
+                serverAddressFeature.Addresses.Clear();
+                serverAddressFeature.Addresses.Add($"http://127.0.0.1:{port}");
+                serverAddressFeature.PreferHostingUrls = true;
+            }
+
+            return next;
+        }
+    }
+
+    private bool GetIsConfigureWebApplicationBuilderOverridden()
+    {
+        var method = this.GetType().GetMethod(nameof(ConfigureWebApplicationBuilder), BindingFlags.NonPublic | BindingFlags.Instance, [typeof(IHostApplicationBuilder)]);
         var declaringType = method!.DeclaringType;
         if (declaringType!.IsGenericType)
         {
@@ -273,7 +284,7 @@ public partial class WebApplicationFactory<TEntryPoint> : IDisposable, IAsyncDis
         }
 
         var receivedBuilderConstructed = false;
-        var isOverridden = GetIsConfigureHostApplicationBuilderOverridden();
+        var isOverridden = GetIsConfigureWebApplicationBuilderOverridden();
 
         EnsureDepsFile();
 
@@ -282,7 +293,7 @@ public partial class WebApplicationFactory<TEntryPoint> : IDisposable, IAsyncDis
         {
             if (isOverridden)
             {
-                throw new InvalidOperationException(Resources.ConfigureHostApplicationBuilderNotSupported);
+                throw new InvalidOperationException(Resources.ConfigureWebApplicationBuilderNotSupported);
             }
 
             ConfigureHostBuilder(hostBuilder);
@@ -308,10 +319,10 @@ public partial class WebApplicationFactory<TEntryPoint> : IDisposable, IAsyncDis
 
             var arbitraryActions = new Dictionary<string, Action<object?>>(capacity: 1)
             {
-                { "HostApplicationBuilderConstructed", hostApplicationBuilder =>
+                { "WebApplicationBuilderConstructed", hostApplicationBuilder =>
                     {
                         receivedBuilderConstructed = true;
-                        ConfigureHostApplicationBuilder((IHostApplicationBuilder)hostApplicationBuilder!);
+                        ConfigureWebApplicationBuilder((IHostApplicationBuilder)hostApplicationBuilder!);
                     }
                 }
             };
@@ -324,7 +335,7 @@ public partial class WebApplicationFactory<TEntryPoint> : IDisposable, IAsyncDis
                     {
                         if (isOverridden && !receivedBuilderConstructed)
                         {
-                            ex = new InvalidOperationException(Resources.ConfigureHostApplicationBuilderNotSupported);
+                            ex = new InvalidOperationException(Resources.ConfigureWebApplicationBuilderNotSupported);
                         }
 
                         deferredHostBuilder.EntryPointCompleted(ex);
@@ -353,7 +364,7 @@ public partial class WebApplicationFactory<TEntryPoint> : IDisposable, IAsyncDis
         {
             if (isOverridden)
             {
-                throw new InvalidOperationException(Resources.ConfigureHostApplicationBuilderNotSupported);
+                throw new InvalidOperationException(Resources.ConfigureWebApplicationBuilderNotSupported);
             }
 
             SetContentRoot(builder);
@@ -655,7 +666,6 @@ public partial class WebApplicationFactory<TEntryPoint> : IDisposable, IAsyncDis
     protected virtual IHost CreateHost(IHostBuilder builder)
     {
         var host = builder.Build();
-        TryConfigureServerPort(() => GetServerAddressFeature(host));
         host.Start();
         return host;
     }
@@ -679,7 +689,7 @@ public partial class WebApplicationFactory<TEntryPoint> : IDisposable, IAsyncDis
     /// This method will be called very early, during the entrypoint's call to WebApplication.CreateBuilder.
     /// </summary>
     /// <param name="hostApplicationBuilder">The host application builder to configure.</param>
-    protected virtual void ConfigureHostApplicationBuilder(IHostApplicationBuilder hostApplicationBuilder)
+    protected virtual void ConfigureWebApplicationBuilder(IHostApplicationBuilder hostApplicationBuilder)
     {
     }
 

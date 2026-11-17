@@ -22,4 +22,21 @@ public static class ComponentsTestDeclarations
         }}
     }}
 ";
+    public static readonly string SourceWithJSInvokable = """
+        namespace Microsoft.JSInterop
+        {
+            public sealed class JSInvokableAttribute : System.Attribute
+            {
+                public string? Identifier { get; }
+
+                public JSInvokableAttribute()
+                {
+                }
+
+                public JSInvokableAttribute(string identifier)
+                {
+                }
+            }
+        }
+        """;
 }

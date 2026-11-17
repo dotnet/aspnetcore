@@ -28,13 +28,17 @@ public class KestrelServerOptions
     internal const string DisableHttp1LineFeedTerminatorsSwitchKey = "Microsoft.AspNetCore.Server.Kestrel.DisableHttp1LineFeedTerminators";
     private const string FinOnErrorSwitch = "Microsoft.AspNetCore.Server.Kestrel.FinOnError";
     internal const string CertificateFileWatchingSwitch = "Microsoft.AspNetCore.Server.Kestrel.DisableCertificateFileWatching";
+    private const string EnableChunkedExtensionsSwitch = "Microsoft.AspNetCore.Server.Kestrel.EnableChunkedExtensions";
+    private const string AllowFragmentInRequestTargetSwitch = "Microsoft.AspNetCore.Server.Kestrel.AllowFragmentInRequestTarget";
     private static readonly bool _finOnError;
     private static readonly bool _disableCertificateFileWatching;
+    private static readonly bool _enableChunkedExtensions;
 
     static KestrelServerOptions()
     {
         AppContext.TryGetSwitch(FinOnErrorSwitch, out _finOnError);
         AppContext.TryGetSwitch(CertificateFileWatchingSwitch, out _disableCertificateFileWatching);
+        AppContext.TryGetSwitch(EnableChunkedExtensionsSwitch, out _enableChunkedExtensions);
     }
 
     // internal to fast-path header decoding when RequestHeaderEncodingSelector is unchanged.
@@ -42,6 +46,9 @@ public class KestrelServerOptions
 
     // Opt-out flag for back compat. Remove in 9.0 (or make public).
     internal bool FinOnError { get; set; } = _finOnError;
+
+    // Internal for testing.
+    internal bool EnableChunkedExtensions { get; set; } = _enableChunkedExtensions;
 
     private Func<string, Encoding?> _requestHeaderEncodingSelector = DefaultHeaderEncodingSelector;
 
@@ -253,6 +260,25 @@ public class KestrelServerOptions
             return _disableHttp1LineFeedTerminators.Value;
         }
         set => _disableHttp1LineFeedTerminators = value;
+    }
+
+    /// <summary>
+    /// Allows a literal <c>#</c> in HTTP/1.x origin-form and absolute-form request targets
+    /// and in the HTTP/2 and HTTP/3 <c>:path</c> pseudo-header.
+    /// </summary>
+    private bool? _allowFragmentInRequestTarget;
+    internal bool AllowFragmentInRequestTarget
+    {
+        get
+        {
+            if (!_allowFragmentInRequestTarget.HasValue)
+            {
+                _allowFragmentInRequestTarget = AppContext.TryGetSwitch(AllowFragmentInRequestTargetSwitch, out var enabled) && enabled;
+            }
+
+            return _allowFragmentInRequestTarget.Value;
+        }
+        set => _allowFragmentInRequestTarget = value;
     }
 
     /// <summary>

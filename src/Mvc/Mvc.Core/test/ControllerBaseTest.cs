@@ -2451,6 +2451,32 @@ public class ControllerBaseTest
     }
 
     [Fact]
+    public void ValidationProblemDetails_SpecifiedExtensionsOverrideExistingValues()
+    {
+        // Arrange
+        var context = new ControllerContext(new ActionContext(
+            new DefaultHttpContext { TraceIdentifier = "some-trace" },
+            new RouteData(),
+            new ControllerActionDescriptor()));
+
+        var options = GetApiBehaviorOptions();
+
+        var controller = new TestableController
+        {
+            ProblemDetailsFactory = new DefaultProblemDetailsFactory(Options.Create(options)),
+            ControllerContext = context,
+        };
+
+        // Act
+        var actionResult = controller.ValidationProblem(extensions: new Dictionary<string, object> { { "traceId", "custom-trace" } });
+
+        // Assert
+        var objectResult = Assert.IsType<BadRequestObjectResult>(actionResult);
+        var problemDetails = Assert.IsType<ValidationProblemDetails>(objectResult.Value);
+        Assert.Equal("custom-trace", problemDetails.Extensions["traceId"]);
+    }
+
+    [Fact]
     public void ProblemDetails_Works()
     {
         // Arrange
@@ -2525,6 +2551,32 @@ public class ControllerBaseTest
         var problemDetails = Assert.IsType<ProblemDetails>(badRequestResult.Value);
         Assert.Equal(1, problemDetails.Extensions["ext1"]);
         Assert.Equal(2, problemDetails.Extensions["ext2"]);
+    }
+
+    [Fact]
+    public void ProblemDetails_PassedInExtensionsOverrideExistingValues()
+    {
+        // Arrange
+        var context = new ControllerContext(new ActionContext(
+            new DefaultHttpContext { TraceIdentifier = "some-trace" },
+            new RouteData(),
+            new ControllerActionDescriptor()));
+
+        var options = GetApiBehaviorOptions();
+
+        var controller = new TestableController
+        {
+            ProblemDetailsFactory = new DefaultProblemDetailsFactory(Options.Create(options)),
+            ControllerContext = context,
+        };
+
+        // Act
+        var actionResult = controller.Problem(extensions: new Dictionary<string, object> { { "traceId", "custom-trace" } });
+
+        // Assert
+        var badRequestResult = Assert.IsType<ObjectResult>(actionResult);
+        var problemDetails = Assert.IsType<ProblemDetails>(badRequestResult.Value);
+        Assert.Equal("custom-trace", problemDetails.Extensions["traceId"]);
     }
 
     [Fact]

@@ -1,31 +1,36 @@
-<Project Sdk="Microsoft.NET.Sdk">
+<Project>
 
   <PropertyGroup>
-    <TargetFramework>$(BundledNETCoreAppTargetFramework)</TargetFramework>
+    <!-- These tasks run on the LKG SDK, not the runtime being built. Targeting its bundled framework
+         does not prevent central transitive pinning from selecting live BCL package versions.
+         Keep the bootstrap/previous-input package versions instead, including ConfigurationManager
+         and its dependencies brought in by Microsoft.Build.Utilities.Core. Set this before SDK props
+         import the VMR package-version overrides. -->
+    <SkipCurrentSourceBuiltPackageVersionOverrides Condition="'$(DotNetBuild)' == 'true'">true</SkipCurrentSourceBuiltPackageVersionOverrides>
+  </PropertyGroup>
+
+  <Import Project="Sdk.props" Sdk="Microsoft.NET.Sdk" />
+
+  <PropertyGroup>
+    <TargetFramework>$(DefaultNetCoreTargetFramework)</TargetFramework>
+    <TargetFramework Condition="'$(DotNetBuild)' == 'true'">$(BundledNETCoreAppTargetFramework)</TargetFramework>
     <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
-    <Optimize>false</Optimize>
-    <DebugType>embedded</DebugType>
     <CopyLocalLockFileAssemblies>true</CopyLocalLockFileAssemblies>
     <!-- Need to build this project in source build -->
     <ExcludeFromSourceOnlyBuild>false</ExcludeFromSourceOnlyBuild>
-    <!-- Temporarily target the previous runtime until https://github.com/dotnet/sdk/pull/14574 is merged. -->
-    <TargetLatestDotNetRuntime>false</TargetLatestDotNetRuntime>
     <!-- No need to track public APIs of these MSBuild tasks. -->
     <AddPublicApiAnalyzers>false</AddPublicApiAnalyzers>
-    <!-- Suppress NuGet vulnerability audit warnings for transitive dependencies in this build-time tool.
-         Uses NoWarn instead of WarningsNotAsErrors because NuGet restore promotes audit warnings to errors
-         via its own mechanism that WarningsNotAsErrors does not override. -->
-    <NoWarn>$(NoWarn);NU1901;NU1902;NU1903;NU1904</NoWarn>
+    <EnableKnownPackVersionUpdatesForCurrentTargetFramework Condition="'$(DotNetBuild)' == 'true'">false</EnableKnownPackVersionUpdatesForCurrentTargetFramework>
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="Microsoft.Build.Framework" Version="$(MicrosoftBuildFrameworkVersion)" ExcludeAssets="runtime" />
-    <PackageReference Include="Microsoft.Build.Tasks.Core" Version="$(MicrosoftBuildTasksCoreVersion)" ExcludeAssets="runtime" />
-    <PackageReference Include="Microsoft.Build.Utilities.Core" Version="$(MicrosoftBuildUtilitiesCoreVersion)" ExcludeAssets="runtime" />
+    <PackageReference Include="Microsoft.Build.Utilities.Core" ExcludeAssets="runtime" />
   </ItemGroup>
 
   <ItemGroup>
     <Compile Include="$(SharedSourceRoot)CertificateGeneration\**\*.cs" LinkBase="shared\CertificateGeneration" />
   </ItemGroup>
+
+  <Import Project="Sdk.targets" Sdk="Microsoft.NET.Sdk" />
 
 </Project>

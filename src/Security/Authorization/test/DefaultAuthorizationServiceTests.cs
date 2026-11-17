@@ -329,6 +329,113 @@ public class DefaultAuthorizationServiceTests
         Assert.True(allowed.Succeeded);
     }
 
+    [Theory]
+    [InlineData("Permission", "CanViewPage", true)]
+    [InlineData("permission", "CanViewPage", true)]
+    [InlineData("Permission", "canviewpage", false)]
+    [InlineData("Other", "CanViewPage", false)]
+    public async Task Authorize_RequireClaim_SearchesAllIdentities(string claimType, string claimValue, bool expected)
+    {
+        // Arrange
+        var authorizationService = BuildAuthorizationService(services =>
+            services.AddAuthorizationBuilder().AddPolicy("Basic", policy => policy.RequireClaim("Permission", "CanViewPage")));
+        var user = new ClaimsPrincipal();
+        user.AddIdentity(new ClaimsIdentity(new[] { new Claim("Name", "Bob") }, "First"));
+        user.AddIdentity(new ClaimsIdentity());
+        user.AddIdentity(new ClaimsIdentity(new[] { new Claim("Name", "Alice"), new Claim(claimType, claimValue) }, "Third"));
+
+        // Act
+        var allowed = await authorizationService.AuthorizeAsync(user, "Basic");
+
+        // Assert
+        Assert.Equal(expected, allowed.Succeeded);
+    }
+
+    [Theory]
+    [InlineData("permission", true)]
+    [InlineData("Other", false)]
+    public async Task Authorize_RequireClaimWithNoValues_SearchesAllIdentities(string claimType, bool expected)
+    {
+        // Arrange
+        var authorizationService = BuildAuthorizationService(services =>
+            services.AddAuthorizationBuilder().AddPolicy("Basic", policy => policy.RequireClaim("Permission")));
+        var user = new ClaimsPrincipal();
+        user.AddIdentity(new ClaimsIdentity(new[] { new Claim("Name", "Bob") }, "First"));
+        user.AddIdentity(new ClaimsIdentity(new[] { new Claim(claimType, "anything") }, "Second"));
+
+        // Act
+        var allowed = await authorizationService.AuthorizeAsync(user, "Basic");
+
+        // Assert
+        Assert.Equal(expected, allowed.Succeeded);
+    }
+
+    [Fact]
+    public async Task Authorize_RequireClaim_UsesOverriddenPrincipalClaims()
+    {
+        // Arrange
+        var authorizationService = BuildAuthorizationService(services =>
+            services.AddAuthorizationBuilder().AddPolicy("Basic", policy => policy.RequireClaim("Permission", "CanViewPage")));
+        var user = new ClaimsOverridingPrincipal(
+            new ClaimsIdentity(new[] { new Claim("Permission", "CanViewPage") }, "Basic"),
+            new[] { new Claim("Name", "Bob") });
+
+        // Act
+        var allowed = await authorizationService.AuthorizeAsync(user, "Basic");
+
+        // Assert
+        Assert.False(allowed.Succeeded);
+        Assert.True(user.ClaimsAccessed);
+    }
+
+    [Fact]
+    public async Task Authorize_RequireClaim_UsesOverriddenIdentityClaims()
+    {
+        // Arrange
+        var authorizationService = BuildAuthorizationService(services =>
+            services.AddAuthorizationBuilder().AddPolicy("Basic", policy => policy.RequireClaim("Permission", "CanViewPage")));
+        var user = new ClaimsPrincipal(new ClaimsOverridingIdentity(new[] { new Claim("Permission", "CanViewPage") }));
+
+        // Act
+        var allowed = await authorizationService.AuthorizeAsync(user, "Basic");
+
+        // Assert
+        Assert.True(allowed.Succeeded);
+    }
+
+    private sealed class ClaimsOverridingPrincipal : ClaimsPrincipal
+    {
+        private readonly IEnumerable<Claim> _claims;
+
+        public ClaimsOverridingPrincipal(ClaimsIdentity identity, IEnumerable<Claim> claims) : base(identity)
+        {
+            _claims = claims;
+        }
+
+        public bool ClaimsAccessed { get; private set; }
+
+        public override IEnumerable<Claim> Claims
+        {
+            get
+            {
+                ClaimsAccessed = true;
+                return _claims;
+            }
+        }
+    }
+
+    private sealed class ClaimsOverridingIdentity : ClaimsIdentity
+    {
+        private readonly IEnumerable<Claim> _claims;
+
+        public ClaimsOverridingIdentity(IEnumerable<Claim> claims) : base("Custom")
+        {
+            _claims = claims;
+        }
+
+        public override IEnumerable<Claim> Claims => _claims;
+    }
+
     [Fact]
     public async Task Authorize_ThrowsWithUnknownPolicy()
     {
@@ -1245,5 +1352,143 @@ public class DefaultAuthorizationServiceTests
         var result = await authorizationService.AuthorizeAsync(user, "Log");
 
         // Assert
+    }
+
+    [Fact]
+    public async Task Authorize_ShouldLogFailureReasonsWhenFailedCallWithReasons()
+    {
+        // Arrange
+
+        static void Assertion(LogLevel level, EventId eventId, object state, Exception exception, Func<object, Exception, string> formatter)
+        {
+            Assert.Equal(LogLevel.Information, level);
+            Assert.Equal(2, eventId.Id);
+            Assert.Equal("UserAuthorizationFailed", eventId.Name);
+            var message = formatter(state, exception);
+
+            Assert.Equal("Authorization failed. Fail() was explicitly called. Authorization failed due to:" + Environment.NewLine + "1" + Environment.NewLine + "3", message);
+        }
+
+        var authorizationService = BuildAuthorizationService(services =>
+        {
+            services.AddSingleton<IAuthorizationHandler>(new ReasonableFailHandler("1"));
+            services.AddSingleton<IAuthorizationHandler>(new ReasonableFailHandler("3"));
+            services.AddSingleton<ILogger<DefaultAuthorizationService>>(new DefaultAuthorizationServiceTestLogger(Assertion));
+            services.AddAuthorization(options => options.AddPolicy("Log", p =>
+            {
+                p.Requirements.Add(new LogRequirement());
+                p.Requirements.Add(new LogRequirement());
+            }));
+        });
+
+        var user = new ClaimsPrincipal();
+
+        // Act
+        var result = await authorizationService.AuthorizeAsync(user, "Log");
+
+        // Assert
+    }
+
+    public static TheoryData<string> RequirementCollectionKinds => new() { "ReadOnlyCollection", "List", "Array", "Enumerable" };
+
+    private static IEnumerable<IAuthorizationRequirement> CreateRequirements(string kind, params IAuthorizationRequirement[] requirements)
+        => kind switch
+        {
+            "ReadOnlyCollection" => new AuthorizationPolicy(requirements, Array.Empty<string>()).Requirements,
+            "List" => new List<IAuthorizationRequirement>(requirements),
+            "Array" => requirements,
+            "Enumerable" => requirements.Select(r => r),
+            _ => throw new ArgumentOutOfRangeException(nameof(kind)),
+        };
+
+    [Theory]
+    [MemberData(nameof(RequirementCollectionKinds))]
+    public async Task Authorize_InvokesTypedHandlersForEachMatchingRequirement(string kind)
+    {
+        var counter = new CountingRequirementHandler();
+        var authorizationService = BuildAuthorizationService(services =>
+        {
+            services.AddSingleton<IAuthorizationHandler>(counter);
+            services.AddSingleton<IAuthorizationHandler, StringResourceRequirementHandler>();
+        });
+        var user = new ClaimsPrincipal(new ClaimsIdentity(new[] { new Claim(ClaimTypes.Name, "Name") }, "AuthType"));
+        var counted = new CountedRequirement();
+        var requirements = CreateRequirements(
+            kind,
+            counted,
+            new StringResourceRequirement(),
+            new DenyAnonymousAuthorizationRequirement(),
+            counted);
+
+        var allowed = await authorizationService.AuthorizeAsync(user, "resource", requirements);
+        var deniedForWrongResource = await authorizationService.AuthorizeAsync(user, 42, requirements);
+
+        Assert.True(allowed.Succeeded);
+        Assert.False(deniedForWrongResource.Succeeded);
+        Assert.Equal(4, counter.Invocations);
+    }
+
+    [Theory]
+    [MemberData(nameof(RequirementCollectionKinds))]
+    public async Task Authorize_PassThroughHandlerStopsAfterFailure(string kind)
+    {
+        var authorizationService = BuildAuthorizationService(services =>
+            services.Configure<AuthorizationOptions>(options => options.InvokeHandlersAfterFailure = false));
+        var user = new ClaimsPrincipal(new ClaimsIdentity());
+        var after = new SelfHandlingRecordingRequirement(fail: false);
+        var requirements = CreateRequirements(kind, new SelfHandlingRecordingRequirement(fail: true), after);
+
+        var result = await authorizationService.AuthorizeAsync(user, null, requirements);
+
+        Assert.False(result.Succeeded);
+        Assert.False(after.Invoked);
+    }
+
+    private sealed class CountedRequirement : IAuthorizationRequirement
+    {
+    }
+
+    private sealed class CountingRequirementHandler : AuthorizationHandler<CountedRequirement>
+    {
+        public int Invocations { get; private set; }
+
+        protected override Task HandleRequirementAsync(AuthorizationHandlerContext context, CountedRequirement requirement)
+        {
+            Invocations++;
+            context.Succeed(requirement);
+            return Task.CompletedTask;
+        }
+    }
+
+    private sealed class StringResourceRequirement : IAuthorizationRequirement
+    {
+    }
+
+    private sealed class StringResourceRequirementHandler : AuthorizationHandler<StringResourceRequirement, string>
+    {
+        protected override Task HandleRequirementAsync(AuthorizationHandlerContext context, StringResourceRequirement requirement, string resource)
+        {
+            context.Succeed(requirement);
+            return Task.CompletedTask;
+        }
+    }
+
+    private sealed class SelfHandlingRecordingRequirement(bool fail) : IAuthorizationRequirement, IAuthorizationHandler
+    {
+        public bool Invoked { get; private set; }
+
+        public Task HandleAsync(AuthorizationHandlerContext context)
+        {
+            Invoked = true;
+            if (fail)
+            {
+                context.Fail();
+            }
+            else
+            {
+                context.Succeed(this);
+            }
+            return Task.CompletedTask;
+        }
     }
 }

@@ -80,6 +80,33 @@ public class Http2StreamTests : Http2TestBase
     }
 
     [Theory]
+    [InlineData(3)]
+    [InlineData(7)]
+    public async Task HEADERS_Received_NonAsciiMethodStart_Reset(int length)
+    {
+        var method = "\u0100" + new string('A', length - 1);
+        var headers = new[]
+        {
+            new KeyValuePair<string, string>(InternalHeaderNames.Method, method),
+            new KeyValuePair<string, string>(InternalHeaderNames.Path, "/"),
+            new KeyValuePair<string, string>(InternalHeaderNames.Scheme, "http"),
+            new KeyValuePair<string, string>(InternalHeaderNames.Authority, "localhost:80"),
+        };
+        var headersEnumerator = GetHeadersEnumerator(headers);
+        headersEnumerator.EncodingSelector = _ => Encoding.UTF8;
+        var buffer = new byte[1024];
+        Assert.Equal(HeaderWriteResult.Done, HPackHeaderWriter.BeginEncodeHeaders(_hpackEncoder, headersEnumerator, buffer, out var headerLength));
+
+        await InitializeConnectionAsync(_noopApplication);
+
+        await StartStreamAsync(1, buffer.AsSpan(0, headerLength), endStream: true);
+
+        await WaitForStreamErrorAsync(expectedStreamId: 1, Http2ErrorCode.PROTOCOL_ERROR, CoreStrings.FormatHttp2ErrorMethodInvalid(method));
+
+        await StopConnectionAsync(expectedLastStreamId: 1, ignoreNonGoAwayFrames: false);
+    }
+
+    [Theory]
     [InlineData("GET")]
     [InlineData("POST")]
     [InlineData("PUT")]
@@ -391,6 +418,73 @@ public class Http2StreamTests : Http2TestBase
     }
 
     [Theory]
+    [InlineData("/a/path?q=a b")]
+    [InlineData("/a/path?q=a\tb")]
+    [InlineData("/a/path?q=a\u0001b")]
+    [InlineData("/a/path?q=a\u001Fb")]
+    [InlineData("/a/path?q=a\u007Fb")]
+    [InlineData("/a/path? ")]
+    [InlineData("/a/path?\t")]
+    [InlineData("/a/path? q=a")]
+    public async Task HEADERS_Received_QueryWithInvalidCharacter_Reset(string path)
+    {
+        await InitializeConnectionAsync(_noopApplication);
+
+        var headers = new[]
+        {
+            new KeyValuePair<string, string>(InternalHeaderNames.Method, "GET"),
+            new KeyValuePair<string, string>(InternalHeaderNames.Scheme, "http"),
+            new KeyValuePair<string, string>(InternalHeaderNames.Path, path)
+        };
+
+        await StartStreamAsync(1, headers, endStream: true);
+        await WaitForStreamErrorAsync(expectedStreamId: 1, Http2ErrorCode.PROTOCOL_ERROR, CoreStrings.FormatHttp2StreamErrorPathInvalid(path));
+        await StopConnectionAsync(expectedLastStreamId: 1, ignoreNonGoAwayFrames: false);
+    }
+
+    // https://www.rfc-editor.org/rfc/rfc3986#section-3.4
+    [Theory]
+    [InlineData("/a/path?")]
+    [InlineData("/a/path?a=b&c=d")]
+    [InlineData("/a/path?q=a%20b+c/d?e")]
+    [InlineData("/a/path?q=~!$'()*,;:@[]")]
+    [InlineData("/a/path?q=<>\"\\^`{|}")]
+    public async Task HEADERS_Received_QueryWithValidCharacters_Accepted(string path)
+    {
+        var expectedQuery = path[path.IndexOf('?')..];
+
+        await InitializeConnectionAsync(context =>
+        {
+            Assert.Equal("/a/path", context.Request.Path.Value);
+            Assert.Equal(expectedQuery, context.Request.QueryString.Value);
+            Assert.Equal(path, context.Features.Get<IHttpRequestFeature>().RawTarget);
+            return Task.CompletedTask;
+        });
+
+        var headers = new[]
+        {
+            new KeyValuePair<string, string>(InternalHeaderNames.Method, "GET"),
+            new KeyValuePair<string, string>(InternalHeaderNames.Scheme, "http"),
+            new KeyValuePair<string, string>(InternalHeaderNames.Path, path)
+        };
+        await SendHeadersAsync(1, Http2HeadersFrameFlags.END_HEADERS | Http2HeadersFrameFlags.END_STREAM, headers);
+
+        var headersFrame = await ExpectAsync(Http2FrameType.HEADERS,
+            withLength: 36,
+            withFlags: (byte)(Http2HeadersFrameFlags.END_HEADERS | Http2HeadersFrameFlags.END_STREAM),
+            withStreamId: 1);
+
+        await StopConnectionAsync(expectedLastStreamId: 1, ignoreNonGoAwayFrames: false);
+
+        _hpackDecoder.Decode(headersFrame.PayloadSequence, endHeaders: false, handler: this);
+
+        Assert.Equal(3, _decodedHeaders.Count);
+        Assert.Contains("date", _decodedHeaders.Keys, StringComparer.OrdinalIgnoreCase);
+        Assert.Equal("200", _decodedHeaders[InternalHeaderNames.Status]);
+        Assert.Equal("0", _decodedHeaders["content-length"]);
+    }
+
+    [Theory]
     [InlineData("/", "/")]
     [InlineData("/a%5E", "/a^")]
     [InlineData("/a%E2%82%AC", "/a€")]
@@ -399,11 +493,15 @@ public class Http2StreamTests : Http2TestBase
     [InlineData("/a/b/c/../d", "/a/b/d")] // Navigation processed
     [InlineData("/a/b/c/../../../../d", "/d")] // Navigation escape prevented
     [InlineData("/a/b/c/.%2E/d", "/a/b/d")] // Decode before navigation processing
-    public async Task HEADERS_Received_Path_DecodedAndNormalized(string input, string expected)
+    [InlineData("/%23", "/#")]
+    [InlineData("/a?q=%23", "/a", "?q=%23")]
+    [InlineData("/a%3Fb%23c?q=%23", "/a?b#c", "?q=%23")]
+    public async Task HEADERS_Received_Path_DecodedAndNormalized(string input, string expectedPath, string expectedQuery = "")
     {
         await InitializeConnectionAsync(context =>
         {
-            Assert.Equal(expected, context.Request.Path.Value);
+            Assert.Equal(expectedPath, context.Request.Path.Value);
+            Assert.Equal(expectedQuery, context.Request.QueryString.Value);
             Assert.Equal(input, context.Features.Get<IHttpRequestFeature>().RawTarget);
             return Task.CompletedTask;
         });
@@ -430,6 +528,64 @@ public class Http2StreamTests : Http2TestBase
         Assert.Contains("date", _decodedHeaders.Keys, StringComparer.OrdinalIgnoreCase);
         Assert.Equal("200", _decodedHeaders[InternalHeaderNames.Status]);
         Assert.Equal("0", _decodedHeaders["content-length"]);
+    }
+
+    [Fact]
+    public async Task HEADERS_Received_FragmentInPath_AcceptedWhenEnabled()
+    {
+        _serviceContext.ServerOptions.AllowFragmentInRequestTarget = true;
+
+        await InitializeConnectionAsync(context =>
+        {
+            Assert.Equal("/a#b", context.Request.Path.Value);
+            Assert.Equal("?q=v", context.Request.QueryString.Value);
+            Assert.Equal("/a#b?q=v", context.Features.Get<IHttpRequestFeature>().RawTarget);
+            return Task.CompletedTask;
+        });
+
+        var headers = new[]
+        {
+            new KeyValuePair<string, string>(InternalHeaderNames.Method, "GET"),
+            new KeyValuePair<string, string>(InternalHeaderNames.Scheme, "http"),
+            new KeyValuePair<string, string>(InternalHeaderNames.Path, "/a#b?q=v")
+        };
+        await SendHeadersAsync(1, Http2HeadersFrameFlags.END_HEADERS | Http2HeadersFrameFlags.END_STREAM, headers);
+
+        var headersFrame = await ExpectAsync(Http2FrameType.HEADERS,
+            withLength: 36,
+            withFlags: (byte)(Http2HeadersFrameFlags.END_HEADERS | Http2HeadersFrameFlags.END_STREAM),
+            withStreamId: 1);
+
+        await StopConnectionAsync(expectedLastStreamId: 1, ignoreNonGoAwayFrames: false);
+
+        _hpackDecoder.Decode(headersFrame.PayloadSequence, endHeaders: false, handler: this);
+
+        Assert.Equal(3, _decodedHeaders.Count);
+        Assert.Contains("date", _decodedHeaders.Keys, StringComparer.OrdinalIgnoreCase);
+        Assert.Equal("200", _decodedHeaders[InternalHeaderNames.Status]);
+        Assert.Equal("0", _decodedHeaders["content-length"]);
+    }
+
+    [Theory]
+    [InlineData("/#")]
+    [InlineData("/a#b?q=v")]
+    [InlineData("/a?q=v#")]
+    [InlineData("/%61#b")]
+    [InlineData("/%61?q=v#")]
+    public async Task HEADERS_Received_FragmentInPath_Reset(string path)
+    {
+        await InitializeConnectionAsync(_noopApplication);
+
+        var headers = new[]
+        {
+            new KeyValuePair<string, string>(InternalHeaderNames.Method, "GET"),
+            new KeyValuePair<string, string>(InternalHeaderNames.Scheme, "http"),
+            new KeyValuePair<string, string>(InternalHeaderNames.Path, path)
+        };
+
+        await StartStreamAsync(1, headers, endStream: true);
+        await WaitForStreamErrorAsync(expectedStreamId: 1, Http2ErrorCode.PROTOCOL_ERROR, CoreStrings.FormatHttp2StreamErrorPathInvalid(path));
+        await StopConnectionAsync(expectedLastStreamId: 1, ignoreNonGoAwayFrames: false);
     }
 
     [Theory]
@@ -5569,7 +5725,7 @@ public class Http2StreamTests : Http2TestBase
                 // Http2FrameWriter sets Trailers.IsReadOnly to true, but since it's a background task we have to wait for something to indicate it ran
                 // That something is the client side receiving the trailers.
                 await trailersTcs.Task;
-                
+
                 Assert.True(context.Features.Get<IHttpResponseTrailersFeature>().Trailers.IsReadOnly);
 
                 // RequestAborted will no longer fire after CompleteAsync.
@@ -5969,5 +6125,32 @@ public class Http2StreamTests : Http2TestBase
         Assert.Equal(2, _decodedHeaders.Count);
         Assert.Contains("date", _decodedHeaders.Keys, StringComparer.OrdinalIgnoreCase);
         Assert.Equal("200", _decodedHeaders[InternalHeaderNames.Status]);
+    }
+
+    [Theory]
+    [InlineData("\r")]
+    [InlineData("\n")]
+    [InlineData("\r\n")]
+    public async Task OnDynamicIndexedHeader_NewlineCharactersInValue_ThrowsConnectionError(string newlineCharacters)
+    {
+        await InitializeConnectionAsync(_noopApplication);
+
+        // Start a request header block without END_HEADERS so the connection has an active stream receiving headers.
+        await SendHeadersAsync(streamId: 1, flags: Http2HeadersFrameFlags.END_STREAM, headers: _browserRequestHeaders);
+
+        var value = Encoding.ASCII.GetBytes(newlineCharacters);
+
+        // Simulate HPackDecoder resolving a fully indexed dynamic-table entry.
+        var exception = Assert.Throws<Http2ConnectionErrorException>(() =>
+            _connection.OnDynamicIndexedHeader(index: null, name: "contains-newline"u8, value));
+
+        Assert.Equal(Http2ErrorCode.PROTOCOL_ERROR, exception.ErrorCode);
+        Assert.Equal(ConnectionEndReason.InvalidRequestHeaders, exception.Reason);
+        Assert.Contains(CoreStrings.BadRequest_MalformedRequestInvalidHeaders, exception.Message);
+
+        // Finish the intentionally incomplete header block and shut down normally.
+        await SendEmptyContinuationFrameAsync(streamId: 1, flags: Http2ContinuationFrameFlags.END_HEADERS);
+        await StopConnectionAsync(expectedLastStreamId: 1, ignoreNonGoAwayFrames: true);
+        AssertConnectionNoError();
     }
 }

@@ -71,7 +71,7 @@ public class EditForm : ComponentBase
     /// A callback that will be invoked when the form is submitted.
     ///
     /// If using this parameter, you are responsible for triggering any validation
-    /// manually, e.g., by calling <see cref="EditContext.Validate"/>.
+    /// manually, e.g., by calling <see cref="EditContext.ValidateAsync"/>.
     /// </summary>
     [Parameter] public EventCallback<EditContext> OnSubmit { get; set; }
 
@@ -167,7 +167,15 @@ public class EditForm : ComponentBase
         builder.OpenComponent<CascadingValue<EditContext>>(7);
         builder.AddComponentParameter(7, "IsFixed", true);
         builder.AddComponentParameter(8, "Value", _editContext);
-        builder.AddComponentParameter(9, "ChildContent", ChildContent?.Invoke(_editContext));
+        builder.AddComponentParameter(9, "ChildContent", (RenderFragment)(childBuilder =>
+        {
+            if (ChildContent != null)
+            {
+                childBuilder.AddContent(0, ChildContent(_editContext));
+            }
+            childBuilder.OpenComponent<ClientValidationData>(1);
+            childBuilder.CloseComponent();
+        }));
         builder.CloseComponent();
 
         builder.CloseElement();

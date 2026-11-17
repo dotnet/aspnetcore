@@ -1,8 +1,6 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-import type { ValidationOptions } from '../Validation';
-
 export interface SsrStartOptions {
   /**
    * If true, does not attempt to preserve DOM nodes when performing dynamic updates to SSR content
@@ -15,9 +13,4 @@ export interface SsrStartOptions {
    * before closing the circuit.
    */
   circuitInactivityTimeoutMs?: number;
-
-  /**
-   * Configures client-side form validation for SSR-rendered forms.
-   */
-  formValidation?: ValidationOptions;
 }

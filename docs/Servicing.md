@@ -43,6 +43,10 @@ To request Shiproom approval for a fix, open a **Pull Request** to the target `r
 
 Once the above conditions are met, apply the `servicing-consider` label.
 
+## Submitting a fix for M2 approval
+
+During RC1 and RC2, PRs should go through M2 approval rather than full tactics/shiproom approval. For that case, follow the steps above, then request review from your M2 on the PR (currently [artl93](https://github.com/artl93)). No email is necessary. When not in M2 mode, follow the below instructions for getting tactics/shiproom approval. 
+
 ## Shiproom
 
 The .NET Shiproom meets regularly (approximately twice a week) and reviews PRs labelled `servicing-consider`. The Shiproom attendees include stakeholders from across the stack (runtime, libraries, app models, sdk, etc.). Any PR with this label will be considered. Having a fully-complete template is important to ensuring the PR can be properly reviewed. Generally, someone familiar with the PR should be present at the meeting, but having the template filled out helps ensure that if that person is unavailable, the bug is well-represented.

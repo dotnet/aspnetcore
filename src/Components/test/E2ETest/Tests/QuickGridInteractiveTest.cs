@@ -34,7 +34,7 @@ public class QuickGridInteractiveTest : ServerTestBase<BasicTestAppServerSiteFix
         Browser.Click(By.CssSelector("#grid > table thead > tr > th:nth-child(1) > div > a"));
         Browser.Equal("10895", () => Browser.FindElement(By.CssSelector("#grid > table tbody > tr:nth-child(1) > td:nth-child(1)")).Text);
         Assert.Contains("sort=PersonId", Browser.Url);
-        Assert.Contains("order=asc", Browser.Url);
+        Assert.Contains("direction=asc", Browser.Url);
 
         // Click again to sort descending
         Browser.Click(By.CssSelector("#grid > table thead > tr > th:nth-child(1) > div > a"));
@@ -45,7 +45,7 @@ public class QuickGridInteractiveTest : ServerTestBase<BasicTestAppServerSiteFix
         Browser.Equal("Karttunen", () => Browser.FindElement(By.CssSelector("#grid > table tbody > tr:nth-child(1) > td:nth-child(3)")).Text);
         Browser.Equal("1981-06-04", () => Browser.FindElement(By.CssSelector("#grid > table tbody > tr:nth-child(1) > td:nth-child(4)")).Text);
         Assert.Contains("sort=PersonId", Browser.Url);
-        Assert.Contains("order=desc", Browser.Url);
+        Assert.Contains("direction=desc", Browser.Url);
     }
 
     [Fact]
@@ -58,7 +58,7 @@ public class QuickGridInteractiveTest : ServerTestBase<BasicTestAppServerSiteFix
         Browser.Click(By.CssSelector("#grid > table thead > tr > th:nth-child(2) > div > a.col-title"));
         Browser.Equal("12372", () => Browser.FindElement(By.CssSelector("#grid > table tbody > tr:nth-child(1) > td:nth-child(1)")).Text);
         Assert.Contains("sort=FirstName", Browser.Url);
-        Assert.Contains("order=asc", Browser.Url);
+        Assert.Contains("direction=asc", Browser.Url);
 
         // Click again to sort descending
         Browser.Click(By.CssSelector("#grid > table thead > tr > th:nth-child(2) > div > a.col-title"));
@@ -69,7 +69,7 @@ public class QuickGridInteractiveTest : ServerTestBase<BasicTestAppServerSiteFix
         Browser.Equal("Piestrzeniewicz", () => Browser.FindElement(By.CssSelector("#grid > table tbody > tr:nth-child(1) > td:nth-child(3)")).Text);
         Browser.Equal("1981-04-02", () => Browser.FindElement(By.CssSelector("#grid > table tbody > tr:nth-child(1) > td:nth-child(4)")).Text);
         Assert.Contains("sort=FirstName", Browser.Url);
-        Assert.Contains("order=desc", Browser.Url);
+        Assert.Contains("direction=desc", Browser.Url);
     }
 
     [Fact]
@@ -82,7 +82,7 @@ public class QuickGridInteractiveTest : ServerTestBase<BasicTestAppServerSiteFix
         Browser.Click(By.CssSelector("#grid > table thead > tr > th:nth-child(4) > div > a"));
         Browser.Equal("11205", () => Browser.FindElement(By.CssSelector("#grid > table tbody > tr:nth-child(1) > td:nth-child(1)")).Text);
         Assert.Contains("sort=BirthDate", Browser.Url);
-        Assert.Contains("order=asc", Browser.Url);
+        Assert.Contains("direction=asc", Browser.Url);
 
         // Click again to sort descending
         Browser.Click(By.CssSelector("#grid > table thead > tr > th:nth-child(4) > div > a"));
@@ -93,24 +93,39 @@ public class QuickGridInteractiveTest : ServerTestBase<BasicTestAppServerSiteFix
         Browser.Equal("Accorti", () => Browser.FindElement(By.CssSelector("#grid > table tbody > tr:nth-child(1) > td:nth-child(3)")).Text);
         Browser.Equal("2018-05-18", () => Browser.FindElement(By.CssSelector("#grid > table tbody > tr:nth-child(1) > td:nth-child(4)")).Text);
         Assert.Contains("sort=BirthDate", Browser.Url);
-        Assert.Contains("order=desc", Browser.Url);
+        Assert.Contains("direction=desc", Browser.Url);
     }
 
     [Fact]
-    [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/67350")]
     public void PaginatorCorrectItemsPerPage()
     {
         Navigate($"{ServerPathBase}/quickgrid-interactive");
         Browser.Exists(By.CssSelector("#grid > table"));
 
-        var grid = Browser.FindElement(By.ClassName("quickgrid"));
-        var rowCount = grid.FindElements(By.CssSelector("tbody > tr")).Count;
-        Assert.Equal(10, rowCount);
+        Browser.Equal(10, () => Browser.FindElements(By.CssSelector("#grid .quickgrid tbody tr")).Count);
 
         Browser.Click(By.CssSelector(".first-paginator .go-next"));
 
         Browser.Equal("2", () => Browser.FindElement(By.CssSelector(".first-paginator .paginator nav > div > strong:nth-child(1)")).Text);
-        Browser.Equal(10, () => Browser.FindElement(By.CssSelector("#grid .quickgrid")).FindElements(By.CssSelector("tbody > tr")).Count);
+        Browser.Equal(10, () => Browser.FindElements(By.CssSelector("#grid .quickgrid tbody tr")).Count);
+    }
+
+    [Fact]
+    public void PaginatorNavigationHasAccessibleName()
+    {
+        Navigate($"{ServerPathBase}/quickgrid-interactive");
+
+        Browser.Equal("Pagination", () => Assert.IsAssignableFrom<WebElement>(Browser.FindElement(By.CssSelector(".first-paginator .paginator nav"))).ComputedAccessibleLabel);
+        Browser.Equal("Pagination", () => Assert.IsAssignableFrom<WebElement>(Browser.FindElement(By.CssSelector(".top-paginator .paginator nav"))).ComputedAccessibleLabel);
+        Browser.Equal("People pages", () => Assert.IsAssignableFrom<WebElement>(Browser.FindElement(By.CssSelector(".bottom-paginator .paginator nav"))).ComputedAccessibleLabel);
+
+        Browser.Click(By.Id("toggle-paginator-labelledby"));
+
+        Browser.Equal("More people pages", () => Assert.IsAssignableFrom<WebElement>(Browser.FindElement(By.CssSelector(".bottom-paginator .paginator nav"))).ComputedAccessibleLabel);
+
+        Browser.Click(By.Id("toggle-paginator-labelledby"));
+
+        Browser.Equal("People pages", () => Assert.IsAssignableFrom<WebElement>(Browser.FindElement(By.CssSelector(".bottom-paginator .paginator nav"))).ComputedAccessibleLabel);
     }
 
     [Fact]
@@ -129,6 +144,33 @@ public class QuickGridInteractiveTest : ServerTestBase<BasicTestAppServerSiteFix
         Assert.Contains("people_page=2", Browser.Url);
     }
 
+    [Theory]
+    [InlineData("first-paginator", "5", "43 items")]
+    [InlineData("bottom-paginator", "9", "Custom summary")]
+    public void PaginatorExposesPageChangesWithoutMovingFocus(string paginatorClass, string pageCount, string summaryText)
+    {
+        Navigate($"{ServerPathBase}/quickgrid-interactive");
+        Browser.Exists(By.Id("quickgrid-interactive-ready"));
+
+        var paginator = Browser.FindElement(By.ClassName(paginatorClass));
+        var status = paginator.FindElement(By.ClassName("pagination-text"));
+        var summary = paginator.FindElement(By.ClassName("summary"));
+        var next = paginator.FindElement(By.CssSelector("a.go-next"));
+
+        Assert.Equal($"Page 1 of {pageCount}", status.Text);
+        Assert.Equal("polite", status.GetDomAttribute("aria-live"));
+        Assert.Equal("true", status.GetDomAttribute("aria-atomic"));
+        Assert.Null(summary.GetDomAttribute("aria-live"));
+
+        next.SendKeys(Keys.Enter);
+
+        Browser.Equal($"Page 2 of {pageCount}", () => status.Text);
+        Browser.Equal(next, () => Browser.SwitchTo().ActiveElement());
+        Assert.Equal("polite", status.GetDomAttribute("aria-live"));
+        Assert.Equal("true", status.GetDomAttribute("aria-atomic"));
+        Assert.Equal(summaryText, summary.Text);
+    }
+
     [Fact]
     public void TwoGridsSortIndependently()
     {
@@ -140,7 +182,7 @@ public class QuickGridInteractiveTest : ServerTestBase<BasicTestAppServerSiteFix
         Browser.Click(By.CssSelector("#grid > table thead > tr > th:nth-child(1) > div > a"));
         Browser.Equal("10895", () => Browser.FindElement(By.CssSelector("#grid > table tbody > tr:nth-child(1) > td:nth-child(1)")).Text);
 
-        // Sort second grid by FirstName ascending (uses QueryParameterNamePrefix="people" prefix)
+        // Sort second grid by FirstName ascending (uses QueryParameterNameOptions with "people_" prefix)
         Browser.Click(By.CssSelector("#grid2 > table thead > tr > th:nth-child(2) > div > a.col-title"));
         Browser.Equal("12372", () => Browser.FindElement(By.CssSelector("#grid2 > table tbody > tr:nth-child(1) > td:nth-child(1)")).Text);
 
@@ -149,9 +191,9 @@ public class QuickGridInteractiveTest : ServerTestBase<BasicTestAppServerSiteFix
 
         // Verify URL contains both unprefixed and prefixed sort parameters
         Assert.Contains("sort=PersonId", Browser.Url);
-        Assert.Contains("order=asc", Browser.Url);
+        Assert.Contains("direction=asc", Browser.Url);
         Assert.Contains("people_sort=FirstName", Browser.Url);
-        Assert.Contains("people_order=asc", Browser.Url);
+        Assert.Contains("people_direction=asc", Browser.Url);
     }
 
     [Fact]
@@ -161,10 +203,8 @@ public class QuickGridInteractiveTest : ServerTestBase<BasicTestAppServerSiteFix
 
         Browser.Exists(By.CssSelector("#type-mismatch-error-virtualized"));
 
-        var errorMessage = Browser.FindElement(By.CssSelector("#error-message-virtualized")).Text;
-
-        Assert.Contains("Column 'Summary' expects item type", errorMessage);
-        Assert.Contains("Employee", errorMessage);
-        Assert.Contains("which does not match the parent QuickGrid's item type.", errorMessage);
+        Browser.Contains("Column 'Summary' expects item type", () => Browser.FindElement(By.CssSelector("#error-message-virtualized")).Text);
+        Browser.Contains("Employee", () => Browser.FindElement(By.CssSelector("#error-message-virtualized")).Text);
+        Browser.Contains("does not match the parent QuickGrid's item type", () => Browser.FindElement(By.CssSelector("#error-message-virtualized")).Text);
     }
 }

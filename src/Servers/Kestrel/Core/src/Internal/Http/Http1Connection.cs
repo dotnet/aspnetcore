@@ -43,6 +43,7 @@ internal partial class Http1Connection : HttpProtocol, IRequestProcessor, IHttpO
     private const byte ByteLF = (byte)'\n';
     private const byte ByteAsterisk = (byte)'*';
     private const byte ByteForwardSlash = (byte)'/';
+    private const byte ByteBackSlash = (byte)'\\';
     private const string Asterisk = "*";
     private const string ForwardSlash = "/";
 
@@ -71,6 +72,9 @@ internal partial class Http1Connection : HttpProtocol, IRequestProcessor, IHttpO
 
     // Tracks whether a bare LF line terminator was seen for the current request
     private bool _sawBareLineFeedTerminator;
+
+    // Tracks whether a chunked extension was seen for the current request
+    private bool _sawChunkedExtension;
 
     public Http1Connection(HttpConnectionContext context)
     {
@@ -393,6 +397,21 @@ internal partial class Http1Connection : HttpProtocol, IRequestProcessor, IHttpO
         }
     }
 
+    public void OnChunkedExtension(bool rejected)
+    {
+        // Only record the log once per request, even if multiple chunk extensions are present.
+        // We intentionally didn't introduce a metric for this. We think the scenario is very
+        // unlikely to occur in practice and isn't worth adding a metric for.
+        if (_sawChunkedExtension)
+        {
+            return;
+        }
+
+        _sawChunkedExtension = true;
+
+        Log.Http1ChunkedExtension(ConnectionId, rejected);
+    }
+
     public void OnBareLineFeedTerminator(bool rejected)
     {
         // Only record the metric and log once per request even if multiple lines use a bare LF terminator.
@@ -483,6 +502,11 @@ internal partial class Http1Connection : HttpProtocol, IRequestProcessor, IHttpO
             _parsedRawTarget = _parsedPath = _parsedQueryString = null;
             _parsedAbsoluteRequestTarget = null;
             return;
+        }
+
+        if (!ServerOptions.AllowFragmentInRequestTarget && target.Contains((byte)'#'))
+        {
+            ThrowRequestTargetRejected(target);
         }
 
         // Read raw target before mutating memory.
@@ -662,6 +686,11 @@ internal partial class Http1Connection : HttpProtocol, IRequestProcessor, IHttpO
         //    a server MUST accept the absolute-form in requests, even though
         //    HTTP/1.1 clients will only send them in requests to proxies.
 
+        if (!ServerOptions.AllowFragmentInRequestTarget && target.Contains((byte)'#'))
+        {
+            ThrowRequestTargetRejected(target);
+        }
+
         var disableStringReuse = ServerOptions.DisableStringReuse;
         var previousValue = _parsedRawTarget;
         if (disableStringReuse ||
@@ -686,6 +715,16 @@ internal partial class Http1Connection : HttpProtocol, IRequestProcessor, IHttpO
             // Validation of absolute URIs is slow, but clients
             // should not be sending this form anyways, so perf optimization
             // not high priority
+
+            // System.Uri treats '\' as a path separator (a Windows/WinINet compatibility
+            // behavior) and collapses dot-segments around it, so uri.AbsolutePath (and thus
+            // Path) would be silently normalized in a way RawTarget doesn't reflect. Per
+            // RFC 3986, '\' is not a valid URI path character, so reject the request instead.
+            // Only the target before the query string is checked (query is target[targetPath.Length..]).
+            if (target[..targetPath.Length].Contains(ByteBackSlash))
+            {
+                ThrowRequestTargetRejected(target);
+            }
 
             if (!Uri.TryCreate(RawTarget, UriKind.Absolute, out var uri))
             {
@@ -842,6 +881,7 @@ internal partial class Http1Connection : HttpProtocol, IRequestProcessor, IHttpO
         _absoluteRequestTarget = null;
         _remainingRequestHeadersBytesAllowed = (long)ServerOptions.Limits.MaxRequestHeadersTotalSize + 2;
         _sawBareLineFeedTerminator = false;
+        _sawChunkedExtension = false;
 
         MinResponseDataRate = ServerOptions.Limits.MinResponseDataRate;
 
@@ -849,10 +889,6 @@ internal partial class Http1Connection : HttpProtocol, IRequestProcessor, IHttpO
         _currentIHttpMinRequestBodyDataRateFeature = this;
         _currentIHttpMinResponseDataRateFeature = this;
         _currentIPersistentStateFeature = this;
-    }
-
-    protected override void OnRequestProcessingEnding()
-    {
     }
 
     protected override string CreateRequestId()

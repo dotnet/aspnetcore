@@ -51,7 +51,7 @@ public class JsonPatchDocument : IJsonPatchDocument
     {
         ArgumentNullThrowHelper.ThrowIfNull(path);
 
-        Operations.Add(new Operation("add", PathHelpers.ValidateAndNormalizePath(path), null, value));
+        Operations.Add(new Operation("add", PathHelpers.NormalizePath(path), null, value));
         return this;
     }
 
@@ -65,7 +65,7 @@ public class JsonPatchDocument : IJsonPatchDocument
     {
         ArgumentNullThrowHelper.ThrowIfNull(path);
 
-        Operations.Add(new Operation("remove", PathHelpers.ValidateAndNormalizePath(path), null, null));
+        Operations.Add(new Operation("remove", PathHelpers.NormalizePath(path), null, null));
         return this;
     }
 
@@ -80,7 +80,7 @@ public class JsonPatchDocument : IJsonPatchDocument
     {
         ArgumentNullThrowHelper.ThrowIfNull(path);
 
-        Operations.Add(new Operation("replace", PathHelpers.ValidateAndNormalizePath(path), null, value));
+        Operations.Add(new Operation("replace", PathHelpers.NormalizePath(path), null, value));
         return this;
     }
 
@@ -95,7 +95,7 @@ public class JsonPatchDocument : IJsonPatchDocument
     {
         ArgumentNullThrowHelper.ThrowIfNull(path);
 
-        Operations.Add(new Operation("test", PathHelpers.ValidateAndNormalizePath(path), null, value));
+        Operations.Add(new Operation("test", PathHelpers.NormalizePath(path), null, value));
         return this;
     }
 
@@ -111,7 +111,7 @@ public class JsonPatchDocument : IJsonPatchDocument
         ArgumentNullThrowHelper.ThrowIfNull(from);
         ArgumentNullThrowHelper.ThrowIfNull(path);
 
-        Operations.Add(new Operation("move", PathHelpers.ValidateAndNormalizePath(path), PathHelpers.ValidateAndNormalizePath(from)));
+        Operations.Add(new Operation("move", PathHelpers.NormalizePath(path), PathHelpers.NormalizePath(from)));
         return this;
     }
 
@@ -127,7 +127,7 @@ public class JsonPatchDocument : IJsonPatchDocument
         ArgumentNullThrowHelper.ThrowIfNull(from);
         ArgumentNullThrowHelper.ThrowIfNull(path);
 
-        Operations.Add(new Operation("copy", PathHelpers.ValidateAndNormalizePath(path), PathHelpers.ValidateAndNormalizePath(from)));
+        Operations.Add(new Operation("copy", PathHelpers.NormalizePath(path), PathHelpers.NormalizePath(from)));
         return this;
     }
 

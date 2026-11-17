@@ -4,6 +4,7 @@
 using System.Net;
 using System.Web;
 using Microsoft.AspNetCore.Components.WebAssembly.Server;
+using Microsoft.AspNetCore.Shared;
 
 namespace Microsoft.AspNetCore.Builder;
 
@@ -16,6 +17,7 @@ public static class WebAssemblyNetDebugProxyAppBuilderExtensions
     /// Adds middleware needed for debugging Blazor WebAssembly applications
     /// inside Chromium dev tools.
     /// </summary>
+    [Obsolete(Obsoletions.UseWebAssemblyDebuggingMessage, DiagnosticId = Obsoletions.UseWebAssemblyDebuggingDiagId, UrlFormat = Obsoletions.AspNetCoreDeprecate011Url)]
     public static void UseWebAssemblyDebugging(this IApplicationBuilder app)
     {
         app.Map("/_framework/debug", app =>
@@ -23,6 +25,10 @@ public static class WebAssemblyNetDebugProxyAppBuilderExtensions
             app.Run(async (context) =>
             {
                 var queryParams = HttpUtility.ParseQueryString(context.Request.QueryString.Value!);
+                // The browser query parameter contains the URL that Chrome or Edge exposes
+                // for debugger connections. It is not the URL of the Blazor application.
+                // This route starts or reuses a .NET debug proxy configured to use that URL.
+                // It does not start Chrome or Edge or enable debugging in the browser.
                 var browserParam = queryParams.Get("browser");
                 Uri? browserUrl = null;
                 var devToolsHost = "http://localhost:9222";

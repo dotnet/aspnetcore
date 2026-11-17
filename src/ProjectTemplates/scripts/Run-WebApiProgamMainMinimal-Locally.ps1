@@ -1,12 +1,9 @@
 #!/usr/bin/env pwsh
 #requires -version 4
 
-[CmdletBinding(PositionalBinding = $false)]
-param()
-
 Set-StrictMode -Version 2
 $ErrorActionPreference = 'Stop'
 
-. $PSScriptRoot\Test-Template.ps1
+Import-Module -Name "$PSScriptRoot/Test-Template.psm1"
 
-Test-Template "webapi" "webapi --use-program-main --use-minimal-apis" "Microsoft.DotNet.Web.ProjectTemplates.11.0.11.0.0-dev.nupkg" $false
+Test-Template -TemplateName "webapi" -TemplateArguments @("webapi", "--use-program-main", "--use-minimal-apis")

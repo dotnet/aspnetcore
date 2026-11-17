@@ -6,6 +6,6 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <Reference Include="Microsoft.Extensions.DiagnosticAdapter" />
+    <PackageReference Include="Microsoft.Extensions.DiagnosticAdapter" />
   </ItemGroup>
 </Project>

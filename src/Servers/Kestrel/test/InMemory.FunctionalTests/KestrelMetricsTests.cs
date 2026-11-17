@@ -587,6 +587,82 @@ public class KestrelMetricsTests : TestApplicationErrorLoggerLoggedTest
     }
 
     [Fact]
+    public async Task Http1Connection_ChunkedExtensionAccepted_LogsDetails()
+    {
+        var serviceContext = new TestServiceContext(LoggerFactory);
+        serviceContext.ServerOptions.EnableChunkedExtensions = true;
+
+        await using var server = new TestServer(ChunkedEchoApp, serviceContext);
+
+        using (var connection = server.CreateConnection())
+        {
+            await connection.Send(
+                "POST / HTTP/1.1",
+                "Host:",
+                "Transfer-Encoding: chunked",
+                "",
+                "2;a=b",
+                "xy",
+                "0",
+                "",
+                "").DefaultTimeout();
+            await connection.Receive(
+                "HTTP/1.1 200 OK",
+                "Content-Length: 2",
+                $"Date: {serviceContext.DateHeaderValue}",
+                "",
+                "xy").DefaultTimeout();
+        }
+
+        Assert.Contains(TestSink.Writes, w => w.EventId.Name == "Http1ChunkedExtension");
+    }
+
+    [Fact]
+    public async Task Http1Connection_ChunkedExtensionRejected_LogsDetails()
+    {
+        var serviceContext = new TestServiceContext(LoggerFactory);
+        serviceContext.ServerOptions.EnableChunkedExtensions = false;
+
+        await using var server = new TestServer(ChunkedEchoApp, serviceContext);
+
+        using (var connection = server.CreateConnection())
+        {
+            await connection.Send(
+                "POST / HTTP/1.1",
+                "Host:",
+                "Transfer-Encoding: chunked",
+                "",
+                "2;a=b",
+                "xy",
+                "0",
+                "",
+                "").DefaultTimeout();
+            await connection.ReceiveEnd(
+                "HTTP/1.1 400 Bad Request",
+                "Content-Length: 0",
+                "Connection: close",
+                $"Date: {serviceContext.DateHeaderValue}",
+                "",
+                "").DefaultTimeout();
+        }
+
+        Assert.Contains(TestSink.Writes, w => w.EventId.Name == "Http1ChunkedExtension");
+    }
+
+    private static async Task ChunkedEchoApp(HttpContext httpContext)
+    {
+        var request = httpContext.Request;
+        var response = httpContext.Response;
+
+        var data = new MemoryStream();
+        await request.Body.CopyToAsync(data);
+        var bytes = data.ToArray();
+
+        response.Headers.ContentLength = bytes.Length;
+        await response.Body.WriteAsync(bytes);
+    }
+
+    [Fact]
     public async Task Http1Connection_Upgrade()
     {
         var listenOptions = new ListenOptions(new IPEndPoint(IPAddress.Loopback, 0));
@@ -758,6 +834,8 @@ public class KestrelMetricsTests : TestApplicationErrorLoggerLoggedTest
 
             await shutdownTask;
         }
+
+        await connectionDuration.WaitForMeasurementsAsync(minCount: 1).DefaultTimeout();
 
         Assert.Collection(connectionDuration.GetMeasurementSnapshot(), m => AssertDuration(m, "127.0.0.1", localPort: 0, "tcp", "ipv4", KestrelMetrics.Http2, error: KestrelMetrics.GetErrorType(ConnectionEndReason.AppShutdownTimeout)));
     }

@@ -168,13 +168,17 @@ internal sealed class DefaultAntiforgeryTokenGenerator : IAntiforgeryTokenGenera
 
         if (!comparer.Equals(requestToken.Username, currentUsername))
         {
-            message = Resources.FormatAntiforgeryToken_UsernameMismatch(requestToken.Username, currentUsername);
+            message = IsTokenForAuthenticatedUserButCurrentUserIsNot(authenticatedIdentity, requestToken)
+                ? Resources.AntiforgeryToken_UnauthenticatedUser
+                : Resources.FormatAntiforgeryToken_UsernameMismatch(requestToken.Username, currentUsername);
             return false;
         }
 
         if (!AreIdenticalClaimUids(requestToken, extractedClaimUidBytes, currentClaimUidBytes))
         {
-            message = Resources.AntiforgeryToken_ClaimUidMismatch;
+            message = IsTokenForAuthenticatedUserButCurrentUserIsNot(authenticatedIdentity, requestToken)
+                ? Resources.AntiforgeryToken_UnauthenticatedUser
+                : Resources.AntiforgeryToken_ClaimUidMismatch;
             return false;
         }
 
@@ -188,6 +192,17 @@ internal sealed class DefaultAntiforgeryTokenGenerator : IAntiforgeryTokenGenera
 
         message = null;
         return true;
+
+        static bool IsTokenForAuthenticatedUserButCurrentUserIsNot(
+            ClaimsIdentity? currentAuthenticatedIdentity,
+            AntiforgeryToken token)
+        {
+            // The current request has no authenticated identity, yet the incoming token was generated for one
+            // (it carries a ClaimUid or a Username). This most commonly happens when UseAntiforgery() runs before
+            // UseAuthentication(), so the user has not been authenticated yet when the token is validated.
+            return currentAuthenticatedIdentity is null
+                && (token.ClaimUid is not null || !string.IsNullOrEmpty(token.Username));
+        }
 
         static bool AreIdenticalClaimUids(AntiforgeryToken token, bool claimUidBytesExtracted, Span<byte> claimUidBytes)
         {

@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Net.Security;
+using System.Security.Authentication.ExtendedProtection;
 using System.Security.Claims;
 using System.Security.Principal;
 
@@ -10,11 +11,26 @@ namespace Microsoft.AspNetCore.Authentication.Negotiate;
 internal sealed class NegotiateState : INegotiateState
 {
     private static readonly NegotiateAuthenticationServerOptions _serverOptions = new();
+    private readonly ChannelBinding? _channelBinding;
     private readonly NegotiateAuthentication _instance;
 
-    public NegotiateState()
+    public NegotiateState(ReadOnlyMemory<byte> channelBindingToken)
     {
-        _instance = new NegotiateAuthentication(_serverOptions);
+        _channelBinding = channelBindingToken.IsEmpty ? null : new NegotiateChannelBinding(channelBindingToken);
+
+        try
+        {
+            var serverOptions = _channelBinding is null
+                ? _serverOptions
+                : new NegotiateAuthenticationServerOptions { Binding = _channelBinding };
+            _instance = new NegotiateAuthentication(serverOptions);
+        }
+        catch
+        {
+            // NegotiateAuthentication construction can fail after the binding has been allocated.
+            _channelBinding?.Dispose();
+            throw;
+        }
     }
 
     public string? GetOutgoingBlob(string incomingBlob, out BlobErrorType status, out Exception? error)
@@ -65,7 +81,14 @@ internal sealed class NegotiateState : INegotiateState
 
     public void Dispose()
     {
-        _instance.Dispose();
+        try
+        {
+            _instance.Dispose();
+        }
+        finally
+        {
+            _channelBinding?.Dispose();
+        }
     }
 
     private static bool IsCredentialError(NegotiateAuthenticationStatusCode error)

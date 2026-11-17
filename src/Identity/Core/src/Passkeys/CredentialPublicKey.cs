@@ -68,7 +68,7 @@ internal sealed class CredentialPublicKey
         {
             case COSEKeyType.EC2:
             case COSEKeyType.OKP:
-                _ecdsa = ParseECDsa(_type, reader);
+                _ecdsa = ParseECDsa(_type, _alg, reader);
                 break;
             case COSEKeyType.RSA:
                 _rsa = ParseRSA(reader);
@@ -146,17 +146,34 @@ internal sealed class CredentialPublicKey
         return RSA.Create(rsaParams);
     }
 
-    private static ECDsa ParseECDsa(COSEKeyType kty, Ctap2CborReader reader)
+    private static ECDsa ParseECDsa(COSEKeyType kty, COSEAlgorithmIdentifier alg, Ctap2CborReader reader)
     {
         var ecParams = new ECParameters();
 
         reader.ReadCoseKeyLabel((int)COSEKeyParameter.Crv);
         var crv = (COSEEllipticCurve)reader.ReadInt32();
 
-        if (IsValidKtyCrvCombination(kty, crv))
+        if (crv == COSEEllipticCurve.P256K)
         {
-            ecParams.Curve = MapCoseCrvToECCurve(crv);
+            // P256K (secp256k1) is a valid COSE curve, but this implementation
+            // has never supported it. Distinguish "recognized but unsupported"
+            // from "not a valid kty+crv combination" below.
+            throw new NotSupportedException("The COSE curve 'P256K' is not supported.");
         }
+
+        if (!IsValidKtyCrvCombination(kty, crv))
+        {
+            throw new CborContentException($"The COSE key type '{kty}' is not valid for crv '{crv}'.");
+        }
+
+        var curve = MapCoseCrvToECCurve(crv);
+
+        if (kty == COSEKeyType.EC2 && !IsValidAlgCrvCombination(alg, crv))
+        {
+            throw new CborContentException($"The COSE algorithm '{alg}' is not valid for kty '{kty}' and crv '{crv}'.");
+        }
+
+        ecParams.Curve = curve;
 
         reader.ReadCoseKeyLabel((int)COSEKeyParameter.X);
         ecParams.Q.X = reader.ReadByteString();
@@ -194,6 +211,23 @@ internal sealed class CredentialPublicKey
             {
                 (COSEKeyType.EC2, COSEEllipticCurve.P256 or COSEEllipticCurve.P384 or COSEEllipticCurve.P521) => true,
                 (COSEKeyType.OKP, COSEEllipticCurve.X25519 or COSEEllipticCurve.X448 or COSEEllipticCurve.Ed25519 or COSEEllipticCurve.Ed448) => true,
+                _ => false,
+            };
+        }
+
+        // See https://www.w3.org/TR/webauthn-3/#sctn-alg-identifier for the
+        // alg/crv pairings for the currently supported EC2 algorithms.
+        // Adding another EC2 algorithm to IsSupportedAlgorithm also requires
+        // updating this switch. ES256K is intentionally omitted: it isn't in
+        // IsSupportedAlgorithm, and a P256K crv is already rejected above
+        // with NotSupportedException before this runs.
+        static bool IsValidAlgCrvCombination(COSEAlgorithmIdentifier alg, COSEEllipticCurve crv)
+        {
+            return (alg, crv) switch
+            {
+                (COSEAlgorithmIdentifier.ES256, COSEEllipticCurve.P256) => true,
+                (COSEAlgorithmIdentifier.ES384, COSEEllipticCurve.P384) => true,
+                (COSEAlgorithmIdentifier.ES512, COSEEllipticCurve.P521) => true,
                 _ => false,
             };
         }

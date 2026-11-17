@@ -29,7 +29,14 @@ internal sealed partial class WebAssemblyRenderer : WebRenderer
     private readonly IInternalJSImportMethods _jsMethods;
     private readonly ComponentStatePersistenceManager _componentStatePersistenceManager;
     private readonly bool _useOutOfProcessRendering;
+
+    // Reused for every out-of-process batch. Batches are serialized one at a time on the renderer's
+    // dispatcher, and the writer resets its string table after each batch, so it holds no strings in between.
+    private ArrayBuilderMemoryStream? _renderBatchStream;
+    private RenderBatchWriter? _renderBatchWriter;
     private static readonly RendererInfo _componentPlatform = new("WebAssembly", isInteractive: true);
+    private bool _isDeferringInitialRootComponentRender;
+    private TaskCompletionSource? _deferredInitialRootComponentRenderCompletionSource;
 
     public WebAssemblyRenderer(IServiceProvider serviceProvider, ResourceAssetCollection resourceCollection, ILoggerFactory loggerFactory, JSComponentInterop jsComponentInterop, bool useOutOfProcessRendering = false)
         : base(serviceProvider, loggerFactory, DefaultWebAssemblyJSRuntime.Instance.ReadJsonSerializerOptions(), jsComponentInterop)
@@ -71,18 +78,18 @@ internal sealed partial class WebAssemblyRenderer : WebRenderer
             switch (operation.Type)
             {
                 case RootComponentOperationType.Add:
-                    _ = webRootComponentManager.AddRootComponentAsync(
+                    ObserveActivationFault(webRootComponentManager.AddRootComponentAsync(
                         operation.SsrComponentId,
                         operation.Descriptor!.ComponentType,
                         operation.Marker!.Value.Key!,
-                        operation.Descriptor!.Parameters);
+                        operation.Descriptor!.Parameters));
                     break;
                 case RootComponentOperationType.Update:
-                    _ = webRootComponentManager.UpdateRootComponentAsync(
+                    ObserveActivationFault(webRootComponentManager.UpdateRootComponentAsync(
                         operation.SsrComponentId,
                         operation.Descriptor!.ComponentType,
                         operation.Marker?.Key,
-                        operation.Descriptor!.Parameters);
+                        operation.Descriptor!.Parameters));
                     break;
                 case RootComponentOperationType.Remove:
                     webRootComponentManager.RemoveRootComponent(operation.SsrComponentId);
@@ -104,6 +111,17 @@ internal sealed partial class WebAssemblyRenderer : WebRenderer
         await componentStatePersistenceManager.RestoreStateAsync(store, RestoreContext.ValueUpdate);
     }
 
+    // Root component activation is otherwise fire-and-forget, so a fault would be silently discarded
+    // instead of being logged and surfacing the error UI like other unhandled rendering exceptions.
+    // Use a fault-only continuation to avoid allocating an async state machine on the success path.
+    private void ObserveActivationFault(Task activationTask)
+        => activationTask.ContinueWith(
+            static (task, state) => ((WebAssemblyRenderer)state!).HandleException(task.Exception!),
+            this,
+            CancellationToken.None,
+            TaskContinuationOptions.OnlyOnFaulted | TaskContinuationOptions.ExecuteSynchronously,
+            TaskScheduler.Current);
+
     protected override IComponentRenderMode? GetComponentRenderMode(IComponent component) => RenderMode.InteractiveWebAssembly;
 
     public void NotifyEndUpdateRootComponents(long batchId)
@@ -123,6 +141,35 @@ internal sealed partial class WebAssemblyRenderer : WebRenderer
         return RenderRootComponentAsync(componentId, parameters);
     }
 
+    internal void BeginInitialRootComponentRender()
+    {
+        if (_isDeferringInitialRootComponentRender)
+        {
+            throw new InvalidOperationException("Initial root component rendering is already being deferred.");
+        }
+
+        _isDeferringInitialRootComponentRender = true;
+    }
+
+    internal void EndInitialRootComponentRender()
+    {
+        if (!_isDeferringInitialRootComponentRender)
+        {
+            throw new InvalidOperationException("Initial root component rendering is not being deferred.");
+        }
+
+        _isDeferringInitialRootComponentRender = false;
+        try
+        {
+            ProcessPendingRender();
+        }
+        finally
+        {
+            _deferredInitialRootComponentRenderCompletionSource?.SetResult();
+            _deferredInitialRootComponentRenderCompletionSource = null;
+        }
+    }
+
     protected override int GetWebRendererId() => (int)WebRendererId.WebAssembly;
 
     protected override void AttachRootComponentToBrowser(int componentId, string domElementSelector)
@@ -139,6 +186,13 @@ internal sealed partial class WebAssemblyRenderer : WebRenderer
     /// <inheritdoc />
     protected override void ProcessPendingRender()
     {
+        if (_isDeferringInitialRootComponentRender)
+        {
+            _deferredInitialRootComponentRenderCompletionSource ??= new(TaskCreationOptions.RunContinuationsAsynchronously);
+            AddPendingTask(componentState: null, _deferredInitialRootComponentRenderCompletionSource.Task);
+            return;
+        }
+
         // For historical reasons, Blazor WebAssembly doesn't enforce that you use InvokeAsync
         // to dispatch calls that originated from outside the system. Changing that now would be
         // too breaking, at least until we can make it a prerequisite for multithreading.
@@ -210,11 +264,17 @@ internal sealed partial class WebAssemblyRenderer : WebRenderer
         var arrayBuilder = new ArrayBuilder<byte>(2048);
         try
         {
-            using var memoryStream = new ArrayBuilderMemoryStream(arrayBuilder);
-            using (var renderBatchWriter = new RenderBatchWriter(memoryStream, leaveOpen: false, useUtf16StringTable: true))
+            if (_renderBatchWriter is null)
             {
-                renderBatchWriter.Write(in batch);
+                _renderBatchStream = new ArrayBuilderMemoryStream(arrayBuilder);
+                _renderBatchWriter = new RenderBatchWriter(_renderBatchStream, leaveOpen: true, useUtf16StringTable: true);
             }
+            else
+            {
+                _renderBatchStream!.ArrayBuilder = arrayBuilder;
+            }
+
+            _renderBatchWriter.Write(in batch);
 
             var batchBytes = arrayBuilder.Buffer.AsSpan(0, arrayBuilder.Count).ToArray();
             RenderBatchOutOfProcess(RendererId, batchBytes);

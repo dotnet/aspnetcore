@@ -1,9 +1,27 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+import { ValidatableElement } from './ValidationTypes';
+
 /** Returns the closest ancestor <form> element, or null if the element is not in a form. */
 export function getElementForm(element: HTMLElement): HTMLFormElement | null {
   return element.closest('form');
+}
+
+/**
+ * Returns every element that shares this field's validation state.
+ * For a radio button that is all radios in its group (same name).
+ * For other input types it is just the element itself.
+ */
+export function getFieldElements(element: ValidatableElement): ValidatableElement[] {
+  if (element instanceof HTMLInputElement && element.type === 'radio' && element.name) {
+    const form = getElementForm(element);
+    if (form) {
+      return Array.from(form.querySelectorAll<HTMLInputElement>(`input[type="radio"][name="${CSS.escape(element.name)}"]`));
+    }
+  }
+
+  return [element];
 }
 
 /**

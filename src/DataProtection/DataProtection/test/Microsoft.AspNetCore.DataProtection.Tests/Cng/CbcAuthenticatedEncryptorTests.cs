@@ -96,11 +96,13 @@ public class CbcAuthenticatedEncryptorTests
     {
         // Arrange
         Secret kdk = new Secret(Encoding.UTF8.GetBytes("master key"));
+        var genRandom = new SequentialGenRandom();
         CbcAuthenticatedEncryptor encryptor = new CbcAuthenticatedEncryptor(kdk,
             symmetricAlgorithmHandle: CachedAlgorithmHandles.AES_CBC,
             symmetricAlgorithmKeySizeInBytes: 256 / 8,
             hmacAlgorithmHandle: CachedAlgorithmHandles.HMAC_SHA256,
-            genRandom: new SequentialGenRandom());
+            genRandom: genRandom);
+        genRandom.Reset();
         ArraySegment<byte> plaintext = new ArraySegment<byte>(new byte[] { 0, 1, 2, 3, 4, 5, 6, 7 }, 2, 3);
         ArraySegment<byte> aad = new ArraySegment<byte>(new byte[] { 7, 6, 5, 4, 3, 2, 1, 0 }, 1, 4);
 
@@ -165,4 +167,22 @@ public class CbcAuthenticatedEncryptorTests
         RoundtripEncryptionHelpers.AssertTryEncryptTryDecryptParity(encryptor, plaintext, aad);
     }
 #endif
+
+    [ConditionalFact]
+    [ConditionalRunTestOnlyOnWindows]
+    public void Constructor_PerformsSelfTest_ConsumesRandomBytes()
+    {
+        var genRandom = new SequentialGenRandom();
+        byte initialValue = genRandom.CurrentValue;
+
+        Secret kdk = new Secret(new byte[512 / 8]);
+        _ = new CbcAuthenticatedEncryptor(kdk,
+            symmetricAlgorithmHandle: CachedAlgorithmHandles.AES_CBC,
+            symmetricAlgorithmKeySizeInBytes: 256 / 8,
+            hmacAlgorithmHandle: CachedAlgorithmHandles.HMAC_SHA256,
+            genRandom: genRandom);
+
+        // Indirectly testing that SelfTest ran by checking that random bytes were consumed
+        Assert.NotEqual(initialValue, genRandom.CurrentValue);
+    }
 }

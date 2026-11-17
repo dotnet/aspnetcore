@@ -74,11 +74,7 @@ export class XhrHttpClient extends HttpClient {
                     request.abortSignal.onabort = null;
                 }
 
-                if (xhr.status >= 200 && xhr.status < 300) {
-                    resolve(new HttpResponse(xhr.status, xhr.statusText, xhr.response || xhr.responseText));
-                } else {
-                    reject(new HttpError(xhr.response || xhr.responseText || xhr.statusText, xhr.status));
-                }
+                resolve(new HttpResponse(xhr.status, xhr.statusText, xhr.response || xhr.responseText));
             };
 
             xhr.onerror = () => {

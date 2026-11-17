@@ -207,8 +207,8 @@ internal sealed class ExternalLoginModel<TUser> : ExternalLoginModel where TUser
 
                     await _emailSender.SendConfirmationLinkAsync(user, Input.Email, HtmlEncoder.Default.Encode(callbackUrl));
 
-                    // If account confirmation is required, we need to show the link if we don't have a real email sender
-                    if (_userManager.Options.SignIn.RequireConfirmedAccount)
+                    // If confirmation is required, we need to show the link if we don't have a real email sender
+                    if (!await _signInManager.CanSignInAsync(user))
                     {
                         return RedirectToPage("./RegisterConfirmation", new { Email = Input.Email });
                     }
