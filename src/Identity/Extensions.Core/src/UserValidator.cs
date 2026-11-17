@@ -2,9 +2,11 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
+#if NET8_0_OR_GREATER
+using System.Buffers;
+#endif
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
-using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Shared;
 
@@ -16,6 +18,11 @@ namespace Microsoft.AspNetCore.Identity;
 /// <typeparam name="TUser">The type encapsulating a user.</typeparam>
 public class UserValidator<TUser> : IUserValidator<TUser> where TUser : class
 {
+    private static readonly EmailAddressAttribute s_emailAddressAttribute = new EmailAddressAttribute();
+#if NET8_0_OR_GREATER
+    private static AllowedUserNameCharacters? s_allowedUserNameCharacters;
+#endif
+
     /// <summary>
     /// Creates a new instance of <see cref="UserValidator{TUser}"/>.
     /// </summary>
@@ -58,8 +65,7 @@ public class UserValidator<TUser> : IUserValidator<TUser> where TUser : class
             errors ??= new List<IdentityError>();
             errors.Add(Describer.InvalidUserName(userName));
         }
-        else if (!string.IsNullOrEmpty(manager.Options.User.AllowedUserNameCharacters) &&
-            userName.Any(c => !manager.Options.User.AllowedUserNameCharacters.Contains(c)))
+        else if (ContainsDisallowedCharacter(userName, manager.Options.User.AllowedUserNameCharacters))
         {
             errors ??= new List<IdentityError>();
             errors.Add(Describer.InvalidUserName(userName));
@@ -78,6 +84,33 @@ public class UserValidator<TUser> : IUserValidator<TUser> where TUser : class
         return errors;
     }
 
+    private static bool ContainsDisallowedCharacter(string userName, string? allowedCharacters)
+    {
+        if (allowedCharacters is null || allowedCharacters.Length == 0)
+        {
+            return false;
+        }
+
+#if NET8_0_OR_GREATER
+        // UserValidator is typically resolved per scope, so cache the SearchValues statically, keyed by the configured string.
+        var cache = s_allowedUserNameCharacters;
+        if (cache is null || !string.Equals(cache.Characters, allowedCharacters, StringComparison.Ordinal))
+        {
+            s_allowedUserNameCharacters = cache = new AllowedUserNameCharacters(allowedCharacters);
+        }
+        return userName.AsSpan().ContainsAnyExcept(cache.Values);
+#else
+        foreach (var c in userName)
+        {
+            if (allowedCharacters.IndexOf(c) < 0)
+            {
+                return true;
+            }
+        }
+        return false;
+#endif
+    }
+
     // make sure email is not empty, valid, and unique
     private async Task<List<IdentityError>?> ValidateEmail(UserManager<TUser> manager, TUser user, List<IdentityError>? errors)
     {
@@ -88,7 +121,7 @@ public class UserValidator<TUser> : IUserValidator<TUser> where TUser : class
             errors.Add(Describer.InvalidEmail(email));
             return errors;
         }
-        if (!new EmailAddressAttribute().IsValid(email))
+        if (!s_emailAddressAttribute.IsValid(email))
         {
             errors ??= new List<IdentityError>();
             errors.Add(Describer.InvalidEmail(email));
@@ -103,4 +136,12 @@ public class UserValidator<TUser> : IUserValidator<TUser> where TUser : class
         }
         return errors;
     }
+
+#if NET8_0_OR_GREATER
+    private sealed class AllowedUserNameCharacters(string characters)
+    {
+        public string Characters { get; } = characters;
+        public SearchValues<char> Values { get; } = SearchValues.Create(characters);
+    }
+#endif
 }

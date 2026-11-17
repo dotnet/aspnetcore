@@ -61,6 +61,20 @@ internal readonly struct Candidate
         Flags = CandidateFlags.None;
     }
 
+    // Creates a copy of an existing candidate with a different score. The arrays are shared
+    // because they are never mutated after the candidate is created.
+    public Candidate(in Candidate other, int score)
+    {
+        Endpoint = other.Endpoint;
+        Flags = other.Flags;
+        Slots = other.Slots;
+        Captures = other.Captures;
+        CatchAll = other.CatchAll;
+        ComplexSegments = other.ComplexSegments;
+        Constraints = other.Constraints;
+        Score = score;
+    }
+
     public Candidate(
         Endpoint endpoint,
         int score,
