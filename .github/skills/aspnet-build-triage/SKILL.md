@@ -105,15 +105,15 @@ Legal (license) alerts are out of scope for aspnet-build. The collector drops th
 Merging approved servicing PRs is the build-duty person's job. Investigating why their CI fails isn't:
 that belongs to the PR author.
 
-- **Merge** when all of these hold: the `Servicing-approved` or `tell-mode` label is on the PR, the
-  branch's required checks (`requiredChecks`, read from branch protection; currently `aspnetcore-ci`
-  and `aspnetcore-components-e2e`) are passing, neutral or skipped, and another developer (not the
-  author, not a bot) approved it in a code review (`approvedBy`). The collector reports these as
-  `ready-to-merge`. Failures in non-required checks, such as agentic workflow checks or Build
-  Analysis, don't block merging. Tell the user to elevate at
+- **Merge** when all of these hold: the `Servicing-approved` or `tell-mode` label is on the PR, CI
+  is green, and another developer (not the author, not a bot) approved it in a code review
+  (`approvedBy`). Green CI means no check is failing or still running (only the derived
+  `Maestro auto-merge - All Checks Successful` check is ignored), and every branch-protection
+  required check (`requiredChecks`; currently `aspnetcore-ci` and `aspnetcore-components-e2e`) has
+  reported success. The collector reports these as `ready-to-merge`. Tell the user to elevate at
   https://repos.opensource.microsoft.com/orgs/dotnet/repos/aspnetcore and then merge it themselves.
   Don't merge on their behalf.
-- **Retry** (`retry-ci`) when a required check failed. Don't investigate the failure; just offer to
+- **Retry** (`retry-ci`) when any check failed. Don't investigate the failure; just offer to
   rerun it in case it's flaky. After the user agrees and has elevated, run:
 
   ```bash
@@ -121,10 +121,11 @@ that belongs to the PR author.
   python3 .github/skills/aspnet-build-triage/scripts/retry_ci.py <pr-number> --execute  # rerun failed jobs
   ```
 
-  The helper reruns only the failed jobs of failed Azure DevOps builds for required checks
-  (`--all-checks` widens that). If the rerun API is denied, it prints a `/azp run <pipeline>`
+  The helper reruns only the failed jobs of each failed Azure DevOps build. It lists failing checks
+  that aren't Azure DevOps builds (such as Build Analysis) without retrying them; those usually
+  re-evaluate after the builds rerun. If the rerun API is denied, it prints a `/azp run <pipeline>`
   comment to post instead. Only post it if the user agrees.
-- **Wait** (`wait-for-ci`) when a required check is still running or hasn't reported yet.
+- **Wait** (`wait-for-ci`) when a check is still running or a required check hasn't reported yet.
 - **Needs approval** when no other developer has approved; tell the user who should be asked to review.
 
 Each servicing result includes `shipsIn`. The collector reads the per-month sub-pages
@@ -183,15 +184,16 @@ Each PR gets one deterministic `nextAction`. The checks below are evaluated in t
 | `draft` | The PR is a draft. |
 | `resolve-conflicts` | GitHub reports merge conflicts. |
 | `investigate-ci` | At least one check failed. The derived `Maestro auto-merge - All Checks Successful` check is ignored because it only mirrors other checks. |
-| `retry-ci` | Servicing PRs only: a required check failed. Retry it rather than investigating. |
+| `retry-ci` | Servicing PRs only: a check failed. Retry it rather than investigating. |
 | `wait-for-ci` | Checks are still running. |
 | `address-feedback` | A reviewer requested changes. |
 | `needs-approval` | Checks are green but a required approval is missing. |
 | `ready-to-merge` | Checks are green, the PR is approved or needs no approval, and GitHub reports it mergeable. |
 | `check-merge-state` | Anything else, such as a blocked state for another reason. Inspect manually. |
 
-Servicing PRs use their own rules (see [Servicing PRs](#servicing-prs)): only required checks
-count, and approval must come from another developer.
+Servicing PRs use their own rules (see [Servicing PRs](#servicing-prs)): every check must be green,
+required checks must have reported, failures are retried rather than investigated, and approval
+must come from another developer.
 
 For `vmr-pings`, the hint describes the PR's own state. The ping and its reply status are what
 decide whether the team still owes a response.

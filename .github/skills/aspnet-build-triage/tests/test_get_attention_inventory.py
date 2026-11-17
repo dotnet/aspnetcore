@@ -297,18 +297,23 @@ class ServicingTests(unittest.TestCase):
         self.assertFalse(inv.matches_category("servicing", self.servicing_pr(base="main")))
         self.assertFalse(inv.matches_category("servicing", self.servicing_pr(labels=("servicing",))))
 
-    def test_merge_needs_required_green_and_another_devs_approval(self):
-        green = [check("aspnetcore-ci"), check("agent", "FAILURE")]
+    def test_merge_needs_all_checks_green_and_another_devs_approval(self):
+        green = [check("aspnetcore-ci"), check("Maestro auto-merge - All Checks Successful", "FAILURE")]
         self.assertEqual(self.action(self.servicing_pr(green, [(OTHER, "APPROVED")])), "ready-to-merge")
         # The author's own approval and bot approvals don't count.
         self.assertEqual(self.action(self.servicing_pr(green, [(HUMAN, "APPROVED"), (MAESTRO, "APPROVED")])),
                          "needs-approval")
         self.assertEqual(self.action(self.servicing_pr(green, [(OTHER, "CHANGES_REQUESTED")])), "address-feedback")
 
-    def test_failing_required_check_is_retried_and_missing_one_is_awaited(self):
+    def test_any_failing_check_is_retried_and_missing_required_one_is_awaited(self):
         approved = [(OTHER, "APPROVED")]
         failing = [check("aspnetcore-ci", "FAILURE"), check("aspnetcore-ci (Test: macOS)", "FAILURE")]
         self.assertEqual(self.action(self.servicing_pr(failing, approved)), "retry-ci")
+        # CI must be fully green: a failing non-required check still blocks merging.
+        self.assertEqual(self.action(self.servicing_pr([check("aspnetcore-ci"), check("agent", "FAILURE")], approved)),
+                         "retry-ci")
+        self.assertEqual(self.action(self.servicing_pr([check("aspnetcore-ci"), check("other", None, "IN_PROGRESS")],
+                                                       approved)), "wait-for-ci")
         self.assertEqual(self.action(self.servicing_pr([check("other")], approved)), "wait-for-ci")
         self.assertEqual(self.action(self.servicing_pr([check("aspnetcore-ci", "NEUTRAL")], approved)), "ready-to-merge")
 
@@ -355,7 +360,7 @@ class ServicingScheduleTests(unittest.TestCase):
 class RetryCiTests(unittest.TestCase):
     URL = "https://dev.azure.com/dnceng-public/proj/_build/results?buildId={}"
 
-    def test_only_failed_required_azdo_builds_are_retried(self):
+    def test_each_failed_azdo_build_is_retried_once(self):
         checks = [
             {"name": "aspnetcore-ci", "conclusion": "FAILURE", "detailsUrl": self.URL.format(1)},
             {"name": "aspnetcore-ci (Test: macOS)", "conclusion": "FAILURE", "detailsUrl": self.URL.format(1) + "&view=logs"},
@@ -363,9 +368,7 @@ class RetryCiTests(unittest.TestCase):
             {"name": "aspnetcore-components-e2e", "conclusion": "SUCCESS", "detailsUrl": self.URL.format(3)},
             {"name": "Build Analysis", "conclusion": "FAILURE", "detailsUrl": "https://github.com/x"},
         ]
-        builds, other = retry_ci.failed_builds(checks, ["aspnetcore-ci", "aspnetcore-components-e2e"])
-        self.assertEqual(list(builds), ["1"])
-        builds, other = retry_ci.failed_builds(checks, None)
+        builds, other = retry_ci.failed_builds(checks)
         self.assertEqual(sorted(builds), ["1", "2"])
         self.assertEqual(other, ["Build Analysis"])
 

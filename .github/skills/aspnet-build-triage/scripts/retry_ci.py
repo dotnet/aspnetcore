@@ -28,15 +28,6 @@ def run(args: list[str]) -> str:
     return result.stdout
 
 
-def required_checks(branch: str) -> list[str] | None:
-    try:
-        out = run(["gh", "api", f"repos/{REPO}/branches/{branch}",
-                   "--jq", "[.protection.required_status_checks.contexts // [] | .[]]"])
-    except RuntimeError:
-        return None
-    return json.loads(out or "null")
-
-
 def check_name(check: dict[str, Any]) -> str:
     return check.get("name") or check.get("context") or ""
 
@@ -45,11 +36,11 @@ def is_failing(check: dict[str, Any]) -> bool:
     return (check.get("conclusion") or check.get("state") or "").upper() in FAILING
 
 
-def failed_builds(checks: list[dict[str, Any]], required: list[str] | None) -> tuple[dict[str, dict[str, Any]], list[str]]:
+def failed_builds(checks: list[dict[str, Any]]) -> tuple[dict[str, dict[str, Any]], list[str]]:
     """Failed Azure DevOps builds keyed by build ID, plus failing checks that aren't AzDO builds.
 
-    When `required` is given, only builds for those pipelines (and their per-job checks, named
-    "<pipeline> (<job>)") are considered.
+    Per-job checks ("<pipeline> (<job>)") link to the same build as their pipeline check, so each
+    build appears once.
     """
     builds: dict[str, dict[str, Any]] = {}
     other = []
@@ -58,8 +49,6 @@ def failed_builds(checks: list[dict[str, Any]], required: list[str] | None) -> t
             continue
         name = check_name(check)
         pipeline = name.split(" (", 1)[0]
-        if required is not None and pipeline not in required:
-            continue
         match = BUILD_URL.match(check.get("detailsUrl") or check.get("targetUrl") or "")
         if not match:
             other.append(name)
@@ -77,17 +66,13 @@ def build_api(build: dict[str, Any], query: str = "") -> str:
 def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("pr", type=int, help="dotnet/aspnetcore PR number")
-    parser.add_argument("--all-checks", action="store_true",
-                        help="Also retry failed builds that aren't required by branch protection.")
     parser.add_argument("--execute", action="store_true", help="Actually retry the builds.")
     args = parser.parse_args(argv)
 
     pr = json.loads(run(["gh", "pr", "view", str(args.pr), "-R", REPO,
                          "--json", "number,url,baseRefName,statusCheckRollup"]))
-    required = None if args.all_checks else required_checks(pr["baseRefName"])
-    builds, other = failed_builds(pr["statusCheckRollup"], required)
-    scope = "all failing checks" if required is None else "required checks: " + ", ".join(required)
-    print(f"{REPO}#{pr['number']} ({pr['baseRefName']}), {scope}")
+    builds, other = failed_builds(pr["statusCheckRollup"])
+    print(f"{REPO}#{pr['number']} ({pr['baseRefName']})")
     if pr["baseRefName"].startswith("release/"):
         print("Reminder: elevate to administrator at "
               "https://repos.opensource.microsoft.com/orgs/dotnet/repos/aspnetcore before acting on this PR.")
@@ -114,7 +99,8 @@ def main(argv: list[str] | None = None) -> int:
             print(f"FAILED to retry {label}: {error}\n"
                   f"  Fallback: comment `/azp run {build['pipeline']}` on the PR (reruns the whole pipeline).")
     if other:
-        print("Failing checks that aren't Azure DevOps builds (not retried): " + ", ".join(sorted(set(other))))
+        print("Failing checks that aren't Azure DevOps builds (not retried; rerun them from the PR's Checks tab "
+              "if they don't re-evaluate after the builds rerun): " + ", ".join(sorted(set(other))))
     return status
 
 

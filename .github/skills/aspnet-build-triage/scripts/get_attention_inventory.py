@@ -213,14 +213,13 @@ def servicing_next_action(pr: dict[str, Any], checks: dict[str, Any],
                           required: list[dict[str, Any]] | None = None) -> str:
     """Servicing PRs are merged on green CI plus another dev's approval; failures are just retried.
 
-    When the branch's required checks are known, only they decide whether CI is green.
+    CI is green only when no check is failing or pending and every branch-protection required
+    check (when known) has reported success.
     """
     approved, changes = approvers(pr)
-    if required is not None:
-        failing = any(r["state"] == "FAILING" for r in required)
-        pending = any(r["state"] in ("PENDING", "MISSING") for r in required)
-    else:
-        failing, pending = bool(checks["failing"]), bool(checks["pending"])
+    required = required or []
+    failing = bool(checks["failing"]) or any(r["state"] == "FAILING" for r in required)
+    pending = bool(checks["pending"]) or any(r["state"] in ("PENDING", "MISSING") for r in required)
     if pr["isDraft"]:
         return "draft"
     if pr["mergeable"] == "CONFLICTING":
@@ -480,13 +479,8 @@ def render_markdown(result: dict[str, Any]) -> str:
         for i in items:
             details = [i["title"][:100]]
             names = [f["name"] for f in i["checks"]["failing"]]
-            label = "failing"
-            if category == "servicing" and i.get("requiredChecks") is not None:
-                required = {r["name"] for r in i["requiredChecks"]}
-                names = [n for n in names if n.split(" (", 1)[0] not in required]
-                label = "non-required failures (don't block merge)"
             if names:
-                details.append(f"{label}: " + ", ".join(names[:5]) + (" …" if len(names) > 5 else ""))
+                details.append("failing: " + ", ".join(names[:5]) + (" …" if len(names) > 5 else ""))
             if i.get("ping"):
                 p = i["ping"]
                 repliers = sorted({r["by"] for r in p["repliedAfterPing"]})
