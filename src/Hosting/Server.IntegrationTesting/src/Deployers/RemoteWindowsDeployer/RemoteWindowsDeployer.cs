@@ -237,7 +237,7 @@ public class RemoteWindowsDeployer : ApplicationDeployer
             {
                 FileName = "powershell.exe",
                 Arguments = parameterBuilder.ToString(),
-                InheritedHandles = [],
+                UseShellExecute = false,
                 CreateNoWindow = true,
                 RedirectStandardError = true,
                 RedirectStandardOutput = true,

@@ -42,7 +42,7 @@ internal sealed class NodeScriptRunner : IDisposable
         var processStartInfo = new ProcessStartInfo(exeToRun)
         {
             Arguments = completeArguments,
-            InheritedHandles = [],
+            UseShellExecute = false,
             RedirectStandardInput = true,
             RedirectStandardOutput = true,
             RedirectStandardError = true,

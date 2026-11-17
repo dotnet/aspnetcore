@@ -100,17 +100,19 @@ internal static class ProcessExtensions
             Arguments = arguments,
             RedirectStandardOutput = true,
             RedirectStandardError = true,
-            InheritedHandles = [],
+            UseShellExecute = false,
         };
 
+        var process = Process.Start(startInfo);
+
         stdout = null;
-        try
+        if (process.WaitForExit((int)timeout.TotalMilliseconds))
         {
-            stdout = Process.RunAndCaptureText(startInfo, timeout).StandardOutput;
+            stdout = process.StandardOutput.ReadToEnd();
         }
-        catch (TimeoutException)
+        else
         {
-            // Preserve the lack of captured output when the command times out.
+            process.Kill();
         }
     }
 }

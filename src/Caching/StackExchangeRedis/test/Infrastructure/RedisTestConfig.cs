@@ -172,11 +172,7 @@ public static class RedisTestConfig
                         FileName = tempRedisServerFullPath,
                         RedirectStandardError = true,
                         RedirectStandardOutput = true,
-#if NET11_0_OR_GREATER
-                        InheritedHandles = [],
-#else
                         UseShellExecute = false,
-#endif
                     };
                     try
                     {

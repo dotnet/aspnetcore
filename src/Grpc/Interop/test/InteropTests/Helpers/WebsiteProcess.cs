@@ -31,7 +31,6 @@ public class WebsiteProcess : IDisposable
         {
             RedirectStandardOutput = true,
             RedirectStandardError = true,
-            InheritedHandles = [],
             FileName = "dotnet",
             Arguments = path
         };

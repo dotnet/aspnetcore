@@ -87,7 +87,6 @@ public class SauceConnectServer : IDisposable
                 $" --use-hostname {E2ETestOptions.Instance.Sauce.HostName}",
             RedirectStandardOutput = true,
             RedirectStandardError = true,
-            InheritedHandles = [],
         };
 
         if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
@@ -199,7 +198,6 @@ Captured output lines:
             $"if(Test-Path {sentinelFile}){{ " +
             $"Write-Output 'Stopping process {process.Id}'; Stop-Process {process.Id}; }}" +
             $"else{{ Write-Output 'Sentinel file {sentinelFile} not found.'}}",
-            InheritedHandles = [],
         };
 
         return Process.Start(psi);

@@ -240,16 +240,15 @@ catch
             string.Join(" ", "-NoProfile", "-C", stopScript))
         {
             CreateNoWindow = true,
-            InheritedHandles = [],
             WorkingDirectory = Path.Combine(AppContext.BaseDirectory, _options.WorkingDirectory)
         };
 
-        using var stopProcess = Process.Start(stopScriptInfo)!;
-        if (stopProcess.TryWaitForExitStatus(TimeSpan.Zero, out ProcessExitStatus? status))
+        using var stopProcess = Process.Start(stopScriptInfo);
+        if (stopProcess == null || stopProcess.HasExited)
         {
             if (_logger.IsEnabled(LogLevel.Warning))
             {
-                _logger.LogWarning($"The SPA process shutdown script '{stopProcess.Id}' exited unexpectedly with exit code {status.ExitCode}. The SPA proxy might" +
+                _logger.LogWarning($"The SPA process shutdown script '{stopProcess?.Id}' failed to start. The SPA proxy might" +
                     $" remain open if the dotnet process is terminated ungracefully. Use the operating system commands to kill" +
                     $" the process tree for {spaProcessId}");
             }
@@ -303,14 +302,13 @@ rm {scriptPath};
         var stopScriptInfo = new ProcessStartInfo("/bin/bash", scriptPath)
         {
             CreateNoWindow = true,
-            InheritedHandles = [],
             WorkingDirectory = Path.Combine(AppContext.BaseDirectory, _options.WorkingDirectory)
         };
 
-        using var stopProcess = Process.Start(stopScriptInfo)!;
-        if (stopProcess.TryWaitForExitStatus(TimeSpan.Zero, out ProcessExitStatus? status))
+        using var stopProcess = Process.Start(stopScriptInfo);
+        if (stopProcess == null || stopProcess.HasExited)
         {
-            _logger.LogWarning($"The SPA process shutdown script '{stopProcess.Id}' exited unexpectedly with exit code {status.ExitCode}. The SPA proxy might" +
+            _logger.LogWarning($"The SPA process shutdown script '{stopProcess?.Id}' failed to start. The SPA proxy might" +
                 $" remain open if the dotnet process is terminated ungracefully. Use the operating system commands to kill" +
                 $" the process tree for {spaProcessId}");
         }

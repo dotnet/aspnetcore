@@ -66,23 +66,38 @@ internal static class DebugProxyLauncher
         {
             FileName = muxerPath,
             Arguments = $"exec \"{executablePath}\" --OwnerPid {ownerPid} --DevToolsUrl {devToolsHost} --IsFirefoxDebugging {isFirefox} --FirefoxProxyPort 6001 {ignoreProxyForLocalAddress}",
-            InheritedHandles = [],
+            UseShellExecute = false,
             RedirectStandardOutput = true,
             RedirectStandardError = true,
         };
         RemoveUnwantedEnvironmentVariables(processStartInfo.Environment);
 
         using var cts = new CancellationTokenSource(DebugProxyLaunchTimeout);
-        var debugProxyProcess = Process.Start(processStartInfo)!;
-        PassThroughConsoleOutput(debugProxyProcess);
-        CompleteTaskWhenServerIsReady(debugProxyProcess, isFirefox, tcs);
-
-        using var ctr = cts.Token.Register(() =>
+        var ctr = default(CancellationTokenRegistration);
+        var debugProxyProcess = Process.Start(processStartInfo);
+        if (debugProxyProcess is null)
         {
-            tcs.TrySetException(new TimeoutException($"Failed to start the debug proxy within the timeout period of {DebugProxyLaunchTimeout.TotalSeconds} seconds."));
-        });
+            tcs.TrySetException(new InvalidOperationException("Unable to start debug proxy process."));
+        }
+        else
+        {
+            PassThroughConsoleOutput(debugProxyProcess);
+            CompleteTaskWhenServerIsReady(debugProxyProcess, isFirefox, tcs);
 
-        return await tcs.Task;
+            ctr = cts.Token.Register(() =>
+            {
+                tcs.TrySetException(new TimeoutException($"Failed to start the debug proxy within the timeout period of {DebugProxyLaunchTimeout.TotalSeconds} seconds."));
+            });
+        }
+
+        try
+        {
+            return await tcs.Task;
+        }
+        finally
+        {
+            ctr.Dispose();
+        }
     }
 
     private static void RemoveUnwantedEnvironmentVariables(IDictionary<string, string?> environment)

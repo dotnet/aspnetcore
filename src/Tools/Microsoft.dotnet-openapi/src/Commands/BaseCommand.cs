@@ -225,7 +225,6 @@ internal abstract class BaseCommand : CommandLineApplication
             WorkingDirectory = projectFile.Directory.FullName,
             RedirectStandardError = true,
             RedirectStandardOutput = true,
-            InheritedHandles = [],
         };
 
         var timeout = 20;

@@ -26,7 +26,6 @@ public class ClientProcess : IDisposable
         {
             RedirectStandardOutput = true,
             RedirectStandardError = true,
-            InheritedHandles = [],
             FileName = "dotnet",
             Arguments = @$"{path} --use_tls false --server_port {serverPort} --client_type httpclient --test_case {testCase}"
         };

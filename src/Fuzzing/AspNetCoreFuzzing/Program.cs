@@ -249,7 +249,7 @@ public static class Program
             {
                 FileName = "sharpfuzz",
                 Arguments = path,
-                InheritedHandles = [],
+                UseShellExecute = false,
                 RedirectStandardOutput = true,
                 RedirectStandardError = true,
             };

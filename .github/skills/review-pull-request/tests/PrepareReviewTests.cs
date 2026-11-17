@@ -2280,7 +2280,7 @@ public class PrepareReviewTests
                 RedirectStandardInput = input is not null,
                 RedirectStandardOutput = true,
                 RedirectStandardError = true,
-                InheritedHandles = [],
+                UseShellExecute = false,
                 CreateNoWindow = true,
             };
             foreach (var pair in Identity) start.Environment[pair.Key] = pair.Value;
@@ -2295,10 +2295,12 @@ public class PrepareReviewTests
                 process.StandardInput.BaseStream.Write(input);
                 process.StandardInput.Close();
             }
-            (byte[] output, byte[] error) = process.ReadAllBytes();
+            using var output = new MemoryStream();
+            process.StandardOutput.BaseStream.CopyTo(output);
+            var error = process.StandardError.ReadToEnd();
             process.WaitForExit();
-            Assert.True(process.ExitCode == 0, process.StandardError.CurrentEncoding.GetString(error));
-            return output;
+            Assert.True(process.ExitCode == 0, error);
+            return output.ToArray();
         }
 
         public ValueTask DisposeAsync()

@@ -2,7 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Diagnostics;
-using System.Runtime.InteropServices;
+using System.Globalization;
 using Microsoft.AspNetCore.Server.IntegrationTesting;
 using Microsoft.AspNetCore.InternalTesting;
 using Xunit.Abstractions;
@@ -97,7 +97,7 @@ public class ShutdownTests : LoggedTest
                     throw new InvalidOperationException("Timeout while waiting for host process to output started message.", ex);
                 }
 
-                Assert.True(deployer.HostProcess.Signal(PosixSignal.SIGTERM));
+                SendSIGTERM(deployer.HostProcess.Id);
 
                 WaitForExitOrKill(deployer.HostProcess);
 
@@ -117,10 +117,28 @@ public class ShutdownTests : LoggedTest
         }
     }
 
+    private static void SendSIGTERM(int processId)
+    {
+        var startInfo = new ProcessStartInfo
+        {
+            FileName = "kill",
+            Arguments = processId.ToString(CultureInfo.InvariantCulture),
+            RedirectStandardOutput = true,
+            UseShellExecute = false
+        };
+
+        var process = Process.Start(startInfo);
+        WaitForExitOrKill(process);
+    }
+
     private static void WaitForExitOrKill(Process process)
     {
-        ProcessExitStatus status = process.SafeHandle.WaitForExitOrKillOnTimeout(TimeSpan.FromSeconds(5));
+        process.WaitForExit(5 * 1000);
+        if (!process.HasExited)
+        {
+            process.Kill();
+        }
 
-        Assert.Equal(0, status.ExitCode);
+        Assert.Equal(0, process.ExitCode);
     }
 }

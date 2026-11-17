@@ -46,14 +46,19 @@ public class AppVerifier
             Arguments = arguments,
             RedirectStandardOutput = true,
             RedirectStandardError = true,
-            InheritedHandles = [],
+            UseShellExecute = false,
         };
 
-        ProcessTextOutput output = Process.RunAndCaptureText(startInfo, timeout);
+        var process = Process.Start(startInfo);
 
-        if (output.ExitStatus.ExitCode != 0)
+        if (!process.WaitForExit((int)timeout.TotalMilliseconds))
         {
-            throw new InvalidOperationException($"Exit code {output.ExitStatus.ExitCode} when running {fileName} {arguments}. Stdout: {output.StandardOutput} Stderr: {output.StandardError}");
+            process.Kill();
+        }
+
+        if (process.ExitCode != 0)
+        {
+            throw new InvalidOperationException($"Exit code {process.ExitCode} when running {fileName} {arguments}. Stdout: {process.StandardOutput.ReadToEnd()} Stderr: {process.StandardError.ReadToEnd()}");
         }
     }
 

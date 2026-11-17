@@ -158,7 +158,7 @@ public class PackageIntegrationTests
         var startInfo = new ProcessStartInfo(executablePath)
         {
             WorkingDirectory = Path.GetDirectoryName(executablePath)!,
-            InheritedHandles = [],
+            UseShellExecute = false,
             RedirectStandardOutput = true,
             RedirectStandardError = true,
         };
@@ -168,25 +168,19 @@ public class PackageIntegrationTests
         startInfo.Environment.Remove("DOTNET_STARTUP_HOOKS");
         startInfo.Environment.Remove("ASPNETCORE_HOSTINGSTARTUPASSEMBLIES");
 
-        using var process = Process.Start(startInfo)!;
-        Task<(string StandardOutput, string StandardError)> outputTask =
-            process.ReadAllTextAsync(TestContext.Current.CancellationToken);
+        using var process = Process.Start(startInfo)
+            ?? throw new InvalidOperationException("Failed to launch the Native AOT package consumer.");
         try
         {
             var readinessTask = AcceptReadinessPostAsync(readinessListener);
             var completed = await Task.WhenAny(
                 readinessTask,
-                process.WaitForExitStatusAsync(TestContext.Current.CancellationToken),
+                process.WaitForExitAsync(TestContext.Current.CancellationToken),
                 Task.Delay(TimeSpan.FromSeconds(30), TestContext.Current.CancellationToken));
             if (completed != readinessTask)
             {
-                if (!process.HasExited)
-                {
-                    process.Kill(entireProcessTree: true);
-                    await process.WaitForExitStatusAsync(TestContext.Current.CancellationToken);
-                }
-
-                (string output, string error) = await outputTask;
+                var output = await process.StandardOutput.ReadToEndAsync(TestContext.Current.CancellationToken);
+                var error = await process.StandardError.ReadToEndAsync(TestContext.Current.CancellationToken);
                 Assert.Fail($"Native app exited or timed out before readiness. stdout: {output}\nstderr: {error}");
             }
 
@@ -203,10 +197,8 @@ public class PackageIntegrationTests
             if (!process.HasExited)
             {
                 process.Kill(entireProcessTree: true);
-                await process.WaitForExitStatusAsync(TestContext.Current.CancellationToken);
+                await process.WaitForExitAsync(TestContext.Current.CancellationToken);
             }
-
-            await outputTask;
         }
     }
 
