@@ -121,6 +121,7 @@ class ComponentGovernanceTests(unittest.TestCase):
 
         with patch.object(cg, "fetch_support_policy"), \
              patch.object(cg, "supported_release_branches", return_value=["release/11.0", "release/10.0"]), \
+             patch.object(cg, "fetch_version_details", return_value=set()), \
              patch.object(cg, "azure_get", side_effect=azure_get) as api:
             result = inv.collect(["component-governance"], NOW)
 
@@ -142,6 +143,18 @@ class RemediationTests(unittest.TestCase):
         cg = inv.component_governance
         hints = [f"Upgrade A.B from 10.0.0 to 10.0.{n} to fix the vulnerability." for n in (8, 13, 10)]
         self.assertEqual(cg.summarize_remediations(hints), "Upgrade A.B to at least 10.0.13")
+
+
+class DotnetDotnetManagedTests(unittest.TestCase):
+    def test_sdk_packs_and_exact_version_details_matches_are_managed(self):
+        cg = inv.component_governance
+        deps = cg.version_details_dependencies(
+            b'<Dependencies><ProductDependencies><Dependency Name="System.Security.Cryptography.Pkcs" '
+            b'Version="11.0.1" /></ProductDependencies></Dependencies>')
+        self.assertTrue(cg.managed_by_dotnet_dotnet("Microsoft.WindowsDesktop.App.Runtime.win-x64", "10.0.0", None))
+        self.assertTrue(cg.managed_by_dotnet_dotnet("System.Security.Cryptography.Pkcs", "11.0.1", deps))
+        self.assertFalse(cg.managed_by_dotnet_dotnet("System.Security.Cryptography.Pkcs", "8.0.1", deps))
+        self.assertFalse(cg.managed_by_dotnet_dotnet("Newtonsoft.Json", "12.0.3", deps))
 
 
 class AdminElevationTests(unittest.TestCase):

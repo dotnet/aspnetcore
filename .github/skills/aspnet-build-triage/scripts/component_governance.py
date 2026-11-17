@@ -12,6 +12,13 @@ SUPPORT_POLICY = "https://dotnet.microsoft.com/en-us/platform/support/policy"
 DASHBOARD = "https://dev.azure.com/dnceng/internal/_componentGovernance/dotnet-aspnetcore"
 API = "https://governance.dev.azure.com/dnceng/internal/_apis/ComponentGovernance/GovernedRepositories/102242"
 AZURE_DEVOPS_RESOURCE = "499b84ac-1321-427f-aa17-267ca6975798"
+VERSION_DETAILS = "https://raw.githubusercontent.com/dotnet/aspnetcore/{branch}/eng/Version.Details.xml"
+# Runtime, targeting and host packs come from the SDK pinned in global.json, which only changes via
+# dotnet/dotnet source updates. aspnetcore can't pick their versions directly.
+SDK_PACK = re.compile(
+    r"Microsoft\.(NETCore|AspNetCore|WindowsDesktop)\.App\.(Runtime|Ref|Host|Crossgen2)(\..+)?"
+    r"|(runtime\.[^.]+\.)?Microsoft\.DotNet\.ILCompiler|Microsoft\.NET\.ILLink\.Tasks",
+    re.IGNORECASE)
 MIRROR_PIPELINE = "https://dev.azure.com/dnceng/internal/_build?definitionId=931&_a=summary"
 
 
@@ -126,6 +133,26 @@ def version_key(version):
     return [int(part) if part.isdigit() else part for part in re.split(r"[.-]", version)]
 
 
+def version_details_dependencies(xml):
+    """Return {(name, version)} for dependencies Maestro manages via eng/Version.Details.xml."""
+    import xml.etree.ElementTree as ET
+    root = ET.fromstring(xml)
+    return {(d.get("Name", "").casefold(), d.get("Version", "")) for d in root.iter("Dependency")}
+
+
+def fetch_version_details(branch):
+    with urlopen(VERSION_DETAILS.format(branch=quote(branch)), timeout=20) as response:
+        return version_details_dependencies(response.read())
+
+
+def managed_by_dotnet_dotnet(package, version, dependencies):
+    """True if the alerting package version is supplied by dotnet/dotnet dependency flow."""
+    if SDK_PACK.fullmatch(package):
+        return True
+    # Name and version must both match; e.g. a transitive Pkcs 8.0.1 is not the flowed Pkcs 11.0.1.
+    return dependencies is not None and (package.casefold(), version) in dependencies
+
+
 def collect():
     errors = {}
     branches = ["main"]
@@ -144,6 +171,15 @@ def collect():
                 summaries[branch] = request.result()
             except (ValueError, KeyError, TypeError) as error:
                 errors[branch] = str(error)
+
+        flow_requests = {branch: pool.submit(fetch_version_details, branch) for branch in summaries}
+        flowed = {}
+        for branch, request in flow_requests.items():
+            try:
+                flowed[branch] = request.result()
+            except Exception as error:  # noqa: BLE001 - fall back to manual guidance, but say so
+                flowed[branch] = None
+                errors[f"{branch} Version.Details.xml"] = str(error)
 
         ids = sorted({alert["alertId"] for alerts in summaries.values() for alert in alerts})
         detail_requests = {alert_id: pool.submit(alert_details, alert_id) for alert_id in ids}
@@ -164,6 +200,9 @@ def collect():
                 continue
             if ecosystem == "npm":
                 action = "Use update-npm-dependencies for a targeted fix"
+            elif ecosystem == "nuget" and managed_by_dotnet_dotnet(
+                    alert["componentName"], alert["componentVersion"], flowed.get(branch)):
+                action = "Wait for the next dotnet/dotnet source update; don't update manually"
             elif ecosystem == "nuget":
                 action = "Open a dependency-update PR after checking quarantine and dotnet-public"
             else:
@@ -214,7 +253,12 @@ def render_markdown(items, coverage):
         lines.append("")
     if coverage["otherEcosystemAlertOccurrences"]:
         lines += [f"Other ecosystem alert occurrences omitted: {coverage['otherEcosystemAlertOccurrences']}.", ""]
-    if any(item["ecosystem"] == "nuget" for item in items):
+    if any(item["nextAction"].startswith("Wait for the next dotnet/dotnet") for item in items):
+        lines += ["**dotnet/dotnet-managed packages:** These versions come from the SDK in `global.json` or "
+                  "from `eng/Version.Details.xml`, which Maestro updates through `Source code updates from "
+                  "dotnet/dotnet` PRs. Don't bump them by hand; merge the next codeflow PR for the branch. "
+                  "Escalate only if the alert remains after a codeflow that should have fixed it.", ""]
+    if any(item["nextAction"].startswith("Open a dependency-update PR") for item in items):
         lines += ["**NuGet:** Verify the patched version's publish time. Wait until it is at least "
                   "seven days old and verify the exact version is on `dotnet-public` before updating. "
                   f"If missing, use the [mirroring pipeline]({MIRROR_PIPELINE}); never queue it without an explicit request.", ""]

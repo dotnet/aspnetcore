@@ -70,7 +70,13 @@ and explain what could not be checked rather than claiming there are no alerts.
   [update-npm-dependencies skill](../update-npm-dependencies/SKILL.md) for a targeted fix on
   the affected branch. Identify the owning lockfile and confirm every affected resolved copy
   is fixed. Do not perform the update or open a remediation PR unless requested.
-- **NuGet:** Recommend a dependency-update PR targeting the affected branch. Use the advisory
+- **NuGet managed by dotnet/dotnet:** If the package is an SDK-provided pack (for example
+  `Microsoft.WindowsDesktop.App.Runtime.*` or `Microsoft.NETCore.App.Runtime.*`, which come from the
+  SDK pinned in `global.json`), or the alert's exact name and version is a dependency in the branch's
+  `eng/Version.Details.xml`, do not update it manually. Tell the user to wait for, and merge, the
+  next `Source code updates from dotnet/dotnet` PR for that branch. A transitive copy of a package
+  at a different version than `Version.Details.xml` is not managed this way.
+- **Other NuGet:** Recommend a dependency-update PR targeting the affected branch. Use the advisory
   and resolved dependency graph to identify a compatible patched version, updating the direct
   parent if the vulnerable package is transitive. Verify its NuGet.org publish time: if it is
   less than seven days old, report when it becomes eligible (publish time plus seven days) and
