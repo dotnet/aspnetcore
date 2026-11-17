@@ -989,6 +989,7 @@ public class RoutingTest : ServerTestBase<ToggleExecutionModeServerFixture<Progr
         // Add a navigation lock that blocks internal navigations
         Browser.FindElement(By.Id("add-navigation-lock")).Click();
         Browser.FindElement(By.CssSelector("#navigation-lock-0 > input.block-internal-navigation")).Click();
+        Browser.Equal("true", () => Browser.FindElement(By.CssSelector("#navigation-lock-0 > input.navigation-lock-ready")).GetDomProperty("value"));
 
         Browser.Navigate().Back();
 
@@ -1156,10 +1157,32 @@ public class RoutingTest : ServerTestBase<ToggleExecutionModeServerFixture<Progr
     }
 
     [Fact]
-    [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/66041")]
-    public void NavigationLock_CanBlockExternalNavigation()
+    public virtual void NavigationLock_CanBlockExternalNavigation()
     {
+        InitializeBrowser(BrowserFixture.NavigationPromptContext);
+        InitializeAsyncCore();
+
         SetUrlViaPushState("/");
+
+        // Observe completed prompt interop, not checkbox state, before attempting navigation.
+        var jsExecutor = (IJavaScriptExecutor)Browser;
+        jsExecutor.ExecuteScript("""
+            const navigationLock = Blazor._internal.NavigationLock;
+            const registeredLocks = new Set();
+            const enableNavigationPrompt = navigationLock.enableNavigationPrompt;
+            const disableNavigationPrompt = navigationLock.disableNavigationPrompt;
+            window.getNavigationLockCount = () => registeredLocks.size;
+            navigationLock.enableNavigationPrompt = id => {
+                enableNavigationPrompt(id);
+                registeredLocks.add(id);
+            };
+            navigationLock.disableNavigationPrompt = id => {
+                disableNavigationPrompt(id);
+                registeredLocks.delete(id);
+            };
+            """);
+
+        long GetNavigationLockCount() => (long)jsExecutor.ExecuteScript("return window.getNavigationLockCount()");
 
         var app = Browser.MountTestComponent<NavigationManagerComponent>();
 
@@ -1167,12 +1190,11 @@ public class RoutingTest : ServerTestBase<ToggleExecutionModeServerFixture<Progr
         Browser.FindElement(By.Id("add-navigation-lock")).Click();
         Browser.FindElement(By.Id("add-navigation-lock")).Click();
         Browser.FindElement(By.CssSelector("#navigation-lock-0 > input.confirm-external-navigation")).Click();
+        Browser.Equal(1L, GetNavigationLockCount);
         Browser.FindElement(By.CssSelector("#navigation-lock-1 > input.confirm-external-navigation")).Click();
+        Browser.Equal(2L, GetNavigationLockCount);
 
         SetAbsluteUrlViaPushState($"{_serverFixture.RootUri}/myexternalpath");
-
-        // Dismiss the confirmation prompt that pops up
-        Browser.SwitchTo().Alert().Dismiss();
 
         // The navigation was canceled and we're on the sarting URI
         var expectedStartingUri = $"{_serverFixture.RootUri}subdir/";
@@ -1180,17 +1202,16 @@ public class RoutingTest : ServerTestBase<ToggleExecutionModeServerFixture<Progr
 
         // Disable external navigation confirmation on one of the navigation locks
         Browser.FindElement(By.CssSelector("#navigation-lock-0 > input.confirm-external-navigation")).Click();
+        Browser.Equal(1L, GetNavigationLockCount);
 
         SetAbsluteUrlViaPushState($"{_serverFixture.RootUri}/myexternalpath2");
-
-        // Dismiss the confirmation prompt that pops up
-        Browser.SwitchTo().Alert().Dismiss();
 
         // The navigation was canceled again and we're on the sarting URI
         Browser.Equal(expectedStartingUri, () => app.FindElement(By.Id("test-info")).Text);
 
         // Disable external navigation confirmation on the other navigation lock
         Browser.FindElement(By.CssSelector("#navigation-lock-1 > input.confirm-external-navigation")).Click();
+        Browser.Equal(0L, GetNavigationLockCount);
 
         var expectedFinalUri = $"{_serverFixture.RootUri}/myexternalpath3";
         SetAbsluteUrlViaPushState(expectedFinalUri);
@@ -1598,7 +1619,7 @@ public class RoutingTest : ServerTestBase<ToggleExecutionModeServerFixture<Progr
         var app = Browser.MountTestComponent<TestRouter>();
         app.FindElement(By.LinkText("With query parameters (none)")).Click();
 
-        Assert.Equal("Hello Abc .", app.FindElement(By.Id("test-info")).Text);
+        Browser.Equal("Hello Abc .", () => app.FindElement(By.Id("test-info")).Text);
         Assert.Equal("0", app.FindElement(By.Id("value-QueryInt")).Text);
         Assert.Equal("0", app.FindElement(By.Id("value-nested-QueryInt")).Text);
         Assert.Equal(string.Empty, app.FindElement(By.Id("value-NullableDateTimeValue")).Text);

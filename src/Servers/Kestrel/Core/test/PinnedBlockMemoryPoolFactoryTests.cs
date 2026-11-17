@@ -123,9 +123,5 @@ public class PinnedBlockMemoryPoolFactoryTests
     }
 
     private static PinnedBlockMemoryPoolFactory CreateMemoryPoolFactory(TimeProvider timeProvider = null)
-    {
-        return new PinnedBlockMemoryPoolFactory(
-            new MemoryPoolMetrics(new TestMeterFactory()),
-            timeProvider: timeProvider);
-    }
+        => new(new MemoryPoolMetrics(new TestMeterFactory()), timeProvider: timeProvider);
 }

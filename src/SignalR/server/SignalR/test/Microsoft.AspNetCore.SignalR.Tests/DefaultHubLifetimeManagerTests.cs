@@ -9,6 +9,7 @@ using Microsoft.AspNetCore.SignalR.Specification.Tests;
 using Microsoft.AspNetCore.InternalTesting;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
+using Moq;
 using Xunit;
 
 namespace Microsoft.AspNetCore.SignalR.Tests;
@@ -103,6 +104,92 @@ public class DefaultHubLifetimeManagerTests : HubLifetimeManagerTestsBase<Hub>
 
             Assert.False(connection1.ConnectionAborted.IsCancellationRequested);
         }
+    }
+
+    [Fact]
+    public async Task SendConnectionsAsyncDoesNotInspectLargeTargetListsWhenThereAreNoConnections()
+    {
+        var targets = new Mock<IReadOnlyList<string>>(MockBehavior.Strict);
+        targets.SetupGet(list => list.Count).Returns(17);
+        var manager = CreateNewHubLifetimeManager();
+
+        await manager.SendConnectionsAsync(targets.Object, "Hello", ["World"]).DefaultTimeout();
+
+        targets.VerifyGet(list => list[It.IsAny<int>()], Times.Never);
+    }
+
+    [Theory]
+    [InlineData(16, false)]
+    [InlineData(16, true)]
+    [InlineData(17, false)]
+    [InlineData(17, true)]
+    public async Task SendConnectionsAsyncWritesOnceToSpecifiedConnections(int targetCount, bool useList)
+    {
+        using var client1 = new TestClient();
+        using var client2 = new TestClient();
+        using var client3 = new TestClient();
+        client1.Connection.ConnectionId = "connection";
+        client2.Connection.ConnectionId = "CONNECTION";
+        client3.Connection.ConnectionId = "Connection";
+        var jsonProtocol = new JsonHubProtocol();
+        var protocol = new Mock<IHubProtocol>(MockBehavior.Strict);
+        protocol.Setup(p => p.Name).Returns(jsonProtocol.Name);
+        protocol.Setup(p => p.GetMessageBytes(It.IsAny<HubMessage>()))
+            .Returns((HubMessage message) => jsonProtocol.GetMessageBytes(message));
+
+        var manager = CreateNewHubLifetimeManager();
+        var connection1 = HubConnectionContextUtils.Create(client1.Connection, protocol.Object);
+        var connection2 = HubConnectionContextUtils.Create(client2.Connection, protocol.Object);
+        var connection3 = HubConnectionContextUtils.Create(client3.Connection, protocol.Object);
+        await manager.OnConnectedAsync(connection1).DefaultTimeout();
+        await manager.OnConnectedAsync(connection2).DefaultTimeout();
+        await manager.OnConnectedAsync(connection3).DefaultTimeout();
+
+        var connectionIds = new string[targetCount];
+        for (var i = 0; i < connectionIds.Length; i++)
+        {
+            connectionIds[i] = (i % 3) switch
+            {
+                0 => "missing",
+                1 => connection1.ConnectionId,
+                _ => connection2.ConnectionId,
+            };
+        }
+
+        IReadOnlyList<string> targets = useList ? new List<string>(connectionIds) : connectionIds;
+        await manager.SendConnectionsAsync(targets, "Hello", ["World"]).DefaultTimeout();
+
+        foreach (var client in new[] { client1, client2 })
+        {
+            var message = Assert.IsType<InvocationMessage>(client.TryRead());
+            Assert.Equal("Hello", message.Target);
+            Assert.Equal("World", Assert.Single(message.Arguments));
+            Assert.Null(client.TryRead());
+        }
+
+        Assert.Null(client3.TryRead());
+        protocol.Verify(p => p.GetMessageBytes(It.IsAny<HubMessage>()), Times.Once);
+    }
+
+    [Fact]
+    public async Task SendConnectionsAsyncWaitsForAllWrites()
+    {
+        using var client1 = new TestClient(pauseWriterThreshold: 2);
+        using var client2 = new TestClient(pauseWriterThreshold: 2);
+        var manager = CreateNewHubLifetimeManager();
+        var connection1 = HubConnectionContextUtils.Create(client1.Connection);
+        var connection2 = HubConnectionContextUtils.Create(client2.Connection);
+        await manager.OnConnectedAsync(connection1).DefaultTimeout();
+        await manager.OnConnectedAsync(connection2).DefaultTimeout();
+
+        var sendTask = manager.SendConnectionsAsync(
+            [connection1.ConnectionId, connection2.ConnectionId], "Hello", ["World"]);
+        Assert.False(sendTask.IsCompleted);
+
+        Assert.IsType<InvocationMessage>(await client2.ReadAsync().DefaultTimeout());
+        Assert.False(sendTask.IsCompleted);
+        Assert.IsType<InvocationMessage>(await client1.ReadAsync().DefaultTimeout());
+        await sendTask.DefaultTimeout();
     }
 
     [Fact]

@@ -339,14 +339,7 @@ public class RouterTest
         // Assert
         var lastBatch = testRenderer.Batches.Last();
         var renderedFrame = lastBatch.ReferenceFrames.First();
-        Assert.Equal(RenderTreeFrameType.Component, renderedFrame.FrameType);
-        Assert.Equal(typeof(RouteView), renderedFrame.ComponentType);
-
-        // Verify that the RouteData contains the NotFoundTestComponent
-        var routeViewFrame = lastBatch.ReferenceFrames.Skip(1).First();
-        Assert.Equal(RenderTreeFrameType.Attribute, routeViewFrame.FrameType);
-        var routeData = (RouteData)routeViewFrame.AttributeValue;
-        Assert.Equal(typeof(NotFoundTestComponent), routeData.PageType);
+        Assert.Equal($"Rendering route matching {typeof(NotFoundTestComponent)}", renderedFrame.TextContent);
     }
 
     [Fact]
@@ -389,16 +382,12 @@ public class RouterTest
         await testRenderer.Dispatcher.InvokeAsync(() => testNavManager.TriggerNotFound());
 
         // Assert
-        var lastBatch = testRenderer.Batches.Last();
-        var renderedFrame = lastBatch.ReferenceFrames.First();
-        Assert.Equal(RenderTreeFrameType.Component, renderedFrame.FrameType);
-        Assert.Equal(typeof(RouteView), renderedFrame.ComponentType);
-
-        // Verify that the RouteData contains the correct component type
-        var routeViewFrame = lastBatch.ReferenceFrames.Skip(1).First();
-        Assert.Equal(RenderTreeFrameType.Attribute, routeViewFrame.FrameType);
-        var routeData = (RouteData)routeViewFrame.AttributeValue;
-        Assert.Equal(typeof(JanComponent), routeData.PageType);
+        var textFrame = testRenderer.Batches
+            .SelectMany(b => b.ReferenceFrames)
+            .FirstOrDefault(f => f.FrameType == RenderTreeFrameType.Text
+                && f.TextContent == $"Rendering route matching {typeof(JanComponent)}");
+        Assert.True(textFrame.FrameType == RenderTreeFrameType.Text,
+            "Expected the Found fragment's rendered text for JanComponent to appear in a batch.");
     }
 
     [Fact]
@@ -440,17 +429,18 @@ public class RouterTest
         // trigger the NavigationManager's OnNotFound event
         await testRenderer.Dispatcher.InvokeAsync(() => testNavManager.TriggerNotFound());
 
-        // The Router should have rendered using RenderComponentByRoute (args.Path) instead of NotFoundPage
-        var lastBatch = testRenderer.Batches.Last();
-        var renderedFrame = lastBatch.ReferenceFrames.First();
-        Assert.Equal(RenderTreeFrameType.Component, renderedFrame.FrameType);
-        Assert.Equal(typeof(RouteView), renderedFrame.ComponentType);
-
-        // Verify that the RouteData contains the JanComponent (from args.Path), not NotFoundTestComponent
-        var routeViewFrame = lastBatch.ReferenceFrames.Skip(1).First();
-        Assert.Equal(RenderTreeFrameType.Attribute, routeViewFrame.FrameType);
-        var routeData = (RouteData)routeViewFrame.AttributeValue;
-        Assert.Equal(typeof(JanComponent), routeData.PageType);
+        // The Router should have rendered using RenderComponentByRoute (args.Path) instead of NotFoundPage,
+        // routed through the user-supplied <Found> fragment.
+        var textFrame = testRenderer.Batches
+            .SelectMany(b => b.ReferenceFrames)
+            .FirstOrDefault(f => f.FrameType == RenderTreeFrameType.Text
+                && f.TextContent == $"Rendering route matching {typeof(JanComponent)}");
+        Assert.True(textFrame.FrameType == RenderTreeFrameType.Text,
+            "Expected the args.Path component (JanComponent) to be rendered through Found, not NotFoundTestComponent.");
+        Assert.DoesNotContain(testRenderer.Batches
+            .SelectMany(b => b.ReferenceFrames),
+            f => f.FrameType == RenderTreeFrameType.Text
+                && f.TextContent == $"Rendering route matching {typeof(NotFoundTestComponent)}");
     }
 
     [Fact]

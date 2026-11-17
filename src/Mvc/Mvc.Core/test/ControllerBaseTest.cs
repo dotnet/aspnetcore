@@ -2451,6 +2451,32 @@ public class ControllerBaseTest
     }
 
     [Fact]
+    public void ValidationProblemDetails_SpecifiedExtensionsOverrideExistingValues()
+    {
+        // Arrange
+        var context = new ControllerContext(new ActionContext(
+            new DefaultHttpContext { TraceIdentifier = "some-trace" },
+            new RouteData(),
+            new ControllerActionDescriptor()));
+
+        var options = GetApiBehaviorOptions();
+
+        var controller = new TestableController
+        {
+            ProblemDetailsFactory = new DefaultProblemDetailsFactory(Options.Create(options)),
+            ControllerContext = context,
+        };
+
+        // Act
+        var actionResult = controller.ValidationProblem(extensions: new Dictionary<string, object> { { "traceId", "custom-trace" } });
+
+        // Assert
+        var objectResult = Assert.IsType<BadRequestObjectResult>(actionResult);
+        var problemDetails = Assert.IsType<ValidationProblemDetails>(objectResult.Value);
+        Assert.Equal("custom-trace", problemDetails.Extensions["traceId"]);
+    }
+
+    [Fact]
     public void ProblemDetails_Works()
     {
         // Arrange
@@ -2475,7 +2501,7 @@ public class ControllerBaseTest
         var problemDetails = Assert.IsType<ProblemDetails>(badRequestResult.Value);
         Assert.Equal(500, actionResult.StatusCode);
         Assert.Equal(500, problemDetails.Status);
-        Assert.Equal("An error occurred while processing your request.", problemDetails.Title);
+        Assert.Equal("Internal Server Error", problemDetails.Title);
         Assert.Equal("https://tools.ietf.org/html/rfc9110#section-15.6.1", problemDetails.Type);
         Assert.Equal("some-trace", problemDetails.Extensions["traceId"]);
     }
@@ -2528,6 +2554,32 @@ public class ControllerBaseTest
     }
 
     [Fact]
+    public void ProblemDetails_PassedInExtensionsOverrideExistingValues()
+    {
+        // Arrange
+        var context = new ControllerContext(new ActionContext(
+            new DefaultHttpContext { TraceIdentifier = "some-trace" },
+            new RouteData(),
+            new ControllerActionDescriptor()));
+
+        var options = GetApiBehaviorOptions();
+
+        var controller = new TestableController
+        {
+            ProblemDetailsFactory = new DefaultProblemDetailsFactory(Options.Create(options)),
+            ControllerContext = context,
+        };
+
+        // Act
+        var actionResult = controller.Problem(extensions: new Dictionary<string, object> { { "traceId", "custom-trace" } });
+
+        // Assert
+        var badRequestResult = Assert.IsType<ObjectResult>(actionResult);
+        var problemDetails = Assert.IsType<ProblemDetails>(badRequestResult.Value);
+        Assert.Equal("custom-trace", problemDetails.Extensions["traceId"]);
+    }
+
+    [Fact]
     public void ProblemDetails_UsesPassedInStatusCode()
     {
         // Arrange
@@ -2568,7 +2620,7 @@ public class ControllerBaseTest
                     },
                     [500] = new ClientErrorData
                     {
-                        Title = "An error occurred while processing your request.",
+                        Title = "Internal Server Error",
                         Link = "https://tools.ietf.org/html/rfc9110#section-15.6.1"
                     }
                 }

@@ -53,6 +53,7 @@ internal abstract partial class Http3Stream : HttpProtocol, IHttp3Stream, IHttpS
     private IStreamClosedFeature _streamClosedFeature = default!;
     private PseudoHeaderFields _parsedPseudoHeaderFields;
     private StreamCompletionFlags _completionState;
+    private readonly Http3RawFrame _incomingFrame = new Http3RawFrame();
     private int _isClosed;
     private int _totalParsedHeaderSize;
     private bool _isMethodConnect;
@@ -62,6 +63,11 @@ internal abstract partial class Http3Stream : HttpProtocol, IHttp3Stream, IHttpS
 
     private readonly ManualResetValueTaskSource<object?> _appCompletedTaskSource = new();
     private readonly Lock _completionLock = new();
+
+    // Published under _completionLock by the abort that first transitions the stream into the Aborted state. It is completed
+    // once that abort has finished running its side-effects (performed outside the lock). Request finalization waits on
+    // it before pooling the stream so a late abort can't tear down a transport that has been reused.
+    private TaskCompletionSource? _abortCompletedTcs;
 
     protected RequestHeaderParsingState _requestHeaderParsingState;
 
@@ -120,6 +126,7 @@ internal abstract partial class Http3Stream : HttpProtocol, IHttp3Stream, IHttpS
         _eagerRequestHeadersParsedLimit = ServerOptions.Limits.MaxRequestHeaderCount * 2;
         _isMethodConnect = false;
         _completionState = default;
+        _abortCompletedTcs = null;
         IsReceivingTrailerHeaders = false;
         StreamTimeoutTimestamp = 0;
 
@@ -167,8 +174,17 @@ internal abstract partial class Http3Stream : HttpProtocol, IHttp3Stream, IHttpS
 
     private void AbortCore(Exception exception, Http3ErrorCode errorCode)
     {
+        TaskCompletionSource abortCompleted;
+
         lock (_completionLock)
         {
+            // Only the completion-state transition is performed under _completionLock. The abort
+            // side-effects below must run *outside* the lock: _http3Output.Stop() (and the frame
+            // writer/transport teardown) acquire Http3OutputProducer._dataWriterLock, which is taken
+            // in the opposite order on the inline output path (Http3OutputProducer.FlushAsync holds
+            // _dataWriterLock and, via the inline data pipe pump -> QuicStreamContext.FireStreamClosed,
+            // calls back into AbortCore -> _completionLock). Holding _completionLock across Stop() would
+            // therefore create a _completionLock <-> _dataWriterLock deadlock. This mirrors Http2Stream.
             if (IsCompleted || IsAborted)
             {
                 return;
@@ -181,7 +197,14 @@ internal abstract partial class Http3Stream : HttpProtocol, IHttp3Stream, IHttpS
                 return;
             }
 
-            if (!(exception is ConnectionAbortedException abortReason))
+            // Publish before releasing the lock so request finalization can observe this in-flight abort
+            // and wait for the side-effects below to finish before the stream is pooled and reused.
+            abortCompleted = _abortCompletedTcs = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+        }
+
+        try
+        {
+            if (exception is not ConnectionAbortedException abortReason)
             {
                 abortReason = new ConnectionAbortedException(exception.Message, exception);
             }
@@ -206,6 +229,28 @@ internal abstract partial class Http3Stream : HttpProtocol, IHttp3Stream, IHttpS
             // Abort framewriter and underlying transport after stopping output.
             _frameWriter.Abort(abortReason);
         }
+        finally
+        {
+            abortCompleted.TrySetResult();
+        }
+    }
+
+    // Marks the stream Completed and waits for any in-flight abort's side-effects to finish. Called by
+    // request finalization before the transport is drained, disposed and pooled. Setting Completed under
+    // _completionLock closes the door: any abort arriving afterwards sees IsCompleted and no-ops, so it
+    // can't mutate a transport that has been reused. An abort that won the race before the door closed is
+    // captured here and awaited so its Stop()/frame writer Abort() land on this stream, not a reused one.
+    private ValueTask CompleteAndWaitForAbortAsync()
+    {
+        TaskCompletionSource? abortCompleted;
+
+        lock (_completionLock)
+        {
+            _completionState |= StreamCompletionFlags.Completed;
+            abortCompleted = _abortCompletedTcs;
+        }
+
+        return abortCompleted is null ? default : new ValueTask(abortCompleted.Task);
     }
 
     protected override void OnErrorAfterResponseStarted()
@@ -312,6 +357,11 @@ internal abstract partial class Http3Stream : HttpProtocol, IHttp3Stream, IHttpS
 
         try
         {
+            if (IsConnectionSpecificHeaderField(name, value))
+            {
+                throw new Http3StreamErrorException(CoreStrings.HttpErrorConnectionSpecificHeaderField, Http3ErrorCode.MessageError);
+            }
+
             if (_requestHeaderParsingState == RequestHeaderParsingState.Trailers)
             {
                 // Just use name + value bytes and do full validation for request trailers.
@@ -339,20 +389,11 @@ internal abstract partial class Http3Stream : HttpProtocol, IHttp3Stream, IHttpS
                         OnHeader(staticTableIndex.GetValueOrDefault(), indexOnly: false, name, value);
                         break;
                     case HeaderType.Dynamic:
-                        // It is faster to set a header using a static table index than a name.
-                        if (staticTableIndex != null)
-                        {
-                            UpdateHeaderParsingState(value, GetPseudoHeaderField(staticTableIndex.GetValueOrDefault()));
-
-                            OnHeader(staticTableIndex.GetValueOrDefault(), indexOnly: false, name, value);
-                        }
-                        else
-                        {
-                            UpdateHeaderParsingState(value, GetPseudoHeaderField(name));
-
-                            OnHeader(name, value, checkForNewlineChars: false);
-                        }
-                        break;
+                        // Dynamic tables aren't currently implemented for HTTP/3
+                        // Let's make sure this code is tested if we add dynamic table support in the future
+                        // Make sure checkForNewlineChars is correct when adding support for dynamic table
+                        // Consider using Http2Connection's dynamic table implementation as a reference if we add support for dynamic table in the future.
+                        throw new UnreachableException();
                     case HeaderType.NameAndValue:
                         UpdateHeaderParsingState(value, GetPseudoHeaderField(name));
 
@@ -378,11 +419,6 @@ internal abstract partial class Http3Stream : HttpProtocol, IHttp3Stream, IHttpS
 
     private void ValidateHeaderContent(ReadOnlySpan<byte> name, ReadOnlySpan<byte> value)
     {
-        if (IsConnectionSpecificHeaderField(name, value))
-        {
-            throw new Http3StreamErrorException(CoreStrings.HttpErrorConnectionSpecificHeaderField, Http3ErrorCode.MessageError);
-        }
-
         // http://httpwg.org/specs/rfc7540.html#rfc.section.8.1.2
         // A request or response containing uppercase header field names MUST be treated as malformed (Section 8.1.2.6).
         for (var i = 0; i < name.Length; i++)
@@ -636,7 +672,10 @@ internal abstract partial class Http3Stream : HttpProtocol, IHttp3Stream, IHttpS
 
         try
         {
-            var incomingFrame = new Http3RawFrame();
+            // Reuse the frame across requests when the stream is pooled. TryReadFrame overwrites its state for each new frame.
+            var incomingFrame = _incomingFrame;
+            incomingFrame.Type = default;
+            incomingFrame.RemainingLength = 0;
             var isContinuedFrame = false;
             while (_isClosed == 0)
             {
@@ -731,11 +770,16 @@ internal abstract partial class Http3Stream : HttpProtocol, IHttp3Stream, IHttpS
             }
             finally
             {
+                // Wait for any in-flight abort to finish mutating this stream's transport/output before
+                // we drain, dispose and pool it; otherwise a late abort could tear down a stream that has
+                // already been reused for another request. This also marks the stream Completed so any
+                // subsequent abort becomes a no-op.
+                await CompleteAndWaitForAbortAsync();
+
                 // Drain transports and dispose.
                 await _context.StreamContext.DisposeAsync();
 
                 // Tells the connection to remove the stream from its active collection.
-                ApplyCompletionFlag(StreamCompletionFlags.Completed);
                 _context.StreamLifetimeHandler.OnStreamCompleted(this);
 
                 // If we have a webtransport session on this stream, end it
@@ -1114,8 +1158,21 @@ internal abstract partial class Http3Stream : HttpProtocol, IHttp3Stream, IHttpS
             return false;
         }
 
+        // https://www.rfc-editor.org/rfc/rfc9114#section-4.3.1
+        if (!ServerOptions.AllowFragmentInRequestTarget && path.Contains('#'))
+        {
+            Abort(new ConnectionAbortedException(CoreStrings.FormatHttp3StreamErrorPathInvalid(RawTarget)), Http3ErrorCode.MessageError);
+            return false;
+        }
+
         var queryIndex = path.IndexOf('?');
         QueryString = queryIndex == -1 ? string.Empty : path.Substring(queryIndex);
+
+        if (queryIndex != -1 && HttpCharacters.ContainsInvalidQueryChar(QueryString))
+        {
+            Abort(new ConnectionAbortedException(CoreStrings.FormatHttp3StreamErrorPathInvalid(RawTarget)), Http3ErrorCode.ProtocolError);
+            return false;
+        }
 
         var pathSegment = queryIndex == -1 ? path.AsSpan() : path.AsSpan(0, queryIndex);
 

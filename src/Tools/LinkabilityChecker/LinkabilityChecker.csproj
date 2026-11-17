@@ -11,13 +11,13 @@
   <Import Project="$(RepoRoot)eng\TrimmableProjects.props" />
 
   <ItemGroup>
-    <Reference Include="@(TrimmableProject)" />
+    <ProjectReference Include="@(TrimmableProject->'%(ProjectPath)')" />
   </ItemGroup>
 
   <ItemGroup>
     <!-- Packages required to produce a complete dependency graph for the trimmer -->
-    <Reference Include="System.Configuration.ConfigurationManager" />
-    <Reference Include="System.Security.Permissions" />
+    <PackageReference Include="System.Configuration.ConfigurationManager" />
+    <PackageReference Include="System.Security.Permissions" />
   </ItemGroup>
   <Target Name="ILLinkTrimProjects" DependsOnTargets="ResolveReferences" AfterTargets="Build" Condition="'$(DotNetBuildSourceOnly)' != 'true' AND '$(SkipTestBuild)' != 'true'">
     <PropertyGroup>
@@ -26,14 +26,18 @@
       <ILLinkArgs>$(ILLinkArgs) --action link</ILLinkArgs>
       <ILLinkArgs Condition="'$(GenerateLinkerWarningSuppressions)' == 'true'">$(ILLinkArgs) --generate-warning-suppressions xml</ILLinkArgs>
     </PropertyGroup>
+    <JoinItems Left="@(ReferencePath->WithMetadataValue('ReferenceSourceTarget', 'ProjectReference'))"
+               LeftKey="MSBuildSourceProjectFile" LeftMetadata="*"
+               Right="@(TrimmableProject->'%(ProjectPath)')" RightKey="FullPath" ItemSpecToUse="Left">
+      <Output TaskParameter="JoinResult" ItemName="_ProjectReferencePaths" />
+    </JoinItems>
     <ItemGroup>
-      <_ProjectReferencePaths Include="@(ReferencePath->HasMetadata('ProjectPath'))" />
       <RootAssemblies Include="@(_ProjectReferencePaths->'%(Filename)')" RootMode="visible" />
       <!-- Create clean items for AssemblyPaths (ITaskItem[] that flows to external task host).
            Using Remove+Include pattern to strip all inherited metadata. -->
       <_CleanAssemblyPaths Remove="@(_CleanAssemblyPaths)" />
       <_CleanAssemblyPaths Include="@(_ProjectReferencePaths->'%(FullPath)')" />
-      <_ILLinkSuppressionFile Include="$([System.IO.Path]::GetDirectoryName($([System.String]::new('%(RootAssemblies.ProjectPath)'))))\%(RootAssemblies.Identity).WarningSuppressions.xml"
+      <_ILLinkSuppressionFile Include="$([System.IO.Path]::GetDirectoryName($([System.String]::new('%(RootAssemblies.MSBuildSourceProjectFile)'))))\%(RootAssemblies.Identity).WarningSuppressions.xml"
         SuppressionFileName="%(RootAssemblies.Identity).WarningSuppressions" />
       <ILLinkSuppressionFile Condition="Exists(%(_ILLinkSuppressionFile.Identity))" Include="%(_ILLinkSuppressionFile.Identity)" />
     </ItemGroup>

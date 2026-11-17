@@ -1,0 +1,42 @@
+{
+  "calls": [
+    {
+      "prompt": "What is the weather in San Francisco?",
+      "messageCount": 1,
+      "toolNames": [
+        "get_weather"
+      ],
+      "frames": [
+        {
+          "name": "weather-call",
+          "functionCall": {
+            "callId": "backend-tool-weather-1",
+            "name": "get_weather",
+            "arguments": {
+              "location": "San Francisco"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "prompt": "What is the weather in San Francisco?",
+      "messageCount": 3,
+      "toolNames": [
+        "get_weather"
+      ],
+      "toolResultCallIds": [
+        "backend-tool-weather-1"
+      ],
+      "frames": [
+        {
+          "name": "weather-summary",
+          "chunks": [
+            "The weather in San Francisco is sunny",
+            " with a temperature of 20\u00b0C."
+          ]
+        }
+      ]
+    }
+  ]
+}

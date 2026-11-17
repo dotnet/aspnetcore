@@ -16,7 +16,7 @@ namespace Microsoft.AspNetCore.Routing.Matching;
 [RequiresDynamicCode("ILEmitTrieFactory uses runtime IL generation.")]
 internal static class ILEmitTrieFactory
 {
-    // The algorthm we use only works for ASCII text. If we find non-ASCII text in the input
+    // The algorithm we use only works for ASCII text. If we find non-ASCII text in the input
     // we need to reject it and let is be processed with a fallback technique.
     public const int NotAscii = int.MinValue;
 
@@ -542,7 +542,7 @@ internal static class ILEmitTrieFactory
     private static ulong GetUInt64Key(string text, int index)
     {
         Debug.Assert(index + 4 <= text.Length);
-        var span = text.ToLowerInvariant().AsSpan(index);
+        var span = text.ToLowerOrdinal().AsSpan(index);
         ref var p = ref Unsafe.As<char, byte>(ref MemoryMarshal.GetReference(span));
         return Unsafe.ReadUnaligned<ulong>(ref p);
     }
@@ -550,7 +550,7 @@ internal static class ILEmitTrieFactory
     private static ushort GetUInt16Key(string text, int index)
     {
         Debug.Assert(index + 1 <= text.Length);
-        return (ushort)char.ToLowerInvariant(text[index]);
+        return (ushort)char.ToLowerOrdinal(text[index]);
     }
 
     // We require a special build-time define since this is a testing/debugging

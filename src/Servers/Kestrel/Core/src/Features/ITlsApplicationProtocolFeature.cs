@@ -9,7 +9,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Features;
 public interface ITlsApplicationProtocolFeature
 {
     /// <summary>
-    /// Gets the <see cref="ReadOnlyMemory{T}"/> represeting the application protocol.
+    /// Gets the <see cref="ReadOnlyMemory{T}"/> representing the application protocol.
     /// </summary>
     ReadOnlyMemory<byte> ApplicationProtocol { get; }
 }

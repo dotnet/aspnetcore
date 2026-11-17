@@ -10,8 +10,8 @@
   <Import Project="..\..\..\..\WebView\src\StaticWebAssets.Groups.targets" />
 
   <ItemGroup>
-    <ProjectReference Include="..\..\src\Microsoft.AspNetCore.Components.WebView.Photino.csproj" />
-    <ProjectReference Include="..\..\..\..\..\test\testassets\BasicTestApp\BasicTestApp.csproj" />
+    <ProjectReference Include="$(RepoRoot)src\Components\test\testassets\BasicTestApp\BasicTestApp.csproj" />
+    <ProjectReference Include="$(RepoRoot)src\Components\WebView\Samples\PhotinoPlatform\src\Microsoft.AspNetCore.Components.WebView.Photino.csproj" />
   </ItemGroup>
 
   <ItemGroup>

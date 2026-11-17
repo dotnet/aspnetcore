@@ -9,8 +9,6 @@
       before importing root Directory.Build.targets.
     -->
     <TargetLatestDotNetRuntime Condition=" '$(IsServicingBuild)' == 'true' ">false</TargetLatestDotNetRuntime>
-    <!-- Tool projects publish before packing. Packages should contain the latest bits. -->
-    <UseLatestPackageReferences>true</UseLatestPackageReferences>
   </PropertyGroup>
 
   <Import Project="$(RepositoryEngineeringDir)common\native\LocateNativeCompiler.targets"

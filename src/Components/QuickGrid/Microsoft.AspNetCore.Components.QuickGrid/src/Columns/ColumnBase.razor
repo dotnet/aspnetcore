@@ -4,6 +4,7 @@
 @namespace Microsoft.AspNetCore.Components.QuickGrid
 @typeparam TGridItem
 @{
+    EnsureColumnMatchesGrid();
     InternalGridContext.Grid.AddColumn(this, InitialSortDirection, IsDefaultSortColumn);
 }
 
@@ -19,7 +20,7 @@
         {
             @if (ColumnOptions is not null && (Align != Align.Right && Align != Align.End))
             {
-                <button class="col-options-button" type="button" title="Column options" @onclick="@(() => Grid.ShowColumnOptionsAsync(this))"></button>
+                <button class="col-options-button" type="button" title="Column options" aria-expanded="@(Grid.IsColumnOptionsVisible(this) ? "true" : "false")" @onclick="@(() => Grid.ShowColumnOptionsAsync(this))"></button>
             }
 
             if (Sortable.HasValue ? Sortable.Value : IsSortableByDefault())
@@ -54,7 +55,7 @@
 
             @if (ColumnOptions is not null && (Align == Align.Right || Align == Align.End))
             {
-                <button class="col-options-button" type="button" title="Column options" @onclick="@(() => Grid.ShowColumnOptionsAsync(this))"></button>
+                <button class="col-options-button" type="button" title="Column options" aria-expanded="@(Grid.IsColumnOptionsVisible(this) ? "true" : "false")" @onclick="@(() => Grid.ShowColumnOptionsAsync(this))"></button>
             }
         }
     }

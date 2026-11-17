@@ -44,6 +44,9 @@ public static class UnionsEndpoints
         // used directly elsewhere registers as a separate component schema.
         unions.MapGet("/kitten-standalone", () => new Kitten("Whiskers", 9));
 
+        // Container record whose property is a *nullable* union with a polymorphic case type.
+        unions.MapGet("/beasts", () => new BeastEnvelope(new OneOrManyBeast(new Dachshund("Chili"))));
+
         return endpointRouteBuilder;
     }
 }

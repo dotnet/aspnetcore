@@ -1,0 +1,150 @@
+@page "/agentic_generative_ui"
+@rendermode InteractiveServer
+@implements IDisposable
+@using System.Text.Json
+@inject ILoggerFactory LoggerFactory
+
+<PageTitle>Agentic Generative UI</PageTitle>
+
+<div class="agentic-generative-ui" data-scenario="agentic_generative_ui">
+    <AgentBoundary Agent="_agent">
+        <div class="sc-ai-root sc-ai-chat-page dojo-chat-panel">
+            <div class="sc-ai-chat-page__header">
+                <h1 class="dojo-scenario__title">Agentic Generative UI</h1>
+            </div>
+            <div class="sc-ai-chat-page__body plan-content">
+                <MessageList>
+                    <EmptyContent>
+                        <p class="dojo-scenario__welcome">
+                            Ask the agent to create and complete a multi-step plan.
+                        </p>
+                        <InitialPlanSuggestions />
+                    </EmptyContent>
+                    <Footer Context="context">
+                        @if (_agent.State.Value.Steps.Count > 0)
+                        {
+                            var isRunning = IsRunning(context.Status);
+                            <div class="plan-activity"
+                                 data-task-status="@(isRunning ? "running" : "done")">
+                                <div class="plan-activity__header">
+                                    <span class="plan-activity__title">create_plan</span>
+                                    <span class="plan-activity__status"
+                                          role="status">@(isRunning ? "Running" : "Done")</span>
+                                </div>
+                                <PlanProgressCard Plan="_agent.State.Value" />
+                            </div>
+                        }
+                        else if (IsRunning(context.Status))
+                        {
+                            <div class="sc-ai-typing" role="status" aria-label="Agent is typing">
+                                <span class="sc-ai-typing__dot"></span>
+                                <span class="sc-ai-typing__dot"></span>
+                                <span class="sc-ai-typing__dot"></span>
+                            </div>
+                        }
+                    </Footer>
+                </MessageList>
+            </div>
+            <div class="sc-ai-chat-page__footer">
+                <div class="sc-ai-chat-page__input-container">
+                    <MessageInput Placeholder="Ask for a plan..." />
+                </div>
+            </div>
+        </div>
+    </AgentBoundary>
+</div>
+
+@code {
+    private static readonly JsonSerializerOptions _jsonOptions =
+        new(JsonSerializerDefaults.Web);
+
+    private UIAgent<PlanState> _agent = default!;
+    private IDisposable? _stateChangedRegistration;
+
+    [Inject(Key = DojoScenarios.AgenticGenerativeUIEndpoint)]
+    public IChatClient ChatClient { get; set; } = default!;
+
+    protected override void OnInitialized()
+    {
+        _agent = new UIAgent<PlanState>(ChatClient, options =>
+        {
+            options.StateMapper = context =>
+            {
+                if (context.Update.RawRepresentation is StateDeltaEvent delta)
+                {
+                    context.SetState(ApplyPlanDelta(_agent.State.Value, delta.Delta));
+                    return;
+                }
+
+                if (context.Update.RawRepresentation is not StateSnapshotEvent snapshot)
+                {
+                    return;
+                }
+
+                var state = snapshot.Snapshot.Deserialize<PlanState>(_jsonOptions);
+                if (state is not null)
+                {
+                    context.SetState(state);
+                }
+            };
+        }, LoggerFactory);
+        _stateChangedRegistration = _agent.State.OnChanged(
+            () => _ = InvokeAsync(StateHasChanged));
+    }
+
+    private static PlanState ApplyPlanDelta(PlanState current, JsonElement delta)
+    {
+        var next = new PlanState
+        {
+            Steps =
+            [
+                .. current.Steps.Select(step => new PlanStep
+                {
+                    Description = step.Description,
+                    Status = step.Status,
+                }),
+            ],
+        };
+
+        foreach (var operation in delta.EnumerateArray())
+        {
+            var operationName = operation.GetProperty("op").GetString();
+            if (operationName is not "replace")
+            {
+                throw new InvalidOperationException(
+                    $"The JSON Patch operation '{operationName}' is not supported.");
+            }
+
+            var pathSegments = operation.GetProperty("path").GetString()?
+                .Split('/', StringSplitOptions.RemoveEmptyEntries);
+            if (pathSegments is not ["steps", var indexText, var property] ||
+                !int.TryParse(indexText, out var index) ||
+                index < 0 ||
+                index >= next.Steps.Count)
+            {
+                continue;
+            }
+
+            var value = operation.GetProperty("value").GetString() ?? "";
+            if (property == "description")
+            {
+                next.Steps[index].Description = value;
+            }
+            else if (property == "status")
+            {
+                next.Steps[index].Status = value;
+            }
+        }
+
+        return next;
+    }
+
+    private static bool IsRunning(ConversationStatus status)
+        => status is ConversationStatus.Streaming or ConversationStatus.AwaitingInput;
+
+    public void Dispose()
+    {
+        _stateChangedRegistration?.Dispose();
+        _agent?.Dispose();
+    }
+}

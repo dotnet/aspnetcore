@@ -1,0 +1,7 @@
+@* Hosts the async DataAnnotations form with a model that is not registered with MEV, so validation runs
+   through the static System.ComponentModel.DataAnnotations.Validator path (Validator.TryValidate*Async). *@
+<AsyncDataAnnotationsForm Model="_model" />
+
+@code {
+    private readonly ValidatorPathModel _model = new();
+}

@@ -560,7 +560,7 @@ public partial class DefaultProblemDetailsWriterTest
         Assert.NotNull(problemDetails);
         Assert.Equal(StatusCodes.Status500InternalServerError, problemDetails.Status);
         Assert.Equal("https://tools.ietf.org/html/rfc9110#section-15.6.1", problemDetails.Type);
-        Assert.Equal("An error occurred while processing your request.", problemDetails.Title);
+        Assert.Equal("Internal Server Error", problemDetails.Title);
         Assert.Equal(expectedTraceId, problemDetails.Extensions["traceId"].ToString());
     }
 

@@ -66,27 +66,26 @@ internal unsafe class KeyRingBasedDataProtector : IDataProtector, IPersistedData
     {
         ArgumentNullThrowHelper.ThrowIfNull(purpose);
 
-        var currentKeyRing = _keyRingProvider.GetCurrentKeyRing();
-        var encryptor = currentKeyRing.DefaultAuthenticatedEncryptor;
-
 #if NET
-        if (encryptor is ISpanAuthenticatedEncryptor)
-        {
-            // allows caller to check if dataProtector supports Span APIs
-            // and use more performant APIs
-            return new KeyRingBasedSpanDataProtector(
-                logger: _logger,
-                keyRingProvider: _keyRingProvider,
-                originalPurposes: Purposes,
-                newPurpose: purpose);
-        }
-#endif
-
+        // Always return the span-capable protector on .NET. It inspects the resolved encryptor at each Protect/Unprotect call
+        // and falls back to the byte[] path when the encryptor does not implement ISpanAuthenticatedEncryptor.
+        //
+        // We could determine whether the encryptor implements ISpanAuthenticatedEncryptor here and return the appropriate protector type,
+        // but that would force a keyring resolve (which may hit the configured key store, e.g. a database or blob storage) during startup.
+        // In hosted apps using AddDataProtection, the registered provider is first wrapped with the application discriminator, so app calls
+        // hit this method (not just KeyRingBasedDataProtectionProvider.CreateProtector). See dotnet/aspnetcore#67447.
+        return new KeyRingBasedSpanDataProtector(
+            logger: _logger,
+            keyRingProvider: _keyRingProvider,
+            originalPurposes: Purposes,
+            newPurpose: purpose);
+#else
         return new KeyRingBasedDataProtector(
             logger: _logger,
             keyRingProvider: _keyRingProvider,
             originalPurposes: Purposes,
             newPurpose: purpose);
+#endif
     }
 
     protected static string JoinPurposesForLog(IEnumerable<string> purposes)
@@ -325,18 +324,30 @@ internal unsafe class KeyRingBasedDataProtector : IDataProtector, IPersistedData
 
     internal struct AdditionalAuthenticatedDataTemplate
     {
-        private byte[] _aadTemplate;
+        private byte[]? _aadTemplate;
+
+        private readonly string[] _purposes;
 
         public AdditionalAuthenticatedDataTemplate(string[] purposes)
         {
-            _aadTemplate = BuildAadTemplateBytes(purposes);
+            // The template is built lazily on first use: protectors that are only used to create
+            // child protectors (e.g. intermediate links in a purpose chain) never need it.
+            // The newest purpose is still validated eagerly so that invalid purposes continue to
+            // fail at CreateProtector time; earlier purposes were validated when their protector was created.
+            if (purposes.Length > 0)
+            {
+                _ = EncodingUtil.SecureUtf8Encoding.GetByteCount(purposes[purposes.Length - 1]);
+            }
+
+            _purposes = purposes;
+            _aadTemplate = null;
         }
 
         public byte[] GetAadForKey(Guid keyId, bool isProtecting)
         {
             // Multiple threads might be trying to read and write the _aadTemplate field
             // simultaneously. We need to make sure all accesses to it are thread-safe.
-            var existingTemplate = Volatile.Read(ref _aadTemplate);
+            var existingTemplate = Volatile.Read(ref _aadTemplate) ?? InitializeTemplate();
             Debug.Assert(existingTemplate.Length >= sizeof(uint) /* MAGIC_HEADER */ + sizeof(Guid) /* keyId */);
 
             // If the template is already initialized to this key id, return it.
@@ -363,6 +374,12 @@ internal unsafe class KeyRingBasedDataProtector : IDataProtector, IPersistedData
                 }
                 return newTemplate;
             }
+        }
+
+        private byte[] InitializeTemplate()
+        {
+            var template = BuildAadTemplateBytes(_purposes);
+            return Interlocked.CompareExchange(ref _aadTemplate, template, null) ?? template;
         }
 
         internal static byte[] BuildAadTemplateBytes(string[] purposes)

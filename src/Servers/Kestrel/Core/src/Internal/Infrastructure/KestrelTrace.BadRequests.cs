@@ -41,6 +41,11 @@ internal sealed partial class KestrelTrace : ILogger
         BadRequestsLog.Http1BareLineFeedTerminator(_badRequestsLogger, connectionId, httpVersion, rejected);
     }
 
+    public void Http1ChunkedExtension(string connectionId, bool rejected)
+    {
+        BadRequestsLog.Http1ChunkedExtension(_badRequestsLogger, connectionId, rejected);
+    }
+
     private static partial class BadRequestsLog
     {
         [LoggerMessage(17, LogLevel.Debug, @"Connection id ""{ConnectionId}"" bad request data: ""{message}""", EventName = "ConnectionBadRequest")]
@@ -60,6 +65,9 @@ internal sealed partial class KestrelTrace : ILogger
 
         [LoggerMessage(68, LogLevel.Debug, @"Connection id ""{ConnectionId}"": HTTP/{HttpVersion} request used a bare LF line terminator instead of CRLF. Rejected: {Rejected}.", EventName = "Http1BareLineFeedTerminator")]
         public static partial void Http1BareLineFeedTerminator(ILogger logger, string connectionId, string httpVersion, bool rejected);
+
+        [LoggerMessage(69, LogLevel.Debug, @"Connection id ""{ConnectionId}"": Request used a chunked extension. Rejected: {Rejected}.", EventName = "Http1ChunkedExtension")]
+        public static partial void Http1ChunkedExtension(ILogger logger, string connectionId, bool rejected);
 
         // IDs prior to 64 are reserved for back compat (the various KestrelTrace loggers used to share a single sequence)
     }

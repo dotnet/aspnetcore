@@ -1,6 +1,1 @@
 #nullable enable
-Microsoft.AspNetCore.Components.WebAssembly.Server.WebAssemblyComponentsOptions
-Microsoft.AspNetCore.Components.WebAssembly.Server.WebAssemblyComponentsOptions.WebAssemblyComponentsOptions() -> void
-Microsoft.AspNetCore.Components.WebAssembly.Server.WebAssemblyComponentsOptions.UseCultureFromServer.get -> bool
-Microsoft.AspNetCore.Components.WebAssembly.Server.WebAssemblyComponentsOptions.UseCultureFromServer.set -> void
-static Microsoft.Extensions.DependencyInjection.WebAssemblyRazorComponentsBuilderExtensions.AddInteractiveWebAssemblyComponents(this Microsoft.Extensions.DependencyInjection.IRazorComponentsBuilder! builder, System.Action<Microsoft.AspNetCore.Components.WebAssembly.Server.WebAssemblyComponentsOptions!>? configure) -> Microsoft.Extensions.DependencyInjection.IRazorComponentsBuilder!

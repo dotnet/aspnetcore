@@ -14,7 +14,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <Reference Include="Microsoft.AspNetCore.Razor.Language" />
+    <PackageReference Include="Microsoft.AspNetCore.Razor.Language" />
   </ItemGroup>
 
 </Project>

@@ -80,6 +80,9 @@ public class CertificateValidationCache : ICertificateValidationCache
         if (context.Items.TryGetValue(CertificateAuthenticationHandler.CertificateSchemeCacheKeyItem, out var schemeObj)
             && schemeObj is string schemeName)
         {
+            // The scheme name prefix namespaces entries per authentication scheme, so registering a single
+            // shared ICertificateValidationCache for multiple certificate authentication schemes cannot let
+            // one scheme's cached result be returned for another scheme's certificate lookup.
             return $"{schemeName}:{certificate.GetCertHashString(HashAlgorithmName.SHA256)}";
         }
         return null;

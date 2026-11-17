@@ -1,0 +1,104 @@
+@page "/tool_based_generative_ui"
+@rendermode InteractiveServer
+@implements IDisposable
+@inject ILoggerFactory LoggerFactory
+
+<PageTitle>Tool-Based Generative UI</PageTitle>
+
+<div class="tool-generative-ui" data-scenario="tool_based_generative_ui">
+    <section class="tool-generative-ui__display" aria-label="Generated haikus">
+        <HaikuCarousel Haikus="_haikus"
+                       CurrentIndex="_currentIndex"
+                       OnNavigate="NavigateToHaiku" />
+    </section>
+
+    <ChatPage Agent="_agent"
+              Placeholder="Ask for a haiku..."
+              class="tool-generative-ui__chat">
+        <Header>
+            <h1 class="dojo-scenario__title">Haiku Generator</h1>
+        </Header>
+        <WelcomeContent>
+            <p class="dojo-scenario__welcome">
+                Ask for a haiku to paint a new card while the agent response streams.
+            </p>
+        </WelcomeContent>
+        <MessageListContent>
+            <BlockRenderer TBlock="UIActionBlock"
+                           Context="action"
+                           When="@(block => block.ToolName == "generate_haiku")">
+                <GenerateHaikuAction @key="action.Id" Block="action" />
+            </BlockRenderer>
+        </MessageListContent>
+    </ChatPage>
+</div>
+
+@code {
+    private UIAgent _agent = default!;
+    private List<HaikuData> _haikus = [];
+    private bool _hasGeneratedHaiku;
+    private int _currentIndex;
+
+    [Inject(Key = DojoScenarios.ToolBasedGenerativeUIEndpoint)]
+    public IChatClient ChatClient { get; set; } = default!;
+
+    protected override void OnInitialized()
+    {
+        ResetHaikus();
+        _agent = new UIAgent(ChatClient, options =>
+        {
+            options.RegisterUIAction(AIFunctionFactory.Create(
+                GenerateHaiku,
+                name: "generate_haiku",
+                description: $"Generate a haiku with Japanese text, English translation, image_name set to {HaikuData.AncientPondImage}, and a two-color linear-gradient background."));
+        }, LoggerFactory);
+    }
+
+    private string GenerateHaiku(
+        List<string> japanese,
+        List<string> english,
+        string image_name,
+        string gradient)
+    {
+        if (!_hasGeneratedHaiku)
+        {
+            _haikus.Clear();
+            _hasGeneratedHaiku = true;
+        }
+
+        _haikus.Insert(0, HaikuData.Create(
+            japanese,
+            english,
+            image_name,
+            gradient));
+        _currentIndex = 0;
+        _ = InvokeAsync(StateHasChanged);
+
+        return "Haiku displayed to user.";
+    }
+
+    private void NavigateToHaiku(int index)
+    {
+        if (index >= 0 && index < _haikus.Count)
+        {
+            _currentIndex = index;
+        }
+    }
+
+    private void ResetHaikus()
+    {
+        _haikus =
+        [
+            new HaikuData
+            {
+                Japanese = ["\u3053\u3053\u306b\u4e00\u53e5", "\u4eee\u306e\u3046\u305f\u7f6e\u304f", "\u6625\u3092\u5f85\u3064"],
+                English = ["A placeholder verse\u2014", "Resting here for now,", "Awaiting your words."],
+                Gradient = HaikuData.DefaultGradient,
+            }
+        ];
+        _hasGeneratedHaiku = false;
+        _currentIndex = 0;
+    }
+
+    public void Dispose() => _agent?.Dispose();
+}

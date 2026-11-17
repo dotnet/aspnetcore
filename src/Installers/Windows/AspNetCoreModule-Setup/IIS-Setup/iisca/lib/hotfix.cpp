@@ -145,7 +145,7 @@ InstallWindowsHotfixQuietly(
     if ( FAILED(hr) )
     {
         DBGERROR_HR(hr);
-        IISLogWrite(SETUP_LOG_SEVERITY_ERROR, L"Error apppending wusa, hr=0x%x", hr);
+        IISLogWrite(SETUP_LOG_SEVERITY_ERROR, L"Error appending wusa, hr=0x%x", hr);
         goto exit;
     }
 
@@ -153,7 +153,7 @@ InstallWindowsHotfixQuietly(
     if ( FAILED(hr) )
     {
         DBGERROR_HR(hr);
-        IISLogWrite(SETUP_LOG_SEVERITY_ERROR, L"Error apppending hotfixpath, hr=0x%x", hr);
+        IISLogWrite(SETUP_LOG_SEVERITY_ERROR, L"Error appending hotfixpath, hr=0x%x", hr);
         goto exit;
     }
 
@@ -161,7 +161,7 @@ InstallWindowsHotfixQuietly(
     if ( FAILED(hr) )
     {
         DBGERROR_HR(hr);
-        IISLogWrite(SETUP_LOG_SEVERITY_ERROR, L"Error apppending end quote, hr=0x%x", hr);
+        IISLogWrite(SETUP_LOG_SEVERITY_ERROR, L"Error appending end quote, hr=0x%x", hr);
         goto exit;
     }
 
@@ -454,7 +454,7 @@ ScheduleInstallWindowsHotfixCA(
             if ( FAILED(hr) )
             {
                  IISLogWrite(SETUP_LOG_SEVERITY_ERROR, 
-                             L"Error gettting column %d from record, hr=0x%x",
+                             L"Error getting column %d from record, hr=0x%x",
                              CA_HOTFIX_CONDITION,
                              hr);
                  goto exit;

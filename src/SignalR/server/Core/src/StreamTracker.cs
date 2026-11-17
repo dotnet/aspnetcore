@@ -15,33 +15,50 @@ namespace Microsoft.AspNetCore.SignalR;
 internal sealed class StreamTracker
 {
     private static readonly MethodInfo _buildConverterMethod = typeof(StreamTracker).GetMethods(BindingFlags.NonPublic | BindingFlags.Static).Single(m => m.Name.Equals(nameof(BuildStream)));
-    private readonly object[] _streamConverterArgs;
-    private readonly ConcurrentDictionary<string, IStreamConverter> _lookup = new ConcurrentDictionary<string, IStreamConverter>();
+    // Factories only depend on the item type, which comes from hub method signatures, so the cache is bounded and shared.
+    private static readonly ConcurrentDictionary<Type, Func<int, IStreamConverter>> _converterFactories = new();
+    private readonly int _streamBufferCapacity;
+    private readonly ConcurrentDictionary<string, (long Owner, IStreamConverter Converter)> _lookup = new();
+    private long _nextStreamOwner;
 
     public StreamTracker(int streamBufferCapacity)
     {
-        _streamConverterArgs = new object[] { streamBufferCapacity };
+        _streamBufferCapacity = streamBufferCapacity;
+    }
+
+    public long GetNextStreamOwner()
+    {
+        return Interlocked.Increment(ref _nextStreamOwner);
     }
 
     /// <summary>
     /// Creates a new stream and returns the ChannelReader for it as an object.
     /// </summary>
+    public object AddStream(string streamId, Type itemType, Type targetType, long streamOwner)
+    {
+        Debug.Assert(RuntimeFeature.IsDynamicCodeSupported || !itemType.IsValueType, "HubMethodDescriptor ensures itemType is not a ValueType when PublishAot=true.");
+
+        var newConverter = _converterFactories.GetOrAdd(itemType, CreateConverterFactory)(_streamBufferCapacity);
+        if (!_lookup.TryAdd(streamId, (streamOwner, newConverter)))
+        {
+            throw new HubException($"Stream ID '{streamId}' is already in use.");
+        }
+
+        return newConverter.GetReaderAsObject(targetType);
+    }
+
     [UnconditionalSuppressMessage("Trimming", "IL2060:MakeGenericMethod",
         Justification = "BuildStream doesn't have trimming annotations.")]
     [UnconditionalSuppressMessage("AOT", "IL3050:RequiresDynamicCode",
         Justification = "HubMethodDescriptor checks for ValueType streaming item types when PublishAot=true. Developers will get an exception in this situation before publishing.")]
-    public object AddStream(string streamId, Type itemType, Type targetType)
+    private static Func<int, IStreamConverter> CreateConverterFactory(Type itemType)
     {
-        Debug.Assert(RuntimeFeature.IsDynamicCodeSupported || !itemType.IsValueType, "HubMethodDescriptor ensures itemType is not a ValueType when PublishAot=true.");
-
-        var newConverter = (IStreamConverter)_buildConverterMethod.MakeGenericMethod(itemType).Invoke(null, _streamConverterArgs)!;
-        _lookup[streamId] = newConverter;
-        return newConverter.GetReaderAsObject(targetType);
+        return _buildConverterMethod.MakeGenericMethod(itemType).CreateDelegate<Func<int, IStreamConverter>>();
     }
 
-    private bool TryGetConverter(string streamId, [NotNullWhen(true)] out IStreamConverter? converter)
+    private bool TryGetRegistration(string streamId, out (long Owner, IStreamConverter Converter) registration)
     {
-        if (_lookup.TryGetValue(streamId, out converter))
+        if (_lookup.TryGetValue(streamId, out registration))
         {
             return true;
         }
@@ -51,9 +68,9 @@ internal sealed class StreamTracker
 
     public bool TryProcessItem(StreamItemMessage message, [NotNullWhen(true)] out Task? task)
     {
-        if (TryGetConverter(message.InvocationId!, out var converter))
+        if (TryGetRegistration(message.InvocationId!, out var registration))
         {
-            task = converter.WriteToStream(message.Item);
+            task = registration.Converter.WriteToStream(message.Item);
             return true;
         }
 
@@ -63,9 +80,9 @@ internal sealed class StreamTracker
 
     public Type GetStreamItemType(string streamId)
     {
-        if (TryGetConverter(streamId, out var converter))
+        if (TryGetRegistration(streamId, out var registration))
         {
-            return converter.GetItemType();
+            return registration.Converter.GetItemType();
         }
 
         throw new KeyNotFoundException($"No stream with id '{streamId}' could be found.");
@@ -73,12 +90,27 @@ internal sealed class StreamTracker
 
     public bool TryComplete(CompletionMessage message)
     {
-        _lookup.TryRemove(message.InvocationId!, out var converter);
-        if (converter == null)
+        if (!_lookup.TryRemove(message.InvocationId!, out var registration))
         {
             return false;
         }
-        converter.TryComplete(message.HasResult || message.Error == null ? null : new HubException(message.Error));
+        registration.Converter.TryComplete(message.HasResult || message.Error == null ? null : new HubException(message.Error));
+        return true;
+    }
+
+    public bool TryComplete(string streamId, long streamOwner)
+    {
+        if (!_lookup.TryGetValue(streamId, out var registration) || registration.Owner != streamOwner)
+        {
+            return false;
+        }
+
+        if (!_lookup.TryRemove(KeyValuePair.Create(streamId, registration)))
+        {
+            return false;
+        }
+
+        registration.Converter.TryComplete(null);
         return true;
     }
 
@@ -86,7 +118,7 @@ internal sealed class StreamTracker
     {
         foreach (var converter in _lookup)
         {
-            converter.Value.TryComplete(ex);
+            converter.Value.Converter.TryComplete(ex);
         }
     }
 

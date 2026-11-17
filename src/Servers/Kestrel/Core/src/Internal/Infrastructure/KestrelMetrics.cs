@@ -368,7 +368,7 @@ internal sealed class KestrelMetrics
     public static bool TryGetHandshakeProtocol(SslProtocols protocols, [NotNullWhen(true)] out string? name, [NotNullWhen(true)] out string? version)
     {
         // Protocol should be either TLS 1.2 or 1.3. Many older SslProtocols are no longer supported.
-        // Logic for resolving older known values is still here out of an abundence of caution.
+        // Logic for resolving older known values is still here out of an abundance of caution.
 
 #pragma warning disable CS0618 // Type or member is obsolete
 #pragma warning disable SYSLIB0039 // Type or member is obsolete
@@ -428,7 +428,7 @@ internal sealed class KestrelMetrics
         {
             // Set end reason when either:
             // - Overwrite is true. For example, AppShutdownTimeout reason is forced when shutting down
-            //   the app reguardless of whether there is already a value.
+            //   the app regardless of whether there is already a value.
             // - New reason is an error type and there isn't already an error type set.
             //   In other words, first error wins.
             if (overwrite)

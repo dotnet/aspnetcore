@@ -31,9 +31,6 @@ namespace Microsoft.AspNetCore.Server.IIS.FunctionalTests;
 
 // Contains all tests related to Startup, requiring starting ANCM/IIS every time.
 [Collection(PublishedSitesCollection.Name)]
-#if NEWSHIM_FUNCTIONALS
-[QuarantinedTest("https://github.com/dotnet/runtime/issues/126925")]
-#endif
 public class StartupTests : IISFunctionalTestBase
 {
     public StartupTests(PublishedSitesFixture fixture) : base(fixture)
@@ -704,6 +701,7 @@ public class StartupTests : IISFunctionalTestBase
 
     [ConditionalFact]
     [RequiresNewHandler]
+    [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/62802")]
     public async Task SetCurrentDirectoryHandlerSettingWorks()
     {
         var deploymentParameters = Fixture.GetBaseDeploymentParameters();
@@ -1189,7 +1187,6 @@ public class StartupTests : IISFunctionalTestBase
     public Task AuthHeaderEnvironmentVariableRemoved_InProcess() => AuthHeaderEnvironmentVariableRemoved(HostingModel.InProcess);
 
     [ConditionalFact]
-    [QuarantinedTest("https://github.com/dotnet/runtime/issues/126925")]
     public Task AuthHeaderEnvironmentVariableRemoved_OutOfProcess() => AuthHeaderEnvironmentVariableRemoved(HostingModel.OutOfProcess);
 
     private async Task AuthHeaderEnvironmentVariableRemoved(HostingModel hostingModel)
@@ -1446,6 +1443,41 @@ public class StartupTests : IISFunctionalTestBase
 
         var response = await deploymentResult.HttpClient.GetAsync("ConnectionClose");
         Assert.Equal(true, response.Headers.ConnectionClose);
+    }
+
+    [ConditionalFact]
+    public async Task InProcessHostlifetime()
+    {
+        if (DeployerSelector.IsNewShimTest)
+        {
+            // NewShim tests use 2.2 IIS packages which don't have the host lifetime
+            return;
+        }
+
+        var deploymentParameters = Fixture.GetBaseDeploymentParameters(HostingModel.InProcess);
+        deploymentParameters.TransformArguments((a, _) => $"{a} HostBuilder");
+
+        Assert.Equal("IISHostLifetime", await GetStringAsync(deploymentParameters, "GetHostLifetime"));
+    }
+
+    [ConditionalFact]
+    public async Task OutOfProcessHostlifetime()
+    {
+        if (DeployerSelector.IsNewShimTest)
+        {
+            // NewShim tests use 2.2 IIS packages which don't have the host lifetime
+            return;
+        }
+
+        var deploymentParameters = Fixture.GetBaseDeploymentParameters(HostingModel.OutOfProcess);
+        deploymentParameters.TransformArguments((a, _) => $"{a} HostBuilder");
+
+        if (deploymentParameters.ServerType == ServerType.IISExpress)
+        {
+            return;
+        }
+
+        Assert.Equal("ConsoleLifetime", await GetStringAsync(deploymentParameters, "GetHostLifetime"));
     }
 
     public static int GetNextSSLPort(int avoid = 0)

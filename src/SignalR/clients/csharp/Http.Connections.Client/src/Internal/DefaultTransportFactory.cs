@@ -3,6 +3,7 @@
 
 using System;
 using System.Net.Http;
+using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 
@@ -13,11 +14,18 @@ internal sealed partial class DefaultTransportFactory : ITransportFactory
     private readonly HttpClient? _httpClient;
     private readonly HttpConnectionOptions _httpConnectionOptions;
     private readonly Func<Task<string?>> _accessTokenProvider;
+    private readonly Func<CancellationToken, Task>? _authenticationRefresh;
     private readonly HttpTransportType _requestedTransportType;
     private readonly ILoggerFactory _loggerFactory;
     private static volatile bool _websocketsSupported = true;
 
-    public DefaultTransportFactory(HttpTransportType requestedTransportType, ILoggerFactory loggerFactory, HttpClient? httpClient, HttpConnectionOptions httpConnectionOptions, Func<Task<string?>> accessTokenProvider)
+    public DefaultTransportFactory(
+        HttpTransportType requestedTransportType,
+        ILoggerFactory loggerFactory,
+        HttpClient? httpClient,
+        HttpConnectionOptions httpConnectionOptions,
+        Func<Task<string?>> accessTokenProvider,
+        Func<CancellationToken, Task>? authenticationRefresh = null)
     {
         if (httpClient == null && requestedTransportType != HttpTransportType.WebSockets)
         {
@@ -29,6 +37,7 @@ internal sealed partial class DefaultTransportFactory : ITransportFactory
         _httpClient = httpClient;
         _httpConnectionOptions = httpConnectionOptions;
         _accessTokenProvider = accessTokenProvider;
+        _authenticationRefresh = authenticationRefresh;
     }
 
     public ITransport CreateTransport(HttpTransportType availableServerTransports, bool useStatefulReconnect)
@@ -55,7 +64,7 @@ internal sealed partial class DefaultTransportFactory : ITransportFactory
         if ((availableServerTransports & HttpTransportType.LongPolling & _requestedTransportType) == HttpTransportType.LongPolling)
         {
             // We don't need to give the transport the accessTokenProvider because the HttpClient has a message handler that does the work for us.
-            return new LongPollingTransport(_httpClient!, _httpConnectionOptions, _loggerFactory);
+            return new LongPollingTransport(_httpClient!, _httpConnectionOptions, _loggerFactory, _authenticationRefresh);
         }
 
         throw new InvalidOperationException("No requested transports available on the server.");

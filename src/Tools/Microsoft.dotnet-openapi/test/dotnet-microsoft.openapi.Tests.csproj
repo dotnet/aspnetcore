@@ -4,10 +4,11 @@
     <AssemblyName>Microsoft.DotNet.Open.Api.Tools.Tests</AssemblyName>
     <DefaultItemExcludes>$(DefaultItemExcludes);TestProjects\**\*</DefaultItemExcludes>
     <TestGroupName>DotNetAddOpenAPIReferenceToolsTests</TestGroupName>
+    <DisableMSBuildAssemblyCopyCheck>true</DisableMSBuildAssemblyCopyCheck>
   </PropertyGroup>
 
   <PropertyGroup>
-    <OpenAPIToolCSProjPath>..\src\Microsoft.dotnet-openapi.csproj</OpenAPIToolCSProjPath>
+    <OpenAPIToolCSProjPath>$(RepoRoot)src\Tools\Microsoft.dotnet-openapi\src\Microsoft.dotnet-openapi.csproj</OpenAPIToolCSProjPath>
   </PropertyGroup>
 
   <ItemGroup>
@@ -17,8 +18,9 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Reference Include="Microsoft.Build" ExcludeAssets="runtime" />
-    <Reference Include="NuGet.Frameworks" />
+    <PackageReference Include="Microsoft.Build" ExcludeAssets="runtime" />
+    <PackageReference Include="NuGet.Frameworks" />
+
     <ProjectReference Include="$(OpenAPIToolCSProjPath)" />
   </ItemGroup>
 

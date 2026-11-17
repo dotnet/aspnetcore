@@ -38,7 +38,7 @@ public static class HttpProtocol
     public static readonly string Http2 = "HTTP/2";
 
     /// <summary>
-    ///  HTTP protcol version 3.
+    ///  HTTP protocol version 3.
     /// </summary>
     public static readonly string Http3 = "HTTP/3";
 

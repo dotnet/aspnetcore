@@ -1,4 +1,4 @@
-﻿{
+{
   "author": "Microsoft",
   "name": "프로토콜 버퍼 파일",
   "description": "gRPC의 메시지 및 서비스를 설명하는 프로토콜 버퍼 파일입니다.",

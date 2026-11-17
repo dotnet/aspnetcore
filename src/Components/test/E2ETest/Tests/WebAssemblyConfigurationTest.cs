@@ -62,6 +62,16 @@ public class WebAssemblyConfigurationTest : ServerTestBase<BlazorWasmTestAppFixt
     }
 
     [Fact]
+    public void WebAssemblyConfiguration_DoesNotRequireAppSettingsInVfs()
+    {
+        var isMonoRuntime = (bool)((IJavaScriptExecutor)Browser).ExecuteScript(
+            "return typeof Blazor.runtime.INTERNAL.monoStringToStringUnsafe === 'function';");
+
+        Browser.Equal(isMonoRuntime ? "True" : "False", () => _appElement.FindElement(By.Id("appsettings-in-vfs")).Text);
+        Browser.Equal("Default key1-value", () => _appElement.FindElement(By.Id("key1")).Text);
+    }
+
+    [Fact]
     public void WebAssemblyConfiguration_ReloadingWorks()
     {
         // Verify values from the default 'appsettings.json' are read.

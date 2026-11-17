@@ -6,6 +6,7 @@ using System.ComponentModel.DataAnnotations;
 using System.IO.Pipelines;
 using System.Net.Http;
 using System.Text.Json;
+using System.Text.Json.Nodes;
 using System.Text.Json.Serialization;
 using System.Text.Json.Serialization.Metadata;
 using Microsoft.AspNetCore.Builder;
@@ -1075,5 +1076,52 @@ public partial class OpenApiSchemaServiceTests : OpenApiDocumentServiceTestBase
     {
         FirstValue,
         SecondValue
+    }
+
+    [Fact]
+    public async Task HandlesNullableAndNonNullableEnumPropertiesWithSharedComponentAndOneOf()
+    {
+        var builder = CreateBuilder();
+
+        builder.MapPost("/nullableEnum", (NullableEnumDto body) => { });
+
+        var document = await VerifyOpenApiDocument(builder, _ => { });
+        var actualComponents = JsonNode.Parse(await document.SerializeAsJsonAsync(OpenApiSpecVersion.OpenApi3_2))!["components"]!["schemas"];
+        var expectedComponents = """
+            {
+              "NullableEnumDto": {
+                "type": "object",
+                "properties": {
+                  "nullableStatus": {
+                    "oneOf": [
+                      {
+                        "type": "null"
+                      },
+                      {
+                        "$ref": "#/components/schemas/Status"
+                      }
+                    ]
+                  },
+                  "status": {
+                    "$ref": "#/components/schemas/Status"
+                  }
+                }
+              },
+              "Status": {
+                "enum": [
+                  "Pending",
+                  "Approved",
+                  "Rejected"
+                ]
+              }
+            }
+            """;
+        Assert.True(JsonNode.DeepEquals(JsonNode.Parse(expectedComponents), actualComponents), $"Actual: {actualComponents}");
+    }
+
+    internal class NullableEnumDto
+    {
+        public Status? NullableStatus { get; set; }
+        public Status Status { get; set; }
     }
 }

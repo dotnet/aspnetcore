@@ -35,7 +35,17 @@ public sealed class PasskeyHandler<TUser> : IPasskeyHandler<TUser>
     }
 
     /// <inheritdoc />
-    public async Task<PasskeyCreationOptionsResult> MakeCreationOptionsAsync(PasskeyUserEntity userEntity, HttpContext httpContext)
+    public bool SupportsConditionalCreation => true;
+
+    /// <inheritdoc />
+    public bool SupportsPasskeySignalOptions => _userManager.SupportsUserPasskey;
+
+    /// <inheritdoc />
+    public Task<PasskeyCreationOptionsResult> MakeCreationOptionsAsync(PasskeyUserEntity userEntity, HttpContext httpContext)
+        => MakeCreationOptionsAsync(userEntity, isConditionallyMediated: false, httpContext);
+
+    /// <inheritdoc />
+    public async Task<PasskeyCreationOptionsResult> MakeCreationOptionsAsync(PasskeyUserEntity userEntity, bool isConditionallyMediated, HttpContext httpContext)
     {
         ArgumentNullException.ThrowIfNull(userEntity);
         ArgumentNullException.ThrowIfNull(httpContext);
@@ -67,7 +77,7 @@ public sealed class PasskeyHandler<TUser> : IPasskeyHandler<TUser>
             {
                 AuthenticatorAttachment = _options.AuthenticatorAttachment,
                 ResidentKey = _options.ResidentKeyRequirement,
-                UserVerification = _options.UserVerificationRequirement,
+                UserVerification = GetUserVerificationRequirement(),
             },
             Attestation = _options.AttestationConveyancePreference,
         };
@@ -75,6 +85,7 @@ public sealed class PasskeyHandler<TUser> : IPasskeyHandler<TUser>
         {
             Challenge = challenge,
             UserEntity = userEntity,
+            IsConditionallyMediated = isConditionallyMediated,
         };
         var optionsJson = JsonSerializer.Serialize(options, IdentityJsonSerializerContext.Default.PublicKeyCredentialCreationOptions);
         var attestationStateJson = JsonSerializer.Serialize(attestationState, IdentityJsonSerializerContext.Default.PasskeyAttestationState);
@@ -103,6 +114,18 @@ public sealed class PasskeyHandler<TUser> : IPasskeyHandler<TUser>
                     Transports = p.Transports ?? [],
                 });
             return [.. excludeCredentials];
+        }
+
+        string? GetUserVerificationRequirement()
+        {
+            // A conditionally mediated creation cannot collect user verification, and the browser rejects
+            // the ceremony outright if we ask for it, so the requirement is reduced to "preferred".
+            if (isConditionallyMediated && string.Equals("required", _options.UserVerificationRequirement, StringComparison.Ordinal))
+            {
+                return "preferred";
+            }
+
+            return _options.UserVerificationRequirement;
         }
     }
 
@@ -155,6 +178,104 @@ public sealed class PasskeyHandler<TUser> : IPasskeyHandler<TUser>
                 });
             return [.. allowCredentials];
         }
+    }
+
+    /// <inheritdoc />
+    public async Task<AllAcceptedCredentialsSignalOptionsResult> MakeAllAcceptedCredentialsSignalOptionsAsync(TUser user, HttpContext httpContext)
+    {
+        ArgumentNullException.ThrowIfNull(user);
+        ArgumentNullException.ThrowIfNull(httpContext);
+
+        var userId = await _userManager.GetUserIdAsync(user).ConfigureAwait(false);
+        var passkeys = await _userManager.GetPasskeysAsync(user).ConfigureAwait(false);
+        var options = new AllAcceptedCredentialsSignalOptions
+        {
+            RpId = GetServerDomain(httpContext),
+            UserId = BufferSource.FromString(userId),
+            AllAcceptedCredentialIds = [.. passkeys.Select(p => BufferSource.FromBytes(p.CredentialId))],
+        };
+        var optionsJson = JsonSerializer.Serialize(options, IdentityJsonSerializerContext.Default.AllAcceptedCredentialsSignalOptions);
+
+        return new AllAcceptedCredentialsSignalOptionsResult
+        {
+            SignalOptionsJson = optionsJson,
+        };
+    }
+
+    /// <inheritdoc />
+    public async Task<CurrentUserDetailsSignalOptionsResult> MakeCurrentUserDetailsSignalOptionsAsync(TUser user, PasskeyUserEntity userEntity, HttpContext httpContext)
+    {
+        ArgumentNullException.ThrowIfNull(user);
+        ArgumentNullException.ThrowIfNull(userEntity);
+        ArgumentNullException.ThrowIfNull(httpContext);
+
+        var userId = await _userManager.GetUserIdAsync(user).ConfigureAwait(false);
+        if (!string.Equals(userId, userEntity.Id, StringComparison.Ordinal))
+        {
+            throw new ArgumentException(
+                $"The user entity ID '{userEntity.Id}' does not match the ID '{userId}' of the specified user.",
+                nameof(userEntity));
+        }
+
+        var options = new CurrentUserDetailsSignalOptions
+        {
+            RpId = GetServerDomain(httpContext),
+            UserId = BufferSource.FromString(userEntity.Id),
+            Name = userEntity.Name,
+            DisplayName = userEntity.DisplayName,
+        };
+        var optionsJson = JsonSerializer.Serialize(options, IdentityJsonSerializerContext.Default.CurrentUserDetailsSignalOptions);
+
+        return new CurrentUserDetailsSignalOptionsResult
+        {
+            SignalOptionsJson = optionsJson,
+        };
+    }
+
+    /// <inheritdoc />
+    public async Task<UnknownCredentialSignalOptionsResult?> MakeUnknownCredentialSignalOptionsAsync(string credentialJson, HttpContext httpContext)
+    {
+        ArgumentException.ThrowIfNullOrEmpty(credentialJson);
+        ArgumentNullException.ThrowIfNull(httpContext);
+
+        if (!_userManager.SupportsUserPasskey)
+        {
+            return null;
+        }
+
+        PublicKeyCredentialId? credential;
+        try
+        {
+            credential = JsonSerializer.Deserialize(credentialJson, IdentityJsonSerializerContext.Default.PublicKeyCredentialId);
+        }
+        catch (JsonException)
+        {
+            return null;
+        }
+
+        // Credential IDs are at most 1023 bytes: https://w3c.github.io/webauthn/#credential-id
+        if (credential?.Id is not { Length: > 0 and <= 1023 })
+        {
+            return null;
+        }
+
+        var user = await _userManager.FindByPasskeyIdAsync(credential.Id.ToArray()).ConfigureAwait(false);
+        if (user is not null)
+        {
+            return null;
+        }
+
+        var options = new UnknownCredentialSignalOptions
+        {
+            RpId = GetServerDomain(httpContext),
+            CredentialId = credential.Id,
+        };
+        var optionsJson = JsonSerializer.Serialize(options, IdentityJsonSerializerContext.Default.UnknownCredentialSignalOptions);
+
+        return new UnknownCredentialSignalOptionsResult
+        {
+            SignalOptionsJson = optionsJson,
+        };
     }
 
     /// <inheritdoc/>
@@ -283,7 +404,10 @@ public sealed class PasskeyHandler<TUser> : IPasskeyHandler<TUser>
         //     bit of the flags in authData.
         //     NOTE: It's up to application code to evaluate BE and BS flags on the returned passkey and determine
         //           whether any action should be taken based on them.
-        VerifyAuthenticatorData(authenticatorData, context.HttpContext);
+        VerifyAuthenticatorData(
+            authenticatorData,
+            context.HttpContext,
+            isConditionallyMediated: attestationState.IsConditionallyMediated);
 
         if (!authenticatorData.HasAttestedCredentialData)
         {
@@ -342,7 +466,7 @@ public sealed class PasskeyHandler<TUser> : IPasskeyHandler<TUser>
         var credentialRecord = new UserPasskeyInfo(
             credentialId,
             publicKey: attestedCredentialData.CredentialPublicKey.ToArray(),
-            createdAt: DateTime.UtcNow,
+            createdAt: GetUtcNow(),
             signCount: authenticatorData.SignCount,
             transports: response.Transports,
             isUserVerified: authenticatorData.IsUserVerified,
@@ -491,7 +615,7 @@ public sealed class PasskeyHandler<TUser> : IPasskeyHandler<TUser>
         // 17. If user verification was determined to be required, verify that the UV bit of the flags in authData is set.
         //     Otherwise, ignore the value of the UV flag.
         // 18. If the BE bit of the flags in authData is not set, verify that the BS bit is not set.
-        VerifyAuthenticatorData(authenticatorData, context.HttpContext);
+        VerifyAuthenticatorData(authenticatorData, context.HttpContext, isConditionallyMediated: false);
 
         // 19. If the credential backup state is used as part of Relying Party business logic or policy, let currentBe and currentBs
         //     be the values of the BE and BS bits, respectively, of the flags in authData. Compare currentBe and currentBs with
@@ -619,7 +743,8 @@ public sealed class PasskeyHandler<TUser> : IPasskeyHandler<TUser>
 
     private void VerifyAuthenticatorData(
         AuthenticatorData authenticatorData,
-        HttpContext httpContext)
+        HttpContext httpContext,
+        bool isConditionallyMediated)
     {
         // Verify that the rpIdHash in authenticatorData is the SHA-256 hash of the RP ID expected by the Relying Party.
         var originalRpId = GetServerDomain(httpContext);
@@ -630,16 +755,17 @@ public sealed class PasskeyHandler<TUser> : IPasskeyHandler<TUser>
         }
 
         // If options.mediation is not set to conditional, verify that the UP bit of the flags in authData is set.
-        // NOTE: We currently check for the UserPresent flag unconditionally. Consider making this optional via options.mediation
-        //       after the level 3 draft becomes standard.
-        if (!authenticatorData.IsUserPresent)
+        if (!isConditionallyMediated && !authenticatorData.IsUserPresent)
         {
             throw PasskeyException.UserNotPresent();
         }
 
         // If user verification is required for this registration, verify that the User Verified bit of the flags in authData is set.
+        // NOTE: A conditionally mediated creation cannot collect user verification, so the requirement doesn't apply.
         var originalUserVerificationRequirement = _options.UserVerificationRequirement;
-        if (string.Equals("required", originalUserVerificationRequirement, StringComparison.Ordinal) && !authenticatorData.IsUserVerified)
+        if (!isConditionallyMediated &&
+            string.Equals("required", originalUserVerificationRequirement, StringComparison.Ordinal) &&
+            !authenticatorData.IsUserVerified)
         {
             throw PasskeyException.UserNotVerified();
         }
@@ -679,4 +805,7 @@ public sealed class PasskeyHandler<TUser> : IPasskeyHandler<TUser>
 
     private string GetServerDomain(HttpContext httpContext)
         => _options.ServerDomain ?? httpContext.Request.Host.Host;
+
+    private DateTime GetUtcNow()
+        => (_options.TimeProvider ?? TimeProvider.System).GetUtcNow().UtcDateTime;
 }

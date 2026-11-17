@@ -108,7 +108,7 @@ public partial class NewtonsoftJsonInputFormatter : TextInputFormatter, IInputFo
         if (readStream.CanSeek)
         {
             // The most common way of getting here is the user has request buffering on.
-            // However, request buffering isn't eager, and consequently it will peform pass-thru synchronous
+            // However, request buffering isn't eager, and consequently it will perform pass-thru synchronous
             // reads as part of the deserialization.
             // To avoid this, drain and reset the stream.
             var position = request.Body.Position;

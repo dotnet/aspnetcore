@@ -3,6 +3,7 @@
 
 using System.Net;
 using System.Net.Http;
+using System.Text;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.TestHost;
@@ -196,6 +197,84 @@ public class BlazorGatewayTests
         Assert.Equal(HttpStatusCode.OK, response.StatusCode);
         Assert.Equal("application/json", response.Content.Headers.ContentType?.MediaType);
         Assert.Equal(json, body, ignoreLineEndingDifferences: true);
+    }
+
+    [Theory]
+    [InlineData(null)]
+    [InlineData("true")]
+    public async Task BrowserToolsHotReloadSettings_ReturnsDisabledFallback_InDevelopment(string? dotnetWatch)
+    {
+        await using var gateway = await StartGatewayAsync(Environments.Development, new()
+        {
+            ["DOTNET_WATCH"] = dotnetWatch,
+        });
+
+        var response = await gateway.Client.GetAsync("/_framework/dotnet-browser-tools/hot-reload-settings.json");
+        var body = await response.Content.ReadAsByteArrayAsync();
+
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        Assert.Equal("application/json", response.Content.Headers.ContentType?.MediaType);
+        Assert.Equal("no-store", response.Headers.CacheControl?.ToString());
+        Assert.Empty(response.Content.Headers.ContentEncoding);
+        Assert.Equal(Encoding.UTF8.GetBytes("""{ "hotReload": false }"""), body);
+    }
+
+    [Theory]
+    [InlineData("Development", "1")]
+    [InlineData("Production", null)]
+    public async Task BrowserToolsHotReloadSettings_DoesNotMapFallback_WhenDisabled(
+        string environment,
+        string? dotnetWatch)
+    {
+        await using var gateway = await StartGatewayAsync(environment, new()
+        {
+            ["DOTNET_WATCH"] = dotnetWatch,
+        });
+
+        var response = await gateway.Client.GetAsync("/_framework/dotnet-browser-tools/hot-reload-settings.json");
+
+        Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
+    }
+
+    [Fact]
+    public async Task BrowserToolsHotReloadSettings_RealEndpointTakesPrecedenceOverFallback()
+    {
+        var builder = WebApplication.CreateSlimBuilder(new WebApplicationOptions
+        {
+            EnvironmentName = Environments.Development,
+        });
+        builder.WebHost.UseTestServer();
+
+        await using var app = BlazorGateway.BuildWebHost(builder);
+        app.MapGet(
+            "/_framework/dotnet-browser-tools/hot-reload-settings.json",
+            () => Results.Content("""{ "hotReload": true }""", "application/json"));
+        await app.StartAsync();
+
+        using var client = app.GetTestClient();
+        var response = await client.GetAsync("/_framework/dotnet-browser-tools/hot-reload-settings.json");
+        var body = await response.Content.ReadAsByteArrayAsync();
+
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        Assert.Equal(Encoding.UTF8.GetBytes("""{ "hotReload": true }"""), body);
+    }
+
+    [Fact]
+    public async Task BuildWebHost_StartsWithHttpsUrl_WhenKestrelCertificateConfigured()
+    {
+        var testCertificatePath = Path.Combine(AppContext.BaseDirectory, "shared", "TestCertificates", "testCert.pfx");
+        var builder = WebApplication.CreateSlimBuilder(new[] { "--urls", "https://127.0.0.1:0" });
+        builder.Configuration.AddInMemoryCollection(new Dictionary<string, string?>
+        {
+            ["Kestrel:Certificates:Default:Path"] = testCertificatePath,
+            ["Kestrel:Certificates:Default:Password"] = "testPassword",
+        });
+
+        await using var app = BlazorGateway.BuildWebHost(builder);
+
+        await app.StartAsync();
+
+        Assert.Contains(app.Urls, address => address.StartsWith("https://127.0.0.1:", StringComparison.Ordinal));
     }
 
     private static bool IsRedirect(HttpStatusCode status) =>

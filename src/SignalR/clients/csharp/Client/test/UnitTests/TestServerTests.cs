@@ -82,7 +82,6 @@ public class TestServerTests : VerifiableLoggedTest
     }
 
     [Fact]
-    [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/67348")]
     public async Task LongPollingWorks()
     {
         using (StartVerifiableLog())

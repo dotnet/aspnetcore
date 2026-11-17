@@ -1,6 +1,7 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.ComponentModel.DataAnnotations;
 using Microsoft.AspNetCore.Components.RenderTree;
 using Microsoft.AspNetCore.Components.Test.Helpers;
 
@@ -169,7 +170,7 @@ public class InputSelectTest
     }
 
     [Fact]
-    public async Task ValidationErrorUsesDisplayAttributeName()
+    public async Task ValidationErrorUsesExplicitDisplayName()
     {
         // Arrange
         var model = new TestModel();
@@ -192,6 +193,24 @@ public class InputSelectTest
         var validationMessages = rootComponent.EditContext.GetValidationMessages(fieldIdentifier);
         Assert.NotEmpty(validationMessages);
         Assert.Contains("The Some number field is not valid.", validationMessages);
+    }
+
+    [Fact]
+    public async Task ValidationErrorUsesDisplayAttributeOnModel()
+    {
+        var model = new TestModel();
+        var rootComponent = new TestInputHostComponent<int, TestInputSelect<int>>
+        {
+            EditContext = new EditContext(model),
+            ValueExpression = () => model.NotNullableInt,
+        };
+        var fieldIdentifier = FieldIdentifier.Create(() => model.NotNullableInt);
+        var inputSelectComponent = await InputRenderer.RenderAndGetComponent(rootComponent);
+
+        await inputSelectComponent.SetCurrentValueAsStringAsync("invalidNumber");
+
+        var validationMessages = rootComponent.EditContext.GetValidationMessages(fieldIdentifier);
+        Assert.Contains("The Number from attribute field is not valid.", validationMessages);
     }
 
     [Fact]
@@ -273,6 +292,7 @@ public class InputSelectTest
 
         public Guid? NullableGuid { get; set; }
 
+        [Display(Name = "Number from attribute")]
         public int NotNullableInt { get; set; }
 
         public int? NullableInt { get; set; }

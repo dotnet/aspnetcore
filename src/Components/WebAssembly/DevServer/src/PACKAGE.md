@@ -1,16 +1,16 @@
 ## About
 
-`Microsoft.AspNetCore.Components.WebAssembly.DevServer` provides a development server for use when building Blazor WebAssembly standalone applications.
+`Microsoft.AspNetCore.Components.WebAssembly.DevServer` is deprecated. Standalone Blazor WebAssembly apps should use `Microsoft.AspNetCore.Components.Gateway` instead.
 
 ## How to use
 
-To use `Microsoft.AspNetCore.Components.WebAssembly.DevServer`, add the package to your project:
+`Microsoft.AspNetCore.Components.WebAssembly.DevServer` is no longer the recommended package for hosting standalone Blazor WebAssembly applications. Use `Microsoft.AspNetCore.Components.Gateway` instead:
 
 ```shell
-dotnet add package Microsoft.AspNetCore.Components.WebAssembly.DevServer
+dotnet add package Microsoft.AspNetCore.Components.Gateway
 ```
 
-Make sure that the newly-added `<PackageReference />` in the `.csproj` file includes `PrivateAssets="all"`:
+If you still need to reference the legacy package for compatibility reasons, make sure that the `<PackageReference />` in the `.csproj` file includes `PrivateAssets="all"`:
 
 ```xml
 <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly.DevServer" Version="..." PrivateAssets="all" />
