@@ -2,12 +2,13 @@
 name: aspnet-build-triage
 description: >-
   Build-duty assistant for the ASP.NET Core build team (@dotnet/aspnet-build). Produces an inventory
-  of open pull requests and Component Governance alerts that need the team's attention: Maestro dependency and
+  of open pull requests and Component Governance alerts that need the team's attention: approved servicing PRs
+  ready to merge, Maestro dependency and
   codeflow updates, inter-branch merges, test quarantine/unquarantine PRs, Dependabot updates,
   localization check-ins, and dotnet/dotnet PRs where a human pinged @dotnet/aspnet-build.
   USE FOR "what needs my attention on build duty", "aspnet-build inventory", "show build-ops PRs",
   "which dependency PRs are stuck", "any pings for aspnet-build", "high or critical Component
-  Governance alerts". DO NOT USE FOR general code review
+  Governance alerts", "which servicing PRs can I merge", "retry CI on a servicing PR". DO NOT USE FOR general code review
   queues or reviewing feature PRs.
 ---
 
@@ -26,7 +27,8 @@ team owns, including dependency alerts. Run the bundled collector, then present 
 
 - `gh` authenticated with read access to `dotnet/aspnetcore` and `dotnet/dotnet`.
 - For Component Governance, Azure CLI (`az`) signed in with access to the `dnceng/internal`
-  dashboard. A Component Governance-only run does not require `gh`.
+  dashboard. For servicing release dates, access to the `devdiv` wiki; for CI retries, permission
+  to rerun `dnceng-public` builds. A Component Governance-only run does not require `gh`.
 - Python 3.9+.
 
 ## Step 1: Collect the inventory
@@ -49,6 +51,7 @@ to find Component Governance alerts. It never changes PRs, alerts or pipelines.
 
 | Category | What it matches |
 |:--|:--|
+| `servicing` | Open `dotnet/aspnetcore` PRs targeting `release/*` with the `Servicing-approved` or `tell-mode` label ([search](https://github.com/dotnet/aspnetcore/pulls?q=is%3Apr+state%3Aopen+base%3Arelease%2F+label%3AServicing-approved%2Ctell-mode)). Each item lists the branch's required checks, who approved it, and the monthly release it would ship in if merged now. |
 | `dependency-updates` | `dotnet/aspnetcore` PRs by `app/dotnet-maestro` on any branch. `codeflow` is "Source code updates from dotnet/dotnet"; everything else is `dependency-update`. |
 | `inter-branch-merges` | `[automated] Merge branch …` PRs from `merge/*` branches, opened by `app/github-actions` or the legacy `dotnet-maestro-bot`. |
 | `test-quarantine` | PRs whose body contains the `gh-aw-workflow-id: test-quarantine` marker from `.github/workflows/test-quarantine.md`. Subcategory is `quarantine` or `unquarantine`. |
@@ -92,6 +95,43 @@ and explain what could not be checked rather than claiming there are no alerts.
   otherwise give them the inputs. Verify the package is on the feed before proceeding.
 
 Legal (license) alerts are out of scope for aspnet-build. The collector drops them; don't report them.
+
+## Servicing PRs
+
+Merging approved servicing PRs is the build-duty person's job. Investigating why their CI fails isn't:
+that belongs to the PR author.
+
+- **Merge** when all of these hold: the `Servicing-approved` or `tell-mode` label is on the PR, the
+  branch's required checks (`requiredChecks`, read from branch protection; currently `aspnetcore-ci`
+  and `aspnetcore-components-e2e`) are passing, neutral or skipped, and another developer (not the
+  author, not a bot) approved it in a code review (`approvedBy`). The collector reports these as
+  `ready-to-merge`. Failures in non-required checks, such as agentic workflow checks or Build
+  Analysis, don't block merging. Tell the user to elevate at
+  https://repos.opensource.microsoft.com/orgs/dotnet/repos/aspnetcore and then merge it themselves.
+  Don't merge on their behalf.
+- **Retry** (`retry-ci`) when a required check failed. Don't investigate the failure; just offer to
+  rerun it in case it's flaky. After the user agrees and has elevated, run:
+
+  ```bash
+  python3 .github/skills/aspnet-build-triage/scripts/retry_ci.py <pr-number>            # dry run
+  python3 .github/skills/aspnet-build-triage/scripts/retry_ci.py <pr-number> --execute  # rerun failed jobs
+  ```
+
+  The helper reruns only the failed jobs of failed Azure DevOps builds for required checks
+  (`--all-checks` widens that). If the rerun API is denied, it prints a `/azp run <pipeline>`
+  comment to post instead. Only post it if the user agrees.
+- **Wait** (`wait-for-ci`) when a required check is still running or hasn't reported yet.
+- **Needs approval** when no other developer has approved; tell the user who should be asked to review.
+
+Each servicing result includes `shipsIn`. The collector reads the per-month sub-pages
+("<Month> <Year>") of the [.NET Servicing Schedule](https://devdiv.visualstudio.com/DevDiv/_wiki/wikis/DevDiv.wiki/8694/NET-Servicing-Schedule)
+wiki in DevDiv. It takes the first release whose code-complete cut-off for the branch's major
+version hasn't passed. Rows for specific versions apply only to those versions; otherwise the
+latest generic code-complete row (for example the final rather than the interim one) is the
+cut-off. Cut-offs are 4 PM Pacific unless the row says otherwise. Tell the user which release a
+merge today lands in, and how long is left before that release's code complete. If `release` is
+null, the page wasn't published or couldn't be parsed; link the schedule and say it's unknown
+rather than guessing. Reading the wiki requires `az` signed in with access to the `devdiv` organization.
 
 ## Workflow failure investigation
 
@@ -139,11 +179,15 @@ Each PR gets one deterministic `nextAction`. The checks below are evaluated in t
 | `draft` | The PR is a draft. |
 | `resolve-conflicts` | GitHub reports merge conflicts. |
 | `investigate-ci` | At least one check failed. The derived `Maestro auto-merge - All Checks Successful` check is ignored because it only mirrors other checks. |
+| `retry-ci` | Servicing PRs only: a required check failed. Retry it rather than investigating. |
 | `wait-for-ci` | Checks are still running. |
 | `address-feedback` | A reviewer requested changes. |
 | `needs-approval` | Checks are green but a required approval is missing. |
 | `ready-to-merge` | Checks are green, the PR is approved or needs no approval, and GitHub reports it mergeable. |
 | `check-merge-state` | Anything else, such as a blocked state for another reason. Inspect manually. |
+
+Servicing PRs use their own rules (see [Servicing PRs](#servicing-prs)): only required checks
+count, and approval must come from another developer.
 
 For `vmr-pings`, the hint describes the PR's own state. The ping and its reply status are what
 decide whether the team still owes a response.
@@ -151,10 +195,11 @@ decide whether the team still owes a response.
 ## Step 2: Present the results
 
 - Group by category in the order above, and show every category even when it's empty.
-- Within a PR category, order by `nextAction` (`investigate-ci`, `resolve-conflicts`, `ready-to-merge`,
+- Within a PR category, order by `nextAction` (`investigate-ci`, `retry-ci`, `resolve-conflicts`, `ready-to-merge`,
   `needs-approval`, then the rest), then by age, oldest first.
 - Keep tables narrow: PR link, base branch, age, next action. Put titles, failing check names and
   ping details in bullets below the table.
+- For servicing PRs, say which monthly release a merge now ships in, once per branch.
 - Always link to the upstream `dotnet/*` repository, never the user's fork. Write references fully
   qualified (`dotnet/aspnetcore#N`, `dotnet/dotnet#N`) or as full `https://github.com/dotnet/...`
   URLs. A bare `#N` resolves against whatever repo the session runs in, which is often a fork.
@@ -164,12 +209,17 @@ decide whether the team still owes a response.
 
 ## Acting on items
 
-Automated actions (investigating failures, retrying flaky builds, approving and merging ready PRs)
-are not part of this skill yet. Until they are, offer to investigate a specific PR with the
-`ci-analysis` skill if it's available, and do not approve, merge, comment on or rerun anything
-unless the user explicitly asks for that specific action.
-When the user does ask to act on a `release/*` PR in `dotnet/aspnetcore`, remind them to elevate
-first, as described at the top of this skill.
+Never approve, merge, comment on or rerun anything unless the user asks for that specific action.
+
+- **Retry CI on a servicing PR:** use `retry_ci.py` as described in [Servicing PRs](#servicing-prs)
+  after the user agrees.
+- **Merge:** the user merges, after elevating for `release/*` PRs. Point them at the PR and summarize
+  why it's ready.
+- **Investigate a failing non-servicing PR:** offer to investigate it with the `ci-analysis` skill if
+  it's available.
+
+When the user acts on a `release/*` PR in `dotnet/aspnetcore`, remind them to elevate first, as
+described at the top of this skill.
 
 ## Testing
 

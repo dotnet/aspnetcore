@@ -12,6 +12,8 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent / "scripts"))
 
 import get_attention_inventory as inv  # noqa: E402
+import retry_ci  # noqa: E402
+import servicing_schedule as schedule  # noqa: E402
 import workflow_failures  # noqa: E402
 
 NOW = datetime(2026, 11, 17, tzinfo=timezone.utc)
@@ -275,6 +277,97 @@ class WorkflowFailureTests(unittest.TestCase):
             self.make_run(3, "success", title="nuget in /. - Update #3", branch="release/10.0", created="2026-11-16T11:00:00Z"),
         ])
         self.assertIsNone(items[0]["laterSuccessUrl"])
+
+
+class ServicingTests(unittest.TestCase):
+    def servicing_pr(self, contexts=(), reviews=(), labels=("Servicing-approved",), base="release/11.0", **kw):
+        pr = make_pr(base=base, contexts=contexts, **kw)
+        pr["labels"]["nodes"] = [{"name": n} for n in labels]
+        pr["latestOpinionatedReviews"] = {"nodes": [
+            {"author": a, "state": st, "submittedAt": "2026-11-16T00:00:00Z", "url": "u"} for a, st in reviews]}
+        return pr
+
+    def action(self, pr, required=("aspnetcore-ci",)):
+        states = inv.required_check_states(pr, list(required))
+        return inv.servicing_next_action(pr, inv.summarize_checks(pr), states)
+
+    def test_requires_release_base_and_label(self):
+        self.assertTrue(inv.matches_category("servicing", self.servicing_pr(labels=("tell-mode",))))
+        self.assertFalse(inv.matches_category("servicing", self.servicing_pr(base="main")))
+        self.assertFalse(inv.matches_category("servicing", self.servicing_pr(labels=("servicing",))))
+
+    def test_merge_needs_required_green_and_another_devs_approval(self):
+        green = [check("aspnetcore-ci"), check("agent", "FAILURE")]
+        self.assertEqual(self.action(self.servicing_pr(green, [(OTHER, "APPROVED")])), "ready-to-merge")
+        # The author's own approval and bot approvals don't count.
+        self.assertEqual(self.action(self.servicing_pr(green, [(HUMAN, "APPROVED"), (MAESTRO, "APPROVED")])),
+                         "needs-approval")
+        self.assertEqual(self.action(self.servicing_pr(green, [(OTHER, "CHANGES_REQUESTED")])), "address-feedback")
+
+    def test_failing_required_check_is_retried_and_missing_one_is_awaited(self):
+        approved = [(OTHER, "APPROVED")]
+        failing = [check("aspnetcore-ci", "FAILURE"), check("aspnetcore-ci (Test: macOS)", "FAILURE")]
+        self.assertEqual(self.action(self.servicing_pr(failing, approved)), "retry-ci")
+        self.assertEqual(self.action(self.servicing_pr([check("other")], approved)), "wait-for-ci")
+        self.assertEqual(self.action(self.servicing_pr([check("aspnetcore-ci", "NEUTRAL")], approved)), "ready-to-merge")
+
+
+class ServicingScheduleTests(unittest.TestCase):
+    DECEMBER = """
+| Activity | ET in Days | Start | End | Days | Notes |
+| Code-complete (all versions, 6,8,10,11) | 1 | Nov 16 | Nov 16 | Mon | 4 PM PT cut-off. |
+| 146350 | [x](y) | CVE | Code complete is September 14. |
+"""
+    JANUARY = "| Code-complete  | 1 | Dec 14 | Dec 14 | Mon | 4 PM PT cut-off. |"
+    NOVEMBER = """
+| .NET interim Code Complete (tell mode) | 1 | 12-Oct |  | Mon | 4:00 PM Pacific |
+| **.NET Final Code Complete** (ask mode) | 1 | **19-Oct** | **19-Oct** | Mon | 4:00 PM Pacific |
+| .NET 6.0 Code Complete | 1 | 21-Oct | 21-Oct | Wed | 4:00 PM Pacific |
+"""
+    APRIL = """
+| Code-complete (8.0, 9.0) | 1 | 12-Mar | 12-Mar | Thu | | 11AM PT cut-off |
+| Code-Complete 10.0 | 1 | 24-Mar | 24-Mar | Tue | | 10.0.6 | 20 |11AM cutoff
+"""
+
+    def cutoff(self, content, year, month, major):
+        return schedule.code_complete_cutoff(content, year, month, major).isoformat()
+
+    def test_parses_each_page_layout(self):
+        self.assertEqual(self.cutoff(self.DECEMBER, 2026, 12, 10), "2026-11-16T16:00:00-08:00")
+        self.assertEqual(self.cutoff(self.JANUARY, 2027, 1, 11), "2026-12-14T16:00:00-08:00")
+        # Generic final code complete applies; the 6.0-only row doesn't.
+        self.assertEqual(self.cutoff(self.NOVEMBER, 2026, 11, 10), "2026-10-19T16:00:00-07:00")
+        self.assertEqual(self.cutoff(self.APRIL, 2026, 4, 10), "2026-03-24T11:00:00-07:00")
+        self.assertEqual(self.cutoff(self.APRIL, 2026, 4, 9), "2026-03-12T11:00:00-07:00")
+
+    def test_merge_after_code_complete_rolls_to_next_release(self):
+        pages = {"November 2026": self.NOVEMBER, "December 2026": self.DECEMBER, "January 2027": self.JANUARY}
+        fetch = lambda title: {"id": 1, "content": pages[title]} if title in pages else None  # noqa: E731
+        result = schedule.target_release(10, NOW.replace(hour=21), fetch)
+        self.assertEqual(result["release"], "January 2027")
+        before = datetime(2026, 11, 16, 23, 59, tzinfo=timezone.utc)  # 3:59 PM PT
+        self.assertEqual(schedule.target_release(10, before, fetch)["release"], "December 2026")
+        late = datetime(2026, 12, 20, tzinfo=timezone.utc)
+        self.assertIsNone(schedule.target_release(10, late, fetch)["release"])
+
+
+class RetryCiTests(unittest.TestCase):
+    URL = "https://dev.azure.com/dnceng-public/proj/_build/results?buildId={}"
+
+    def test_only_failed_required_azdo_builds_are_retried(self):
+        checks = [
+            {"name": "aspnetcore-ci", "conclusion": "FAILURE", "detailsUrl": self.URL.format(1)},
+            {"name": "aspnetcore-ci (Test: macOS)", "conclusion": "FAILURE", "detailsUrl": self.URL.format(1) + "&view=logs"},
+            {"name": "aspnetcore-quarantined-pr", "conclusion": "FAILURE", "detailsUrl": self.URL.format(2)},
+            {"name": "aspnetcore-components-e2e", "conclusion": "SUCCESS", "detailsUrl": self.URL.format(3)},
+            {"name": "Build Analysis", "conclusion": "FAILURE", "detailsUrl": "https://github.com/x"},
+        ]
+        builds, other = retry_ci.failed_builds(checks, ["aspnetcore-ci", "aspnetcore-components-e2e"])
+        self.assertEqual(list(builds), ["1"])
+        builds, other = retry_ci.failed_builds(checks, None)
+        self.assertEqual(sorted(builds), ["1", "2"])
+        self.assertEqual(other, ["Build Analysis"])
+
 
 if __name__ == "__main__":
     unittest.main()

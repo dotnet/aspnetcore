@@ -15,6 +15,7 @@ from datetime import datetime, timezone
 from typing import Any, Iterable
 
 import component_governance
+import servicing_schedule
 import workflow_failures
 
 ASPNETCORE = "dotnet/aspnetcore"
@@ -23,6 +24,7 @@ VMR = "dotnet/dotnet"
 TEAM = "dotnet/aspnet-build"
 TEAM_MENTION = re.compile(r"(?<![\w/-])@dotnet/aspnet-build(?![\w-])", re.IGNORECASE)
 QUARANTINE_MARKER = "gh-aw-workflow-id: test-quarantine"
+SERVICING_LABELS = {"servicing-approved", "tell-mode"}
 
 # User accounts (not GitHub Apps) that post automated content.
 AUTOMATION_LOGINS = {
@@ -36,6 +38,7 @@ AUTOMATION_LOGINS = {
 }
 
 CATEGORIES = {
+    "servicing": "Servicing PRs to merge",
     "dependency-updates": "Dependency updates (Maestro)",
     "inter-branch-merges": "Inter-branch merges",
     "test-quarantine": "Test quarantine / unquarantine",
@@ -48,6 +51,9 @@ CATEGORIES = {
 
 # Search queries per category. Results are re-validated by `matches_category`.
 SEARCHES = {
+    # A comma in label: means OR. `base:release/` isn't a prefix match in the search API, so the
+    # release/* base is checked in `matches_category`.
+    "servicing": [f"repo:{ASPNETCORE} is:pr is:open label:Servicing-approved,tell-mode"],
     "dependency-updates": [f"repo:{ASPNETCORE} is:pr is:open author:app/dotnet-maestro"],
     "inter-branch-merges": [
         f'repo:{ASPNETCORE} is:pr is:open author:app/github-actions "Merge branch" in:title',
@@ -80,6 +86,10 @@ PR_FIELDS = """
   } } } }
 """
 
+REVIEW_FIELDS = """
+  latestOpinionatedReviews(first: 30) { nodes { author { login __typename } state submittedAt url } }
+"""
+
 DISCUSSION_FIELDS = """
   comments(last: 100) { nodes { author { login __typename } body createdAt url } }
   reviews(last: 50) { nodes { author { login __typename } body submittedAt url state } }
@@ -99,8 +109,9 @@ FAILING = {"FAILURE", "ERROR", "TIMED_OUT", "CANCELLED", "ACTION_REQUIRED", "STA
 # Derived checks that only reflect other checks' results; never a root cause.
 IGNORED_CHECKS = {"Maestro auto-merge - All Checks Successful"}
 PENDING = {"PENDING", "EXPECTED", "QUEUED", "IN_PROGRESS", "WAITING", "REQUESTED"}
+PASSING = {"SUCCESS", "NEUTRAL", "SKIPPED"}
 
-ACTION_ORDER = ["investigate-ci", "resolve-conflicts", "ready-to-merge", "needs-approval",
+ACTION_ORDER = ["investigate-ci", "retry-ci", "resolve-conflicts", "ready-to-merge", "needs-approval",
                 "address-feedback", "check-merge-state", "wait-for-ci", "draft"]
 
 
@@ -118,8 +129,8 @@ def run_graphql(query: str, variables: dict[str, Any]) -> dict[str, Any]:
     return payload["data"]
 
 
-def search_prs(query: str, with_discussion: bool) -> list[dict[str, Any]]:
-    gql = SEARCH_QUERY % (PR_FIELDS, DISCUSSION_FIELDS if with_discussion else "")
+def search_prs(query: str, extra_fields: str = "") -> list[dict[str, Any]]:
+    gql = SEARCH_QUERY % (PR_FIELDS, extra_fields)
     nodes: list[dict[str, Any]] = []
     after = None
     while True:
@@ -144,7 +155,85 @@ def matches_category(category: str, pr: dict[str, Any]) -> bool:
         return pr["headRefName"].startswith("merge/") and "merge branch" in pr["title"].lower()
     if category == "test-quarantine":
         return QUARANTINE_MARKER in (pr.get("body") or "")
+    if category == "servicing":
+        return pr["baseRefName"].startswith("release/") and bool(servicing_labels(pr))
     return True
+
+
+def servicing_labels(pr: dict[str, Any]) -> list[str]:
+    return [l["name"] for l in pr["labels"]["nodes"] if l["name"].lower() in SERVICING_LABELS]
+
+
+def approvers(pr: dict[str, Any]) -> tuple[list[str], list[str]]:
+    """Humans other than the author whose latest review approves, or requests changes."""
+    author = (pr.get("author") or {}).get("login")
+    approved, changes = [], []
+    for review in (pr.get("latestOpinionatedReviews") or {}).get("nodes") or []:
+        if not is_human(review["author"]) or review["author"]["login"] == author:
+            continue
+        if review["state"] == "APPROVED":
+            approved.append(review["author"]["login"])
+        elif review["state"] == "CHANGES_REQUESTED":
+            changes.append(review["author"]["login"])
+    return sorted(approved), sorted(changes)
+
+
+def required_check_states(pr: dict[str, Any], required: list[str] | None) -> list[dict[str, Any]] | None:
+    """State of each branch-protection required check; None when the required list is unknown."""
+    if required is None:
+        return None
+    commits = (pr.get("commits") or {}).get("nodes") or []
+    rollup = commits[0]["commit"].get("statusCheckRollup") if commits else None
+    contexts = rollup["contexts"]["nodes"] if rollup else []
+    states = []
+    for name in required:
+        results, url = [], None
+        for ctx in contexts:
+            if (ctx.get("name") or ctx.get("context")) != name:
+                continue
+            if ctx["__typename"] == "CheckRun":
+                results.append(ctx["conclusion"] if ctx["status"] == "COMPLETED" else "PENDING")
+                url = ctx.get("detailsUrl")
+            else:
+                results.append(ctx["state"])
+                url = ctx.get("targetUrl")
+        if not results:
+            state = "MISSING"
+        elif any(r in FAILING for r in results):
+            state = "FAILING"
+        elif all(r in PASSING for r in results):
+            state = "PASSING"
+        else:
+            state = "PENDING"
+        states.append({"name": name, "state": state, "url": url})
+    return states
+
+
+def servicing_next_action(pr: dict[str, Any], checks: dict[str, Any],
+                          required: list[dict[str, Any]] | None = None) -> str:
+    """Servicing PRs are merged on green CI plus another dev's approval; failures are just retried.
+
+    When the branch's required checks are known, only they decide whether CI is green.
+    """
+    approved, changes = approvers(pr)
+    if required is not None:
+        failing = any(r["state"] == "FAILING" for r in required)
+        pending = any(r["state"] in ("PENDING", "MISSING") for r in required)
+    else:
+        failing, pending = bool(checks["failing"]), bool(checks["pending"])
+    if pr["isDraft"]:
+        return "draft"
+    if pr["mergeable"] == "CONFLICTING":
+        return "resolve-conflicts"
+    if failing:
+        return "retry-ci"
+    if pending:
+        return "wait-for-ci"
+    if changes:
+        return "address-feedback"
+    if not approved:
+        return "needs-approval"
+    return "ready-to-merge"
 
 
 def subcategory(category: str, pr: dict[str, Any]) -> str | None:
@@ -247,8 +336,12 @@ def requires_admin_elevation(pr: dict[str, Any]) -> bool:
     return pr["repository"]["nameWithOwner"] == ASPNETCORE and pr["baseRefName"].startswith("release/")
 
 
-def build_item(category: str, pr: dict[str, Any], now: datetime) -> dict[str, Any]:
+def build_item(category: str, pr: dict[str, Any], now: datetime,
+               required_checks: dict[str, list[str] | None] | None = None) -> dict[str, Any]:
     checks = summarize_checks(pr)
+    required = None
+    if category == "servicing":
+        required = required_check_states(pr, (required_checks or {}).get(pr["baseRefName"]))
     item = {
         "category": category,
         "subcategory": subcategory(category, pr),
@@ -267,23 +360,42 @@ def build_item(category: str, pr: dict[str, Any], now: datetime) -> dict[str, An
         "reviewDecision": pr["reviewDecision"],
         "labels": [label["name"] for label in pr["labels"]["nodes"]],
         "checks": checks,
-        "nextAction": next_action(pr, checks),
+        "nextAction": servicing_next_action(pr, checks, required) if category == "servicing" else next_action(pr, checks),
         "requiresAdminElevation": requires_admin_elevation(pr),
     }
     if category == "vmr-pings":
         item["ping"] = find_human_pings(pr)
+    if category == "servicing":
+        approved, changes = approvers(pr)
+        item.update(servicingLabels=servicing_labels(pr), approvedBy=approved, changesRequestedBy=changes,
+                    requiredChecks=required)
     return item
+
+
+def fetch_required_checks(branch: str) -> list[str] | None:
+    """Required status checks from the branch's protection, or None if they can't be read."""
+    result = subprocess.run(
+        ["gh", "api", f"repos/{ASPNETCORE}/branches/{branch}",
+         "--jq", "[.protection.required_status_checks.contexts // [] | .[]]"],
+        capture_output=True, text=True)
+    if result.returncode != 0:
+        return None
+    return json.loads(result.stdout or "null")
 
 
 def classify(category: str, prs: Iterable[dict[str, Any]], now: datetime,
              seen: set[tuple[str, int]], excluded: dict[str, int]) -> list[dict[str, Any]]:
+    prs = list(prs)
+    required_checks = None
+    if category == "servicing":
+        required_checks = {b: fetch_required_checks(b) for b in {pr["baseRefName"] for pr in prs}}
     items = []
     for pr in prs:
         key = (pr["repository"]["nameWithOwner"], pr["number"])
         if key in seen or not matches_category(category, pr):
             continue
         seen.add(key)
-        item = build_item(category, pr, now)
+        item = build_item(category, pr, now, required_checks)
         if category == "vmr-pings" and item["ping"] is None:
             excluded["vmr-pings-no-human-mention"] = excluded.get("vmr-pings-no-human-mention", 0) + 1
             continue
@@ -305,14 +417,42 @@ def collect(categories: list[str], now: datetime) -> dict[str, Any]:
             runs, coverage[category] = workflow_failures.collect(now)
             items += runs
             continue
+        extra = {"vmr-pings": DISCUSSION_FIELDS, "servicing": REVIEW_FIELDS}.get(category, "")
         for query in SEARCHES[category]:
-            prs = search_prs(query, with_discussion=category == "vmr-pings")
-            items += classify(category, prs, now, seen, excluded)
+            items += classify(category, search_prs(query, extra), now, seen, excluded)
+        if category == "servicing":
+            add_target_releases([i for i in items if i["category"] == "servicing"], now)
     result = {"generatedAt": now.isoformat(timespec="seconds"), "categories": categories,
               "excluded": excluded, "items": items}
     if coverage:
         result["coverage"] = coverage
     return result
+
+
+def add_target_releases(items: list[dict[str, Any]], now: datetime) -> None:
+    """Annotate servicing PRs with the monthly release they'd ship in if merged now."""
+    if not items:
+        return
+    releases = servicing_schedule.release_for_branches([i["base"] for i in items], now)
+    for item in items:
+        item["shipsIn"] = releases.get(item["base"])
+
+
+def render_ship_dates(items: list[dict[str, Any]]) -> list[str]:
+    lines, done = [], set()
+    for i in sorted(items, key=lambda i: i["base"]):
+        if i["base"] in done:
+            continue
+        done.add(i["base"])
+        ships = i.get("shipsIn") or {}
+        url = ships.get("scheduleUrl", servicing_schedule.SCHEDULE_URL)
+        if ships.get("release"):
+            cutoff = datetime.fromisoformat(ships["codeComplete"]).strftime("%b %d %Y, %I:%M %p")
+            lines.append(f"- If merged now, `{i['base']}` PRs ship in **{ships['release']}** "
+                         f"(code complete {cutoff} PT, [schedule]({url})).")
+        else:
+            lines.append(f"- `{i['base']}`: target release unknown. {ships.get('note', '')} [Schedule]({url})")
+    return lines + [""] if lines else []
 
 
 def render_markdown(result: dict[str, Any]) -> str:
@@ -339,19 +479,34 @@ def render_markdown(result: dict[str, Any]) -> str:
         lines.append("")
         for i in items:
             details = [i["title"][:100]]
-            if i["checks"]["failing"]:
-                names = [f["name"] for f in i["checks"]["failing"]]
-                details.append("failing: " + ", ".join(names[:5]) + (" …" if len(names) > 5 else ""))
+            names = [f["name"] for f in i["checks"]["failing"]]
+            label = "failing"
+            if category == "servicing" and i.get("requiredChecks") is not None:
+                required = {r["name"] for r in i["requiredChecks"]}
+                names = [n for n in names if n.split(" (", 1)[0] not in required]
+                label = "non-required failures (don't block merge)"
+            if names:
+                details.append(f"{label}: " + ", ".join(names[:5]) + (" …" if len(names) > 5 else ""))
             if i.get("ping"):
                 p = i["ping"]
                 repliers = sorted({r["by"] for r in p["repliedAfterPing"]})
                 replied = "replied by " + ", ".join(repliers) if repliers else "no reply yet"
                 details.append(f"pinged by @{p['pingedBy']} on {p['pingedAt'][:10]} ({replied})")
+            if category == "servicing":
+                if i.get("requiredChecks") is not None:
+                    bad = [f"{r['name']} {r['state'].lower()}" for r in i["requiredChecks"] if r["state"] != "PASSING"]
+                    details.append("required checks: " + (", ".join(bad) if bad else "all passing"))
+                details.append("labels: " + ", ".join(i["servicingLabels"]))
+                details.append("approved by " + ", ".join(i["approvedBy"]) if i["approvedBy"] else "no approval from another dev")
+                if i["changesRequestedBy"]:
+                    details.append("changes requested by " + ", ".join(i["changesRequestedBy"]))
             if i["requiresAdminElevation"]:
                 details.append("release branch: elevate to admin before acting")
             ref = f"{i['repo']}#{i['number']}"
             lines.append(f"- {ref}: " + " — ".join(details))
         lines.append("")
+        if category == "servicing":
+            lines += render_ship_dates(items)
     if any(i.get("requiresAdminElevation") for i in result["items"]):
         lines += [f"Before acting on a `release/*` PR, temporarily elevate to administrator at {ADMIN_ELEVATION_URL}.", ""]
     if result["excluded"]:
