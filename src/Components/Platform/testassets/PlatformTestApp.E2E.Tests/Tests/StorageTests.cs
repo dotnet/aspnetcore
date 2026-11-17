@@ -14,6 +14,7 @@ namespace PlatformTestApp.E2E.Tests.Tests;
 public partial class StorageTests : BrowserTest
 {
     private static readonly string[] StoragePaths = ["/storage-server", "/storage-wasm"];
+    private static readonly string[] UrlPaths = ["/url-server", "/url-wasm"];
 
     private ServerInstance _server = null!;
     private IPage _page = null!;
@@ -45,6 +46,43 @@ public partial class StorageTests : BrowserTest
             await _page.Locator("#remove-storage").ClickAsync();
             await _page.Locator("#load-storage").ClickAsync();
             await Expect(_page.Locator("#storage-result")).ToHaveTextAsync("Value is missing.");
+        }
+    }
+
+    [TestMethod]
+    public async Task Url_WorksInBothRenderModes()
+    {
+        foreach (var path in UrlPaths)
+        {
+            await NavigateAsync(path, "#run-url");
+
+            await _page.Locator("#run-url").ClickAsync();
+
+            await Expect(_page.Locator("#url-result")).ToHaveTextAsync("URL API passed.");
+        }
+    }
+
+    [TestMethod]
+    public async Task WebStorage_ReportsChangesFromAnotherPage()
+    {
+        foreach (var path in StoragePaths)
+        {
+            await NavigateAsync(path, "#watch-storage");
+            await _page.Locator("#watch-storage").ClickAsync();
+            await Expect(_page.Locator("#storage-result")).ToHaveTextAsync("Watching storage events.");
+
+            // The storage event fires only in other pages of the same origin.
+            var otherPage = await _page.Context.NewPageAsync();
+            await otherPage.GotoAsync($"{_server.TestUrl}{path}");
+
+            var value = path == "/storage-server" ? "server-event" : "wasm-event";
+            await otherPage.EvaluateAsync("value => localStorage.setItem('components-platform-e2e', value)", value);
+            await Expect(_page.Locator("#storage-event")).ToHaveTextAsync($"components-platform-e2e: (none) -> {value} in localStorage");
+
+            await otherPage.EvaluateAsync("() => localStorage.removeItem('components-platform-e2e')");
+            await Expect(_page.Locator("#storage-event")).ToHaveTextAsync($"components-platform-e2e: {value} -> (none) in localStorage");
+
+            await otherPage.CloseAsync();
         }
     }
 

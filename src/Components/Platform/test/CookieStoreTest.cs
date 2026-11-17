@@ -4,7 +4,9 @@
 #nullable enable
 #pragma warning disable ASP0040 // Partitioned is experimental.
 
+using System.Text.Json;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
 using Microsoft.JSInterop;
 using Microsoft.JSInterop.Infrastructure;
 using Xunit;
@@ -223,6 +225,106 @@ public class CookieStoreTest
         Assert.False(jsRuntime.ObjectReference.Disposed);
     }
 
+    [Fact]
+    public async Task AddEventListenerAsync_AddsAFunctionThatDeliversTheChangeEvent()
+    {
+        var jsRuntime = new BrowserJSRuntime();
+        await using var provider = CreateServiceProvider(jsRuntime);
+        var cookieStore = provider.GetRequiredService<IBrowserPlatform>().Window.CookieStore;
+        CookieChangeEvent? received = null;
+
+        await cookieStore.AddEventListenerAsync(CookieStore.ChangeEvent, changeEvent =>
+        {
+            received = changeEvent;
+            return Task.CompletedTask;
+        });
+        var result = await jsRuntime.InvokeLastCallbackAsync(
+            """[{"changed":[{"name":"a","value":"1"}],"deleted":[{"name":"b"}]}]""");
+
+        // The cookie store is object 1, the module is object 2, and the function is object 3.
+        using var createCallbackArgs = JsonDocument.Parse(Assert.Single(jsRuntime.CallsTo("createCallback")).ArgsJson);
+        Assert.Equal("""[{"changed":null,"deleted":null}]""", createCallbackArgs.RootElement[1].GetString());
+        var addition = Assert.Single(jsRuntime.CallsTo("addEventListener"));
+        Assert.Equal((JSCallType.FunctionCall, 1, """["change",{"__jsObjectId":3}]"""), (addition.CallType, addition.TargetInstanceId, addition.ArgsJson));
+        Assert.True(result.Success, result.Exception?.ToString());
+        Assert.Equal(("a", "1"), (Assert.Single(received!.Changed).Name, received.Changed[0].Value));
+        Assert.Equal(("b", null), (Assert.Single(received.Deleted).Name, received.Deleted[0].Value));
+    }
+
+    [Fact]
+    public async Task AddEventListenerAsync_KeepsListenersIndependent()
+    {
+        var jsRuntime = new BrowserJSRuntime();
+        await using var provider = CreateServiceProvider(jsRuntime);
+        var cookieStore = provider.GetRequiredService<IBrowserPlatform>().Window.CookieStore;
+        var calls = new List<string>();
+
+        var first = await cookieStore.AddEventListenerAsync(CookieStore.ChangeEvent, _ => { calls.Add("first"); return Task.CompletedTask; });
+        await cookieStore.AddEventListenerAsync(CookieStore.ChangeEvent, _ => { calls.Add("second"); return Task.CompletedTask; });
+        await jsRuntime.InvokeCallbackAsync(0, EmptyChange);
+        await jsRuntime.InvokeCallbackAsync(1, EmptyChange);
+        await first.DisposeAsync();
+        await first.DisposeAsync();
+        var afterRemoval = await jsRuntime.InvokeCallbackAsync(0, EmptyChange);
+        await jsRuntime.InvokeCallbackAsync(1, EmptyChange);
+
+        // The module is object 2, and the functions are objects 3 and 4.
+        Assert.Equal(["first", "second", "second"], calls);
+        Assert.False(afterRemoval.Success);
+        Assert.Single(jsRuntime.CallsTo("import"));
+        var removal = Assert.Single(jsRuntime.CallsTo("removeEventListener"));
+        Assert.Equal((1, """["change",{"__jsObjectId":3}]"""), (removal.TargetInstanceId, removal.ArgsJson));
+        Assert.Equal(["[3]"], jsRuntime.CallsTo("DotNet.disposeJSObjectReferenceById").Select(call => call.ArgsJson));
+    }
+
+    [Fact]
+    public async Task AddEventListenerAsync_LogsAnExceptionFromTheListener()
+    {
+        var jsRuntime = new BrowserJSRuntime();
+        var loggerFactory = new RecordingLoggerFactory();
+        await using var provider = CreateServiceProvider(jsRuntime, loggerFactory);
+        var cookieStore = provider.GetRequiredService<IBrowserPlatform>().Window.CookieStore;
+
+        await cookieStore.AddEventListenerAsync(CookieStore.ChangeEvent, _ => throw new InvalidOperationException("Listener failed."));
+        var result = await jsRuntime.InvokeLastCallbackAsync(EmptyChange);
+
+        Assert.True(result.Success, result.Exception?.ToString());
+        var entry = Assert.Single(loggerFactory.Entries);
+        Assert.Equal((LogLevel.Error, "ListenerThrew"), (entry.Level, entry.EventId.Name));
+        Assert.Equal("Listener failed.", Assert.IsType<InvalidOperationException>(entry.Exception).Message);
+    }
+
+    [Fact]
+    public async Task AddEventListenerAsync_ThrowsForNullArguments()
+    {
+        await using var provider = CreateServiceProvider(new BrowserJSRuntime());
+        var cookieStore = provider.GetRequiredService<IBrowserPlatform>().Window.CookieStore;
+
+        await Assert.ThrowsAsync<ArgumentNullException>(
+            () => cookieStore.AddEventListenerAsync<CookieChangeEvent>(null!, _ => Task.CompletedTask).AsTask());
+        await Assert.ThrowsAsync<ArgumentNullException>(
+            () => cookieStore.AddEventListenerAsync(CookieStore.ChangeEvent, null!).AsTask());
+    }
+
+    [Fact]
+    public async Task ScopeDisposal_RemovesListeners()
+    {
+        var jsRuntime = new BrowserJSRuntime();
+        var provider = CreateServiceProvider(jsRuntime);
+        var cookieStore = provider.GetRequiredService<IBrowserPlatform>().Window.CookieStore;
+        var listener = await cookieStore.AddEventListenerAsync(CookieStore.ChangeEvent, _ => Task.CompletedTask);
+
+        await provider.DisposeAsync();
+        await listener.DisposeAsync();
+
+        Assert.Single(jsRuntime.CallsTo("removeEventListener"));
+        Assert.Equal(
+            ["[3]", "[1]", "[2]"],
+            jsRuntime.CallsTo("DotNet.disposeJSObjectReferenceById").Select(call => call.ArgsJson));
+        await Assert.ThrowsAsync<ObjectDisposedException>(
+            () => cookieStore.AddEventListenerAsync(CookieStore.ChangeEvent, _ => Task.CompletedTask).AsTask());
+    }
+
     // A mock IJSRuntime records arguments before serialization, so the tests below check the JSON the browser receives.
     [Fact]
     public async Task SetAsync_SendsCookieInitWithoutNullMembers()
@@ -256,19 +358,87 @@ public class CookieStoreTest
             jsRuntime.ArgumentsSentTo("set"));
     }
 
-    [Theory]
-    [InlineData(CookieSameSite.Strict, "strict")]
-    [InlineData(CookieSameSite.Lax, "lax")]
-    [InlineData(CookieSameSite.None, "none")]
-    public async Task SetAsync_SendsSameSiteAsTheWebIdlString(CookieSameSite sameSite, string expected)
+    [Fact]
+    public async Task SetAsync_SendsSameSiteAsTheWebIdlString()
     {
         var jsRuntime = new SerializingJSRuntime();
         await using var provider = CreateServiceProvider(jsRuntime);
         var cookieStore = provider.GetRequiredService<IBrowserPlatform>().Window.CookieStore;
 
-        await cookieStore.SetAsync(new CookieInit { Name = "a", Value = "1", SameSite = sameSite });
+        await cookieStore.SetAsync(new CookieInit { Name = "a", Value = "1", SameSite = CookieSameSite.Strict });
+        await cookieStore.SetAsync(new CookieInit { Name = "a", Value = "1", SameSite = CookieSameSite.Lax });
+        await cookieStore.SetAsync(new CookieInit { Name = "a", Value = "1", SameSite = CookieSameSite.None });
+        await cookieStore.SetAsync(new CookieInit { Name = "a", Value = "1", SameSite = new CookieSameSite("future-value") });
 
-        Assert.Contains($"\"sameSite\":\"{expected}\"", Assert.Single(jsRuntime.ArgumentsSentTo("set")));
+        Assert.Equal(
+            ["strict", "lax", "none", "future-value"],
+            jsRuntime.ArgumentsSentTo("set").Select(json => JsonDocument.Parse(json).RootElement[0].GetProperty("sameSite").GetString()));
+    }
+
+    [Fact]
+    public async Task SetAsync_SendsDefaultSameSiteAsStrict()
+    {
+        var jsRuntime = new SerializingJSRuntime();
+        await using var provider = CreateServiceProvider(jsRuntime);
+        var cookieStore = provider.GetRequiredService<IBrowserPlatform>().Window.CookieStore;
+
+        await cookieStore.SetAsync(new CookieInit { Name = "a", Value = "1", SameSite = default });
+        await cookieStore.SetAsync(new CookieInit { Name = "a", Value = "1", SameSite = new CookieSameSite() });
+
+        Assert.Equal(
+            ["strict", "strict"],
+            jsRuntime.ArgumentsSentTo("set").Select(json => JsonDocument.Parse(json).RootElement[0].GetProperty("sameSite").GetString()));
+    }
+
+    [Fact]
+    public void CookieSameSite_DefaultIsStrict()
+    {
+        var defaultValue = default(CookieSameSite);
+
+        Assert.Equal("strict", defaultValue.Value);
+        Assert.Equal("strict", defaultValue.ToString());
+        Assert.Equal(CookieSameSite.Strict, defaultValue);
+        Assert.True(CookieSameSite.Strict == defaultValue);
+        Assert.True(new CookieSameSite("strict") == defaultValue);
+        Assert.Equal(CookieSameSite.Strict.GetHashCode(), defaultValue.GetHashCode());
+        Assert.NotEqual(CookieSameSite.Lax, defaultValue);
+        Assert.NotEqual(new CookieSameSite("Strict"), defaultValue);
+    }
+
+    [Fact]
+    public async Task CookieSameSite_ReadsStrictFromTheBrowserAsTheDefault()
+    {
+        var jsRuntime = new SerializingJSRuntime { ReadResult = "\"strict\"" };
+
+        var sameSite = await jsRuntime.InvokeAsync<CookieSameSite>("read");
+
+        Assert.Equal(default(CookieSameSite), sameSite);
+        Assert.Equal(CookieSameSite.Strict, sameSite);
+    }
+
+    [Fact]
+    public async Task CookieSameSite_ReadsAnyStringFromTheBrowser()
+    {
+        var jsRuntime = new SerializingJSRuntime { ReadResult = "\"future-value\"" };
+
+        var sameSite = await jsRuntime.InvokeAsync<CookieSameSite>("read");
+
+        Assert.Equal(new CookieSameSite("future-value"), sameSite);
+        Assert.Equal("future-value", sameSite.Value);
+    }
+
+    [Fact]
+    public void CookieSameSite_ComparesByOrdinalString()
+    {
+        Assert.Equal(CookieSameSite.Lax, new CookieSameSite("lax"));
+        Assert.True(CookieSameSite.Lax == new CookieSameSite("lax"));
+        Assert.True(CookieSameSite.Lax != new CookieSameSite("Lax"));
+        Assert.Equal(CookieSameSite.Lax.GetHashCode(), new CookieSameSite("lax").GetHashCode());
+        Assert.True(CookieSameSite.Lax.Equals((object)new CookieSameSite("lax")));
+        Assert.False(CookieSameSite.Lax.Equals((object)"lax"));
+        Assert.False(CookieSameSite.Lax.Equals(null));
+        Assert.Equal("none", CookieSameSite.None.ToString());
+        Assert.Throws<ArgumentNullException>("value", () => new CookieSameSite(null!));
     }
 
     [Fact]
@@ -343,11 +513,18 @@ public class CookieStoreTest
         Assert.Null(missing);
     }
 
-    private static ServiceProvider CreateServiceProvider(IJSRuntime jsRuntime)
+    private const string EmptyChange = """[{"changed":[],"deleted":[]}]""";
+
+    private static ServiceProvider CreateServiceProvider(IJSRuntime jsRuntime, ILoggerFactory? loggerFactory = null)
     {
         var services = new ServiceCollection();
         services.AddSingleton(jsRuntime);
         services.AddBrowserPlatform();
+
+        if (loggerFactory is not null)
+        {
+            services.AddSingleton(loggerFactory);
+        }
 
         return services.BuildServiceProvider();
     }
@@ -465,6 +642,8 @@ public class CookieStoreTest
 
         public string GetResult { get; set; } = "null";
 
+        public string ReadResult { get; init; } = "null";
+
         public string[] ArgumentsSentTo(string identifier)
             => [.. _calls.Where(call => call.Identifier == identifier).Select(call => call.ArgsJson ?? string.Empty)];
 
@@ -477,6 +656,7 @@ public class CookieStoreTest
                 "cookieStore" => """{"__jsObjectId":1}""",
                 "get" => GetResult,
                 "getAll" => GetAllResult,
+                "read" => ReadResult,
                 _ => "null",
             };
 

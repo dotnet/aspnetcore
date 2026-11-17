@@ -142,6 +142,27 @@ public partial class CookieStoreTests : BrowserTest
     }
 
     [TestMethod]
+    public async Task CookieSameSite_PassesAndReadsValuesTheLibraryDoesNotDefine()
+    {
+        foreach (var path in CookieStorePaths)
+        {
+            await NavigateAsync(path, "#set-cookie");
+
+            var name = path == "/cookiestore-server" ? "server-same-site" : "wasm-same-site";
+            await _page.Locator("#cookie-name").FillAsync(name);
+
+            await RunAsync("#set-cookie-same-site-from-string", $"Set SameSite from a string: {name}");
+            Assert.AreEqual(SameSiteAttribute.Lax, (await GetBrowserCookieAsync(name)).SameSite);
+            await RunAsync("#delete-cookie", $"Delete: {name}");
+
+            await RunAsync("#set-cookie-unknown-same-site", "Set an unknown SameSite: Rejected.");
+            Assert.DoesNotContain(name, (await _context.CookiesAsync()).Select(browserCookie => browserCookie.Name));
+
+            await RunAsync("#read-same-site", "Read SameSite from JavaScript: future-value, known: False");
+        }
+    }
+
+    [TestMethod]
     public async Task CookieStore_ThrowsNotSupportedExceptionWithoutTheBrowserApi()
     {
         // Same as a page that is not a secure context. The context belongs to this test only.
@@ -154,6 +175,59 @@ public partial class CookieStoreTests : BrowserTest
 
             await RunAsync("#get-cookie", "Get: Not supported: JSException");
         }
+    }
+
+    [TestMethod]
+    public async Task CookieStore_ReportsChangesToEachListener()
+    {
+        foreach (var path in CookieStorePaths)
+        {
+            await NavigateAsync(path, "#set-cookie");
+
+            var name = path == "/cookiestore-server" ? "server-watched" : "wasm-watched";
+            await _page.Locator("#cookie-name").FillAsync(name);
+            await _page.Locator("#cookie-value").FillAsync("value");
+            await RunAsync("#watch-cookie-changes", "Watch changes: added");
+            await RunAsync("#watch-cookie-changes-second", "Watch changes with a second listener: added");
+
+            await RunAsync("#set-cookie", $"Set: {name}");
+            await Expect(_page.Locator("#cookie-change")).ToHaveTextAsync($"Changed: {name}=value");
+            await Expect(_page.Locator("#cookie-change-second")).ToHaveTextAsync($"Changed: {name}=value");
+
+            // A change that does not come from .NET is reported too.
+            await _page.EvaluateAsync("() => { document.cookie = 'external=1'; }");
+            await Expect(_page.Locator("#cookie-change")).ToHaveTextAsync("Changed: external=1");
+            await _page.EvaluateAsync("() => { document.cookie = 'external=; max-age=0'; }");
+            await Expect(_page.Locator("#cookie-change")).ToHaveTextAsync("Deleted: external");
+
+            await RunAsync("#delete-cookie", $"Delete: {name}");
+            await Expect(_page.Locator("#cookie-change")).ToHaveTextAsync($"Deleted: {name}");
+
+            // Removing one listener leaves the other in place.
+            await RunAsync("#unwatch-cookie-changes", "Stop watching changes: removed");
+            await SetCookieAndWaitForTheBrowserEventAsync(name);
+            await Expect(_page.Locator("#cookie-change-second")).ToHaveTextAsync($"Changed: {name}=value");
+            // A round trip after the browser event lets a late notification arrive before the check.
+            await RunAsync("#get-cookie", $"Get: Found: {name}=value");
+            await Expect(_page.Locator("#cookie-change")).ToHaveTextAsync($"Deleted: {name}");
+            await RunAsync("#delete-cookie", $"Delete: {name}");
+            await Expect(_page.Locator("#cookie-change-second")).ToHaveTextAsync($"Deleted: {name}");
+
+            // Canceling the token removes the second listener.
+            await RunAsync("#cancel-second-cookie-watch", "Cancel the second listener: canceled");
+            await SetCookieAndWaitForTheBrowserEventAsync(name);
+            await RunAsync("#get-cookie", $"Get: Found: {name}=value");
+            await Expect(_page.Locator("#cookie-change-second")).ToHaveTextAsync($"Deleted: {name}");
+            await RunAsync("#delete-cookie", $"Delete: {name}");
+        }
+    }
+
+    private async Task SetCookieAndWaitForTheBrowserEventAsync(string name)
+    {
+        var browserEvent = _page.EvaluateAsync(
+            "() => new Promise(resolve => cookieStore.addEventListener('change', resolve, { once: true }))");
+        await RunAsync("#set-cookie", $"Set: {name}");
+        await browserEvent;
     }
 
     private async Task NavigateAsync(string path, string interactiveSelector)

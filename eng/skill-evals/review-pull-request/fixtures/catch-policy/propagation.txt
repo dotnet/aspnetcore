@@ -1,0 +1,21 @@
+Selected scenario
+Construct ConversationEngine with FailingClient and ThrowingDiagnosticSink.
+Register StatusObserver.OnStatusChanged, then await SendMessageAsync.
+These are the only implementations in scope for this bounded scenario.
+
+Originating issue
+Report conversation-processing failures through the configured diagnostic sink.
+
+Target-base contract
+Processing failures are exposed in Error and the Error status.
+If the configured diagnostic sink fails during error reporting, the returned task
+must fault with that sink failure. This applies to newly introduced reporting call
+sites as well as existing ones.
+
+PR rationale and test
+The author says the nested catch preserves successful task completion.
+A new test awaits SendMessageAsync and asserts that Error is the client's Failure.
+Its complete implementation is in ConversationEngineTests.cs.source.
+
+Existing feedback
+None.
