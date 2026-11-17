@@ -91,9 +91,10 @@ REVIEW_FIELDS = """
 """
 
 DISCUSSION_FIELDS = """
-  comments(last: 100) { nodes { author { login __typename } body createdAt url } }
-  reviews(last: 50) { nodes { author { login __typename } body submittedAt url state } }
-  reviewThreads(last: 30) { nodes { comments(first: 20) { nodes { author { login __typename } body createdAt url } } } }
+  comments(last: 100) { totalCount nodes { author { login __typename } body createdAt url } }
+  reviews(last: 50) { totalCount nodes { author { login __typename } body submittedAt url state } }
+  reviewThreads(last: 30) { totalCount nodes { comments(first: 20) {
+    totalCount nodes { author { login __typename } body createdAt url } } } }
 """
 
 SEARCH_QUERY = """
@@ -232,7 +233,9 @@ def servicing_next_action(pr: dict[str, Any], checks: dict[str, Any],
         return "address-feedback"
     if not approved or pr.get("reviewDecision") != "APPROVED":
         return "needs-approval"
-    if required is None:
+    # BLOCKED is expected: elevating to admin bypasses branch protection, and checks and approvals
+    # are verified above. States that elevation doesn't resolve still need a look.
+    if required is None or pr["mergeable"] != "MERGEABLE" or pr["mergeStateStatus"] in ("BEHIND", "DIRTY", "UNKNOWN"):
         return "check-merge-state"
     return "ready-to-merge"
 
@@ -307,6 +310,43 @@ def iter_discussion(pr: dict[str, Any]) -> Iterable[dict[str, Any]]:
             yield {"author": c["author"], "body": c["body"], "at": c["createdAt"], "url": c["url"]}
 
 
+def discussion_truncated(pr: dict[str, Any]) -> bool:
+    """True when the GraphQL search returned only part of a PR's comments, reviews or threads."""
+    def partial(conn: dict[str, Any] | None) -> bool:
+        return bool(conn) and conn.get("totalCount", 0) > len(conn.get("nodes") or [])
+    threads = pr.get("reviewThreads") or {}
+    return (partial(pr.get("comments")) or partial(pr.get("reviews")) or partial(threads)
+            or any(partial(t.get("comments")) for t in threads.get("nodes") or []))
+
+
+def rest_list(path: str) -> list[dict[str, Any]]:
+    result = subprocess.run(["gh", "api", "--paginate", path, "--jq", ".[]"], capture_output=True, text=True)
+    if result.returncode != 0:
+        raise RuntimeError(f"gh api {path} failed: {result.stderr.strip()[:300]}")
+    return [json.loads(line) for line in result.stdout.splitlines() if line.strip()]
+
+
+def full_discussion(pr: dict[str, Any]) -> dict[str, Any]:
+    """Replace a truncated GraphQL discussion with every comment, review and review comment (REST)."""
+    base = f"repos/{pr['repository']['nameWithOwner']}"
+    number = pr["number"]
+
+    def author(user: dict[str, Any] | None) -> dict[str, Any]:
+        user = user or {}
+        return {"login": user.get("login", ""), "__typename": "Bot" if user.get("type") == "Bot" else "User"}
+
+    comments = [{"author": author(c["user"]), "body": c["body"], "createdAt": c["created_at"], "url": c["html_url"]}
+                for c in rest_list(f"{base}/issues/{number}/comments?per_page=100")]
+    reviews = [{"author": author(r["user"]), "body": r["body"], "submittedAt": r.get("submitted_at"),
+                "url": r["html_url"], "state": r["state"]}
+               for r in rest_list(f"{base}/pulls/{number}/reviews?per_page=100")]
+    review_comments = [{"author": author(c["user"]), "body": c["body"], "createdAt": c["created_at"],
+                        "url": c["html_url"]}
+                       for c in rest_list(f"{base}/pulls/{number}/comments?per_page=100")]
+    return {**pr, "comments": {"nodes": comments}, "reviews": {"nodes": reviews},
+            "reviewThreads": {"nodes": [{"comments": {"nodes": review_comments}}]}}
+
+
 def find_human_pings(pr: dict[str, Any]) -> dict[str, Any] | None:
     """Return the latest human @dotnet/aspnet-build mention and any human replies after it."""
     events = sorted(iter_discussion(pr), key=lambda e: e["at"])
@@ -365,6 +405,8 @@ def build_item(category: str, pr: dict[str, Any], now: datetime,
         "requiresAdminElevation": requires_admin_elevation(pr),
     }
     if category == "vmr-pings":
+        if discussion_truncated(pr):
+            pr = full_discussion(pr)
         item["ping"] = find_human_pings(pr)
     if category == "servicing":
         approved, changes = approvers(pr)

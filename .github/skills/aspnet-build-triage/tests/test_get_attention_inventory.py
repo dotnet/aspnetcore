@@ -209,6 +209,22 @@ class PingTests(unittest.TestCase):
         self.assertEqual((ping["pingedBy"], ping["pingedAt"], ping["pingCount"]), ("dev", "2026-11-14T00:00:00Z", 2))
         self.assertEqual(ping["repliedAfterPing"], [])
 
+    def test_truncated_discussion_is_fetched_in_full(self):
+        pr = make_pr(repo="dotnet/dotnet", author=MAESTRO, comments=[comment(MAESTRO, "noise", "2026-11-15T00:00:00Z")])
+        pr["comments"]["totalCount"] = 150
+        rest = {
+            "issues/1/comments": [{"user": {"login": "dev", "type": "User"}, "body": "@dotnet/aspnet-build help",
+                                   "created_at": "2026-11-12T00:00:00Z", "html_url": "c1"}],
+            "pulls/1/reviews": [],
+            "pulls/1/comments": [{"user": {"login": "other", "type": "User"}, "body": "on it",
+                                  "created_at": "2026-11-13T00:00:00Z", "html_url": "c2"}],
+        }
+        fake = lambda path: next(v for k, v in rest.items() if f"/{k}?" in path)  # noqa: E731
+        with unittest.mock.patch.object(inv, "rest_list", fake):
+            items, _ = self.classify(pr)
+        self.assertEqual(items[0]["ping"]["pingedBy"], "dev")
+        self.assertEqual(items[0]["ping"]["repliedAfterPing"][0]["by"], "other")
+
 
 
 class WorkflowFailureTests(unittest.TestCase):
@@ -248,6 +264,12 @@ class WorkflowFailureTests(unittest.TestCase):
 
         with unittest.mock.patch.object(workflow_failures, "gh_api", gh_api):
             return workflow_failures.collect(NOW)
+
+    def test_runs_are_paginated(self):
+        pages = {1: [self.make_run(i, "success") for i in range(100)], 2: [self.make_run(100, "failure")]}
+        fake = lambda path, raw=False, args=(): {"workflow_runs": pages[int(path.rsplit("page=", 1)[1])]}  # noqa: E731
+        with unittest.mock.patch.object(workflow_failures, "gh_api", fake):
+            self.assertEqual(len(workflow_failures.workflow_runs(1, "2026-11-10T00:00:00Z")), 101)
 
     @staticmethod
     def make_run(run_id, conclusion, title="Daily Test Quarantine Management", branch="main", created="2026-11-15T10:00:00Z"):
@@ -309,6 +331,12 @@ class ServicingTests(unittest.TestCase):
         # An approval made stale by a later push leaves GitHub's review decision unapproved.
         self.assertEqual(self.action(self.servicing_pr(green, [(OTHER, "APPROVED")], review="REVIEW_REQUIRED")),
                          "needs-approval")
+        # BLOCKED is bypassed by admin elevation; states it can't fix need a manual look.
+        self.assertEqual(self.action(self.servicing_pr(green, [(OTHER, "APPROVED")], merge_state="BLOCKED")),
+                         "ready-to-merge")
+        for state, mergeable in (("BEHIND", "MERGEABLE"), ("UNKNOWN", "UNKNOWN")):
+            self.assertEqual(self.action(self.servicing_pr(green, [(OTHER, "APPROVED")], merge_state=state,
+                                                           mergeable=mergeable)), "check-merge-state")
         # Unknown required checks mean CI can't be confirmed green.
         self.assertEqual(self.action(self.servicing_pr([], [(OTHER, "APPROVED")]), required=None), "check-merge-state")
 

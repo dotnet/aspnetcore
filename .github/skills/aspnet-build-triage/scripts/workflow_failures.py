@@ -118,14 +118,25 @@ def current_user():
         return None
 
 
+def workflow_runs(workflow, since, max_pages=20):
+    """Every run created since `since`, following pagination."""
+    runs = []
+    for page in range(1, max_pages + 1):
+        batch = gh_api(f"repos/{REPO}/actions/workflows/{workflow}/runs"
+                       f"?created=%3E{since}&per_page=100&page={page}")["workflow_runs"]
+        runs += batch
+        if len(batch) < 100:
+            return runs
+    raise ValueError(f"More than {max_pages * 100} runs since {since}; coverage would be incomplete")
+
+
 def collect(now):
     since = (now - timedelta(days=LOOKBACK_DAYS)).strftime("%Y-%m-%dT%H:%M:%SZ")
     items, errors, checked = [], {}, []
     user = current_user()
     for path, info in MONITORED.items():
         try:
-            runs = gh_api(f"repos/{REPO}/actions/workflows/{workflow_id(path)}/runs"
-                          f"?created=%3E{since}&per_page=100")["workflow_runs"]
+            runs = workflow_runs(workflow_id(path), since)
         except ValueError as error:
             errors[info["name"]] = str(error)
             continue

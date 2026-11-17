@@ -113,8 +113,9 @@ that belongs to the PR author.
   stale, and it doesn't count). Green CI means no check is failing or still running (only the derived
   `Maestro auto-merge - All Checks Successful` check is ignored), and every branch-protection
   required check (`requiredChecks`; currently `aspnetcore-ci` and `aspnetcore-components-e2e`) has
-  reported success. If the required checks couldn't be read, the collector reports
-  `check-merge-state` instead; verify them on the PR. The collector reports these as `ready-to-merge`. Tell the user to elevate at
+  reported success. GitHub must also report the PR as mergeable and not `BEHIND`; `BLOCKED` is
+  expected, because elevating to admin bypasses it. If the required checks couldn't be read or the
+  merge state isn't acceptable, the collector reports `check-merge-state` instead; check the PR. The collector reports these as `ready-to-merge`. Tell the user to elevate at
   https://repos.opensource.microsoft.com/orgs/dotnet/repos/aspnetcore and then merge it themselves.
   Don't merge on their behalf.
 - **Retry** (`retry-ci`) when any check failed. Don't investigate the failure; just offer to
