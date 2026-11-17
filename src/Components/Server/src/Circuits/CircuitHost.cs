@@ -813,22 +813,31 @@ internal partial class CircuitHost : IAsyncDisposable
         return reportQueueOverflow ? ReportRootComponentUpdateQueueOverflowAsync() : Task.CompletedTask;
     }
 
-    private async Task ReportRootComponentUpdateQueueOverflowAsync()
+    private Task ReportRootComponentUpdateQueueOverflowAsync()
     {
         var exception = new InvalidOperationException("The maximum number of pending root component updates has been exceeded.");
         Log.RootComponentUpdateQueueOverflow(_logger, CircuitId, MaxPendingRootComponentUpdates, exception);
-        await TryNotifyClientErrorAsync(Client, GetClientErrorMessage(exception), exception);
+        _ = TryNotifyClientErrorAsync(Client, GetClientErrorMessage(exception), exception);
         UnhandledException?.Invoke(this, new UnhandledExceptionEventArgs(exception, isTerminating: false));
+
+        return Task.CompletedTask;
+    }
+
+    private void CompleteRootComponentOperations(TaskCompletionSource operationsApplied)
+    {
+        lock (_rootComponentUpdateLock)
+        {
+            if (!operationsApplied.Task.IsCompleted)
+            {
+                _pendingRootComponentUpdates--;
+                operationsApplied.SetResult();
+            }
+        }
     }
 
     private void CompleteRootComponentUpdate(TaskCompletionSource operationsApplied, TaskCompletionSource updateCompletion)
     {
-        lock (_rootComponentUpdateLock)
-        {
-            _pendingRootComponentUpdates--;
-        }
-
-        operationsApplied.TrySetResult();
+        CompleteRootComponentOperations(operationsApplied);
         updateCompletion.SetResult();
     }
 
@@ -1051,7 +1060,7 @@ internal partial class CircuitHost : IAsyncDisposable
             return Task.CompletedTask;
         });
 
-        operationsApplied.TrySetResult();
+        CompleteRootComponentOperations(operationsApplied);
 
         if (pendingTasks != null)
         {
