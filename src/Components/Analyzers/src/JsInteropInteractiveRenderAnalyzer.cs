@@ -503,7 +503,16 @@ public sealed class JsInteropInteractiveRenderAnalyzer : DiagnosticAnalyzer
 
         foreach (var argument in invocation.Arguments)
         {
-            AnalyzeOperationsTree(argument.Value, state);
+            var parameterRefKind = argument.Parameter?.RefKind;
+            if ((parameterRefKind == RefKind.Ref || parameterRefKind == RefKind.Out)
+                && argument.Value is ILocalReferenceOperation localReference)
+            {
+                state.SymbolChecks.Remove(localReference.Local);
+            }
+            else
+            {
+                AnalyzeOperationsTree(argument.Value, state);
+            }
         }
 
         if (state.CurrentDepth < MaxNestedMethodDepth

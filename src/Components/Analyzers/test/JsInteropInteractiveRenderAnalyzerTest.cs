@@ -2079,6 +2079,27 @@ namespace ConsoleApplication1
     }
 
     [Theory]
+    [InlineData("var available = RendererInfo.IsInteractive; Replace(ref available); if (available) { await JS.InvokeVoidAsync(Identifier); } static void Replace(ref bool value) => value = true;", 104)]
+    [InlineData("var available = RendererInfo.IsInteractive; Replace(out available); if (available) { await JS.InvokeVoidAsync(Identifier); } static void Replace(out bool value) => value = true;", 104)]
+    [InlineData("var available = RendererInfo.IsInteractive; Replace(ref available); if (!available) { return; } await JS.InvokeVoidAsync(Identifier); static void Replace(ref bool value) => value = true;", 115)]
+    public void JSInvokeAfterIsInteractiveVariablePassedByRefOrOutShouldThrowWarning(string statements, int column)
+    {
+        VerifyCSharpDiagnostic(CreateOnInitializedAsyncTest(statements),
+            new DiagnosticResult { Locations = new[] { new DiagnosticResultLocation("Test0.cs", 21, column) }, Id = id, Message = messageInvokeVoidAsync, Severity = DiagnosticSeverity.Warning, }
+        );
+    }
+
+    [Theory]
+    [InlineData("var available = RendererInfo.IsInteractive; Read(available); if (available) { await JS.InvokeVoidAsync(Identifier); } static void Read(bool value) { }")]
+    [InlineData("var available = RendererInfo.IsInteractive; Read(in available); if (available) { await JS.InvokeVoidAsync(Identifier); } static void Read(in bool value) { }")]
+    [InlineData("var available = RendererInfo.IsInteractive; Replace(ref available); available = RendererInfo.IsInteractive; if (available) { await JS.InvokeVoidAsync(Identifier); } static void Replace(ref bool value) => value = true;")]
+    [InlineData("var available = false; Replace(out available); available = RendererInfo.IsInteractive; if (available) { await JS.InvokeVoidAsync(Identifier); } static void Replace(out bool value) => value = true;")]
+    public void JSInvokeAfterIsInteractiveVariableNotReplacedByCalleeShouldNotThrowWarning(string statements)
+    {
+        VerifyCSharpDiagnostic(CreateOnInitializedAsyncTest(statements));
+    }
+
+    [Theory]
     [InlineData("var reference = DotNetObjectReference.Create(this);")]
     [InlineData("DotNetObjectReference.Create(this).Dispose();")]
     public void DotNetObjectReferenceUsageShouldNotThrowWarning(string statements)
