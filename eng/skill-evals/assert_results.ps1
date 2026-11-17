@@ -12,6 +12,19 @@ param(
 $ErrorActionPreference = 'Stop'
 Set-StrictMode -Version 3
 
+function Assert-NoGraderError {
+    param($Grade, [string]$Variant)
+
+    if ($Grade.PSObject.Properties['status'] -and $Grade.status -eq 'error') {
+        throw "The '$Variant' variant has a grader error."
+    }
+    if ($Grade.PSObject.Properties['details']) {
+        foreach ($detail in $Grade.details) {
+            Assert-NoGraderError $detail $Variant
+        }
+    }
+}
+
 if ($RunDirectory) {
     $resolvedOutput = (Resolve-Path -LiteralPath $RunDirectory).Path
     if (-not (Test-Path -LiteralPath $resolvedOutput -PathType Container)) {
@@ -42,6 +55,7 @@ if (-not (Test-Path -LiteralPath $snapshotPath -PathType Leaf)) {
 $snapshot = Get-Content -LiteralPath $snapshotPath -Raw | ConvertFrom-Json -Depth 100
 $scoresByVariant = @{}
 $plansByVariant = @{}
+$hasScoreThreshold = $false
 $variants = if ($Variant) {
     @($Variant)
 } elseif ($snapshot.evals.Count -eq 1 -and $snapshot.evals[0].variant -eq 'current') {
@@ -115,6 +129,9 @@ foreach ($variant in $variants) {
 
     $isReview = $plan.PSObject.Properties['evalName'] -and $plan.evalName -eq 'review-pull-request'
     $isPerStimulusSuite = ($variant -eq 'current') -or $isReview
+    $hasScoreThreshold = $hasScoreThreshold -or ($variant -ne 'baseline' -and (
+        -not $isPerStimulusSuite -or [int]$plan.runs -gt 1
+    ))
     $scores = [Collections.Generic.List[double]]::new()
     $scoresByStimulus = @{}
     $identities = [Collections.Generic.HashSet[string]]::new()
@@ -198,6 +215,7 @@ foreach ($variant in $variants) {
                 }
             }
         }
+        Assert-NoGraderError $gradeResultProperty.Value $variant
     }
 
     $scoresByVariant[$variant] = ($scores | Measure-Object -Average).Average
@@ -225,6 +243,8 @@ if (@($plansByVariant.Values | Where-Object {
         ($_.PSObject.Properties['evalName'] -and $_.evalName -eq 'review-pull-request'))
 }).Count -gt 0) {
     Write-Host 'Single-run review/verifier checks validate completion, grader scores, and read integrity, not disposition accuracy thresholds.'
-} else {
+} elseif ($hasScoreThreshold) {
     Write-Host 'Configured score thresholds passed.'
+} else {
+    Write-Host 'No score thresholds were applied to the selected variants.'
 }
