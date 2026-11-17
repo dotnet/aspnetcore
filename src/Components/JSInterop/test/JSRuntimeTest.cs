@@ -482,6 +482,8 @@ public class JSRuntimeTest
 
     class TestJSRuntime : JSRuntime
     {
+        public void FailPendingTasks(Exception exception) => base.FailPendingTasks(exception);
+
         public List<JSInvocationInfo> BeginInvokeCalls = [];
         public List<EndInvokeDotNetArgs> EndInvokeDotNetCalls = [];
 
