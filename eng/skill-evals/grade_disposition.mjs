@@ -86,6 +86,16 @@ function stripMarkdown(text)
     .replace(/(?<!\w)_([^_\r\n]+)_(?!\w)/g, '$1');
 }
 
+// Accept word-bounded IDs, plus IDs wrapped in underscore emphasis (_C1_, __C1__) that are not
+// part of a word or path such as src/_C2_/File.cs.
+function candidateIdPattern(id)
+{
+  return new RegExp(String.raw`(?:\b|(?<=(?:^|[^\w/\\.])__?))${id}(?:\b|(?=__?(?:$|[^\w/\\.])))`, 'm');
+}
+
+const c1Pattern = candidateIdPattern('C1');
+const otherCandidatePattern = candidateIdPattern(String.raw`C(?!1(?!\d))\d+`);
+
 function normalizeHeading(line)
 {
   return stripMarkdown(line.trim())
@@ -112,11 +122,35 @@ function isNegativeC1Line(line)
     /^(?:(?:is\s+|was\s+)?not\s+(?:covered(?:\s+by\s+(?:any\s+)?(?:existing\s+)?feedback(?:\s+in\s+(?:the\s+)?(?:supplied\s+|frozen\s+|existing\s+)*(?:(?:pr|review|evidence)\s+)*(?:evidence|bundle|pr|review|threads?|comments?|feedback))?)?|unresolved|discarded|applicable)|has\s+no\s+existing\s+feedback|(?:is\s+|was\s+)?omitted)[.!]?\s*$/i.test(afterC1));
 }
 
-function hasPositiveC1(sectionText)
+const sectionStatuses = new Map([
+  ['UNRESOLVED', 'unresolved'],
+  ['DISCARDED', 'discarded'],
+]);
+
+function isCrossSectionNegation(line, section)
+{
+  const status = sectionStatuses.get(section);
+  if (!status)
+  {
+    return false;
+  }
+  const clean = stripMarkdown(line)
+    .trim()
+    .replace(/^(?:[-*+]|\d+[.)])\s+/, '')
+    .replace(/^(?:none|n\/a)[.!]\s+/i, '')
+    .trim();
+  const afterC1 = clean.replace(/^C1\b\s*(?:[-:—–]|\s)*/i, '');
+  const otherStatus = `(?!${status}\\b)(?:unresolved|discarded|verified|a\\s+new\\s+finding)`;
+  return afterC1 !== clean && (
+    new RegExp(`^(?:is\\s+|was\\s+)?not\\s+${status}\\s*[;,:—–-]\\s*(?:it|C1)\\s+(?:is|remains|stays)\\s+${otherStatus}[.!]?\\s*$`, 'i').test(afterC1) ||
+    new RegExp(`^(?:is|was|remains)\\s+${otherStatus}\\s+rather\\s+than\\s+${status}[.!]?\\s*$`, 'i').test(afterC1));
+}
+
+function hasPositiveC1(sectionText, section)
 {
   return sectionText
     .split(/\r?\n/)
-    .some(line => /\bC1\b/.test(line) && !isNegativeC1Line(line));
+    .some(line => c1Pattern.test(line) && !isNegativeC1Line(line) && !isCrossSectionNegation(line, section));
 }
 
 function gradeReview(name, output)
@@ -160,11 +194,11 @@ function gradeReview(name, output)
   {
     return false;
   }
-  if ([...sections.values()].some(text => /\bC(?!1\b)\d+\b/.test(text)))
+  if ([...sections.values()].some(text => otherCandidatePattern.test(text)))
   {
     return false;
   }
-  const hasCandidate = key => hasPositiveC1(sections.get(key));
+  const hasCandidate = key => hasPositiveC1(sections.get(key), key);
   if (!hasCandidate(expected.section))
   {
     return false;

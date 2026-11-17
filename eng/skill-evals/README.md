@@ -12,7 +12,8 @@ auto-discovered by this repository's experiment and runner.
 `skills-vs-baseline.experiment.yaml` runs the generic skill specs twice with the
 same stimuli: once without a skill and once with exactly
 `.github/skills/<skill>` loaded. The experiment owns `environment.skills`;
-standard specs must not set it themselves.
+standard specs must not set it themselves. Reviewer diagnostic-control runs use
+`review-vs-baseline.experiment.yaml` and `review-smoke.experiment.yaml` instead.
 The verifier component suite has no skill arm and runs directly.
 
 Any other `*.vally.yaml` file is a specialized suite. Specialized suites are not
@@ -21,24 +22,56 @@ beside the spec that consumes them, normally under a `fixtures` directory. Do
 not place eval specs, `evals` directories, or eval runners in runtime skill
 directories. A runtime skill may use a `fixtures` directory for non-eval assets.
 
-`review-pull-request/catch-policy.vally.yaml` is a specialized, offline policy
-exercise. It stages the current reviewer skill, cross-cutting guide, diff, old/head source,
-dependency implementations, and one selected scenario into each trial workspace.
-Five independent stimuli cover unspecified policy, existing feedback, propagation,
-best-effort reporting, and a nonthrowing producer control. The agent must derive the
-effect from source rather than receive the expected behavior in its prompt.
-Static tool-result checks require the relevant guidance and source to be read;
-binary judging checks the reasoning separately. These checks do not prove every
-line was read or replace the semantic judge. Five trials per stimulus must all pass.
-Platform-required native skill acquisition is allowed, but does not replace reading
-the staged guidance or authorize coordinator execution.
-The executor and judge models are both pinned to the reviewer skill's supported
-`gpt-5.6-sol`. Because they share a model identity, the judge is not independent-
-model corroboration. Overrides are separate model-compatibility results, not
-evidence that the default reviewer improved.
-This does not invoke live PR review or measure baseline-versus-skilled improvement.
-Run it explicitly with
-`./eng/skill-evals/run.ps1 Run -Eval eng/skill-evals/review-pull-request/catch-policy.vally.yaml --require-pass`.
+The standard `review-pull-request` suite uses frozen source and diff excerpts from
+ASP.NET Core PRs #70106, #69782, #70304, #69721, and #70299. These cover exact-input
+old/head comparison, constructor mapping versus a lower-layer head test, renderer
+disposal and issue intent, browser-test wrapper ordering in a disputed
+token-exchange dependency claim, and existing feedback on render-mode-dependent
+navigation. Each case carries its source roles,
+Git blob identities, original line ranges, and fixture SHA-256 hashes in
+`provenance.json`. Issue and feedback excerpts identify their captured public
+revision metadata. Neutral stimulus names and destination paths do not encode
+expected dispositions. A sixth case integrates the synthetic public catch-policy
+example from #70312. It omits the explicit missing-policy hints and the redundant
+existing-question case. It does not represent production framework source.
+It replaces the retired standalone catch-policy suite and its duplicate fixtures.
+Fixture attributes retain LF and upstream whitespace so Git checkout preserves
+the frozen hashes on Windows and Unix.
+
+These are offline single-context candidate exercises, not full bundle preparation,
+guide-worker dispatch, verifier integration, live PR review, or browser tests.
+L1 is frozen-evidence adjudication regression, not a measurement of skill lift.
+Its baseline is a diagnostic control, not a competitor. Skill lift requires
+end-to-end evidence.
+All six L1 oracles (`case-01`, `case-02`, `case-03`, `case-04`, `case-05`, and
+`case-06`) are provisional pending an independent two-reviewer audit.
+The original `case-04` claim mixed an unestablished timing link with a
+contradicted effect link, so reviewers split between `DISCARDED` and
+`UNRESOLVED`. The case was narrowed to the ordering of the flag and sign-in call.
+The `case-06` notification-order confound is corrected, its `UNRESOLVED` oracle
+is retained, and two cold reviewers from different model families agree. That
+agreement is not a human audit.
+Both arms share frozen source and both guidance documents. Only the skilled arm
+receives the skill and verifier/worker instructions. Baseline does not receive
+`SKILL.md` or either agent profile. `tool-calls.required` matches both read arguments and
+returned bytes, including actual skill text from native acquisition or an installed
+file read. A success acknowledgement or a filename citation does not satisfy those
+checks. Content signatures prove the specified bytes appeared in a tool result,
+not that every possible review path ran.
+
+Only the deterministic program grader contributes to disposition scores. It checks
+the status line, C1's section placement, inline confidence, and existing-thread
+deduplication. Skill acquisition, read receipts, and LLM rubrics have zero weight.
+The result gate checks evidence/guidance receipts for both arms and skill/profile
+receipts for skilled only. A missing baseline skill cannot lower its disposition
+score. Each skilled stimulus must independently meet its threshold. Baseline
+disposition scores are reported, not threshold-gated.
+
+The zero-weight LLM rubrics remain secondary diagnostics, not semantic quality
+gates. They still incur judge calls during a model-bearing run. The subject and
+judge use the same model; the judge is not independent-model corroboration.
+These public development cases are not held-out evidence. Five repeats do not
+create five independent PR lineages.
 
 The `review-candidate-verifier` component suite checks normalized `decision` and
 applicable `downgradeKind`, `dropBasis`, and `contradictedLink` fields. It tolerates
@@ -56,6 +89,39 @@ policy-only head-test scenario (close to @maraf's 3/10 `DROP(unestablished)` /
 7/10 `DOWNGRADE(intent)` synthetic fixture) was omitted from the component gate;
 `SKILL.md` retains the coordinator backstop mapping `DOWNGRADE(intent)` with
 `contract: "n/a"` to `UNRESOLVED`, which has not been measured end to end.
+The earlier 30-trial-per-arm L1 run scored 27/30 for the diagnostic baseline
+and 29/30 for skilled, with skilled `case-04` at 4/5. A subsequent 30-trial
+skilled-only run with the current skill also scored 29/30, with `case-02` at
+4/5 and every other case at 5/5. Both skilled runs failed the configured 5/5
+per-case gate. Both measured the original `case-04` claim, before it was
+narrowed. The baseline was not rerun. These results are against provisional
+oracles and do not establish skill lift.
+
+Red means "read the misses": inspect each decision and its reason against the
+provisional oracle. In the earlier run, baseline `case-02` trial 3 discarded the
+claim because it treated required-parameter behavior and the converter test as
+sufficient intent; baseline `case-04` trials 0 and 3 and skilled `case-04`
+trial 3 were unresolved because browser or MSAL timing evidence was missing.
+In the later run, skilled `case-02` trial 4 discarded the claim, treating the
+target-base required-parameter rule and the lower-layer head converter test as
+evidence of intent.
+
+A separate skilled run of the narrowed `case-04` scored 10/10, with all read
+receipts passing. Each decision cited the flag assignment before delegation to
+`signIn`. Some responses also asserted browser observation timing that the
+frozen source does not establish; that timing is not needed for this claim.
+
+A 20-trial skilled diagnostic of `case-02` scored 19/20. Its only miss,
+trial 3, discarded the claim: it treated the target-base required-parameter
+rule as dispositive and the lower-layer head converter test as supporting intent.
+All read receipts passed. The result assertion failed because 19/20 is below
+the configured threshold of 1. Together with the earlier 4/5, current-skill
+`case-02` scored 23/25. Both misses warrant review in the pending two-reviewer
+audit of its provisional oracle.
+
+At an assumed independent per-trial pass rate of 0.92, a 5/5 gate goes red
+about one run in three. The 23/25 sample does not establish a population rate.
+The full six-case suite was not rerun after narrowing `case-04`.
 
 Model-free validation checks layout, schema, source hashes, read-guard coverage,
 and experiment selection. It does not establish adjudication quality. A
@@ -63,8 +129,9 @@ model-bearing `Run` and inspection of every trial's actual read receipts and
 semantic result remain necessary before making a behavioral claim.
 
 The experiment deliberately does not override `runs`. A standard spec owns its
-trial count through `defaults.runs`. The component suite has 15 trials.
-The dotnet/skills quality gate uses five trials as the minimum at which a clean sweep can support a one-sided sign test at 5%; enforcing a
+trial count through `defaults.runs`. The reviewer suite has 30 trials per arm.
+The component suite has 15 trials. The dotnet/skills quality gate uses five trials as the minimum at
+which a clean sweep can support a one-sided sign test at 5%; enforcing a
 trial-count policy here remains a documented follow-up.
 
 ## Fixture purpose and file scope
@@ -75,6 +142,7 @@ Verifier cases a and b supply nine C# files at each of head and merge base,
 plus base-tip docs, rather than full trees.
 Their diff covers only `AgentContext.cs`, although the snapshots also contain
 changes to `UIAgent.cs` and `UIAgentLog.cs`.
+L1 `case-02` supplies the `FileConverter.cs` diff from a six-file PR.
 The results provide regression evidence for these supplied slices.
 They do not establish production-bundle fidelity or end-to-end review quality.
 
@@ -129,6 +197,38 @@ them, and the spec maps each one to both revisions. Only `AgentContext.cs`,
 | `Engine\ConversationStatus.cs` | a, b | Status values used by the stream and callbacks. |
 | `Engine\ConversationTurn.cs` | a, b | Request and response block storage. |
 
+### Reviewer cases
+
+Each folder under `review-pull-request\fixtures` contains the same seven filenames.
+The eval stages only the selected folder for each trial.
+All expected answers below remain provisional, pending an independent two-reviewer audit.
+
+| Folder and stimulus | Purpose | Provisional expected answer |
+|---|---|---|
+| `case-01` | Stale-token claim during an authentication-state change. | `DISCARDED` |
+| `case-02` | Unmatched constructor file parameter compared with a lower-layer head test. | Verified finding |
+| `case-03` | ErrorBoundary delivery after renderer disposal, with issue intent. | `DISCARDED` |
+| `case-04` | Browser-test dependency on token exchange before assertions. | `DISCARDED` (disputed) |
+| `case-05` | Navigation-ordering question already raised in existing feedback. | `EXISTING_FEEDBACK_COVERAGE` with an unresolved thread reference |
+| `case-06` | Unestablished secondary-failure policy after status notification. | `UNRESOLVED` (fixture-confound corrected) |
+
+| File relative to each case folder | Cases | Purpose |
+|---|---|---|
+| `case.source` | case-01 through case-06 | Candidate claim and saved PR rationale. |
+| `change.diff` | case-01 through case-06 | Selected change to adjudicate. |
+| `mergeBase.source` | case-01 through case-06 | Earlier source for comparison. |
+| `head.source` | case-01 through case-06 | Proposed source. |
+| `baseTip.source` | case-01 through case-06 | Base-tip source context. |
+| `context.source` | case-01 through case-06 | Supporting head tests, issue intent, or feedback for that case. |
+| `provenance.json` | case-01 through case-06 | Source roles, revisions, line ranges, and fixture hashes. |
+
+The reviewer fixture root's `.gitattributes` preserves frozen bytes for all six cases.
+The `.source` extension marks inert, role-tagged excerpts, which can concatenate
+non-compilable snippets. The production exporter also uses `.source` for frozen files.
+Both reviewer arms receive the repository's two guidance documents.
+Only the skilled arm receives the skill and worker/verifier profiles.
+These shared instructions sit outside the per-case fixture folders.
+
 ## Local entry point
 
 Run these commands from any directory:
@@ -140,9 +240,11 @@ Run these commands from any directory:
 # Prove every validator rule and runner isolation with self-tests
 ./eng/skill-evals/run.ps1 Test
 
-# Select one suite for layout and lint.
+# Select this suite for layout, lint, and both experiment dry-runs.
+./eng/skill-evals/run.ps1 Validate -Suite review-pull-request
 ./eng/skill-evals/run.ps1 Validate -Suite review-candidate-verifier
 # Run infrastructure self-tests plus the selected suite's fixture checks.
+./eng/skill-evals/run.ps1 Test -Suite review-pull-request
 ./eng/skill-evals/run.ps1 Test -Suite review-candidate-verifier
 
 # Strict Vally parsing/schema lint; does not call a model
@@ -157,7 +259,8 @@ Run these commands from any directory:
 ```
 
 Without a suite or explicit experiment, `Run` dispatches each standard suite into
-its own output subdirectory. This includes the direct verifier component suite.
+its own output subdirectory. This includes the reviewer diagnostic control and the direct
+verifier component suite.
 Experiment-only options require `-Suite` or `-Experiment` and are rejected before all-suite dispatch.
 Each single-eval experiment or direct component `Run` checks its own new run directory with
 `assert_results.ps1` before it returns. A Vally exit code of 1 is accepted only
@@ -165,7 +268,7 @@ after those checks pass; any failed check stops the run, including in the
 all-suite dispatch. A direct component run writes a plan beside Vally's
 timestamped `results.jsonl`; it does not invent an experiment variant directory.
 That plan reflects the selected YAML and CLI runs/threshold overrides. For the
-verifier suite, smoke selects one repeat per case and checks trial
+reviewer and verifier suites, smoke selects one repeat per case and checks trial
 completion, grader scores, and read-integrity receipts without enforcing the
 multi-trial per-stimulus disposition threshold.
 Experiment runs with `--variant skilled` or `--variant=skilled` check only the

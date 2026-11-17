@@ -1,0 +1,19 @@
+=== head cfe304ed94f2c9de0e1069947ba51c8c82690ba7 src/Components/Endpoints/test/Binding/FormDataMapperTests.cs:2512-2528 ===
+    public void CanDeserialize_ComplexType_IReadOnlyListFormFileWithNoMatches_IsNotFound()
+    {
+        var formFileCollection = new FormFileCollection
+        {
+            new FormFile(Stream.Null, 0, 10, "otherFile", "file.txt"),
+        };
+        var data = new Dictionary<string, StringValues>();
+        var reader = CreateFormDataReader(data, CultureInfo.InvariantCulture, formFileCollection);
+        reader.PushPrefix("file");
+        var converter = new FileConverter<IReadOnlyList<IFormFile>>();
+
+        var succeeded = converter.TryRead(ref reader, typeof(IReadOnlyList<IFormFile>), default!, out var result, out var found);
+
+        Assert.True(succeeded);
+        Assert.False(found);
+        Assert.Empty(result);
+    }
+

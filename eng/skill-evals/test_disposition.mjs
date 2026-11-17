@@ -139,6 +139,12 @@ test('ReviewDispositionResetsAtUnindentedTopLevelMetadata', async context =>
       assert.equal(score('case-02', output), 0);
     });
   }
+  await context.test('bullet-before-trailing-text', () =>
+  {
+    const output = review('NEW_FINDINGS', 'verified')
+      .replace('DISCARDED\nNone.', 'DISCARDED\nNone.\n- PATH: per-guide\nC1 was reviewed through the per-guide path.');
+    assert.equal(score('case-02', output), 1);
+  });
 });
 
 test('ReviewDispositionToleratesSingleUnderscoreEmphasis', async context =>
@@ -155,6 +161,72 @@ test('ReviewDispositionToleratesSingleUnderscoreEmphasis', async context =>
       const output = review(section, confidence)
         .replace(oldText, newText);
       assert.equal(score(caseName, output), 1);
+    });
+  }
+});
+
+test('ReviewDispositionRecognizesUnderscoreEmphasizedCandidateIds', async context =>
+{
+  for (const [name, caseName, output, expected] of [
+    ['single-underscore', 'case-06', review('UNRESOLVED', 'unresolved')
+      .replace('C1 missing target-base contract.', '- _C1_: missing target-base contract.'), 1],
+    ['double-underscore', 'case-06', review('UNRESOLVED', 'unresolved')
+      .replace('C1 missing target-base contract.', '- __C1__: missing target-base contract.'), 1],
+    ['contradictory-placement', 'case-02', review('NEW_FINDINGS', 'verified')
+      .replace('DISCARDED\nNone.', 'DISCARDED\n_C1_: old and head match.'), 0],
+    ['extra-candidate', 'case-02', review('NEW_FINDINGS', 'verified')
+      .replace('DISCARDED\nNone.', 'DISCARDED\n_C2_: another concern.'), 0],
+   ['code-span-extra-candidate', 'case-02', review('NEW_FINDINGS', 'verified')
+     .replace('DISCARDED\nNone.', 'DISCARDED\n`C2`: another concern.'), 0],
+   ['code-span-path-is-not-extra-candidate', 'case-02', review('NEW_FINDINGS', 'verified')
+     .replace('Why verified: source reason.', 'Why verified: `src/_C2_/File.cs` is unchanged.'), 1],
+   ['code-span-path-is-not-c1', 'case-02', review('NEW_FINDINGS', 'verified')
+     .replace('DISCARDED\nNone.', 'DISCARDED\nOnly `src/_C1_/File.cs` moved.'), 1],
+    ['emphasis-wrapping-code-span', 'case-06', review('UNRESOLVED', 'unresolved')
+     .replace('C1 missing target-base contract.', '- _C1 (`AgentContext.cs`): missing target-base contract._'), 1],
+    ['emphasis-wrapping-code-span-extra-candidate', 'case-02', review('NEW_FINDINGS', 'verified')
+     .replace('DISCARDED\nNone.', 'DISCARDED\n- _C2 (`File.cs`): another concern._'), 0],
+    ['emphasis-between-double-backtick-spans', 'case-06', review('UNRESOLVED', 'unresolved')
+     .replace('C1 missing target-base contract.', '``a`` _C1_ ``b``'), 1],
+    ['double-backtick-code-span-path', 'case-02', review('NEW_FINDINGS', 'verified')
+     .replace('Why verified: source reason.', 'Why verified: ``code ` src/_C2_/File.cs`` is unchanged.'), 1],
+    ['escaped-backticks-are-not-code-span', 'case-02', review('NEW_FINDINGS', 'verified')
+     .replace('DISCARDED\nNone.', 'DISCARDED\n\\` _C2_: another concern. \\`'), 0],
+    ['multiline-code-span-path', 'case-02', review('NEW_FINDINGS', 'verified')
+     .replace('Why verified: source reason.', 'Why verified: `unchanged\nsrc/_C2_/File.cs` source.'), 1],
+    ['snake-case-identifier', 'case-02', review('NEW_FINDINGS', 'verified')
+     .replace('DISCARDED\nNone.', 'DISCARDED\nOnly snake_C1_name moved.'), 1],
+  ])
+  {
+    await context.test(name, () =>
+    {
+      assert.equal(score(caseName, output), expected);
+    });
+  }
+});
+
+test('ReviewDispositionTreatsCrossSectionNegationAsAbsence', async context =>
+{
+  for (const [name, caseName, output, expected] of [
+    ['semicolon', 'case-06', review('UNRESOLVED', 'unresolved')
+      .replace('DISCARDED\nNone.', 'DISCARDED\nC1 is not discarded; it remains unresolved.'), 1],
+    ['comma', 'case-06', review('UNRESOLVED', 'unresolved')
+      .replace('DISCARDED\nNone.', 'DISCARDED\nC1 is not discarded, it remains unresolved.'), 1],
+    ['colon', 'case-06', review('UNRESOLVED', 'unresolved')
+      .replace('DISCARDED\nNone.', 'DISCARDED\n**C1:** Not discarded: it remains unresolved.'), 1],
+    ['none-rather-than', 'case-06', review('UNRESOLVED', 'unresolved')
+      .replace('DISCARDED\nNone.', 'DISCARDED\nNone. **C1 is unresolved rather than discarded.**'), 1],
+    ['unresolved-section', 'case-01', review('DISCARDED', 'discarded')
+      .replace('UNRESOLVED\nNone.', 'UNRESOLVED\nC1 is not unresolved; it is discarded.'), 1],
+    ['matching-section-is-present', 'case-02', review('NEW_FINDINGS', 'verified')
+      .replace('UNRESOLVED\nNone.', 'UNRESOLVED\nC1 is not discarded; it remains unresolved.'), 0],
+    ['negation-with-prose', 'case-02', review('NEW_FINDINGS', 'verified')
+      .replace('DISCARDED\nNone.', 'DISCARDED\nC1 is not discarded; old and head match.'), 0],
+  ])
+  {
+    await context.test(name, () =>
+    {
+      assert.equal(score(caseName, output), expected);
     });
   }
 });
@@ -210,6 +282,16 @@ test('ReviewDispositionDistinguishesSubstantiveNoneFromAbsenceMarkers', async co
     ['absence-in-one-section-only', 'case-02', review('NEW_FINDINGS', 'verified')
       .replace('UNRESOLVED\nNone.', 'UNRESOLVED\nC1: None.')
       .replace('DISCARDED\nNone.', 'DISCARDED\nC1 omitted.'), 1],
+    ['conflicting-no-findings-prose', 'case-02', review('NEW_FINDINGS', 'verified')
+      .replace('UNRESOLVED\nNone.', 'UNRESOLVED\nC1: No findings warranted because propagation is unknown.'), 0],
+    ['conflicting-none-applicable-comma-prose', 'case-02', review('NEW_FINDINGS', 'verified')
+      .replace('UNRESOLVED\nNone.', 'UNRESOLVED\nC1: None applicable, but propagation is unknown.'), 0],
+    ['conflicting-none-applicable-colon-prose', 'case-02', review('NEW_FINDINGS', 'verified')
+      .replace('UNRESOLVED\nNone.', 'UNRESOLVED\nC1: None applicable: propagation is unknown.'), 0],
+    ['conflicting-na-comma-prose', 'case-02', review('NEW_FINDINGS', 'verified')
+      .replace('UNRESOLVED\nNone.', 'UNRESOLVED\nC1: N/A, but propagation is unknown.'), 0],
+    ['conflicting-na-colon-prose', 'case-02', review('NEW_FINDINGS', 'verified')
+      .replace('UNRESOLVED\nNone.', 'UNRESOLVED\nC1: N/A: the propagation contract is unknown.'), 0],
   ])
   {
     await context.test(name, () =>
