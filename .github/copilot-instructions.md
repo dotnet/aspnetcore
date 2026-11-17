@@ -49,6 +49,7 @@ If at any time, the user directs you explicitly to override any of these instruc
 * Declare variables non-nullable, and check for `null` at entry points.
 * Always use `is null` or `is not null` instead of `== null` or `!= null`.
 * Trust the C# null annotations and don't add null checks when the type system says a value cannot be null.
+* In this repository, nullable-reference warnings depend on the evaluated `<Nullable>` property, including imports and conditions, applicable `#nullable` directives, and warning suppressions, not the directory name: `eng/targets/CSharp.Common.targets` defaults an unset `<Nullable>` to `enable` only for `_IsSrcProject` (implementation, analyzer, or specification-test projects), so verify the effective context before reporting a CS86xx warning.
 
 ### Testing
 
