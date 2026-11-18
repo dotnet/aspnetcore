@@ -81,6 +81,21 @@ public class SectionRegistryTest
     }
 
     [Fact]
+    public void ApplicationSectionId_SameRenderMode_DoesNotThrow()
+    {
+        var renderer = new SectionsTestRenderer(new TestSink())
+        {
+            OutletRenderMode = new RenderModeA(),
+            ContentRenderMode = new RenderModeA(),
+        };
+
+        var exception = Record.Exception(() =>
+            Render(renderer, outletFirst: true, useSectionName: false, sectionId: ApplicationSectionId));
+
+        Assert.Null(exception);
+    }
+
+    [Fact]
     public void NamedSection_InteractiveContentWithStaticOutlet_Throws()
     {
         var renderer = new SectionsTestRenderer(new TestSink())
@@ -170,6 +185,42 @@ public class SectionRegistryTest
         Assert.Contains(nameof(RenderModeB), exception.Message);
     }
 
+    [Fact]
+    public void RemovingNamedProvider_MatchingRenderModes_DoesNotThrow()
+    {
+        var includeContent = true;
+        var renderer = new SectionsTestRenderer(new TestSink())
+        {
+            OutletRenderMode = new RenderModeA(),
+            ContentRenderMode = new RenderModeA(),
+        };
+
+        RenderFragment host = builder =>
+        {
+            builder.OpenComponent<SectionOutlet>(0);
+            builder.AddComponentParameter(1, nameof(SectionOutlet.SectionName), "test-section");
+            builder.CloseComponent();
+
+            if (includeContent)
+            {
+                builder.OpenComponent<SectionContent>(2);
+                builder.AddComponentParameter(3, nameof(SectionContent.SectionName), "test-section");
+                builder.AddComponentParameter(4, nameof(SectionContent.ChildContent), (RenderFragment)(b => b.AddContent(0, "Section content")));
+                builder.CloseComponent();
+            }
+        };
+
+        var hostComponent = new PassthroughComponent(host);
+        var componentId = renderer.AssignRootComponentId(hostComponent);
+        renderer.RenderRootComponent(componentId);
+
+        includeContent = false;
+        var exception = Record.Exception(() =>
+            renderer.Dispatcher.InvokeAsync(hostComponent.TriggerRender).GetAwaiter().GetResult());
+
+        Assert.Null(exception);
+    }
+
     private static IReadOnlyList<WriteContext> GetWrites(TestSink sink, string eventName)
         => sink.Writes.Where(w => w.EventId.Name == eventName).ToList();
 
@@ -243,6 +294,9 @@ public class SectionRegistryTest
             _renderHandle.Render(renderFragment);
             return Task.CompletedTask;
         }
+
+        public void TriggerRender()
+            => _renderHandle.Render(renderFragment);
     }
 
     private sealed class SectionsTestRenderer : Renderer

@@ -1459,6 +1459,25 @@ public class EndpointHtmlRendererTest
     }
 
     [Fact]
+    public async Task HeadOutletAndInteractivePageTitle_DoesNotThrowDuringPrerendering()
+    {
+        // Arrange
+        var renderer = GetEndpointHtmlRenderer();
+        var httpContext = GetHttpContext();
+
+        // Act
+        var exception = await Record.ExceptionAsync(async () =>
+            await renderer.PrerenderComponentAsync(
+                httpContext,
+                typeof(HeadOutletAndInteractivePageTitle),
+                null,
+                ParameterView.Empty));
+
+        // Assert
+        Assert.Null(exception);
+    }
+
+    [Fact]
     public async Task DoesNotEmitNestedRenderModeBoundaries()
     {
         // Arrange

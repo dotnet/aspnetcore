@@ -129,6 +129,7 @@ internal sealed partial class SectionRegistry(ILoggerFactory loggerFactory)
     private static void ValidateRenderModeCompatibility(object identifier, SectionOutlet? subscriber, SectionContent? provider)
     {
         // Framework-owned head/title sections use BuiltInSectionIdentifier and retain the existing warning behavior.
+        // This validation is intentionally limited to application components sharing this renderer's registry.
         if (subscriber is null || provider is null || identifier is BuiltInSectionIdentifier)
         {
             return;
