@@ -160,6 +160,7 @@ internal partial class RazorComponentEndpointInvoker : IRazorComponentEndpointIn
         // streaming SSR batches (inside SendStreamingUpdatesAsync). Otherwise some other code might dispatch to the
         // renderer sync context and cause a batch that would get missed.
         htmlContent.WriteTo(bufferWriter, HtmlEncoder.Default); // Don't use WriteToAsync, as per the comment above
+        _renderer.EmitBrowserConfigurationForInitialContent(bufferWriter);
 
         if (!quiesceTask.IsCompletedSuccessfully)
         {

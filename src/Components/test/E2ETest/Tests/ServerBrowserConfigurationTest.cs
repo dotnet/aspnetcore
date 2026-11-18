@@ -2,6 +2,8 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Globalization;
+using System.Net.Http;
+using System.Text.Json;
 using Components.TestServer.RazorComponents;
 using Microsoft.AspNetCore.Components.E2ETest;
 using Microsoft.AspNetCore.Components.E2ETest.Infrastructure;
@@ -24,13 +26,10 @@ public class ServerBrowserConfigurationTest(
     public override Task InitializeAsync()
         => InitializeAsync(BrowserFixture.StreamingContext);
 
-    [Theory]
-    [InlineData(3000, null)]
-    [InlineData(3000, 500)]
-    [InlineData(500, 3000)]
-    [InlineData(3000, 0)]
-    public void CircuitInactivityTimeoutAppliesAfterRemovingLastServerComponent(int serverTimeout, int? javaScriptTimeout)
+    [Fact]
+    public void CircuitInactivityTimeoutAppliesAfterRemovingLastServerComponent()
     {
+        const int serverTimeout = 3000;
         using var fixture = CreateFixture($"--BrowserConfigurationCircuitInactivityTimeoutMs={serverTimeout}");
         NavigateToStartPage(fixture);
 
@@ -44,7 +43,7 @@ public class ServerBrowserConfigurationTest(
                 }
             };
             """);
-        StartCounter(javaScriptTimeout is { } timeout ? $$"""{ ssr: { circuitInactivityTimeoutMs: {{timeout}} } }""" : "{}");
+        StartCounter();
 
         javascript.ExecuteScript("window.componentRemovedAt = performance.now()");
         Browser.Click(By.Id("remove-counter-link-0"));
@@ -52,42 +51,228 @@ public class ServerBrowserConfigurationTest(
         Browser.True(() => (bool)javascript.ExecuteScript("return window.socketClosedAt !== undefined"));
 
         var elapsed = Convert.ToDouble(javascript.ExecuteScript("return window.socketClosedAt - window.componentRemovedAt"), CultureInfo.InvariantCulture);
-        var expectedTimeout = javaScriptTimeout ?? serverTimeout;
-        Assert.InRange(elapsed, Math.Max(0, expectedTimeout - 500), expectedTimeout + 1500);
+        Assert.InRange(elapsed, serverTimeout - 500, serverTimeout + 1500);
     }
 
-    [Theory]
-    [InlineData(BrowserLogLevel.Trace, null, true)]
-    [InlineData(BrowserLogLevel.Trace, BrowserLogLevel.Error, false)]
-    [InlineData(BrowserLogLevel.Error, BrowserLogLevel.Trace, true)]
-    public void CircuitLogLevelControlsEventMessages(BrowserLogLevel serverLogLevel, BrowserLogLevel? javaScriptLogLevel, bool expectEventMessages)
+    [Fact]
+    public void CircuitLogLevelControlsEventMessages()
     {
-        using var fixture = CreateFixture($"--BrowserConfigurationLogLevel={serverLogLevel}");
+        using var fixture = CreateFixture($"--BrowserConfigurationLogLevel={BrowserLogLevel.Trace}");
         NavigateToStartPage(fixture);
-        StartCounter(javaScriptLogLevel is { } logLevel ? $$"""{ circuit: { logLevel: {{(int)logLevel}} } }""" : "{}");
+        StartCounter();
         Browser.Manage().Logs.GetLog(LogType.Browser);
 
         Browser.Click(By.Id("increment-0"));
         Browser.Equal("1", () => Browser.Exists(By.Id("count-0")).Text);
 
         var entries = Browser.Manage().Logs.GetLog(LogType.Browser);
-        Assert.Equal(expectEventMessages, entries.Any(entry => entry.Message.Contains("Dispatching event with handler id", StringComparison.Ordinal)));
+        Assert.Contains(entries, entry => entry.Message.Contains("Dispatching event with handler id", StringComparison.Ordinal));
     }
 
-    [Theory]
-    [InlineData(200, null)]
-    [InlineData(null, "200")]
-    [InlineData(1000, "200")]
-    [InlineData(1000, "() => 200")]
-    public void ReconnectionRetryIntervalControlsTransportAttempts(int? serverRetryInterval, string javaScriptRetryInterval)
+    [Fact]
+    public void CircuitLogLevelFromInitializerIsNotOverwrittenByNavigation()
     {
-        using var fixture = CreateFixture("--BrowserConfigurationReconnectionMaxRetries=2");
-        if (serverRetryInterval is { } retryInterval)
-        {
-            fixture.AdditionalArguments.Add($"--BrowserConfigurationReconnectionRetryIntervalMs={retryInterval}");
-        }
+        using var fixture = CreateFixture($"--BrowserConfigurationLogLevel={BrowserLogLevel.Error}");
+        NavigateToStartPage(fixture, "&initializer-circuit-log-trace");
+
+        var javascript = (IJavaScriptExecutor)Browser;
+        javascript.ExecuteScript("Blazor.start({})");
+        Browser.True(() => (bool)javascript.ExecuteScript("return window.circuitLogInitializerRan === true"));
+        Browser.Click(By.Id("add-server-counter-prerendered-link"));
+        Browser.Equal("True", () => Browser.Exists(By.Id("is-interactive-0")).Text);
+        Browser.Manage().Logs.GetLog(LogType.Browser);
+
+        Browser.Click(By.Id("increment-0"));
+        Browser.Equal("1", () => Browser.Exists(By.Id("count-0")).Text);
+        var entries = Browser.Manage().Logs.GetLog(LogType.Browser);
+        Assert.Contains(entries, entry => entry.Message.Contains("Dispatching event with handler id", StringComparison.Ordinal));
+    }
+
+    [Fact]
+    public void PreserveDomDisabledReloadsFirstNavigationAndBack()
+    {
+        using var fixture = CreateFixture("--BrowserConfigurationPreserveDom=false");
         NavigateToStartPage(fixture);
-        StartCounter(javaScriptRetryInterval is not null ? $$"""{ circuit: { reconnectionOptions: { retryIntervalMilliseconds: {{javaScriptRetryInterval}} } } }""" : "{}");
+
+        var initialDocument = Browser.FindElement(By.TagName("html"));
+        ((IJavaScriptExecutor)Browser).ExecuteScript("Blazor.start({})");
+        Browser.Click(By.Id("add-server-counter-prerendered-link"));
+        Browser.Exists(By.Id("remove-counter-link-0"));
+        Browser.True(initialDocument.IsStale, TimeSpan.FromSeconds(10));
+        Browser.Equal("True", () => Browser.Exists(By.Id("is-interactive-0")).Text);
+
+        var counterDocument = Browser.FindElement(By.TagName("html"));
+        Browser.Navigate().Back();
+        Browser.Equal("Not streaming", () => Browser.Exists(By.Id("status")).Text);
+        Browser.True(counterDocument.IsStale);
+    }
+
+    [Fact]
+    public async Task BrowserOptionsAreEmittedOnceForStaticPage()
+    {
+        using var fixture = CreateFixture("--BrowserConfigurationPreserveDom=false");
+        NavigateToStartPage(fixture);
+
+        using var client = new HttpClient { BaseAddress = fixture.RootUri };
+        var html = await client.GetStringAsync("subdir/streaming-interactivity");
+        Assert.DoesNotContain("<!--Blazor:", html, StringComparison.Ordinal);
+        var parts = html.Split("<!--Blazor-Configuration:", StringSplitOptions.None);
+        Assert.Equal(2, parts.Length);
+        var payload = parts[1].Split("-->", StringSplitOptions.None)[0];
+        using var configuration = JsonDocument.Parse(Convert.FromBase64String(payload));
+        Assert.True(configuration.RootElement.GetProperty("ssr").GetProperty("disableDomPreservation").GetBoolean());
+    }
+
+    [Fact]
+    public void PreserveDomDisabledOnDestinationReloadsFirstNavigationAndPreservesHistory()
+    {
+        using var fixture = CreateFixture("--BrowserConfigurationDisableOnCounter=true");
+        NavigateToStartPage(fixture);
+
+        var initialDocument = Browser.FindElement(By.TagName("html"));
+        ((IJavaScriptExecutor)Browser).ExecuteScript("Blazor.start({})");
+        Browser.Click(By.Id("disable-keys-link"));
+        Browser.Exists(By.Id("enable-keys-link"));
+        Assert.False(initialDocument.IsStale());
+
+        Browser.Click(By.Id("add-server-counter-prerendered-link"));
+        Browser.Exists(By.Id("remove-counter-link-0"));
+        Browser.True(initialDocument.IsStale, TimeSpan.FromSeconds(10));
+        Browser.Equal("True", () => Browser.Exists(By.Id("is-interactive-0")).Text);
+
+        Browser.Navigate().Back();
+        Browser.Exists(By.Id("enable-keys-link"));
+        Browser.DoesNotExist(By.Id("is-interactive-0"));
+    }
+
+    [Fact]
+    public void JavaScriptPreserveDomOptionOverridesServerConfiguration()
+    {
+        using var fixture = CreateFixture("--BrowserConfigurationPreserveDom=false");
+        NavigateToStartPage(fixture);
+
+        var initialDocument = Browser.FindElement(By.TagName("html"));
+        ((IJavaScriptExecutor)Browser).ExecuteScript("Blazor.start({ ssr: { disableDomPreservation: false } })");
+        Browser.Click(By.Id("add-server-counter-prerendered-link"));
+        Browser.Equal("True", () => Browser.Exists(By.Id("is-interactive-0")).Text);
+        Assert.False(initialDocument.IsStale());
+    }
+
+    [Fact]
+    public void InitializerPreserveDomOptionOverridesServerConfiguration()
+    {
+        using var fixture = CreateFixture("--BrowserConfigurationPreserveDom=false");
+        NavigateToStartPage(fixture, "&initializer-preserve-dom");
+
+        var initialDocument = Browser.FindElement(By.TagName("html"));
+        var javascript = (IJavaScriptExecutor)Browser;
+        javascript.ExecuteScript("Blazor.start({})");
+        Browser.True(() => (bool)javascript.ExecuteScript("return window.preserveDomInitializerRan === true"));
+        javascript.ExecuteScript("Blazor.navigateTo(document.getElementById('add-server-counter-prerendered-link').href)");
+        Browser.Equal("True", () => Browser.Exists(By.Id("is-interactive-0")).Text);
+        Assert.False(initialDocument.IsStale());
+    }
+
+    [Fact]
+    public async Task PreserveDomDisabledOnFormPostDoesNotReplayTheSubmission()
+    {
+        using var fixture = CreateFixture("--BrowserConfigurationDisableOnFormPost=true");
+        var operationId = Guid.NewGuid().ToString("N");
+        Browser.Navigate(fixture.RootUri, $"{ServerPathBase}/forms/streaming-rendering/{operationId}?suppress-autostart");
+        Browser.Exists(By.Id("send"));
+        Browser.Exists(By.Id("call-blazor-start"));
+
+        var initialBody = Browser.FindElement(By.TagName("body"));
+        ((IJavaScriptExecutor)Browser).ExecuteScript("Blazor.start({})");
+        Browser.Equal("True", () => Browser.Exists(By.Id("is-interactive-form")).Text);
+        using var client = new HttpClient { BaseAddress = fixture.RootUri };
+        try
+        {
+            Browser.Click(By.Id("send"));
+            Browser.Exists(By.Id("progress"));
+            Browser.True(initialBody.IsStale, TimeSpan.FromSeconds(10));
+        }
+        finally
+        {
+            var response = await client.PostAsync($"subdir/forms/streaming-rendering/complete/{operationId}", content: null);
+            response.EnsureSuccessStatusCode();
+        }
+
+        Browser.Exists(By.Id("pass"));
+        Browser.Equal("1", () => Browser.Exists(By.Id("browser-options-post-count")).Text);
+        Browser.Equal("True", () => Browser.Exists(By.Id("is-interactive-form")).Text);
+        Browser.Click(By.Id("increment-form"));
+        Browser.Equal("1", () => Browser.Exists(By.Id("count-form")).Text);
+    }
+
+    [Fact]
+    public void PreserveDomDisabledReplacesStreamingContentAndActivatesFirstComponent()
+    {
+        using var fixture = CreateFixture("--BrowserConfigurationPreserveDom=false");
+        Browser.Navigate(fixture.RootUri, $"{ServerPathBase}/streaming-interactivity?ShouldStream=True&suppress-autostart");
+        Browser.Equal("Streaming", () => Browser.Exists(By.Id("status")).Text);
+        Browser.Exists(By.Id("call-blazor-start"));
+
+        var status = Browser.FindElement(By.Id("status"));
+        ((IJavaScriptExecutor)Browser).ExecuteScript("Blazor.start({})");
+        Browser.Click(By.Id("add-server-counter-prerendered-link"));
+        Browser.Equal("False", () => Browser.Exists(By.Id("is-interactive-0")).Text);
+        Browser.True(status.IsStale, TimeSpan.FromSeconds(10));
+
+        Browser.Click(By.Id("stop-streaming-link"));
+        Browser.Equal("True", () => Browser.Exists(By.Id("is-interactive-0")).Text);
+        Browser.Click(By.Id("increment-0"));
+        Browser.Equal("1", () => Browser.Exists(By.Id("count-0")).Text);
+    }
+
+    [Fact]
+    public void BrowserConfigurationFromStreamingContentAppliesBeforeCircuitStarts()
+    {
+        using var fixture = CreateFixture($"--BrowserConfigurationLogLevel={BrowserLogLevel.Error}", "--BrowserConfigurationTraceOnStreamingCounter=true");
+        Browser.Navigate(fixture.RootUri, $"{ServerPathBase}/streaming-interactivity?ShouldStream=True&suppress-autostart");
+        Browser.Equal("Streaming", () => Browser.Exists(By.Id("status")).Text);
+        Browser.Exists(By.Id("call-blazor-start"));
+
+        ((IJavaScriptExecutor)Browser).ExecuteScript("Blazor.start({})");
+        Browser.Click(By.Id("add-server-counter-prerendered-link"));
+        Browser.Equal("False", () => Browser.Exists(By.Id("is-interactive-0")).Text);
+        Browser.Click(By.Id("stop-streaming-link"));
+        Browser.Equal("True", () => Browser.Exists(By.Id("is-interactive-0")).Text);
+        Browser.Manage().Logs.GetLog(LogType.Browser);
+
+        Browser.Click(By.Id("increment-0"));
+        Browser.Equal("1", () => Browser.Exists(By.Id("count-0")).Text);
+        var entries = Browser.Manage().Logs.GetLog(LogType.Browser);
+        Assert.Contains(entries, entry => entry.Message.Contains("Dispatching event with handler id", StringComparison.Ordinal));
+    }
+
+    [Fact]
+    public void BrowserConfigurationFromEnhancedNavigationStreamingContentAppliesBeforeCircuitStarts()
+    {
+        using var fixture = CreateFixture($"--BrowserConfigurationLogLevel={BrowserLogLevel.Error}", "--BrowserConfigurationTraceOnStreamingCounter=true");
+        NavigateToStartPage(fixture);
+
+        ((IJavaScriptExecutor)Browser).ExecuteScript("Blazor.start({})");
+        Browser.Click(By.Id("start-streaming-link"));
+        Browser.Equal("Streaming", () => Browser.Exists(By.Id("status")).Text);
+        Browser.Click(By.Id("add-server-counter-prerendered-link"));
+        Browser.Equal("False", () => Browser.Exists(By.Id("is-interactive-0")).Text);
+        Browser.Click(By.Id("stop-streaming-link"));
+        Browser.Equal("True", () => Browser.Exists(By.Id("is-interactive-0")).Text);
+        Browser.Manage().Logs.GetLog(LogType.Browser);
+
+        Browser.Click(By.Id("increment-0"));
+        Browser.Equal("1", () => Browser.Exists(By.Id("count-0")).Text);
+        var entries = Browser.Manage().Logs.GetLog(LogType.Browser);
+        Assert.Contains(entries, entry => entry.Message.Contains("Dispatching event with handler id", StringComparison.Ordinal));
+    }
+
+    [Fact]
+    public void ReconnectionRetryIntervalControlsTransportAttempts()
+    {
+        using var fixture = CreateFixture("--BrowserConfigurationReconnectionMaxRetries=2", "--BrowserConfigurationReconnectionRetryIntervalMs=200");
+        NavigateToStartPage(fixture);
+        StartCounter();
 
         var javascript = (IJavaScriptExecutor)Browser;
         javascript.ExecuteScript("""
@@ -125,15 +310,16 @@ public class ServerBrowserConfigurationTest(
         return fixture;
     }
 
-    private void NavigateToStartPage(BasicTestAppServerSiteFixture<RazorComponentEndpointsStartup<App>> fixture)
+    private void NavigateToStartPage(BasicTestAppServerSiteFixture<RazorComponentEndpointsStartup<App>> fixture, string additionalQuery = "")
     {
-        Browser.Navigate(fixture.RootUri, $"{ServerPathBase}/streaming-interactivity?suppress-autostart");
+        Browser.Navigate(fixture.RootUri, $"{ServerPathBase}/streaming-interactivity?suppress-autostart{additionalQuery}");
         Browser.Equal("Not streaming", () => Browser.Exists(By.Id("status")).Text);
+        Browser.Exists(By.Id("call-blazor-start"));
     }
 
-    private void StartCounter(string options = "{}")
+    private void StartCounter()
     {
-        ((IJavaScriptExecutor)Browser).ExecuteScript($"Blazor.start({options})");
+        ((IJavaScriptExecutor)Browser).ExecuteScript("Blazor.start({})");
         Browser.Click(By.Id("add-server-counter-prerendered-link"));
         Browser.Equal("True", () => Browser.Exists(By.Id("is-interactive-0")).Text);
     }

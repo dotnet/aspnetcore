@@ -1,5 +1,13 @@
 export function beforeWebStart(options) {
     options.webAssembly.loadBootResource ??= (type, name) => `WasmMinimal/_framework/${name}`;
+    if (new URLSearchParams(location.search).has('initializer-circuit-log-trace')) {
+        options.circuit.logLevel = 0;
+        window.circuitLogInitializerRan = true;
+    }
+    if (new URLSearchParams(location.search).has('initializer-preserve-dom')) {
+        options.ssr.disableDomPreservation = false;
+        window.preserveDomInitializerRan = true;
+    }
 }
 
 export function beforeWebAssemblyStart() {

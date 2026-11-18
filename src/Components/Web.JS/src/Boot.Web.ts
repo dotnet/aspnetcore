@@ -16,7 +16,7 @@ import { Blazor } from './GlobalExports';
 import { WebStartOptions } from './Platform/WebStartOptions';
 import { attachStreamingRenderingListener } from './Rendering/StreamingRendering';
 import { resetScrollIfNeeded, ScrollResetSchedule } from './Rendering/Renderer';
-import { NavigationEnhancementCallbacks, attachProgressivelyEnhancedNavigationListener } from './Services/NavigationEnhancement';
+import { NavigationEnhancementCallbacks, attachProgressivelyEnhancedNavigationListener, updateProgrammaticEnhancedNavigationHandler } from './Services/NavigationEnhancement';
 import { WebRootComponentManager } from './Services/WebRootComponentManager';
 import { hasProgrammaticEnhancedNavigationHandler, performProgrammaticEnhancedNavigation } from './Services/NavigationUtils';
 import { attachComponentDescriptorHandler, registerAllComponentDescriptors } from './Rendering/DomMerging/DomSync';
@@ -37,6 +37,7 @@ let initialOptions: {
   logLevel?: LogLevel;
   circuitLogLevel?: LogLevel;
   circuitInactivityTimeoutMs?: number;
+  disableDomPreservation?: boolean;
   reconnectionRetryIntervalMilliseconds?: ReconnectionOptions['retryIntervalMilliseconds'];
 };
 
@@ -52,6 +53,7 @@ function boot(options?: Partial<WebStartOptions>) : Promise<void> {
     logLevel: options.logLevel,
     circuitLogLevel: options.circuit?.logLevel,
     circuitInactivityTimeoutMs: options.ssr?.circuitInactivityTimeoutMs,
+    disableDomPreservation: options.ssr?.disableDomPreservation,
     reconnectionRetryIntervalMilliseconds: options.circuit?.reconnectionOptions?.retryIntervalMilliseconds,
   };
   options.logLevel ??= LogLevel.Error;
@@ -76,6 +78,7 @@ function boot(options?: Partial<WebStartOptions>) : Promise<void> {
     beforeDomUpdate: (source) => {
       updateOptionsFromBrowserConfiguration(options, source);
     },
+    isDomPreservationDisabled: () => options.ssr?.disableDomPreservation === true,
     documentUpdated: () => {
       rootComponentManager.onDocumentUpdated();
       resetScrollIfNeeded(ScrollResetSchedule.AfterDocumentUpdate);
@@ -89,10 +92,7 @@ function boot(options?: Partial<WebStartOptions>) : Promise<void> {
 
   attachComponentDescriptorHandler(rootComponentManager);
   attachStreamingRenderingListener(options?.ssr, navigationEnhancementCallbacks);
-
-  if (!options?.ssr?.disableDomPreservation) {
-    attachProgressivelyEnhancedNavigationListener(navigationEnhancementCallbacks);
-  }
+  attachProgressivelyEnhancedNavigationListener(navigationEnhancementCallbacks);
 
   enableFocusOnNavigate(jsEventRegistry);
 
@@ -125,7 +125,39 @@ function onInitialDomContentLoaded(options: Partial<WebStartOptions>) {
   options.circuit = initialCircuitOptions;
   options.webAssembly = options.webAssembly || ({} as WebAssemblyStartOptions);
   const logger = new ConsoleLogger(initialCircuitOptions.logLevel);
-  const initializersPromise = fetchAndInvokeInitializers(options, logger);
+  const initialSsrOptions = options.ssr || {};
+  options.ssr = initialSsrOptions;
+  const initializerSsrOptions = new Proxy(initialSsrOptions, {
+    set(target, property, value) {
+      if (property === 'disableDomPreservation') {
+        initialOptions.disableDomPreservation = value;
+      }
+      const result = Reflect.set(target, property, value);
+      if (property === 'disableDomPreservation') {
+        updateProgrammaticEnhancedNavigationHandler();
+      }
+      return result;
+    },
+  });
+  const initializerCircuitOptions = new Proxy(initialCircuitOptions, {
+    set(target, property, value) {
+      if (property === 'logLevel') {
+        initialOptions.circuitLogLevel = value;
+      }
+      return Reflect.set(target, property, value);
+    },
+  });
+  const initializerOptions = new Proxy(options, {
+    get(target, property, receiver) {
+      if (property === 'ssr' && target.ssr === initialSsrOptions) {
+        return initializerSsrOptions;
+      }
+      return property === 'circuit' && target.circuit === initialCircuitOptions
+        ? initializerCircuitOptions
+        : Reflect.get(target, property, receiver);
+    },
+  });
+  const initializersPromise = fetchAndInvokeInitializers(initializerOptions, logger);
   setCircuitOptions(resolveConfiguredOptions(initializersPromise, initialCircuitOptions));
   setWebAssemblyOptions(resolveConfiguredOptions(initializersPromise, options.webAssembly));
 
@@ -149,7 +181,8 @@ function updateOptionsFromBrowserConfiguration(options: Partial<WebStartOptions>
     if (browserConfig.ssr) {
       options.ssr = options.ssr || {};
       if (browserConfig.ssr.disableDomPreservation !== undefined) {
-        options.ssr.disableDomPreservation = browserConfig.ssr.disableDomPreservation;
+        options.ssr.disableDomPreservation = initialOptions.disableDomPreservation ?? browserConfig.ssr.disableDomPreservation;
+        updateProgrammaticEnhancedNavigationHandler();
       }
       if (browserConfig.ssr.circuitInactivityTimeoutMs !== undefined) {
         options.ssr.circuitInactivityTimeoutMs = initialOptions.circuitInactivityTimeoutMs ?? browserConfig.ssr.circuitInactivityTimeoutMs;
