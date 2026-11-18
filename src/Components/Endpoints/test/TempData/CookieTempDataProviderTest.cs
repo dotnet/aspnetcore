@@ -82,6 +82,19 @@ public class CookieTempDataProviderTest
     }
 
     [Fact]
+    public void Save_EscapesSemicolonInPathBase()
+    {
+        var httpContext = new DefaultHttpContext();
+        httpContext.Request.PathBase = "/a;b";
+        var tempData = CreateTempData();
+        tempData["Key1"] = "Value1";
+
+        _cookieTempDataProvider.SaveTempData(httpContext, tempData.Save());
+
+        Assert.Contains("path=/a%3Bb", httpContext.Response.Headers.SetCookie.ToString(), StringComparison.Ordinal);
+    }
+
+    [Fact]
     public void Save_ThrowsForUnsupportedType()
     {
         var httpContext = CreateHttpContext();

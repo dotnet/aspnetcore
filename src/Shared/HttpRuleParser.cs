@@ -4,6 +4,7 @@
 using System.Buffers;
 using System.Diagnostics.Contracts;
 using System.Globalization;
+using System.Runtime.CompilerServices;
 using System.Text;
 using Microsoft.Extensions.Primitives;
 
@@ -109,6 +110,35 @@ internal static class HttpRuleParser
 
         // All characters between startIndex and the end of the string are LWS characters.
         return input.Length - startIndex;
+    }
+
+    // Returns the length of the run of separator characters and LWS at the start of input.
+    // Used to skip long runs of empty list elements (e.g. ",,,,") without a per-char loop.
+    [MethodImpl(MethodImplOptions.NoInlining)]
+    internal static int GetSeparatorsAndWhitespaceLength(StringSegment input, int startIndex, char separator)
+    {
+        var current = startIndex;
+        while (current < input.Length)
+        {
+            var index = input.AsSpan(current).IndexOfAnyExcept(separator, SP, Tab);
+            if (index < 0)
+            {
+                return input.Length - startIndex;
+            }
+
+            current += index;
+
+            // Handle obsolete line folding (CRLF followed by SP or HT).
+            var whitespaceLength = GetWhitespaceLength(input, current);
+            if (whitespaceLength == 0)
+            {
+                break;
+            }
+
+            current += whitespaceLength;
+        }
+
+        return current - startIndex;
     }
 
     internal static int GetNumberLength(StringSegment input, int startIndex, bool allowDecimal)

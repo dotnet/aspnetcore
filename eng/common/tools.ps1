@@ -811,7 +811,9 @@ function MSBuild() {
     }
   }
 
-  $cmdArgs = "$($buildTool.Command) /m /nologo /clp:Summary /v:$verbosity /nr:$nodeReuse /p:ContinuousIntegrationBuild=$ci"
+  $restoreSwitch = if ($restore) { ' /restore' } else { '' }
+
+  $cmdArgs = "$($buildTool.Command)$restoreSwitch /m /nologo /clp:Summary /v:$verbosity /nr:$nodeReuse /p:ContinuousIntegrationBuild=$ci"
 
   # Build with MSBuild's multi-threaded mode, but not with msbuild.exe (VS MSBuild) for now.
   # TODO: Enable for VS MSBuild as well: https://github.com/dotnet/dotnet/issues/9989

@@ -1036,7 +1036,9 @@ public partial class HubConnection : IAsyncDisposable
         for (var i = 0; i < args.Length; i++)
         {
             var arg = args[i];
-            if (arg is not null && ReflectionHelper.IsStreamingType(arg.GetType()))
+            // Primitives, strings, enums, DateTime and decimal can never be streams, skip the reflection check
+            // for them since it allocates (Type.GetInterfaces) for every argument on every send.
+            if (arg is not null && Type.GetTypeCode(arg.GetType()) == TypeCode.Object && ReflectionHelper.IsStreamingType(arg.GetType()))
             {
                 isStreaming[i] = true;
                 newArgsCount--;
