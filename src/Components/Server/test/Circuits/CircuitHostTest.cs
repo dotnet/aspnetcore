@@ -1141,12 +1141,15 @@ public class CircuitHostTest
     }
 
     [Fact]
-    public async Task UpdateRootComponents_DoesNotUpdateExistingRootComponent_WhenDescriptorComponentTypeDoesNotMatchRootComponentType()
+    public async Task UpdateRootComponents_DoesNotApplyQueuedUpdate_WhenDescriptorComponentTypeDoesNotMatchRootComponentType()
     {
         // Arrange
+        var renderer = GetRemoteRenderer();
         var circuitHost = TestCircuitHost.Create(
-            remoteRenderer: GetRemoteRenderer(),
+            remoteRenderer: renderer,
             serviceScope: new ServiceCollection().BuildServiceProvider().CreateAsyncScope());
+        var unhandledExceptions = new List<Exception>();
+        circuitHost.UnhandledException += (_, eventArgs) => unhandledExceptions.Add((Exception)eventArgs.ExceptionObject);
 
         // Arrange
         var expectedMessage = "Existing message";
@@ -1155,27 +1158,30 @@ public class CircuitHostTest
             [nameof(DynamicallyAddedComponent.Message)] = expectedMessage,
         });
 
-        await AddComponentAsync<TestComponent>(circuitHost, 2, []);
-
         Dictionary<string, object> parameters = new()
         {
             [nameof(DynamicallyAddedComponent.Message)] = "Updated message",
         };
 
         // Act
-        var evt = await Assert.RaisesAsync<UnhandledExceptionEventArgs>(
-            handler => circuitHost.UnhandledException += new UnhandledExceptionEventHandler(handler),
-            handler => circuitHost.UnhandledException -= new UnhandledExceptionEventHandler(handler),
-            () => UpdateComponentAsync<TestComponent /* Note the incorrect component type */>(circuitHost, 1, parameters));
+        var failedUpdate = circuitHost.UpdateRootComponents(new()
+        {
+            Operations = [CreateRootComponentOperation<TestComponent>(RootComponentOperationType.Update, 1, parameters)],
+        }, null, false, CancellationToken.None);
+        var queuedUpdate = circuitHost.UpdateRootComponents(new()
+        {
+            Operations = [CreateRootComponentOperation<DynamicallyAddedComponent>(RootComponentOperationType.Add, 3)],
+        }, null, false, CancellationToken.None);
+        await Task.WhenAll(failedUpdate, queuedUpdate);
 
         // Assert
         var componentState = ((TestRemoteRenderer)circuitHost.Renderer).GetTestComponentState(0);
         var component = Assert.IsType<DynamicallyAddedComponent>(componentState.Component);
         Assert.Equal(expectedMessage, component.Message);
 
-        Assert.NotNull(evt);
-        var exception = Assert.IsType<InvalidOperationException>(evt.Arguments.ExceptionObject);
+        var exception = Assert.IsType<InvalidOperationException>(Assert.Single(unhandledExceptions));
         Assert.Equal("Cannot update components with mismatching types.", exception.Message);
+        Assert.DoesNotContain(renderer.GetOrCreateWebRootComponentManager().GetRootComponents(), component => component.id == 3);
     }
 
     [Fact]
@@ -1295,7 +1301,7 @@ public class CircuitHostTest
     [Fact]
     public async Task UpdateRootComponents_CanRemoveRootComponentBeforeInitialRenderReachesQuiescence()
     {
-        var lifecycle = new CompletesInitializationOnDisposeLifecycle();
+        var lifecycle = new CompletesInitializationOnDisposeLifecycle(completeInitializationOnDispose: false);
         var renderer = GetRemoteRenderer(services => services.AddSingleton(lifecycle));
         var acknowledgedBatches = new List<long>();
         var client = new Mock<ISingleClientProxy>();
@@ -1328,12 +1334,13 @@ public class CircuitHostTest
 
         try
         {
-            await Task.WhenAll(firstUpdate, secondUpdate).WaitAsync(TimeSpan.FromSeconds(5));
+            await secondUpdate.WaitAsync(TimeSpan.FromSeconds(5));
 
             Assert.True(lifecycle.Disposed);
+            Assert.False(firstUpdate.IsCompleted);
             Assert.Empty(unhandledExceptions);
             Assert.Equal([2], renderer.GetOrCreateWebRootComponentManager().GetRootComponents().Select(component => component.id));
-            Assert.Equal([1L, 2L], acknowledgedBatches);
+            Assert.Equal([2L], acknowledgedBatches);
         }
         finally
         {
@@ -1993,7 +2000,7 @@ public class CircuitHostTest
         }
     }
 
-    private sealed class CompletesInitializationOnDisposeLifecycle
+    private sealed class CompletesInitializationOnDisposeLifecycle(bool completeInitializationOnDispose = true)
     {
         private readonly TaskCompletionSource _initializationStarted = new(TaskCreationOptions.RunContinuationsAsynchronously);
         private readonly TaskCompletionSource _initialization = new(TaskCreationOptions.RunContinuationsAsynchronously);
@@ -2009,7 +2016,10 @@ public class CircuitHostTest
         public void NotifyDisposed()
         {
             Disposed = true;
-            _initialization.TrySetResult();
+            if (completeInitializationOnDispose)
+            {
+                _initialization.TrySetResult();
+            }
         }
 
         public void ReleaseInitialization() => _initialization.TrySetResult();

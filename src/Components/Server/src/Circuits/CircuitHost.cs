@@ -39,8 +39,7 @@ internal partial class CircuitHost : IAsyncDisposable
     private bool _disposed;
     private bool _rootComponentUpdateQueueOverflowed;
     private int _pendingRootComponentUpdates;
-    private Task _rootComponentOperationsTask = Task.CompletedTask;
-    private Task _rootComponentUpdateTask = Task.CompletedTask;
+    private Task<bool> _rootComponentOperationsTask = Task.FromResult(true);
     private long _startTime;
     private ResumedPersistedCircuitState _persistedCircuitState;
 
@@ -794,16 +793,11 @@ internal partial class CircuitHost : IAsyncDisposable
                 {
                     _pendingRootComponentUpdates++;
                     var previousOperations = _rootComponentOperationsTask;
-                    var previousUpdate = _rootComponentUpdateTask;
-                    var operationsApplied = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
-                    var updateCompletion = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+                    var operationsApplied = new TaskCompletionSource<bool>(TaskCreationOptions.RunContinuationsAsynchronously);
                     _rootComponentOperationsTask = operationsApplied.Task;
-                    _rootComponentUpdateTask = updateCompletion.Task;
                     return UpdateRootComponentsCore(
                         previousOperations,
                         operationsApplied,
-                        previousUpdate,
-                        updateCompletion,
                         operationBatch,
                         store,
                         isRestore,
@@ -826,29 +820,21 @@ internal partial class CircuitHost : IAsyncDisposable
         return Task.CompletedTask;
     }
 
-    private void CompleteRootComponentOperations(TaskCompletionSource operationsApplied)
+    private void CompleteRootComponentOperations(TaskCompletionSource<bool> operationsApplied, bool succeeded)
     {
         lock (_rootComponentUpdateLock)
         {
             if (!operationsApplied.Task.IsCompleted)
             {
                 _pendingRootComponentUpdates--;
-                operationsApplied.SetResult();
+                operationsApplied.SetResult(succeeded);
             }
         }
     }
 
-    private void CompleteRootComponentUpdate(TaskCompletionSource operationsApplied, TaskCompletionSource updateCompletion)
-    {
-        CompleteRootComponentOperations(operationsApplied);
-        updateCompletion.SetResult();
-    }
-
     private async Task UpdateRootComponentsCore(
-        Task previousOperations,
-        TaskCompletionSource operationsApplied,
-        Task previousUpdate,
-        TaskCompletionSource updateCompletion,
+        Task<bool> previousOperations,
+        TaskCompletionSource<bool> operationsApplied,
         RootComponentOperationBatch operationBatch,
         IClearableStore store,
         bool isRestore,
@@ -858,7 +844,11 @@ internal partial class CircuitHost : IAsyncDisposable
         {
             try
             {
-                await previousOperations.WaitAsync(_rootComponentUpdateCancellation.Token);
+                if (!await previousOperations.WaitAsync(_rootComponentUpdateCancellation.Token))
+                {
+                    store?.Clear();
+                    return;
+                }
                 _rootComponentUpdateCancellation.Token.ThrowIfCancellationRequested();
             }
             catch (OperationCanceledException) when (_rootComponentUpdateCancellation.IsCancellationRequested)
@@ -880,16 +870,6 @@ internal partial class CircuitHost : IAsyncDisposable
 
             try
             {
-                await previousUpdate.WaitAsync(_rootComponentUpdateCancellation.Token);
-                _rootComponentUpdateCancellation.Token.ThrowIfCancellationRequested();
-            }
-            catch (OperationCanceledException) when (_rootComponentUpdateCancellation.IsCancellationRequested)
-            {
-                return;
-            }
-
-            try
-            {
                 await Client.SendAsync("JS.EndUpdateRootComponents", operationBatch.BatchId, CancellationToken.None);
                 Log.UpdateRootComponentsSucceeded(_logger);
             }
@@ -902,7 +882,7 @@ internal partial class CircuitHost : IAsyncDisposable
         }
         finally
         {
-            CompleteRootComponentUpdate(operationsApplied, updateCompletion);
+            CompleteRootComponentOperations(operationsApplied, succeeded: false);
         }
     }
 
@@ -911,7 +891,7 @@ internal partial class CircuitHost : IAsyncDisposable
         IClearableStore store,
         bool isRestore,
         CancellationToken cancellation,
-        TaskCompletionSource operationsApplied)
+        TaskCompletionSource<bool> operationsApplied)
     {
         var shouldClearStore = false;
         var shouldWaitForQuiescence = false;
@@ -1019,7 +999,7 @@ internal partial class CircuitHost : IAsyncDisposable
         RootComponentOperation[] operations,
         bool shouldWaitForQuiescence,
         Task postStateTask,
-        TaskCompletionSource operationsApplied)
+        TaskCompletionSource<bool> operationsApplied)
     {
         var webRootComponentManager = Renderer.GetOrCreateWebRootComponentManager();
         webRootComponentManager.SetCurrentUpdateTask(postStateTask);
@@ -1063,7 +1043,7 @@ internal partial class CircuitHost : IAsyncDisposable
             return Task.CompletedTask;
         });
 
-        CompleteRootComponentOperations(operationsApplied);
+        CompleteRootComponentOperations(operationsApplied, succeeded: true);
 
         if (pendingTasks != null)
         {
