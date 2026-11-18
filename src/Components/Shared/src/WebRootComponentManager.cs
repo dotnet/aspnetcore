@@ -3,6 +3,7 @@
 
 using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
+using System.Linq;
 using static Microsoft.AspNetCore.Internal.LinkerFlags;
 
 #if COMPONENTS_SERVER
@@ -114,6 +115,9 @@ internal partial class WebAssemblyRenderer
             _pendingRootComponentInitializations = pendingRootComponentInitializations;
         }
 
+        internal Task WaitForPendingRenderStartsAsync()
+            => Task.WhenAll(_webRootComponents.Values.Select(component => component.RenderStarted));
+
         private sealed class WebRootComponent
         {
             [DynamicallyAccessedMembers(Component)]
@@ -127,6 +131,7 @@ internal partial class WebAssemblyRenderer
             private bool _removed;
 
             public bool IsInitialized => _interactiveComponentId >= 0;
+            public Task RenderStarted { get; private set; } = Task.CompletedTask;
 
             public static WebRootComponent Create(
                 Renderer renderer,
@@ -247,23 +252,48 @@ internal partial class WebAssemblyRenderer
             public async Task RenderAsync(Renderer renderer, Task updateTask)
             {
                 var version = _version;
-                await updateTask;
-                if (!_removed && version == _version && IsInitialized)
+                var renderStarted = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+                RenderStarted = renderStarted.Task;
+                var renderTask = Task.CompletedTask;
+                try
                 {
-                    await renderer.RenderRootComponentAsync(_interactiveComponentId, _latestParameters.Parameters);
+                    await updateTask;
+                    if (!_removed && version == _version && IsInitialized)
+                    {
+                        renderTask = renderer.RenderRootComponentAsync(_interactiveComponentId, _latestParameters.Parameters);
+                    }
                 }
+                finally
+                {
+                    renderStarted.SetResult();
+                }
+
+                await renderTask;
             }
 
             private void EnqueueInitialization(Renderer renderer, List<Action> pendingRootComponentInitializations)
             {
                 var version = _version;
+                var executionContext = ExecutionContext.Capture();
                 pendingRootComponentInitializations.Add(() =>
                 {
                     if (!_removed && version == _version)
                     {
-                        _interactiveComponentId = renderer.AddRootComponent(_componentType, _ssrComponentIdString);
+                        if (executionContext is null)
+                        {
+                            Initialize(null);
+                        }
+                        else
+                        {
+                            ExecutionContext.Run(executionContext, Initialize, null);
+                        }
                     }
                 });
+
+                void Initialize(object? state)
+                {
+                    _interactiveComponentId = renderer.AddRootComponent(_componentType, _ssrComponentIdString);
+                }
             }
 
             public void Remove(Renderer renderer)

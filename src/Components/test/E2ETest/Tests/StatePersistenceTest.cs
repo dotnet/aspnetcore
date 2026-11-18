@@ -9,7 +9,6 @@ using Microsoft.AspNetCore.Components.E2ETests.ServerRenderingTests;
 using Microsoft.AspNetCore.Components.Web;
 using Microsoft.AspNetCore.E2ETesting;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Logging.Testing;
 using OpenQA.Selenium;
 using TestServer;
 using Xunit.Abstractions;
@@ -374,7 +373,6 @@ public class StatePersistenceTest : ServerTestBase<BasicTestAppServerSiteFixture
         Browser.Equal("Current count: 1", () => Browser.Exists(By.CssSelector("p[role='status']")).Text);
     }
 
-    // Regression coverage for issue 70390: initial circuit startup overlaps enhanced navigation.
     [Theory]
     [InlineData(false)]
     [InlineData(true)]
@@ -411,14 +409,12 @@ public class StatePersistenceTest : ServerTestBase<BasicTestAppServerSiteFixture
             }
 
             Browser.Equal("loading", () => Browser.FindElement(By.Id("startup-slow-status")).Text);
-            var sink = _serverFixture.Host.Services.GetRequiredService<TestSink>();
-            var updatesBeforeBack = sink.Writes.Count(entry => entry.EventId.Name == "UpdateRootComponentsStarted");
             Browser.Navigate().Back();
             Browser.Exists(By.Id("startup-state-value"));
             Assert.True((bool)js.ExecuteScript("return window.startupNegotiationBlocked === true"));
             var restoredState = Browser.FindElement(By.Id("startup-state-value")).Text;
             Assert.True(Guid.TryParse(restoredState, out _));
-            Browser.True(() => sink.Writes.Count(entry => entry.EventId.Name == "UpdateRootComponentsStarted") > updatesBeforeBack);
+            Browser.True(() => _serverFixture.Host.Services.GetRequiredService<AutoPauseTestStreamGate>().IsCompleted($"{testId}:disposed"));
 
             using var release = await client.PostAsync(releaseUri, null);
             release.EnsureSuccessStatusCode();

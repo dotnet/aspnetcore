@@ -33,6 +33,8 @@ internal partial class CircuitHost : IAsyncDisposable
     private bool _isFirstUpdate = true;
     private Task _rootComponentOperationsTask = Task.CompletedTask;
     private Task _rootComponentStateTask = Task.CompletedTask;
+    private readonly TaskCompletionSource _rootComponentPauseRequested = new(TaskCreationOptions.RunContinuationsAsynchronously);
+    private bool _pausingRootComponents;
     private bool _rootComponentUpdateFailed;
     private bool _onConnectionUpFired;
     private bool _onConnectionDownFired;
@@ -777,6 +779,11 @@ internal partial class CircuitHost : IAsyncDisposable
 
         return Renderer.Dispatcher.InvokeAsync(async () =>
         {
+            if (_pausingRootComponents)
+            {
+                return;
+            }
+
             // Removals must be able to dispose components whose initialization is keeping the previous state alive.
             var previousOperationsTask = _rootComponentOperationsTask;
             var previousStateTask = _rootComponentStateTask;
@@ -862,7 +869,8 @@ internal partial class CircuitHost : IAsyncDisposable
 
                     var operationsTask = PerformRootComponentOperations(operations, shouldWaitForQuiescence, postRemovalTask, operationsCompletionSource, pendingRootComponentInitializations);
 
-                    await Task.WhenAll(operationsTask.AsTask(), postRemovalTask);
+                    await operationsTask;
+                    await postRemovalTask;
                 }
                 catch (RootComponentUpdateAbortedException)
                 {
@@ -871,6 +879,7 @@ internal partial class CircuitHost : IAsyncDisposable
                 catch
                 {
                     _rootComponentUpdateFailed = true;
+                    _ = ObserveRootComponentOperation(postRemovalTask, postRemovalTask);
                     throw;
                 }
                 finally
@@ -885,7 +894,7 @@ internal partial class CircuitHost : IAsyncDisposable
                     finally
                     {
                         operationsCompletionSource.TrySetResult();
-                        stateCompletionSource.SetResult();
+                        _ = CompleteRootComponentStateAsync(previousStateTask, stateCompletionSource);
                     }
                 }
 
@@ -909,6 +918,11 @@ internal partial class CircuitHost : IAsyncDisposable
         List<Action> pendingRootComponentInitializations)
     {
         await operationsTask;
+        if (_rootComponentUpdateFailed || _disposed)
+        {
+            throw new RootComponentUpdateAbortedException();
+        }
+
         await previousStateTask;
         if (_rootComponentUpdateFailed || _disposed)
         {
@@ -916,15 +930,44 @@ internal partial class CircuitHost : IAsyncDisposable
         }
 
         // New subscriptions must not observe state belonging to an earlier batch.
-        foreach (var initialize in pendingRootComponentInitializations)
+        try
         {
-            initialize();
+            foreach (var initialize in pendingRootComponentInitializations)
+            {
+                initialize();
+            }
+        }
+        finally
+        {
+            pendingRootComponentInitializations.Clear();
         }
 
         if (store is not null)
         {
             var manager = _scope.ServiceProvider.GetRequiredService<ComponentStatePersistenceManager>();
             await manager.RestoreStateAsync(store, RestoreContext.ValueUpdate);
+        }
+    }
+
+    private static async Task CompleteRootComponentStateAsync(Task previousStateTask, TaskCompletionSource completionSource)
+    {
+        await previousStateTask;
+        completionSource.SetResult();
+    }
+
+    internal async Task PrepareForPauseAsync()
+    {
+        Renderer.Dispatcher.AssertAccess();
+        _pausingRootComponents = true;
+        _rootComponentPauseRequested.TrySetResult();
+
+        // Pausing ends the initial state lifetime without waiting for initialization that may require disposal.
+        await _rootComponentStateTask;
+        await Renderer.GetOrCreateWebRootComponentManager().WaitForPendingRenderStartsAsync();
+        AssertNotDisposed();
+        if (_rootComponentUpdateFailed)
+        {
+            throw new InvalidOperationException("Cannot pause a circuit after root component updates failed.");
         }
     }
 
@@ -998,7 +1041,15 @@ internal partial class CircuitHost : IAsyncDisposable
 
         if (pendingTasks != null)
         {
-            await Task.WhenAll(pendingTasks);
+            var quiescenceTask = Task.WhenAll(pendingTasks);
+            if (await Task.WhenAny(quiescenceTask, _rootComponentPauseRequested.Task) == quiescenceTask)
+            {
+                await quiescenceTask;
+            }
+            else
+            {
+                _ = ObserveRootComponentOperation(quiescenceTask, postStateTask);
+            }
         }
     }
 

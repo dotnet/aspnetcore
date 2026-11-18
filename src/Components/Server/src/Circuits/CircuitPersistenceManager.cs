@@ -24,6 +24,7 @@ internal partial class CircuitPersistenceManager(
     {
         await circuit.Renderer.Dispatcher.InvokeAsync(async () =>
         {
+            await circuit.PrepareForPauseAsync();
             var renderer = circuit.Renderer;
             var persistenceManager = circuit.Services.GetRequiredService<ComponentStatePersistenceManager>();
             var collector = new CircuitPersistenceManagerCollector(circuitOptions, serverComponentSerializer, circuit.Renderer);
