@@ -608,16 +608,6 @@ function init(dotNetHelper: DotNet.DotNetObject, spacerBefore: HTMLElement, spac
     }
   }
 
-  function handleUserPointerDown(event: PointerEvent): void {
-    // A native scrollbar drag dispatches pointerdown on the scroll target but no
-    // pointermove. Ignore bubbled pointerdown events from unrelated controls.
-    const target = event.target as Node | null;
-    if (!target || (target !== scrollElement && target !== document.documentElement && target !== document.body)) {
-      return;
-    }
-    handleUserScrollInput();
-  }
-
   function isUserScrollKey(key: string): boolean {
     return ['ArrowUp', 'ArrowDown', 'PageUp', 'PageDown', ' '].includes(key);
   }
@@ -660,7 +650,6 @@ function init(dotNetHelper: DotNet.DotNetObject, spacerBefore: HTMLElement, spac
     keydownTarget.addEventListener('keydown', handleJumpKeys);
     scrollEventTarget.addEventListener('wheel', handleUserScrollInput, { passive: true });
     scrollEventTarget.addEventListener('touchmove', handleUserScrollInput, { passive: true });
-    scrollEventTarget.addEventListener('pointerdown', handleUserPointerDown, { passive: true });
     scrollEventTarget.addEventListener('pointermove', handleUserPointerMove, { passive: true });
   }
 
@@ -668,7 +657,6 @@ function init(dotNetHelper: DotNet.DotNetObject, spacerBefore: HTMLElement, spac
     keydownTarget.removeEventListener('keydown', handleJumpKeys);
     scrollEventTarget.removeEventListener('wheel', handleUserScrollInput);
     scrollEventTarget.removeEventListener('touchmove', handleUserScrollInput);
-    scrollEventTarget.removeEventListener('pointerdown', handleUserPointerDown);
     scrollEventTarget.removeEventListener('pointermove', handleUserPointerMove);
   }
 
