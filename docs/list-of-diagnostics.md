@@ -2,7 +2,7 @@
 
 ## Analyzer Warnings
 
-### ASP (`ASP0000-ASP0039`)
+### ASP (`ASP0000-ASP0040`)
 
 | Diagnostic ID     | Description |
 | :---------------- | :---------- |
@@ -44,6 +44,7 @@
 |  __`ASP0037`__ | \[ValidatableType] cannot be used in generated code |
 |  __`ASP0038`__ | \[ValidatableType] should not be used without a call to 'AddValidation' |
 |  __`ASP0039`__ | Experimental warning for well-known passkey endpoints APIs |
+|  __`ASP0040`__ | Experimental warning for Components.Platform browser API members that have not met the package's stability criteria |
 
 ### API (`API1000-API1003`)
 
@@ -66,7 +67,7 @@
 |  __`MVC1005`__ | Cannot use UseMvc with Endpoint Routing |
 |  __`MVC1006`__ | Methods containing TagHelpers must be async and return Task |
 
-### BL  (`BL0001-BL0019`)
+### BL  (`BL0001-BL0020`)
 
 | Diagnostic ID     | Description |
 | :---------------- | :---------- |
@@ -89,6 +90,7 @@
 |  __`BL0017`__ | Component declares `Dispose()` but does not implement `IDisposable`  |
 |  __`BL0018`__ | Component declares `DisposeAsync()` but does not implement `IAsyncDisposable` |
 |  __`BL0019`__ | Virtualize uses an invalid spacer element |
+|  __`BL0020`__ | RazorComponentResult parameter does not match a component parameter |
 
 ### Request Delegate Generator  (`RDG001-RDG014`)
 

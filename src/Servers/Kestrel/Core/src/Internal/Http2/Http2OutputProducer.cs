@@ -95,6 +95,23 @@ internal sealed class Http2OutputProducer : IHttpOutputProducer, IHttpOutputAbor
         }
     }
 
+    // Called by the frame writer after dequeuing this producer. Returns true if the response has already completed, so there's
+    // nothing left to write. Checking and clearing _isScheduled under the same lock as Schedule() ensures a reused stream can't
+    // be left with _isScheduled set and no queued write.
+    internal bool TryUnscheduleCompletedResponse()
+    {
+        lock (_dataWriterLock)
+        {
+            if (!_completedResponse)
+            {
+                return false;
+            }
+
+            _isScheduled = false;
+            return true;
+        }
+    }
+
     // Useful for debugging the scheduling state in the debugger
     internal (int, long, State, State, long) SchedulingState => (Stream.StreamId, _unconsumedBytes, _unobservedState, _currentState, _streamWindow);
 

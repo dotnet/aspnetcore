@@ -135,7 +135,13 @@ public class Project : IDisposable
             Directory.Delete(TemplateOutputDir, recursive: true);
         }
 
-        using var createExecution = ProcessEx.Run(Output, AppContext.BaseDirectory, DotNetMuxer.MuxerPathOrDefault(), argString, environmentVariables);
+        using var createExecution = ProcessEx.Run(
+            Output,
+            AppContext.BaseDirectory,
+            DotNetMuxer.MuxerPathOrDefault(),
+            argString,
+            environmentVariables,
+            envVarToRemove: _msBuildSdksPathEnvironmentVariable);
         await createExecution.Exited;
 
         var createResult = new ProcessResult(createExecution);
@@ -149,7 +155,13 @@ public class Project : IDisposable
                 argString += $" {restoreArgs}";
             }
 
-            using var restoreExecution = ProcessEx.Run(Output, TemplateOutputDir, DotNetMuxer.MuxerPathOrDefault(), argString, environmentVariables);
+            using var restoreExecution = ProcessEx.Run(
+                Output,
+                TemplateOutputDir,
+                DotNetMuxer.MuxerPathOrDefault(),
+                argString,
+                environmentVariables,
+                envVarToRemove: _msBuildSdksPathEnvironmentVariable);
             await restoreExecution.Exited;
 
             var restoreResult = new ProcessResult(restoreExecution);
@@ -233,7 +245,8 @@ public class Project : IDisposable
         environmentVariables ??= new Dictionary<string, string>();
 
         // The Helix payload places Directory.Build.props outside the generated projects' parent
-        // directory hierarchy, so pass the bootstrap SDK pruning workarounds to child processes.
+        // directory hierarchy, so pass runtime selection and bootstrap SDK pruning workarounds to child processes.
+        environmentVariables["UseMonoRuntime"] = "false";
         environmentVariables["LoadPrunePackageDataFromNearestFramework"] = "true";
         environmentVariables["AllowMissingPrunePackageData"] = "true";
 
@@ -366,7 +379,7 @@ public class Project : IDisposable
             command = "dotnet-ef";
         }
 
-        using var result = ProcessEx.Run(Output, TemplateOutputDir, command, args);
+        using var result = ProcessEx.Run(Output, TemplateOutputDir, command, args, envVarToRemove: _msBuildSdksPathEnvironmentVariable);
         await result.Exited;
         var processResult = new ProcessResult(result);
         Assert.True(0 == processResult.ExitCode, ErrorMessages.GetFailedProcessMessage("run EF migrations", this, processResult));
@@ -386,7 +399,7 @@ public class Project : IDisposable
             command = "dotnet-ef";
         }
 
-        using var result = ProcessEx.Run(Output, TemplateOutputDir, command, args);
+        using var result = ProcessEx.Run(Output, TemplateOutputDir, command, args, envVarToRemove: _msBuildSdksPathEnvironmentVariable);
         await result.Exited;
         var processResult = new ProcessResult(result);
         Assert.True(0 == processResult.ExitCode, ErrorMessages.GetFailedProcessMessage("update database", this, processResult));
@@ -585,7 +598,9 @@ public class Project : IDisposable
             DotNetMuxer.MuxerPathOrDefault(),
             arguments +
                 $" --debug:disable-sdk-templates --debug:custom-hive \"{TemplatePackageInstaller.CustomHivePath}\"" +
-                $" -o {TemplateOutputDir}");
+                $" -o {TemplateOutputDir}",
+            envVars: AddBootstrapSdkEnvironmentVariables(null),
+            envVarToRemove: _msBuildSdksPathEnvironmentVariable);
         await result.Exited;
         Assert.True(result.ExitCode == 0, result.GetFormattedOutput());
     }

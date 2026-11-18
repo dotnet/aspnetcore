@@ -152,7 +152,8 @@
       <!-- BuildJava -->
       <ItemGroup>
         <JavaProjects Include="$(RepoRoot)src\SignalR\**\*.javaproj"
-                      Exclude="@(ProjectToExclude)" />
+                      Exclude="@(ProjectToExclude)"
+                      BuildInParallel="false" />
 
         <ProjectToBuild Condition=" '$(BuildJava)' == 'true'" Include="@(JavaProjects)" Exclude="@(ProjectToExclude)" BuildStep="managed" />
         <ProjectToExclude Condition=" '$(BuildJava)' != 'true'" Include="@(JavaProjects)" />
@@ -190,7 +191,7 @@
                         Condition=" '$(BuildMainlyReferenceProviders)' != 'true' " />
         <DotNetProjects Include="$(RepoRoot)src\Tools\NativeAot\aspnetcoretools\aspnetcoretools.csproj"
                         Exclude="@(ProjectToBuild);@(ProjectToExclude);$(RepoRoot)**\bin\**\*;$(RepoRoot)**\obj\**\*"
-                        Condition=" '$(BuildMainlyReferenceProviders)' != 'true' and '$(DotNetBuildUseMonoRuntime)' != 'true' " />
+                        Condition=" '$(BuildMainlyReferenceProviders)' != 'true' " />
         <!-- Only build the composite R2R runtime pack when we will actually ship it -->
         <DotNetProjects Include="$(RepoRoot)src\Framework\App.Runtime\src\aspnetcore-runtime-composite.proj"
                         Condition=" '$(BuildMainlyReferenceProviders)' != 'true' and '$(TargetOsName)' != 'win' " />

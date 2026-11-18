@@ -1330,7 +1330,7 @@ public class HostingApplicationDiagnosticsTests : LoggedTest
     [InlineData("?q=OpenTelemetry",
                  "q=OpenTelemetry")]
     [InlineData("?X-Amz-Signature=signature&X-Amz-Credential=credential&X-Amz-Security-Token=token&AWSAccessKeyId=key&Signature=signature&sig=sas&X-Goog-Signature=google",
-                 "X-Amz-Signature=REDACTED&X-Amz-Credential=REDACTED&X-Amz-Security-Token=REDACTED&AWSAccessKeyId=key&Signature=signature&sig=REDACTED&X-Goog-Signature=REDACTED")]
+                 "X-Amz-Signature=REDACTED&X-Amz-Credential=REDACTED&X-Amz-Security-Token=REDACTED&AWSAccessKeyId=REDACTED&Signature=REDACTED&sig=REDACTED&X-Goog-Signature=REDACTED")]
     [InlineData("?x-amz-signature=signature&x-amz-credential=credential&x-amz-security-token=token&awsaccesskeyid=key&signature=signature&SIG=sas&x-goog-signature=google",
                  "x-amz-signature=signature&x-amz-credential=credential&x-amz-security-token=token&awsaccesskeyid=key&signature=signature&SIG=sas&x-goog-signature=google")]
     [InlineData("?%73ig=encoded&sig=&sig",
@@ -1485,7 +1485,14 @@ public class HostingApplicationDiagnosticsTests : LoggedTest
         using var listener = new ActivityListener
         {
             ShouldListenTo = activitySource => ReferenceEquals(activitySource, testSource),
-            Sample = (ref ActivityCreationOptions<ActivityContext> _) => ActivitySamplingResult.PropagationData,
+            Sample = (ref ActivityCreationOptions<ActivityContext> options) =>
+            {
+                var tags = options.Tags.ToDictionary();
+                Assert.Equal("GET", tags[HostingTelemetryHelpers.AttributeHttpRequestMethod]);
+                Assert.Equal("http", tags[HostingTelemetryHelpers.AttributeUrlScheme]);
+                Assert.Equal("/hello", tags[HostingTelemetryHelpers.AttributeUrlPath]);
+                return ActivitySamplingResult.PropagationData;
+            },
             ActivityStopped = activity => stoppedActivity = activity
         };
 
@@ -1504,11 +1511,6 @@ public class HostingApplicationDiagnosticsTests : LoggedTest
         Assert.False(stoppedActivity.IsAllDataRequested);
 
         var tags = stoppedActivity.TagObjects.ToDictionary();
-
-        // Verify sampling tags are still present
-        Assert.True(tags.ContainsKey(HostingTelemetryHelpers.AttributeHttpRequestMethod));
-        Assert.True(tags.ContainsKey(HostingTelemetryHelpers.AttributeUrlScheme));
-        Assert.True(tags.ContainsKey(HostingTelemetryHelpers.AttributeUrlPath));
 
         // Verify end tags are NOT present since IsAllDataRequested is false
         Assert.False(tags.ContainsKey(HostingTelemetryHelpers.AttributeHttpResponseStatusCode));

@@ -1,4 +1,7 @@
 ﻿@inherits LayoutComponentBase
+@using Microsoft.Extensions.DependencyInjection
+@implements IDisposable
+@inject IServiceProvider Services
 
 @Body
 
@@ -11,6 +14,43 @@
     <li><a href="PageRequiringAuthorization">Page requiring any authentication</a></li>
     <li><a href="PageRequiringPolicy">Page requiring policy</a></li>
     <li><a href="PageRequiringRole">Page requiring role</a></li>
+    <li><a href="PageRequiringSlowAsyncPolicy">Page requiring slow async policy</a></li>
 </ul>
 
+
+@if (_gate is not null)
+{
+    <button id="release-slow-auth" @onclick="@(() => _gate.Release())">Release slow authorization</button>
+    <span id="slow-auth-settled">@_gate.IsSettled</span>
+}
+
+
 <p>To change the underlying authentication state, <a target="_blank" href="/Authentication">go here</a>.</p>
+
+
+@code {
+    private AsyncAuthorizationGate _gate;
+
+    protected override void OnInitialized()
+    {
+        // Optional, because not every host that renders this layout registers the gate.
+        _gate = Services.GetService<AsyncAuthorizationGate>();
+
+        if (_gate is not null)
+        {
+            _gate.Reset();
+            _gate.OnProgressChanged += OnProgressChanged;
+        }
+    }
+
+    private void OnProgressChanged()
+        => InvokeAsync(StateHasChanged);
+
+    public void Dispose()
+    {
+        if (_gate is not null)
+        {
+            _gate.OnProgressChanged -= OnProgressChanged;
+        }
+    }
+}

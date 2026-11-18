@@ -20,6 +20,7 @@ public class RealServerUsingMinimalBackedIntegrationTests : IClassFixture<Kestre
     }
 
     [Fact]
+    [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/70662", OperatingSystems.Windows)]
     public async Task RetrievesDataFromRealServer()
     {
         // Arrange
@@ -51,6 +52,7 @@ public class RealServerUsingMinimalBackedIntegrationTests : IClassFixture<Kestre
     }
 
     [Fact]
+    [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/67340", OperatingSystems.Windows)]
     public void CanResolveServices()
     {
         // Act

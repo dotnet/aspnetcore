@@ -24,7 +24,7 @@ class WorkflowPolicyTests(unittest.TestCase):
 
     def test_incomplete_analysis_cannot_report_noop(self):
         expected_clauses = (
-            "still query pipelines 84 and 87 and complete the Part 2 candidate analysis before reporting `noop`.",
+            "still inspect the deterministic collection for pipelines 84 and 87 and complete the Part 2 candidate analysis before reporting `noop`.",
             "A `noop` message must explicitly summarize the Part 1 Case A and Case B candidate counts",
             "and the Part 2 pipeline 84 and pipeline 87 analysis results.",
             "Never use `noop` to disclose that a required phase was skipped.",

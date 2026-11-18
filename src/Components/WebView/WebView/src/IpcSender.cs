@@ -15,6 +15,10 @@ internal sealed class IpcSender
     private readonly Dispatcher _dispatcher;
     private readonly Action<string> _messageDispatcher;
 
+    // Reused across render batches. It is taken exclusively for each batch, so callers can never share
+    // it, and the writer resets its string table after each batch, so it holds no strings in between.
+    private CachedRenderBatchWriter? _cachedRenderBatchWriter;
+
     public IpcSender(Dispatcher dispatcher, Action<string> messageDispatcher)
     {
         _dispatcher = dispatcher;
@@ -24,12 +28,28 @@ internal sealed class IpcSender
     public void ApplyRenderBatch(long batchId, RenderBatch renderBatch)
     {
         var arrayBuilder = new ArrayBuilder<byte>(2048);
-        using var memoryStream = new ArrayBuilderMemoryStream(arrayBuilder);
-        using (var renderBatchWriter = new RenderBatchWriter(memoryStream, false))
+        string message;
+        var cachedWriter = Interlocked.Exchange(ref _cachedRenderBatchWriter, null);
+        try
         {
-            renderBatchWriter.Write(in renderBatch);
+            if (cachedWriter is null)
+            {
+                cachedWriter = new CachedRenderBatchWriter(arrayBuilder);
+            }
+            else
+            {
+                cachedWriter.Stream.ArrayBuilder = arrayBuilder;
+            }
+
+            cachedWriter.Writer.Write(in renderBatch);
+            message = IpcCommon.Serialize(IpcCommon.OutgoingMessageType.RenderBatch, batchId, Convert.ToBase64String(arrayBuilder.Buffer, 0, arrayBuilder.Count));
         }
-        var message = IpcCommon.Serialize(IpcCommon.OutgoingMessageType.RenderBatch, batchId, Convert.ToBase64String(arrayBuilder.Buffer, 0, arrayBuilder.Count));
+        finally
+        {
+            Volatile.Write(ref _cachedRenderBatchWriter, cachedWriter);
+            arrayBuilder.Dispose();
+        }
+
         DispatchMessageWithErrorHandling(message);
     }
 
@@ -112,5 +132,18 @@ internal sealed class IpcSender
                 NotifyUnhandledException(ex);
             }
         }
+    }
+
+    private sealed class CachedRenderBatchWriter
+    {
+        public CachedRenderBatchWriter(ArrayBuilder<byte> output)
+        {
+            Stream = new ArrayBuilderMemoryStream(output);
+            Writer = new RenderBatchWriter(Stream, leaveOpen: true);
+        }
+
+        public ArrayBuilderMemoryStream Stream { get; }
+
+        public RenderBatchWriter Writer { get; }
     }
 }

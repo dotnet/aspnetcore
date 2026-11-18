@@ -67,6 +67,22 @@ internal static class ResponseContentTypeHelper
 
     public static Encoding? GetEncoding(string mediaType)
     {
+        // Parameters, including charset, can only follow a ';'. Without one there is no encoding to find,
+        // whether or not the value parses.
+        if (!mediaType.Contains(';'))
+        {
+            return null;
+        }
+
+        // Common content types whose charset parameter is exactly "utf-8". Resolve it the same way
+        // MediaTypeHeaderValue.Encoding does so registered encoding providers are still honored.
+        if (string.Equals(mediaType, "text/plain; charset=utf-8", StringComparison.Ordinal) ||
+            string.Equals(mediaType, "text/html; charset=utf-8", StringComparison.Ordinal) ||
+            string.Equals(mediaType, "application/json; charset=utf-8", StringComparison.Ordinal))
+        {
+            return Encoding.GetEncoding("utf-8");
+        }
+
         if (MediaTypeHeaderValue.TryParse(mediaType, out var parsed))
         {
             return parsed.Encoding;

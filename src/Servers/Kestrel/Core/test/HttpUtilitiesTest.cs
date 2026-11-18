@@ -13,6 +13,21 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests;
 public class HttpUtilitiesTest
 {
     [Theory]
+    [InlineData(0x0100, 3)]
+    [InlineData(0x0100, 4)]
+    [InlineData(0x0100, 5)]
+    [InlineData(0x0100, 6)]
+    [InlineData(0x0100, 7)]
+    [InlineData(0xFFFF, 3)]
+    [InlineData(0xFFFF, 7)]
+    public void GetKnownMethod_NonAsciiStart_ReturnsCustom(int firstChar, int length)
+    {
+        var method = (char)firstChar + new string('A', length - 1);
+
+        Assert.Equal(HttpMethod.Custom, HttpUtilities.GetKnownMethod(method));
+    }
+
+    [Theory]
     [InlineData("CONNECT / HTTP/1.1", true, "CONNECT", (int)HttpMethod.Connect)]
     [InlineData("DELETE / HTTP/1.1", true, "DELETE", (int)HttpMethod.Delete)]
     [InlineData("GET / HTTP/1.1", true, "GET", (int)HttpMethod.Get)]
