@@ -30,7 +30,7 @@ internal class ParentProcessWatcher : BackgroundService
 
         try
         {
-            var parent = Process.GetProcessById(_parentPid);
+            using var parent = Process.GetProcessById(_parentPid);
 
             while (!stoppingToken.IsCancellationRequested)
             {
