@@ -8,6 +8,9 @@
     <BlazorDisableThrowNavigationException>true</BlazorDisableThrowNavigationException>
   </PropertyGroup>
 
+  <ItemGroup>
+    <ProjectReference Include="$(RepoRoot)src\Components\Samples\BlazorWebAppPerPage.Client\BlazorWebAppPerPage.Client.csproj" />
+  </ItemGroup>
 
   <ItemGroup>
 
