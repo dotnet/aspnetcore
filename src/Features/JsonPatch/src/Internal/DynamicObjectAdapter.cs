@@ -130,7 +130,11 @@ public class DynamicObjectAdapter : IAdapter
             return false;
         }
 
-        if (!JToken.DeepEquals(JsonConvert.SerializeObject(property), JsonConvert.SerializeObject(convertedValue)))
+        var serializerSettings = new JsonSerializerSettings()
+        {
+            ContractResolver = contractResolver
+        };
+        if (!JToken.DeepEquals(JsonConvert.SerializeObject(property, serializerSettings), JsonConvert.SerializeObject(convertedValue, serializerSettings)))
         {
             errorMessage = Resources.FormatValueNotEqualToTestValue(property, value, segment);
             return false;

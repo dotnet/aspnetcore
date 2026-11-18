@@ -493,4 +493,21 @@ public class ListAdapterTest
         Assert.False(testStatus);
         Assert.Equal(expectedErrorMessage, errorMessage);
     }
+
+    [Fact]
+    public void Test_UsesContractResolver_ToCompareValues()
+    {
+        // Arrange
+        var resolver = new CodeContractResolver();
+        var targetObject = new List<Code>() { new Code("ABCD1234") };
+        var listAdapter = new ListAdapter();
+        var expectedErrorMessage = "The current value 'ABCD1234' at position '0' is not equal to the test value 'ZZZZZZZZ'.";
+
+        // Act
+        var testStatus = listAdapter.TryTest(targetObject, "0", resolver, "ZZZZZZZZ", out var errorMessage);
+
+        //Assert
+        Assert.False(testStatus);
+        Assert.Equal(expectedErrorMessage, errorMessage);
+    }
 }

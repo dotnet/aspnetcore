@@ -57,6 +57,11 @@ public static class ConversionResultProvider
 
     public static ConversionResult CopyTo(object value, Type typeToConvertTo)
     {
+        return CopyTo(value, typeToConvertTo, null);
+    }
+
+    internal static ConversionResult CopyTo(object value, Type typeToConvertTo, IContractResolver contractResolver)
+    {
         var targetType = typeToConvertTo;
         if (value == null)
         {
@@ -69,8 +74,22 @@ public static class ConversionResultProvider
         }
         try
         {
-            var deserialized = JsonConvert.DeserializeObject(JsonConvert.SerializeObject(value), targetType);
-            return new ConversionResult(true, deserialized);
+            if (contractResolver == null)
+            {
+                var deserialized = JsonConvert.DeserializeObject(JsonConvert.SerializeObject(value), targetType);
+                return new ConversionResult(true, deserialized);
+            }
+            else
+            {
+                // The copy round-trips through JSON, so both directions must use the
+                // document's contract resolver or resolver-assigned converters are lost.
+                var serializerSettings = new JsonSerializerSettings()
+                {
+                    ContractResolver = contractResolver
+                };
+                var deserialized = JsonConvert.DeserializeObject(JsonConvert.SerializeObject(value, serializerSettings), targetType, serializerSettings);
+                return new ConversionResult(true, deserialized);
+            }
         }
         catch
         {
