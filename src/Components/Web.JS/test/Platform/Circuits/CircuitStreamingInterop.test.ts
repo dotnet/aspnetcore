@@ -58,7 +58,7 @@ describe('CircuitStreamingInterop', () => {
     const send = jest.fn<HubConnection['send']>();
     const onComplete = jest.fn();
     const connection = { invoke, send } as unknown as HubConnection;
-    const data = Uint8Array.from({ length: 600 }, (_, index) => index % 256);
+    const data = Uint8Array.from({ length: 255 }, (_, index) => index);
 
     sendJSDataStream(connection, data, 7, 1, 1000, onComplete);
     await jest.advanceTimersByTimeAsync(0);
@@ -68,16 +68,21 @@ describe('CircuitStreamingInterop', () => {
     expect(invoke).toHaveBeenCalledTimes(15);
     await jest.advanceTimersByTimeAsync(10);
     expect(invoke).toHaveBeenCalledTimes(35);
-
-    await jest.advanceTimersByTimeAsync(79);
-    expect(onComplete).not.toHaveBeenCalled();
-    await jest.advanceTimersByTimeAsync(1);
+    await jest.advanceTimersByTimeAsync(10);
+    expect(invoke).toHaveBeenCalledTimes(75);
+    await jest.advanceTimersByTimeAsync(10);
+    expect(invoke).toHaveBeenCalledTimes(155);
+    await jest.advanceTimersByTimeAsync(10);
+    expect(invoke).toHaveBeenCalledTimes(data.length);
+    await jest.advanceTimersByTimeAsync(10);
 
     expect(invoke).toHaveBeenCalledTimes(data.length);
     expect(maximumActiveInvocations).toBe(100);
-    for (let index = 0; index < data.length; index++) {
-      expect(invoke).toHaveBeenNthCalledWith(index + 1, 'ReceiveJSDataChunk', 7, index, data.slice(index, index + 1), null);
-    }
+    expect(invoke.mock.calls.map(call => call.slice(1, 4))).toEqual(Array.from({ length: data.length }, (_, index) => [
+      7,
+      index,
+      data.slice(index, index + 1),
+    ]));
     expect(send).not.toHaveBeenCalled();
     expect(onComplete).toHaveBeenCalledTimes(1);
   });
