@@ -299,6 +299,7 @@ public class AgentContext : IDisposable
             _agent.RejectPendingPredictiveState();
             Error = ex;
             Status = ConversationStatus.Error;
+            _agent.LogProcessingError(ex);
             NotifyStatusChanged();
             return;
         }

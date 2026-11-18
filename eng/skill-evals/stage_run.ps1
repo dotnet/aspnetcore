@@ -16,6 +16,12 @@ param(
 $ErrorActionPreference = 'Stop'
 Set-StrictMode -Version 3
 
+# Matches the "yaml" package version resolved by evaluation-tools/package-lock.json
+# (a transitive dependency of the pinned @microsoft/vally-cli). Using its bundled
+# CLI gives Assert-EvalSpecIsRestricted a real YAML parse instead of a line scan,
+# so flow mappings, quoted keys, and block scalars are handled correctly.
+$script:yamlCliVersion = '2.9.1'
+
 function Resolve-Directory {
     param(
         [string]$Path,
@@ -87,6 +93,136 @@ function Assert-TreeIsSafe {
     }
 }
 
+function ConvertFrom-EvalSpecYaml {
+    param([string]$Path)
+
+    $yamlText = Get-Content $Path -Raw
+    $jsonText = $yamlText | & npx `
+        --yes `
+        --registry=https://packagefeedproxy.microsoft.io/npm/ `
+        "yaml@$script:yamlCliVersion" `
+        --json --single --strict
+    if ($LASTEXITCODE -ne 0) {
+        throw "Could not parse '$Path' as a single, strict YAML document."
+    }
+    if ([string]::IsNullOrWhiteSpace($jsonText)) {
+        return $null
+    }
+    return $jsonText | ConvertFrom-Json -AsHashtable -Depth 100
+}
+
+function Find-ForbiddenEvalField {
+    param(
+        $Node,
+        [string]$DispositionMode
+    )
+
+    if ($Node -is [System.Collections.IDictionary]) {
+        foreach ($environmentKey in 'environment', 'agent_environment', 'grading_environment') {
+            $environmentBlock = $Node[$environmentKey]
+            if ($environmentBlock -is [System.Collections.IDictionary]) {
+                if ($environmentBlock.Contains('commands')) {
+                    return "declares a forbidden '$environmentKey.commands' field; staged fixture binaries are made executable automatically."
+                }
+                if ($environmentBlock.Contains('mcpServers')) {
+                    return "declares a forbidden '$environmentKey.mcpServers' field; per-eval MCP servers are not allowed."
+                }
+                if ($DispositionMode -and $environmentKey -eq 'grading_environment' -and
+                    $environmentBlock.Contains('files')) {
+                    $files = @($environmentBlock['files'])
+                    if ($files.Count -ne 1 -or $files[0] -isnot [Collections.IDictionary] -or
+                        $files[0]['src'] -cne '../grade_disposition.mjs' -or
+                        $files[0]['dest'] -cne 'grade_disposition.mjs') {
+                        return "declares forbidden grading_environment.files; only '../grade_disposition.mjs' to 'grade_disposition.mjs' is allowed."
+                    }
+                }
+            }
+        }
+
+        if ($DispositionMode -and $Node['type'] -ceq 'program') {
+            $config = $Node['config']
+            if ($config -isnot [Collections.IDictionary] -or $config.PSBase.Count -ne 3 -or
+                $config['program'] -cne 'node' -or
+                $config['args'] -isnot [Collections.IEnumerable] -or $config['args'] -is [string] -or
+                @($config['args']).Count -ne 1 -or $config['args'][0] -cne 'grade_disposition.mjs' -or
+                $config['env'] -isnot [Collections.IDictionary] -or $config['env'].PSBase.Count -ne 1 -or
+                $config['env']['DISPOSITION_MODE'] -cne $DispositionMode) {
+                return "declares a forbidden program grader; use only node grade_disposition.mjs with DISPOSITION_MODE=$DispositionMode."
+            }
+        }
+
+        $executorBlock = $Node['executor']
+        if ($executorBlock -is [System.Collections.IDictionary]) {
+            $executorConfig = $executorBlock['config']
+            if ($executorConfig -is [System.Collections.IDictionary] -and
+                $executorConfig.Contains('provider')) {
+                return "declares a forbidden 'executor.config.provider' override."
+            }
+        }
+
+        foreach ($value in $Node.PSBase.Values) {
+            $found = Find-ForbiddenEvalField $value $DispositionMode
+            if ($found) {
+                return $found
+            }
+        }
+    } elseif ($Node -is [System.Collections.IEnumerable] -and $Node -isnot [string]) {
+        foreach ($item in $Node) {
+            $found = Find-ForbiddenEvalField $item $DispositionMode
+            if ($found) {
+                return $found
+            }
+        }
+    }
+
+    return $null
+}
+
+function Assert-EvalSpecIsRestricted {
+    param(
+        [string]$Path,
+        [string]$Description
+    )
+
+    $parsed = ConvertFrom-EvalSpecYaml $Path
+    $dispositionMode = switch ($EvalName) {
+        'review-pull-request' { 'review' }
+        'review-candidate-verifier' { 'component' }
+    }
+    $violation = Find-ForbiddenEvalField $parsed $dispositionMode
+    if ($violation) {
+        throw "$Description $violation"
+    }
+    if ($dispositionMode) {
+        if ($parsed -isnot [Collections.IDictionary] -or $parsed['name'] -cne $EvalName) {
+            throw "$Description must have name '$EvalName'."
+        }
+        if ($parsed -isnot [Collections.IDictionary] -or
+            $parsed['grading_environment'] -isnot [Collections.IDictionary] -or
+            -not $parsed['grading_environment'].Contains('files')) {
+            throw "$Description must declare the trusted grading_environment.files mapping."
+        }
+        $stimuli = $parsed['stimuli']
+        if ($stimuli -isnot [Collections.IList] -or $stimuli.Count -eq 0 -or
+            @($stimuli | Where-Object {
+                $_ -isnot [Collections.IDictionary] -or
+                $_['name'] -isnot [string] -or
+                [string]::IsNullOrWhiteSpace($_['name'])
+            }).Count -gt 0) {
+            throw "$Description must declare a non-empty stimuli list of named stimuli."
+        }
+        foreach ($stimulus in $stimuli) {
+            $primary = @($stimulus['graders'] | Where-Object {
+                $_ -is [Collections.IDictionary] -and
+                $_['name'] -ceq "disposition-$($stimulus['name'])"
+            })
+            if ($primary.Count -ne 1 -or $primary[0]['type'] -cne 'program') {
+                throw "$Description must declare exactly one primary disposition program grader for '$($stimulus['name'])'."
+            }
+        }
+    }
+}
+
 function Test-PathWithinRoot {
     param(
         [string]$Root,
@@ -123,19 +259,32 @@ $trustedFiles = @(
     'eng/skill-evals/skills-vs-baseline.experiment.yaml'
     'eng/skill-evals/skills-smoke.experiment.yaml'
 )
+if ($EvalName -in @('review-pull-request', 'review-candidate-verifier')) {
+    $trustedFiles += 'eng/skill-evals/grade_disposition.mjs'
+    if ($EvalName -eq 'review-pull-request') {
+        $trustedFiles += @(
+            'eng/skill-evals/review-vs-baseline.experiment.yaml'
+            'eng/skill-evals/review-smoke.experiment.yaml'
+        )
+    }
+}
 $candidateSkill = Join-Path $candidateRootPath ".github/skills/$EvalName"
 $candidateEvalRoot = Join-Path $candidateRootPath "eng/skill-evals/$EvalName"
 $candidateEval = Join-Path $candidateEvalRoot 'eval.vally.yaml'
 $candidateFixtures = Join-Path $candidateEvalRoot 'fixtures'
 
-if (-not (Test-Path $candidateSkill -PathType Container)) {
+if ($EvalName -ne 'review-candidate-verifier' -and
+    -not (Test-Path $candidateSkill -PathType Container)) {
     throw "Missing candidate skill directory at '$candidateSkill'."
 }
-Assert-TreeIsSafe $candidateSkill $candidateRootPath "Candidate skill '$EvalName'"
+if ($EvalName -ne 'review-candidate-verifier') {
+    Assert-TreeIsSafe $candidateSkill $candidateRootPath "Candidate skill '$EvalName'"
+}
 if (-not (Test-Path $candidateEval -PathType Leaf)) {
     throw "Missing candidate eval specification at '$candidateEval'."
 }
 Assert-TreeIsSafe $candidateEval $candidateRootPath "Candidate eval '$EvalName'"
+Assert-EvalSpecIsRestricted $candidateEval "Candidate eval '$EvalName'"
 if (Test-Path $candidateFixtures) {
     if (-not (Test-Path $candidateFixtures -PathType Container)) {
         throw "Candidate fixtures path '$candidateFixtures' is not a directory."
@@ -160,16 +309,48 @@ try {
         Copy-Item (Join-Path $trustedRootPath $relativePath) $target
     }
 
-    $skillTarget = Join-Path $destinationPath ".github/skills/$EvalName"
-    New-Item -ItemType Directory -Path (Split-Path $skillTarget -Parent) -Force |
-        Out-Null
-    Copy-Item $candidateSkill $skillTarget -Recurse -Force
+    if ($EvalName -ne 'review-candidate-verifier') {
+        $skillTarget = Join-Path $destinationPath ".github/skills/$EvalName"
+        New-Item -ItemType Directory -Path (Split-Path $skillTarget -Parent) -Force |
+            Out-Null
+        Copy-Item $candidateSkill $skillTarget -Recurse -Force
+    }
 
     $evalTargetRoot = Join-Path $destinationPath "eng/skill-evals/$EvalName"
     New-Item -ItemType Directory -Path $evalTargetRoot -Force | Out-Null
     Copy-Item $candidateEval (Join-Path $evalTargetRoot 'eval.vally.yaml')
     if (Test-Path $candidateFixtures -PathType Container) {
-        Copy-Item $candidateFixtures (Join-Path $evalTargetRoot 'fixtures') -Recurse -Force
+        $fixturesTarget = Join-Path $evalTargetRoot 'fixtures'
+        Copy-Item $candidateFixtures $fixturesTarget -Recurse -Force
+        if (-not $IsWindows) {
+            Get-ChildItem $fixturesTarget -Recurse -File -Force | ForEach-Object {
+                chmod +x $_.FullName
+            }
+        }
+    }
+
+    if ($EvalName -in @('review-pull-request', 'review-candidate-verifier')) {
+        $reviewSupportFiles = @(
+            '.github/agents/review-candidate-verifier.agent.md'
+        )
+        if ($EvalName -eq 'review-pull-request') {
+            $reviewSupportFiles += @(
+                '.github/agents/review-guide-worker.agent.md'
+                'docs/CrossCuttingGuidance.md'
+                'docs/BlazorComponentsGuidance.md'
+            )
+        }
+        foreach ($relativePath in $reviewSupportFiles) {
+            $sourcePath = Join-Path $candidateRootPath $relativePath
+            if (-not (Test-Path $sourcePath -PathType Leaf)) {
+                throw "Missing candidate support file '$relativePath'."
+            }
+            Assert-TreeIsSafe $sourcePath $candidateRootPath "Candidate support file '$relativePath'"
+            $targetPath = Join-Path $destinationPath $relativePath
+            New-Item -ItemType Directory -Path (Split-Path $targetPath -Parent) -Force |
+                Out-Null
+            Copy-Item $sourcePath $targetPath -Force
+        }
     }
 
     Assert-TreeIsSafe $destinationPath $destinationPath 'Staged evaluation tree'

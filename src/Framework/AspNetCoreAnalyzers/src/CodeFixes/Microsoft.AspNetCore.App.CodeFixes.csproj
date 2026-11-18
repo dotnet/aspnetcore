@@ -20,7 +20,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="Microsoft.CodeAnalysis.CSharp.Workspaces" PrivateAssets="All" />
+    <PackageReference Include="Microsoft.CodeAnalysis.CSharp.Workspaces" PrivateAssets="All" VersionOverride="$(Analyzer_MicrosoftCodeAnalysisCSharpWorkspacesVersion_LatestVS)" />
 
     <ProjectReference Include="$(RepoRoot)src\Framework\AspNetCoreAnalyzers\src\Analyzers\Microsoft.AspNetCore.App.Analyzers.csproj" />
   </ItemGroup>

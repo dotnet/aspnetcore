@@ -2,7 +2,7 @@
 @rendermode RenderMode.InteractiveServer
 @using Microsoft.AspNetCore.Components.QuickGrid
 
-<h3>Sample QuickGrid Component</h3>
+<h3 id="@(interactiveReady ? "quickgrid-interactive-ready" : null)">Sample QuickGrid Component</h3>
 
 <div id="grid">
     <QuickGrid @ref="@quickGridRef" Items="@FilteredPeople" Pagination="@pagination" RowClass="HighlightJulie" OnRowClick="@((Person p) => HandleRowClick(p))" custom-attrib="somevalue" class="custom-class-attrib">
@@ -25,7 +25,11 @@
 </div>
 
 <div class="top-paginator">
-    <Paginator State="@pagination2" />
+    <Paginator State="@pagination2">
+        <SummaryTemplate>
+            <span aria-live="polite">Current page: @(pagination2.CurrentPageIndex + 1)</span>
+        </SummaryTemplate>
+    </Paginator>
 </div>
 <div id="grid2">
     <QuickGrid Items="@people" Pagination="@pagination2" QueryParameterNameOptions="@(new QueryParameterNameOptions("people_"))">
@@ -36,8 +40,12 @@
     </QuickGrid>
 </div>
 <div class="bottom-paginator">
-    <Paginator State="@pagination2" />
+    <Paginator State="@pagination2" aria-label="People pages" aria-labelledby="@(useHeadingForPaginatorName ? "people-pages" : null)">
+        <SummaryTemplate>Custom summary</SummaryTemplate>
+    </Paginator>
 </div>
+<h4 id="people-pages">More people pages</h4>
+<button id="toggle-paginator-labelledby" @onclick="() => useHeadingForPaginatorName = !useHeadingForPaginatorName">Toggle heading-based paginator name</button>
 
 <div id="clicked-row-info">
     @if (clickedPerson is not null)
@@ -60,6 +68,17 @@
     QuickGrid<Person> quickGridRef;
     Person clickedPerson;
     int clickCount;
+    bool useHeadingForPaginatorName;
+    bool interactiveReady;
+
+    protected override void OnAfterRender(bool firstRender)
+    {
+        if (firstRender)
+        {
+            interactiveReady = true;
+            StateHasChanged();
+        }
+    }
 
     void HandleRowClick(Person person)
     {
