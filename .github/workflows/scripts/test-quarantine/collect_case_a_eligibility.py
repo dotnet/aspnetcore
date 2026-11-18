@@ -2606,6 +2606,18 @@ def namespace_rename_detected(root, relative_path, type_name, history_ref):
     return False
 
 
+def quarantine_event_issues(events):
+    issues = set()
+    for event in events:
+        candidates = [event.get("issue")]
+        candidates.extend(event.get("issues", []))
+        issues.update(
+            issue for issue in candidates
+            if isinstance(issue, int) and not isinstance(issue, bool)
+        )
+    return issues
+
+
 def method_quarantine_transitions(
     root,
     project_root,
@@ -2678,6 +2690,19 @@ def method_quarantine_transitions(
         current = target in current_index["method_quarantines"]
         previous = target in parent_index["method_quarantines"]
         if current == previous:
+            if current:
+                previous_issue = parent_index["method_quarantine_issues"].get(target)
+                current_issue = current_index["method_quarantine_issues"].get(target)
+                if previous_issue != current_issue:
+                    events.append({
+                        "status": "modified",
+                        "commit": sha,
+                        "utc": timestamp,
+                        "scope": "method",
+                        "type": type_name,
+                        "method": method,
+                        "issues": [previous_issue, current_issue],
+                    })
             continue
         events.append({
             "status": "added" if current else "removed",
@@ -2769,6 +2794,20 @@ def data_quarantine_transitions(
         current = target in current_index["data_quarantines"]
         previous = target in parent_index["data_quarantines"]
         if current == previous:
+            if current:
+                previous_issue = parent_index["data_quarantine_issues"].get(target)
+                current_issue = current_index["data_quarantine_issues"].get(target)
+                if previous_issue != current_issue:
+                    events.append({
+                        "status": "modified",
+                        "commit": sha,
+                        "utc": timestamp,
+                        "scope": "data",
+                        "type": type_name,
+                        "method": method,
+                        "data": data_values,
+                        "issues": [previous_issue, current_issue],
+                    })
             continue
         events.append({
             "status": "added" if current else "removed",
@@ -4010,6 +4049,7 @@ def collect(
     pr_files_cache = {}
     ancestry_cache = {}
     issue_cache = {}
+    optional_issue_cache = {}
     project_history_cache = {}
     assembly_history_cache = {}
     method_history_cache = {}
@@ -4043,6 +4083,7 @@ def collect(
             "case_b_eligible": False,
             "case_b_issue": None,
             "case_b_issue_verified": False,
+            "case_b_verified_issues": [],
             "quarantine_operating_systems": None,
             "evidence": None,
             "reasons": reasons,
@@ -4104,6 +4145,7 @@ def collect(
             "quarantined" if quarantined else "not-quarantined"
         )
         transitions = []
+        target_history_issues = set()
         for location in source["history_locations"]:
             if location["method"] is None:
                 continue
@@ -4117,6 +4159,7 @@ def collect(
                 historical_source_cache,
                 historical_content_cache,
             )
+            target_history_issues.update(quarantine_event_issues(events))
             transitions.append(events[0] if events else {"status": "none"})
         data_target = (
             source["data_quarantine"]
@@ -4134,6 +4177,7 @@ def collect(
                 historical_source_cache,
                 historical_content_cache,
             )
+            target_history_issues.update(quarantine_event_issues(events))
             transitions.append(
                 events[0] if events else {"status": "none"}
             )
@@ -4324,6 +4368,27 @@ def collect(
                 receipt["case_b_issue_verified"] = issue_cache[issue]
                 if receipt["case_b_issue_verified"]:
                     receipt["case_b_eligible"] = True
+                    # Older issues that tracked an earlier quarantine of this
+                    # exact target remain acceptable for reuse.
+                    verified_issues = {issue}
+                    for history_issue in sorted(target_history_issues - {issue}):
+                        if history_issue in issue_cache:
+                            verified = issue_cache[history_issue]
+                        elif history_issue in optional_issue_cache:
+                            verified = optional_issue_cache[history_issue]
+                        else:
+                            # Optional lookups only widen the allowlist, so a
+                            # lookup error drops the issue instead of aborting.
+                            try:
+                                verified = (
+                                    issue_exists_provider(history_issue) is True
+                                )
+                            except Exception:
+                                verified = False
+                            optional_issue_cache[history_issue] = verified
+                        if verified:
+                            verified_issues.add(history_issue)
+                    receipt["case_b_verified_issues"] = sorted(verified_issues)
                 else:
                     reasons.append("original-quarantine-issue-unverified")
             else:

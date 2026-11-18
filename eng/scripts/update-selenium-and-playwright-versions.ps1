@@ -69,7 +69,7 @@ foreach ($package in $versions.Keys) {
 Update-VersionsProps -filePath "eng/Versions.props" -versions $versions
 
 # Check if the Docker image exists
-$playwrightVersion = "v$($versions["Microsoft.Playwright"])-jammy-amd64"
+$playwrightVersion = "v$($versions["Microsoft.Playwright"])-noble-amd64"
 if (Test-DockerImageExists -imageName "playwright/dotnet" -version $playwrightVersion) {
 # Update the Dockerfile
 Update-Dockerfile -filePath "src/Components/benchmarkapps/Wasm.Performance/dockerfile" -version $playwrightVersion

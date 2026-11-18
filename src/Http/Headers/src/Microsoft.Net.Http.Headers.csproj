@@ -15,6 +15,7 @@
     <Compile Include="..\..\Shared\CookieHeaderParserShared.cs" Link="CookieHeaderParserShared.cs" />
     <Compile Include="$(SharedSourceRoot)HttpRuleParser.cs" />
     <Compile Include="$(SharedSourceRoot)HttpParseResult.cs" />
+    <Compile Include="$(SharedSourceRoot)System.Text\StringBuilderCache.cs" LinkBase="Shared" />
   </ItemGroup>
 
   <ItemGroup>
