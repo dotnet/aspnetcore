@@ -120,6 +120,7 @@ internal sealed partial class SectionRegistry(ILoggerFactory loggerFactory)
 
             if (_subscribersByIdentifier.TryGetValue(identifier, out var subscriber))
             {
+                ValidateRenderModeCompatibility(identifier, subscriber, provider);
                 DetectRenderModeMismatch(identifier, subscriber, provider);
             }
         }
@@ -127,8 +128,8 @@ internal sealed partial class SectionRegistry(ILoggerFactory loggerFactory)
 
     private static void ValidateRenderModeCompatibility(object identifier, SectionOutlet? subscriber, SectionContent? provider)
     {
-        // Built-in head components use object identifiers and are excluded from this validation.
-        if (identifier is not string sectionName || subscriber is null || provider is null)
+        // Framework-owned head/title sections use BuiltInSectionIdentifier and retain the existing warning behavior.
+        if (subscriber is null || provider is null || identifier is BuiltInSectionIdentifier)
         {
             return;
         }
@@ -141,12 +142,13 @@ internal sealed partial class SectionRegistry(ILoggerFactory loggerFactory)
             return;
         }
 
+        var sectionId = DescribeIdentifier(identifier);
         throw new InvalidOperationException(
-            $"The content provided to the section '{sectionName}' uses the render mode '{DescribeRenderMode(contentRenderMode)}', " +
+            $"The content provided to the section '{sectionId}' uses the render mode '{DescribeRenderMode(contentRenderMode)}', " +
             $"but the matching '{nameof(SectionOutlet)}' uses the render mode '{DescribeRenderMode(outletRenderMode)}'. " +
             $"A '{nameof(SectionContent)}' and its matching '{nameof(SectionOutlet)}' must use the same render mode, because " +
             $"the section content is rendered at the location of the '{nameof(SectionOutlet)}'. To fix this, ensure the " +
-            $"'{nameof(SectionContent)}' and the '{nameof(SectionOutlet)}' for the section '{sectionName}' use the same render mode.");
+            $"'{nameof(SectionContent)}' and the '{nameof(SectionOutlet)}' for the section '{sectionId}' use the same render mode.");
     }
 
     private void DetectRenderModeMismatch(object identifier, SectionOutlet subscriber, SectionContent? provider)

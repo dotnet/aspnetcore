@@ -12,7 +12,8 @@ namespace Microsoft.AspNetCore.Components.Sections;
 
 public class SectionRegistryTest
 {
-    private static readonly object SectionId = new();
+    private static readonly object SectionId = new BuiltInSectionIdentifier();
+    private static readonly object ApplicationSectionId = new();
 
     [Fact]
     public void OutletThenContent_DifferentRenderModes_LogsWarning()
@@ -153,13 +154,30 @@ public class SectionRegistryTest
         Assert.Contains("same render mode", exception.Message);
     }
 
+    [Fact]
+    public void ApplicationSectionId_DifferentRenderModes_Throws()
+    {
+        var renderer = new SectionsTestRenderer(new TestSink())
+        {
+            OutletRenderMode = new RenderModeA(),
+            ContentRenderMode = new RenderModeB(),
+        };
+
+        var exception = Assert.Throws<InvalidOperationException>(() =>
+            Render(renderer, outletFirst: true, useSectionName: false, sectionId: ApplicationSectionId));
+
+        Assert.Contains(nameof(RenderModeA), exception.Message);
+        Assert.Contains(nameof(RenderModeB), exception.Message);
+    }
+
     private static IReadOnlyList<WriteContext> GetWrites(TestSink sink, string eventName)
         => sink.Writes.Where(w => w.EventId.Name == eventName).ToList();
 
     private static void Render(
         SectionsTestRenderer renderer,
         bool outletFirst,
-        bool useSectionName = false)
+        bool useSectionName = false,
+        object sectionId = null)
     {
         RenderFragment content = builder => builder.AddContent(0, "Section content");
 
@@ -168,14 +186,14 @@ public class SectionRegistryTest
             void RenderOutlet(RenderTreeBuilder b)
             {
                 b.OpenComponent<SectionOutlet>(0);
-                AddSectionIdentifier(b, 1, useSectionName);
+                AddSectionIdentifier(b, 1, useSectionName, sectionId);
                 b.CloseComponent();
             }
 
             void RenderContent(RenderTreeBuilder b)
             {
                 b.OpenComponent<SectionContent>(2);
-                AddSectionIdentifier(b, 3, useSectionName);
+                AddSectionIdentifier(b, 3, useSectionName, sectionId);
                 b.AddComponentParameter(4, nameof(SectionContent.ChildContent), content);
                 b.CloseComponent();
             }
@@ -197,7 +215,7 @@ public class SectionRegistryTest
         renderer.RenderRootComponent(componentId);
     }
 
-    private static void AddSectionIdentifier(RenderTreeBuilder builder, int sequence, bool useSectionName)
+    private static void AddSectionIdentifier(RenderTreeBuilder builder, int sequence, bool useSectionName, object sectionId)
     {
         if (useSectionName)
         {
@@ -205,7 +223,7 @@ public class SectionRegistryTest
         }
         else
         {
-            builder.AddComponentParameter(sequence, nameof(SectionOutlet.SectionId), SectionId);
+            builder.AddComponentParameter(sequence, nameof(SectionOutlet.SectionId), sectionId ?? SectionId);
         }
     }
 

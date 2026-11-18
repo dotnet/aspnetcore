@@ -15,8 +15,8 @@ public sealed class HeadOutlet : ComponentBase
 {
     private const string GetAndRemoveExistingTitle = "Blazor._internal.PageTitle.getAndRemoveExistingTitle";
 
-    internal static readonly object HeadSectionId = new();
-    internal static readonly object TitleSectionId = new();
+    internal static readonly object HeadSectionId = new BuiltInSectionIdentifier();
+    internal static readonly object TitleSectionId = new BuiltInSectionIdentifier();
 
     private string? _defaultTitle;
 
