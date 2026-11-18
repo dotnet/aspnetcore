@@ -1111,7 +1111,7 @@ try {
   const bodyClassificationMismatches = [];
   for (const [workflowName, workflow] of [['source', workflowSource], ['lock', workflowLock]]) {
     const preflight = workflow.match(
-      /- name: Reject incomplete or partial publication sets\r?\n[\s\S]*?\r?\n([ \t]+)script: \|\r?\n([\s\S]*?)(?=\r?\n[ \t]*- name:)/);
+      /- name: Reject incomplete or partial publication sets\r?\n[\s\S]*?\r?\n([ \t]+)script: \|\r?\n((?:\1[ \t]+[^\r\n]*\r?\n|[ \t]*\r?\n)*)/);
     assert.ok(preflight, `${workflowName} publication preflight must be extractable.`);
     const script = preflight[2].split(/\r?\n/)
       .map(line => line.slice(preflight[1].length + 2)).join('\n');
@@ -1133,14 +1133,21 @@ try {
       assert.equal(verified.status, 0, `${workflowName} ${name}: ${verified.stderr}`);
       const artifact = path.join(tempRoot, 'review-publication-gate');
       fs.mkdirSync(artifact, { recursive: true });
-      fs.writeFileSync(path.join(artifact, 'agent_output.json'), JSON.stringify({ items, errors: [] }));
+      const filename = path.join(artifact, 'agent_output.json');
+      fs.writeFileSync(filename, JSON.stringify({ items, errors: [] }));
       const failures = [];
       Function('require', 'process', 'core', script)(
         moduleName => moduleName === 'fs' ? fs : moduleName === 'path' ? path : undefined,
-        { env: { RUNNER_TEMP: tempRoot } },
-        { setFailed: message => failures.push(message) });
-      if ((failures.length === 0) !== accepted) {
+        { env: { RUNNER_TEMP: tempRoot, GH_AW_AGENT_OUTPUT: filename } },
+        { setFailed: message => failures.push(message), notice: () => {} });
+      if (failures.length > 0) {
         bodyClassificationMismatches.push(`${workflowName} ${name}: ${failures.join('; ')}`);
+      } else {
+        const published = JSON.parse(fs.readFileSync(filename, 'utf8'));
+        const expected = accepted ? items : items.slice(1);
+        if (JSON.stringify(published.items) !== JSON.stringify(expected)) {
+          bodyClassificationMismatches.push(`${workflowName} ${name}: the wrong inline items were retained.`);
+        }
       }
     }
   }

@@ -35,20 +35,29 @@ function execute(script, input) {
   try {
     const artifact = path.join(temporaryRoot, 'review-publication-gate');
     fs.mkdirSync(artifact);
-    fs.writeFileSync(path.join(artifact, 'agent_output.json'),
+    const filename = path.join(artifact, 'agent_output.json');
+    fs.writeFileSync(filename,
       input?.rawJson ?? JSON.stringify(input));
     const failures = [];
-    const core = { setFailed: message => failures.push(message) };
+    const notices = [];
+    const core = {
+      setFailed: message => failures.push(message),
+      notice: message => notices.push(message),
+    };
     let error;
     try {
       Function('require', 'process', 'core', script)(
         moduleName => moduleName === 'fs' ? fs : moduleName === 'path' ? path : undefined,
-        { env: { RUNNER_TEMP: temporaryRoot } },
+        { env: { RUNNER_TEMP: temporaryRoot, GH_AW_AGENT_OUTPUT: filename } },
         core);
     } catch (caught) {
       error = caught;
     }
-    return { failures, error };
+    const rawOutput = fs.readFileSync(filename, 'utf8');
+    return {
+      failures, error, notices, rawOutput,
+      output: failures.length === 0 && error === undefined ? JSON.parse(rawOutput) : undefined,
+    };
   } finally {
     fs.rmSync(temporaryRoot, { recursive: true, force: true });
   }
@@ -76,9 +85,7 @@ const findingWithBody = body => ({
   errors: [],
 });
 
-const cases = [
-  ['one finding', findings(1), true],
-  ['five findings', findings(5), true],
+const bodyCases = [
   ['unresolved finding unchanged', findingWithBody(
     '[UNRESOLVED] External behavior.\nConfidence: unresolved\nWhy unresolved: Missing version-bound evidence.'), true],
   ['discarded heading', findingWithBody('[DISCARDED] Pre-existing behavior.'), false],
@@ -209,6 +216,54 @@ const cases = [
     '    [DISCARDED] Example.\n\nA verified regression.\nConfidence: verified'), true],
   ['real discarded claim after indented example', findingWithBody(
     '    Example.\n\n[DISCARDED] Pre-existing behavior.'), false],
+];
+
+const historicalMixed = {
+  items: [
+    {
+      ...comment(),
+      path: 'src/Components/test/E2ETest/ServerExecutionTests/AutoPauseEnhancedNavigationTests.cs',
+      line: 135,
+      side: 'RIGHT',
+      body: '**[P3][UNRESOLVED] The cleanup-enabled row installs the wrong callback name**\n\n' +
+        '`handler.dispose` is never called by the paused-circuit disposal path; production invokes ' +
+        '`onPausedCircuitDisposed`, so the only `retirement.cleanup++` in this test is not connected to the callback under test.\n\n' +
+        '**Why unresolved:** A version-bound Selenium/WebDriver contract or immutable runtime artifact is still needed to prove ' +
+        '`ExecuteScript` executes this JavaScript unchanged and that the inactivity-disposal sequence reaches the assertion ' +
+        'with `retirement.cleanup === 0`.\n\n' +
+        '**Minimal repro:** Execute `PausedCircuitDisposal_DoesNotReportConnectionUp(true)`; the row installs `handler.dispose`, ' +
+        'waits for circuit closure, and then expects `retirement.cleanup` to equal `1`.\n\n' +
+        '```suggestion\nhandler.onPausedCircuitDisposed = () => retirement.cleanup++;\n```',
+    },
+    {
+      ...comment(),
+      path: 'src/Components/Web.JS/src/Boot.Server.Common.ts',
+      line: 161,
+      side: 'RIGHT',
+      body: '**[P3][DISCARDED] Replacement startup is not blocked by this teardown await**\n\n' +
+        '**Why discarded:** For the proposed sequence, `startCircuit()` returns the existing `circuitStarting` promise at ' +
+        '`Boot.Server.Common.ts:139-140` while the first startup is pending, before execution can reach changed line 161. ' +
+        'The base implementation likewise retained a rejected startup promise while awaiting cleanup, so the claimed ' +
+        'old/new replacement-startup regression is not established.\n\n' +
+        '**Minimal repro:** Start a circuit, invoke `startCircuit()` again while the first start remains pending, ' +
+        'and compare merge-base with head. Both calls share the existing startup promise; no replacement start reaches this await.\n\n' +
+        '**What goes wrong:** Nothing on this sequence; frozen source directly refutes the proposed causal path.\n\n' +
+        '**Fix:** none',
+    },
+    {
+      ...review(),
+      event: 'COMMENT',
+      body: 'Source-only review of frozen head `59cd5bddfcc4c34d2acd5e76a3c3ba369f1df49f`.\n\n' +
+        '<details><summary>DISCARDED</summary>\nReplacement startup returns the existing startup promise.\n</details>',
+    },
+  ],
+  errors: [],
+};
+
+const cases = [
+  ['one finding', findings(1), true],
+  ['five findings', findings(5), true],
+  ...bodyCases.map(([name, input, retained]) => [name, input, true, retained ? [] : [0]]),
   ['mixed valid quoted findings', {
     items: [
       { ...comment(), body: 'The parser rejects `[DISCARDED]` in valid claims.\nConfidence: verified' },
@@ -224,7 +279,17 @@ const cases = [
       review(),
     ],
     errors: [],
-  }, false],
+  }, true, [1]],
+  ['run 43875900411 keeps unresolved r4586400680 and drops discarded r4586400709',
+    historicalMixed, true, [1]],
+  ['all discarded inline candidates become one no-findings noop', {
+    items: [
+      { ...comment(), body: '[DISCARDED] First old behavior.' },
+      { ...comment(), body: 'Second old behavior.\nConfidence: discarded' },
+      { ...review(), body: 'STATUS: FINDINGS\n<details><summary>DISCARDED</summary>\nBoth are old.\n</details>' },
+    ],
+    errors: [],
+  }, true, [0, 1]],
   ['discarded audit summary with real finding', {
     items: [
       { ...comment(), body: 'Real regression.\nConfidence: verified' },
@@ -248,6 +313,14 @@ const cases = [
   ['duplicate noop', { items: [{ type: 'noop' }, { type: 'noop' }], errors: [] }, false],
   ['duplicate reviews', { items: [comment(), review(), review()], errors: [] }, false],
   ['mixed outputs', { items: [{ type: 'noop' }, comment(), review()], errors: [] }, false],
+  ['discarded item does not repair mixed noop and findings', {
+    items: [{ type: 'noop' }, ...findingWithBody('[DISCARDED] Old behavior.').items],
+    errors: [],
+  }, false],
+  ['discarded item does not repair missing review', {
+    items: [{ ...comment(), body: '[DISCARDED] Old behavior.' }],
+    errors: [],
+  }, false],
   ['comment only', { items: [comment()], errors: [] }, false],
   ['review only', { items: [review()], errors: [] }, false],
   ['too many findings', findings(6), false],
@@ -339,13 +412,31 @@ const cases = [
 const mismatches = [];
 for (const filename of [workflowSource, workflowLock]) {
   const script = extractScript(filename);
-  for (const [name, input, accepted] of cases) {
+  for (const [name, input, accepted, dropped = []] of cases) {
     const result = execute(script, input);
     if (result.error !== undefined) {
       mismatches.push(`${path.basename(filename)} ${name} threw instead of failing through core.setFailed: ${result.error}`);
     } else if ((result.failures.length === 0) !== accepted) {
       mismatches.push(
         `${path.basename(filename)} ${name} was ${result.failures.length === 0 ? 'accepted' : 'rejected'}: ${result.failures.join('; ')}`);
+    } else if (accepted) {
+      try {
+        const remaining = input.items.filter((_, index) => !dropped.includes(index));
+        if (dropped.length > 0 && !remaining.some(item => item.type === 'create_pull_request_review_comment')) {
+          assert.equal(result.output.items.length, 1);
+          assert.equal(result.output.items[0].type, 'noop');
+          assert.match(result.output.items[0].message, /^STATUS: NO_FINDINGS\b/);
+          assert.deepEqual(result.output, { ...input, items: result.output.items });
+        } else {
+          assert.deepEqual(result.output, { ...input, items: remaining });
+        }
+        assert.equal(result.notices.length, dropped.length > 0 ? 1 : 0);
+      } catch (error) {
+        mismatches.push(`${path.basename(filename)} ${name} published the wrong items: ${error.message}`);
+      }
+    } else {
+      assert.equal(result.rawOutput, input?.rawJson ?? JSON.stringify(input),
+        `${name} must not rewrite a rejected publication set.`);
     }
   }
 }
@@ -353,5 +444,17 @@ for (const filename of [workflowSource, workflowLock]) {
 assert.equal(extractScript(workflowSource), extractScript(workflowLock),
   'The source and compiled workflow publication preflight scripts differ.');
 assert.deepEqual(mismatches, [], mismatches.join('\n'));
+
+const compiledSafeOutputs = fs.readFileSync(workflowLock, 'utf8')
+  .match(/^  safe_outputs:\r?\n([\s\S]*?)(?=^  [a-z_]+:)/m)?.[1];
+assert.ok(compiledSafeOutputs, 'The compiled safe-outputs job must be extractable.');
+const downloadIndex = compiledSafeOutputs.indexOf('name: Download agent output artifact');
+const preflightIndex = compiledSafeOutputs.indexOf(`name: ${stepName}`);
+const publishIndex = compiledSafeOutputs.indexOf('name: Process Safe Outputs');
+assert.ok(downloadIndex >= 0 && downloadIndex < preflightIndex && preflightIndex < publishIndex,
+  'Publication preflight must filter the downloaded payload inside safe outputs before processing.');
+assert.equal(compiledSafeOutputs.split(
+  'GH_AW_AGENT_OUTPUT: ${{ steps.setup-agent-output-env.outputs.GH_AW_AGENT_OUTPUT }}').length - 1, 2,
+  'Preflight and the publisher must consume the same agent output file.');
 
 console.log(`Validated ${cases.length} publication preflight cases against source and compiled lock.`);

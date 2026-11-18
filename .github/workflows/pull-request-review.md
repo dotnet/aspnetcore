@@ -592,120 +592,15 @@ safe-outputs:
     commit-id: ${{ needs.freeze_pr_head.outputs.head_sha }}
     allowed-events: [COMMENT]
 
-jobs:
-  freeze_pr_head:
-    needs: [pre_activation]
-    if: needs.pre_activation.outputs.activated == 'true'
-    runs-on: ubuntu-slim
-    permissions:
-      contents: read
-      pull-requests: read
-    outputs:
-      head_sha: ${{ steps.get_head.outputs.head_sha }}
-      pr_number: ${{ steps.get_head.outputs.pr_number }}
-      base_tip: ${{ steps.get_head.outputs.base_tip }}
-      merge_base: ${{ steps.get_head.outputs.merge_base }}
-      base_ref: ${{ steps.get_head.outputs.base_ref }}
-    steps:
-      - name: Freeze the triggering pull request head
-        id: get_head
-        uses: actions/github-script@v9.0.0
-        with:
-          github-token: ${{ github.token }}
-          script: |
-            const repository = `${context.repo.owner}/${context.repo.repo}`;
-            const pullNumber = context.eventName === 'issue_comment' && context.payload.issue?.pull_request
-              ? context.payload.issue.number
-              : undefined;
-            if (!Number.isSafeInteger(pullNumber) || pullNumber <= 0) {
-              core.setFailed('The triggering event must identify a valid pull request number.');
-              return;
-            }
-
-            const { data } = await github.rest.pulls.get({
-              owner: context.repo.owner,
-              repo: context.repo.repo,
-              pull_number: pullNumber,
-            });
-            if (data.number !== pullNumber || data.state !== 'open' ||
-                data.base.repo.full_name.toLowerCase() !== repository.toLowerCase() ||
-                typeof data.head.sha !== 'string' || !/^[0-9a-f]{40}$/.test(data.head.sha) ||
-                typeof data.base.ref !== 'string' || data.base.ref.length === 0) {
-              core.setFailed('GitHub did not return the expected open pull request and valid head SHA.');
-              return;
-            }
-
-            core.setOutput('pr_number', String(pullNumber));
-            core.setOutput('head_sha', data.head.sha);
-            const { data: branch } = await github.rest.git.getRef({
-              owner: context.repo.owner, repo: context.repo.repo, ref: `heads/${data.base.ref}`,
-            });
-            const baseTip = branch.object.sha;
-            if (!/^[0-9a-f]{40}$/.test(baseTip)) {
-              core.setFailed('The frozen base tip is invalid.');
-              return;
-            }
-            const comparison = await github.rest.repos.compareCommits({
-              owner: context.repo.owner, repo: context.repo.repo,
-              base: baseTip, head: data.head.sha,
-            });
-            const mergeBase = comparison.data.merge_base_commit.sha;
-            if (comparison.data.base_commit.sha !== baseTip || !/^[0-9a-f]{40}$/.test(mergeBase)) {
-              core.setFailed('The frozen merge base is invalid.');
-              return;
-            }
-            core.setOutput('base_tip', baseTip);
-            core.setOutput('merge_base', mergeBase);
-            core.setOutput('base_ref', data.base.ref);
-
-  agent:
-    needs: [freeze_pr_head]
-  safe_outputs:
-    if: needs.verify_live_head.result == 'success'
-    pre-steps:
-      - name: Reject a moved pull request inside safe outputs
-        uses: actions/github-script@v9.0.0
-        env:
-          REVIEW_BASE_REF: ${{ needs.freeze_pr_head.outputs.base_ref }}
-        with:
-          github-token: ${{ github.token }}
-          script: |
-            const pullNumber = Number('${{ needs.freeze_pr_head.outputs.pr_number }}');
-            const expected = '${{ needs.freeze_pr_head.outputs.head_sha }}';
-            if (!Number.isSafeInteger(pullNumber) || !/^[a-f0-9]{40}$/.test(expected)) {
-              core.setFailed('The frozen review identity is unavailable.');
-              return;
-            }
-            const { data } = await github.rest.pulls.get({
-              owner: context.repo.owner,
-              repo: context.repo.repo,
-              pull_number: pullNumber,
-            });
-            if (data.number !== pullNumber || data.state !== 'open' ||
-                data.base.repo.full_name.toLowerCase() !== `${context.repo.owner}/${context.repo.repo}`.toLowerCase() ||
-                data.head.sha !== expected || data.base.ref !== process.env.REVIEW_BASE_REF) {
-              core.setFailed('The PR head moved, the base branch changed, or the PR closed after review; safe outputs are blocked.');
-            }
-  verify_live_head:
-    needs: [agent, freeze_pr_head]
-    if: needs.agent.result == 'success'
-    runs-on: ubuntu-slim
-    permissions:
-      pull-requests: read
-    steps:
-      - name: Download review output for publication preflight
-        uses: actions/download-artifact@v8.0.2
-        with:
-          pattern: "{agent,agent-output-fallback}"
-          merge-multiple: true
-          path: ${{ runner.temp }}/review-publication-gate
+  steps:
       - name: Reject incomplete or partial publication sets
         uses: actions/github-script@v9.0.0
+        env:
+          GH_AW_AGENT_OUTPUT: ${{ steps.setup-agent-output-env.outputs.GH_AW_AGENT_OUTPUT }}
         with:
           script: |
             const fs = require('fs');
-            const path = require('path');
-            const filename = path.join(process.env.RUNNER_TEMP, 'review-publication-gate', 'agent_output.json');
+            const filename = process.env.GH_AW_AGENT_OUTPUT;
             let output;
             try {
               output = JSON.parse(fs.readFileSync(filename, 'utf8'));
@@ -853,13 +748,6 @@ jobs:
                 lines.some(line => /^Why[ \t]+discarded[ \t]*:/i.test(line)) ||
                 lines.some(line => /^Confidence[ \t]*:[ \t]*`?discarded`?[ \t]*$/i.test(line));
             };
-            if (output.items.some(item =>
-              item.type === 'create_pull_request_review_comment' &&
-              typeof item.body === 'string' &&
-              isDiscardedInline(item.body))) {
-              core.setFailed('Discarded candidates belong only in the review summary, never inline.');
-              return;
-            }
             const count = type => output.items.filter(item => item.type === type).length;
             const comments = count('create_pull_request_review_comment');
             const reviews = count('submit_pull_request_review');
@@ -885,7 +773,127 @@ jobs:
               expectedStatusBodies.includes(statusComments[0].body);
             if (!findings && !clean && !stopped) {
               core.setFailed('Incomplete or partial review output cannot be published.');
+              return;
             }
+            const discarded = output.items.filter(item =>
+              item.type === 'create_pull_request_review_comment' &&
+              typeof item.body === 'string' &&
+              isDiscardedInline(item.body));
+            if (discarded.length > 0) {
+              output.items = output.items.filter(item => !discarded.includes(item));
+              const remaining = comments - discarded.length;
+              if (remaining === 0) {
+                output.items = [{
+                  type: 'noop',
+                  message: 'STATUS: NO_FINDINGS\nAll inline candidates were discarded; see the original agent output for details.',
+                }];
+              }
+              fs.writeFileSync(filename, JSON.stringify(output));
+              core.notice(`Removed ${discarded.length} discarded inline candidate(s); ${remaining} inline finding(s) remain. ` +
+                'The original agent artifact retains the discarded candidates.');
+            }
+
+jobs:
+  freeze_pr_head:
+    needs: [pre_activation]
+    if: needs.pre_activation.outputs.activated == 'true'
+    runs-on: ubuntu-slim
+    permissions:
+      contents: read
+      pull-requests: read
+    outputs:
+      head_sha: ${{ steps.get_head.outputs.head_sha }}
+      pr_number: ${{ steps.get_head.outputs.pr_number }}
+      base_tip: ${{ steps.get_head.outputs.base_tip }}
+      merge_base: ${{ steps.get_head.outputs.merge_base }}
+      base_ref: ${{ steps.get_head.outputs.base_ref }}
+    steps:
+      - name: Freeze the triggering pull request head
+        id: get_head
+        uses: actions/github-script@v9.0.0
+        with:
+          github-token: ${{ github.token }}
+          script: |
+            const repository = `${context.repo.owner}/${context.repo.repo}`;
+            const pullNumber = context.eventName === 'issue_comment' && context.payload.issue?.pull_request
+              ? context.payload.issue.number
+              : undefined;
+            if (!Number.isSafeInteger(pullNumber) || pullNumber <= 0) {
+              core.setFailed('The triggering event must identify a valid pull request number.');
+              return;
+            }
+
+            const { data } = await github.rest.pulls.get({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              pull_number: pullNumber,
+            });
+            if (data.number !== pullNumber || data.state !== 'open' ||
+                data.base.repo.full_name.toLowerCase() !== repository.toLowerCase() ||
+                typeof data.head.sha !== 'string' || !/^[0-9a-f]{40}$/.test(data.head.sha) ||
+                typeof data.base.ref !== 'string' || data.base.ref.length === 0) {
+              core.setFailed('GitHub did not return the expected open pull request and valid head SHA.');
+              return;
+            }
+
+            core.setOutput('pr_number', String(pullNumber));
+            core.setOutput('head_sha', data.head.sha);
+            const { data: branch } = await github.rest.git.getRef({
+              owner: context.repo.owner, repo: context.repo.repo, ref: `heads/${data.base.ref}`,
+            });
+            const baseTip = branch.object.sha;
+            if (!/^[0-9a-f]{40}$/.test(baseTip)) {
+              core.setFailed('The frozen base tip is invalid.');
+              return;
+            }
+            const comparison = await github.rest.repos.compareCommits({
+              owner: context.repo.owner, repo: context.repo.repo,
+              base: baseTip, head: data.head.sha,
+            });
+            const mergeBase = comparison.data.merge_base_commit.sha;
+            if (comparison.data.base_commit.sha !== baseTip || !/^[0-9a-f]{40}$/.test(mergeBase)) {
+              core.setFailed('The frozen merge base is invalid.');
+              return;
+            }
+            core.setOutput('base_tip', baseTip);
+            core.setOutput('merge_base', mergeBase);
+            core.setOutput('base_ref', data.base.ref);
+
+  agent:
+    needs: [freeze_pr_head]
+  safe_outputs:
+    if: needs.verify_live_head.result == 'success'
+    pre-steps:
+      - name: Reject a moved pull request inside safe outputs
+        uses: actions/github-script@v9.0.0
+        env:
+          REVIEW_BASE_REF: ${{ needs.freeze_pr_head.outputs.base_ref }}
+        with:
+          github-token: ${{ github.token }}
+          script: |
+            const pullNumber = Number('${{ needs.freeze_pr_head.outputs.pr_number }}');
+            const expected = '${{ needs.freeze_pr_head.outputs.head_sha }}';
+            if (!Number.isSafeInteger(pullNumber) || !/^[a-f0-9]{40}$/.test(expected)) {
+              core.setFailed('The frozen review identity is unavailable.');
+              return;
+            }
+            const { data } = await github.rest.pulls.get({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              pull_number: pullNumber,
+            });
+            if (data.number !== pullNumber || data.state !== 'open' ||
+                data.base.repo.full_name.toLowerCase() !== `${context.repo.owner}/${context.repo.repo}`.toLowerCase() ||
+                data.head.sha !== expected || data.base.ref !== process.env.REVIEW_BASE_REF) {
+              core.setFailed('The PR head moved, the base branch changed, or the PR closed after review; safe outputs are blocked.');
+            }
+  verify_live_head:
+    needs: [agent, freeze_pr_head]
+    if: needs.agent.result == 'success'
+    runs-on: ubuntu-slim
+    permissions:
+      pull-requests: read
+    steps:
       - name: Reject a moved pull request before safe outputs
         uses: actions/github-script@v9.0.0
         env:
@@ -1069,6 +1077,11 @@ publication. Neither read is atomic with publication; the trusted `commit-id` pi
 attribution to the reviewed SHA if a push races the in-job check.
 
 Never publish a `DISCARDED` candidate as an inline comment or count it in `NEW_FINDINGS`.
+As a publication backstop, the trusted preflight removes an erroneously emitted discarded
+inline item without withholding surviving findings or changing their review summary.
+If none survive, it replaces the all-discarded review with a `NO_FINDINGS` noop, not an
+empty `FINDINGS` review. The original agent artifact retains the discarded payloads;
+a PR-visible no-findings audit comment is outside this adapter's current contract.
 For `FINDINGS`, emit one `create_pull_request_review_comment` per selected entry, preserving
 the skill's format and order, then exactly one `submit_pull_request_review` with event `COMMENT`. Use only
 the triggering PR and include the frozen SHA in the review text. Both handlers are pinned by
