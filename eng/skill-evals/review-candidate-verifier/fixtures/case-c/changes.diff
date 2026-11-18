@@ -1,0 +1,23 @@
+diff --git a/src/Engine/Conversation.mjs b/src/Engine/Conversation.mjs
+index 4b751950b4..f72499cc94 100644
+--- a/src/Engine/Conversation.mjs
++++ b/src/Engine/Conversation.mjs
+@@ -26,15 +26,15 @@ export class Conversation
+       try
+       {
+         this.log(processingError);
+-      }
+-      finally
+-      {
+         this.status = "Error";
+         for (const observer of this.observers)
+         {
+           observer(this.status);
+         }
+       }
++      catch
++      {
++      }
+     }
+   }
+ }
