@@ -8,6 +8,10 @@ export function beforeWebStart(options) {
         options.ssr.disableDomPreservation = false;
         window.preserveDomInitializerRan = true;
     }
+    if (new URLSearchParams(location.search).has('initializer-inactivity-timeout')) {
+        options.ssr.circuitInactivityTimeoutMs = 500;
+        window.inactivityTimeoutInitializerRan = true;
+    }
 }
 
 export function beforeWebAssemblyStart() {

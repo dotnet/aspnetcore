@@ -131,6 +131,8 @@ function onInitialDomContentLoaded(options: Partial<WebStartOptions>) {
     set(target, property, value) {
       if (property === 'disableDomPreservation') {
         initialOptions.disableDomPreservation = value;
+      } else if (property === 'circuitInactivityTimeoutMs') {
+        initialOptions.circuitInactivityTimeoutMs = value;
       }
       const result = Reflect.set(target, property, value);
       if (property === 'disableDomPreservation') {

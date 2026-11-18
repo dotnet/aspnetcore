@@ -55,6 +55,37 @@ public class ServerBrowserConfigurationTest(
     }
 
     [Fact]
+    public void CircuitInactivityTimeoutFromInitializerIsNotOverwrittenByNavigation()
+    {
+        const int initializerTimeout = 500;
+        using var fixture = CreateFixture("--BrowserConfigurationCircuitInactivityTimeoutMs=5000");
+        NavigateToStartPage(fixture, "&initializer-inactivity-timeout");
+
+        var javascript = (IJavaScriptExecutor)Browser;
+        javascript.ExecuteScript("""
+            const Socket = window.WebSocket;
+            window.WebSocket = class extends Socket {
+                constructor(...args) {
+                    super(...args);
+                    this.addEventListener('close', () => window.socketClosedAt = performance.now());
+                }
+            };
+            """);
+        javascript.ExecuteScript("Blazor.start({})");
+        Browser.True(() => (bool)javascript.ExecuteScript("return window.inactivityTimeoutInitializerRan === true"));
+        Browser.Click(By.Id("add-server-counter-prerendered-link"));
+        Browser.Equal("True", () => Browser.Exists(By.Id("is-interactive-0")).Text);
+
+        javascript.ExecuteScript("window.componentRemovedAt = performance.now()");
+        Browser.Click(By.Id("remove-counter-link-0"));
+        Browser.DoesNotExist(By.Id("increment-0"));
+        Browser.True(() => (bool)javascript.ExecuteScript("return window.socketClosedAt !== undefined"));
+
+        var elapsed = Convert.ToDouble(javascript.ExecuteScript("return window.socketClosedAt - window.componentRemovedAt"), CultureInfo.InvariantCulture);
+        Assert.InRange(elapsed, 0, initializerTimeout + 1500);
+    }
+
+    [Fact]
     public void CircuitLogLevelControlsEventMessages()
     {
         using var fixture = CreateFixture($"--BrowserConfigurationLogLevel={BrowserLogLevel.Trace}");
