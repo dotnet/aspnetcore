@@ -791,6 +791,95 @@ public class ResponseTests : TestApplicationErrorLoggerLoggedTest
         Assert.Equal(1, requestCount);
     }
 
+    [Theory]
+    [InlineData("HTTP/1.0")]
+    [InlineData("HTTP/1.1")]
+    public async Task NonConnectRequestKeepsHttp1ConnectionAlive(string protocol)
+    {
+        var requestCount = 0;
+        await using var server = new TestServer(context =>
+        {
+            requestCount++;
+            context.Response.ContentLength = 0;
+            return Task.CompletedTask;
+        }, new TestServiceContext(LoggerFactory));
+        using var connection = server.CreateConnection();
+
+        await connection.Send(
+            $"GET / {protocol}",
+            "Host: server.example",
+            "Connection: keep-alive",
+            "",
+            "");
+
+        var expectedResponse = new List<string>
+        {
+            "HTTP/1.1 200 OK",
+            "Content-Length: 0"
+        };
+        if (protocol == "HTTP/1.0")
+        {
+            expectedResponse.Add("Connection: keep-alive");
+        }
+        expectedResponse.Add($"Date: {server.Context.DateHeaderValue}");
+        expectedResponse.Add("");
+        expectedResponse.Add("");
+        await connection.Receive(expectedResponse.ToArray());
+
+        await connection.Send(
+            $"GET / {protocol}",
+            "Host: server.example",
+            "Connection: close",
+            "",
+            "");
+        await connection.ReceiveEnd(
+            "HTTP/1.1 200 OK",
+            "Content-Length: 0",
+            "Connection: close",
+            $"Date: {server.Context.DateHeaderValue}",
+            "",
+            "");
+        Assert.Equal(2, requestCount);
+    }
+
+    [Fact]
+    public async Task ConnectRequestWith100ContinueClosesOnlyAfterFinalResponse()
+    {
+        var requestCount = 0;
+        await using var server = new TestServer(async context =>
+        {
+            requestCount++;
+            await context.Request.Body.CopyToAsync(Stream.Null);
+        }, new TestServiceContext(LoggerFactory));
+        using var connection = server.CreateConnection();
+
+        await connection.Send(
+            "CONNECT server.example:443 HTTP/1.1",
+            "Host: server.example:443",
+            "Content-Length: 1",
+            "Expect: 100-continue",
+            "",
+            "");
+        await connection.Receive(
+            "HTTP/1.1 100 Continue",
+            "",
+            "");
+
+        await connection.SendAll(
+            "aGET / HTTP/1.1",
+            "Host: server.example:443",
+            "Connection: close",
+            "",
+            "");
+        await connection.ReceiveEnd(
+            "HTTP/1.1 200 OK",
+            "Connection: close",
+            $"Date: {server.Context.DateHeaderValue}",
+            "",
+            "");
+        Assert.Equal(1, requestCount);
+    }
+
     private async Task AttemptingToWriteNonzeroContentLengthFails(int statusCode, HttpMethod method)
     {
         var testMeterFactory = new TestMeterFactory();
