@@ -170,6 +170,64 @@ Before expanding validation across this full matrix, state the render modes and 
 
 6. **Clean up sample code** - After the selected permanent tests are passing, remove the sample code you added to the Samples projects. The sample was only for development and interactive testing; the selected tests now provide the permanent coverage. Use `git checkout -- src/Components/Samples src/Components/WebAssembly/Samples` and `git clean -df -- src/Components/Samples src/Components/WebAssembly/Samples` to remove the sample code.
 
+## Design invariants
+
+Apply these rules to framework code in this area. Before flagging code, check the current
+analyzer, host-assembly boundary, and nearby pattern. Examples are anchors, not exhaustive
+inventories.
+
+### Render modes
+
+- Framework components must be render-mode agnostic so they work when consumed from a Razor
+  Class Library. The app chooses the render mode; framework components do not force one with
+  `@rendermode`.
+- Host-specific APIs and components may live in concrete host assemblies, but that set is
+  deliberately small - adding to it needs a strong reason. Anything intended for broad app or
+  library consumption needs a render-mode-agnostic abstraction.
+
+### `HttpContext` and host services
+
+- Do not use `IHttpContextAccessor` in framework components or services. Components receive
+  `HttpContext` as a cascading parameter:
+
+  ```csharp
+  [CascadingParameter] public HttpContext? HttpContext { get; set; }
+  ```
+
+- Services accept `HttpContext` as a method parameter, never as a constructor dependency.
+- Features consumed by class libraries use a render-mode-agnostic abstraction with an
+  implementation and service registration for each supported host. Antiforgery is the
+  reference pattern.
+
+### Rendering and event dispatch
+
+- Analyzer `BL0012` is authoritative for redundant `StateHasChanged()` calls in
+  `OnInitialized[Async]`, `OnParametersSet[Async]`, and event-callback handlers. Calls from
+  after-render logic, helper methods, or external callbacks may be required; check the
+  analyzer's current scope before flagging them.
+- Do not use `InvokeAsync` to re-enter a synchronization context that framework code is already
+  on. Use it to marshal external callbacks onto the renderer's context.
+  This rule covers `ComponentBase.InvokeAsync` only: `Dispatcher.InvokeAsync` in hosting
+  infrastructure is the intended dispatch point, and `EventCallback.InvokeAsync` is an
+  unrelated callback-invocation API.
+- Do not implement `IHandleEvent` in new components. `ComponentBase` already provides automatic
+  rendering after event handlers.
+
+### Trimming and dependencies
+
+- Handle reflection with trim/AOT annotations such as `[DynamicallyAccessedMembers]`,
+  `[RequiresUnreferencedCode]`, and `[RequiresDynamicCode]`. Do not impose a blanket reflection
+  ban or source-generated-serialization-only rule; JS interop itself uses annotated reflection.
+- Do not add package dependencies to shipping Components projects by default. Any addition
+  needs explicit justification against the nearby project pattern.
+
+### Coordinating async work in tests
+
+Prefer `TaskCompletionSource` to coordinate async work. Do not use `Task.Delay` or
+`Thread.Sleep` to wait for state changes. Legitimate exceptions include real-browser polling,
+duration assertions, analyzer fixture source text that is the input being analyzed, and
+deliberate slow-work simulation.
+
 ## Build Tips
 
 ### Build and retry discipline
@@ -386,6 +444,10 @@ The Selenium E2E tests are located in `src/Components/test/E2ETest`.
 For telemetry or distributed-state behavior, assert the real consumer-visible output rather than only an internal component probe. Capture exported activities, metrics, or state; correlate the scenario with a unique test ID and expose a test endpoint when needed; and assert operation names, tags, links, and platform-specific metadata relevant to the contract.
 
 ### Running E2E Tests
+
+Playwright MCP is used for manual interactive validation of Components samples, not as this
+suite's E2E framework. Adding another Components E2E framework requires agreement from
+Components maintainers.
 
 This E2E suite uses Selenium. To build and run tests:
 
