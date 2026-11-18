@@ -1,4 +1,4 @@
-﻿{
+{
   "author": "Microsoft",
   "name": "Blazor WebAssembly サービスの既定値",
   "description": "Blazor WebAssembly アプリケーション用のサービスの既定のライブラリを作成するためのプロジェクト テンプレートです。OpenTelemetry、サービス検出、Aspire 統合の回復性のサポートが含まれます。",

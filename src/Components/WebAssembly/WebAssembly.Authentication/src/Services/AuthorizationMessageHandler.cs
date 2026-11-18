@@ -21,6 +21,7 @@ public class AuthorizationMessageHandler : DelegatingHandler, IDisposable
     private readonly AuthenticationStateChangedHandler? _authenticationStateChangedHandler;
     private AccessToken? _lastToken;
     private AuthenticationHeaderValue? _cachedHeader;
+    private CancellationTokenSource? _authenticationStateChangedCts;
     private Uri[]? _authorizedUris;
     private AccessTokenRequestOptions? _tokenOptions;
 
@@ -39,7 +40,13 @@ public class AuthorizationMessageHandler : DelegatingHandler, IDisposable
         // Invalidate the cached _lastToken when the authentication state changes
         if (_provider is AuthenticationStateProvider authStateProvider)
         {
-            _authenticationStateChangedHandler = _ => { _lastToken = null; };
+            _authenticationStateChangedHandler = _ =>
+            {
+                _lastToken = null;
+
+                _authenticationStateChangedCts?.Cancel();
+                _authenticationStateChangedCts = null;
+            };
             authStateProvider.AuthenticationStateChanged += _authenticationStateChangedHandler;
         }
     }
@@ -56,16 +63,22 @@ public class AuthorizationMessageHandler : DelegatingHandler, IDisposable
 
         if (request.RequestUri != null && _authorizedUris.Any(uri => uri.IsBaseOf(request.RequestUri)))
         {
+            var header = _cachedHeader;
             if (_lastToken == null || now >= _lastToken.Expires.AddMinutes(-5))
             {
+                var authenticationStateChangedToken = (_authenticationStateChangedCts ??= new()).Token;
                 var tokenResult = _tokenOptions != null ?
                     await _provider.RequestAccessToken(_tokenOptions) :
                     await _provider.RequestAccessToken();
 
                 if (tokenResult.TryGetToken(out var token))
                 {
-                    _lastToken = token;
-                    _cachedHeader = new AuthenticationHeaderValue("Bearer", _lastToken.Value);
+                    header = new AuthenticationHeaderValue("Bearer", token.Value);
+                    if (!authenticationStateChangedToken.IsCancellationRequested)
+                    {
+                        _lastToken = token;
+                        _cachedHeader = header;
+                    }
                 }
                 else
                 {
@@ -76,7 +89,7 @@ public class AuthorizationMessageHandler : DelegatingHandler, IDisposable
             // We don't try to handle 401s and retry the request with a new token automatically since that would mean we need to copy the request
             // headers and buffer the body and we expect that the user instead handles the 401s. (Also, we can't really handle all 401s as we might
             // not be able to provision a token without user interaction).
-            request.Headers.Authorization = _cachedHeader;
+            request.Headers.Authorization = header;
         }
 
         return await base.SendAsync(request, cancellationToken);
