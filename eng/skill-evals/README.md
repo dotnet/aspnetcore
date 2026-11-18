@@ -172,6 +172,15 @@ Experiment runs with `--variant skilled` or `--variant=skilled` check only the
 selected variant; without this option, both baseline and skilled are required.
 Experiments without `-Suite`/`-Eval`, or with `--eval-filter` or `--shard`, skip result-set checks and return Vally's exit status.
 
+Direct component and specialized eval runs do not support `--dry-run`; use
+`Validate` for model-free checks instead. A Vally failure before run output is
+created reports its exit code rather than a missing-result gate failure.
+Result-set checks reject grader errors, including errors nested in weighted
+grader details. Baseline-only runs check completion and grader validity but do
+not apply score thresholds. An explicit `--require-pass` preserves Vally's
+nonzero verdict even when the repository checker would not apply a threshold.
+The hosted workflow uses the runner's result-set checks and does not repeat them.
+
 ## Hosted entry point
 
 `.github/workflows/skill-evals.yml` runs `Validate` automatically when pull
