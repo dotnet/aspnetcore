@@ -465,34 +465,6 @@ updates:
   - dependency-type: all
   commit-message:
     include: scope
-    prefix: "[release/8.0] "
-  directory: /
-  labels:
-  - area-infrastructure
-  package-ecosystem: gitsubmodule
-  cooldown:
-    default-days: 0
-  schedule:
-    interval: monthly
-  target-branch: release/8.0
-- allow:
-  - dependency-type: all
-  commit-message:
-    include: scope
-    prefix: "[release/9.0] "
-  directory: /
-  labels:
-  - area-infrastructure
-  package-ecosystem: gitsubmodule
-  cooldown:
-    default-days: 0
-  schedule:
-    interval: monthly
-  target-branch: release/9.0
-- allow:
-  - dependency-type: all
-  commit-message:
-    include: scope
     prefix: "[release/10.0] "
   directory: /
   labels:

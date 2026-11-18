@@ -1,0 +1,6 @@
+Assigned base-tip contract for AgentContext.SendMessageAsync:
+When the processing-failure path invokes a logging provider, an exception thrown
+by that provider must propagate unchanged to the caller awaiting SendMessageAsync.
+Setting Error and Status, or notifying status observers, does not replace this
+propagation requirement. This contract applies to the secondary logging failure,
+not to the original processing exception.
