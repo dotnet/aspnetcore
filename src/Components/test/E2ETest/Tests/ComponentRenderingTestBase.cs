@@ -66,6 +66,38 @@ public abstract class ComponentRenderingTestBase : ServerTestBase<ToggleExecutio
     }
 
     [Fact]
+    public void CanToggleEnumeratedBooleanAttributes()
+    {
+        var appElement = Browser.MountTestComponent<DuplicateAttributesComponent>();
+        var target = Browser.Exists(By.Id("bool-toggle-target"));
+        var toggle = appElement.FindElement(By.Id("bool-toggle-button"));
+        var state = appElement.FindElement(By.Id("bool-toggle-state"));
+
+        AssertAttributes(enabled: true);
+        toggle.Click();
+        AssertAttributes(enabled: false);
+        toggle.Click();
+        AssertAttributes(enabled: true);
+
+        void AssertAttributes(bool enabled)
+        {
+            var value = enabled ? "true" : "false";
+            Browser.Equal(enabled.ToString(), () => state.Text);
+
+            Assert.Equal(value, target.GetDomAttribute("draggable"));
+            Assert.Equal(value, target.GetDomAttribute("spellcheck"));
+            Assert.Equal(value, target.GetDomAttribute("contenteditable"));
+            Assert.Equal(value, target.GetDomAttribute("writingsuggestions"));
+            Assert.Equal(enabled.ToString(), target.GetDomProperty("draggable"));
+            Assert.Equal(enabled.ToString(), target.GetDomProperty("spellcheck"));
+            Assert.Equal(value, target.GetDomProperty("contentEditable"));
+            Assert.Equal(value, target.GetDomProperty("writingSuggestions"));
+            Assert.Equal(!enabled, target.GetDomAttribute("hidden") is not null);
+            Assert.Equal((!enabled).ToString(), target.GetDomProperty("hidden"));
+        }
+    }
+
+    [Fact]
     public void CanTriggerEvents()
     {
         // Initial count is zero

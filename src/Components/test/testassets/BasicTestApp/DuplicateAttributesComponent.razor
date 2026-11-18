@@ -14,7 +14,7 @@
 
 <div id="bool-toggle-section">
     <h2>Bool attribute toggle</h2>
-    <div id="bool-toggle-target" @attributes="toggleBoolValues">Content</div>
+    <div id="bool-toggle-target" draggable="@isBoolEnabled" spellcheck="@isBoolEnabled" contenteditable="@isBoolEnabled" @attributes="toggleBoolValues">Content</div>
     <button id="bool-toggle-button" @onclick="ToggleBoolAttribute">Toggle</button>
     <span id="bool-toggle-state">@isBoolEnabled</span>
 </div>
@@ -52,6 +52,7 @@
     {
         { "data-enabled", isBoolEnabled },
         { "hidden", !isBoolEnabled },
+        { "writingsuggestions", isBoolEnabled },
     };
 
     void ToggleBoolAttribute()
