@@ -28,7 +28,7 @@ public class CacheViewTextWriterTest
         writer.StartCapture();
 
         var ex = Assert.Throws<InvalidOperationException>(() =>
-            writer.CreateLiveCachedComponent(typeof(TestRenderFragmentLiveCachedComponent), renderMode: null, capture, NullLogger.Instance));
+            writer.CreateLiveCachedComponent(typeof(TestRenderFragmentLiveCachedComponent), capture, NullLogger.Instance));
         Assert.Contains("RenderFragment parameter", ex.Message);
     }
 
@@ -45,7 +45,7 @@ public class CacheViewTextWriterTest
         var writer = new CacheViewTextWriter(new StringWriter(), CacheVaryBy.None);
         writer.StartCapture();
 
-        var ex = Assert.Throws<InvalidOperationException>(() => writer.CreateLiveCachedComponent(typeof(TestRenderFragmentLiveCachedComponent), renderMode: null, capture, NullLogger.Instance));
+        var ex = Assert.Throws<InvalidOperationException>(() => writer.CreateLiveCachedComponent(typeof(TestRenderFragmentLiveCachedComponent), capture, NullLogger.Instance));
         Assert.Contains("RenderFragment", ex.Message);
     }
 
@@ -61,7 +61,7 @@ public class CacheViewTextWriterTest
 
         var writer = new CacheViewTextWriter(new StringWriter(), CacheVaryBy.None);
         writer.StartCapture();
-        writer.CreateLiveCachedComponent(typeof(TestRenderFragmentLiveCachedComponent), renderMode: null, capture, NullLogger.Instance);
+        writer.CreateLiveCachedComponent(typeof(TestRenderFragmentLiveCachedComponent), capture, NullLogger.Instance);
         writer.StopCapture();
 
         var fragment = writer.GetSerializedRenderFragment();
@@ -84,7 +84,7 @@ public class CacheViewTextWriterTest
         writer.StartCapture();
         writer.Write("<p>before</p>");
         writer.PauseCapture();
-        writer.CreateLiveCachedComponent(typeof(TestRenderFragmentLiveCachedComponent), renderMode: null, capture, NullLogger.Instance);
+        writer.CreateLiveCachedComponent(typeof(TestRenderFragmentLiveCachedComponent), capture, NullLogger.Instance);
         writer.StartCapture();
         writer.Write("<p>after</p>");
         writer.StopCapture();

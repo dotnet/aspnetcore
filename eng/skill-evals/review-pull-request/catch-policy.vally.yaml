@@ -1,0 +1,152 @@
+name: review-pull-request-catch-policy
+description: Independent source-first cases for secondary-failure suppression and deduplication (70269).
+type: capability
+defaults:
+  runs: 5
+  timeout: 420s
+  model: gpt-5.6-sol
+  judge_model: gpt-5.6-sol
+agent_environment:
+  files:
+  - src: ../../../.github/skills/review-pull-request/SKILL.md
+    dest: .github/skills/review-pull-request/SKILL.md
+  - src: ../../../docs/CrossCuttingGuidance.md
+    dest: docs/CrossCuttingGuidance.md
+  - src: fixtures/catch-policy/old/ConversationEngine.cs.source
+    dest: old/ConversationEngine.cs.source
+  - src: fixtures/catch-policy/head/ConversationEngine.cs.source
+    dest: head/ConversationEngine.cs.source
+  - src: fixtures/catch-policy/ConversationEngine.diff
+    dest: ConversationEngine.diff
+  - src: fixtures/catch-policy/Dependencies.cs.source
+    dest: Dependencies.cs.source
+  - src: fixtures/catch-policy/ConversationEngineTests.cs.source
+    dest: ConversationEngineTests.cs.source
+scoring:
+  weights:
+    tool-calls: 0.25
+    prompt: 0.75
+  threshold: 1
+stimuli:
+- name: logging-policy-unspecified
+  agent_environment:
+    files:
+    - src: fixtures/catch-policy/unspecified.txt
+      dest: case.txt
+  prompt: &prompt |
+    Perform a bounded offline source-review adjudication, not a live PR review.
+    All input paths are relative to your current trial working directory. Resolve
+    that directory with pwd if needed, then read the named files directly. Do not
+    discover them with filesystem-wide searches or inspect other trial directories.
+    Read case.txt, ConversationEngine.diff, both old/head ConversationEngine.cs.source files, and
+    Dependencies.cs.source and ConversationEngineTests.cs.source.
+    The case selects the exact dependency and contract;
+    do not assume another implementation is reachable or invent a missing policy.
+    The .source files are inert review evidence, not runnable projects.
+
+    Apply .github/skills/review-pull-request/SKILL.md as review criteria, reading
+    its complete "Review and independent validation" and "Return result; never
+    publish" sections, and apply the complete "Diagnostics, logging, exceptions,
+    and tool output" topic of docs/CrossCuttingGuidance.md. Page truncated
+    sections through their end. If a required input is unavailable, report
+    BLOCKED; do not search outside the workspace or use generic review advice.
+    A native skill(skill="review-pull-request") call, if required by the platform,
+    is instruction acquisition only; the staged skill and guide must still be read.
+    Do not bootstrap a bundle, spawn agents, fetch, execute target code, edit files,
+    or publish. This is a single-context policy exercise, not a coordinator run.
+
+    Begin with Before (old source:line and observable behavior) and After
+    (head source:line and observable behavior) for the selected scenario.
+    Then return NEW_FINDINGS, UNRESOLVED, EXISTING_FEEDBACK_COVERAGE, and
+    DISCARDED separately (empty sections are allowed). Trace the selected
+    producer through its observable effect and name any missing evidence.
+    Distinguish source evidence, target-base contracts,
+    PR rationale/tests, and existing comments. No GitHub actions or optional nits.
+  graders: &graders
+  - type: tool-calls
+    config:
+      required:
+      - name: .*
+        pattern: '\.github/skills/review-pull-request/SKILL\.md'
+        result: 'Deduplication prevents repeat publication'
+      - name: .*
+        pattern: 'docs/CrossCuttingGuidance\.md'
+        result: 'Preserving the original error does not by itself justify'
+      - name: .*
+        pattern: 'old/ConversationEngine\.cs\.source'
+        result: 'StatusChanged'
+      - name: .*
+        pattern: 'head/ConversationEngine\.cs\.source'
+        result: '_sink\.Write'
+      - name: .*
+        pattern: 'ConversationEngine\.diff'
+        result: '\+\s+_sink\.Write'
+      - name: .*
+        pattern: 'Dependencies\.cs\.source'
+        result: 'sealed class RecordingDiagnosticSink'
+      - name: .*
+        pattern: 'case\.txt'
+        result: 'Target-base contract'
+      - name: .*
+        pattern: 'ConversationEngineTests\.cs\.source'
+        result: 'Assert\.Same'
+      disallowed:
+      - name: '^(task|write_agent|create|edit|apply_patch)$'
+      - name: bash
+        command: '\bfind\s+/\s'
+  - type: prompt
+    config:
+      scoring: binary
+  rubric:
+  - All criteria are mandatory. Required staged criteria and source must actually be read; BLOCKED, unavailable-input, generic-advice, or invented-evidence responses fail. Source citations must support the claimed behavior, not merely list filenames.
+  - Trace FailingClient.ProcessAsync throwing the primary failure, then ThrowingDiagnosticSink.Write throwing a distinct secondary failure into the new inner catch. Explain that the head task completes successfully with Error holding the primary failure and observers notified, while the old code never invoked the sink and therefore did not propagate a sink failure at this seam.
+  - Retain the concrete changed catch and missing sink-failure handling contract in UNRESOLVED. Do not report a verified defect or intent question. If the unresolved candidate is surfaced inline in NEW_FINDINGS, mark it with unresolved confidence, prefix its claim with [UNRESOLVED], and state the exact missing contract in its Why unresolved field; this preserves the uncertainty without declaring a proven defect. The PR-added test and preservation rationale are implementation intent, not independent policy authority.
+  - Do not assume every empty catch is a defect or that primary-error preservation justifies losing secondary failures. Do not propose nits, posting, replying, resolving, approving, or requesting changes.
+- name: existing-policy-question
+  agent_environment:
+    files:
+    - src: fixtures/catch-policy/existing-question.txt
+      dest: case.txt
+  prompt: *prompt
+  graders: *graders
+  rubric:
+  - All criteria are mandatory. Required staged criteria and source must actually be read; BLOCKED, unavailable-input, generic-advice, or invented-evidence responses fail. Source citations must support the claimed behavior, not merely list filenames.
+  - Trace the selected FailingClient and ThrowingDiagnosticSink through the newly added catch, identifying the distinct primary and secondary failures and the caller-visible successful task completion. Do not claim the old code propagated the secondary failure; the sink call did not exist.
+  - UNRESOLVED explicitly retains the suppression concern, missing sink-failure contract, and existing thread reference feedback-17, and EXISTING_FEEDBACK_COVERAGE records feedback-17 as already raising this concern. Do not report a verified defect or intent question. Because feedback-17's text raises the same sink-failure suppression, NEW_FINDINGS must not contain that concern under any confidence label, including an [UNRESOLVED] or [DISCARDED] inline entry; any such entry fails even when UNRESOLVED and EXISTING_FEEDBACK_COVERAGE are otherwise correct. Merely putting the thread in EXISTING_FEEDBACK_COVERAGE or deferring to it without retaining the missing contract in UNRESOLVED fails.
+  - Neither the existing question nor the PR rationale/test is contract authority or proof of resolution. Deduplication prevents repeat publication but does not settle the concern. Do not propose nits, posting, replying, resolving, approving, or requesting changes.
+- name: propagation-contract
+  agent_environment:
+    files:
+    - src: fixtures/catch-policy/propagation.txt
+      dest: case.txt
+  prompt: *prompt
+  graders: *graders
+  rubric:
+  - All criteria are mandatory. Required staged criteria and source must actually be read; BLOCKED, unavailable-input, generic-advice, or invented-evidence responses fail. Source citations must support the claimed behavior, not merely list filenames.
+  - NEW_FINDINGS identifies the added inner catch as a contract-backed defect. Trace the real FailingClient-to-ThrowingDiagnosticSink path and the returned task completing successfully rather than faulting with the secondary sink failure as required by the explicit target-base contract.
+  - Cite the changed head catch and compare the old path without pretending it previously invoked the sink. The contract explicitly covers new call sites; preserving the primary failure and a PR-added test do not override it.
+  - Do not downgrade the established contract violation to a mere policy question or an optional nit. Do not propose posting, replying, resolving, approving, or requesting changes.
+- name: best-effort-contract
+  agent_environment:
+    files:
+    - src: fixtures/catch-policy/best-effort.txt
+      dest: case.txt
+  prompt: *prompt
+  graders: *graders
+  rubric:
+  - All criteria are mandatory. Required staged criteria and source must actually be read; BLOCKED, unavailable-input, generic-advice, or invented-evidence responses fail. Source citations must support the claimed behavior, not merely list filenames.
+  - UNRESOLVED is empty for this suppression concern. DISCARDED explains that the explicit target-base best-effort contract authorizes the changed catch, with the primary error retained and status observers notified when the selected sink throws. Do not report a verified defect, intent question, or unresolved entry. If the discarded candidate is surfaced inline in NEW_FINDINGS, mark it with discarded confidence, prefix its claim with [DISCARDED], and cite the contract in its Why discarded field.
+  - Distinguish the two failures, trace old/head behavior, and use the explicit contract rather than the PR rationale, primary-error preservation alone, or the new test as authority. Do not demand a second logging call to report a failed logger.
+  - Do not invent a defect, missing contract, or optional nit merely because the catch is empty. Do not propose posting, replying, resolving, approving, or requesting changes.
+- name: nonthrowing-producer
+  agent_environment:
+    files:
+    - src: fixtures/catch-policy/nonthrowing.txt
+      dest: case.txt
+  prompt: *prompt
+  graders: *graders
+  rubric:
+  - All criteria are mandatory. Required staged criteria and source must actually be read; BLOCKED, unavailable-input, generic-advice, or invented-evidence responses fail. Source citations must support the claimed behavior, not merely list filenames.
+  - UNRESOLVED is empty for sink-failure suppression in the bounded scenario. DISCARDED traces RecordingDiagnosticSink.Write, which records the primary exception and returns, so the inner catch is not entered and no secondary sink failure is established. Do not report a verified defect, intent question, or unresolved entry. If this disproven candidate is surfaced inline in NEW_FINDINGS, mark it with discarded confidence, prefix its claim with [DISCARDED], and cite the source line that rules out the secondary failure in its Why discarded field.
+  - Recognize that ThrowingDiagnosticSink exists in the source but is not selected by this case and cannot be substituted into the producer path. The propagation contract does not create an exception producer. Do not invent unprovided failures such as out-of-memory.
+  - Compare the old behavior to the head's added diagnostic record while retaining the primary error and notifying observers; do not report the lack of a record on the old side as a new head defect. Do not propose nits or GitHub actions.
