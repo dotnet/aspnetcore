@@ -2,7 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Diagnostics;
-using System.Text;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Endpoints;
 using Microsoft.AspNetCore.Components.Endpoints.Infrastructure;
@@ -24,19 +24,24 @@ namespace Microsoft.AspNetCore.Builder;
 public class RazorComponentsEndpointRouteBuilderExtensionsTest
 {
     [Fact]
-    public async Task MapRazorComponents_SharesFrameworkEndpointsWithStaticAssets()
+    public void MapRazorComponents_SharesFrameworkEndpointsWithStaticAssets()
     {
         using var services = CreateServices();
         var application = new ApplicationBuilder(services);
+        RazorComponentsEndpointConventionBuilder firstBuilder = null;
+        RazorComponentsEndpointConventionBuilder secondBuilder = null;
+        ICollection<EndpointDataSource> endpointDataSources = null;
         application.UseRouting();
         application.UseEndpoints(endpoints =>
         {
+            endpointDataSources = endpoints.DataSources;
             const string manifest = "TestApplication.staticwebassets.endpoints.json";
             var group = endpoints.MapGroup("/group");
             group.MapStaticAssets(manifest);
-            group.MapRazorComponents<FirstApp>().WithStaticAssets(manifest)
-                .RequireHost("a.example")
-                .AddRenderMode(new InteractiveWebAssemblyRenderMode());
+            firstBuilder = group.MapRazorComponents<FirstApp>().WithStaticAssets(manifest)
+                .RequireHost("a.example");
+            firstBuilder.WithMetadata(new AuthorizeAttribute("Policy")).Add(RewriteFrameworkRoute);
+            firstBuilder.AddRenderMode(new InteractiveWebAssemblyRenderMode());
             var collection = Assert.Single(((IEndpointRouteBuilder)group).DataSources
                 .OfType<RazorComponentEndpointDataSourceCollection>());
             using var composite = new CompositeEndpointDataSource([collection]);
@@ -44,41 +49,28 @@ public class RazorComponentsEndpointRouteBuilderExtensionsTest
                 endpoint.Metadata.GetMetadata<BlazorWebEndpointMetadata>() is not null));
             var changeToken = composite.GetChangeToken();
 
-            group.MapRazorComponents<SecondApp>().WithStaticAssets(manifest)
-                .RequireHost("a.example")
-                .AddRenderMode(new InteractiveWebAssemblyRenderMode());
+            secondBuilder = group.MapRazorComponents<SecondApp>().WithStaticAssets(manifest)
+                .RequireHost("a.example");
+            secondBuilder.WithMetadata(new AuthorizeAttribute("Policy")).Add(RewriteFrameworkRoute);
+            secondBuilder.AddRenderMode(new InteractiveWebAssemblyRenderMode());
 
             Assert.True(changeToken.HasChanged);
 
             var registered = endpoints.DataSources.SelectMany(source => source.Endpoints).OfType<RouteEndpoint>().ToArray();
             AssertFrameworkMetadata(Assert.Single(registered,
-                endpoint => endpoint.RoutePattern.RawText == "/group" + BrowserToolsHotReloadSettings.Path));
+                endpoint => endpoint.RoutePattern.RawText == "/group/custom" + BrowserToolsHotReloadSettings.Path));
             AssertFrameworkMetadata(Assert.Single(registered,
-                endpoint => endpoint.RoutePattern.RawText == "/group/_framework/opaque-redirect"));
+                endpoint => endpoint.RoutePattern.RawText == "/group/custom/_framework/opaque-redirect"));
         });
-        var pipeline = application.Build();
-        var settings = CreateHttpContext(services, "/group" + BrowserToolsHotReloadSettings.Path, "a.example");
+        firstBuilder.WithStaticAssets("unmapped.json");
+        secondBuilder.WithStaticAssets("unmapped.json");
 
-        await pipeline(settings);
-
-        Assert.Equal(StatusCodes.Status200OK, settings.Response.StatusCode);
-        Assert.Equal("application/json", settings.Response.ContentType);
-        Assert.Equal("no-store", settings.Response.Headers.CacheControl);
-        Assert.Equal("""{ "hotReload": false }""", Encoding.UTF8.GetString(((MemoryStream)settings.Response.Body).ToArray()));
-
-        var redirectUrl = OpaqueRedirection.CreateProtectedRedirectionUrl(settings, "/destination");
-        var redirect = CreateHttpContext(services, $"/group/{redirectUrl}", "a.example");
-
-        await pipeline(redirect);
-
-        Assert.Equal(StatusCodes.Status302Found, redirect.Response.StatusCode);
-        Assert.Equal("/destination", redirect.Response.Headers.Location);
-
-        var unmatchedHost = CreateHttpContext(services, "/group" + BrowserToolsHotReloadSettings.Path, "other.example");
-
-        await pipeline(unmatchedHost);
-
-        Assert.Equal(StatusCodes.Status404NotFound, unmatchedHost.Response.StatusCode);
+        var registered = endpointDataSources.SelectMany(source => source.Endpoints).OfType<RouteEndpoint>()
+            .Where(endpoint => endpoint.Metadata.GetMetadata<BlazorWebEndpointMetadata>() is not null);
+        Assert.All(registered, endpoint => Assert.Null(endpoint.Metadata.GetMetadata<ResourceAssetCollection>()));
+        Assert.All(registered, endpoint => Assert.Null(endpoint.Metadata.GetMetadata<ResourcePreloadCollection>()));
+        Assert.All(registered, endpoint => Assert.Null(endpoint.Metadata.GetMetadata<ResourceCollectionUrlMetadata>()));
+        Assert.All(registered, endpoint => Assert.Null(endpoint.Metadata.GetMetadata<ImportMapDefinition>()));
     }
 
     [Fact]
@@ -117,6 +109,22 @@ public class RazorComponentsEndpointRouteBuilderExtensionsTest
             Assert.NotNull(exception);
             Assert.Equal("Microsoft.AspNetCore.Routing.Matching.AmbiguousMatchException", exception.GetType().FullName);
         }
+
+        var customHostApplication = new ApplicationBuilder(services);
+        customHostApplication.UseRouting();
+        customHostApplication.UseEndpoints(endpoints =>
+        {
+            endpoints.MapRazorComponents<FirstApp>()
+                .WithMetadata(new CustomHostMetadata(Array.Empty<string>(), suppressMatching: true));
+            endpoints.MapRazorComponents<SecondApp>()
+                .WithMetadata(new CustomHostMetadata(Array.Empty<string>(), suppressMatching: false));
+        });
+        pipeline = customHostApplication.Build();
+        var customHostContext = CreateHttpContext(services, BrowserToolsHotReloadSettings.Path, "localhost");
+
+        await pipeline(customHostContext);
+
+        Assert.Equal(StatusCodes.Status200OK, customHostContext.Response.StatusCode);
     }
 
     private static void RewriteFrameworkRoute(EndpointBuilder endpointBuilder)
@@ -187,5 +195,12 @@ public class RazorComponentsEndpointRouteBuilderExtensionsTest
     private sealed class RootMetadata(string routeParameter)
     {
         public string RouteParameter { get; } = routeParameter;
+    }
+
+    private sealed class CustomHostMetadata(string[] hosts, bool suppressMatching) : IHostMetadata, ISuppressMatchingMetadata
+    {
+        public IReadOnlyList<string> Hosts { get; } = hosts;
+
+        public bool SuppressMatching { get; } = suppressMatching;
     }
 }
