@@ -152,8 +152,8 @@ public class HotReloadServiceTests
         var first = CreateDataSource<App>(services, ConfigureServerComponentBuilder);
         var second = CreateDataSource<StaticComponent>(services, ConfigureServerComponentBuilder);
         var collection = new RazorComponentEndpointDataSourceCollection();
-        collection.DataSources.Add(first);
-        collection.DataSources.Add(second);
+        collection.Add(first);
+        collection.Add(second);
         using var composite = new CompositeEndpointDataSource([collection]);
         var changeToken = composite.GetChangeToken();
 

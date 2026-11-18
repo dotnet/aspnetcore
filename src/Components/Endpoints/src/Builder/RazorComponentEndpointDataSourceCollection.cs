@@ -3,6 +3,7 @@
 
 using System.Linq;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Http.Metadata;
 using Microsoft.AspNetCore.Routing;
 using Microsoft.Extensions.Primitives;
 
@@ -10,7 +11,34 @@ namespace Microsoft.AspNetCore.Components.Endpoints;
 
 internal sealed class RazorComponentEndpointDataSourceCollection : EndpointDataSource
 {
-    public List<EndpointDataSource> DataSources { get; } = [];
+    private readonly object _lock = new();
+    private readonly List<EndpointDataSource> _dataSources = [];
+    private CancellationTokenSource _cancellationTokenSource = new();
+
+    public IReadOnlyList<EndpointDataSource> DataSources
+    {
+        get
+        {
+            lock (_lock)
+            {
+                return [.. _dataSources];
+            }
+        }
+    }
+
+    public void Add(EndpointDataSource dataSource)
+    {
+        CancellationTokenSource previousCancellationTokenSource;
+        lock (_lock)
+        {
+            _dataSources.Add(dataSource);
+            previousCancellationTokenSource = _cancellationTokenSource;
+            _cancellationTokenSource = new();
+        }
+
+        previousCancellationTokenSource.Cancel();
+        previousCancellationTokenSource.Dispose();
+    }
 
     public override IReadOnlyList<Endpoint> Endpoints
     {
@@ -38,7 +66,20 @@ internal sealed class RazorComponentEndpointDataSourceCollection : EndpointDataS
     }
 
     public override IChangeToken GetChangeToken()
-        => new CompositeChangeToken(DataSources.Select(source => source.GetChangeToken()).ToArray());
+    {
+        CancellationToken cancellationToken;
+        IReadOnlyList<EndpointDataSource> dataSources;
+        lock (_lock)
+        {
+            cancellationToken = _cancellationTokenSource.Token;
+            dataSources = [.. _dataSources];
+        }
+
+        return new CompositeChangeToken([
+            new CancellationChangeToken(cancellationToken),
+            .. dataSources.Select(source => source.GetChangeToken()),
+        ]);
+    }
 
     private static bool AreEquivalent(RouteEndpoint first, RouteEndpoint second)
     {
@@ -78,6 +119,8 @@ internal sealed class RazorComponentEndpointDataSourceCollection : EndpointDataS
         {
             (HttpMethodMetadata left, HttpMethodMetadata right) =>
                 left.AcceptCorsPreflight == right.AcceptCorsPreflight && left.HttpMethods.SequenceEqual(right.HttpMethods),
+            (IHostMetadata left, IHostMetadata right) => left.Hosts.SequenceEqual(right.Hosts),
+            (IRouteDiagnosticsMetadata left, IRouteDiagnosticsMetadata right) => left.Route == right.Route,
             (ResourceAssetCollection left, ResourceAssetCollection right) => AreAssetsEquivalent(left, right),
             (ImportMapDefinition left, ImportMapDefinition right) => left.ToJson() == right.ToJson(),
             (ResourcePreloadCollection left, ResourcePreloadCollection right)

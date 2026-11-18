@@ -54,7 +54,7 @@ public static class RazorComponentsEndpointRouteBuilderExtensions
         {
             var factory = endpoints.ServiceProvider.GetRequiredService<RazorComponentEndpointDataSourceFactory>();
             dataSource = factory.CreateDataSource<TRootComponent>(endpoints);
-            collection.DataSources.Add(dataSource);
+            collection.Add(dataSource);
         }
 
         return dataSource;
