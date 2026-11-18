@@ -4,6 +4,8 @@
 import { synchronizeDomContent } from '../Rendering/DomMerging/DomSync';
 import { attachProgrammaticEnhancedNavigationHandler, handleClickForNavigationInterception, hasInteractiveRouter, isForSamePath, isWithinBaseUriSpace, notifyEnhancedNavigationListeners, performScrollToElementOnTheSamePage, isSamePageWithHash, recordLocationChange } from './NavigationUtils';
 import { scheduleScrollReset, ScrollResetSchedule } from '../Rendering/Renderer';
+import { WebRendererId } from '../Rendering/WebRendererId';
+import { isRendererAttached } from '../Rendering/WebRendererInteropMethods';
 
 /*
 In effect, we have two separate client-side navigation mechanisms:
@@ -201,6 +203,7 @@ function onDocumentSubmit(event: SubmitEvent) {
 
 export async function performEnhancedPageLoad(internalDestinationHref: string, interceptedLink: boolean, fetchOptions?: RequestInit, treatAsRedirectionFromMethod?: 'get' | 'post', changeUrl = true) {
   performingEnhancedPageLoad = true;
+  const serverRendererAttachedAtStart = isRendererAttached(WebRendererId.Server);
 
   // First, stop any preceding enhanced page load
   currentEnhancedNavigationAbortController?.abort();
@@ -267,6 +270,7 @@ export async function performEnhancedPageLoad(internalDestinationHref: string, i
       // then let the rest of enhanced nav logic run to patch the new content into the DOM.
       if (changeUrl && (response.redirected || treatAsRedirectionFromMethod)) {
         const treatAsGet = treatAsRedirectionFromMethod ? (treatAsRedirectionFromMethod === 'get') : isGetRequest;
+        const previousLocation = location.href;
         if (!isWithinBaseUriSpace(response.url)) {
           if (treatAsGet) {
             location.replace(response.url);
@@ -288,6 +292,8 @@ export async function performEnhancedPageLoad(internalDestinationHref: string, i
         }
         if (response.url !== internalDestinationHref) {
           notifyEnhancedNavigationListeners(response.url, interceptedLink);
+        } else if (!serverRendererAttachedAtStart && isRendererAttached(WebRendererId.Server) && response.url !== previousLocation) {
+          notifyEnhancedNavigationListeners(response.url, interceptedLink, WebRendererId.Server);
         }
         abortSignal.throwIfAborted();
         internalDestinationHref = response.url;

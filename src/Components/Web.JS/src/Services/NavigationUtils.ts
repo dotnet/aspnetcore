@@ -85,8 +85,8 @@ export function attachEnhancedNavigationListener(listener: typeof enhancedNaviga
   enhancedNavigationListener = listener;
 }
 
-export function notifyEnhancedNavigationListeners(internalDestinationHref: string, interceptedLink: boolean) {
-  enhancedNavigationListener?.(internalDestinationHref, interceptedLink);
+export function notifyEnhancedNavigationListeners(internalDestinationHref: string, interceptedLink: boolean, rendererId?: WebRendererId) {
+  enhancedNavigationListener?.(internalDestinationHref, interceptedLink, rendererId);
 }
 
 export function recordLocationChange(uri: string, intercepted: boolean): void {

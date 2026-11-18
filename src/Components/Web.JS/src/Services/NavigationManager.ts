@@ -60,8 +60,8 @@ function listenForNavigationEvents(
   window.addEventListener('popstate', onPopState);
   currentHistoryIndex = history.state?._index ?? 0;
 
-  attachEnhancedNavigationListener((internalDestinationHref, interceptedLink) => {
-    notifyLocationChanged(interceptedLink, internalDestinationHref);
+  attachEnhancedNavigationListener((internalDestinationHref, interceptedLink, rendererId) => {
+    notifyLocationChanged(interceptedLink, internalDestinationHref, rendererId);
   });
 }
 
@@ -262,13 +262,13 @@ async function onBrowserInitiatedPopState(state: PopStateEvent) {
   await notifyLocationChanged(/* interceptedLink */ true);
 }
 
-async function notifyLocationChanged(interceptedLink: boolean, internalDestinationHref?: string) {
+async function notifyLocationChanged(interceptedLink: boolean, internalDestinationHref?: string, targetRendererId?: WebRendererId) {
   const uri = internalDestinationHref ?? location.href;
 
   recordLocationChange(uri, interceptedLink);
 
   await Promise.all(Array.from(navigationCallbacks, async ([rendererId, callbacks]) => {
-    if (isRendererAttached(rendererId)) {
+    if ((targetRendererId === undefined || targetRendererId === rendererId) && isRendererAttached(rendererId)) {
       await callbacks.locationChanged(uri, history.state?.userState, interceptedLink);
     }
   }));
