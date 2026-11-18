@@ -38,7 +38,7 @@ The content type of the response is `application/json` and is a JSON payload con
 
 ### Version 1
 
-When the server and client agree on version 1 the server response will include a "connectionToken" property in addition to the "connectionId" property. The value of the "connectionToken" property will be used in the "id" query string for the HTTP requests described below, this value should be kept secret.
+When the server and client agree on version 1 the server response will include a "connectionToken" property in addition to the "connectionId" property. The value of the "connectionToken" property will be used in the "id" query string for the transport requests described below and in the `X-SignalR-Connection-Token` header for authentication refresh requests. This value should be kept secret.
 
 A successful negotiate response will look similar to the following payload:
   ```json
@@ -132,6 +132,12 @@ There are two other possible negotiation responses:
   The payload returned from this endpoint provides the following data:
 
   * The `error` that gives details about why the negotiate failed.
+
+## `POST [endpoint-base]/refresh` request
+
+When authentication refresh is enabled, a client can re-authenticate an existing version 1 connection by sending a `POST` request to `[endpoint-base]/refresh`. The request must include the private `connectionToken` from negotiation in the `X-SignalR-Connection-Token` header. The token is not accepted from the query string. Because this header is not CORS-safelisted, a cross-origin browser request requires a successful CORS preflight.
+
+The response has content type `application/json`. A successful response can include a `tokenLifetimeSeconds` property with the lifetime of the refreshed authentication and an `accessToken` property containing a replacement transport access token.
 
 ## Transfer Formats
 
