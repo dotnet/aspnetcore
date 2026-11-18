@@ -187,7 +187,7 @@ describe('CircuitStreamingInterop', () => {
 
   test('subtracts acknowledgement latency from the retry delay', async () => {
     jest.useFakeTimers();
-    const invoke = jest.fn<HubConnection['invoke']>(async (..._args: Parameters<HubConnection['invoke']>) => {
+    const invoke = jest.fn(async (..._args: Parameters<HubConnection['invoke']>) => {
       await new Promise(resolve => setTimeout(resolve, 450));
       return 2;
     });
