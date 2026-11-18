@@ -10,6 +10,12 @@
     <TestContentPackage.ComponentWithLocationChanged Id="server" @rendermode="@(new InteractiveServerRenderMode(prerender: false))" />
 }
 
+@if (Mode == "server-and-wasm-state")
+{
+    <TestContentPackage.ComponentWithLocationChanged Id="server" @rendermode="@(new InteractiveServerRenderMode(prerender: false))" />
+    <TestContentPackage.HistoryStateRouter @rendermode="@(new InteractiveWebAssemblyRenderMode(prerender: false))" />
+}
+
 <br/>
 
 @if (Mode == "wasm" || Mode == "server-and-wasm")

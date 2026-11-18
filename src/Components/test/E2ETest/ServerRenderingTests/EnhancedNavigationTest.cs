@@ -682,6 +682,45 @@ public class EnhancedNavigationTest : ServerTestBase<BasicTestAppServerSiteFixtu
         Browser.Equal("1", () => Browser.Exists(By.Id("query-server")).Text);
     }
 
+    [Fact]
+    public void HistoryStateGetsUpdatedOnSameUriNavigationBeforeServerRendererAttaches()
+    {
+        Navigate($"{ServerPathBase}/nav");
+        ((IJavaScriptExecutor)Browser).ExecuteScript("sessionStorage.setItem('block-server-renderer-attach', 'true')");
+        Navigate($"{ServerPathBase}/nav/location-changed/server-and-wasm-state");
+        Browser.Exists(By.Id("server-renderer-attach-blocked"));
+
+        var uri = Browser.Url;
+        Browser.Exists(By.Id("set-history-state")).Click();
+        Browser.Equal("state-from-wasm", () => (string)((IJavaScriptExecutor)Browser).ExecuteScript("return history.state?.userState"));
+        Assert.Equal(uri, Browser.Url);
+
+        ((IJavaScriptExecutor)Browser).ExecuteScript("window.unblockServerRendererAttach()");
+        Browser.Equal("state-from-wasm", () => Browser.Exists(By.Id("history-state-server")).Text);
+        Assert.Equal(uri, Browser.Url);
+        Browser.Exists(By.Id("update-query-string-server")).Click();
+        Browser.Equal("1", () => Browser.Exists(By.Id("query-server")).Text);
+    }
+
+    [Fact]
+    public void PreexistingHistoryStateWithoutNavigationDoesNotTriggerReplay()
+    {
+        Navigate($"{ServerPathBase}/nav/location-changed/server-and-wasm-state");
+        Browser.Exists(By.Id("set-history-state")).Click();
+        Browser.Equal("state-from-wasm", () => Browser.Exists(By.Id("history-state-server")).Text);
+
+        ((IJavaScriptExecutor)Browser).ExecuteScript("sessionStorage.setItem('block-server-renderer-attach', 'true')");
+        Browser.Navigate().Refresh();
+        Browser.Exists(By.Id("server-renderer-attach-blocked"));
+        Browser.Equal("state-from-wasm", () => (string)((IJavaScriptExecutor)Browser).ExecuteScript("return history.state?.userState"));
+
+        ((IJavaScriptExecutor)Browser).ExecuteScript("window.unblockServerRendererAttach()");
+        Browser.Exists(By.Id("refresh-history-state-server")).Click();
+        Browser.Equal("Refresh history state: 1", () => Browser.Exists(By.Id("refresh-history-state-server")).Text);
+        Browser.Equal("(null)", () => Browser.Exists(By.Id("history-state-server")).Text);
+        Browser.Equal("state-from-wasm", () => (string)((IJavaScriptExecutor)Browser).ExecuteScript("return history.state?.userState"));
+    }
+
     [Theory]
     [InlineData("server")]
     [InlineData("wasm")]

@@ -99,6 +99,10 @@ export function resetLastLocationChange(): void {
   lastLocationChange = undefined;
 }
 
+export function wasLocationChangeRecordedFor(uri: string): boolean {
+  return lastLocationChange?.uri === uri;
+}
+
 export function wasLastLocationChangeIntercepted(uri: string): boolean {
   return lastLocationChange?.uri === uri && lastLocationChange.intercepted;
 }

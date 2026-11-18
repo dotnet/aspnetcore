@@ -5,8 +5,11 @@
 @inject NavigationManager Navigation
 
 <button type="button" id="update-query-string-@Id" @onclick="UpdateQueryString">Update query string</button>
+<button type="button" id="refresh-history-state-@Id" @onclick="() => _refreshCount++">Refresh history state: @_refreshCount</button>
 
 <p>Current URL: <span id="nav-uri-@Id">@Navigation.Uri</span></p>
+
+<p>History state: <span id="history-state-@Id">@(Navigation.HistoryEntryState ?? "(null)")</span></p>
 
 <p>Query: <span id="query-@Id">@Query</span></p>
 
@@ -19,6 +22,7 @@
     private int _nextQueryStringValue = 1;
     private int _locationChangedCount = 0;
     private int _locationChangingCount = 0;
+    private int _refreshCount = 0;
 
     [Parameter]
     public string Id { get; set; }

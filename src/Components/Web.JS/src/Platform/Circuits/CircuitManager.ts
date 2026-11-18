@@ -1,7 +1,8 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-import { internalFunctions as navigationManagerFunctions, resetLastLocationChange, wasLastLocationChangeIntercepted } from '../../Services/NavigationManager';
+import { internalFunctions as navigationManagerFunctions } from '../../Services/NavigationManager';
+import { resetLastLocationChange, wasLastLocationChangeIntercepted, wasLocationChangeRecordedFor } from '../../Services/NavigationUtils';
 import { toLogicalRootCommentElement, LogicalElement, toLogicalElement } from '../../Rendering/LogicalElements';
 import { ServerComponentDescriptor, descriptorToMarker, discoverServerPersistedState } from '../../Services/ComponentDescriptorDiscovery';
 import { HttpTransportType, HubConnection, HubConnectionBuilder, HubConnectionState, LogLevel } from '@microsoft/signalr';
@@ -536,12 +537,13 @@ export class CircuitManager implements DotNet.DotNetCallDispatcher {
 
   public onRendererAttached(): void {
     // Location changes are not delivered to the circuit until its renderer attaches, so
-    // one that happens after 'StartCircuit' captured the URI would otherwise be lost.
+    // URI or history state changes after 'StartCircuit' would otherwise be lost.
     const startCircuitUri = this._startCircuitUri;
     this._startCircuitUri = undefined;
     const uri = navigationManagerFunctions.getLocationHref();
-    if (startCircuitUri !== undefined && uri !== startCircuitUri) {
-      this.sendLocationChanged(uri, history.state?.userState, wasLastLocationChangeIntercepted(uri)).catch(error => this.unhandledError(error));
+    const state = history.state?.userState;
+    if (startCircuitUri !== undefined && (uri !== startCircuitUri || (typeof state === 'string' && wasLocationChangeRecordedFor(uri)))) {
+      this.sendLocationChanged(uri, state, wasLastLocationChangeIntercepted(uri)).catch(error => this.unhandledError(error));
     }
   }
 
