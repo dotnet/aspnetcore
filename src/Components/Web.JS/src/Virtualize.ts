@@ -95,8 +95,6 @@ function init(dotNetHelper: DotNet.DotNetObject, spacerBefore: HTMLElement, spac
   const useNativeAnchoring = !isTable && supportsAnchor;
 
   const rangeBetweenSpacers = document.createRange();
-  let renderedItemSize = Number(spacerBefore.getAttribute('data-blazor-virtualize-item-size'));
-  let scrollTriggeredRender = false;
 
   if (isTable) {
     spacerBefore.style.display = 'table-row';
@@ -118,6 +116,7 @@ function init(dotNetHelper: DotNet.DotNetObject, spacerBefore: HTMLElement, spac
     ['data-blazor-virtualize-loop-breaker-transform', 'transform', (n: number) => `translateY(${n}px)`],
   ] as const;
   const layoutAttrNames = layoutAttrs.map(([a]) => a);
+  const scrollRecalibrationAttr = 'data-blazor-virtualize-scroll-recalibration';
   function applyLayoutAttrs(el: HTMLElement): void {
     ensureBaseStyles(el);
     for (const [attr, styleProp, format] of layoutAttrs) {
@@ -131,10 +130,12 @@ function init(dotNetHelper: DotNet.DotNetObject, spacerBefore: HTMLElement, spac
     }
   }
 
-  // Apply layout attributes before the MutationObserver starts catching changes.
-  function applyLayoutAttrsBetweenSpacers(): void {
-    const scrollTop = scrollElement.scrollTop;
-    const itemSize = Number(spacerBefore.getAttribute('data-blazor-virtualize-item-size'));
+  function applyLayoutAttrsBetweenSpacers(records?: MutationRecord[]): void {
+    // Only the mutation that supplies a new estimate pair owns the correction.
+    const recalibration = records?.some(record => record.target === spacerBefore && record.attributeName === scrollRecalibrationAttr)
+      ? spacerBefore.getAttribute(scrollRecalibrationAttr)
+      : null;
+    const scrollTop = recalibration ? scrollElement.scrollTop : 0;
     for (let el: Element | null = spacerBefore;
          el && el !== spacerAfter.nextElementSibling;
          el = el.nextElementSibling) {
@@ -142,16 +143,16 @@ function init(dotNetHelper: DotNet.DotNetObject, spacerBefore: HTMLElement, spac
         applyLayoutAttrs(el as HTMLElement);
       }
     }
-    if (scrollTriggeredRender && renderedItemSize > 0 && itemSize > 0) {
+    if (recalibration) {
       // Keep the viewport at the same estimated item when recalibration resizes the leading spacer.
+      const [previousItemSize, itemSize] = recalibration.split(':').map(Number);
       const spacerHeight = Number(spacerBefore.getAttribute('data-blazor-virtualize-reserved-height'));
-      const delta = spacerHeight * (1 - renderedItemSize / itemSize);
-      if (Math.abs(delta) > 1) {
+      const delta = spacerHeight * (1 - previousItemSize / itemSize);
+      if (Number.isFinite(delta) && Math.abs(delta) > 1) {
         scrollActivity.ignoreNextScroll();
         scrollElement.scrollTop = scrollTop + delta;
       }
     }
-    renderedItemSize = itemSize;
   }
   applyLayoutAttrsBetweenSpacers();
 
@@ -167,8 +168,8 @@ function init(dotNetHelper: DotNet.DotNetObject, spacerBefore: HTMLElement, spac
   let restoreAnchorOnMutation = false;
   // Observe only the two spacers we already hold references to. Placeholders are siblings between them,
   // so on each spacer mutation we walk the sibling chain to reapply styles.
-  const mutationObserver = new MutationObserver(() => {
-    applyLayoutAttrsBetweenSpacers();
+  const mutationObserver = new MutationObserver(records => {
+    applyLayoutAttrsBetweenSpacers(records);
     if (restoreAnchorOnMutation) {
       restoreAnchorOnMutation = false;
       restoreAnchorForShift();
@@ -176,15 +177,19 @@ function init(dotNetHelper: DotNet.DotNetObject, spacerBefore: HTMLElement, spac
   });
 
   function flushPendingStyleMutations(): void {
-    if (mutationObserver.takeRecords().length > 0) {
-      applyLayoutAttrsBetweenSpacers();
+    const records = mutationObserver.takeRecords();
+    if (records.length > 0) {
+      applyLayoutAttrsBetweenSpacers(records);
     }
   }
   const spacerObserverOptions: MutationObserverInit = {
     attributes: true,
     attributeFilter: layoutAttrNames,
   };
-  mutationObserver.observe(spacerBefore, spacerObserverOptions);
+  mutationObserver.observe(spacerBefore, {
+    ...spacerObserverOptions,
+    attributeFilter: [...layoutAttrNames, scrollRecalibrationAttr],
+  });
   mutationObserver.observe(spacerAfter, spacerObserverOptions);
 
   const intersectionObserverOptions: IntersectionObserverInit = {
@@ -224,6 +229,7 @@ function init(dotNetHelper: DotNet.DotNetObject, spacerBefore: HTMLElement, spac
   };
 
   const anchoredItems: Map<Element, number> = new Map();
+  let scrollTriggeredRender = false;
 
   const scrollActivity = {
     source: ScrollSource.None as ScrollSource,
@@ -403,7 +409,6 @@ function init(dotNetHelper: DotNet.DotNetObject, spacerBefore: HTMLElement, spac
   resizeObserver.observe(spacerAfter);
 
   function refreshObservedElements(isLoading: boolean, refreshViewport: boolean): void {
-    flushPendingStyleMutations();
     if (refreshViewport) {
       pendingCallbacks.clear();
       reobserveSpacers();

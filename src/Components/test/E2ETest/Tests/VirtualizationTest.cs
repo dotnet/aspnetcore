@@ -6517,7 +6517,7 @@ public class VirtualizationTest : ServerTestBase<ToggleExecutionModeServerFixtur
     }
 
     [Fact]
-    public void ScrollToItem_EndAnchor_AfterAppendingVariableHeightItems_CanScrollUp()
+    public virtual void ScrollToItem_EndAnchor_AfterAppendingVariableHeightItems_CanScrollUp()
     {
         Browser.MountTestComponent<VirtualizationAppendAndScroll>();
         var container = Browser.Exists(By.Id("scroll-container"));
@@ -6547,24 +6547,27 @@ public class VirtualizationTest : ServerTestBase<ToggleExecutionModeServerFixtur
         Browser.Exists(By.Id("scroll-to-end")).Click();
         WaitForScrollStatus("Completed: 10009");
         Browser.True(() => GetTopRenderedIndex(js) > 9990);
+        Browser.Equal(10009L, () => GetBottomRenderedIndex(js));
         Browser.True(() => ViewportEdgeCoveredByRealItem(js, "bottom"));
-        WaitForRenderToSettle(container, js);
+        WaitForRenderToSettle(container, js, trackScrollHeight: true);
 
         var firstTailIndex = int.Parse(
             container.FindElements(By.CssSelector(".item"))[0].GetDomAttribute("data-index"),
             CultureInfo.InvariantCulture);
 
-        // WebDriver has no absolute scrollbar-position API. Setting scrollTop raises native scroll and observer events.
-        js.ExecuteScript("arguments[0].scrollTop -= 6000;", container);
+        const int upwardWheelDistance = 6000;
+        var targetScrollTop = (int)GetScrollTop(js, container) - upwardWheelDistance;
+        ScrollContainerWithWheelTo(js, container, targetScrollTop);
 
         Browser.True(() =>
         {
             var firstVisibleIndex = GetTopRenderedIndex(js);
-            return firstVisibleIndex > 0
+            // At least 120px per row: a 6000px wheel must not jump far beyond the tail.
+            return firstVisibleIndex >= firstTailIndex - 60
                 && firstVisibleIndex < firstTailIndex
                 && ViewportEdgeCoveredByRealItem(js, "top")
                 && ViewportEdgeCoveredByRealItem(js, "bottom");
-        }, "Scrolling above the rendered tail must load earlier items and cover the viewport instead of exposing the leading spacer.");
+        }, "Wheeling above the rendered tail must show nearby earlier items and cover the viewport instead of exposing the leading spacer.");
     }
 
     [Theory]

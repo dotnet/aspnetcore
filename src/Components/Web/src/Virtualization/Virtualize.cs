@@ -46,6 +46,8 @@ public sealed class Virtualize<TItem> : ComponentBase, IVirtualizeJsCallbacks, I
 
     private float _lastRenderedItemSize;
 
+    private (int ItemsBefore, float ItemSize)? _pendingScrollRecalibration;
+
     private float _lastSetItemSize;
 
     private IEnumerable<TItem>? _loadedItems;
@@ -565,12 +567,25 @@ public sealed class Virtualize<TItem> : ComponentBase, IVirtualizeJsCallbacks, I
             throw oldRefreshException;
         }
 
-        _lastRenderedItemSize = GetItemHeight();
+        var itemSize = GetItemHeight();
+        var scrollRecalibration = _pendingScrollRecalibration;
+        _pendingScrollRecalibration = null;
 
         builder.OpenElement(0, SpacerElement);
         builder.AddAttribute(1, "data-blazor-virtualize-reserved-height", GetSpacerHeightPx(_itemsBefore));
         builder.AddAttribute(2, "aria-hidden", "true");
-        builder.AddAttribute(3, "data-blazor-virtualize-item-size", _lastRenderedItemSize.ToString(CultureInfo.InvariantCulture));
+        if (scrollRecalibration is { } recalibration
+            && recalibration.ItemsBefore == _itemsBefore
+            && recalibration.ItemSize == itemSize
+            && _itemsBefore > 0
+            && _lastRenderedItemSize > 0 && itemSize > 0 && _lastRenderedItemSize != itemSize
+            && (AnchorMode & VirtualizeAnchorMode.End) != 0
+            && !_pendingAnchorRestore && !_pendingScrollToBottom && _currentScrollCts is null)
+        {
+            // Carry both estimates in the render that changes them, not in an after-render interop call.
+            builder.AddAttribute(3, "data-blazor-virtualize-scroll-recalibration", string.Create(CultureInfo.InvariantCulture, $"{_lastRenderedItemSize}:{itemSize}"));
+        }
+        _lastRenderedItemSize = itemSize;
         builder.AddElementReferenceCapture(4, elementReference => _spacerBefore = elementReference);
         builder.CloseElement();
 
@@ -737,7 +752,8 @@ public sealed class Virtualize<TItem> : ComponentBase, IVirtualizeJsCallbacks, I
             itemsBefore--;
         }
 
-        UpdateItemDistribution(itemsBefore, visibleItemCapacity, unusedItemCapacity);
+        UpdateItemDistribution(itemsBefore, visibleItemCapacity, unusedItemCapacity,
+            preserveScrollOnRecalibration: (AnchorMode & VirtualizeAnchorMode.End) != 0);
     }
 
     void IVirtualizeJsCallbacks.OnAfterSpacerVisible(float spacerSize, float spacerSeparation, float containerSize, SpacerVisibilityReason reason)
@@ -961,7 +977,8 @@ public sealed class Virtualize<TItem> : ComponentBase, IVirtualizeJsCallbacks, I
         return _visibleItemCapacity;
     }
 
-    private void UpdateItemDistribution(int itemsBefore, int visibleItemCapacity, int unusedItemCapacity)
+    private void UpdateItemDistribution(
+        int itemsBefore, int visibleItemCapacity, int unusedItemCapacity, bool preserveScrollOnRecalibration = false)
     {
         // If the itemcount just changed to a lower number, and we're already scrolled past the end of the new
         // reduced set of items, clamp the scroll position to the new maximum
@@ -976,6 +993,7 @@ public sealed class Virtualize<TItem> : ComponentBase, IVirtualizeJsCallbacks, I
             _itemsBefore = itemsBefore;
             _visibleItemCapacity = visibleItemCapacity;
             _unusedItemCapacity = unusedItemCapacity;
+            _pendingScrollRecalibration = preserveScrollOnRecalibration ? (itemsBefore, GetItemHeight()) : null;
 
             // After a successful data load, the ResizeObserver→IntersectionObserver cycle
             // re-triggers with refined measurements. This one-shot flag skips the single

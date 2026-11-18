@@ -121,6 +121,9 @@ public class ServerVirtualizationTest : VirtualizationTest
 
     public override void QuickGrid_AnchorMode_Top_AppendKeepsViewportStable(string anchorMode, bool useItemsProvider)
         => base.QuickGrid_AnchorMode_Top_AppendKeepsViewportStable(anchorMode, useItemsProvider);
+
+    public override void ScrollToItem_EndAnchor_AfterAppendingVariableHeightItems_CanScrollUp()
+        => base.ScrollToItem_EndAnchor_AfterAppendingVariableHeightItems_CanScrollUp();
 }
 
 public class ServerDynamicComponentRenderingTest : DynamicComponentRenderingTest
