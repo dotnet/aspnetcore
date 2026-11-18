@@ -2,7 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 import { synchronizeDomContent } from '../Rendering/DomMerging/DomSync';
-import { attachProgrammaticEnhancedNavigationHandler, handleClickForNavigationInterception, hasInteractiveRouter, isForSamePath, notifyEnhancedNavigationListeners, performScrollToElementOnTheSamePage, isSamePageWithHash, recordLocationChange } from './NavigationUtils';
+import { attachProgrammaticEnhancedNavigationHandler, handleClickForNavigationInterception, hasInteractiveRouter, isForSamePath, isWithinBaseUriSpace, notifyEnhancedNavigationListeners, performScrollToElementOnTheSamePage, isSamePageWithHash, recordLocationChange } from './NavigationUtils';
 import { scheduleScrollReset, ScrollResetSchedule } from '../Rendering/Renderer';
 
 /*
@@ -267,6 +267,15 @@ export async function performEnhancedPageLoad(internalDestinationHref: string, i
       // then let the rest of enhanced nav logic run to patch the new content into the DOM.
       if (changeUrl && (response.redirected || treatAsRedirectionFromMethod)) {
         const treatAsGet = treatAsRedirectionFromMethod ? (treatAsRedirectionFromMethod === 'get') : isGetRequest;
+        if (!isWithinBaseUriSpace(response.url)) {
+          if (treatAsGet) {
+            location.replace(response.url);
+          } else {
+            location.assign(response.url);
+          }
+          return;
+        }
+
         if (treatAsGet) {
           // For gets, the intermediate (redirecting) URL is already in the address bar, so we have to use 'replace'
           // so that 'back' would go to the page before the redirection
