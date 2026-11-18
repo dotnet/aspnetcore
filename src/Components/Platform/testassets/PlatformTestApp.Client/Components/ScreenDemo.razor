@@ -1,4 +1,5 @@
 @using System.Globalization
+@implements IAsyncDisposable
 @inject Microsoft.AspNetCore.Components.Platform.IBrowserPlatform Browser
 
 <h2>Screen</h2>
@@ -11,11 +12,21 @@
     <button id="get-color-depth" @onclick="GetColorDepthAsync">Color depth</button>
     <button id="get-pixel-depth" @onclick="GetPixelDepthAsync">Pixel depth</button>
 </div>
+<div>
+    <button id="get-orientation-type" @onclick="GetOrientationTypeAsync">Orientation type</button>
+    <button id="get-orientation-angle" @onclick="GetOrientationAngleAsync">Orientation angle</button>
+    <button id="watch-orientation" @onclick="WatchOrientationAsync">Watch orientation</button>
+    <button id="unwatch-orientation" @onclick="UnwatchOrientationAsync">Stop watching orientation</button>
+</div>
 <p id="screen-result" role="status" data-run="@runCount">@result</p>
+<p id="orientation-event" role="status">@orientationEvent</p>
 
 @code {
     private string result = "No operation has run.";
     private int runCount;
+    private string orientationEvent = "No event has been reported.";
+    private int orientationEventCount;
+    private Task<IAsyncDisposable>? orientationListenerTask;
 
     private Task GetAvailWidthAsync() => RunAsync("Available width", async () =>
         (await Browser.Window.Screen.GetAvailWidthAsync()).ToString(CultureInfo.InvariantCulture));
@@ -35,10 +46,57 @@
     private Task GetPixelDepthAsync() => RunAsync("Pixel depth", async () =>
         (await Browser.Window.Screen.GetPixelDepthAsync()).ToString(CultureInfo.InvariantCulture));
 
+    private Task GetOrientationTypeAsync() => RunAsync("Orientation type", async () =>
+    {
+        var type = await Browser.Window.Screen.Orientation.GetTypeAsync();
+        var known = type == OrientationType.PortraitPrimary || type == OrientationType.PortraitSecondary
+            || type == OrientationType.LandscapePrimary || type == OrientationType.LandscapeSecondary;
+        return $"{type}, known: {known}";
+    });
+
+    private Task GetOrientationAngleAsync() => RunAsync("Orientation angle", async () =>
+        (await Browser.Window.Screen.Orientation.GetAngleAsync()).ToString(CultureInfo.InvariantCulture));
+
+    private Task WatchOrientationAsync() => RunAsync("Watch orientation", async () =>
+    {
+        // Stored before the first await, so a click while adding reuses the pending listener instead of adding another.
+        await (orientationListenerTask ??= Browser.Window.Screen.Orientation.AddEventListenerAsync(ScreenOrientation.ChangeEvent, _ => ReportOrientationEvent()).AsTask());
+        return "added";
+    });
+
+    private Task UnwatchOrientationAsync() => RunAsync("Stop watching orientation", async () =>
+    {
+        await DisposeListenerAsync();
+        return "removed";
+    });
+
+    // The count tells two events apart. The listener runs on the renderer's dispatcher.
+    private Task ReportOrientationEvent()
+    {
+        orientationEventCount++;
+        orientationEvent = $"change ({orientationEventCount.ToString(CultureInfo.InvariantCulture)})";
+        StateHasChanged();
+        return Task.CompletedTask;
+    }
+
+    private async Task DisposeListenerAsync()
+    {
+        // Cleared before the first await, so a Watch click meanwhile adds a new listener that this call does not remove.
+        var listener = orientationListenerTask;
+        orientationListenerTask = null;
+
+        if (listener is not null)
+        {
+            await (await listener).DisposeAsync();
+        }
+    }
+
     private async Task RunAsync(string operation, Func<Task<string>> run)
     {
         result = $"{operation}: {await run()}";
         // Counts only completed runs, so a test waits for its own click and an exception fails at its step.
         runCount++;
     }
+
+    public async ValueTask DisposeAsync() => await DisposeListenerAsync();
 }
