@@ -153,6 +153,11 @@ public abstract class WebViewManager : IAsyncDisposable
 
         _ = _dispatcher.InvokeAsync(async () =>
         {
+            if (_disposed)
+            {
+                return;
+            }
+
             // TODO: Verify this produces the correct exception-surfacing behaviors.
             // For example, JS interop exceptions should flow back into JS, whereas
             // renderer exceptions should be fatal.

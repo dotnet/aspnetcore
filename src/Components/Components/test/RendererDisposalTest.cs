@@ -7,6 +7,7 @@ using Microsoft.AspNetCore.Components.Rendering;
 using Microsoft.AspNetCore.Components.RenderTree;
 using Microsoft.AspNetCore.Components.Test.Helpers;
 using Microsoft.Extensions.DependencyInjection;
+using Moq;
 
 namespace Microsoft.AspNetCore.Components.Test;
 
@@ -84,6 +85,117 @@ public class RendererDisposalTest
         Assert.Collection(exception.InnerExceptions,
             exception => Assert.Same(subscriptionException, exception),
             exception => Assert.Same(componentException, exception));
+    }
+
+    [Fact]
+    public void DisposedRenderer_DisposesAllCascadingSubscriptionsWhenDisposalThrows()
+    {
+        var firstException = new InvalidOperationException("First subscription disposal failed.");
+        var secondException = new InvalidOperationException("Second subscription disposal failed.");
+        var subscriptions = new[]
+        {
+            new ThrowingCascadingSubscription(firstException),
+            new ThrowingCascadingSubscription(secondException),
+        };
+        var subscriptionIndex = 0;
+        var services = new ServiceCollection();
+        services.TryAddCascadingValueSupplier<TestCascadingParameterAttribute>(
+            _ => (_, _, _) => subscriptions[subscriptionIndex++]);
+        using var provider = services.BuildServiceProvider();
+        using var renderer = new TestRenderer(provider) { ShouldHandleExceptions = true };
+        var component = new ComponentWithTwoCustomCascadingSubscriptions();
+        var componentId = renderer.AssignRootComponentId(component);
+        renderer.RenderRootComponent(componentId);
+        Assert.Equal(2, subscriptionIndex);
+
+        renderer.Dispose();
+
+        Assert.All(subscriptions, subscription => Assert.True(subscription.Disposed));
+        Assert.True(component.Disposed);
+        var exception = Assert.IsType<AggregateException>(Assert.Single(renderer.HandledExceptions));
+        Assert.Collection(exception.InnerExceptions,
+            exception => Assert.Same(firstException, exception),
+            exception => Assert.Same(secondException, exception));
+    }
+
+    [Fact]
+    public async Task RemovingComponents_AggregatesSynchronousSubscriptionDisposalExceptionsAfterCleanup()
+    {
+        var firstException = new InvalidOperationException("First subscription disposal failed.");
+        var secondException = new InvalidOperationException("Second subscription disposal failed.");
+        var subscriptions = new Queue<ThrowingCascadingSubscription>(
+        [
+            new(firstException),
+            new(secondException),
+        ]);
+        var services = new ServiceCollection();
+        services.TryAddCascadingValueSupplier<TestCascadingParameterAttribute>(
+            _ => (_, _, _) => subscriptions.Dequeue());
+        using var provider = services.BuildServiceProvider();
+        using var renderer = new TestRenderer(provider) { ShouldHandleExceptions = true };
+        var parent = new SubscriptionParentComponent();
+        var componentId = renderer.AssignRootComponentId(parent);
+        renderer.RenderRootComponent(componentId);
+        Assert.Equal(2, parent.Children.Count);
+        var cleanupCompletedWhenReported = new List<bool>();
+        renderer.OnExceptionHandled = () =>
+            cleanupCompletedWhenReported.Add(parent.Children.All(child => child.Disposed));
+
+        parent.ChildCount = 0;
+        await renderer.RenderRootComponentAsync(componentId);
+
+        var exception = Assert.IsType<AggregateException>(Assert.Single(renderer.HandledExceptions));
+        Assert.Collection(exception.InnerExceptions,
+            exception => Assert.Same(firstException, exception),
+            exception => Assert.Same(secondException, exception));
+        Assert.True(Assert.Single(cleanupCompletedWhenReported));
+    }
+
+    [Fact]
+    public async Task DisposedRenderer_PropagatesSynchronousSubscriptionAndComponentDisposalExceptions()
+    {
+        var subscriptionException = new InvalidOperationException("Subscription disposal failed.");
+        var componentException = new InvalidOperationException("Component disposal failed.");
+        var services = new ServiceCollection();
+        services.TryAddCascadingValueSupplier<TestCascadingParameterAttribute>(
+            _ => (_, _, _) => new ThrowingCascadingSubscription(subscriptionException));
+        using var provider = services.BuildServiceProvider();
+        using var renderer = new TestRenderer(provider);
+        var component = new ThrowingDisposableComponentWithCustomCascadingSubscription(componentException);
+        var componentId = renderer.AssignRootComponentId(component);
+        renderer.RenderRootComponent(componentId);
+
+        var exception = await renderer.Dispatcher.InvokeAsync(
+            () => Assert.Throws<AggregateException>(renderer.Dispose));
+
+        Assert.True(component.Disposed);
+        Assert.Collection(exception.InnerExceptions,
+            exception => Assert.Same(subscriptionException, exception),
+            exception => Assert.Same(componentException, exception));
+    }
+
+    [Fact]
+    public async Task RemovingComponent_UnsubscribesWhenComponentStateDisposalOmitsBaseCall()
+    {
+        var subscription = new Mock<CascadingParameterSubscription>();
+        subscription.Setup(subscription => subscription.GetCurrentValue()).Returns("initial");
+        var services = new ServiceCollection();
+        services.TryAddCascadingValueSupplier<TestCascadingParameterAttribute>(
+            _ => (_, _, _) => subscription.Object);
+        using var provider = services.BuildServiceProvider();
+        using var renderer = new CustomDisposalRenderer(provider);
+        var parent = new SubscriptionParentComponent { ChildCount = 1 };
+        var componentId = renderer.AssignRootComponentId(parent);
+        renderer.RenderRootComponent(componentId);
+        var child = Assert.Single(parent.Children);
+        Assert.Equal("initial", child.Value);
+        subscription.Verify(subscription => subscription.Dispose(), Times.Never);
+
+        parent.ChildCount = 0;
+        await renderer.RenderRootComponentAsync(componentId);
+
+        Assert.True(child.Disposed);
+        subscription.Verify(subscription => subscription.Dispose(), Times.Once);
     }
 
     [Fact]
@@ -271,6 +383,60 @@ public class RendererDisposalTest
             await Task.Yield();
             Dispose();
             throw exception;
+        }
+    }
+
+    private sealed class ComponentWithTwoCustomCascadingSubscriptions : ComponentWithCustomCascadingSubscription
+    {
+        [TestCascadingParameter]
+        public string SecondValue { get; set; } = string.Empty;
+    }
+
+    private sealed class ThrowingDisposableComponentWithCustomCascadingSubscription(Exception exception)
+        : ComponentWithCustomCascadingSubscription, IDisposable
+    {
+        void IDisposable.Dispose()
+        {
+            Dispose();
+            throw exception;
+        }
+    }
+
+    private sealed class SubscriptionParentComponent : ComponentBase
+    {
+        public int ChildCount { get; set; } = 2;
+
+        public List<ComponentWithCustomCascadingSubscription> Children { get; } = new();
+
+        protected override void BuildRenderTree(RenderTreeBuilder builder)
+        {
+            for (var i = 0; i < ChildCount; i++)
+            {
+                builder.OpenComponent<ComponentWithCustomCascadingSubscription>(0);
+                builder.AddComponentReferenceCapture(1,
+                    component => Children.Add((ComponentWithCustomCascadingSubscription)component));
+                builder.CloseComponent();
+            }
+        }
+    }
+
+    private sealed class CustomDisposalRenderer(IServiceProvider services) : TestRenderer(services)
+    {
+        protected override ComponentState CreateComponentState(int componentId, IComponent component, ComponentState parentComponentState)
+            => component is ComponentWithCustomCascadingSubscription
+                ? new CustomDisposalComponentState(this, componentId, component, parentComponentState)
+                : base.CreateComponentState(componentId, component, parentComponentState);
+    }
+
+    private sealed class CustomDisposalComponentState(
+        Renderer renderer, int componentId, IComponent component, ComponentState parentComponentState)
+        : ComponentState(renderer, componentId, component, parentComponentState)
+    {
+        public override ValueTask DisposeAsync()
+        {
+            ((IDisposable)CurrentRenderTree).Dispose();
+            ((IDisposable)Component).Dispose();
+            return ValueTask.CompletedTask;
         }
     }
 

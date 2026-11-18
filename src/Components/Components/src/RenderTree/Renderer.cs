@@ -1290,7 +1290,7 @@ public abstract partial class Renderer : IDisposable, IAsyncDisposable
 
             try
             {
-                var task = componentState.DisposeAsync();
+                var task = componentState.DisposeAsyncWithSubscriptionCleanup();
                 if (task.IsCompletedSuccessfully)
                 {
                     // If it's a IValueTaskSource backed ValueTask,

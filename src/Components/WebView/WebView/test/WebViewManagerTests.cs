@@ -290,6 +290,95 @@ public class WebViewManagerTests
     [Theory]
     [InlineData(false)]
     [InlineData(true)]
+    public async Task DisposingWebViewManager_IgnoresLateRenderAcknowledgement(bool queuedBeforeDisposal)
+    {
+        await using var services = RegisterTestServices()
+            .AddTestBlazorWebView()
+            .BuildServiceProvider();
+        await using var webViewManager = new TestWebViewManager(services, new TestFileProvider());
+        await webViewManager.AddRootComponentAsync(typeof(MyComponent), "#app", ParameterView.Empty);
+        webViewManager.ReceiveAttachPageMessage();
+        AssertHelpers.IsRenderBatch(webViewManager.SentIpcMessages.Last());
+        var messageCount = webViewManager.SentIpcMessages.Count;
+
+        if (queuedBeforeDisposal)
+        {
+            await webViewManager.Dispatcher.InvokeAsync(() =>
+            {
+                // Queue the message behind this work item, then dispose before it can run.
+                var messageQueued = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+                ThreadPool.QueueUserWorkItem(_ =>
+                {
+                    try
+                    {
+                        Assert.False(webViewManager.Dispatcher.CheckAccess());
+                        webViewManager.ReceiveIpcMessage(IpcCommon.IncomingMessageType.OnRenderCompleted, 1, null);
+                        messageQueued.SetResult();
+                    }
+                    catch (Exception exception)
+                    {
+                        messageQueued.SetException(exception);
+                    }
+                });
+                messageQueued.Task.GetAwaiter().GetResult();
+                var disposal = webViewManager.DisposeAsync();
+                Assert.True(disposal.IsCompletedSuccessfully);
+                disposal.GetAwaiter().GetResult();
+            });
+        }
+        else
+        {
+            await webViewManager.DisposeAsync();
+            webViewManager.ReceiveIpcMessage(IpcCommon.IncomingMessageType.OnRenderCompleted, 1, null);
+        }
+
+        await Task.Run(() => webViewManager.Dispatcher.InvokeAsync(() => { }));
+
+        Assert.Null(webViewManager.CurrentPageContext);
+        Assert.Equal(messageCount, webViewManager.SentIpcMessages.Count);
+    }
+
+    [Fact]
+    public async Task ActiveWebViewManager_ProcessesRenderAcknowledgement()
+    {
+        await using var services = RegisterTestServices()
+            .AddTestBlazorWebView()
+            .BuildServiceProvider();
+        await using var webViewManager = new TestWebViewManager(services, new TestFileProvider());
+        var afterRender = new TaskCompletionSource();
+        await webViewManager.AddRootComponentAsync(
+            typeof(ComponentWithAfterRenderCallback),
+            "#app",
+            ParameterView.FromDictionary(new Dictionary<string, object>
+            {
+                [nameof(ComponentWithAfterRenderCallback.AfterRender)] = (Action)afterRender.SetResult,
+            }));
+        webViewManager.ReceiveAttachPageMessage();
+        AssertHelpers.IsRenderBatch(webViewManager.SentIpcMessages.Last());
+        Assert.False(afterRender.Task.IsCompleted);
+        var messageCount = webViewManager.SentIpcMessages.Count;
+
+        webViewManager.ReceiveIpcMessage(IpcCommon.IncomingMessageType.OnRenderCompleted, 1, null);
+        await afterRender.Task.WaitAsync(TimeSpan.FromSeconds(30));
+
+        Assert.NotNull(webViewManager.CurrentPageContext);
+        Assert.Equal(messageCount, webViewManager.SentIpcMessages.Count);
+    }
+
+    private sealed class ComponentWithAfterRenderCallback : ComponentBase
+    {
+        [Parameter]
+        public Action AfterRender { get; set; }
+
+        protected override void OnAfterRender(bool firstRender)
+        {
+            AfterRender();
+        }
+    }
+
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
     public async Task DisposingWebViewManager_DoesNotAttachAnotherPage(bool attachmentStartedFirst)
     {
         var disposalEntered = new TaskCompletionSource();

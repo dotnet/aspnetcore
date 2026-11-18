@@ -318,21 +318,36 @@ public class ComponentState : IAsyncDisposable
 
     private void RemoveCascadingParameterSubscriptions()
     {
+        List<Exception>? exceptions = null;
         var numCascadingParameters = _cascadingParameters!.Count;
         for (var i = 0; i < numCascadingParameters; i++)
         {
             var supplier = _cascadingParameters[i].ValueSupplier;
             if (!supplier.IsFixed)
             {
-                supplier.Unsubscribe(this, _cascadingParameters[i].ParameterInfo);
+                try
+                {
+                    supplier.Unsubscribe(this, _cascadingParameters[i].ParameterInfo);
+                }
+                catch (Exception exception)
+                {
+                    exceptions ??= new();
+                    exceptions.Add(exception);
+                }
             }
+        }
+
+        if (exceptions?.Count == 1)
+        {
+            ExceptionDispatchInfo.Throw(exceptions[0]);
+        }
+        else if (exceptions is not null)
+        {
+            throw new AggregateException(exceptions);
         }
     }
 
-    /// <summary>
-    /// Disposes this instance and its associated component.
-    /// </summary>
-    public virtual ValueTask DisposeAsync()
+    internal ValueTask DisposeAsyncWithSubscriptionCleanup()
     {
         _componentWasDisposed = true;
 
@@ -344,18 +359,33 @@ public class ComponentState : IAsyncDisposable
             }
             catch (Exception exception)
             {
-                return DisposeAfterSubscriptionFailureAsync(exception);
+                try
+                {
+                    var disposalTask = DisposeAsync();
+                    if (!disposalTask.IsCompleted)
+                    {
+                        return DisposeAfterSubscriptionFailureAsync(exception, disposalTask);
+                    }
+
+                    disposalTask.GetAwaiter().GetResult();
+                }
+                catch (Exception componentException)
+                {
+                    throw new AggregateException(exception, componentException);
+                }
+
+                ExceptionDispatchInfo.Throw(exception);
             }
         }
 
-        return DisposeComponentAsync();
+        return DisposeAsync();
     }
 
-    private async ValueTask DisposeAfterSubscriptionFailureAsync(Exception subscriptionException)
+    private static async ValueTask DisposeAfterSubscriptionFailureAsync(Exception subscriptionException, ValueTask disposalTask)
     {
         try
         {
-            await DisposeComponentAsync();
+            await disposalTask;
         }
         catch (Exception componentException)
         {
@@ -365,8 +395,12 @@ public class ComponentState : IAsyncDisposable
         ExceptionDispatchInfo.Throw(subscriptionException);
     }
 
-    private ValueTask DisposeComponentAsync()
+    /// <summary>
+    /// Disposes this instance and its associated component.
+    /// </summary>
+    public virtual ValueTask DisposeAsync()
     {
+        _componentWasDisposed = true;
         DisposeBuffers();
 
         // Components shouldn't need to implement IAsyncDisposable and IDisposable simultaneously,
@@ -397,7 +431,7 @@ public class ComponentState : IAsyncDisposable
         // We don't expect these things to throw.
         RenderTreeDiffBuilder.DisposeFrames(batchBuilder, ComponentId, CurrentRenderTree.GetFrames());
 
-        return DisposeAsync();
+        return DisposeAsyncWithSubscriptionCleanup();
     }
 
     /// <summary>
