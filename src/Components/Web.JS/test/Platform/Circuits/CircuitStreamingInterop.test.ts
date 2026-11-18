@@ -26,7 +26,14 @@ describe('CircuitStreamingInterop', () => {
     const onComplete = jest.fn();
     const connection = { invoke, send } as unknown as HubConnection;
 
-    sendJSDataStream(connection, new Uint8Array([1, 2, 3, 4, 5, 6]), 7, 1, 1000, onComplete);
+    sendJSDataStream(connection, new Uint8Array([
+      1,
+      2,
+      3,
+      4,
+      5,
+      6,
+    ]), 7, 1, 1000, onComplete);
     await jest.runAllTimersAsync();
 
     expect(invoke).toHaveBeenCalledTimes(6);
@@ -92,7 +99,7 @@ describe('CircuitStreamingInterop', () => {
     await jest.advanceTimersByTimeAsync(20);
     expect(invoke).toHaveBeenCalledTimes(15);
 
-    await jest.advanceTimersByTimeAsync(99);
+    await jest.advanceTimersByTimeAsync(89);
     expect(invoke).toHaveBeenCalledTimes(15);
     await jest.advanceTimersByTimeAsync(1);
     expect(invoke).toHaveBeenCalledTimes(20);
@@ -105,11 +112,10 @@ describe('CircuitStreamingInterop', () => {
     ]);
 
     await jest.advanceTimersByTimeAsync(110);
-    expect(invoke).toHaveBeenCalledTimes(22);
-    expect(invoke.mock.calls.slice(20).map(call => call[2])).toEqual([6, 7]);
-    await jest.advanceTimersByTimeAsync(10);
     expect(invoke).toHaveBeenCalledTimes(26);
-    expect(invoke.mock.calls.slice(22).map(call => call[2])).toEqual([
+    expect(invoke.mock.calls.slice(20).map(call => call[2])).toEqual([
+      6,
+      7,
       8,
       9,
       10,
@@ -144,9 +150,21 @@ describe('CircuitStreamingInterop', () => {
     expect(invoke).toHaveBeenCalledTimes(3);
 
     expect(invoke.mock.calls.map(call => call.slice(1, 4))).toEqual([
-      [7, 0, new Uint8Array([1])],
-      [7, 1, new Uint8Array([2])],
-      [7, 1, new Uint8Array([2])],
+      [
+        7,
+        0,
+        new Uint8Array([1]),
+      ],
+      [
+        7,
+        1,
+        new Uint8Array([2]),
+      ],
+      [
+        7,
+        1,
+        new Uint8Array([2]),
+      ],
     ]);
   });
 
@@ -167,6 +185,23 @@ describe('CircuitStreamingInterop', () => {
     expect(invoke).toHaveBeenCalledTimes(2);
   });
 
+  test('subtracts acknowledgement latency from the retry delay', async () => {
+    jest.useFakeTimers();
+    const invoke = jest.fn<HubConnection['invoke']>(async (..._args: Parameters<HubConnection['invoke']>) => {
+      await new Promise(resolve => setTimeout(resolve, 450));
+      return 2;
+    });
+    const connection = { invoke, send: jest.fn<HubConnection['send']>() } as unknown as HubConnection;
+
+    sendJSDataStream(connection, new Uint8Array([1]), 7, 1, 500);
+    await jest.advanceTimersByTimeAsync(450);
+    expect(invoke).toHaveBeenCalledTimes(1);
+    await jest.advanceTimersByTimeAsync(1);
+    expect(invoke).toHaveBeenCalledTimes(2);
+    await jest.advanceTimersByTimeAsync(451);
+    expect(invoke).toHaveBeenCalledTimes(3);
+  });
+
   test('caps exponential retry delays during sustained backpressure', async () => {
     jest.useFakeTimers();
     const invoke = jest.fn<HubConnection['invoke']>().mockResolvedValue(2);
@@ -179,7 +214,13 @@ describe('CircuitStreamingInterop', () => {
     expect(invoke).toHaveBeenCalledTimes(1);
 
     let attempts = 1;
-    for (const delay of [100, 125, 125, 125, 125]) {
+    for (const delay of [
+      100,
+      125,
+      125,
+      125,
+      125,
+    ]) {
       await jest.advanceTimersByTimeAsync(delay - 1);
       expect(invoke).toHaveBeenCalledTimes(attempts);
       await jest.advanceTimersByTimeAsync(1);
@@ -191,7 +232,13 @@ describe('CircuitStreamingInterop', () => {
 
     expect(invoke).toHaveBeenCalledTimes(attempts + 1);
     for (const call of invoke.mock.calls) {
-      expect(call).toEqual(['ReceiveJSDataChunk', 7, 0, new Uint8Array([1]), null]);
+      expect(call).toEqual([
+        'ReceiveJSDataChunk',
+        7,
+        0,
+        new Uint8Array([1]),
+        null,
+      ]);
     }
     expect(send).not.toHaveBeenCalled();
     expect(onComplete).toHaveBeenCalledTimes(1);

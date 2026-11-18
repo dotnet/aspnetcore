@@ -346,6 +346,48 @@ public class RemoteJSDataStreamTest
     }
 
     [Fact]
+    public async Task ReceiveData_WithPipelinedBackpressureRetries_RefreshesTimeout()
+    {
+        var unhandledExceptionRaisedTask = new TaskCompletionSource<Exception>(TaskCreationOptions.RunContinuationsAsynchronously);
+        var jsRuntime = new TestRemoteJSRuntime(Options.Create(new CircuitOptions()), Options.Create(new HubOptions<ComponentHub>()), Mock.Of<ILogger<RemoteJSRuntime>>());
+        jsRuntime.UnhandledException += (_, ex) => unhandledExceptionRaisedTask.TrySetResult(ex);
+        var jsStreamReference = Mock.Of<IJSStreamReference>();
+        const int chunkSize = 9_488;
+        var remoteJSDataStream = await RemoteJSDataStream.CreateRemoteJSDataStreamAsync(
+            jsRuntime,
+            jsStreamReference,
+            totalLength: chunkSize * 20,
+            signalRMaximumIncomingBytes: 10_000,
+            jsInteropDefaultCallTimeout: TimeSpan.FromMilliseconds(200),
+            cancellationToken: CancellationToken.None);
+        var streamId = GetStreamId(remoteJSDataStream, jsRuntime);
+        var acceptedChunks = 0;
+
+        while (true)
+        {
+            var result = await RemoteJSDataStream.ReceiveData(jsRuntime, streamId, acceptedChunks, new byte[chunkSize], error: null).DefaultTimeout();
+            if (result == RemoteJSDataStreamResult.ChunkRejectedDueToBackpressure)
+            {
+                break;
+            }
+
+            Assert.Equal(RemoteJSDataStreamResult.ChunkAccepted, result);
+            acceptedChunks++;
+        }
+
+        for (var retry = 0; retry < 16; retry++)
+        {
+            await Task.Delay(25);
+            var result = await RemoteJSDataStream.ReceiveData(jsRuntime, streamId, acceptedChunks + 1, new byte[chunkSize], error: null).DefaultTimeout();
+            Assert.Equal(RemoteJSDataStreamResult.ChunkRejectedDueToBackpressure, result);
+            Assert.False(unhandledExceptionRaisedTask.Task.IsCompleted);
+        }
+
+        var exception = await unhandledExceptionRaisedTask.Task.DefaultTimeout();
+        Assert.IsType<TimeoutException>(exception);
+    }
+
+    [Fact]
     public async Task ReceiveData_FinalChunkWithBackpressure_DoesNotTimeOutWhileWaitingForReader()
     {
         var unhandledExceptionRaisedTask = new TaskCompletionSource<Exception>(TaskCreationOptions.RunContinuationsAsynchronously);

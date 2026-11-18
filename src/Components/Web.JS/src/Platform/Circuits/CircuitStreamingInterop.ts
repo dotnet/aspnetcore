@@ -44,8 +44,10 @@ export function sendJSDataStream(connection: HubConnection, data: ArrayBufferVie
           batchPosition += nextChunkSize;
         }
 
+        const acknowledgementStartTime = Date.now();
         const results = await Promise.all(chunks.map(chunk =>
           connection.invoke<RemoteJSDataStreamResult>('ReceiveJSDataChunk', streamId, chunk.id, chunk.data, null)));
+        const acknowledgementLatency = Date.now() - acknowledgementStartTime;
 
         let acceptedChunks = 0;
         for (const result of results) {
@@ -77,7 +79,7 @@ export function sendJSDataStream(connection: HubConnection, data: ArrayBufferVie
 
         if (acceptedChunks < chunks.length) {
           chunksInFlight = Math.max(1, Math.floor(chunksInFlight / 2));
-          await new Promise(resolve => setTimeout(resolve, backoffMilliseconds));
+          await new Promise(resolve => setTimeout(resolve, Math.max(0, backoffMilliseconds - acknowledgementLatency)));
           backoffMilliseconds = acceptedChunks > 0
             ? initialBackoffMilliseconds
             : Math.min(maxBackoffMilliseconds, backoffMilliseconds * 2);

@@ -115,6 +115,7 @@ internal sealed class RemoteJSDataStream : Stream
 
             if (_backpressureObserved && chunkId > _expectedChunkId)
             {
+                _lastDataReceivedTime = DateTimeOffset.UtcNow;
                 return RemoteJSDataStreamResult.ChunkRejectedDueToBackpressure;
             }
 
