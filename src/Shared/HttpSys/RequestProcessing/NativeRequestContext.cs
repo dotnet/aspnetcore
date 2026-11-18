@@ -713,9 +713,9 @@ internal unsafe class NativeRequestContext : IDisposable
                         var pFrom = (byte*)pDataChunk->Anonymous.FromMemory.pBuffer + dataChunkOffset + fixup;
 
                         var bytesToRead = pDataChunk->Anonymous.FromMemory.BufferLength - (uint)dataChunkOffset;
-                        if (bytesToRead > (uint)size)
+                        if (bytesToRead > (uint)size - dataRead)
                         {
-                            bytesToRead = (uint)size;
+                            bytesToRead = (uint)size - dataRead;
                         }
                         for (uint i = 0; i < bytesToRead; i++)
                         {
