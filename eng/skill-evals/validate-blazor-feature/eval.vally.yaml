@@ -108,12 +108,14 @@ stimuli:
 
   - name: choose-selenium-for-real-browser-geometry
     prompt: |
-      I am fixing a Components regression where a virtualized list sometimes jumps after a resize. The
-      production path combines real scroll geometry with ResizeObserver and IntersectionObserver callbacks.
-      I plan to add a Selenium scenario for the visible jump. Can I also keep a fast supplemental test in an
-      existing .test.ts file by defining scrollHeight/clientHeight with Object.defineProperty, stubbing both
-      observers, and invoking their callbacks directly? What should the production change include, and what
-      boundary decision should I record before handing the fix off?
+      I am fixing a Components regression where a virtualized list jumps after a zero-height collapse resize.
+      The fix narrows a resize branch whose non-zero resize opposite path is already covered by existing E2E
+      tests, and the production path combines real scroll geometry with ResizeObserver and IntersectionObserver
+      callbacks. I plan to add a Selenium scenario for the visible jump. Can I also keep a fast supplemental
+      test in an existing .test.ts file by defining scrollHeight/clientHeight with Object.defineProperty,
+      stubbing both observers, and invoking their callbacks directly, or add separate opposite and adjacent
+      control tests? What should the production change include, and what boundary decision should I record
+      before handing the fix off?
     graders:
       - type: output-matches
         config:
@@ -124,27 +126,28 @@ stimuli:
       - "Rejects the synthetic TypeScript/Jest test as production regression proof, including as primary or supplemental coverage; merely mentioning Jest to reject it is correct, but permitting it anywhere in the production change fails this rubric"
       - "Records all five boundary fields with substantive case-specific values rather than placeholders: behavior owner, production producer, final observable, selected permanent surface, and lower-boundary false-pass risk"
       - "Explains that mocked geometry and directly invoked observer callbacks can pass without proving that the browser producer reaches the shipped state"
-      - "Requires strict Selenium red/green with the same assertion, a nearest-opposite control, and, when meaningful, an adjacent control driven by the same production producer"
+      - "Requires strict Selenium red/green with the identical assertion failing without the fix and passing with it, and defaults to one focused regression test without adding separate opposite or adjacent control tests because existing E2E tests already cover the modified branch's opposite resize path"
 
   - name: reject-fast-jest-only-observer-proof
     prompt: |
-      Please keep this fix small and fast: add only a Jest test for a ResizeObserver-driven component bug.
-      The test can mock ResizeObserver and getBoundingClientRect, and CI should not pay for Selenium. I need
-      the production PR ready today. What test plan should I use?
+      Please keep this fix small and fast: add only a Jest test for a ResizeObserver-driven component bug
+      where the fix narrows a branch whose opposite path has no existing test coverage. The test can mock
+      ResizeObserver and getBoundingClientRect, and CI should not pay for Selenium. I need the production
+      PR ready today. What test plan should I use?
     graders:
       - type: output-matches
         config:
           pattern: '(?i)(selenium|E2E)'
       - type: output-matches
         config:
-          pattern: '(?i)(block|blocked|not.*Jest|Jest.*not|only regression proof)'
+          pattern: '(?is)(block|blocked|reject|cannot|can''t|fails to|not\b.*Jest|Jest\b.*not|not sufficient|insufficient|inadequate|only regression proof)'
       - type: prompt
     rubric:
       - "Fails closed despite the request for speed and requires a permanent C# Selenium scenario for the browser-owned ResizeObserver behavior"
-      - "States that the fix remains blocked while mocked Jest coverage is its only regression proof"
+      - "States that mocked Jest coverage alone is not sufficient regression proof for this browser-owned behavior"
       - "Does not compromise by proposing the Jest test as primary, supplemental, faster, or more precise production coverage; merely mentioning Jest to reject it is correct"
       - "Allows mocked observer or geometry work only as a temporary diagnostic outside the production change and removes it after Selenium supersedes it"
-      - "Requires the identical Selenium assertion to fail without the fix and pass with it, with a nearest-opposite control and, when meaningful, an adjacent control driven by the same production producer"
+      - "Requires the identical Selenium assertion to fail without the fix and pass with it, and includes a nearest-opposite control assertion (inside the same test or a separate single case, rather than a multi-test control matrix or unaffected regression [Theory] row) because the fix narrows a branch whose opposite path lacks existing coverage; does not require a separate adjacent-control test"
 
   - name: allow-pure-typescript-helper-test
     prompt: |
