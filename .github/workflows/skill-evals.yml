@@ -627,24 +627,11 @@ jobs:
               $arguments += @('--workers', '1')
 
               & pwsh @arguments
-              $vallyExitCode = $LASTEXITCODE
-              if ($vallyExitCode -notin @(0, 1)) {
-                  Write-Error "Vally failed for '$evalName' with unexpected exit code $vallyExitCode." -ErrorAction Continue
+              $runnerExitCode = $LASTEXITCODE
+              if ($runnerExitCode -ne 0) {
+                  Write-Error "Skill-eval runner failed for '$evalName' with exit code $runnerExitCode." -ErrorAction Continue
                   $failedEvals += $evalName
                   continue
-              }
-
-              try {
-                  & (Join-Path $executionRoot 'eng/skill-evals/assert_results.ps1') `
-                      -OutputDirectory $outputDirectory
-              } catch {
-                  Write-Error "The complete result-set gate failed for '$evalName': $_" -ErrorAction Continue
-                  $failedEvals += $evalName
-                  continue
-              }
-
-              if ($vallyExitCode -eq 1) {
-                  Write-Warning "Vally exited with code 1 for '$evalName'. Complete primary trials passed the applicable result-set checks."
               }
           }
 
