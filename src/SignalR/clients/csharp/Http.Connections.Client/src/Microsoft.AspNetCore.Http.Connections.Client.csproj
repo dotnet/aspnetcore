@@ -20,6 +20,7 @@
     <Compile Include="$(SharedSourceRoot)ThrowHelpers\ObjectDisposedThrowHelper.cs" LinkBase="Shared" />
     <Compile Include="$(SharedSourceRoot)CallerArgument\CallerArgumentExpressionAttribute.cs" LinkBase="Shared" />
     <Compile Include="$(SharedSourceRoot)QueryStringEnumerable.cs" LinkBase="Shared" />
+    <Compile Include="$(SharedSourceRoot)QueryStringDecoder.cs" LinkBase="Shared" />
   </ItemGroup>
 
   <ItemGroup>

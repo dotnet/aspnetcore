@@ -132,6 +132,7 @@ describe("HttpConnection", () => {
             let accessTokenFactoryCallCount = 0;
             let negotiateAuthorizationHeader: string | undefined;
             let refreshAuthorizationHeader: string | undefined;
+            let refreshConnectionTokenHeader: string | undefined;
             let refreshUrl: string | undefined;
             const options: IHttpConnectionOptions = {
                 ...commonOptions,
@@ -143,6 +144,7 @@ describe("HttpConnection", () => {
                     })
                     .on("POST", /\/refresh/, (request) => {
                         refreshAuthorizationHeader = request.headers![HeaderNames.Authorization];
+                        refreshConnectionTokenHeader = request.headers![HeaderNames.ConnectionToken];
                         refreshUrl = request.url;
                         return { tokenLifetimeSeconds: 42 };
                     }),
@@ -160,7 +162,8 @@ describe("HttpConnection", () => {
                 expect(accessTokenFactoryCallCount).toBe(2);
                 expect(negotiateAuthorizationHeader).toBe("Bearer token1");
                 expect(refreshAuthorizationHeader).toBe("Bearer token2");
-                expect(refreshUrl).toBe("http://tempuri.org/chat/refresh?q=value&id=123abc");
+                expect(refreshConnectionTokenHeader).toBe("123abc");
+                expect(refreshUrl).toBe("http://tempuri.org/chat/refresh?q=value");
                 expect((connection as any)._httpClient._accessToken).toBe("token2");
             } finally {
                 transport.onclose!();
@@ -176,6 +179,7 @@ describe("HttpConnection", () => {
             let firstNegotiateAuthorizationHeader: string | undefined;
             let redirectedNegotiateAuthorizationHeader: string | undefined;
             let refreshAuthorizationHeader: string | undefined;
+            let refreshConnectionTokenHeader: string | undefined;
             let refreshUrl: string | undefined;
             const options: IHttpConnectionOptions = {
                 ...commonOptions,
@@ -197,6 +201,7 @@ describe("HttpConnection", () => {
                     })
                     .on("POST", /\/refresh/, (request) => {
                         refreshAuthorizationHeader = request.headers![HeaderNames.Authorization];
+                        refreshConnectionTokenHeader = request.headers![HeaderNames.ConnectionToken];
                         refreshUrl = request.url;
                         return { accessToken: "service-token2", tokenLifetimeSeconds: 42 };
                     }),
@@ -216,7 +221,8 @@ describe("HttpConnection", () => {
                 expect(firstNegotiateAuthorizationHeader).toBe("Bearer app-token");
                 expect(redirectedNegotiateAuthorizationHeader).toBe("Bearer service-token");
                 expect(refreshAuthorizationHeader).toBe("Bearer app-token");
-                expect(refreshUrl).toBe("http://original.example/hub/refresh?id=123abc");
+                expect(refreshConnectionTokenHeader).toBe("123abc");
+                expect(refreshUrl).toBe("http://original.example/hub/refresh");
                 expect((connection as any)._httpClient._accessToken).toBe("service-token2");
             } finally {
                 transport.onclose!();
@@ -301,7 +307,7 @@ describe("HttpConnection", () => {
         const accessTokenHttpClient = new AccessTokenHttpClient(innerClient, () => `new-token${++accessTokenFactoryCallCount}`);
         accessTokenHttpClient.updateCachedToken("cached-token");
 
-        await accessTokenHttpClient.post("http://tempuri.org/refresh?id=123abc");
+        await accessTokenHttpClient.post("http://tempuri.org/refresh");
         await accessTokenHttpClient.post("http://tempuri.org/negotiate?id=123abc");
 
         expect(accessTokenFactoryCallCount).toBe(0);

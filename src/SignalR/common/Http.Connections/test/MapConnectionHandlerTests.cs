@@ -427,7 +427,10 @@ public class MapConnectionHandlerTests
     {
         void ConfigureRoutes(IEndpointRouteBuilder endpoints)
         {
-            endpoints.MapConnectionHandler<CorsConnectionHandler>("/path");
+            endpoints.MapConnectionHandler<CorsConnectionHandler>("/path", options =>
+            {
+                options.EnableAuthenticationRefresh = true;
+            });
         }
 
         using (var host = BuildWebHost(ConfigureRoutes))
@@ -435,11 +438,16 @@ public class MapConnectionHandlerTests
             host.Start();
 
             var dataSource = host.Services.GetRequiredService<EndpointDataSource>();
-            // We register 2 endpoints (/negotiate and /)
+            // CORS metadata must apply to /refresh so its connection-token header can be preflighted.
             Assert.Collection(dataSource.Endpoints,
                 endpoint =>
                 {
                     Assert.Equal("/path/negotiate", endpoint.DisplayName);
+                    Assert.NotNull(endpoint.Metadata.GetMetadata<IEnableCorsAttribute>());
+                },
+                endpoint =>
+                {
+                    Assert.Equal("/path/refresh", endpoint.DisplayName);
                     Assert.NotNull(endpoint.Metadata.GetMetadata<IEnableCorsAttribute>());
                 },
                 endpoint =>
