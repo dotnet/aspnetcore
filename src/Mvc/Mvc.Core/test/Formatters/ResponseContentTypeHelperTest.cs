@@ -137,4 +137,32 @@ public class ResponseContentTypeHelperTest
         Assert.Equal(expectedContentType, resolvedContentType);
         Assert.Equal(Encoding.UTF8, resolvedContentTypeEncoding);
     }
+
+    [Theory]
+    [InlineData("text/html")]
+    [InlineData("text/plain")]
+    [InlineData("application/json")]
+    [InlineData("invalid")]
+    [InlineData("")]
+    [InlineData("text/html, charset=utf-8")]
+    [InlineData("text/plain; charset=utf-8")]
+    [InlineData("TEXT/PLAIN; CHARSET=UTF-8")]
+    [InlineData("text/html; charset=utf-8")]
+    [InlineData("application/json; charset=utf-8")]
+    [InlineData("application/json;charset=utf-8")]
+    [InlineData("text/plain; charset=utf-16")]
+    [InlineData("text/plain; charset=us-ascii")]
+    [InlineData("text/plain; charset=\"utf-8\"")]
+    [InlineData("text/plain; charset=unknown")]
+    [InlineData("text/plain; charset=")]
+    [InlineData("text/plain; format=flowed")]
+    [InlineData("text/plain;")]
+    [InlineData(";charset=utf-8")]
+    [InlineData("text plain; charset=utf-8")]
+    public void GetEncoding_MatchesMediaTypeHeaderValue(string mediaType)
+    {
+        var expected = MediaTypeHeaderValue.TryParse(mediaType, out var parsed) ? parsed.Encoding : null;
+
+        Assert.Same(expected, ResponseContentTypeHelper.GetEncoding(mediaType));
+    }
 }

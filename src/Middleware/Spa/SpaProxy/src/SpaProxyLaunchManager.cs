@@ -243,7 +243,7 @@ catch
             WorkingDirectory = Path.Combine(AppContext.BaseDirectory, _options.WorkingDirectory)
         };
 
-        var stopProcess = Process.Start(stopScriptInfo);
+        using var stopProcess = Process.Start(stopScriptInfo);
         if (stopProcess == null || stopProcess.HasExited)
         {
             if (_logger.IsEnabled(LogLevel.Warning))
@@ -305,7 +305,7 @@ rm {scriptPath};
             WorkingDirectory = Path.Combine(AppContext.BaseDirectory, _options.WorkingDirectory)
         };
 
-        var stopProcess = Process.Start(stopScriptInfo);
+        using var stopProcess = Process.Start(stopScriptInfo);
         if (stopProcess == null || stopProcess.HasExited)
         {
             _logger.LogWarning($"The SPA process shutdown script '{stopProcess?.Id}' failed to start. The SPA proxy might" +

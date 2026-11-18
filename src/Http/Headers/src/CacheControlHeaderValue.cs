@@ -328,7 +328,7 @@ public class CacheControlHeaderValue
     /// <inheritdoc />
     public override string ToString()
     {
-        var sb = new StringBuilder();
+        var sb = StringBuilderCache.Acquire();
 
         AppendValueIfRequired(sb, _noStore, NoStoreString);
         AppendValueIfRequired(sb, _noTransform, NoTransformString);
@@ -352,14 +352,14 @@ public class CacheControlHeaderValue
         {
             AppendValueWithSeparatorIfRequired(sb, MaxAgeString);
             sb.Append('=');
-            sb.Append(((int)_maxAge.GetValueOrDefault().TotalSeconds).ToString(NumberFormatInfo.InvariantInfo));
+            sb.Append(NumberFormatInfo.InvariantInfo, $"{(int)_maxAge.GetValueOrDefault().TotalSeconds}");
         }
 
         if (_sharedMaxAge.HasValue)
         {
             AppendValueWithSeparatorIfRequired(sb, SharedMaxAgeString);
             sb.Append('=');
-            sb.Append(((int)_sharedMaxAge.GetValueOrDefault().TotalSeconds).ToString(NumberFormatInfo.InvariantInfo));
+            sb.Append(NumberFormatInfo.InvariantInfo, $"{(int)_sharedMaxAge.GetValueOrDefault().TotalSeconds}");
         }
 
         if (_maxStale)
@@ -368,7 +368,7 @@ public class CacheControlHeaderValue
             if (_maxStaleLimit.HasValue)
             {
                 sb.Append('=');
-                sb.Append(((int)_maxStaleLimit.GetValueOrDefault().TotalSeconds).ToString(NumberFormatInfo.InvariantInfo));
+                sb.Append(NumberFormatInfo.InvariantInfo, $"{(int)_maxStaleLimit.GetValueOrDefault().TotalSeconds}");
             }
         }
 
@@ -376,7 +376,7 @@ public class CacheControlHeaderValue
         {
             AppendValueWithSeparatorIfRequired(sb, MinFreshString);
             sb.Append('=');
-            sb.Append(((int)_minFresh.GetValueOrDefault().TotalSeconds).ToString(NumberFormatInfo.InvariantInfo));
+            sb.Append(NumberFormatInfo.InvariantInfo, $"{(int)_minFresh.GetValueOrDefault().TotalSeconds}");
         }
 
         if (_private)
@@ -392,7 +392,7 @@ public class CacheControlHeaderValue
 
         NameValueHeaderValue.ToString(_extensions, ',', false, sb);
 
-        return sb.ToString();
+        return StringBuilderCache.GetStringAndRelease(sb);
     }
 
     /// <inheritdoc />

@@ -1,0 +1,48 @@
+@using System.Globalization
+@inject Microsoft.AspNetCore.Components.Platform.IBrowserPlatform Browser
+
+<h2>Navigator</h2>
+
+<div>
+    <button id="get-language" @onclick="GetLanguageAsync">Language</button>
+    <button id="get-languages" @onclick="GetLanguagesAsync">Languages</button>
+    <button id="get-online" @onclick="GetOnLineAsync">Online</button>
+    <button id="get-cookie-enabled" @onclick="GetCookieEnabledAsync">Cookie enabled</button>
+    <button id="get-user-agent" @onclick="GetUserAgentAsync">User agent</button>
+    <button id="get-hardware-concurrency" @onclick="GetHardwareConcurrencyAsync">Hardware concurrency</button>
+    <button id="get-max-touch-points" @onclick="GetMaxTouchPointsAsync">Max touch points</button>
+</div>
+<p id="navigator-result" role="status" data-run="@runCount">@result</p>
+
+@code {
+    private string result = "No operation has run.";
+    private int runCount;
+
+    private Task GetLanguageAsync() => RunAsync("Language", async () =>
+        await Browser.Window.Navigator.GetLanguageAsync());
+
+    private Task GetLanguagesAsync() => RunAsync("Languages", async () =>
+        string.Join(", ", await Browser.Window.Navigator.GetLanguagesAsync()));
+
+    private Task GetOnLineAsync() => RunAsync("Online", async () =>
+        (await Browser.Window.Navigator.GetOnLineAsync()).ToString());
+
+    private Task GetCookieEnabledAsync() => RunAsync("Cookie enabled", async () =>
+        (await Browser.Window.Navigator.GetCookieEnabledAsync()).ToString());
+
+    private Task GetUserAgentAsync() => RunAsync("User agent", async () =>
+        await Browser.Window.Navigator.GetUserAgentAsync());
+
+    private Task GetHardwareConcurrencyAsync() => RunAsync("Hardware concurrency", async () =>
+        (await Browser.Window.Navigator.GetHardwareConcurrencyAsync()).ToString(CultureInfo.InvariantCulture));
+
+    private Task GetMaxTouchPointsAsync() => RunAsync("Max touch points", async () =>
+        (await Browser.Window.Navigator.GetMaxTouchPointsAsync()).ToString(CultureInfo.InvariantCulture));
+
+    private async Task RunAsync(string operation, Func<Task<string>> run)
+    {
+        result = $"{operation}: {await run()}";
+        // Counts only completed runs, so a test waits for its own click and an exception fails at its step.
+        runCount++;
+    }
+}
