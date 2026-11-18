@@ -11,7 +11,7 @@ describe('CircuitStreamingInterop', () => {
     jest.useRealTimers();
   });
 
-  test('pipelines up to five chunks', async () => {
+  test('starts by pipelining five chunks', async () => {
     jest.useFakeTimers();
     let activeInvocations = 0;
     let maximumActiveInvocations = 0;
@@ -33,6 +33,95 @@ describe('CircuitStreamingInterop', () => {
     expect(maximumActiveInvocations).toBe(5);
     expect(invoke).toHaveBeenNthCalledWith(1, 'ReceiveJSDataChunk', 7, 0, new Uint8Array([1]), null);
     expect(invoke).toHaveBeenNthCalledWith(6, 'ReceiveJSDataChunk', 7, 5, new Uint8Array([6]), null);
+    expect(send).not.toHaveBeenCalled();
+    expect(onComplete).toHaveBeenCalledTimes(1);
+  });
+
+  test('grows the send window on accepted batches and bounds chunks in flight', async () => {
+    jest.useFakeTimers();
+    let activeInvocations = 0;
+    let maximumActiveInvocations = 0;
+    const invoke = jest.fn(async () => {
+      activeInvocations++;
+      maximumActiveInvocations = Math.max(maximumActiveInvocations, activeInvocations);
+      await new Promise(resolve => setTimeout(resolve, 10));
+      activeInvocations--;
+      return 1;
+    });
+    const send = jest.fn<HubConnection['send']>();
+    const onComplete = jest.fn();
+    const connection = { invoke, send } as unknown as HubConnection;
+    const data = Uint8Array.from({ length: 600 }, (_, index) => index % 256);
+
+    sendJSDataStream(connection, data, 7, 1, 1000, onComplete);
+    await jest.advanceTimersByTimeAsync(0);
+    expect(invoke).toHaveBeenCalledTimes(5);
+
+    await jest.advanceTimersByTimeAsync(10);
+    expect(invoke).toHaveBeenCalledTimes(15);
+    await jest.advanceTimersByTimeAsync(10);
+    expect(invoke).toHaveBeenCalledTimes(35);
+
+    await jest.advanceTimersByTimeAsync(79);
+    expect(onComplete).not.toHaveBeenCalled();
+    await jest.advanceTimersByTimeAsync(1);
+
+    expect(invoke).toHaveBeenCalledTimes(data.length);
+    expect(maximumActiveInvocations).toBe(100);
+    for (let index = 0; index < data.length; index++) {
+      expect(invoke).toHaveBeenNthCalledWith(index + 1, 'ReceiveJSDataChunk', 7, index, data.slice(index, index + 1), null);
+    }
+    expect(send).not.toHaveBeenCalled();
+    expect(onComplete).toHaveBeenCalledTimes(1);
+  });
+
+  test('shrinks a grown window on backpressure and retries in order before growing again', async () => {
+    jest.useFakeTimers();
+    let invocationCount = 0;
+    const invoke = jest.fn(async (..._args: Parameters<HubConnection['invoke']>) => {
+      const callIndex = invocationCount++;
+      await new Promise(resolve => setTimeout(resolve, 10));
+      return callIndex >= 6 && callIndex < 20 ? 2 : 1;
+    });
+    const send = jest.fn<HubConnection['send']>();
+    const onComplete = jest.fn();
+    const connection = { invoke, send } as unknown as HubConnection;
+    const data = Uint8Array.from({ length: 30 }, (_, index) => index);
+
+    sendJSDataStream(connection, data, 7, 1, 1000, onComplete);
+    await jest.advanceTimersByTimeAsync(20);
+    expect(invoke).toHaveBeenCalledTimes(15);
+
+    await jest.advanceTimersByTimeAsync(99);
+    expect(invoke).toHaveBeenCalledTimes(15);
+    await jest.advanceTimersByTimeAsync(1);
+    expect(invoke).toHaveBeenCalledTimes(20);
+    expect(invoke.mock.calls.slice(15).map(call => call[2])).toEqual([
+      6,
+      7,
+      8,
+      9,
+      10,
+    ]);
+
+    await jest.advanceTimersByTimeAsync(110);
+    expect(invoke).toHaveBeenCalledTimes(22);
+    expect(invoke.mock.calls.slice(20).map(call => call[2])).toEqual([6, 7]);
+    await jest.advanceTimersByTimeAsync(10);
+    expect(invoke).toHaveBeenCalledTimes(26);
+    expect(invoke.mock.calls.slice(22).map(call => call[2])).toEqual([
+      8,
+      9,
+      10,
+      11,
+    ]);
+
+    await jest.runAllTimersAsync();
+
+    expect(invoke.mock.calls.slice(20).map(call => call[2])).toEqual(Array.from({ length: 24 }, (_, index) => index + 6));
+    for (const call of invoke.mock.calls) {
+      expect(call[3]).toEqual(data.slice(call[2], call[2] + 1));
+    }
     expect(send).not.toHaveBeenCalled();
     expect(onComplete).toHaveBeenCalledTimes(1);
   });

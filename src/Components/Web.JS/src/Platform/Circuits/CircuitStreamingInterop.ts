@@ -15,7 +15,8 @@ export function sendJSDataStream(connection: HubConnection, data: ArrayBufferVie
   // otherwise we'll deadlock (.NET can't begin reading until this completes, but it won't complete
   // because nobody's reading the pipe)
   setTimeout(async () => {
-    const maxChunksInFlight = 5;
+    const maxChunksInFlight = 100;
+    let chunksInFlight = 5;
     const maxBackoffMilliseconds = jsInteropCallTimeoutMilliseconds > 0
       ? Math.max(1, Math.min(1000, Math.floor(jsInteropCallTimeoutMilliseconds / 4)))
       : 1000;
@@ -33,7 +34,7 @@ export function sendJSDataStream(connection: HubConnection, data: ArrayBufferVie
           id: number;
         }[] = [];
         let batchPosition = position;
-        for (let i = 0; i < maxChunksInFlight && batchPosition < byteLength; i++) {
+        for (let i = 0; i < chunksInFlight && batchPosition < byteLength; i++) {
           const nextChunkSize = Math.min(chunkSize, byteLength - batchPosition);
           chunks.push({
             data: await getNextChunk(data, batchPosition, nextChunkSize),
@@ -75,6 +76,7 @@ export function sendJSDataStream(connection: HubConnection, data: ArrayBufferVie
         }
 
         if (acceptedChunks < chunks.length) {
+          chunksInFlight = Math.max(1, Math.floor(chunksInFlight / 2));
           await new Promise(resolve => setTimeout(resolve, backoffMilliseconds));
           backoffMilliseconds = acceptedChunks > 0
             ? initialBackoffMilliseconds
@@ -82,6 +84,7 @@ export function sendJSDataStream(connection: HubConnection, data: ArrayBufferVie
           continue;
         }
 
+        chunksInFlight = Math.min(maxChunksInFlight, chunksInFlight * 2);
         backoffMilliseconds = initialBackoffMilliseconds;
       }
     } catch (error) {
