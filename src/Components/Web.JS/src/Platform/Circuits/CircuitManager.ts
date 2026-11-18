@@ -47,6 +47,8 @@ export class CircuitManager implements DotNet.DotNetCallDispatcher {
 
   private _startCircuitUri?: string;
 
+  private _locationReplayFailed = false;
+
   private _renderingFailed = false;
 
   private _disposePromise?: Promise<void>;
@@ -117,13 +119,21 @@ export class CircuitManager implements DotNet.DotNetCallDispatcher {
     const componentsJson = JSON.stringify(this._componentManager.initialComponents.map(c => descriptorToMarker(c)));
     this._startCircuitUri = navigationManagerFunctions.getLocationHref();
     resetLastLocationChange();
-    this._circuitId = await this._connection.invoke<string>(
-      'StartCircuit',
-      navigationManagerFunctions.getBaseURI(),
-      this._startCircuitUri,
-      componentsJson,
-      this._applicationState || ''
-    );
+    try {
+      this._circuitId = await this._connection.invoke<string>(
+        'StartCircuit',
+        navigationManagerFunctions.getBaseURI(),
+        this._startCircuitUri,
+        componentsJson,
+        this._applicationState || ''
+      );
+    } catch (error) {
+      if (this._locationReplayFailed) {
+        this._logger.log(LogLevel.Error, `Failed to start the circuit: ${error}`);
+        return false;
+      }
+      throw error;
+    }
 
     if (!this._circuitId) {
       return false;
@@ -543,7 +553,10 @@ export class CircuitManager implements DotNet.DotNetCallDispatcher {
     const uri = navigationManagerFunctions.getLocationHref();
     const state = history.state?.userState;
     if (startCircuitUri !== undefined && (uri !== startCircuitUri || (typeof state === 'string' && wasLocationChangeRecordedFor(uri)))) {
-      this.sendLocationChanged(uri, state, wasLastLocationChangeIntercepted(uri)).catch(error => this.unhandledError(error));
+      this.sendLocationChanged(uri, state, wasLastLocationChangeIntercepted(uri)).catch(error => {
+        this._locationReplayFailed = true;
+        this.unhandledError(error);
+      });
     }
   }
 
@@ -590,7 +603,8 @@ export class CircuitManager implements DotNet.DotNetCallDispatcher {
 
     // Disconnect on errors.
     // Trying to call methods on the connection after its been closed will throw.
-    this.disconnect();
+    const disconnectPromise = this._circuitId ? this.disconnect() : this._connection?.stop();
+    disconnectPromise?.catch(error => this._logger.log(LogLevel.Error, `Failed to disconnect the circuit: ${error}`));
   }
 
   private getDisconnectFormData(): FormData {
