@@ -627,20 +627,35 @@ function init(dotNetHelper: DotNet.DotNetObject, spacerBefore: HTMLElement, spac
 
   function isEditableTarget(e: KeyboardEvent): boolean {
     // A keydown inside a shadow root is retargeted to the host at a document
-    // listener, so inspect the composed path instead of only the target.
+    // listener, so inspect the composed path. Use the first HTML element: its
+    // isContentEditable already accounts for an editable ancestor and for a
+    // contenteditable="false" island inside that ancestor.
     const path = typeof e.composedPath === 'function' ? e.composedPath() : [e.target];
-    return path.some(isEditableElement);
+    const target = path.find((node): node is HTMLElement => node instanceof HTMLElement);
+    return target !== undefined && isEditableElement(target);
   }
 
   const keydownTarget: EventTarget = scrollContainer || document;
   function handleJumpKeys(e: Event): void {
     const ke = e as KeyboardEvent;
-    // Home and End belong to the focused control (for example, moving the caret in
-    // a text input) unless the list itself is handling the key.
-    if (ke.defaultPrevented || isEditableTarget(ke)) {
+    if (isEditableTarget(ke)) {
       return;
     }
-    if (ke.key === 'End') {
+    if (ke.key === 'End' || ke.key === 'Home') {
+      // Blazor's @onkeydown:preventDefault runs in its document-level delegate.
+      // Defer the jump so that cancellation is observable before we move the list.
+      setTimeout(() => {
+        if (!ke.defaultPrevented) {
+          handleJumpKey(ke.key);
+        }
+      }, 0);
+    } else if (isUserScrollKey(ke.key)) {
+      handleUserScrollInput();
+    }
+  }
+
+  function handleJumpKey(key: string): void {
+    if (key === 'End') {
       interruptProgrammaticScroll();
       scrollActivity.source = ScrollSource.UserScroll;
       reobserveSpacers();
@@ -654,7 +669,7 @@ function init(dotNetHelper: DotNet.DotNetObject, spacerBefore: HTMLElement, spac
       if (!convergence.bottom && spacerAfter.offsetHeight > 0) {
         startConvergenceObserving('bottom');
       }
-    } else if (ke.key === 'Home') {
+    } else if (key === 'Home') {
       interruptProgrammaticScroll();
       scrollActivity.source = ScrollSource.UserScroll;
       reobserveSpacers();
@@ -665,8 +680,6 @@ function init(dotNetHelper: DotNet.DotNetObject, spacerBefore: HTMLElement, spac
       if (!convergence.top && spacerBefore.offsetHeight > 0) {
         startConvergenceObserving('top');
       }
-    } else if (isUserScrollKey(ke.key)) {
-      handleUserScrollInput();
     }
   }
 
