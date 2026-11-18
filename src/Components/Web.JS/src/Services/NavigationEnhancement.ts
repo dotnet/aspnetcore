@@ -289,6 +289,7 @@ export async function performEnhancedPageLoad(internalDestinationHref: string, i
         if (response.url !== internalDestinationHref) {
           notifyEnhancedNavigationListeners(response.url, interceptedLink);
         }
+        abortSignal.throwIfAborted();
         internalDestinationHref = response.url;
       }
 

@@ -2,6 +2,40 @@
   "version": "0.2.0",
   "configurations": [
     {
+      "name": "Launch BlazorWebAppPerPage",
+
+      "type": "coreclr",
+
+      "request": "launch",
+
+      "preLaunchTask": "build-BlazorWebAppPerPage",
+
+      "program": "${workspaceFolder}/.dotnet/dotnet",
+
+      "args": [
+        "exec",
+
+        "${workspaceFolder}/artifacts/bin/BlazorWebAppPerPage/Debug/net12.0/BlazorWebAppPerPage.dll"
+      ],
+
+      "cwd": "${workspaceFolder}/src/Components/Samples/BlazorWebAppPerPage",
+
+      "stopAtEntry": false,
+
+      "serverReadyAction": {
+        "action": "openExternally",
+
+        "pattern": "\\bNow listening on:\\s+(https?://\\S+)"
+      },
+
+      "env": {
+        "ASPNETCORE_ENVIRONMENT": "Development",
+
+        "DOTNET_ROOT": "${workspaceFolder}/.dotnet"
+      }
+    },
+
+    {
       "type": "PowerShell",
       "request": "launch",
       "name": "ps: Interactive Session",
