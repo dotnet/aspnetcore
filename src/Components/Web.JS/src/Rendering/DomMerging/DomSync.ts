@@ -50,7 +50,11 @@ function preprocessAndSynchronizeDomContent(destination: CommentBoundedRange | N
   synchronizeDomContentCore(destination, newContent);
 }
 
-function synchronizeDomContentCore(destination: CommentBoundedRange | Node, newContent: Node) {
+export function synchronizePrerenderedDom(destination: CommentBoundedRange, newContent: Node, onMatch: (destination: Node, source: Node) => boolean) {
+  synchronizeDomContentCore(destination, newContent, onMatch);
+}
+
+function synchronizeDomContentCore(destination: CommentBoundedRange | Node, newContent: Node, onMatch?: (destination: Node, source: Node) => boolean) {
   // Determine the destination's parent node, i.e., the node containing the children
   // we intend to synchronize. This might sometimes be a logical parent.
   let destinationParent: Node;
@@ -58,13 +62,13 @@ function synchronizeDomContentCore(destination: CommentBoundedRange | Node, newC
     destinationParent = destination;
   } else {
     destinationParent =
-      getLogicalParent(destination.startExclusive as unknown as LogicalElement) as unknown as Node ??
+      (onMatch ? undefined : getLogicalParent(destination.startExclusive as unknown as LogicalElement) as unknown as Node) ??
       destination.startExclusive.parentNode!;
   }
 
   // If only one out of the destination and new content is a logical element, we normalize
   // the other to also be a logical element
-  const isSynchronizingLogicalElements = isLogicalElement(destinationParent) || isLogicalElement(newContent);
+  const isSynchronizingLogicalElements = !onMatch && (isLogicalElement(destinationParent) || isLogicalElement(newContent));
   if (isSynchronizingLogicalElements) {
     toLogicalElement(destinationParent, /* allowExistingContents */ true);
     toLogicalElement(newContent, /* allowExistingContents */ true);
@@ -91,7 +95,7 @@ function synchronizeDomContentCore(destination: CommentBoundedRange | Node, newC
   const editScript = computeEditScript(
     originalNodesForDiff,
     newNodesForDiff,
-    domNodeComparer
+    onMatch ? (a, b) => domNodeComparer(a, b, true) : domNodeComparer
   );
 
   let destinationWalker: EditWalker;
@@ -106,7 +110,7 @@ function synchronizeDomContentCore(destination: CommentBoundedRange | Node, newC
 
   // Handle any common leading items
   for (let i = 0; i < editScript.skipCount; i++) {
-    treatAsMatch(destinationWalker.current, sourceWalker.current);
+    treatAsMatch(destinationWalker.current, sourceWalker.current, onMatch);
     destinationWalker.advance();
     sourceWalker.advance();
   }
@@ -120,13 +124,14 @@ function synchronizeDomContentCore(destination: CommentBoundedRange | Node, newC
       const operation = edits[editIndex];
       switch (operation) {
         case Operation.Keep: {
-          treatAsMatch(destinationWalker.current, sourceWalker.current);
+          treatAsMatch(destinationWalker.current, sourceWalker.current, onMatch);
           destinationWalker.advance();
           sourceWalker.advance();
           break;
         }
         case Operation.Update: {
           treatAsSubstitution(destinationWalker.current, sourceWalker.current);
+          onMatch?.(destinationWalker.current, sourceWalker.current);
           destinationWalker.advance();
           sourceWalker.advance();
           break;
@@ -134,13 +139,13 @@ function synchronizeDomContentCore(destination: CommentBoundedRange | Node, newC
         case Operation.Delete: {
           const nodeToRemove = destinationWalker.current;
           destinationWalker.advance();
-          treatAsDeletion(nodeToRemove, destinationParent);
+          treatAsDeletion(nodeToRemove, destinationParent, !!onMatch);
           break;
         }
         case Operation.Insert: {
           const nodeToInsert = sourceWalker.current;
           sourceWalker.advance();
-          treatAsInsertion(nodeToInsert, destinationWalker.current, destinationParent);
+          treatAsInsertion(nodeToInsert, destinationWalker.current, destinationParent, !!onMatch);
           break;
         }
         default:
@@ -152,7 +157,7 @@ function synchronizeDomContentCore(destination: CommentBoundedRange | Node, newC
     // These can only exist if there were some edits, otherwise everything would be in the set of common leading items
     const endAtNodeExclOrNull = destination instanceof Node ? null : destination.endExclusive;
     while (destinationWalker.current !== endAtNodeExclOrNull) {
-      treatAsMatch(destinationWalker.current, sourceWalker.current);
+      treatAsMatch(destinationWalker.current, sourceWalker.current, onMatch);
       destinationWalker.advance();
       sourceWalker.advance();
     }
@@ -164,7 +169,8 @@ function synchronizeDomContentCore(destination: CommentBoundedRange | Node, newC
   }
 }
 
-function treatAsMatch(destination: Node, source: Node) {
+function treatAsMatch(destination: Node, source: Node, onMatch?: (destination: Node, source: Node) => boolean) {
+  const preserveFormState = onMatch?.(destination, source) ?? false;
   switch (destination.nodeType) {
     case Node.TEXT_NODE:
       break;
@@ -187,7 +193,7 @@ function treatAsMatch(destination: Node, source: Node) {
           // Don't sync DOM content for already-interactive components because their content is managed
           // by the renderer.
         } else {
-          synchronizeDomContentCore(destination, source);
+          synchronizeDomContentCore(destination, source, onMatch);
         }
       }
       break;
@@ -197,15 +203,17 @@ function treatAsMatch(destination: Node, source: Node) {
         // The destination element's content and attributes should be retained.
       } else {
         const editableElementValue = getEditableElementValue(source as Element);
-        synchronizeAttributes(destination as Element, source as Element);
-        applyAnyDeferredValue(destination as Element);
-        synchronizeDomContentCore(destination as Element, source as Element);
+        if (!preserveFormState) {
+          synchronizeAttributes(destination as Element, source as Element);
+          applyAnyDeferredValue(destination as Element);
+        }
+        synchronizeDomContentCore(destination as Element, source as Element, onMatch);
 
         // This is a much simpler alternative to the deferred-value-assignment logic we use in interactive rendering.
         // Because this sync algorithm goes depth-first, we know all the attributes and descendants are fully in sync
         // by now, so setting any "special value" property is just a matter of assigning it right now (we don't have
         // to be concerned that it's invalid because it doesn't correspond to an <option> child or a min/max attribute).
-        if (editableElementValue !== null) {
+        if (!preserveFormState && editableElementValue !== null) {
           ensureEditableValueSynchronized(destination as Element, editableElementValue);
         }
       }
@@ -230,8 +238,8 @@ function treatAsSubstitution(destination: Node, source: Node) {
   }
 }
 
-function treatAsDeletion(nodeToDelete: Node, parentNode: Node) {
-  if (isLogicalElement(parentNode)) {
+function treatAsDeletion(nodeToDelete: Node, parentNode: Node, physical = false) {
+  if (!physical && isLogicalElement(parentNode)) {
     // It's not safe to call 'removeLogicalChild' here because it recursively removes
     // logical descendants from their parents, and that can potentially interfere with
     // renderer-managed DOM. Instead, we insert the logical element into a new document
@@ -244,8 +252,8 @@ function treatAsDeletion(nodeToDelete: Node, parentNode: Node) {
   }
 }
 
-function treatAsInsertion(nodeToInsert: Node, nextNode: Node | null, parentNode: Node) {
-  if (isLogicalElement(parentNode)) {
+function treatAsInsertion(nodeToInsert: Node, nextNode: Node | null, parentNode: Node, physical = false) {
+  if (!physical && isLogicalElement(parentNode)) {
     insertLogicalChildBefore(nodeToInsert, parentNode as unknown as LogicalElement, nextNode as unknown as LogicalElement);
   } else {
     // If the parent node is not a logical element, that means
@@ -256,6 +264,9 @@ function treatAsInsertion(nodeToInsert: Node, nextNode: Node | null, parentNode:
   }
 
   // Find and register descriptors in new content
+  if (physical) {
+    return;
+  }
   const iterator = document.createNodeIterator(nodeToInsert, NodeFilter.SHOW_COMMENT);
   while (iterator.nextNode()) {
     const logicalRootDescriptor = getLogicalRootDescriptor(iterator.referenceNode as unknown as LogicalElement);
@@ -265,12 +276,12 @@ function treatAsInsertion(nodeToInsert: Node, nextNode: Node | null, parentNode:
   }
 }
 
-function domNodeComparer(a: Node, b: Node): UpdateCost {
+function domNodeComparer(a: Node, b: Node, physical = false): UpdateCost {
   if (a.nodeType !== b.nodeType) {
     return UpdateCost.Infinite;
   }
 
-  if (isLogicalElement(a) !== isLogicalElement(b)) {
+  if (!physical && isLogicalElement(a) !== isLogicalElement(b)) {
     // We cannot merge logical elements with non-logical elements.
     return UpdateCost.Infinite;
   }

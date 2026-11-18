@@ -33,7 +33,7 @@ public class InteractivityTest : ServerTestBase<BasicTestAppServerSiteFixture<Ra
     [Theory]
     [InlineData(true)]
     [InlineData(false)]
-    public void PrerenderedDom_WithInitializersUsesWholeRootFallbackForMismatches(bool matches)
+    public void PrerenderedDom_PreservesMatchingNodesWithInitializers_WhenOtherContentChanges(bool matches)
     {
         Navigate($"{ServerPathBase}/prerendered-dom?suppress-autostart&platform=server&mismatch={!matches}");
         var root = Browser.Exists(By.Id("dom-first-root"));
@@ -52,35 +52,32 @@ public class InteractivityTest : ServerTestBase<BasicTestAppServerSiteFixture<Ra
 
         StartInteractivityAndWaitForReady("dom-first-ready", "dom-second-ready");
 
-        var shouldPreserveRoot = matches;
         var currentRoot = Browser.FindElement(By.Id("dom-first-root"));
-        Assert.Equal(shouldPreserveRoot, root.Equals(currentRoot));
-        Assert.Equal(shouldPreserveRoot, input.Equals(Browser.FindElement(By.Id("dom-first-input"))));
-        Assert.Equal(shouldPreserveRoot ? "Before activation" : "Initial", Browser.FindElement(By.Id("dom-first-input")).GetDomProperty("value"));
-        Assert.Equal(shouldPreserveRoot ? "Edited textarea" : "Initial", Browser.FindElement(By.Id("dom-first-textarea")).GetDomProperty("value"));
-        Assert.Equal(shouldPreserveRoot, Browser.FindElement(By.Id("dom-first-checkbox")).Selected);
-        Assert.Equal(shouldPreserveRoot ? "second" : "first", new SelectElement(Browser.FindElement(By.Id("dom-first-select"))).SelectedOption.GetDomProperty("value"));
-        Assert.Equal(shouldPreserveRoot ? scrollTopBeforeInteractivity : "0", Browser.FindElement(By.Id("dom-first-scroll")).GetDomProperty("scrollTop"));
-        Assert.Equal(shouldPreserveRoot ? 0L : 1L, js.ExecuteScript("return window.prerenderedDomRemovals"));
-        Assert.Equal(shouldPreserveRoot ? 2L : 3L, js.ExecuteScript("return window.prerenderedDomScriptRuns"));
+        Assert.Equal(root, currentRoot);
+        Assert.Equal(input, Browser.FindElement(By.Id("dom-first-input")));
+        Assert.Equal("Before activation", Browser.FindElement(By.Id("dom-first-input")).GetDomProperty("value"));
+        Assert.Equal("Edited textarea", Browser.FindElement(By.Id("dom-first-textarea")).GetDomProperty("value"));
+        Assert.True(Browser.FindElement(By.Id("dom-first-checkbox")).Selected);
+        Assert.Equal("second", new SelectElement(Browser.FindElement(By.Id("dom-first-select"))).SelectedOption.GetDomProperty("value"));
+        Assert.Equal(scrollTopBeforeInteractivity, Browser.FindElement(By.Id("dom-first-scroll")).GetDomProperty("scrollTop"));
+        Assert.Equal(0L, js.ExecuteScript("return window.prerenderedDomRemovals"));
+        Assert.Equal(2L, js.ExecuteScript("return window.prerenderedDomScriptRuns"));
+        Assert.Equal(matches ? "Same" : "Different", root.FindElement(By.CssSelector("span[data-state]")).Text);
         Assert.Equal("Initial", Browser.FindElement(By.Id("dom-first-model")).Text);
         Assert.Equal("Initial", Browser.FindElement(By.Id("dom-first-input-model")).Text);
-        Assert.Equal(shouldPreserveRoot ? "Before input" : "Initial", Browser.FindElement(By.Id("dom-first-input-bound")).GetDomProperty("value"));
+        Assert.Equal("Before input", Browser.FindElement(By.Id("dom-first-input-bound")).GetDomProperty("value"));
         Assert.Equal(secondRoot, Browser.FindElement(By.Id("dom-second-root")));
         Assert.Equal("Other root", secondInput.GetDomProperty("value"));
 
-        if (shouldPreserveRoot)
-        {
-            Assert.Equal(input, Browser.SwitchTo().ActiveElement());
-            Assert.Equal("2", input.GetDomProperty("selectionStart"));
-            Assert.Equal("7", input.GetDomProperty("selectionEnd"));
-            Assert.Equal("1", Browser.FindElement(By.Id("dom-first-custom")).GetDomProperty("connectionCount"));
-            Assert.Equal(true, js.ExecuteScript("return window.prerenderedDomAnimation === document.getElementById('dom-first-animation').getAnimations()[0]"));
-            Assert.Equal(true, js.ExecuteScript("return !!window.prerenderedDomStylesheet && window.prerenderedDomStylesheet === document.getElementById('dom-first-stylesheet').sheet"));
-        }
+        Assert.Equal(input, Browser.SwitchTo().ActiveElement());
+        Assert.Equal("2", input.GetDomProperty("selectionStart"));
+        Assert.Equal("7", input.GetDomProperty("selectionEnd"));
+        Assert.Equal("1", Browser.FindElement(By.Id("dom-first-custom")).GetDomProperty("connectionCount"));
+        Assert.Equal(true, js.ExecuteScript("return window.prerenderedDomAnimation === document.getElementById('dom-first-animation').getAnimations()[0]"));
+        Assert.Equal(true, js.ExecuteScript("return !!window.prerenderedDomStylesheet && window.prerenderedDomStylesheet === document.getElementById('dom-first-stylesheet').sheet"));
         js.ExecuteScript("window.prerenderedDomObserver.disconnect()");
 
-        AssertUserCanInteractWithFirstRootOnceInteractive(expectedSelectedValue: shouldPreserveRoot ? "second" : "first");
+        AssertUserCanInteractWithFirstRootOnceInteractive(expectedSelectedValue: "second");
     }
 
     private void StartInteractivityAndWaitForReady(params string[] readyElementIds)
@@ -315,7 +312,7 @@ public class InteractivityTest : ServerTestBase<BasicTestAppServerSiteFixture<Ra
     [InlineData("remove-leading")]
     [InlineData("component")]
     [InlineData("markup-tree")]
-    public void PrerenderedDom_ReplacesOnlyMismatchedPositions(string scenario)
+    public void PrerenderedDom_PreservesCompatibleNodesAndUpdatesChangedContent(string scenario)
     {
         Navigate($"{ServerPathBase}/prerendered-dom?suppress-autostart&platform=server&scenario={scenario}");
         var root = Browser.Exists(By.Id("position-root"));
@@ -363,17 +360,17 @@ public class InteractivityTest : ServerTestBase<BasicTestAppServerSiteFixture<Ra
         Assert.Equal(footer, Browser.FindElement(By.Id("position-footer")));
         Assert.Equal("AliceBob", Browser.FindElement(By.Id("position-footer-note")).GetDomProperty("value"));
         var currentNote = Browser.FindElement(By.Id("position-note"));
-        var preservesNote = scenario is not "remove-leading";
-        Assert.Equal(preservesNote, note.Equals(currentNote));
-        Assert.Equal(preservesNote ? "Bob" : "Alice", currentNote.GetDomProperty("value"));
-        if (preservesNote)
+        Assert.Equal(note, currentNote);
+        Assert.Equal("Bob", currentNote.GetDomProperty("value"));
+        Assert.Equal(note, Browser.SwitchTo().ActiveElement());
+        if (scenario == "remove-leading")
         {
-            Assert.Equal(note, Browser.SwitchTo().ActiveElement());
+            Browser.DoesNotExist(By.Id("position-leading"));
         }
         if (scenario is "input-default" or "textarea-default")
         {
             var changedInput = Browser.FindElement(By.Id("position-changed-input"));
-            Assert.NotEqual(nestedNote, changedInput);
+            Assert.Equal(nestedNote, changedInput);
             Assert.Equal("Carol", changedInput.GetDomProperty("value"));
         }
         else if (nestedNote is not null)
@@ -389,7 +386,7 @@ public class InteractivityTest : ServerTestBase<BasicTestAppServerSiteFixture<Ra
         if (changedTextarea is not null)
         {
             var currentTextarea = Browser.FindElement(By.Id("position-changed-textarea"));
-            Assert.NotEqual(changedTextarea, currentTextarea);
+            Assert.Equal(changedTextarea, currentTextarea);
             Assert.Equal("Carol", currentTextarea.GetDomProperty("value"));
         }
         if (matchingTextarea is not null)
@@ -422,14 +419,16 @@ public class InteractivityTest : ServerTestBase<BasicTestAppServerSiteFixture<Ra
     }
 
     [Fact]
-    public void PrerenderedDom_InitializersBindToNodes_AfterReplacement()
+    public void PrerenderedDom_PreservesInitializerBindings_AndReinitializesRecreatedNodes()
     {
         Navigate($"{ServerPathBase}/prerendered-dom?suppress-autostart&platform=server&scenario=script-order");
         var root = Browser.Exists(By.Id("position-root"));
         var footer = Browser.Exists(By.Id("position-footer"));
+        var target = Browser.Exists(By.Id("position-target"));
         Browser.Exists(By.Id("position-footer-note")).SendKeys("Bob");
         var js = (IJavaScriptExecutor)Browser;
         StartInteractivityAndWaitForReady("position-ready");
+        Assert.Equal(target, Browser.FindElement(By.Id("position-target")));
         Browser.Exists(By.Id("position-target")).Click();
         Assert.Equal("Clicked", Browser.FindElement(By.Id("position-native-status")).Text);
         Assert.Equal(1L, js.ExecuteScript("return window.prerenderedPositionNativeClicks"));
@@ -438,11 +437,14 @@ public class InteractivityTest : ServerTestBase<BasicTestAppServerSiteFixture<Ra
         var currentFooter = Browser.FindElement(By.Id("position-footer"));
         Assert.Equal(footer, currentFooter);
         Assert.Equal("AliceBob", Browser.FindElement(By.Id("position-footer-note")).GetDomProperty("value"));
-        Assert.Equal(2L, js.ExecuteScript("return window.prerenderedPositionInitializerRuns"));
+        Assert.Equal(1L, js.ExecuteScript("return window.prerenderedPositionInitializerRuns"));
 
         Browser.Click(By.Id("position-increment"));
         Browser.Equal("Count: 1", () => Browser.FindElement(By.Id("position-increment")).Text);
         AssertUserCanRemoveAndRecreateScope(currentFooter);
+        Assert.NotEqual(target, Browser.FindElement(By.Id("position-target")));
+        Assert.Equal(2L, js.ExecuteScript("return window.prerenderedPositionInitializerRuns"));
+        Assert.Equal(true, js.ExecuteScript("return window.prerenderedPositionInitializedTarget === document.getElementById('position-target')"));
         Browser.Exists(By.Id("position-target")).Click();
         Assert.Equal("Clicked", Browser.FindElement(By.Id("position-native-status")).Text);
         Assert.Equal(2L, js.ExecuteScript("return window.prerenderedPositionNativeClicks"));
@@ -480,7 +482,7 @@ public class InteractivityTest : ServerTestBase<BasicTestAppServerSiteFixture<Ra
         StartInteractivityAndWaitForReady("dom-first-ready");
         Assert.Equal(root, Browser.FindElement(By.Id("dom-first-root")));
         var currentForm = Browser.FindElement(By.Id("dom-first-root")).FindElement(By.TagName("form"));
-        Assert.Equal(shouldPreserveInput, form.Equals(currentForm));
+        Assert.Equal(form, currentForm);
         Assert.Equal(shouldPreserveInput ? "post" : null, currentForm.GetDomAttribute("method"));
         Assert.Equal(outsideInput, Browser.FindElement(By.Id("dom-first-input")));
         Assert.Equal("Outside the form", outsideInput.GetDomProperty("value"));

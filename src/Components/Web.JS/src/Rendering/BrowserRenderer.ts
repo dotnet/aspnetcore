@@ -6,8 +6,8 @@ import { EventDelegator } from './Events/EventDelegator';
 import { LogicalElement, PermutationListEntry, toLogicalElement, insertLogicalChild, removeLogicalChild, getLogicalParent, getLogicalChild, createAndInsertLogicalContainer, isSvgElement, isMathMLElement, permuteLogicalChildren, getClosestDomElement, emptyLogicalElement, getLogicalChildrenArray, depthFirstNodeTreeTraversal, getLogicalRootDescriptor, adoptLogicalChild, getElementNamespace } from './LogicalElements';
 import { applyCaptureIdToElement } from './ElementReferenceCapture';
 import { attachToEventDelegator as attachNavigationManagerToEventDelegator } from '../Services/NavigationManager';
-import { applyAnyDeferredValue, deferredValuePropname, tryApplySpecialProperty, rememberDeferredValue, internalAttributeNamePrefix } from './DomSpecialPropertyUtil';
-import { PrerenderedDom, PrerenderedFramesForRendering } from './PrerenderedDom';
+import { applyAnyDeferredValue, deferredValuePropname, tryApplySpecialProperty, internalAttributeNamePrefix } from './DomSpecialPropertyUtil';
+import { PrerenderedDom, PrerenderedFramesForRendering, PrerenderedDomPreview } from './PrerenderedDom';
 const sharedTemplateElemForParsing = document.createElement('template');
 const sharedSvgElemForParsing = document.createElementNS('http://www.w3.org/2000/svg', 'g');
 const sharedMathMLElemForParsing = document.createElementNS('http://www.w3.org/1998/Math/MathML', 'mrow');
@@ -20,7 +20,7 @@ const previouslyAttachedRoots = new WeakSet<LogicalElement>();
 const prerenderedRoots = new WeakSet<LogicalElement>();
 
 export class BrowserRenderer {
-  public eventDelegator: EventDelegator;
+  public eventDelegator!: EventDelegator;
 
   private rootComponentIds = new Set<number>();
 
@@ -32,7 +32,10 @@ export class BrowserRenderer {
 
   private framesForRendering: PrerenderedFramesForRendering = new Map();
 
-  public constructor(browserRendererId: number) {
+  public constructor(browserRendererId: number, private readonly preview?: PrerenderedDomPreview) {
+    if (preview) {
+      return;
+    }
     this.eventDelegator = new EventDelegator(browserRendererId);
 
     // We don't yet know whether or not navigation interception will be enabled, but in case it will be,
@@ -88,8 +91,8 @@ export class BrowserRenderer {
       this.pendingPrerenderedComponents.delete(componentId);
       const element = this.childComponentLocations[componentId];
       if (prerenderedRoots.delete(element)) {
-        const rootPlan = new PrerenderedDom(batch, diffs, parseMarkup);
-        if (rootPlan.tryPlanRoot(componentId, element)) {
+        const rootPlan = new PrerenderedDom(() => this.createPrerenderedPreview(batch, diffs, componentId, element));
+        if (rootPlan.tryPlanRoot(element)) {
           this.prerenderedRootPlans.set(componentId, rootPlan);
         }
       }
@@ -99,6 +102,38 @@ export class BrowserRenderer {
   public endBatch(): void {
     this.prerenderedRootPlans.clear();
     this.framesForRendering.clear();
+  }
+
+  private createPrerenderedPreview(batch: RenderBatch, diffs: Map<number, RenderTreeDiff | undefined>, componentId: number, root: LogicalElement): PrerenderedDomPreview | undefined {
+    const creationDocument = document.implementation.createHTMLDocument();
+    const parent = getClosestDomElement(root);
+    const host = parent instanceof Element
+      ? creationDocument.createElementNS(parent.namespaceURI, parent.localName)
+      : creationDocument.createElement('div');
+    const preview: PrerenderedDomPreview = { document: creationDocument, root: host, frames: new Map() };
+    const renderer = new BrowserRenderer(0, preview);
+    renderer.attachComponentToElement(componentId, toLogicalElement(host));
+    const rendered = new Set<number>();
+    for (const [id, diff] of diffs) {
+      if (!renderer.childComponentLocations[id]) {
+        continue;
+      }
+      if (diff === undefined) {
+        return;
+      }
+      const edits = batch.diffReader.edits(diff);
+      const values = batch.arrayBuilderSegmentReader.values(edits);
+      const offset = batch.arrayBuilderSegmentReader.offset(edits);
+      const count = batch.arrayBuilderSegmentReader.count(edits);
+      for (let i = offset; i < offset + count; i++) {
+        if (batch.editReader.editType(batch.diffReader.editsEntry(values, i)) !== EditType.prependFrame) {
+          return;
+        }
+      }
+      renderer.updateComponent(batch, id, edits, batch.arrayRangeReader.values(batch.referenceFrames()));
+      rendered.add(id);
+    }
+    return Object.keys(renderer.childComponentLocations).every(id => !diffs.has(+id) || rendered.has(+id)) ? preview : undefined;
   }
 
   public updateComponent(batch: RenderBatch, componentId: number, edits: ArrayBuilderSegment<RenderTreeEdit>, referenceFrames: ArrayValues<RenderTreeFrame>): void {
@@ -324,7 +359,9 @@ export class BrowserRenderer {
         return this.insertFrameRange(batch, componentId, parent, childIndex, frames, frameIndex + 1, frameIndex + frameReader.subtreeLength(frame));
       case FrameType.elementReferenceCapture:
         if (parent instanceof Element) {
-          applyCaptureIdToElement(parent, frameReader.elementReferenceCaptureId(frame)!);
+          if (!this.preview) {
+            applyCaptureIdToElement(parent, frameReader.elementReferenceCaptureId(frame)!);
+          }
           return 0; // A "capture" is a child in the diff, but has no node in the DOM
         } else {
           throw new Error('Reference capture frames can only be children of element frames.');
@@ -345,20 +382,23 @@ export class BrowserRenderer {
     const frameReader = batch.frameReader;
     const tagName = frameReader.elementName(frame)!;
     const namespace = getElementNamespace(tagName, parent);
+    const creationDocument = this.preview?.document ?? document;
 
-    const plannedNode = this.framesForRendering.get(frameIndex)?.nodes[0];
+    const framePlan = this.framesForRendering.get(frameIndex);
+    const plannedNode = framePlan?.nodes[0];
     const isPreservedElement = plannedNode instanceof Element;
     let domElement: Element;
     if (isPreservedElement) {
       domElement = plannedNode;
       adoptLogicalChild(domElement, parent, childIndex);
     } else if (namespace === 'http://www.w3.org/2000/svg') {
-      domElement = document.createElementNS('http://www.w3.org/2000/svg', tagName);
+      domElement = creationDocument.createElementNS('http://www.w3.org/2000/svg', tagName);
     } else if (namespace === 'http://www.w3.org/1998/Math/MathML') {
-      domElement = document.createElementNS('http://www.w3.org/1998/Math/MathML', tagName);
+      domElement = creationDocument.createElementNS('http://www.w3.org/1998/Math/MathML', tagName);
     } else {
-      domElement = document.createElement(tagName);
+      domElement = creationDocument.createElement(tagName);
     }
+    this.preview?.frames.set(frameIndex, domElement);
     const logicalElement = toLogicalElement(domElement);
 
     const descendantsEndIndexExcl = frameIndex + frameReader.subtreeLength(frame);
@@ -368,21 +408,18 @@ export class BrowserRenderer {
       if (frameReader.frameType(descendantFrame) !== FrameType.attribute) {
         break;
       }
-      this.applyAttribute(batch, componentId, domElement, descendantFrame, isPreservedElement);
+      this.applyAttribute(batch, componentId, domElement, descendantFrame, isPreservedElement, !!framePlan?.preserveFormState);
     }
 
     if (!isPreservedElement) {
-      if (plannedNode) {
-        plannedNode.parentNode!.replaceChild(domElement, plannedNode);
-        adoptLogicalChild(domElement, parent, childIndex);
-      } else {
-        insertLogicalChild(domElement, parent, childIndex);
-      }
+      insertLogicalChild(domElement, parent, childIndex);
     }
     if (descendantIndex < descendantsEndIndexExcl) {
       this.insertFrameRange(batch, componentId, logicalElement, 0, frames, descendantIndex, descendantsEndIndexExcl);
     }
-    if (!isPreservedElement) {
+    if (framePlan?.preserveFormState) {
+      framePlan.preserveFormState();
+    } else {
       applyAnyDeferredValue(domElement);
     }
   }
@@ -393,6 +430,7 @@ export class BrowserRenderer {
     if (plannedContainer) {
       adoptLogicalChild(plannedContainer, parent, childIndex);
     }
+    this.preview?.frames.set(frameIndex, containerElement);
 
     // All we have to do is associate the child component ID with its location. We don't actually
     // do any rendering here, because the diff for the child will appear later in the render batch.
@@ -407,7 +445,8 @@ export class BrowserRenderer {
       return;
     }
     const textContent = batch.frameReader.textContent(textFrame)!;
-    const newTextNode = document.createTextNode(textContent);
+    const newTextNode = (this.preview?.document ?? document).createTextNode(textContent);
+    this.preview?.frames.set(frameIndex, newTextNode);
     insertLogicalChild(newTextNode, parent, childIndex);
   }
 
@@ -424,19 +463,25 @@ export class BrowserRenderer {
       return;
     }
     const markupContainer = createAndInsertLogicalContainer(parent, childIndex);
+    if (frameIndex !== undefined) {
+      this.preview?.frames.set(frameIndex, markupContainer);
+    }
 
     const markupContent = batch.frameReader.markupContent(markupFrame);
-    const parsedMarkup = parseMarkup(markupContent, isSvgElement(parent), isMathMLElement(parent));
+    const parsedMarkup = parseMarkup(markupContent, isSvgElement(parent), isMathMLElement(parent), this.preview?.document);
     let logicalSiblingIndex = 0;
     while (parsedMarkup.firstChild) {
       insertLogicalChild(parsedMarkup.firstChild, markupContainer, logicalSiblingIndex++);
     }
   }
 
-  private applyAttribute(batch: RenderBatch, componentId: number, toDomElement: Element, attributeFrame: RenderTreeFrame, preserveExistingAttributes = false) {
+  private applyAttribute(batch: RenderBatch, componentId: number, toDomElement: Element, attributeFrame: RenderTreeFrame, preserveExistingAttributes = false, preserveFormState = false) {
     const frameReader = batch.frameReader;
     const attributeName = frameReader.attributeName(attributeFrame)!;
     const eventHandlerId = frameReader.attributeEventHandlerId(attributeFrame);
+    if (this.preview && (eventHandlerId || attributeName.startsWith(internalAttributeNamePrefix))) {
+      return;
+    }
 
     if (eventHandlerId) {
       const eventName = stripOnPrefix(attributeName);
@@ -445,8 +490,8 @@ export class BrowserRenderer {
     }
 
     if (preserveExistingAttributes && !attributeName.startsWith(internalAttributeNamePrefix)) {
-      if (attributeName === 'value') {
-        rememberDeferredValue(toDomElement, frameReader.attributeValue(attributeFrame));
+      if (attributeName === 'value' && !preserveFormState) {
+        this.setOrRemoveAttributeOrProperty(toDomElement, attributeName, frameReader.attributeValue(attributeFrame));
       }
     } else {
       const value = frameReader.attributeValue(attributeFrame);
@@ -539,15 +584,18 @@ export interface ComponentDescriptor {
   end: Node;
 }
 
-function parseMarkup(markup: string, isSvg: boolean, isMathML: boolean) {
+function parseMarkup(markup: string, isSvg: boolean, isMathML: boolean, creationDocument?: Document) {
+  const template = creationDocument ? creationDocument.createElement('template') : sharedTemplateElemForParsing;
+  const svg = creationDocument ? creationDocument.createElementNS('http://www.w3.org/2000/svg', 'g') : sharedSvgElemForParsing;
+  const mathML = creationDocument ? creationDocument.createElementNS('http://www.w3.org/1998/Math/MathML', 'mrow') : sharedMathMLElemForParsing;
   if (isSvg) {
-    sharedSvgElemForParsing.innerHTML = markup || ' ';
-    return sharedSvgElemForParsing;
+    svg.innerHTML = markup || ' ';
+    return svg;
   } else if (isMathML) {
-    sharedMathMLElemForParsing.innerHTML = markup || ' ';
-    return sharedMathMLElemForParsing;
+    mathML.innerHTML = markup || ' ';
+    return mathML;
   } else {
-    sharedTemplateElemForParsing.innerHTML = markup || ' ';
+    template.innerHTML = markup || ' ';
 
     // Since this is a markup string, we want to honor the developer's intent to
     // evaluate any scripts it may contain. Scripts parsed from an innerHTML assignment
@@ -559,8 +607,8 @@ function parseMarkup(markup: string, isSvg: boolean, isMathML: boolean) {
     // It doesn't make sense to have such an inconsistency in Blazor's interactive
     // renderer, and for back-compat with pre-.NET 8 code (when the Razor compiler always
     // used OpenElement like above), as well as consistency with static SSR, we need to make it work.
-    sharedTemplateElemForParsing.content.querySelectorAll('script').forEach(oldScriptElem => {
-      const newScriptElem = document.createElement('script');
+    template.content.querySelectorAll('script').forEach(oldScriptElem => {
+      const newScriptElem = (creationDocument ?? document).createElement('script');
       newScriptElem.textContent = oldScriptElem.textContent;
 
       oldScriptElem.getAttributeNames().forEach(attribName => {
@@ -570,7 +618,7 @@ function parseMarkup(markup: string, isSvg: boolean, isMathML: boolean) {
       oldScriptElem.parentNode!.replaceChild(newScriptElem, oldScriptElem);
     });
 
-    return sharedTemplateElemForParsing.content;
+    return template.content;
   }
 }
 
