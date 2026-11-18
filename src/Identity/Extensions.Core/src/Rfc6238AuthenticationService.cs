@@ -22,7 +22,7 @@ internal static class Rfc6238AuthenticationService
 
     internal static int ComputeTotp(
 #if NET6_0_OR_GREATER
-        byte[] key,
+        ReadOnlySpan<byte> key,
 #else
         HashAlgorithm hashAlgorithm,
 #endif
