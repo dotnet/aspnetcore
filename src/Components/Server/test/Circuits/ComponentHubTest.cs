@@ -4,6 +4,7 @@
 using System.Collections.ObjectModel;
 using System.Diagnostics.CodeAnalysis;
 using System.Security.Claims;
+using System.Text.Json;
 using System.Text.RegularExpressions;
 using Microsoft.AspNetCore.Components.Authorization;
 using Microsoft.AspNetCore.Components.Server.Circuits;
@@ -195,6 +196,55 @@ public class ComponentHubTest
         var exception = await exceptionSource.Task.WaitAsync(TimeSpan.FromSeconds(10));
 
         Assert.Equal("Exceeded the maximum number of allowed server interactive root components.", exception.Message);
+        Assert.DoesNotContain(sink.Writes, write => write.LogLevel == LogLevel.Error);
+    }
+
+    [Fact]
+    public async Task UpdateRootComponents_ResumedCircuitMissingMarkerKeyDoesNotLogError()
+    {
+        var dataProtectionProvider = new EphemeralDataProtectionProvider();
+        var deserializer = new ServerComponentDeserializer(
+            dataProtectionProvider,
+            NullLogger<ServerComponentDeserializer>.Instance,
+            new RootTypeCache(),
+            new ComponentParameterDeserializer(
+                NullLogger<ComponentParameterDeserializer>.Instance,
+                new ComponentParametersTypeCache()));
+        var sink = new TestSink();
+        var loggerFactory = new TestLoggerFactory(sink, enabled: true);
+        var circuitHost = TestCircuitHost.Create(logger: loggerFactory.CreateLogger<CircuitHost>());
+        circuitHost.AttachPersistedState(new ResumedPersistedCircuitState
+        {
+            ApplicationState = ReadOnlyDictionary<string, byte[]>.Empty,
+            RootComponentDescriptors = new Dictionary<int, WebRootComponentDescriptor>
+            {
+                [1] = new(typeof(TestComponent), WebRootComponentParameters.Empty),
+            },
+        });
+        var handleRegistry = new TestCircuitHandleRegistry();
+        handleRegistry.SetCircuit(new Dictionary<object, object>(), new object(), circuitHost);
+        var exceptionSource = new TaskCompletionSource<Exception>(TaskCreationOptions.RunContinuationsAsynchronously);
+        circuitHost.UnhandledException += (_, eventArgs) => exceptionSource.SetResult((Exception)eventArgs.ExceptionObject);
+        var (_, hub) = InitializeComponentHub(deserializer, handleRegistry);
+        var operations = new RootComponentOperationBatch
+        {
+            BatchId = 1,
+            Operations =
+            [
+                new RootComponentOperation
+                {
+                    Type = RootComponentOperationType.Add,
+                    SsrComponentId = 1,
+                    Marker = ComponentMarker.Create(ComponentMarker.ServerMarkerType, prerendered: false, key: null),
+                },
+            ],
+        };
+        var serializedOperations = JsonSerializer.Serialize(operations, ServerComponentSerializationSettings.JsonSerializationOptions);
+
+        await hub.UpdateRootComponents(serializedOperations, "");
+        var exception = await exceptionSource.Task.WaitAsync(TimeSpan.FromSeconds(10));
+
+        Assert.Equal("An invalid component marker key was provided.", exception.Message);
         Assert.DoesNotContain(sink.Writes, write => write.LogLevel == LogLevel.Error);
     }
 
@@ -455,7 +505,7 @@ public class ComponentHubTest
     }
 
     private static (Mock<ISingleClientProxy>, ComponentHub) InitializeComponentHub(
-        TestServerComponentDeserializer deserializer = null,
+        IServerComponentDeserializer deserializer = null,
         ICircuitHandleRegistry handleRegistry = null,
         ICircuitPersistenceProvider provider = null,
         ICircuitFactory circuitFactory = null,

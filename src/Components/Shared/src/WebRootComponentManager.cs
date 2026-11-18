@@ -52,10 +52,15 @@ internal partial class WebAssemblyRenderer
                 throw new InvalidOperationException($"A root component with SSR component ID {ssrComponentId} already exists.");
             }
 
+            if (!key.HasValue)
+            {
+                throw new InvalidOperationException("An invalid component marker key was provided.");
+            }
+
             WebRootComponent component;
             try
             {
-                component = WebRootComponent.Create(renderer, componentType, ssrComponentId, key, parameters);
+                component = WebRootComponent.Create(renderer, componentType, ssrComponentId, key.Value, parameters);
             }
             catch (Exception ex)
             {
@@ -147,18 +152,13 @@ internal partial class WebAssemblyRenderer
                 Renderer renderer,
                 [DynamicallyAccessedMembers(Component)] Type componentType,
                 int ssrComponentId,
-                ComponentMarkerKey? key,
+                ComponentMarkerKey key,
                 WebRootComponentParameters initialParameters)
             {
-                if (!key.HasValue)
-                {
-                    throw new InvalidOperationException("An invalid component marker key was provided.");
-                }
-
                 var ssrComponentIdString = ssrComponentId.ToString(CultureInfo.InvariantCulture);
                 var interactiveComponentId = renderer.AddRootComponent(componentType, ssrComponentIdString);
 
-                return new(componentType, ssrComponentIdString, key.Value, interactiveComponentId, initialParameters);
+                return new(componentType, ssrComponentIdString, key, interactiveComponentId, initialParameters);
             }
 
             private WebRootComponent(
