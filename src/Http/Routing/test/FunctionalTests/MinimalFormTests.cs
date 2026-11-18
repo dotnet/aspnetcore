@@ -698,6 +698,7 @@ public class MinimalFormTests
         Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
     }
 
+#nullable enable annotations
     [Fact]
     public async Task MapPost_WithFormFile_MissingBody_ReturnsBadRequest()
     {
@@ -723,6 +724,34 @@ public class MinimalFormTests
         var response = await client.PostAsync("/", null);
 
         Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
+    }
+#nullable restore annotations
+
+    [Fact]
+    public async Task MapPost_WithObliviousFormFile_MissingBody_PassesNull()
+    {
+        using var host = new HostBuilder()
+            .ConfigureWebHost(webHostBuilder =>
+            {
+                webHostBuilder
+                    .Configure(app =>
+                    {
+                        app.UseRouting();
+                        app.UseEndpoints(b => b.MapPost("/", (IFormFile formFile) => formFile is null ? "empty" : "file").DisableAntiforgery());
+                    })
+                    .UseTestServer();
+            })
+            .ConfigureServices(services => services.AddRouting())
+            .Build();
+
+        using var server = host.GetTestServer();
+        await host.StartAsync();
+        using var client = server.CreateClient();
+
+        using var response = await client.PostAsync("/", null);
+
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        Assert.Equal("empty", await response.Content.ReadAsStringAsync());
     }
 
     [Fact]

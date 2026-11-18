@@ -5,10 +5,14 @@ using System.Security.Cryptography.X509Certificates;
 using System.Text;
 using Castle.Core.Internal;
 using Microsoft.AspNetCore.Antiforgery;
+using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.Http.Metadata;
 using Microsoft.AspNetCore.Routing;
+using Microsoft.AspNetCore.TestHost;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Primitives;
 namespace Microsoft.AspNetCore.Http.Generators.Tests;
@@ -1016,6 +1020,177 @@ app.MapPost("/", TestAction);
         Assert.Equal(@"Failed to read parameter ""IFormFile file"" from the request body as form.", badHttpRequestException.Message);
         Assert.Equal(400, badHttpRequestException.StatusCode);
         Assert.IsType<InvalidDataException>(badHttpRequestException.InnerException);
+    }
+
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task RequestDelegatePopulatesNullableIFormFileParameterAsNullWhenRequestHasNoBody(bool throwOnBadRequest)
+    {
+        var source = """
+#nullable enable
+app.MapGet("/", (IFormFile? file, HttpContext httpContext) =>
+{
+    httpContext.Items["file"] = file;
+    httpContext.Items["invoked"] = true;
+});
+""";
+        var (_, compilation) = await RunGeneratorAsync(source);
+        var serviceProvider = CreateServiceProvider(services =>
+            services.Configure<RouteHandlerOptions>(options => options.ThrowOnBadRequest = throwOnBadRequest));
+        var endpoint = GetEndpointFromCompilation(compilation, serviceProvider: serviceProvider);
+
+        var httpContext = CreateHttpContext();
+        httpContext.Features.Set<IHttpRequestBodyDetectionFeature>(new RequestBodyDetectionFeature(false));
+
+        await endpoint.RequestDelegate(httpContext);
+
+        Assert.True(Assert.IsType<bool>(httpContext.Items["invoked"]));
+        Assert.Null(httpContext.Items["file"]);
+        Assert.Equal(200, httpContext.Response.StatusCode);
+        Assert.True(Assert.Single(endpoint.Metadata.OfType<IAcceptsMetadata>()).IsOptional);
+    }
+
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task RequestDelegateSets400ResponseForRequiredIFormFileWhenRequestHasNoBody(bool throwOnBadRequest)
+    {
+        var source = """app.MapPost("/", (IFormFile file, HttpContext httpContext) => httpContext.Items["invoked"] = true);""";
+        var (_, compilation) = await RunGeneratorAsync(source);
+        var serviceProvider = CreateServiceProvider(services =>
+            services.Configure<RouteHandlerOptions>(options => options.ThrowOnBadRequest = throwOnBadRequest));
+        var endpoint = GetEndpointFromCompilation(compilation, serviceProvider: serviceProvider);
+
+        var httpContext = CreateHttpContext();
+        httpContext.Features.Set<IHttpRequestBodyDetectionFeature>(new RequestBodyDetectionFeature(false));
+
+        if (throwOnBadRequest)
+        {
+            var exception = await Assert.ThrowsAsync<BadHttpRequestException>(() => endpoint.RequestDelegate(httpContext));
+            Assert.Equal(400, exception.StatusCode);
+            Assert.Contains("Unexpected request without body", exception.Message);
+        }
+        else
+        {
+            await endpoint.RequestDelegate(httpContext);
+            Assert.Equal(400, httpContext.Response.StatusCode);
+        }
+
+        Assert.Null(httpContext.Items["invoked"]);
+        Assert.False(Assert.Single(endpoint.Metadata.OfType<IAcceptsMetadata>()).IsOptional);
+    }
+
+    [Fact]
+    public async Task RequestDelegatePopulatesNullableIFormFileCollectionParameterAsEmptyWhenRequestHasNoBody()
+    {
+        var source = """
+#nullable enable
+app.MapGet("/", (IFormFileCollection? fileCollection, HttpContext httpContext) =>
+{
+    httpContext.Items["fileCollection"] = fileCollection;
+    httpContext.Items["invoked"] = true;
+});
+""";
+        var (_, compilation) = await RunGeneratorAsync(source);
+        var endpoint = GetEndpointFromCompilation(compilation);
+
+        var httpContext = CreateHttpContext();
+        httpContext.Features.Set<IHttpRequestBodyDetectionFeature>(new RequestBodyDetectionFeature(false));
+
+        await endpoint.RequestDelegate(httpContext);
+
+        Assert.True(Assert.IsType<bool>(httpContext.Items["invoked"]));
+        var fileCollection = Assert.IsAssignableFrom<IFormFileCollection>(httpContext.Items["fileCollection"]);
+        Assert.NotNull(fileCollection);
+        Assert.Empty(fileCollection);
+        Assert.Equal(200, httpContext.Response.StatusCode);
+        Assert.True(Assert.Single(endpoint.Metadata.OfType<IAcceptsMetadata>()).IsOptional);
+    }
+
+    [Theory]
+    [InlineData("IFormFile? optional, IFormFile required")]
+    [InlineData("IFormFile required, IFormFile? optional")]
+    [InlineData("IFormFile? optional, IFormFileCollection required")]
+    [InlineData("IFormFileCollection required, IFormFile? optional")]
+    [InlineData("IFormFile? optional, IFormCollection required")]
+    [InlineData("IFormCollection required, IFormFile? optional")]
+    [InlineData("IFormFile? optional, [FromForm] string required")]
+    [InlineData("[FromForm] string required, IFormFile? optional")]
+    public async Task RequestDelegateSets400ResponseForMixedOptionalAndRequiredFormParametersWhenRequestHasNoBody(string parameters)
+    {
+        var source = $$"""
+#nullable enable
+app.MapPost("/", ({{parameters}}, HttpContext httpContext) => httpContext.Items["invoked"] = true);
+""";
+        var (_, compilation) = await RunGeneratorAsync(source);
+        var endpoint = GetEndpointFromCompilation(compilation);
+
+        var httpContext = CreateHttpContext();
+        httpContext.Features.Set<IHttpRequestBodyDetectionFeature>(new RequestBodyDetectionFeature(false));
+
+        await endpoint.RequestDelegate(httpContext);
+
+        Assert.Null(httpContext.Items["invoked"]);
+        Assert.Equal(400, httpContext.Response.StatusCode);
+        Assert.False(Assert.Single(endpoint.Metadata.OfType<IAcceptsMetadata>()).IsOptional);
+    }
+
+    [Theory]
+    [InlineData("[FromForm] string? value", true, "application/x-www-form-urlencoded")]
+    [InlineData("[FromForm] string value", false, "application/x-www-form-urlencoded")]
+    [InlineData("IFormFile? file, [FromForm] string? value", true, "multipart/form-data")]
+    [InlineData("IFormFile? file, [FromForm] string value", false, "multipart/form-data")]
+    public async Task RequestDelegateFormMetadataMatchesBodyOptionality(string parameters, bool isOptional, string contentType)
+    {
+        var source = $$"""
+app.MapPost("/", ({{parameters}}, HttpContext httpContext) => httpContext.Items["invoked"] = true);
+""";
+        var (_, compilation) = await RunGeneratorAsync(source);
+        var endpoint = GetEndpointFromCompilation(compilation);
+        var httpContext = CreateHttpContext();
+        httpContext.Features.Set<IHttpRequestBodyDetectionFeature>(new RequestBodyDetectionFeature(false));
+
+        await endpoint.RequestDelegate(httpContext);
+
+        Assert.Equal(isOptional ? 200 : 400, httpContext.Response.StatusCode);
+        Assert.Equal(isOptional, httpContext.Items.ContainsKey("invoked"));
+        var acceptsMetadata = Assert.Single(endpoint.Metadata.OfType<IAcceptsMetadata>());
+        Assert.Equal(isOptional, acceptsMetadata.IsOptional);
+        Assert.Contains(contentType, acceptsMetadata.ContentTypes);
+    }
+
+    [Theory]
+    [InlineData("GET", true)]
+    [InlineData("POST", true)]
+    [InlineData("GET", false)]
+    [InlineData("POST", false)]
+    public async Task RequestDelegateWithFormFileHandlesBodylessHttpRequest(string method, bool isOptional)
+    {
+        var source = $$"""
+app.MapMethods("/", new[] { "GET", "POST" }, ({{(isOptional ? "IFormFile?" : "IFormFile")}} file) => file is null ? "empty" : "file");
+""";
+        var (_, compilation) = await RunGeneratorAsync(source);
+        var endpoint = GetEndpointFromCompilation(compilation);
+        using var host = new HostBuilder()
+            .ConfigureWebHost(builder => builder
+                .ConfigureServices(services => services.AddRouting())
+                .Configure(app => app.Run(async context =>
+                {
+                    Assert.False(context.Features.Get<IHttpRequestBodyDetectionFeature>().CanHaveBody);
+                    await endpoint.RequestDelegate(context);
+                }))
+                .UseTestServer())
+            .Build();
+        await host.StartAsync();
+        using var client = host.GetTestClient();
+        using var request = new HttpRequestMessage(new HttpMethod(method), "/");
+
+        using var response = await client.SendAsync(request);
+
+        Assert.Equal(isOptional ? 200 : 400, (int)response.StatusCode);
+        Assert.Equal(isOptional ? "empty" : "", await response.Content.ReadAsStringAsync());
+        Assert.Equal(isOptional, Assert.Single(endpoint.Metadata.OfType<IAcceptsMetadata>()).IsOptional);
     }
 
     [Fact]

@@ -283,14 +283,18 @@ internal static class StaticRouteHandlerModelEmitter
     public static void EmitFormAcceptsMetadata(this Endpoint endpoint, CodeWriter codeWriter)
     {
         var hasFormFiles = endpoint.Parameters.Any(p => p.IsFormFile);
+        var allFormBodyParamsOptional = endpoint.Parameters
+            .SelectMany(p => p.EndpointParameters ?? new[] { p })
+            .Where(p => p.Source == EndpointParameterSource.FormBody)
+            .All(p => p.IsOptional);
 
         if (hasFormFiles)
         {
-            codeWriter.WriteLine("options.EndpointBuilder.Metadata.Add(new AcceptsMetadata(contentTypes: GeneratedMetadataConstants.FormFileContentType));");
+            codeWriter.WriteLine($"options.EndpointBuilder.Metadata.Add(new AcceptsMetadata(isOptional: {(allFormBodyParamsOptional ? "true" : "false")}, contentTypes: GeneratedMetadataConstants.FormFileContentType));");
         }
         else
         {
-            codeWriter.WriteLine("options.EndpointBuilder.Metadata.Add(new AcceptsMetadata(contentTypes: GeneratedMetadataConstants.FormContentType));");
+            codeWriter.WriteLine($"options.EndpointBuilder.Metadata.Add(new AcceptsMetadata(isOptional: {(allFormBodyParamsOptional ? "true" : "false")}, contentTypes: GeneratedMetadataConstants.FormContentType));");
         }
     }
 

@@ -55,7 +55,7 @@ internal static class EndpointParameterEmitter
         endpointParameter.EmitParsingBlock(codeWriter);
     }
 
-    internal static void EmitFormParameterPreparation(this EndpointParameter endpointParameter, CodeWriter codeWriter, ref bool readFormEmitted)
+    internal static void EmitFormParameterPreparation(this EndpointParameter endpointParameter, CodeWriter codeWriter, ref bool readFormEmitted, bool allowEmpty = false)
     {
         codeWriter.WriteLine(endpointParameter.EmitParameterDiagnosticComment());
 
@@ -65,7 +65,8 @@ internal static class EndpointParameterEmitter
         if (!readFormEmitted)
         {
             var shortParameterTypeName = endpointParameter.Type.ToDisplayString(SymbolDisplayFormat.CSharpShortErrorMessageFormat);
-            var assigningCode = $"await GeneratedRouteBuilderExtensionsCore.TryResolveFormAsync(httpContext, logOrThrowExceptionHelper, {SymbolDisplay.FormatLiteral(shortParameterTypeName, true)}, {SymbolDisplay.FormatLiteral(endpointParameter.SymbolName, true)})";
+            var allowEmptyLiteral = allowEmpty ? "true" : "false";
+            var assigningCode = $"await GeneratedRouteBuilderExtensionsCore.TryResolveFormAsync(httpContext, logOrThrowExceptionHelper, {SymbolDisplay.FormatLiteral(shortParameterTypeName, true)}, {SymbolDisplay.FormatLiteral(endpointParameter.SymbolName, true)}, {allowEmptyLiteral})";
             var resolveFormResult = $"{endpointParameter.SymbolName}_resolveFormResult";
             codeWriter.WriteLine($"var {resolveFormResult} = {assigningCode};");
 
