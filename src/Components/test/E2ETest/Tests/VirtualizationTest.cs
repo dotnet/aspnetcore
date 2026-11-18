@@ -431,11 +431,12 @@ public class VirtualizationTest : ServerTestBase<ToggleExecutionModeServerFixtur
         Browser.MountTestComponent<VirtualizationFractionalHeightTable>();
         var js = (IJavaScriptExecutor)Browser;
 
-        Browser.True(() =>
-            js.ExecuteScript("return document.querySelectorAll('#fractional-height-table-container [id^=\"fractional-row-\"]').length") is long count && count > 0,
-            TimeSpan.FromSeconds(10), "Expected initially rendered fractional-height rows");
+        Browser.True(
+            () => Browser.FindElements(By.XPath("//td[text()='Loading…']")).Count > 0,
+            TimeSpan.FromSeconds(10), "Expected the gated provider to show placeholders");
+        Assert.Empty(Browser.FindElements(By.CssSelector("#fractional-height-table-container [id^='fractional-row-']")));
 
-        // Match the report's scroll cadence so the virtualizer renders between steps.
+        // Match the report's scroll cadence while the provider is still pending.
         js.ExecuteAsyncScript(@"
             var container = document.getElementById('fractional-height-table-container');
             var done = arguments[arguments.length - 1];
@@ -451,22 +452,33 @@ public class VirtualizationTest : ServerTestBase<ToggleExecutionModeServerFixtur
             step();
         ");
 
+        Assert.Empty(Browser.FindElements(By.CssSelector("#fractional-height-table-container [id^='fractional-row-']")));
+
+        Browser.Exists(By.Id("release-fractional-load")).Click();
+
+        Browser.True(
+            () => Browser.FindElements(By.CssSelector("#fractional-height-table-container [id^='fractional-row-']")).Count > 0,
+            TimeSpan.FromSeconds(10), "Expected real rows after releasing the provider");
+
         Browser.True(() =>
         {
-            var visible = js.ExecuteScript(@"
+            var filled = js.ExecuteScript(@"
                 var container = document.getElementById('fractional-height-table-container');
                 var containerRect = container.getBoundingClientRect();
                 var rows = container.querySelectorAll('[id^=""fractional-row-""]');
+                var visibleHeight = 0;
                 for (var i = 0; i < rows.length; i++) {
                     var rect = rows[i].getBoundingClientRect();
-                    if (rect.bottom > containerRect.top && rect.top < containerRect.bottom) {
-                        return true;
+                    var top = Math.max(rect.top, containerRect.top);
+                    var bottom = Math.min(rect.bottom, containerRect.bottom);
+                    if (bottom > top) {
+                        visibleHeight += bottom - top;
                     }
                 }
-                return false;
+                return visibleHeight >= containerRect.height * 0.5;
             ");
-            return visible is bool isVisible && isVisible;
-        }, TimeSpan.FromSeconds(10), "Fractional-height table should keep at least one row visible after scrolling");
+            return filled is bool isFilled && isFilled;
+        }, TimeSpan.FromSeconds(10), "Fractional-height table should fill at least half of the viewport after scrolling");
     }
 
     [Theory]
