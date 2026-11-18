@@ -733,55 +733,62 @@ public class ResponseTests : TestApplicationErrorLoggerLoggedTest
         }
     }
 
-    // A 2xx CONNECT response accepts the tunnel. RFC 9931 Section 8's mandatory-close rule
-    // only applies to rejections, so keep-alive should not be forced off. Verify by sending a
-    // follow-up request on the same connection and confirming it is processed.
-    [Fact]
-    public async Task AcceptedConnectRequestDoesNotForceConnectionClose()
+    // RFC 9931 Section 8 requires closure only for rejected HTTP/1.1 CONNECT requests.
+    // Kestrel closes HTTP/1.x connections after any CONNECT response, including successful
+    // responses, rather than dispatching another HTTP request on the same connection.
+    [Theory]
+    [InlineData("HTTP/1.0", StatusCodes.Status200OK, false)]
+    [InlineData("HTTP/1.0", StatusCodes.Status204NoContent, false)]
+    [InlineData("HTTP/1.0", StatusCodes.Status407ProxyAuthenticationRequired, false)]
+    [InlineData("HTTP/1.1", StatusCodes.Status200OK, false)]
+    [InlineData("HTTP/1.1", StatusCodes.Status204NoContent, false)]
+    [InlineData("HTTP/1.1", StatusCodes.Status407ProxyAuthenticationRequired, false)]
+    [InlineData("HTTP/1.0", StatusCodes.Status200OK, true)]
+    [InlineData("HTTP/1.1", StatusCodes.Status200OK, true)]
+    public async Task ConnectRequestClosesHttp1ConnectionWithoutDispatchingPipelinedRequest(
+        string protocol, int statusCode, bool responseKeepAlive)
     {
-        await using (var server = new TestServer(httpContext =>
+        var requestCount = 0;
+        await using var server = new TestServer(context =>
         {
-            if (httpContext.Request.Method == "CONNECT")
+            requestCount++;
+            context.Response.StatusCode = statusCode;
+            context.Response.ContentLength = 0;
+            if (responseKeepAlive)
             {
-                httpContext.Response.StatusCode = StatusCodes.Status200OK;
-            }
-            else
-            {
-                httpContext.Response.StatusCode = StatusCodes.Status204NoContent;
+                // This application-supplied header must not prevent connection closure.
+                context.Response.Headers.Connection = "keep-alive";
             }
             return Task.CompletedTask;
-        }, new TestServiceContext(LoggerFactory)))
+        }, new TestServiceContext(LoggerFactory));
+        using var connection = server.CreateConnection();
+
+        await connection.SendAll(
+            $"CONNECT server.example:443 {protocol}",
+            "Host: server.example:443",
+            "Connection: keep-alive",
+            "",
+            $"GET / {protocol}",
+            "Host: server.example:443",
+            "Connection: close",
+            "",
+            "");
+
+        var expectedResponse = new List<string>
         {
-            using (var connection = server.CreateConnection())
-            {
-                await connection.Send(
-                    "CONNECT server.example:443 HTTP/1.1",
-                    "Host: server.example:443",
-                    "",
-                    "");
-
-                // A 2xx response to CONNECT must not include Content-Length and must not
-                // carry a "Connection: close" header added by Kestrel.
-                await connection.Receive(
-                    "HTTP/1.1 200 OK",
-                    $"Date: {server.Context.DateHeaderValue}",
-                    "",
-                    "");
-
-                // The connection should still be usable for subsequent requests.
-                await connection.Send(
-                    "GET / HTTP/1.1",
-                    "Host:",
-                    "",
-                    "");
-
-                await connection.Receive(
-                    "HTTP/1.1 204 No Content",
-                    $"Date: {server.Context.DateHeaderValue}",
-                    "",
-                    "");
-            }
+            $"HTTP/1.1 {Encoding.ASCII.GetString(ReasonPhrases.ToStatusBytes(statusCode))}"
+        };
+        if (statusCode >= StatusCodes.Status300MultipleChoices)
+        {
+            expectedResponse.Add("Content-Length: 0");
         }
+        expectedResponse.Add(responseKeepAlive ? "Connection: keep-alive" : "Connection: close");
+        expectedResponse.Add($"Date: {server.Context.DateHeaderValue}");
+        expectedResponse.Add("");
+        expectedResponse.Add("");
+
+        await connection.ReceiveEnd(expectedResponse.ToArray());
+        Assert.Equal(1, requestCount);
     }
 
     private async Task AttemptingToWriteNonzeroContentLengthFails(int statusCode, HttpMethod method)
@@ -855,11 +862,19 @@ public class ResponseTests : TestApplicationErrorLoggerLoggedTest
                     "",
                     "");
 
-                await connection.Receive(
-                    $"HTTP/1.1 {Encoding.ASCII.GetString(ReasonPhrases.ToStatusBytes(statusCode))}",
-                    $"Date: {server.Context.DateHeaderValue}",
-                    "",
-                    "");
+                var expectedResponse = new List<string>
+                {
+                    $"HTTP/1.1 {Encoding.ASCII.GetString(ReasonPhrases.ToStatusBytes(statusCode))}"
+                };
+                if (method == HttpMethod.Connect)
+                {
+                    expectedResponse.Add("Connection: close");
+                }
+                expectedResponse.Add($"Date: {server.Context.DateHeaderValue}");
+                expectedResponse.Add("");
+                expectedResponse.Add("");
+
+                await connection.Receive(expectedResponse.ToArray());
             }
         }
     }

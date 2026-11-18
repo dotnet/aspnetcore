@@ -1255,11 +1255,11 @@ internal abstract partial class HttpProtocol : IHttpResponseControl
             }
         }
 
-        // Close the connection when rejecting an HTTP/1.1 CONNECT request.
+        // RFC 9931 section 8 requires closing rejected HTTP/1.1 CONNECT requests.
+        // Also prevent HTTP/1.x connection reuse after successful CONNECT responses.
         // See https://www.rfc-editor.org/rfc/rfc9931#section-8.
-        if (_httpVersion == Http.HttpVersion.Http11 &&
-            Method == HttpMethod.Connect &&
-            StatusCode >= StatusCodes.Status300MultipleChoices)
+        if ((_httpVersion == Http.HttpVersion.Http10 || _httpVersion == Http.HttpVersion.Http11) &&
+            Method == HttpMethod.Connect)
         {
             DisableKeepAlive(ConnectionEndReason.ResponseNoKeepAlive);
         }
