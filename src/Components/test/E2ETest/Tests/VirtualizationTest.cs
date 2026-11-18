@@ -5160,6 +5160,33 @@ public class VirtualizationTest : ServerTestBase<ToggleExecutionModeServerFixtur
     }
 
     [Theory]
+    [InlineData("0", "scroll-target-checkbox")]
+    [InlineData("0", "scroll-target-radio")]
+    [InlineData("1", "scroll-target-checkbox")]
+    [InlineData("1", "scroll-target-radio")]
+    public void AnchorMode_WindowScroll_EndKeyOnNonTextInputJumps(string anchorMode, string controlId)
+    {
+        MountWindowScrollAnchorModeComponent(anchorMode);
+
+        var js = (IJavaScriptExecutor)Browser;
+
+        WindowScrollMidListAndWaitForRender(js);
+
+        var control = Browser.Exists(By.Id(controlId));
+        control.Click();
+        control.SendKeys(Keys.End);
+
+        Browser.True(() =>
+        {
+            var scrollY = (long)js.ExecuteScript("return Math.round(window.scrollY)");
+            var scrollHeight = (long)js.ExecuteScript("return document.documentElement.scrollHeight");
+            var innerHeight = (long)js.ExecuteScript("return window.innerHeight");
+            return scrollHeight - scrollY - innerHeight < 2;
+        }, TimeSpan.FromSeconds(10),
+            $"Window AnchorMode {anchorMode}: End on {controlId} should jump to the bottom");
+    }
+
+    [Theory]
     [InlineData("0")]
     [InlineData("1")]
     public void AnchorMode_WindowScroll_EndKeyInInputDoesNotJump(string anchorMode)

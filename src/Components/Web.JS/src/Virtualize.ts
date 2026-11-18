@@ -622,7 +622,17 @@ function init(dotNetHelper: DotNet.DotNetObject, spacerBefore: HTMLElement, spac
       return true;
     }
     const tagName = target.tagName;
-    return tagName === 'INPUT' || tagName === 'TEXTAREA' || tagName === 'SELECT';
+    if (tagName === 'INPUT') {
+      const type = (target as HTMLInputElement).type;
+      return type !== 'button'
+        && type !== 'checkbox'
+        && type !== 'hidden'
+        && type !== 'image'
+        && type !== 'radio'
+        && type !== 'reset'
+        && type !== 'submit';
+    }
+    return tagName === 'TEXTAREA' || tagName === 'SELECT';
   }
 
   function isEditableTarget(e: KeyboardEvent): boolean {
@@ -643,12 +653,16 @@ function init(dotNetHelper: DotNet.DotNetObject, spacerBefore: HTMLElement, spac
     }
     if (ke.key === 'End' || ke.key === 'Home') {
       // Blazor's @onkeydown:preventDefault runs in its document-level delegate.
-      // Defer the jump so that cancellation is observable before we move the list.
-      setTimeout(() => {
-        if (!ke.defaultPrevented) {
+      // Listen once on window, which runs after that delegate, and inspect the
+      // original event. If propagation stops first, clean the listener up.
+      const onKeydown = (event: KeyboardEvent) => {
+        window.removeEventListener('keydown', onKeydown);
+        if (event === ke && !ke.defaultPrevented) {
           handleJumpKey(ke.key);
         }
-      }, 0);
+      };
+      window.addEventListener('keydown', onKeydown, { once: true });
+      queueMicrotask(() => window.removeEventListener('keydown', onKeydown));
     } else if (isUserScrollKey(ke.key)) {
       handleUserScrollInput();
     }
