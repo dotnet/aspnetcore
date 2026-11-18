@@ -286,13 +286,7 @@ Prerendering and interactive rendering are separate executions. Prerendering cre
 
 Activation information in the HTML identifies interactive roots and supplies the data needed to create them. It does not transfer ownership of the prerendered component instances. Any state required to avoid recomputation or preserve continuity must be captured during prerendering and restored by the interactive instance.
 
-On the first interactive render, `Web.JS` renders the expected output into an inert document and uses the existing DOM synchronization algorithm to compare its physical nodes with the prerendered DOM. It then restores renderer text boundaries and logical anchors and binds events and references to the final nodes. Unsupported initial edits, templates, permanent elements, and nested discovered interactive roots cause whole-root replacement before live synchronization.
-
-Compatible elements can remain in place when their attributes or text change, or when a preceding sibling is removed. A retained script is not executed again during activation; its existing listeners remain on retained nodes. If interactive rendering later removes and recreates that content, newly inserted scripts execute normally.
-
-Retained form controls keep live user edits when their rendered defaults and relevant markup agree with the interactive output. Activation skips value assignments for these controls while initializing the ordinary renderer's deferred-value bookkeeping. Changed defaults use the interactive values. This does not update the component model or replay events. Each root is handled independently. Later renders, circuit restoration, and enhanced navigation are unchanged.
-
-For input element frames, adoption restores ordinary interactive form-reset defaults without changing the live value or checked state. Raw markup keeps its HTML defaults.
+On the first interactive render, `Web.JS` renders an inert preview and reuses enhanced navigation's DOM diff to preserve compatible prerendered nodes, then binds events and references. Form controls retain user edits when their rendered defaults and relevant markup match; unsupported roots fall back to replacement. Later renders, circuit restoration, and enhanced navigation are unchanged.
 
 A statically rendered parent can establish interactive roots, but the selected render mode defines an execution boundary. Components within an interactive hierarchy execute in the runtime that owns that hierarchy unless another independently activated root is established at an allowed boundary.
 

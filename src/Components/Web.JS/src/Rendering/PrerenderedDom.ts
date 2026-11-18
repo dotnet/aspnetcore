@@ -46,69 +46,51 @@ export class PrerenderedDom {
     const descriptor = getLogicalRootDescriptor(root);
     const end = descriptor.end!;
     const anchors = new Set<Node>(Array.from(preview.frames.values()).filter(node => node instanceof Comment));
-    const projections = new Map<Node, Node>();
-    const textRuns = new Map<Text, Text[]>();
-    const projectedRoot = preview.document.createDocumentFragment();
-    projections.set(preview.root, projectedRoot);
+    const children = new Map<Node, Node[]>();
+    const actual = new Map<Node | LogicalElement, Node>([[preview.root, descriptor.start.parentNode!]]);
+    const textRuns = new Map<Text, { node: Text; length: number }[]>();
 
-    const projectChildren = (source: Node, destination: Node) => {
-      for (const child of Array.from(source.childNodes)) {
+    const prepareChildren = (source: Node) => {
+      const originalChildren = Array.from(source.childNodes);
+      children.set(source, originalChildren);
+      let previousText: Text | undefined;
+      for (const child of originalChildren) {
         if (anchors.has(child)) {
-          continue;
-        }
-        if (child instanceof Text) {
-          const previous = destination.lastChild;
-          let text: Text;
-          if (previous instanceof Text) {
-            text = previous;
+          source.removeChild(child);
+        } else if (child instanceof Text) {
+          const part = { node: child, length: child.length };
+          if (previousText) {
+            textRuns.get(previousText)!.push(part);
+            previousText.appendData(child.data);
+            source.removeChild(child);
           } else {
-            text = destination.appendChild(preview.document.createTextNode(''));
-            textRuns.set(text, []);
+            previousText = child;
+            textRuns.set(child, [part]);
           }
-          textRuns.get(text)!.push(child);
-          text.data += child.data;
-          projections.set(child, text);
         } else {
-          const projected = child.cloneNode(false);
-          projections.set(child, projected);
-          projectChildren(child, projected);
-          if (child instanceof HTMLInputElement && projected instanceof HTMLInputElement) {
-            projected.checked = child.checked;
-            if (deferredValuePropname in child && child.type !== 'file') {
-              projected.setAttribute('value', child.value);
-            }
-          } else if (child instanceof HTMLTextAreaElement && projected instanceof HTMLTextAreaElement) {
-            projected.value = child.value;
-          } else if (child instanceof HTMLOptionElement && projected instanceof HTMLOptionElement) {
-            projected.selected = child.selected;
-          }
-          destination.appendChild(projected);
-          if (child instanceof HTMLSelectElement && projected instanceof HTMLSelectElement) {
-            Array.from(child.options).forEach((option, index) => {
-              projected.options[index].selected = option.selected;
-            });
+          previousText = undefined;
+          actual.set(child, child);
+          prepareChildren(child);
+          if (child instanceof HTMLInputElement && deferredValuePropname in child && child.type !== 'file') {
+            child.setAttribute('value', child.value);
           }
         }
       }
     };
-    projectChildren(preview.root, projectedRoot);
-    for (const [text, parts] of textRuns) {
+    prepareChildren(preview.root);
+    for (const text of textRuns.keys()) {
       if (!text.data) {
         text.parentNode!.removeChild(text);
-        for (const part of parts) {
-          projections.delete(part);
-        }
         textRuns.delete(text);
       }
     }
 
-    const retained = new Map<Node, Node>();
     const preservedFormState = new Set<Node>();
     synchronizePrerenderedDom(
       { startExclusive: descriptor.start, endExclusive: end },
-      projectedRoot,
+      preview.root,
       (destination, source) => {
-        retained.set(source, destination);
+        actual.set(source, destination);
         if (matchesFormDefaults(destination, source)) {
           preservedFormState.add(destination);
           if (destination instanceof HTMLSelectElement) {
@@ -122,28 +104,22 @@ export class PrerenderedDom {
         return preservedFormState.has(destination);
       }
     );
-    const actual = new Map<Node | LogicalElement, Node>([[preview.root, descriptor.start.parentNode!]]);
-    for (const [source, projected] of projections) {
-      if (source !== preview.root) {
-        actual.set(source, retained.get(projected) ?? projected);
-      }
-    }
     // SSR coalesces adjacent frame text. Restore frame boundaries only after the physical diff.
-    for (const [projected, parts] of textRuns) {
-      let text = (retained.get(projected) ?? projected) as Text;
+    for (const [source, parts] of textRuns) {
+      let text = (actual.get(source) ?? source) as Text;
       for (let i = 0; i < parts.length; i++) {
         const next = i + 1 < parts.length ? text.splitText(parts[i].length) : undefined;
-        actual.set(parts[i], text);
+        actual.set(parts[i].node, text);
         text = next!;
       }
     }
     const restoreAnchors = (source: Node, boundary: Node | null) => {
       const parent = actual.get(source)!;
       let next = boundary;
-      for (const child of Array.from(source.childNodes).reverse()) {
+      for (const child of (children.get(source) ?? []).slice().reverse()) {
         let node = actual.get(child);
         if (!node) {
-          node = child instanceof Text ? document.createTextNode('') : document.createComment('!');
+          node = child;
           parent.insertBefore(node, next);
           actual.set(child, node);
         } else if (node.parentNode !== parent) {
@@ -155,12 +131,7 @@ export class PrerenderedDom {
     };
     restoreAnchors(preview.root, end);
 
-    resetLogicalChildren(root);
-    for (const [source, node] of actual) {
-      if (source !== preview.root) {
-        resetLogicalChildren(toLogicalElement(node, true));
-      }
-    }
+    // Capture frame ownership before clearing logical children on inserted preview nodes.
     for (const [index, source] of preview.frames) {
       const node = actual.get(source)!;
       const nodes = [node];
@@ -184,6 +155,12 @@ export class PrerenderedDom {
           }
         },
       });
+    }
+    resetLogicalChildren(root);
+    for (const [source, node] of actual) {
+      if (source !== preview.root) {
+        resetLogicalChildren(toLogicalElement(node, true));
+      }
     }
     end.parentNode!.removeChild(end);
   }

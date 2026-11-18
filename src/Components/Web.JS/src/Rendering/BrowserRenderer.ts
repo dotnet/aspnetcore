@@ -1,9 +1,9 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-import { RenderBatch, ArrayBuilderSegment, RenderTreeEdit, RenderTreeFrame, RenderTreeDiff, EditType, FrameType, ArrayValues, countDescendantFrames } from './RenderBatch/RenderBatch';
+import { RenderBatch, ArrayBuilderSegment, RenderTreeEdit, RenderTreeFrame, RenderTreeDiff, EditType, FrameType, ArrayValues } from './RenderBatch/RenderBatch';
 import { EventDelegator } from './Events/EventDelegator';
-import { LogicalElement, PermutationListEntry, toLogicalElement, insertLogicalChild, removeLogicalChild, getLogicalParent, getLogicalChild, createAndInsertLogicalContainer, isSvgElement, isMathMLElement, permuteLogicalChildren, getClosestDomElement, emptyLogicalElement, getLogicalChildrenArray, depthFirstNodeTreeTraversal, getLogicalRootDescriptor, adoptLogicalChild, getElementNamespace } from './LogicalElements';
+import { LogicalElement, PermutationListEntry, toLogicalElement, insertLogicalChild, removeLogicalChild, getLogicalParent, getLogicalChild, createAndInsertLogicalContainer, isSvgElement, isMathMLElement, permuteLogicalChildren, getClosestDomElement, emptyLogicalElement, getLogicalChildrenArray, depthFirstNodeTreeTraversal, getLogicalRootDescriptor, adoptLogicalChild } from './LogicalElements';
 import { applyCaptureIdToElement } from './ElementReferenceCapture';
 import { attachToEventDelegator as attachNavigationManagerToEventDelegator } from '../Services/NavigationManager';
 import { applyAnyDeferredValue, deferredValuePropname, tryApplySpecialProperty, internalAttributeNamePrefix } from './DomSpecialPropertyUtil';
@@ -387,7 +387,6 @@ export class BrowserRenderer {
   private insertElement(batch: RenderBatch, componentId: number, parent: LogicalElement, childIndex: number, frames: ArrayValues<RenderTreeFrame>, frame: RenderTreeFrame, frameIndex: number) {
     const frameReader = batch.frameReader;
     const tagName = frameReader.elementName(frame)!;
-    const namespace = getElementNamespace(tagName, parent);
     const creationDocument = this.preview?.document ?? document;
 
     const framePlan = this.framesForRendering.get(frameIndex);
@@ -397,9 +396,9 @@ export class BrowserRenderer {
     if (isPreservedElement) {
       domElement = plannedNode;
       adoptLogicalChild(domElement, parent, childIndex);
-    } else if (namespace === 'http://www.w3.org/2000/svg') {
+    } else if (tagName === 'svg' || isSvgElement(parent)) {
       domElement = creationDocument.createElementNS('http://www.w3.org/2000/svg', tagName);
-    } else if (namespace === 'http://www.w3.org/1998/Math/MathML') {
+    } else if (tagName === 'math' || isMathMLElement(parent)) {
       domElement = creationDocument.createElementNS('http://www.w3.org/1998/Math/MathML', tagName);
     } else {
       domElement = creationDocument.createElement(tagName);
@@ -625,6 +624,21 @@ function parseMarkup(markup: string, isSvg: boolean, isMathML: boolean, creation
     });
 
     return template.content;
+  }
+}
+
+function countDescendantFrames(batch: RenderBatch, frame: RenderTreeFrame): number {
+  const frameReader = batch.frameReader;
+  switch (frameReader.frameType(frame)) {
+    // The following frame types have a subtree length. Other frames may use that memory slot
+    // to mean something else, so we must not read it. We should consider having nominal subtypes
+    // of RenderTreeFramePointer that prevent access to non-applicable fields.
+    case FrameType.component:
+    case FrameType.element:
+    case FrameType.region:
+      return frameReader.subtreeLength(frame) - 1;
+    default:
+      return 0;
   }
 }
 
