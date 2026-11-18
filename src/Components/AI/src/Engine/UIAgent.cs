@@ -40,6 +40,11 @@ public class UIAgent : IDisposable
     {
     }
 
+    internal void LogProcessingError(Exception exception)
+    {
+        UIAgentLog.ProcessingError(_logger, exception);
+    }
+
     /// <summary>
     /// Initializes a new instance of the <see cref="UIAgent"/> class.
     /// </summary>

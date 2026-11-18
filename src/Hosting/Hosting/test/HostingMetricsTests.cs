@@ -261,6 +261,57 @@ public class HostingMetricsTests
         Assert.Equal("System.InvalidOperationException", (string)measurement.Tags[HostingTelemetryHelpers.AttributeErrorType]);
     }
 
+    [Fact]
+    public void RequestDuration_OriginalEndpointInItems_RouteTagSet()
+    {
+        // Arrange
+        var meterFactory = new TestMeterFactory();
+        var hostingApplication = CreateApplication(meterFactory: meterFactory);
+        var httpContext = new DefaultHttpContext();
+
+        using var requestDurationCollector = new MetricCollector<double>(meterFactory, HostingMetrics.MeterName, "http.server.request.duration");
+
+        // Act
+        var context = hostingApplication.CreateContext(httpContext.Features);
+        // Middleware that re-executes the pipeline clears the endpoint and stashes the original one in Items.
+        context.HttpContext.Items["__OriginalEndpoint"] = new Endpoint(
+            c => Task.CompletedTask,
+            new EndpointMetadataCollection(new TestRouteDiagnosticsMetadata("/hello/{name}")),
+            "Test endpoint");
+        hostingApplication.DisposeContext(context, null);
+
+        // Assert
+        var measurement = Assert.Single(requestDurationCollector.GetMeasurementSnapshot());
+        Assert.Equal("/hello/{name}", (string)measurement.Tags["http.route"]);
+        Assert.False(measurement.Tags.ContainsKey("aspnetcore.request.is_unhandled"));
+    }
+
+    [Fact]
+    public void RequestDuration_ItemsNotUsed_ItemsFeatureNotCreated()
+    {
+        // Arrange
+        var meterFactory = new TestMeterFactory();
+        var hostingApplication = CreateApplication(meterFactory: meterFactory);
+        var httpContext = new DefaultHttpContext();
+
+        using var requestDurationCollector = new MetricCollector<double>(meterFactory, HostingMetrics.MeterName, "http.server.request.duration");
+
+        // Act
+        var context = hostingApplication.CreateContext(httpContext.Features);
+        hostingApplication.DisposeContext(context, null);
+
+        // Assert
+        var measurement = Assert.Single(requestDurationCollector.GetMeasurementSnapshot());
+        Assert.False(measurement.Tags.ContainsKey("aspnetcore.request.is_unhandled"));
+        Assert.False(measurement.Tags.ContainsKey("http.route"));
+        Assert.Null(httpContext.Features.Get<IItemsFeature>());
+    }
+
+    private sealed class TestRouteDiagnosticsMetadata(string route) : Http.Metadata.IRouteDiagnosticsMetadata
+    {
+        public string Route { get; } = route;
+    }
+
     private sealed class TestHttpMetricsTagsFeature : IHttpMetricsTagsFeature
     {
         public ICollection<KeyValuePair<string, object>> Tags { get; } = new Collection<KeyValuePair<string, object>>();

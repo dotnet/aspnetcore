@@ -53,6 +53,7 @@ internal abstract partial class Http3Stream : HttpProtocol, IHttp3Stream, IHttpS
     private IStreamClosedFeature _streamClosedFeature = default!;
     private PseudoHeaderFields _parsedPseudoHeaderFields;
     private StreamCompletionFlags _completionState;
+    private readonly Http3RawFrame _incomingFrame = new Http3RawFrame();
     private int _isClosed;
     private int _totalParsedHeaderSize;
     private bool _isMethodConnect;
@@ -388,20 +389,11 @@ internal abstract partial class Http3Stream : HttpProtocol, IHttp3Stream, IHttpS
                         OnHeader(staticTableIndex.GetValueOrDefault(), indexOnly: false, name, value);
                         break;
                     case HeaderType.Dynamic:
-                        // It is faster to set a header using a static table index than a name.
-                        if (staticTableIndex != null)
-                        {
-                            UpdateHeaderParsingState(value, GetPseudoHeaderField(staticTableIndex.GetValueOrDefault()));
-
-                            OnHeader(staticTableIndex.GetValueOrDefault(), indexOnly: false, name, value);
-                        }
-                        else
-                        {
-                            UpdateHeaderParsingState(value, GetPseudoHeaderField(name));
-
-                            OnHeader(name, value, checkForNewlineChars: false);
-                        }
-                        break;
+                        // Dynamic tables aren't currently implemented for HTTP/3
+                        // Let's make sure this code is tested if we add dynamic table support in the future
+                        // Make sure checkForNewlineChars is correct when adding support for dynamic table
+                        // Consider using Http2Connection's dynamic table implementation as a reference if we add support for dynamic table in the future.
+                        throw new UnreachableException();
                     case HeaderType.NameAndValue:
                         UpdateHeaderParsingState(value, GetPseudoHeaderField(name));
 
@@ -680,7 +672,10 @@ internal abstract partial class Http3Stream : HttpProtocol, IHttp3Stream, IHttpS
 
         try
         {
-            var incomingFrame = new Http3RawFrame();
+            // Reuse the frame across requests when the stream is pooled. TryReadFrame overwrites its state for each new frame.
+            var incomingFrame = _incomingFrame;
+            incomingFrame.Type = default;
+            incomingFrame.RemainingLength = 0;
             var isContinuedFrame = false;
             while (_isClosed == 0)
             {
@@ -1164,6 +1159,12 @@ internal abstract partial class Http3Stream : HttpProtocol, IHttp3Stream, IHttpS
         }
 
         // https://www.rfc-editor.org/rfc/rfc9114#section-4.3.1
+        if (!ServerOptions.AllowFragmentInRequestTarget && path.Contains('#'))
+        {
+            Abort(new ConnectionAbortedException(CoreStrings.FormatHttp3StreamErrorPathInvalid(RawTarget)), Http3ErrorCode.MessageError);
+            return false;
+        }
+
         var queryIndex = path.IndexOf('?');
         QueryString = queryIndex == -1 ? string.Empty : path.Substring(queryIndex);
 
