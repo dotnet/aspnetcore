@@ -673,10 +673,15 @@ function init(dotNetHelper: DotNet.DotNetObject, spacerBefore: HTMLElement, spac
       return;
     }
     if (scrollActivity.consumeIgnoreScroll()) {
-      // The restore's own scroll has been delivered; release its latch so a later
-      // scripted scroll or scrollbar drag is not reported as this restore.
+      // The restore's own scroll has been delivered. Release its latch after the
+      // current frame so any additional scroll events from the same restore are
+      // still treated as self-scrolls, but a later user scroll is not.
       if (scrollActivity.source === ScrollSource.RestoreSnapshot) {
-        scrollActivity.source = ScrollSource.None;
+        requestAnimationFrame(() => {
+          if (scrollActivity.source === ScrollSource.RestoreSnapshot) {
+            scrollActivity.source = ScrollSource.None;
+          }
+        });
       }
       return;
     }
