@@ -45,7 +45,7 @@ internal sealed class RedirectAction : UrlAction
 
         pattern = UrlNormalizer.CollapseLeadingSlashes(pattern);
 
-        if (!pattern.Contains(Uri.SchemeDelimiter, StringComparison.Ordinal) && pattern[0] != '/')
+        if (!UrlNormalizer.HasAbsoluteSchemeAndAuthority(pattern, out _) && pattern[0] != '/')
         {
             pattern = '/' + pattern;
         }

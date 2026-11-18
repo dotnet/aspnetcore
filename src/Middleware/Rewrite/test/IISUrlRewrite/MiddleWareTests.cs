@@ -82,6 +82,78 @@ public class MiddlewareTests
         Assert.Equal("/example.com", response.Headers.Location.OriginalString);
     }
 
+    [Theory]
+    [InlineData("legacy/https://example.com/path", "/archive/https://example.com/path")]
+    [InlineData("legacy/:////example.com", "/archive/:////example.com")]
+    public async Task Invoke_RedirectPreservesRelativeTargetWithEmbeddedSchemeDelimiter(string requestPath, string expectedLocation)
+    {
+        var options = new RewriteOptions().AddIISUrlRewrite(new StringReader(@"<rewrite>
+                <rules>
+                <rule name=""RelativePrefix"">
+                <match url=""^legacy/(.*)"" />
+                <action type=""Redirect"" url=""archive/{R:1}"" redirectType=""Found"" />
+                </rule>
+                </rules>
+                </rewrite>"));
+        using var host = new HostBuilder()
+             .ConfigureWebHost(webHostBuilder =>
+             {
+                 webHostBuilder
+                 .UseTestServer()
+                 .Configure(app =>
+                 {
+                     app.UseRewriter(options);
+                 });
+             }).Build();
+
+        await host.StartAsync();
+
+        var server = host.GetTestServer();
+
+        var response = await server.CreateClient().GetAsync(requestPath);
+
+        Assert.Equal(expectedLocation, response.Headers.Location.OriginalString);
+    }
+
+    [Theory]
+    [InlineData("/archive/{R:1}", "legacy/https://example.com/admin", "http://localhost|/archive/https://example.com/admin")]
+    [InlineData("/{R:1}", "legacy/%5Cexample.com", "http://localhost|/example.com")]
+    public async Task Invoke_RewritePreservesRelativePathAndCollapsesDecodedBackslash(string actionUrl, string requestPath, string expectedState)
+    {
+        var options = new RewriteOptions().AddIISUrlRewrite(new StringReader($@"<rewrite>
+                <rules>
+                <rule name=""RelativeRewrite"">
+                <match url=""^legacy/(.*)"" />
+                <action type=""Rewrite"" url=""{actionUrl}"" />
+                </rule>
+                </rules>
+                </rewrite>"));
+        using var host = new HostBuilder()
+             .ConfigureWebHost(webHostBuilder =>
+             {
+                 webHostBuilder
+                 .UseTestServer()
+                 .Configure(app =>
+                 {
+                     app.UseRewriter(options);
+                     app.Run(context => context.Response.WriteAsync(
+                         context.Request.Scheme +
+                         "://" +
+                         context.Request.Host +
+                         "|" +
+                         context.Request.Path.Value));
+                 });
+             }).Build();
+
+        await host.StartAsync();
+
+        var server = host.GetTestServer();
+
+        var response = await server.CreateClient().GetStringAsync(requestPath);
+
+        Assert.Equal(expectedState, response);
+    }
+
     [Fact]
     public async Task Invoke_RewritePathToPathAndQuery()
     {

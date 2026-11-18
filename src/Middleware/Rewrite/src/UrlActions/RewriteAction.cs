@@ -65,7 +65,7 @@ internal sealed class RewriteAction : UrlAction
         pattern = UrlNormalizer.CollapseLeadingSlashes(pattern);
 
         // TODO PERF, substrings, object creation, etc.
-        if (pattern.Contains(Uri.SchemeDelimiter, StringComparison.Ordinal))
+        if (UrlNormalizer.HasAbsoluteSchemeAndAuthority(pattern, out _))
         {
             string scheme;
             HostString host;
@@ -99,13 +99,13 @@ internal sealed class RewriteAction : UrlAction
             if (split >= 0)
             {
                 var path = pattern.Substring(0, split);
-                if (path[0] == '/')
+                if (path.Length > 0 && path[0] == '/')
                 {
-                    request.Path = PathString.FromUriComponent(path);
+                    request.Path = UrlNormalizer.CollapseLeadingSlashes(PathString.FromUriComponent(path));
                 }
                 else
                 {
-                    request.Path = PathString.FromUriComponent('/' + path);
+                    request.Path = UrlNormalizer.CollapseLeadingSlashes(PathString.FromUriComponent('/' + path));
                 }
 
                 if (QueryStringAppend)
@@ -124,11 +124,11 @@ internal sealed class RewriteAction : UrlAction
             {
                 if (pattern[0] == '/')
                 {
-                    request.Path = PathString.FromUriComponent(pattern);
+                    request.Path = UrlNormalizer.CollapseLeadingSlashes(PathString.FromUriComponent(pattern));
                 }
                 else
                 {
-                    request.Path = PathString.FromUriComponent('/' + pattern);
+                    request.Path = UrlNormalizer.CollapseLeadingSlashes(PathString.FromUriComponent('/' + pattern));
                 }
 
                 if (QueryStringDelete)

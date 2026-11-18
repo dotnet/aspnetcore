@@ -1,10 +1,39 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Buffers;
+using Microsoft.AspNetCore.Http;
+
 namespace Microsoft.AspNetCore.Rewrite;
 
 internal static class UrlNormalizer
 {
+    // RFC 3986 section 3.1: scheme = ALPHA *( ALPHA / DIGIT / "+" / "-" / "." ), matching Uri.CheckSchemeName without allocating a substring.
+    private static readonly SearchValues<char> s_validSchemeChars =
+        SearchValues.Create("+-.0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz");
+
+    public static bool HasAbsoluteSchemeAndAuthority(string url, out int schemeSplit)
+    {
+        schemeSplit = url.IndexOf(Uri.SchemeDelimiter, StringComparison.Ordinal);
+        if (schemeSplit <= 0 || !IsValidSchemeName(url.AsSpan(0, schemeSplit)))
+        {
+            return false;
+        }
+
+        var remainder = url.AsSpan(schemeSplit + Uri.SchemeDelimiter.Length);
+        var delimiterIndex = remainder.IndexOfAny('/', '?', '#');
+        var authority = delimiterIndex < 0 ? remainder : remainder.Slice(0, delimiterIndex);
+
+        return !authority.IsEmpty;
+    }
+
+    private static bool IsValidSchemeName(ReadOnlySpan<char> scheme)
+    {
+        return !scheme.IsEmpty
+            && char.IsAsciiLetter(scheme[0])
+            && !scheme.Slice(1).ContainsAnyExcept(s_validSchemeChars);
+    }
+
     // Collapses a leading run of '/' and '\' to a single '/' so a redirect/rewrite target cannot resolve as a
     // scheme-relative authority. Mirrors the rejection predicate in SharedUrlHelper.IsLocalUrl.
     public static string CollapseLeadingSlashes(string url)
@@ -28,5 +57,17 @@ internal static class UrlNormalizer
         }
 
         return string.Concat("/", url.AsSpan(firstNonSlash));
+    }
+
+    public static PathString CollapseLeadingSlashes(PathString path)
+    {
+        if (!path.HasValue)
+        {
+            return path;
+        }
+
+        var collapsed = CollapseLeadingSlashes(path.Value);
+
+        return ReferenceEquals(collapsed, path.Value) ? path : new PathString(collapsed);
     }
 }

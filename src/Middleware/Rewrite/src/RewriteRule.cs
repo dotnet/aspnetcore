@@ -52,7 +52,7 @@ internal sealed class RewriteRule : IRule
                 result = "/";
             }
 
-            if (result.Contains(Uri.SchemeDelimiter, StringComparison.Ordinal))
+            if (UrlNormalizer.HasAbsoluteSchemeAndAuthority(result, out _))
             {
                 string scheme;
                 HostString host;
@@ -70,14 +70,14 @@ internal sealed class RewriteRule : IRule
                 var split = result.IndexOf('?');
                 if (split >= 0)
                 {
-                    var newPath = result.Substring(0, split);
-                    if (newPath[0] == '/')
+                    var newPath = UrlNormalizer.CollapseLeadingSlashes(result.Substring(0, split));
+                    if (newPath.Length > 0 && newPath[0] == '/')
                     {
-                        request.Path = PathString.FromUriComponent(newPath);
+                        request.Path = UrlNormalizer.CollapseLeadingSlashes(PathString.FromUriComponent(newPath));
                     }
                     else
                     {
-                        request.Path = PathString.FromUriComponent('/' + newPath);
+                        request.Path = UrlNormalizer.CollapseLeadingSlashes(PathString.FromUriComponent('/' + newPath));
                     }
                     request.QueryString = request.QueryString.Add(
                         QueryString.FromUriComponent(
@@ -85,13 +85,14 @@ internal sealed class RewriteRule : IRule
                 }
                 else
                 {
+                    result = UrlNormalizer.CollapseLeadingSlashes(result);
                     if (result[0] == '/')
                     {
-                        request.Path = PathString.FromUriComponent(result);
+                        request.Path = UrlNormalizer.CollapseLeadingSlashes(PathString.FromUriComponent(result));
                     }
                     else
                     {
-                        request.Path = PathString.FromUriComponent('/' + result);
+                        request.Path = UrlNormalizer.CollapseLeadingSlashes(PathString.FromUriComponent('/' + result));
                     }
                 }
             }
