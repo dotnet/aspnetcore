@@ -79,12 +79,87 @@ public class SectionRegistryTest
         Assert.Empty(GetWrites(sink, "SectionRenderModeMismatch"));
     }
 
+    [Fact]
+    public void NamedSection_InteractiveContentWithStaticOutlet_Throws()
+    {
+        var renderer = new SectionsTestRenderer(new TestSink())
+        {
+            OutletRenderMode = null,
+            ContentRenderMode = new RenderModeA(),
+        };
+
+        var exception = Assert.Throws<InvalidOperationException>(() => Render(renderer, outletFirst: true, useSectionName: true));
+
+        Assert.Contains("static", exception.Message);
+        Assert.Contains(nameof(RenderModeA), exception.Message);
+    }
+
+    [Fact]
+    public void NamedSection_StaticContentWithInteractiveOutlet_Throws()
+    {
+        var renderer = new SectionsTestRenderer(new TestSink())
+        {
+            OutletRenderMode = new RenderModeA(),
+            ContentRenderMode = null,
+        };
+
+        var exception = Assert.Throws<InvalidOperationException>(() => Render(renderer, outletFirst: true, useSectionName: true));
+
+        Assert.Contains("static", exception.Message);
+        Assert.Contains(nameof(RenderModeA), exception.Message);
+    }
+
+    [Fact]
+    public void NamedSection_DifferentInteractiveRenderModes_Throws()
+    {
+        var renderer = new SectionsTestRenderer(new TestSink())
+        {
+            OutletRenderMode = new RenderModeA(),
+            ContentRenderMode = new RenderModeB(),
+        };
+
+        var exception = Assert.Throws<InvalidOperationException>(() => Render(renderer, outletFirst: true, useSectionName: true));
+
+        Assert.Contains(nameof(RenderModeA), exception.Message);
+        Assert.Contains(nameof(RenderModeB), exception.Message);
+    }
+
+    [Fact]
+    public void NamedSection_ReverseInteractiveRenderModes_Throws()
+    {
+        var renderer = new SectionsTestRenderer(new TestSink())
+        {
+            OutletRenderMode = new RenderModeB(),
+            ContentRenderMode = new RenderModeA(),
+        };
+
+        var exception = Assert.Throws<InvalidOperationException>(() => Render(renderer, outletFirst: true, useSectionName: true));
+
+        Assert.Contains(nameof(RenderModeA), exception.Message);
+        Assert.Contains(nameof(RenderModeB), exception.Message);
+    }
+
+    [Fact]
+    public void NamedSection_ContentBeforeOutletWithDifferentRenderModes_Throws()
+    {
+        var renderer = new SectionsTestRenderer(new TestSink())
+        {
+            OutletRenderMode = new RenderModeA(),
+            ContentRenderMode = new RenderModeB(),
+        };
+
+        var exception = Assert.Throws<InvalidOperationException>(() => Render(renderer, outletFirst: false, useSectionName: true));
+
+        Assert.Contains("same render mode", exception.Message);
+    }
+
     private static IReadOnlyList<WriteContext> GetWrites(TestSink sink, string eventName)
         => sink.Writes.Where(w => w.EventId.Name == eventName).ToList();
 
     private static void Render(
         SectionsTestRenderer renderer,
-        bool outletFirst)
+        bool outletFirst,
+        bool useSectionName = false)
     {
         RenderFragment content = builder => builder.AddContent(0, "Section content");
 
@@ -93,14 +168,14 @@ public class SectionRegistryTest
             void RenderOutlet(RenderTreeBuilder b)
             {
                 b.OpenComponent<SectionOutlet>(0);
-                b.AddComponentParameter(1, nameof(SectionOutlet.SectionId), SectionId);
+                AddSectionIdentifier(b, 1, useSectionName);
                 b.CloseComponent();
             }
 
             void RenderContent(RenderTreeBuilder b)
             {
                 b.OpenComponent<SectionContent>(2);
-                b.AddComponentParameter(3, nameof(SectionContent.SectionId), SectionId);
+                AddSectionIdentifier(b, 3, useSectionName);
                 b.AddComponentParameter(4, nameof(SectionContent.ChildContent), content);
                 b.CloseComponent();
             }
@@ -120,6 +195,18 @@ public class SectionRegistryTest
         var hostComponent = new PassthroughComponent(host);
         var componentId = renderer.AssignRootComponentId(hostComponent);
         renderer.RenderRootComponent(componentId);
+    }
+
+    private static void AddSectionIdentifier(RenderTreeBuilder builder, int sequence, bool useSectionName)
+    {
+        if (useSectionName)
+        {
+            builder.AddComponentParameter(sequence, nameof(SectionOutlet.SectionName), "test-section");
+        }
+        else
+        {
+            builder.AddComponentParameter(sequence, nameof(SectionOutlet.SectionId), SectionId);
+        }
     }
 
     private sealed class RenderModeA : IComponentRenderMode;
