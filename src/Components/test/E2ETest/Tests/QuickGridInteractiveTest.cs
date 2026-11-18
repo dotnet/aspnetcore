@@ -6,7 +6,6 @@ using Microsoft.AspNetCore.Components.E2ETest.Infrastructure;
 using Microsoft.AspNetCore.Components.E2ETest.Infrastructure.ServerFixtures;
 using Microsoft.AspNetCore.E2ETesting;
 using Microsoft.AspNetCore.InternalTesting;
-using Microsoft.AspNetCore.Localization;
 using OpenQA.Selenium;
 using TestServer;
 using Xunit.Abstractions;
@@ -23,39 +22,7 @@ public class QuickGridInteractiveTest : ServerTestBase<BasicTestAppServerSiteFix
     {
     }
 
-    protected override void InitializeAsyncCore()
-    {
-        _serverFixture.AdditionalArguments.Add("EnableCultureTesting=true");
-        _serverFixture.AdditionalArguments.Add("EnforceServerCultureOnClient=true");
-        base.InitializeAsyncCore();
-    }
-
     public override Task InitializeAsync() => InitializeAsync(BrowserFixture.StreamingContext);
-
-    [Fact]
-    public void PaginatorUsesLocalizedText()
-    {
-        try
-        {
-            Navigate($"{ServerPathBase}/Culture/SetCulture?culture=es-ES&uiCulture=es-ES&redirectUri={Uri.EscapeDataString($"{ServerPathBase}/quickgrid-interactive")}");
-            Browser.Exists(By.ClassName("return-from-culture-setter")).Click();
-
-            Browser.Equal("43 elementos", () => Browser.FindElement(By.CssSelector(".first-paginator .summary")).Text);
-            Browser.Equal("Página 1 de 5", () => Browser.FindElement(By.CssSelector(".first-paginator .pagination-text")).Text);
-            Browser.Equal("Ir a la página siguiente", () => Browser.FindElement(By.CssSelector(".first-paginator .go-next")).GetDomAttribute("title"));
-            Browser.Equal("Ir a la página siguiente", () => Browser.FindElement(By.CssSelector(".first-paginator .go-next")).GetDomAttribute("aria-label"));
-
-            Browser.Click(By.CssSelector(".first-paginator .go-next"));
-
-            Browser.Equal("Página 2 de 5", () => Browser.FindElement(By.CssSelector(".first-paginator .pagination-text")).Text);
-        }
-        finally
-        {
-            Browser.Manage().Cookies.DeleteCookieNamed(CookieRequestCultureProvider.DefaultCookieName);
-        }
-
-        Assert.Null(Browser.Manage().Cookies.GetCookieNamed(CookieRequestCultureProvider.DefaultCookieName));
-    }
 
     [Fact]
     public void CanColumnSortByInt()

@@ -41,6 +41,10 @@
   <resheader name="writer">
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
+  <data name="Pagination" xml:space="preserve">
+    <value>Pagination</value>
+    <comment>Accessible label (aria-label) for the paginator navigation landmark.</comment>
+  </data>
   <data name="PaginationPageStatus" xml:space="preserve">
     <value>Page {0} of {1}</value>
     <comment>Status text shown in the Paginator. {0} is current page, {1} is total pages.</comment>

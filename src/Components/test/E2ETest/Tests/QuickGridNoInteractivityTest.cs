@@ -43,6 +43,7 @@ public class QuickGridNoInteractivityTest : ServerTestBase<BasicTestAppServerSit
             Browser.Equal("Página 1 de 5", () => Browser.FindElement(By.CssSelector(".first-paginator .pagination-text")).Text);
             Browser.Equal("Ir a la página siguiente", () => Browser.FindElement(By.CssSelector(".first-paginator .go-next")).GetDomAttribute("title"));
             Browser.Equal("Ir a la página siguiente", () => Browser.FindElement(By.CssSelector(".first-paginator .go-next")).GetDomAttribute("aria-label"));
+            Browser.Equal("Paginación", () => Browser.FindElement(By.CssSelector(".first-paginator nav")).GetDomAttribute("aria-label"));
 
             Browser.FindElement(By.CssSelector(".first-paginator .go-next")).Click();
 

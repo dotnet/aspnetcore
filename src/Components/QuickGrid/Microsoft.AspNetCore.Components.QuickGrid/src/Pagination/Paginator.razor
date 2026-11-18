@@ -14,7 +14,7 @@
                 <text><strong>@State.TotalItemCount</strong> @Localize("Items")</text>
             }
         </div>
-        <nav role="navigation" aria-label="Pagination" @attributes="AdditionalAttributes">
+        <nav role="navigation" aria-label="@Localize("Pagination")" @attributes="AdditionalAttributes">
             @if (QuickGridFeatureFlags.EnableUrlBasedQuickGridNavigationAndSorting)
             {
                 <a class="go-first" href="@GetPageUrl(0)" title="@Localize("GoToFirstPage")" aria-label="@Localize("GoToFirstPage")" aria-disabled="@(!CanGoBack ? "true" : "false")" tabindex="@(!CanGoBack ? "-1" : null)">«</a>

@@ -98,6 +98,7 @@ internal static class ClientValidationLocalizationData
                 ["Age"] = "Edad",
                 ["RequiredKey"] = "El campo {0} es obligatorio (es)",
                 ["RangeKey"] = "El campo {0} debe estar entre {1} y {2} (es)",
+                ["Pagination"] = "Paginación",
                 ["PaginationPageStatus"] = "Página {0} de {1}",
                 ["Items"] = "elementos",
                 ["GoToFirstPage"] = "Ir a la primera página",
