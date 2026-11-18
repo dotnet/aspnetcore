@@ -442,6 +442,14 @@ public class VirtualizationTest : ServerTestBase<ToggleExecutionModeServerFixtur
             () => (long)js.ExecuteScript("return Math.round(document.getElementById('filter-list').scrollTop)") >= 2900,
             TimeSpan.FromSeconds(10));
 
+        // Wait for the observer/.NET round trip to render the scrolled window,
+        // not just for the assigned scrollTop value.
+        Browser.True(
+            () => (bool)js.ExecuteScript(
+                "return !document.getElementById('filter-row-0') && Array.from(document.querySelectorAll('[id^=\"filter-row-\"]')).some(el => parseInt(el.id.split('-').pop()) > 50);"),
+            TimeSpan.FromSeconds(10),
+            "The filtered window should render around row 300 before the list grows");
+
         // Clearing the filter grows the list. Regardless of the growth handling, a
         // scripted scroll back to the top must move the rendered window with it.
         Browser.Exists(By.Id("clear-filter")).Click();
