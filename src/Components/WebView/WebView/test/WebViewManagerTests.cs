@@ -1,6 +1,7 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Web;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.JSInterop;
@@ -139,6 +140,26 @@ public class WebViewManagerTests
     }
 
     [Fact]
+    public async Task ReattachingPage_DoesNotReportOldPageDisconnectAsUnhandled()
+    {
+        // Arrange
+        var services = RegisterTestServices().AddTestBlazorWebView().BuildServiceProvider();
+        var webViewManager = new TestWebViewManager(services, new TestFileProvider());
+        webViewManager.ReceiveAttachPageMessage();
+        await webViewManager.AddRootComponentAsync(typeof(PendingJsInteropComponent), "#app", ParameterView.Empty);
+
+        // Act - replace the page while the component still awaits JS interop
+        webViewManager.ReceiveAttachPageMessage();
+
+        // Assert - the old page's JSDisconnectedException is not sent on the new page's IPC
+        Assert.DoesNotContain(webViewManager.SentIpcMessages, message =>
+        {
+            IpcCommon.TryDeserializeOutgoing(message, out var type, out _);
+            return type == IpcCommon.OutgoingMessageType.NotifyUnhandledException;
+        });
+    }
+
+    [Fact]
     public async Task AddRootComponentsWithExistingSelector_Throws()
     {
         // Arrange
@@ -233,6 +254,17 @@ public class WebViewManagerTests
     private static IServiceCollection RegisterTestServices()
     {
         return new ServiceCollection().AddSingleton<SingletonService>().AddScoped<ScopedService>();
+    }
+
+    private class PendingJsInteropComponent : ComponentBase
+    {
+        [Inject]
+        public IJSRuntime JSRuntime { get; set; } = default!;
+
+        protected override async Task OnInitializedAsync()
+        {
+            await JSRuntime.InvokeAsync<string>("neverCompletes");
+        }
     }
 
     private class MyComponent : IComponent

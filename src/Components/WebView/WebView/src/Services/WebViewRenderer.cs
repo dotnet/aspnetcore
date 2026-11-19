@@ -4,6 +4,7 @@
 using System.Diagnostics.CodeAnalysis;
 using Microsoft.AspNetCore.Components.RenderTree;
 using Microsoft.AspNetCore.Components.Web.Infrastructure;
+using Microsoft.JSInterop;
 using Microsoft.Extensions.Logging;
 using static Microsoft.AspNetCore.Internal.LinkerFlags;
 
@@ -40,6 +41,14 @@ internal sealed class WebViewRenderer : WebRenderer
 
     protected override void HandleException(Exception exception)
     {
+        // A disconnected JS runtime is expected while a page is being replaced or
+        // disposed. Reporting it through the replacement page's IPC would terminate
+        // the new document before it can attach.
+        if (exception is JSDisconnectedException)
+        {
+            return;
+        }
+
         // Notify the JS code so it can show the in-app UI
         _ipcSender.NotifyUnhandledException(exception);
     }
