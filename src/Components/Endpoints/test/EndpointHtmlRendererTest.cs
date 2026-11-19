@@ -1452,6 +1452,11 @@ public class EndpointHtmlRendererTest
         await renderer.Dispatcher.InvokeAsync(() => renderer.DispatchSubmitEventAsync("my-name", out isBadRequest));
         Assert.False(isBadRequest);
         Assert.Equal(1, eventReceivedCount);
+
+        // The handler's render replaces the keyed form in a batch that records the new event before removing the old one.
+        await renderer.Dispatcher.InvokeAsync(() => renderer.DispatchSubmitEventAsync("my-name", out isBadRequest));
+        Assert.False(isBadRequest);
+        Assert.Equal(2, eventReceivedCount);
     }
 
     [Fact]

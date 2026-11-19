@@ -11,6 +11,7 @@ using Microsoft.AspNetCore.WebUtilities;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using System.Buffers;
+using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using System.Linq;
 using System.Text;
@@ -179,35 +180,35 @@ internal partial class EndpointHtmlRenderer
     {
         var changesCount = changes.Count;
         var changesArray = changes.Array;
-        var finalChangeIndices = new Dictionary<(int ComponentId, int FrameIndex), int>();
-        // A surviving component can add, remove, and replace an event in one batch.
-        // Only the last change at each location describes the event that remains.
-        for (var i = 0; i < changesCount; i++)
-        {
-            ref var change = ref changesArray[i];
-            if (string.Equals(change.EventType, "onsubmit", StringComparison.Ordinal))
-            {
-                finalChangeIndices[(change.ComponentId, change.FrameIndex)] = i;
-            }
-        }
-
         for (var i = 0; i < changesCount; i++)
         {
             ref var change = ref changesArray[i];
             if (change.ChangeType == NamedEventChangeType.Added
-                && string.Equals(change.EventType, "onsubmit", StringComparison.Ordinal)
-                && finalChangeIndices[(change.ComponentId, change.FrameIndex)] == i)
+                && string.Equals(change.EventType, "onsubmit", StringComparison.Ordinal))
             {
                 // An error boundary can dispose a component in the same batch that added its named events.
-                if (disposedComponentIds.Contains(change.ComponentId))
+                // Keyed replacement can also record the new event before removing the old one at this location.
+                if (disposedComponentIds.Contains(change.ComponentId)
+                    || !TryGetRemainingNamedSubmitEventName(change.ComponentId, change.FrameIndex, out var assignedName))
                 {
                     continue;
                 }
 
-                if (TryCreateScopeQualifiedEventName(change.ComponentId, change.AssignedName, out var scopeQualifiedName))
+                if (TryCreateScopeQualifiedEventName(change.ComponentId, assignedName, out var scopeQualifiedName))
                 {
-                    var locationsForName = GetOrAddNewToDictionary(_namedSubmitEventsByScopeQualifiedName, scopeQualifiedName);
                     var location = (change.ComponentId, change.FrameIndex);
+                    // The same batch can record more than one addition for a form that remains at this location.
+                    if (_namedSubmitEventsByLocation.TryGetValue(location, out var existingName))
+                    {
+                        if (string.Equals(existingName, scopeQualifiedName, StringComparison.Ordinal))
+                        {
+                            continue;
+                        }
+
+                        throw new InvalidOperationException($"A single named submit event is tracked more than once at the same location.");
+                    }
+
+                    var locationsForName = GetOrAddNewToDictionary(_namedSubmitEventsByScopeQualifiedName, scopeQualifiedName);
                     if (!locationsForName.Add(location))
                     {
                         // This shouldn't be possible, since each NamedEvent frame innately has a distinct location
@@ -218,6 +219,27 @@ internal partial class EndpointHtmlRenderer
                 }
             }
         }
+    }
+
+    private bool TryGetRemainingNamedSubmitEventName(int componentId, int frameIndex, [NotNullWhen(true)] out string? assignedName)
+    {
+        var frames = GetCurrentRenderTreeFrames(componentId);
+        if ((uint)frameIndex >= (uint)frames.Count)
+        {
+            assignedName = null;
+            return false;
+        }
+
+        ref var frame = ref frames.Array[frameIndex];
+        if (frame.FrameType != RenderTreeFrameType.NamedEvent
+            || !string.Equals(frame.NamedEventType, "onsubmit", StringComparison.Ordinal))
+        {
+            assignedName = null;
+            return false;
+        }
+
+        assignedName = frame.NamedEventAssignedName;
+        return true;
     }
 
     private static TVal GetOrAddNewToDictionary<TKey, TVal>(Dictionary<TKey, TVal> dictionary, TKey key) where TKey: notnull where TVal: new()
