@@ -25,6 +25,19 @@
     <button id="bind-with-suffix-textbox-initially-populated-setnull" @onclick="@(() => { textboxInitiallyPopulatedValue = null; })">Set null</button>
 </p>
 
+<h2>Shadow DOM textbox</h2>
+<p>
+    Reject values containing "!":
+    <shadow-dom-input id="shadow-dom-textbox" @bind-value="ShadowDomValue" @bind-value:event="oninput"></shadow-dom-input>
+    <span id="shadow-dom-textbox-value">@ShadowDomValue</span>
+</p>
+<p>
+    Trim the public value:
+    <shadow-dom-input id="shadow-dom-trimmed-textbox" trim @bind-value="ShadowDomTrimmedValue" @bind-value:event="oninput"></shadow-dom-input>
+    <span id="shadow-dom-trimmed-textbox-value">@ShadowDomTrimmedValue</span>
+    <span id="shadow-dom-trimmed-textbox-input-count">@shadowDomTrimmedInputCount</span>
+</p>
+
 <h2>Numeric Textboxes</h2>
 <p>
     int:
@@ -473,6 +486,32 @@
 </p>
 
 @code {
+    private string _shadowDomValue = "abc";
+    private string _shadowDomTrimmedValue = "abc";
+    private int shadowDomTrimmedInputCount;
+
+    private string ShadowDomValue
+    {
+        get => _shadowDomValue;
+        set
+        {
+            if (!value.Contains('!'))
+            {
+                _shadowDomValue = value;
+            }
+        }
+    }
+
+    private string ShadowDomTrimmedValue
+    {
+        get => _shadowDomTrimmedValue;
+        set
+        {
+            _shadowDomTrimmedValue = value;
+            shadowDomTrimmedInputCount++;
+        }
+    }
+
     string textboxInitiallyBlankValue = null;
     string textboxInitiallyPopulatedValue = "Hello";
 

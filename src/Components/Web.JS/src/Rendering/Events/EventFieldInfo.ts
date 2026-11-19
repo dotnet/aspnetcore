@@ -6,10 +6,18 @@ export class EventFieldInfo {
   }
 
   public static fromEvent(componentId: number, event: Event): EventFieldInfo | null {
-    const elem = event.target;
+    const elem = event.composedPath()[0] ?? event.target;
     if (elem instanceof Element) {
       const fieldData = getFormFieldData(elem);
       if (fieldData) {
+        if (elem !== event.target) {
+          // The renderer updates the host's bound attribute, so its value must use the same representation.
+          const target = event.target;
+          if (!(target instanceof Element) || !('value' in target) || target.value !== fieldData.value) {
+            return null;
+          }
+        }
+
         return new EventFieldInfo(componentId, fieldData.value);
       }
     }

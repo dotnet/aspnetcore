@@ -32,6 +32,45 @@ public class BindTest : ServerTestBase<ToggleExecutionModeServerFixture<Program>
     }
 
     [Fact]
+    public void CanBindShadowDomTextbox_RevertsRejectedValue()
+    {
+        var host = Browser.Exists(By.Id("shadow-dom-textbox"));
+        var target = host.GetShadowRoot().FindElement(By.CssSelector("input"));
+        var boundValue = Browser.Exists(By.Id("shadow-dom-textbox-value"));
+        Browser.Equal("abc", () => target.GetDomProperty("value"));
+
+        target.SendKeys(Keys.End + "d");
+        Browser.Equal("abcd", () => boundValue.Text);
+
+        target.SendKeys("!");
+        Browser.Equal("abcd", () => target.GetDomProperty("value"));
+        Assert.Equal("abcd", boundValue.Text);
+
+        target.SendKeys("e");
+        Browser.Equal("abcde", () => boundValue.Text);
+        Browser.Equal("abcde", () => target.GetDomProperty("value"));
+    }
+
+    [Fact]
+    public void CanBindShadowDomTextbox_PreservesDifferentDisplayValue()
+    {
+        var host = Browser.Exists(By.Id("shadow-dom-trimmed-textbox"));
+        var target = host.GetShadowRoot().FindElement(By.CssSelector("input"));
+        var boundValue = Browser.Exists(By.Id("shadow-dom-trimmed-textbox-value"));
+        var inputCount = Browser.Exists(By.Id("shadow-dom-trimmed-textbox-input-count"));
+
+        target.SendKeys(Keys.End + " ");
+        Browser.Equal("1", () => inputCount.Text);
+        Assert.Equal("abc", boundValue.Text);
+        Assert.Equal("abc ", target.GetDomProperty("value"));
+
+        target.SendKeys("d");
+        Browser.Equal("2", () => inputCount.Text);
+        Assert.Equal("abc d", boundValue.Text);
+        Assert.Equal("abc d", target.GetDomProperty("value"));
+    }
+
+    [Fact]
     public void CanBindTextbox_InitiallyBlank()
     {
         var target = Browser.Exists(By.Id("textbox-initially-blank"));
