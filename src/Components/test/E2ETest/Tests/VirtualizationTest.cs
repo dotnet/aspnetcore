@@ -58,15 +58,48 @@ public class VirtualizationTest : ServerTestBase<ToggleExecutionModeServerFixtur
                 window.__virtualizeDisposed = true;
                 return result;
             };
-            arguments[0].style.setProperty('overflow-anchor', 'none', 'important');
+            arguments[0].style.setProperty('overflow-anchor', 'auto', 'important');
             """, container);
 
         try
         {
+            js.ExecuteScript("""
+                const state = window.__anchoringFrames = {
+                    request: window.requestAnimationFrame,
+                    cancel: window.cancelAnimationFrame,
+                    pending: new Set()
+                };
+                window.requestAnimationFrame = () => {
+                    const id = state.request.call(window, () => {});
+                    state.pending.add(id);
+                    return id;
+                };
+                window.cancelAnimationFrame = id => {
+                    state.pending.delete(id);
+                    state.cancel.call(window, id);
+                };
+                """);
+
+            var origin = new WheelInputDevice.ScrollOrigin { Element = container };
+            new Actions(Browser).ScrollFromOrigin(origin, 0, 600).Perform();
+            Browser.True(() => (bool)js.ExecuteScript("return window.__anchoringFrames.pending.size > 0"));
+            Browser.NotEqual("0", () => container.FindElement(By.CssSelector("[data-blazor-virtualize-reserved-height]"))
+                .GetDomAttribute("data-blazor-virtualize-reserved-height"));
+            Assert.Equal("none", (string)js.ExecuteScript("return arguments[0].style.overflowAnchor", container));
+
             Browser.Exists(By.Id("remove-hover-list")).Click();
             Browser.True(() => (bool)js.ExecuteScript("return window.__virtualizeDisposed"));
             Assert.Empty(container.FindElements(By.ClassName("hover-row")));
-            Assert.Equal("none", (string)js.ExecuteScript("return arguments[0].style.overflowAnchor", container));
+            Assert.Equal("auto", (string)js.ExecuteScript("return arguments[0].style.overflowAnchor", container));
+            Assert.Equal("important", (string)js.ExecuteScript("return arguments[0].style.getPropertyPriority('overflow-anchor')", container));
+
+            Assert.Equal(0L, (long)js.ExecuteScript("return window.__anchoringFrames.pending.size"));
+            js.ExecuteAsyncScript("""
+                const done = arguments[arguments.length - 1];
+                const request = window.__anchoringFrames.request;
+                request.call(window, () => request.call(window, done));
+                """);
+            Assert.Equal("auto", (string)js.ExecuteScript("return arguments[0].style.overflowAnchor", container));
             Assert.Equal("important", (string)js.ExecuteScript("return arguments[0].style.getPropertyPriority('overflow-anchor')", container));
         }
         finally
@@ -75,6 +108,15 @@ public class VirtualizationTest : ServerTestBase<ToggleExecutionModeServerFixtur
                 Blazor._internal.Virtualize.dispose = window.__originalVirtualizeDispose;
                 delete window.__originalVirtualizeDispose;
                 delete window.__virtualizeDisposed;
+                const state = window.__anchoringFrames;
+                if (state) {
+                    window.requestAnimationFrame = state.request;
+                    window.cancelAnimationFrame = state.cancel;
+                    for (const id of state.pending) {
+                        state.cancel.call(window, id);
+                    }
+                    delete window.__anchoringFrames;
+                }
                 """);
         }
     }
