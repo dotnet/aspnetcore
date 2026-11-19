@@ -33,6 +33,7 @@ internal partial class WebAssemblyRenderer
     {
         private readonly Dictionary<int, WebRootComponent> _webRootComponents = new();
         private Task _currentUpdateTask = Task.CompletedTask;
+        private Task _currentParameterUpdateTask = Task.CompletedTask;
         private List<Action>? _pendingRootComponentInitializations;
 
         public async Task AddRootComponentAsync(
@@ -65,7 +66,7 @@ internal partial class WebAssemblyRenderer
             WebRootComponentParameters newParameters)
         {
             var component = GetRequiredWebRootComponent(ssrComponentId);
-            return component.UpdateAsync(renderer, newComponentType, newKey, newParameters, _currentUpdateTask, _pendingRootComponentInitializations);
+            return component.UpdateAsync(renderer, newComponentType, newKey, newParameters, _currentUpdateTask, _currentParameterUpdateTask, _pendingRootComponentInitializations);
         }
 
         public void RemoveRootComponent(int ssrComponentId)
@@ -109,9 +110,10 @@ internal partial class WebAssemblyRenderer
             return default;
         }
 
-        internal void SetCurrentUpdateTask(Task postStateTask, List<Action>? pendingRootComponentInitializations = null)
+        internal void SetCurrentUpdateTask(Task postStateTask, List<Action>? pendingRootComponentInitializations = null, Task? parameterUpdateTask = null)
         {
             _currentUpdateTask = postStateTask;
+            _currentParameterUpdateTask = parameterUpdateTask ?? postStateTask;
             _pendingRootComponentInitializations = pendingRootComponentInitializations;
         }
 
@@ -192,6 +194,7 @@ internal partial class WebAssemblyRenderer
                 ComponentMarkerKey? newKey,
                 WebRootComponentParameters newParameters,
                 Task currentUpdateTask,
+                Task parameterUpdateTask,
                 List<Action>? pendingRootComponentInitializations)
             {
                 if (_componentType != newComponentType)
@@ -216,7 +219,7 @@ internal partial class WebAssemblyRenderer
                     // We can supply new parameters if the key has a @key value, because that means the client
                     // opted in to dynamic parameter updates.
                     _latestParameters = newParameters;
-                    return RenderAsync(renderer, currentUpdateTask);
+                    return RenderAsync(renderer, IsInitialized ? parameterUpdateTask : currentUpdateTask);
                 }
                 else
                 {

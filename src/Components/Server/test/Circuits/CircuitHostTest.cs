@@ -1333,6 +1333,120 @@ public class CircuitHostTest
     }
 
     [Fact]
+    public async Task UpdateRootComponents_KeyedParametersCancelInitialWork()
+    {
+        var state = new ParameterCancellationState();
+        await using var services = new ServiceCollection()
+            .AddLogging()
+            .AddSingleton<IJSRuntime>(Mock.Of<IJSRuntime>())
+            .AddSingleton<ComponentStatePersistenceManager>()
+            .AddSingleton(state)
+            .BuildServiceProvider();
+        var renderer = new TestRemoteRenderer(services, Mock.Of<ISingleClientProxy>());
+        var host = TestCircuitHost.Create(remoteRenderer: renderer, serviceScope: services.CreateAsyncScope());
+        var errors = new List<object>();
+        host.UnhandledException += (_, args) => errors.Add(args.ExceptionObject);
+        var initial = AddComponentAsync<ParameterCancellationComponent>(host, 1,
+            new() { [nameof(ParameterCancellationComponent.Id)] = 1 }, componentKey: "retained", store: CreateStore());
+        Task update = Task.CompletedTask;
+        try
+        {
+            await state.Started.Task.WaitAsync(TimeSpan.FromSeconds(10));
+            var component = await renderer.Dispatcher.InvokeAsync(() => renderer.GetTestComponentState(0).Component);
+            Assert.False(initial.IsCompleted);
+            var restoredIds = new List<int>();
+            using var subscription = host.Services.GetRequiredService<ComponentStatePersistenceManager>().State.RegisterOnRestoring(
+                () => restoredIds.Add(((ParameterCancellationComponent)component).Id),
+                new RestoreOptions { AllowUpdates = true });
+            var parameters = new Dictionary<string, object> { [nameof(ParameterCancellationComponent.Id)] = 2 };
+            update = host.UpdateRootComponents(new()
+            {
+                Operations =
+                [
+                    new()
+                    {
+                        Type = RootComponentOperationType.Update,
+                        SsrComponentId = 1,
+                        Marker = CreateMarker(typeof(ParameterCancellationComponent), "1", parameters, "retained"),
+                        Descriptor = new(typeof(ParameterCancellationComponent), CreateWebRootComponentParameters(parameters)),
+                    },
+                ],
+            }, CreateStore(), false, CancellationToken.None);
+
+            await state.Cancelled.Task.WaitAsync(TimeSpan.FromSeconds(10));
+            await state.UpdatedRender.Task.WaitAsync(TimeSpan.FromSeconds(10));
+            await Task.WhenAll(initial, update).WaitAsync(TimeSpan.FromSeconds(10));
+            await renderer.Dispatcher.InvokeAsync(() =>
+            {
+                Assert.Same(component, renderer.GetTestComponentState(0).Component);
+                Assert.Equal(2, state.RenderedId);
+                Assert.Contains(2, restoredIds);
+                Assert.Empty(errors);
+            });
+        }
+        finally
+        {
+            await host.DisposeAsync();
+            await Task.WhenAll(initial, update).WaitAsync(TimeSpan.FromSeconds(10));
+        }
+    }
+
+    [Fact]
+    public async Task UpdateRootComponents_StateFreeKeyedUpdateWaitsForEarlierRestore()
+    {
+        var renderer = GetRemoteRenderer();
+        var host = TestCircuitHost.Create(remoteRenderer: renderer);
+        await AddComponentAsync<DynamicallyAddedComponent>(host, 1,
+            new() { [nameof(DynamicallyAddedComponent.Message)] = "initial" }, componentKey: "retained", store: CreateStore());
+        var store = new TestComponentApplicationStore(new() { ["unconsumed"] = [1] });
+        var restore = Update("restoring", store);
+        Task next = Task.CompletedTask;
+        var restoreReleased = false;
+        try
+        {
+            await store.RestoreStarted.Task.WaitAsync(TimeSpan.FromSeconds(10));
+            next = Update("latest", CreateStore());
+            await renderer.Dispatcher.InvokeAsync(() =>
+                Assert.Equal("initial", Assert.IsType<DynamicallyAddedComponent>(renderer.GetTestComponentState(0).Component).Message));
+            Assert.False(restore.IsCompleted);
+            Assert.False(next.IsCompleted);
+
+            store.Continue();
+            restoreReleased = true;
+            await Task.WhenAll(restore, next).WaitAsync(TimeSpan.FromSeconds(10));
+            await renderer.Dispatcher.InvokeAsync(() =>
+                Assert.Equal("latest", Assert.IsType<DynamicallyAddedComponent>(renderer.GetTestComponentState(0).Component).Message));
+        }
+        finally
+        {
+            if (!restoreReleased)
+            {
+                store.Continue();
+            }
+            await host.DisposeAsync();
+            await Task.WhenAll(restore, next).WaitAsync(TimeSpan.FromSeconds(10));
+        }
+
+        Task Update(string message, IClearableStore updateStore)
+        {
+            var parameters = new Dictionary<string, object> { [nameof(DynamicallyAddedComponent.Message)] = message };
+            return host.UpdateRootComponents(new()
+            {
+                Operations =
+                [
+                    new()
+                    {
+                        Type = RootComponentOperationType.Update,
+                        SsrComponentId = 1,
+                        Marker = CreateMarker(typeof(DynamicallyAddedComponent), "1", parameters, "retained"),
+                        Descriptor = new(typeof(DynamicallyAddedComponent), CreateWebRootComponentParameters(parameters)),
+                    },
+                ],
+            }, updateStore, false, CancellationToken.None);
+        }
+    }
+
+    [Fact]
     public async Task UpdateRootComponents_SerializesInitialStateLifetimeThroughQuiescence()
     {
         var renderer = GetRemoteRenderer();
@@ -2445,6 +2559,58 @@ public class CircuitHostTest
         }
     }
 
+    private sealed class ParameterCancellationState
+    {
+        public TaskCompletionSource Started { get; } = new(TaskCreationOptions.RunContinuationsAsynchronously);
+        public TaskCompletionSource Cancelled { get; } = new(TaskCreationOptions.RunContinuationsAsynchronously);
+        public TaskCompletionSource UpdatedRender { get; } = new(TaskCreationOptions.RunContinuationsAsynchronously);
+        public int RenderedId { get; set; }
+    }
+
+    private sealed class ParameterCancellationComponent(ParameterCancellationState state) : ComponentBase, IDisposable
+    {
+        private CancellationTokenSource _request;
+
+        [Parameter]
+        public int Id { get; set; }
+
+        protected override async Task OnParametersSetAsync()
+        {
+            _request?.Cancel();
+            _request?.Dispose();
+            _request = new CancellationTokenSource();
+            var request = _request;
+            if (Id == 1)
+            {
+                state.Started.TrySetResult();
+                try
+                {
+                    await Task.Delay(Timeout.InfiniteTimeSpan, request.Token);
+                }
+                catch (OperationCanceledException) when (request.IsCancellationRequested)
+                {
+                    state.Cancelled.TrySetResult();
+                }
+            }
+        }
+
+        protected override void BuildRenderTree(RenderTreeBuilder builder)
+        {
+            builder.AddContent(0, Id);
+            state.RenderedId = Id;
+            if (Id == 2)
+            {
+                state.UpdatedRender.TrySetResult();
+            }
+        }
+
+        public void Dispose()
+        {
+            _request?.Cancel();
+            _request?.Dispose();
+        }
+    }
+
     private sealed class PersistentRootComponent : IComponent
     {
         [PersistentState(AllowUpdates = true)]
@@ -2529,6 +2695,7 @@ public class CircuitHostTest
 
         public TaskCompletionSource RestoreStarted { get; } = new(TaskCreationOptions.RunContinuationsAsynchronously);
         public bool Cleared { get; private set; }
+        public bool IsEmpty => dictionary.Count == 0;
 
         public void Clear()
         {

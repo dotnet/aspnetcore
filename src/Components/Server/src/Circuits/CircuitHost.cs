@@ -33,6 +33,7 @@ internal partial class CircuitHost : IAsyncDisposable
     private bool _isFirstUpdate = true;
     private Task _rootComponentOperationsTask = Task.CompletedTask;
     private Task _rootComponentStateTask = Task.CompletedTask;
+    private Task _rootComponentParameterTask = Task.CompletedTask;
     private readonly TaskCompletionSource _rootComponentPauseRequested = new(TaskCreationOptions.RunContinuationsAsynchronously);
     private bool _pausingRootComponents;
     private bool _rootComponentUpdateFailed;
@@ -867,7 +868,12 @@ internal partial class CircuitHost : IAsyncDisposable
                         }
                     }
 
-                    var operationsTask = PerformRootComponentOperations(operations, shouldWaitForQuiescence, postRemovalTask, operationsCompletionSource, pendingRootComponentInitializations);
+                    // Retained roots may need new parameters to cancel the work holding initial quiescence.
+                    var parameterUpdateTask = store is null || store.IsEmpty
+                        ? WaitForRootComponentParametersAsync(_rootComponentParameterTask)
+                        : shouldWaitForQuiescence ? stateCompletionSource.Task : postRemovalTask;
+                    _rootComponentParameterTask = parameterUpdateTask;
+                    var operationsTask = PerformRootComponentOperations(operations, shouldWaitForQuiescence, postRemovalTask, parameterUpdateTask, operationsCompletionSource, pendingRootComponentInitializations);
 
                     await operationsTask;
                     await postRemovalTask;
@@ -949,6 +955,15 @@ internal partial class CircuitHost : IAsyncDisposable
         }
     }
 
+    private async Task WaitForRootComponentParametersAsync(Task previousParameterTask)
+    {
+        await previousParameterTask;
+        if (_rootComponentUpdateFailed || _disposed)
+        {
+            throw new RootComponentUpdateAbortedException();
+        }
+    }
+
     private static async Task CompleteRootComponentStateAsync(Task previousStateTask, TaskCompletionSource completionSource)
     {
         await previousStateTask;
@@ -975,11 +990,12 @@ internal partial class CircuitHost : IAsyncDisposable
         RootComponentOperation[] operations,
         bool shouldWaitForQuiescence,
         Task postStateTask,
+        Task parameterUpdateTask,
         TaskCompletionSource operationsCompletionSource,
         List<Action> pendingRootComponentInitializations)
     {
         var webRootComponentManager = Renderer.GetOrCreateWebRootComponentManager();
-        webRootComponentManager.SetCurrentUpdateTask(postStateTask, pendingRootComponentInitializations);
+        webRootComponentManager.SetCurrentUpdateTask(postStateTask, pendingRootComponentInitializations, parameterUpdateTask);
 
         var pendingTasks = shouldWaitForQuiescence
             ? new Task[operations.Length]
@@ -1018,7 +1034,7 @@ internal partial class CircuitHost : IAsyncDisposable
                                 operation.Descriptor.ComponentType,
                                 operation.Marker.Value.Key,
                                 operation.Descriptor.Parameters);
-                            _ = ObserveRootComponentOperation(updateTask, postStateTask);
+                            _ = ObserveRootComponentOperation(updateTask, postStateTask, parameterUpdateTask);
                             break;
                         case RootComponentOperationType.Remove:
                             webRootComponentManager.RemoveRootComponent(operation.SsrComponentId);
@@ -1053,7 +1069,7 @@ internal partial class CircuitHost : IAsyncDisposable
         }
     }
 
-    private async Task ObserveRootComponentOperation(Task task, Task postStateTask)
+    private async Task ObserveRootComponentOperation(Task task, Task postStateTask, Task parameterUpdateTask = null)
     {
         try
         {
@@ -1062,7 +1078,8 @@ internal partial class CircuitHost : IAsyncDisposable
         catch (Exception ex)
         {
             // A failed restore is reported by UpdateRootComponents, not once per dependent operation.
-            if (!postStateTask.IsFaulted && !postStateTask.IsCanceled)
+            if (!postStateTask.IsFaulted && !postStateTask.IsCanceled &&
+                parameterUpdateTask is not { IsFaulted: true } and not { IsCanceled: true })
             {
                 await ReportRootComponentUpdateFailureAsync(ex);
             }
