@@ -234,10 +234,12 @@ container; Docker is not run inside the build container.
 The test mounts the `aspnetcoretools` native publish output read-only and runs
 certificate and user-secret operations without an SDK or rebuilding.
 
-To run it locally after building the native tools, use Docker on the host:
+To run it locally after building the native tools, use Docker on the host.
+Select the repository's `DefaultNetCoreTargetFramework` from `eng/Versions.props`
+(`net12.0` on this branch), rather than retained outputs for older frameworks:
 
 ```bash
-bash eng/scripts/run-native-abi-tests.sh artifacts/bin/aspnetcoretools/Release/*/linux-x64/publish
+bash eng/scripts/run-native-abi-tests.sh artifacts/bin/aspnetcoretools/Release/net12.0/linux-x64/publish
 ```
 
 The image is `mcr.microsoft.com/dotnet-buildtools/prereqs:ubuntu-18.04-net11.0-abi-test-amd64`.
