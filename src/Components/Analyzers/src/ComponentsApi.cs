@@ -73,6 +73,12 @@ internal static class ComponentsApi
         public const string MetadataName = FullTypeName;
     }
 
+    public static class Dispatcher
+    {
+        public const string FullTypeName = "Microsoft.AspNetCore.Components.Dispatcher";
+        public const string MetadataName = FullTypeName;
+    }
+
     public static class RendererInfo
     {
         public const string FullTypeName = "Microsoft.AspNetCore.Components.RendererInfo";

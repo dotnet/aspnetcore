@@ -28,6 +28,14 @@ namespace Microsoft.AspNetCore.Components
         protected RendererInfo RendererInfo = new();
         protected virtual void OnAfterRender(bool firstRender) {}
         protected virtual Task OnAfterRenderAsync(bool firstRender) => Task.CompletedTask;
+        protected Task InvokeAsync(Action workItem) => Task.CompletedTask;
+        protected Task InvokeAsync(Func<Task> workItem) => Task.CompletedTask;
+    }
+
+    public abstract class Dispatcher
+    {
+        public abstract Task InvokeAsync(Action workItem);
+        public abstract Task InvokeAsync(Func<Task> workItem);
     }
 
     public sealed class InjectAttribute : Attribute
@@ -2176,6 +2184,85 @@ namespace ConsoleApplication1
         VerifyCSharpDiagnostic(test,
             new DiagnosticResult { Locations = new[] { new DiagnosticResultLocation("Test0.cs", 21, column) }, Id = id, Message = messageInvoke, Severity = DiagnosticSeverity.Warning, }
         );
+    }
+
+    [Theory]
+    [InlineData("await InvokeAsync(async () => await JS.InvokeVoidAsync(Identifier));", 21, 49)]
+    [InlineData("await InvokeAsync(InvokeJSAsync);", 16, 19)]
+    [InlineData("Func<Task> invokeJS = async () => await JS.InvokeVoidAsync(Identifier); await InvokeAsync(invokeJS);", 21, 53)]
+    [InlineData("Dispatcher dispatcher = default!; await dispatcher.InvokeAsync(async () => await JS.InvokeVoidAsync(Identifier));", 21, 94)]
+    [InlineData("new System.Collections.Generic.List<int> { 1 }.ForEach(_ => JS.InvokeVoidAsync(Identifier));", 21, 73)]
+    [InlineData("Array.ForEach(new[] { 1 }, _ => JS.InvokeVoidAsync(Identifier));", 21, 45)]
+    [InlineData("await RunAsync(async () => await JS.InvokeVoidAsync(Identifier)); static async Task RunAsync(Func<Task> work) => await work();", 21, 46)]
+    [InlineData("new System.Collections.Generic.List<int> { 1 }.ForEach(_ => { if (!RendererInfo.IsInteractive) { return; } }); await JS.InvokeVoidAsync(Identifier);", 21, 130)]
+    public void JSInvokeInDelegateArgumentInvokedByCalleeShouldThrowWarning(string statements, int line, int column)
+    {
+        VerifyCSharpDiagnostic(CreateOnInitializedAsyncTest(statements),
+            new DiagnosticResult { Locations = new[] { new DiagnosticResultLocation("Test0.cs", line, column) }, Id = id, Message = messageInvokeVoidAsync, Severity = DiagnosticSeverity.Warning, }
+        );
+    }
+
+    [Theory]
+    [InlineData("if (!RendererInfo.IsInteractive) { return; } await InvokeAsync(async () => await JS.InvokeVoidAsync(Identifier));")]
+    [InlineData("var callbacks = new System.Collections.Generic.List<Func<ValueTask>>(); callbacks.Add(() => JS.InvokeVoidAsync(Identifier));")]
+    [InlineData("Store(() => JS.InvokeVoidAsync(Identifier)); static void Store(Func<ValueTask> work) => _ = work;")]
+    [InlineData("var lazy = new Lazy<ValueTask>(() => JS.InvokeVoidAsync(Identifier));")]
+    [InlineData("AppDomain.CurrentDomain.ProcessExit += (sender, args) => JS.InvokeVoidAsync(Identifier);")]
+    public void JSInvokeInDelegateArgumentNotInvokedWithoutIsInteractiveCheckShouldNotThrowWarning(string statements)
+    {
+        VerifyCSharpDiagnostic(CreateOnInitializedAsyncTest(statements));
+    }
+
+    [Theory]
+    [InlineData("var callbacks = new System.Collections.Generic.List<Action>(); callbacks.Add(Identifier.Length > 0 ? null : () => JS.InvokeVoidAsync(Identifier));")]
+    [InlineData("var callbacks = new System.Collections.Generic.List<Action>(); Action handler = null; callbacks.Add(handler ?? (() => JS.InvokeVoidAsync(Identifier)));")]
+    [InlineData("var actions = new Action[] { () => JS.InvokeVoidAsync(Identifier) };")]
+    [InlineData("Action action = Identifier.Length > 0 ? null : () => JS.InvokeVoidAsync(Identifier);")]
+    [InlineData("var pair = (Callback: (Action)(() => JS.InvokeVoidAsync(Identifier)), Count: 1);")]
+    public void JSInvokeInLambdaNestedInExpressionNotInvokedShouldNotThrowWarning(string statements)
+    {
+        VerifyCSharpDiagnostic(CreateOnInitializedAsyncTest(statements));
+    }
+
+    [Fact]
+    public void JSInvokeInReturnedLambdaInvokedByCallerShouldThrowWarning()
+    {
+        VerifyCSharpDiagnostic(CreateOnInitializedAsyncTest("Make()(); Action Make() => () => JS.InvokeVoidAsync(Identifier);"),
+            new DiagnosticResult { Locations = new[] { new DiagnosticResultLocation("Test0.cs", 21, 46) }, Id = id, Message = messageInvokeVoidAsync, Severity = DiagnosticSeverity.Warning, }
+        );
+    }
+
+    [Fact]
+    public void JSInvokeInDelegateStoredByUnrelatedAddAttributeShouldNotThrowWarning()
+    {
+        var test = @"
+namespace ConsoleApplication1
+{
+    using System;
+    using Microsoft.AspNetCore.Components;
+    using Microsoft.AspNetCore.Components.Rendering;
+    using Microsoft.JSInterop;
+
+    class CallbackStore
+    {
+        private Action _callback = default!;
+
+        public void AddAttribute(int sequence, string name, Action value) => _callback = value;
+    }
+
+    class TestComponent : ComponentBase
+    {
+        private IJSInProcessRuntime JS = default!;
+        private readonly CallbackStore _store = new();
+
+        protected override void BuildRenderTree(RenderTreeBuilder __builder)
+        {
+            _store.AddAttribute(1, ""OnClick"", () => JS.Invoke<string>(""getValue""));
+        }
+    }
+}" + BaseComponentDeclarations;
+
+        VerifyCSharpDiagnostic(test);
     }
 
     private static string CreateBuildRenderTreeTest(string statements)

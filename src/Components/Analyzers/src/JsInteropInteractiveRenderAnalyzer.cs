@@ -37,6 +37,21 @@ public sealed class JsInteropInteractiveRenderAnalyzer : DiagnosticAnalyzer
         "IJSStreamReference",
         "JSStreamReference",
     };
+
+    // Methods that invoke their delegate arguments before they return or, for Dispatcher, on the renderer's context during the same render.
+    // Null method names mean that every method of the type invokes its delegate parameters. Delegates passed to other methods
+    // outside the analyzed source are assumed to be stored, not invoked.
+    private static readonly (string TypeMetadataName, string[]? MethodNames)[] ImmediateDelegateInvokers = new (string, string[]?)[]
+    {
+        // RenderTreeBuilder.AddAttribute also takes delegates, but stores them as event handlers.
+        (ComponentsApi.RenderTreeBuilder.MetadataName, new[] { "AddContent" }),
+        (ComponentsApi.ComponentBase.MetadataName, new[] { "InvokeAsync" }),
+        (ComponentsApi.Dispatcher.MetadataName, new[] { "InvokeAsync" }),
+        ("System.Collections.Generic.List`1", null),
+        ("System.Array", null),
+        ("System.Threading.Tasks.Parallel", null),
+    };
+
     public override ImmutableArray<DiagnosticDescriptor> SupportedDiagnostics =>
         ImmutableArray.Create(DiagnosticDescriptors.JsInteropUsageWithoutIsInteractiveCheck);
 
@@ -83,6 +98,15 @@ public sealed class JsInteropInteractiveRenderAnalyzer : DiagnosticAnalyzer
                 return;
             }
 
+            var immediateDelegateInvokers = new Dictionary<INamedTypeSymbol, string[]?>(SymbolEqualityComparer.Default);
+            foreach (var (typeMetadataName, methodNames) in ImmediateDelegateInvokers)
+            {
+                if (context.Compilation.GetTypeByMetadataName(typeMetadataName) is INamedTypeSymbol invokerType)
+                {
+                    immediateDelegateInvokers[invokerType] = methodNames;
+                }
+            }
+
             context.RegisterOperationBlockAction(context =>
             {
                 if (context.OwningSymbol is IMethodSymbol owningMethod
@@ -92,7 +116,7 @@ public sealed class JsInteropInteractiveRenderAnalyzer : DiagnosticAnalyzer
                     foreach (var childBlock in context.OperationBlocks)
                     {
                         // Should be one but could be more than one if there are multiple partial class definitions.
-                        AnalyzeOperationsTree(childBlock, new JSInteropAnalyzerState(context, availableTypes));
+                        AnalyzeOperationsTree(childBlock, new JSInteropAnalyzerState(context, availableTypes, immediateDelegateInvokers));
                     }
                 }
             });
@@ -141,9 +165,33 @@ public sealed class JsInteropInteractiveRenderAnalyzer : DiagnosticAnalyzer
             // Analyze if we have JSInterop calls.
             AnalyzeInvocation(invocation, state);
         }
-        else if (operation is ILocalFunctionOperation)
+        else if (operation is IObjectCreationOperation objectCreation)
         {
+            // Constructors are not analyzed, so delegates passed to them are assumed to be stored.
+            AnalyzeArguments(objectCreation.Arguments, false, state);
+            if (objectCreation.Initializer is not null)
+            {
+                AnalyzeOperationsTree(objectCreation.Initializer, state);
+            }
+        }
+        else if (operation is IEventAssignmentOperation eventAssignment)
+        {
+            AnalyzeOperationsTree(eventAssignment.EventReference, state);
+            if (FindPassedDelegate(eventAssignment.HandlerValue, state) is null)
+            {
+                AnalyzeOperationsTree(eventAssignment.HandlerValue, state);
+            }
+        }
+        else if (operation is ILocalFunctionOperation || operation is IAnonymousFunctionOperation)
+        {
+            // Local function and lambda bodies run only when invoked, so they are analyzed where they are invoked, not where they are declared.
             return;
+        }
+        else if (operation is IReturnOperation returnOperation
+            && FindReturnedLambda(returnOperation) is IAnonymousFunctionOperation returnedLambda)
+        {
+            // A returned lambda is handed to the caller to invoke, like the RenderFragment returned by a RenderFragment<TValue>.
+            AnalyzeOperationsTree(returnedLambda.Body, state.Clone());
         }
         else
         {
@@ -498,13 +546,75 @@ public sealed class JsInteropInteractiveRenderAnalyzer : DiagnosticAnalyzer
             AnalyzeOperationsTree(invocation.Instance, state);
         }
 
-        foreach (var argument in invocation.Arguments)
+        bool argsInvokedImmediately = IsImmediateDelegateInvoker(invocation.TargetMethod, state);
+        var delegatesNotInvoked = AnalyzeArguments(invocation.Arguments, argsInvokedImmediately, state);
+        if (argsInvokedImmediately)
         {
-            var parameterRefKind = argument.Parameter?.RefKind;
-            if ((parameterRefKind == RefKind.Ref || parameterRefKind == RefKind.Out)
+            // If the invocation is a known invoker, then all delegate arguments have already been analyzed.
+            return;
+        }
+
+        // The delegate this call invokes, such as f() or f.Invoke(). Known invokers are not delegate types, so this never
+        // analyzes a delegate that AnalyzeArguments already analyzed.
+        if (FindInvokedStoredDelegate(invocation, state) is IOperation storedDelegate)
+        {
+            AnalyzeInvokedDelegate(storedDelegate, state);
+            return;
+        }
+
+        if (state.CurrentDepth < MaxNestedMethodDepth
+            && state.BlockContext.OwningSymbol is IMethodSymbol methodSymbol
+            && ComponentFacts.IsComponentBase(methodSymbol.ContainingType, state.AvailableTypes[ComponentsApi.ComponentBase.MetadataName]))
+        {
+            AnalyzeMethodReference(invocation.TargetMethod, state, delegatesNotInvoked);
+        }
+    }
+
+    /// <summary>
+    /// Analyze arguments in evaluation order. A delegate argument is analyzed immediately only for a known invoker.
+    /// Otherwise it is returned, to be analyzed where a callee declared in source invokes it.
+    /// </summary>
+    private static Dictionary<ISymbol, IOperation>? AnalyzeArguments(ImmutableArray<IArgumentOperation> arguments, bool argsInvokedImmediately, JSInteropAnalyzerState state)
+    {
+        Dictionary<ISymbol, IOperation>? delegatesNotInvoked = null;
+        foreach (var argument in arguments)
+        {
+            var parameter = argument.Parameter;
+            var isDelegateParameter = IsDelegateParameter(parameter);
+            if ((parameter?.RefKind == RefKind.Ref || parameter?.RefKind == RefKind.Out)
                 && argument.Value is ILocalReferenceOperation localReference)
             {
                 state.SymbolChecks.Remove(localReference.Local);
+            }
+            else if (isDelegateParameter && FindPassedDelegate(argument.Value, state) is IOperation passedDelegate)
+            {
+                if (argsInvokedImmediately)
+                {
+                    AnalyzeInvokedDelegate(passedDelegate, state);
+                }
+                else if (parameter is not null)
+                {
+                    delegatesNotInvoked ??= new Dictionary<ISymbol, IOperation>(SymbolEqualityComparer.Default);
+                    delegatesNotInvoked[parameter.OriginalDefinition] = passedDelegate;
+                }
+            }
+            else if (argument.ArgumentKind == ArgumentKind.ParamArray
+                && argument.Value is IArrayCreationOperation { Initializer: { } paramsInitializer })
+            {
+                foreach (var element in paramsInitializer.ElementValues)
+                {
+                    if (isDelegateParameter && FindPassedDelegate(element, state) is IOperation elementDelegate)
+                    {
+                        if (argsInvokedImmediately)
+                        {
+                            AnalyzeInvokedDelegate(elementDelegate, state);
+                        }
+                    }
+                    else
+                    {
+                        AnalyzeOperationsTree(element, state);
+                    }
+                }
             }
             else
             {
@@ -512,18 +622,59 @@ public sealed class JsInteropInteractiveRenderAnalyzer : DiagnosticAnalyzer
             }
         }
 
-        if (state.CurrentDepth < MaxNestedMethodDepth
-            && FindInvokedStoredDelegate(invocation, state) is IOperation storedDelegate)
+        return delegatesNotInvoked;
+    }
+
+    private static bool IsImmediateDelegateInvoker(IMethodSymbol method, JSInteropAnalyzerState state)
+    {
+        return state.ImmediateDelegateInvokers.TryGetValue(method.ContainingType.OriginalDefinition, out var methodNames)
+            && (methodNames is null || Array.IndexOf(methodNames, method.Name) >= 0);
+    }
+
+    private static bool IsDelegateParameter(IParameterSymbol? parameter)
+    {
+        // The declared type excludes generic values such as AddContent<TValue>'s value, which is passed to the fragment rather than invoked.
+        var parameterType = parameter?.OriginalDefinition.Type;
+        if (parameterType is IArrayTypeSymbol arrayType)
         {
-            AnalyzeStoredDelegate(storedDelegate, state);
+            parameterType = arrayType.ElementType;
         }
 
-        if (state.CurrentDepth < MaxNestedMethodDepth
-            && state.BlockContext.OwningSymbol is IMethodSymbol methodSymbol
-            && ComponentFacts.IsComponentBase(methodSymbol.ContainingType, state.AvailableTypes[ComponentsApi.ComponentBase.MetadataName]))
+        return parameterType?.TypeKind == TypeKind.Delegate;
+    }
+
+    private static IOperation? FindPassedDelegate(IOperation value, JSInteropAnalyzerState state)
+    {
+        while (value is IConversionOperation conversion)
         {
-            AnalyzeMethodReference(invocation.TargetMethod, state);
+            // Dig through conversion to see if the base is a delegate creation wrapped in a conversion.
+            value = conversion.Operand;
         }
+
+        if (value is IDelegateCreationOperation delegateCreation
+            && (delegateCreation.Target is IAnonymousFunctionOperation || delegateCreation.Target is IMethodReferenceOperation))
+        {
+            return delegateCreation.Target;
+        }
+
+        if (GetReferencedLocalOrParameter(value) is ISymbol delegateVariable
+            && state.StoredDelegates.TryGetValue(delegateVariable, out var storedDelegate))
+        {
+            return storedDelegate;
+        }
+
+        return null;
+    }
+
+    private static IAnonymousFunctionOperation? FindReturnedLambda(IReturnOperation returnOperation)
+    {
+        var returnedValue = returnOperation.ReturnedValue;
+        while (returnedValue is IConversionOperation conversion)
+        {
+            returnedValue = conversion.Operand;
+        }
+
+        return (returnedValue as IDelegateCreationOperation)?.Target as IAnonymousFunctionOperation;
     }
 
     private static ISymbol? GetReferencedLocalOrParameter(IOperation? operation)
@@ -566,15 +717,20 @@ public sealed class JsInteropInteractiveRenderAnalyzer : DiagnosticAnalyzer
         return null;
     }
 
-    private static void AnalyzeStoredDelegate(IOperation storedDelegate, JSInteropAnalyzerState state)
+    private static void AnalyzeInvokedDelegate(IOperation invokedDelegate, JSInteropAnalyzerState state)
     {
-        if (storedDelegate is IAnonymousFunctionOperation anonymousFunction)
+        if (state.CurrentDepth >= MaxNestedMethodDepth)
+        {
+            return;
+        }
+
+        if (invokedDelegate is IAnonymousFunctionOperation anonymousFunction)
         {
             var clonedState = state.Clone();
             clonedState.CurrentDepth++;
             AnalyzeOperationsTree(anonymousFunction.Body, clonedState);
         }
-        else if (storedDelegate is IMethodReferenceOperation methodReference)
+        else if (invokedDelegate is IMethodReferenceOperation methodReference)
         {
             AnalyzeMethodReference(methodReference.Method, state);
         }
@@ -593,7 +749,7 @@ public sealed class JsInteropInteractiveRenderAnalyzer : DiagnosticAnalyzer
         return state.BlockContext.Compilation.GetSemanticModel(syntaxTree);
     }
 
-    private static void AnalyzeMethodReference(IMethodSymbol methodSymbol, JSInteropAnalyzerState state)
+    private static void AnalyzeMethodReference(IMethodSymbol methodSymbol, JSInteropAnalyzerState state, Dictionary<ISymbol, IOperation>? delegatesNotInvoked = null)
     {
         foreach (var syntaxRef in methodSymbol.DeclaringSyntaxReferences)
         {
@@ -612,6 +768,14 @@ public sealed class JsInteropInteractiveRenderAnalyzer : DiagnosticAnalyzer
             }
             var clonedState = state.Clone();
             clonedState.CurrentDepth++;
+            if (delegatesNotInvoked is not null)
+            {
+                foreach (var delegateToStore in delegatesNotInvoked)
+                {
+                    clonedState.StoredDelegates[delegateToStore.Key] = delegateToStore.Value;
+                }
+            }
+
             AnalyzeOperationsTree(methodOperation, clonedState);
         }
     }
@@ -725,6 +889,7 @@ public sealed class JsInteropInteractiveRenderAnalyzer : DiagnosticAnalyzer
         public int CurrentDepth { get; set; }
         public bool IsInteractiveChecked { get; set; }
         public Dictionary<string, INamedTypeSymbol?> AvailableTypes { get; }
+        public Dictionary<INamedTypeSymbol, string[]?> ImmediateDelegateInvokers { get; }
         public OperationBlockAnalysisContext BlockContext { get; }
 
         public HashSet<ILocalSymbol> SymbolChecks { get; private set; } = new HashSet<ILocalSymbol>();
@@ -732,15 +897,16 @@ public sealed class JsInteropInteractiveRenderAnalyzer : DiagnosticAnalyzer
         // Delegates held by locals or parameters, keyed by the variable, analyzed where the variable is invoked.
         public Dictionary<ISymbol, IOperation> StoredDelegates { get; private set; } = new Dictionary<ISymbol, IOperation>(SymbolEqualityComparer.Default);
 
-        public JSInteropAnalyzerState(OperationBlockAnalysisContext blockContext, Dictionary<string, INamedTypeSymbol?> availableTypes)
+        public JSInteropAnalyzerState(OperationBlockAnalysisContext blockContext, Dictionary<string, INamedTypeSymbol?> availableTypes, Dictionary<INamedTypeSymbol, string[]?> immediateDelegateInvokers)
         {
             BlockContext = blockContext;
             AvailableTypes = availableTypes;
+            ImmediateDelegateInvokers = immediateDelegateInvokers;
         }
 
         public JSInteropAnalyzerState Clone()
         {
-            return new JSInteropAnalyzerState(this.BlockContext, this.AvailableTypes)
+            return new JSInteropAnalyzerState(this.BlockContext, this.AvailableTypes, this.ImmediateDelegateInvokers)
             {
                 CurrentDepth = this.CurrentDepth,
                 IsInteractiveChecked = this.IsInteractiveChecked,
