@@ -172,8 +172,7 @@ internal static class IdentityComponentsEndpointRouteBuilderExtensions
             return TypedResults.Content(optionsJson, contentType: "application/json");
         });
 
-        // Unlike /PasskeyRequestOptions, this never takes a username: the passkey being asserted
-        // must belong to the account that is already signed in.
+        // The passkey being asserted must belong to the account that is already signed in.
         manageGroup.MapPost("/PasskeyReauthenticationOptions", [RequireAntiforgeryToken] async (
             HttpContext context,
             [FromServices] UserManager<ApplicationUser> userManager,
