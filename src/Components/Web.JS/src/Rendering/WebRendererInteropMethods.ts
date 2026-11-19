@@ -29,14 +29,15 @@ export function attachWebRendererInterop(
 
   interopMethodsByRenderer.set(rendererId, interopMethods);
 
+  // Replay the startup location before JS initializers can navigate.
+  invokeRendererAttachedListeners(rendererId);
+
   if (jsComponentParameters && jsComponentInitializers && Object.keys(jsComponentParameters).length > 0) {
     const manager = getInteropMethods(rendererId);
     enableJSRootComponents(rendererId, manager, jsComponentParameters, jsComponentInitializers);
   }
 
   rendererByIdResolverMap.get(rendererId)?.[0]?.();
-
-  invokeRendererAttachedListeners(rendererId);
 }
 
 export function detachWebRendererInterop(rendererId: number): DotNet.DotNetObject {

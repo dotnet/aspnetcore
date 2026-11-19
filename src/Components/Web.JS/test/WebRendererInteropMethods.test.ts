@@ -6,6 +6,7 @@ import {
   attachWebRendererInterop,
   detachWebRendererInterop,
   isRendererAttached,
+  registerRendererAttachedListener,
 } from '../src/Rendering/WebRendererInteropMethods';
 import { WebRendererId } from '../src/Rendering/WebRendererId';
 
@@ -93,4 +94,33 @@ describe('Issue #64738 - reconnect then resume double registration', () => {
     expect(result).toBe(false);
     expect(isRendererAttached(WebRendererId.Server)).toBe(false);
   });
+});
+
+test('renderer-attached listeners run before JavaScript component initializers', () => {
+  let order: string[] | undefined = [];
+  registerRendererAttachedListener(rendererId => {
+    if (rendererId === WebRendererId.Server) {
+      order?.push('attached');
+    }
+  });
+  Object.assign(window, {
+    testJSComponentInitializer: () => order?.push('initializer'),
+  });
+
+  try {
+    attachWebRendererInterop(
+      WebRendererId.Server,
+      createMockInteropMethods(),
+      { 'test-component': [] },
+      { testJSComponentInitializer: ['test-component'] },
+    );
+
+    expect(order).toEqual(['attached', 'initializer']);
+  } finally {
+    if (isRendererAttached(WebRendererId.Server)) {
+      detachWebRendererInterop(WebRendererId.Server);
+    }
+    Reflect.deleteProperty(window, 'testJSComponentInitializer');
+    order = undefined;
+  }
 });

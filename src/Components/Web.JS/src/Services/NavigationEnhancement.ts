@@ -272,6 +272,10 @@ export async function performEnhancedPageLoad(internalDestinationHref: string, i
         const treatAsGet = treatAsRedirectionFromMethod ? (treatAsRedirectionFromMethod === 'get') : isGetRequest;
         const previousLocation = location.href;
         if (!isWithinBaseUriSpace(response.url)) {
+          if (!isGetRequest) {
+            throw new Error('Enhanced navigation does not support non-GET requests that redirect outside the application base URI.');
+          }
+
           if (treatAsGet) {
             location.replace(response.url);
           } else {

@@ -554,8 +554,7 @@ export class CircuitManager implements DotNet.DotNetCallDispatcher {
     const state = history.state?.userState;
     if (startCircuitUri !== undefined && (uri !== startCircuitUri || (typeof state === 'string' && wasLocationChangeRecordedFor(uri)))) {
       this.sendLocationChanged(uri, state, wasLastLocationChangeIntercepted(uri)).catch(error => {
-        this._locationReplayFailed = true;
-        this.unhandledError(error);
+        this.handleLocationReplayFailure(error);
       });
     }
   }
@@ -605,6 +604,13 @@ export class CircuitManager implements DotNet.DotNetCallDispatcher {
     // Trying to call methods on the connection after its been closed will throw.
     const disconnectPromise = this._circuitId ? this.disconnect() : this._connection?.stop();
     disconnectPromise?.catch(error => this._logger.log(LogLevel.Error, `Failed to disconnect the circuit: ${error}`));
+  }
+
+  private handleLocationReplayFailure(error: Error): void {
+    this._locationReplayFailed = true;
+    this._renderingFailed = true;
+    this.unhandledError(error);
+    showErrorNotification();
   }
 
   private getDisconnectFormData(): FormData {

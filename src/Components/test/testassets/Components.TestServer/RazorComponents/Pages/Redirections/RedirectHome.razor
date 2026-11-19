@@ -89,6 +89,12 @@
             <span>Note: this case is not supported and is shown here only for manual testing. No E2E test attempts this case.</span>
         </form>
     </li>
+    <li>
+        <form id="form-nonblazor-enhanced-outside-base" @formname="outside-base-form" method="post" action="redirect/nonblazor/post?outside-base=true" data-enhance>
+            <AntiforgeryToken />
+            <button>Enhanced POST redirect outside the application base URI</button>
+        </form>
+    </li>
 </ul>
 
 <h2>Redirect inside error boundary</h2>

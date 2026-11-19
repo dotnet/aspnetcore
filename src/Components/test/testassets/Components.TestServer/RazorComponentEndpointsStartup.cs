@@ -176,6 +176,16 @@ public class RazorComponentEndpointsStartup<TRootComponent>
 
             ConfigureSubdirPipeline(app, env);
         });
+
+        app.Map("/outside-base-post", app => app.Run(async context =>
+        {
+            context.Response.Headers["blazor-enhanced-nav"] = "allow";
+            context.Response.ContentType = "text/html";
+            context.Response.StatusCode = context.Request.Method == HttpMethods.Post
+                ? StatusCodes.Status200OK
+                : StatusCodes.Status405MethodNotAllowed;
+            await context.Response.WriteAsync($"<html><body><h1>{context.Request.Method}</h1></body></html>");
+        }));
     }
 
     private void ConfigureSubdirPipeline(IApplicationBuilder app, IWebHostEnvironment env)
@@ -398,6 +408,12 @@ public class RazorComponentEndpointsStartup<TRootComponent>
             HttpResponse response,
             ExternalNavigationTarget externalNavigationTarget)
         {
+            if (request.Query["outside-base"] == "true")
+            {
+                response.Redirect("/outside-base-post", permanent: false, preserveMethod: true);
+                return Task.CompletedTask;
+            }
+
             response.Redirect(request.Query["external"] == "true"
                 ? externalNavigationTarget.Uri.AbsoluteUri
                 : $"{request.PathBase}/nav/scroll-to-hash#some-content");

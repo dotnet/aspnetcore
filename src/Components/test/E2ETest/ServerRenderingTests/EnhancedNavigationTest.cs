@@ -683,6 +683,22 @@ public class EnhancedNavigationTest : ServerTestBase<BasicTestAppServerSiteFixtu
     }
 
     [Fact]
+    public void SupersededLocationChangeDoesNotReachTheServerRenderer()
+    {
+        Navigate($"{ServerPathBase}/nav/location-changed/server-and-wasm");
+        Browser.Exists(By.Id("nav-uri-wasm"));
+        Browser.Exists(By.Id("nav-uri-server"));
+
+        ((IJavaScriptExecutor)Browser).ExecuteScript("Blazor.navigateTo('nav/location-changed/server-and-wasm?superseded=1')");
+
+        Browser.Contains("query=2", () => Browser.Url);
+        Browser.Contains("query=2", () => Browser.Exists(By.Id("nav-uri-server")).Text);
+        Browser.Equal("2", () => Browser.Exists(By.Id("query-server")).Text);
+        Browser.Contains("query=2", () => Browser.Exists(By.Id("nav-uri-wasm")).Text);
+        Browser.Equal("2", () => Browser.Exists(By.Id("query-wasm")).Text);
+    }
+
+    [Fact]
     public void HistoryStateGetsUpdatedOnSameUriNavigationBeforeServerRendererAttaches()
     {
         Navigate($"{ServerPathBase}/nav");

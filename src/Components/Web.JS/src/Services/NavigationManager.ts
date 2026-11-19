@@ -12,6 +12,8 @@ import { IBlazor } from '../GlobalExports';
 let hasRegisteredNavigationEventListeners = false;
 let currentHistoryIndex = 0;
 let currentLocationChangingCallId = 0;
+let locationChangedNotificationSequence = 0;
+const latestLocationChangedNotificationSequenceByRenderer = new Map<WebRendererId, number>();
 
 type NavigationCallbacks = {
   rendererId: WebRendererId;
@@ -264,12 +266,22 @@ async function onBrowserInitiatedPopState(state: PopStateEvent) {
 
 async function notifyLocationChanged(interceptedLink: boolean, internalDestinationHref?: string, targetRendererId?: WebRendererId) {
   const uri = internalDestinationHref ?? location.href;
+  const state = history.state?.userState;
+  const notificationSequence = ++locationChangedNotificationSequence;
 
   recordLocationChange(uri, interceptedLink);
 
-  await Promise.all(Array.from(navigationCallbacks, async ([rendererId, callbacks]) => {
-    if ((targetRendererId === undefined || targetRendererId === rendererId) && isRendererAttached(rendererId)) {
-      await callbacks.locationChanged(uri, history.state?.userState, interceptedLink);
+  const callbacksToNotify = Array.from(navigationCallbacks).filter(([rendererId]) =>
+    (targetRendererId === undefined || targetRendererId === rendererId) && isRendererAttached(rendererId));
+
+  // Mark every recipient before callbacks run, since a renderer can synchronously start another navigation.
+  for (const [rendererId] of callbacksToNotify) {
+    latestLocationChangedNotificationSequenceByRenderer.set(rendererId, notificationSequence);
+  }
+
+  await Promise.all(callbacksToNotify.map(async ([rendererId, callbacks]) => {
+    if (latestLocationChangedNotificationSequenceByRenderer.get(rendererId) === notificationSequence && isRendererAttached(rendererId)) {
+      await callbacks.locationChanged(uri, state, interceptedLink);
     }
   }));
 }
