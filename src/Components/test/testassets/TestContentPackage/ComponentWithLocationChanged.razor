@@ -48,6 +48,11 @@
     {
         _locationChangedCount++;
         StateHasChanged();
+
+        if (Id == "wasm" && args.Location.EndsWith("?superseded=1", StringComparison.Ordinal))
+        {
+            Navigation.NavigateTo("nav/location-changed/server-and-wasm?query=2");
+        }
     }
 
     private ValueTask OnLocationChanging(LocationChangingContext context)
