@@ -17,6 +17,11 @@ internal static class PathDecoder
             // URI was encoded, unescape and then parse as UTF-8
             pathLength = UrlDecoder.DecodeInPlace(path, isFormEncoding: false);
 
+            // Backslashes decoded from percent-encoding (e.g. %5C) must be normalized to forward
+            // slashes before dot segments are removed or the path is handed to any other code that
+            // looks for '/' as the segment separator.
+            PathNormalizer.NormalizeBackslashes(path.Slice(0, pathLength));
+
             // Removing dot segments must be done after unescaping. From RFC 3986:
             //
             // URI producing applications should percent-encode data octets that
@@ -33,12 +38,15 @@ internal static class PathDecoder
             return Encoding.UTF8.GetString(path.Slice(0, pathLength));
         }
 
+        // The target may contain a literal (not percent-encoded) backslash even though no
+        // percent-encoding was present at all, so this also needs normalizing.
+        var containedBackslash = PathNormalizer.NormalizeBackslashes(path);
         pathLength = PathNormalizer.RemoveDotSegments(path);
 
-        if (path.Length == pathLength && queryLength == 0)
+        if (!containedBackslash && path.Length == pathLength && queryLength == 0)
         {
-            // If no decoding was required, no dot segments were removed and
-            // there is no query, the request path is the same as the raw target
+            // If no decoding or backslash normalization was required, no dot segments were
+            // removed and there is no query, the request path is the same as the raw target
             return rawTarget;
         }
 

@@ -106,6 +106,15 @@ public class HttpParsingData
             new[] { "GET /%61/%2E%2E/%62 HTTP/1.1\r\n", "/%61/%2E%2E/%62", "/b", "" },
             new[] { "GET /a?p=/a/../b HTTP/1.1\r\n", "/a?p=/a/../b", "/a", "?p=/a/../b" },
             new[] { "GET /a?p=/a/%2E%2E/b HTTP/1.1\r\n", "/a?p=/a/%2E%2E/b", "/a", "?p=/a/%2E%2E/b" },
+
+            // Backslashes (literal or percent-decoded) must be normalized to forward slashes so
+            // they can't be used to smuggle a dot-segment past removal, or to disagree with other
+            // code that treats only '/' as a path separator.
+            new[] { "GET /a\\b HTTP/1.1\r\n", "/a\\b", "/a/b", "" },
+            new[] { "GET /a%5Cb HTTP/1.1\r\n", "/a%5Cb", "/a/b", "" },
+            new[] { "GET /a\\..\\b HTTP/1.1\r\n", "/a\\..\\b", "/b", "" },
+            new[] { "GET /a%5C..%5Cb HTTP/1.1\r\n", "/a%5C..%5Cb", "/b", "" },
+            new[] { "GET /secure%5C..%5Cpublic HTTP/1.1\r\n", "/secure%5C..%5Cpublic", "/public", "" },
             new[] { "GET http://example.com/a/../b HTTP/1.1\r\n", "http://example.com/a/../b", "/b", "" },
             new[] { "GET http://example.com/%61/../%62 HTTP/1.1\r\n", "http://example.com/%61/../%62", "/b", "" },
             new[] { "GET http://example.com/a/%2E%2E/b HTTP/1.1\r\n", "http://example.com/a/%2E%2E/b", "/b", "" },

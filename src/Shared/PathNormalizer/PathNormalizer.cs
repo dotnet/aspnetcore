@@ -1,6 +1,7 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System;
 using System.Diagnostics;
 using System.Runtime.InteropServices;
 
@@ -9,7 +10,38 @@ namespace Microsoft.AspNetCore.Internal;
 internal static class PathNormalizer
 {
     private const byte ByteSlash = (byte)'/';
+    private const byte ByteBackslash = (byte)'\\';
     private const byte ByteDot = (byte)'.';
+
+    // AppContext switch allowing applications to opt back into the pre-fix behavior for
+    // https://github.com/dotnet/aspnetcore/issues/66665, where a decoded '\' was left as-is instead of being normalized to '/'.
+    private static readonly bool _backslashPathNormalizationDisabled =
+        AppContext.TryGetSwitch("Microsoft.AspNetCore.DisableBackslashPathNormalization", out var disabled) && disabled;
+
+    // Normalizes '\' (0x5C) to '/' (0x2F) in place, matching the WHATWG URL Standard's treatment of
+    // backslash as an alternate path separator for "special" schemes such as http/https, and the
+    // cooked-URL behavior of http.sys. This must run before RemoveDotSegments, since dot-segment
+    // collapsing also keys off literal '/' bytes to find segment boundaries, and before any other
+    // code examines segment boundaries (e.g. routing, PathString, static file path resolution) so
+    // those callers can't disagree about where one segment ends and the next begins.
+    public static bool NormalizeBackslashes(Span<byte> src)
+    {
+        if (_backslashPathNormalizationDisabled)
+        {
+            return false;
+        }
+
+        var normalized = false;
+        for (var i = 0; i < src.Length; i++)
+        {
+            if (src[i] == ByteBackslash)
+            {
+                src[i] = ByteSlash;
+                normalized = true;
+            }
+        }
+        return normalized;
+    }
 
     // In-place implementation of the algorithm from https://tools.ietf.org/html/rfc3986#section-5.2.4
     public static int RemoveDotSegments(Span<byte> src)

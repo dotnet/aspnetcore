@@ -37,6 +37,9 @@ internal static class RequestUriBuilder
 
         var unescapedPath = Unescape(rawPath);
 
+        // Normalize backslashes decoded from percent-encoding (e.g. %5C) before removing dotsegments
+        PathNormalizer.NormalizeBackslashes(unescapedPath);
+
         var length = PathNormalizer.RemoveDotSegments(unescapedPath);
 
         return UTF8.GetString(unescapedPath.Slice(0, length));
