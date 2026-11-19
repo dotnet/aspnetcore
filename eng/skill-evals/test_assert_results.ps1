@@ -112,6 +112,55 @@ try {
         throw 'A passing generic LLM suite no longer reports its aggregate threshold gate.'
     }
 
+    $regressions = [Collections.Generic.List[string]]::new()
+    $baselineMessages = (& $assertResults -RunDirectory $run -Variant baseline 6>&1 | Out-String)
+    if ($baselineMessages -like '*Configured score thresholds passed*' -or
+        $baselineMessages -notlike '*No score thresholds were applied*') {
+        $regressions.Add('BaselineOnlyReportsNoThresholds')
+        Write-Host 'BaselineOnlyReportsNoThresholds failed.'
+    } else {
+        Write-Host 'BaselineOnlyReportsNoThresholds passed.'
+    }
+    foreach ($location in @('Aggregate', 'Detail', 'NestedDetail')) {
+        $grade = @{
+            name = 'trajectory-grade'
+            passed = $false
+            score = 0.7
+            details = @(
+                @{ name = 'output-matches'; passed = $false; score = 0 },
+                @{ name = 'prompt'; passed = $true; score = 1 }
+            )
+        }
+        switch ($location) {
+            'Aggregate' { $grade.status = 'error' }
+            'Detail' { $grade.details[0].status = 'error' }
+            'NestedDetail' { $grade.details[0].details = @(@{ status = 'error'; passed = $false; score = 0 }) }
+        }
+        foreach ($variant in @('baseline', 'skilled')) {
+            Write-Results -Variant baseline -Score 0.1
+            Write-Results -Variant skilled -Score 0.8
+            $resultPath = Join-Path $run "$variant/results.jsonl"
+            $result = Get-Content $resultPath -Raw | ConvertFrom-Json
+            $result.gradeResult = $grade
+            $result | ConvertTo-Json -Depth 10 -Compress | Set-Content $resultPath
+            $caseName = "WeightedGraderError-$location-$variant"
+            try {
+                Assert-Throws {
+                    & $assertResults -RunDirectory $run
+                } "'$variant' variant has a grader error" 'A weighted grader error was accepted.'
+                Write-Host "$caseName passed."
+            } catch {
+                $regressions.Add("$caseName`: $_")
+                Write-Host "$caseName failed."
+            }
+        }
+    }
+    if ($regressions.Count -gt 0) {
+        throw ($regressions -join "`n")
+    }
+    Write-Results -Variant baseline -Score 0.1
+    Write-Results -Variant skilled -Score 0.8
+
     $literalRun = Join-Path $output 'run-[1]'
     Move-Item -LiteralPath $run -Destination $literalRun
     try {
