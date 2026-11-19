@@ -122,6 +122,50 @@ public class EnhancedNavigationTest : ServerTestBase<BasicTestAppServerSiteFixtu
         }
     }
 
+    [Theory]
+    [InlineData("enhancednavigationstart")]
+    [InlineData("enhancednavigationend")]
+    public void GetFormNetworkFailureDoesNotReplaceNewerNavigation(string eventName)
+    {
+        var (id, state) = StartNetworkFailureScenario();
+        try
+        {
+            var originalDocument = Browser.Exists(By.TagName("html"));
+            ((IJavaScriptExecutor)Browser).ExecuteScript("""
+                const eventName = arguments[0];
+                const listener = () => {
+                    Blazor.removeEventListener(eventName, listener);
+                    Blazor.navigateTo(new URL('nav/other', document.baseURI).href);
+                };
+                Blazor.addEventListener(eventName, listener);
+                """, eventName);
+
+            Browser.Exists(By.Id("failed-get-form")).Click();
+            if (eventName == "enhancednavigationend")
+            {
+                WaitForNetworkFailureRequest(state);
+                state.Release();
+            }
+
+            Browser.Equal("Other", () => Browser.Exists(By.TagName("h1")).Text);
+            if (eventName == "enhancednavigationstart")
+            {
+                Assert.Equal(0, state.EnhancedRequests);
+            }
+            else
+            {
+                Assert.True(state.EnhancedRequests > 0);
+            }
+            Assert.Equal(1, state.FullPageRequests);
+            Assert.Equal(originalDocument, Browser.FindElement(By.TagName("html")));
+        }
+        finally
+        {
+            state.Release();
+            NetworkFailures.Remove(id);
+        }
+    }
+
     [Fact]
     public void PostNetworkFailureShowsErrorAndCompletesLoadingWithoutReplaying()
     {

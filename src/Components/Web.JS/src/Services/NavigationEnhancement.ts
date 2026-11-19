@@ -207,16 +207,23 @@ export async function performEnhancedPageLoad(internalDestinationHref: string, i
   // First, stop any preceding enhanced page load
   currentEnhancedNavigationAbortController?.abort();
 
+  const abortController = new AbortController();
+  currentEnhancedNavigationAbortController = abortController;
+
   // Notify any interactive runtimes that an enhanced navigation is starting
   notifyEnhancedNavigationListeners(internalDestinationHref, interceptedLink);
+  if (currentEnhancedNavigationAbortController !== abortController || abortController.signal.aborted) {
+    return;
+  }
 
   // Notify handlers that enhanced navigation is starting
   navigationEnhancementCallbacks.enhancedNavigationStarted();
+  if (currentEnhancedNavigationAbortController !== abortController || abortController.signal.aborted) {
+    return;
+  }
 
   // Now request the new page via fetch, and a special header that tells the server we want it to inject
   // framing boundaries to distinguish the initial document and each subsequent streaming SSR update.
-  const abortController = new AbortController();
-  currentEnhancedNavigationAbortController = abortController;
   const abortSignal = abortController.signal;
   const responsePromise = fetch(internalDestinationHref, Object.assign(<RequestInit>{
     signal: abortSignal,
@@ -396,7 +403,9 @@ function handleEnhancedNavigationFailure(ex: unknown, internalDestinationHref: s
   if (isResponseReadFailure && isGetRequest && currentEnhancedNavigationAbortController === abortController) {
     performingEnhancedPageLoad = false;
     navigationEnhancementCallbacks.enhancedNavigationCompleted();
-    retryEnhancedNavAsFullPageLoad(internalDestinationHref);
+    if (currentEnhancedNavigationAbortController === abortController && !abortController.signal.aborted) {
+      retryEnhancedNavAsFullPageLoad(internalDestinationHref);
+    }
     return;
   }
 
