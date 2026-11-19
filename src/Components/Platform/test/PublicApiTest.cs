@@ -28,6 +28,7 @@ public class PublicApiTest
     [InlineData(typeof(CookieStore))]
     [InlineData(typeof(Navigator))]
     [InlineData(typeof(Screen))]
+    [InlineData(typeof(ScreenOrientation))]
     public void SharedInstances_CannotBeDisposedByApplicationCode(Type type)
     {
         Assert.False(typeof(IAsyncDisposable).IsAssignableFrom(type));
@@ -53,6 +54,7 @@ public class PublicApiTest
             typeof(UrlSearchParams),
             typeof(Navigator),
             typeof(Screen),
+            typeof(ScreenOrientation),
             typeof(Window),
         ];
 

@@ -155,7 +155,6 @@
       '$(IsPackable)' != 'true' AND
       $([MSBuild]::IsTargetFrameworkCompatible('$(TargetFramework)', 'net11.0')) AND
       '$(UseRuntimeAsync)' != 'false' AND
-      '$(DotNetBuildUseMonoRuntime)' != 'true' AND
       '$(TargetOS)' != 'browser' AND
       !$(RuntimeIdentifier.StartsWith('browser-'))">
     <Features>$(Features);runtime-async=on</Features>
@@ -165,7 +164,6 @@
   <PropertyGroup Condition="'$(IsTestProject)' == 'true' AND
       $([MSBuild]::IsTargetFrameworkCompatible('$(TargetFramework)', 'net11.0')) AND
       '$(UseRuntimeAsync)' != 'false' AND
-      '$(DotNetBuildUseMonoRuntime)' != 'true' AND
       '$(TargetOS)' != 'browser' AND
       !$(RuntimeIdentifier.StartsWith('browser-'))">
     <Features>$(Features);runtime-async=on</Features>
@@ -175,7 +173,6 @@
        so that subprocess dotnet invocations can forward them and avoid recompiling
        framework projects with different properties. -->
   <ItemGroup Condition="'$(IsTestProject)' == 'true'">
-    <RuntimeHostConfigurationOption Include="DotNetBuildUseMonoRuntime" Value="$(DotNetBuildUseMonoRuntime)" Condition="'$(DotNetBuildUseMonoRuntime)' != ''" />
     <RuntimeHostConfigurationOption Include="ContinuousIntegrationBuild" Value="$(ContinuousIntegrationBuild)" Condition="'$(ContinuousIntegrationBuild)' != ''" />
   </ItemGroup>
 
