@@ -139,7 +139,8 @@ export function initialize(target) {
             document.getElementById(`${id}-js`).textContent = "pending";
             await collected;
             document.getElementById(`${id}-gc`).textContent = "signal collected";
-            await nextTask(); // Lets the interop's own cleanup callback for the signal run before the release.
+            // Registries are not ordered, so give the interop's own cleanup callback time to run before the release.
+            await new Promise(resolve => setTimeout(resolve, 200));
             await target.invokeMethodAsync("ReleaseHeldInboundActivity");
             try {
                 document.getElementById(`${id}-js`).textContent = String(await pending);

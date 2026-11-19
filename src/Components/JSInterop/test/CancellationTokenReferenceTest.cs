@@ -83,15 +83,28 @@ public class CancellationTokenReferenceTest
     {
         using var runtime = new ReferenceRuntime();
         var token = ReceiveToken(runtime, """[{"__abortSignal":10,"aborted":false}]""");
+        using var entered = new ManualResetEventSlim();
         using var gate = new ManualResetEventSlim();
-        using var registration = token.Register(() => gate.Wait());
+        using var registration = token.Register(() =>
+        {
+            entered.Set();
+            gate.Wait();
+        });
 
-        SendAbort(runtime, 10, "abort");
-        var acknowledgment = runtime.GetResult("abort");
-        await Task.Delay(50);
-        Assert.False(acknowledgment.IsCompleted);
+        Task<DotNetInvocationResult> acknowledgment;
+        try
+        {
+            SendAbort(runtime, 10, "abort");
+            acknowledgment = runtime.GetResult("abort");
+            Assert.True(entered.Wait(TimeSpan.FromSeconds(10)));
+            await Task.Delay(50);
+            Assert.False(acknowledgment.IsCompleted);
+        }
+        finally
+        {
+            gate.Set();
+        }
 
-        gate.Set();
         Assert.True((await acknowledgment).Success);
     }
 
@@ -100,22 +113,32 @@ public class CancellationTokenReferenceTest
     {
         using var runtime = new ReferenceRuntime();
         var token = ReceiveToken(runtime, """[{"__abortSignal":12,"aborted":false}]""");
+        using var entered = new ManualResetEventSlim();
         using var gate = new ManualResetEventSlim();
         var callbackRuns = 0;
         using var registration = token.Register(() =>
         {
             Interlocked.Increment(ref callbackRuns);
+            entered.Set();
             gate.Wait();
             throw new InvalidOperationException("callback failure");
         });
 
-        ReceiveToken(runtime, """[{"__abortSignal":12,"aborted":true}]""");
-        SendAbort(runtime, 12, "abort");
-        var acknowledgment = runtime.GetResult("abort");
-        await Task.Delay(50);
-        Assert.False(acknowledgment.IsCompleted);
+        Task<DotNetInvocationResult> acknowledgment;
+        try
+        {
+            ReceiveToken(runtime, """[{"__abortSignal":12,"aborted":true}]""");
+            Assert.True(entered.Wait(TimeSpan.FromSeconds(10)));
+            SendAbort(runtime, 12, "abort");
+            acknowledgment = runtime.GetResult("abort");
+            await Task.Delay(50);
+            Assert.False(acknowledgment.IsCompleted);
+        }
+        finally
+        {
+            gate.Set();
+        }
 
-        gate.Set();
         var result = await acknowledgment;
         Assert.False(result.Success);
         Assert.Contains("callback failure", result.Exception!.ToString(), StringComparison.Ordinal);
