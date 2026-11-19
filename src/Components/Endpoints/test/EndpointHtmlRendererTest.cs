@@ -1241,6 +1241,72 @@ public class EndpointHtmlRendererTest
         Assert.True(invoked);
     }
 
+    [Theory]
+    [InlineData("default")]
+    [InlineData("fallback")]
+    [InlineData(null)]
+    public async Task CanRender_ErrorBoundaryReplacesDirectNamedForm(string fallbackFormName)
+    {
+        var httpContext = GetHttpContext();
+        var originalInvoked = false;
+        var fallbackInvoked = false;
+        var component = new TestComponent(builder =>
+        {
+            builder.OpenComponent<ErrorBoundary>(0);
+            builder.AddAttribute(1, nameof(ErrorBoundary.ChildContent), (RenderFragment)(childBuilder =>
+            {
+                childBuilder.OpenElement(0, "form");
+                childBuilder.AddAttribute(1, "onsubmit", (Action)(() => originalInvoked = true));
+                childBuilder.AddNamedEvent("onsubmit", "default");
+                childBuilder.CloseElement();
+                childBuilder.OpenComponent<ExceptionComponent>(2);
+                childBuilder.CloseComponent();
+            }));
+            builder.AddAttribute(2, nameof(ErrorBoundary.ErrorContent), (RenderFragment<Exception>)(_ => errorBuilder =>
+            {
+                if (fallbackFormName is not null)
+                {
+                    errorBuilder.OpenElement(0, "form");
+                    errorBuilder.AddAttribute(1, "onsubmit", (Action)(() => fallbackInvoked = true));
+                    errorBuilder.AddNamedEvent("onsubmit", fallbackFormName);
+                    errorBuilder.CloseElement();
+                }
+
+                errorBuilder.AddContent(2, "Error handled");
+            }));
+            builder.CloseComponent();
+        });
+
+        await renderer.Dispatcher.InvokeAsync(async () =>
+        {
+            await renderer.PrerenderComponentAsync(httpContext, typeof(EmptyComponent), null, ParameterView.Empty);
+            var result = renderer.BeginRenderingComponent(component, ParameterView.Empty);
+            await result.QuiescenceTask;
+
+            var expectedForm = fallbackFormName is null
+                ? ""
+                : $"<form action=\"/base/path?query=value\"><input type=\"hidden\" name=\"_handler\" value=\"{fallbackFormName}\" /></form>";
+            Assert.Equal($"{expectedForm}Error handled", result.ToHtmlString());
+            Assert.Equal(StatusCodes.Status200OK, httpContext.Response.StatusCode);
+
+            if (fallbackFormName is not null)
+            {
+                await renderer.DispatchSubmitEventAsync(fallbackFormName, out var isBadRequest);
+                Assert.False(isBadRequest);
+                Assert.True(fallbackInvoked);
+            }
+
+            if (fallbackFormName != "default")
+            {
+                await renderer.DispatchSubmitEventAsync("default", out var isBadRequest);
+                Assert.True(isBadRequest);
+                Assert.Equal(StatusCodes.Status400BadRequest, httpContext.Response.StatusCode);
+            }
+        });
+
+        Assert.False(originalInvoked);
+    }
+
     [Fact]
     public async Task CanDispatchNamedEvent_ToComponent()
     {

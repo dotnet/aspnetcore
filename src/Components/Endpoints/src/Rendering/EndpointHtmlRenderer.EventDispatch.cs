@@ -179,11 +179,24 @@ internal partial class EndpointHtmlRenderer
     {
         var changesCount = changes.Count;
         var changesArray = changes.Array;
+        var finalChangeIndices = new Dictionary<(int ComponentId, int FrameIndex), int>();
+        // A surviving component can add, remove, and replace an event in one batch.
+        // Only the last change at each location describes the event that remains.
+        for (var i = 0; i < changesCount; i++)
+        {
+            ref var change = ref changesArray[i];
+            if (string.Equals(change.EventType, "onsubmit", StringComparison.Ordinal))
+            {
+                finalChangeIndices[(change.ComponentId, change.FrameIndex)] = i;
+            }
+        }
+
         for (var i = 0; i < changesCount; i++)
         {
             ref var change = ref changesArray[i];
             if (change.ChangeType == NamedEventChangeType.Added
-                && string.Equals(change.EventType, "onsubmit", StringComparison.Ordinal))
+                && string.Equals(change.EventType, "onsubmit", StringComparison.Ordinal)
+                && finalChangeIndices[(change.ComponentId, change.FrameIndex)] == i)
             {
                 // An error boundary can dispose a component in the same batch that added its named events.
                 if (disposedComponentIds.Contains(change.ComponentId))
