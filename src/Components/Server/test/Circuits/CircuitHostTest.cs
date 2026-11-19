@@ -174,7 +174,7 @@ public class CircuitHostTest
 
         // Assert
         var exception = await Assert.ThrowsAsync<JSDisconnectedException>(async () => await component.PendingCall);
-        Assert.Contains("WebView has been disposed", exception.Message);
+        Assert.Contains("circuit has disconnected", exception.Message);
     }
 
     [Fact]
