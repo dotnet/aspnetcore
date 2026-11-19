@@ -31,12 +31,14 @@ public class BindTest : ServerTestBase<ToggleExecutionModeServerFixture<Program>
         Browser.Exists(By.Id("bind-cases"));
     }
 
-    [Fact]
-    public void CanBindShadowDomTextbox_RevertsRejectedValue()
+    [Theory]
+    [InlineData("shadow-dom-textbox", "shadow-dom-textbox-value")]
+    [InlineData("shadow-dom-input-text", "shadow-dom-input-text-value")]
+    public void CanBindShadowDomTextbox_RevertsRejectedValue(string inputId, string valueId)
     {
-        var host = Browser.Exists(By.Id("shadow-dom-textbox"));
+        var host = Browser.Exists(By.Id(inputId));
         var target = host.GetShadowRoot().FindElement(By.CssSelector("input"));
-        var boundValue = Browser.Exists(By.Id("shadow-dom-textbox-value"));
+        var boundValue = Browser.Exists(By.Id(valueId));
         Browser.Equal("abc", () => target.GetDomProperty("value"));
 
         target.SendKeys(Keys.End + "d");

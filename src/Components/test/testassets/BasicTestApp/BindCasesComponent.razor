@@ -32,10 +32,20 @@
     <span id="shadow-dom-textbox-value">@ShadowDomValue</span>
 </p>
 <p>
+    InputText with a shadow input:
+    <ShadowDomInputText id="shadow-dom-input-text" @bind-Value="ShadowDomValue" />
+    <span id="shadow-dom-input-text-value">@ShadowDomValue</span>
+</p>
+<p>
     Trim the public value:
     <shadow-dom-input id="shadow-dom-trimmed-textbox" trim @bind-value="ShadowDomTrimmedValue" @bind-value:event="oninput"></shadow-dom-input>
     <span id="shadow-dom-trimmed-textbox-value">@ShadowDomTrimmedValue</span>
     <span id="shadow-dom-trimmed-textbox-input-count">@shadowDomTrimmedInputCount</span>
+</p>
+<p>
+    Keyboard handler with an unreadable public value:
+    <shadow-dom-input-with-throwing-value id="shadow-dom-keyboard" @onkeydown="() => shadowDomKeyDownCount++"></shadow-dom-input-with-throwing-value>
+    <span id="shadow-dom-keydown-count">@shadowDomKeyDownCount</span>
 </p>
 
 <h2>Numeric Textboxes</h2>
@@ -489,6 +499,7 @@
     private string _shadowDomValue = "abc";
     private string _shadowDomTrimmedValue = "abc";
     private int shadowDomTrimmedInputCount;
+    private int shadowDomKeyDownCount;
 
     private string ShadowDomValue
     {

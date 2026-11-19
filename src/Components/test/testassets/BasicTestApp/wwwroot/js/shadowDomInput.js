@@ -28,3 +28,9 @@ window.customElements.define('shadow-dom-input', class extends HTMLElement {
         }
     }
 });
+
+window.customElements.define('shadow-dom-input-with-throwing-value', class extends customElements.get('shadow-dom-input') {
+    get value() {
+        throw new Error('The value getter must not be read for keyboard events.');
+    }
+});

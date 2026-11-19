@@ -227,7 +227,7 @@ export class EventDelegator {
           dispatchEvent(this.browserRendererId, {
             eventHandlerId: handlerInfo.eventHandlerId,
             eventName: eventName,
-            eventFieldInfo: EventFieldInfo.fromEvent(handlerInfo.renderingComponentId, browserEvent),
+            eventFieldInfo: EventFieldInfo.fromEvent(handlerInfo.renderingComponentId, browserEvent, eventArgs),
           }, eventArgs);
         }
 

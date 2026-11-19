@@ -30,6 +30,19 @@ public class EventTest : ServerTestBase<ToggleExecutionModeServerFixture<Program
     }
 
     [Fact]
+    public void KeyboardEvent_ShadowDomDoesNotReadHostValue()
+    {
+        Browser.MountTestComponent<BindCasesComponent>();
+
+        var host = Browser.Exists(By.Id("shadow-dom-keyboard"));
+        var target = host.GetShadowRoot().FindElement(By.CssSelector("input"));
+        target.SendKeys("a");
+
+        Browser.Equal("1", () => Browser.FindElement(By.Id("shadow-dom-keydown-count")).Text);
+        Assert.Equal("a", target.GetDomProperty("value"));
+    }
+
+    [Fact]
     public void FocusEvents_CanTrigger()
     {
         Browser.MountTestComponent<FocusEventComponent>();
