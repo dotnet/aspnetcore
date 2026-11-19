@@ -877,9 +877,8 @@ public sealed class Virtualize<TItem> : ComponentBase, IVirtualizeJsCallbacks, I
         }
     }
 
-    private float GetEffectiveItemSizeForStaleSpacer()
+    private float GetEffectiveItemSize(float effectiveItemSize)
     {
-        var effectiveItemSize = _lastRenderedItemSize;
         if (effectiveItemSize <= 0 || float.IsNaN(effectiveItemSize) || float.IsInfinity(effectiveItemSize))
         {
             effectiveItemSize = _itemSize > 0 ? _itemSize : ItemSize;
@@ -929,14 +928,15 @@ public sealed class Virtualize<TItem> : ComponentBase, IVirtualizeJsCallbacks, I
     {
         var hadNewMeasurements = AccumulateMeasurement(spacerSeparation);
         RecalibrateItemSize(spacerSeparation);
-        var effectiveItemSize = GetEffectiveItemSizeForStaleSpacer();
+        var spacerItemSize = GetEffectiveItemSize(_lastRenderedItemSize);
+        var effectiveItemSize = GetEffectiveItemSize(GetItemHeight());
 
         // This AppContext data was added as a stopgap for .NET 8 and earlier, since it was added in a patch
         // where we couldn't add new public API. For backcompat we still support the AppContext setting, but
         // new applications should use the much more convenient MaxItemCount parameter.
         var maxItemCount = GetMaximumItemCapacity();
 
-        itemsInSpacer = Math.Max(0, (int)Math.Floor(spacerSize / effectiveItemSize) - OverscanCount);
+        itemsInSpacer = Math.Max(0, (int)Math.Floor(spacerSize / spacerItemSize) - OverscanCount);
         visibleItemCapacity = (int)Math.Ceiling(containerSize / effectiveItemSize) + 2 * OverscanCount;
         unusedItemCapacity = Math.Max(0, visibleItemCapacity - maxItemCount);
         visibleItemCapacity -= unusedItemCapacity;

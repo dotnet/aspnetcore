@@ -136,6 +136,25 @@ public class VirtualizeTest
         Assert.True(virtualize._measuredItemCount > 0);
     }
 
+    [Theory]
+    [InlineData(25f, 50)]
+    [InlineData(100f, 35)]
+    public async Task Virtualize_Recalibration_UsesMeasuredViewportCapacity(float measuredItemSize, int expectedItemCount)
+    {
+        var (virtualize, renderer) = await CreateRenderedVirtualize(
+            itemSize: 50f, totalItems: 1000, childContent: SimpleItemTemplate);
+        var callbacks = (IVirtualizeJsCallbacks)virtualize;
+        await renderer.Dispatcher.InvokeAsync(() =>
+            callbacks.OnAfterSpacerVisible(0f, 0f, 500f, SpacerVisibilityReason.ViewportFill));
+        Assert.Equal(40, virtualize._lastRenderedItemCount);
+
+        await renderer.Dispatcher.InvokeAsync(() =>
+            callbacks.OnBeforeSpacerVisible(0f, 40 * measuredItemSize, 500f, SpacerVisibilityReason.ViewportFill));
+
+        Assert.Equal(expectedItemCount, virtualize._lastRenderedItemCount + virtualize._lastRenderedPlaceholderCount);
+        Assert.Equal(0, virtualize._itemsBefore);
+    }
+
     [Fact]
     public async Task InitialIndex_MeasurementDoesNotChangeSpacerUntilPositioningCompletes()
     {
