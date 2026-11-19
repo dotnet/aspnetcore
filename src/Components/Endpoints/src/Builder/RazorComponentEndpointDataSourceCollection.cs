@@ -126,7 +126,9 @@ internal sealed class RazorComponentEndpointDataSourceCollection : EndpointDataS
                 left.Policy == right.Policy &&
                 left.Roles == right.Roles &&
                 left.AuthenticationSchemes == right.AuthenticationSchemes,
-            (IRouteDiagnosticsMetadata left, IRouteDiagnosticsMetadata right) => left.Route == right.Route,
+            (IRouteDiagnosticsMetadata left, IRouteDiagnosticsMetadata right)
+                when left.GetType() == right.GetType() && left.GetType().Assembly == typeof(RouteEndpoint).Assembly =>
+                left.Route == right.Route,
             (ResourceAssetCollection left, ResourceAssetCollection right) => AreAssetsEquivalent(left, right),
             (ImportMapDefinition left, ImportMapDefinition right) => left.ToJson() == right.ToJson(),
             (ResourcePreloadCollection left, ResourcePreloadCollection right)
@@ -150,6 +152,7 @@ internal sealed class RazorComponentEndpointDataSourceCollection : EndpointDataS
             first.PathSegments.Count != second.PathSegments.Count ||
             !AreValuesEquivalent(first.Defaults, second.Defaults) ||
             !AreValuesEquivalent(first.RequiredValues, second.RequiredValues) ||
+            !AreParameterPolicyMapsEquivalent(first.ParameterPolicies, second.ParameterPolicies) ||
             !AreParameterPartsEquivalent(first.Parameters, second.Parameters))
         {
             return false;
@@ -225,6 +228,27 @@ internal sealed class RazorComponentEndpointDataSourceCollection : EndpointDataS
         {
             if (first[i].Content != second[i].Content ||
                 !ReferenceEquals(first[i].ParameterPolicy, second[i].ParameterPolicy))
+            {
+                return false;
+            }
+        }
+
+        return true;
+    }
+
+    private static bool AreParameterPolicyMapsEquivalent(
+        IReadOnlyDictionary<string, IReadOnlyList<RoutePatternParameterPolicyReference>> first,
+        IReadOnlyDictionary<string, IReadOnlyList<RoutePatternParameterPolicyReference>> second)
+    {
+        if (first.Count != second.Count)
+        {
+            return false;
+        }
+
+        foreach (var (key, policies) in first)
+        {
+            if (!second.TryGetValue(key, out var secondPolicies) ||
+                !AreParameterPoliciesEquivalent(policies, secondPolicies))
             {
                 return false;
             }

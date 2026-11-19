@@ -125,6 +125,60 @@ public class RazorComponentsEndpointRouteBuilderExtensionsTest
         await pipeline(customHostContext);
 
         Assert.Equal(StatusCodes.Status200OK, customHostContext.Response.StatusCode);
+
+        foreach (var reverse in new[] { false, true })
+        {
+            var diagnosticsApplication = new ApplicationBuilder(services);
+            diagnosticsApplication.UseRouting();
+            diagnosticsApplication.UseEndpoints(endpoints =>
+            {
+                if (reverse)
+                {
+                    endpoints.MapRazorComponents<SecondApp>()
+                        .WithMetadata(new CustomDiagnosticsMetadata(BrowserToolsHotReloadSettings.Path, suppressMatching: false));
+                    endpoints.MapRazorComponents<FirstApp>()
+                        .WithMetadata(new CustomDiagnosticsMetadata(BrowserToolsHotReloadSettings.Path, suppressMatching: true));
+                }
+                else
+                {
+                    endpoints.MapRazorComponents<FirstApp>()
+                        .WithMetadata(new CustomDiagnosticsMetadata(BrowserToolsHotReloadSettings.Path, suppressMatching: true));
+                    endpoints.MapRazorComponents<SecondApp>()
+                        .WithMetadata(new CustomDiagnosticsMetadata(BrowserToolsHotReloadSettings.Path, suppressMatching: false));
+                }
+            });
+            var diagnosticsPipeline = diagnosticsApplication.Build();
+            var diagnosticsContext = CreateHttpContext(services, BrowserToolsHotReloadSettings.Path, "localhost");
+
+            await diagnosticsPipeline(diagnosticsContext);
+
+            Assert.Equal(StatusCodes.Status200OK, diagnosticsContext.Response.StatusCode);
+        }
+
+        foreach (var reverse in new[] { false, true })
+        {
+            var policyApplication = new ApplicationBuilder(services);
+            policyApplication.UseRouting();
+            policyApplication.UseEndpoints(endpoints =>
+            {
+                if (reverse)
+                {
+                    endpoints.MapRazorComponents<SecondApp>().Add(endpoint => ConfigureRoutePolicy(endpoint, constrained: false));
+                    endpoints.MapRazorComponents<FirstApp>().Add(endpoint => ConfigureRoutePolicy(endpoint, constrained: true));
+                }
+                else
+                {
+                    endpoints.MapRazorComponents<FirstApp>().Add(endpoint => ConfigureRoutePolicy(endpoint, constrained: true));
+                    endpoints.MapRazorComponents<SecondApp>().Add(endpoint => ConfigureRoutePolicy(endpoint, constrained: false));
+                }
+            });
+            var policyPipeline = policyApplication.Build();
+            var policyContext = CreateHttpContext(services, "/_framework/opaque-redirect", "localhost");
+
+            await policyPipeline(policyContext);
+
+            Assert.Equal(StatusCodes.Status400BadRequest, policyContext.Response.StatusCode);
+        }
     }
 
     private static void RewriteFrameworkRoute(EndpointBuilder endpointBuilder)
@@ -133,6 +187,18 @@ public class RazorComponentsEndpointRouteBuilderExtensionsTest
             endpointBuilder.Metadata.OfType<BlazorWebEndpointMetadata>().SingleOrDefault() is { } metadata)
         {
             routeEndpointBuilder.RoutePattern = RoutePatternFactory.Parse("/custom" + metadata.RoutePattern.RawText);
+        }
+    }
+
+    private static void ConfigureRoutePolicy(EndpointBuilder endpointBuilder, bool constrained)
+    {
+        if (endpointBuilder is RouteEndpointBuilder routeEndpointBuilder &&
+            routeEndpointBuilder.RoutePattern.RawText == "/_framework/opaque-redirect")
+        {
+            routeEndpointBuilder.RoutePattern = RoutePatternFactory.Parse(
+                routeEndpointBuilder.RoutePattern.RawText,
+                new RouteValueDictionary { ["kind"] = "abc" },
+                constrained ? new RouteValueDictionary { ["kind"] = "int" } : null);
         }
     }
 
@@ -200,6 +266,14 @@ public class RazorComponentsEndpointRouteBuilderExtensionsTest
     private sealed class CustomHostMetadata(string[] hosts, bool suppressMatching) : IHostMetadata, ISuppressMatchingMetadata
     {
         public IReadOnlyList<string> Hosts { get; } = hosts;
+
+        public bool SuppressMatching { get; } = suppressMatching;
+    }
+
+    private sealed class CustomDiagnosticsMetadata(string route, bool suppressMatching) :
+        IRouteDiagnosticsMetadata, ISuppressMatchingMetadata
+    {
+        public string Route { get; } = route;
 
         public bool SuppressMatching { get; } = suppressMatching;
     }
