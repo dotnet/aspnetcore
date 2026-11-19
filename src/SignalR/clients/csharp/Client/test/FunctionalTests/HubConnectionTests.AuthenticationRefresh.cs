@@ -121,7 +121,6 @@ public partial class HubConnectionTests
 
     [Theory]
     [MemberData(nameof(TransportTypes))]
-    [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/68019")]
     public async Task RefreshingAuthAddingClaimAllowsAuthorizedMethod(HttpTransportType transportType)
     {
         await using (var server = await StartServer<Startup>())
