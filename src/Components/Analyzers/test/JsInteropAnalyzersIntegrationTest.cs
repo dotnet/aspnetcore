@@ -24,10 +24,15 @@ namespace Microsoft.AspNetCore.Components
 
     public interface IComponent { }
 
+    // Mirrors the shipping ComponentBase lifecycle contract so that test overrides compile.
     public abstract class ComponentBase : IComponent
     {
-        protected RendererInfo RendererInfo = new();
-        protected virtual void OnAfterRender(bool firstRender) {}
+        protected RendererInfo RendererInfo => new();
+        protected virtual void OnInitialized() { }
+        protected virtual Task OnInitializedAsync() => Task.CompletedTask;
+        protected virtual void OnParametersSet() { }
+        protected virtual Task OnParametersSetAsync() => Task.CompletedTask;
+        protected virtual void OnAfterRender(bool firstRender) { }
         protected virtual Task OnAfterRenderAsync(bool firstRender) => Task.CompletedTask;
     }
 

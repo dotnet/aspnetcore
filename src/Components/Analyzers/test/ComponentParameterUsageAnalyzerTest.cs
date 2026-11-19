@@ -192,7 +192,7 @@ public class ComponentParameterUsageAnalyzerTest : DiagnosticVerifier
         {{
             void Method()
             {{
-                System.IO.Console.WriteLine(new TestComponent().TestProperty);
+                System.Console.WriteLine(new TestComponent().TestProperty);
             }}
         }}
     }}" + ComponentTestSource;
@@ -339,7 +339,7 @@ public class ComponentParameterUsageAnalyzerTest : DiagnosticVerifier
         using {typeof(ParameterAttribute).Namespace};
         class OtherComponent : IComponent
         {{
-            private SomethingElse _testNonComponent;
+            private NotAComponent _testNonComponent;
             void Render()
             {{
                 _testNonComponent = new NotAComponent();

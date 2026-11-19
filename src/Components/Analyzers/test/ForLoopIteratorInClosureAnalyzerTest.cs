@@ -93,6 +93,7 @@ namespace ConsoleApplication1
 
         public void HandleClick() { }
         public void SelectItem(int index) { }
+        public void SelectItem(string item) { }
         public void UpdateHeading(Microsoft.AspNetCore.Components.Web.MouseEventArgs e, int index) { }
     }
 
@@ -225,7 +226,7 @@ namespace ConsoleApplication1
     {
         protected override void BuildRenderTree(Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder __builder)
         {
-            for (var i = 0, j = 0, step = 1; i < stringArray.Length; i += step, j++)
+            for (int i = 0, j = 0, step = 1; i < stringArray.Length; i += step, j++)
             {
                 //  <button @onclick=""@(() => SelectItem(i))"">Item @i</button>
                 __builder.OpenElement(14, ""button"");
@@ -813,6 +814,8 @@ namespace ConsoleApplication1
         var test = @"
 namespace ConsoleApplication1
 {
+    using System.Linq;
+
     partial class TestComponent : Microsoft.AspNetCore.Components.ComponentBase
     {
         protected override void BuildRenderTree(Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder __builder)
@@ -1050,18 +1053,19 @@ namespace ConsoleApplication1
                 }
             }
 
+            {
+                var i = 10;
+                //  <button @onclick=""@(() => SelectItem(i))"">Item @i</button>
+                __builder.OpenElement(14, ""button"");
+                __builder.AddAttribute(15, ""onclick"", Microsoft.AspNetCore.Components.EventCallback.Factory.Create<Microsoft.AspNetCore.Components.Web.MouseEventArgs>(this,
+                    () => SelectItem(i)
 
-            var i = 10;
-            //  <button @onclick=""@(() => SelectItem(i))"">Item @i</button>
-            __builder.OpenElement(14, ""button"");
-            __builder.AddAttribute(15, ""onclick"", Microsoft.AspNetCore.Components.EventCallback.Factory.Create<Microsoft.AspNetCore.Components.Web.MouseEventArgs>(this, 
-                () => SelectItem(i)
-
-            ));
-            __builder.AddContent(16, ""Item "");
-                __builder.AddContent(17, i
-            );
-            __builder.CloseElement();
+                ));
+                __builder.AddContent(16, ""Item "");
+                    __builder.AddContent(17, i
+                );
+                __builder.CloseElement();
+            }
         }
     }
 }" + BaseComponentDeclarations;
