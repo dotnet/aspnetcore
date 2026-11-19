@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 import { ComponentDescriptor, isMetadataComment } from '../Services/ComponentDescriptorDiscovery';
+import { deferHeadStylesheetRemoval, recordInsertedHeadStylesheet } from './HeadStylesheetTransition';
 
 /*
   A LogicalElement plays the same role as an Element instance from the point of view of the
@@ -207,6 +208,7 @@ export function insertLogicalChild(child: Node, parent: LogicalElement, childInd
   }
 
   childAsLogicalElement[logicalParentPropname] = parent;
+  recordInsertedHeadStylesheet(child);
   if (!(logicalChildrenPropname in childAsLogicalElement)) {
     childAsLogicalElement[logicalChildrenPropname] = [];
   }
@@ -228,7 +230,9 @@ export function removeLogicalChild(parent: LogicalElement, childIndex: number): 
 
   // Finally, remove the node itself
   const domNodeToRemove = childToRemove as any as Node;
-  domNodeToRemove.parentNode!.removeChild(domNodeToRemove);
+  if (!deferHeadStylesheetRemoval(domNodeToRemove)) {
+    domNodeToRemove.parentNode!.removeChild(domNodeToRemove);
+  }
 }
 
 export function getLogicalParent(element: LogicalElement): LogicalElement | null {
