@@ -11,6 +11,7 @@ using Microsoft.AspNetCore.E2ETesting;
 using OpenQA.Selenium;
 using TestServer;
 using Xunit.Abstractions;
+using Microsoft.AspNetCore.InternalTesting;
 
 namespace Microsoft.AspNetCore.Components.E2ETests.ServerRenderingTests;
 
@@ -27,6 +28,7 @@ public class AddValidationIntegrationTest : ServerTestBase<BasicTestAppServerSit
     }
 
     [Fact]
+    [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/68223")]
     public void FormWithNestedValidation_Works()
     {
         Browser.Exists(By.Id("submit-form")).Click();
