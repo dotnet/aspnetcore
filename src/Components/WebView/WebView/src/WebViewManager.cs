@@ -153,7 +153,7 @@ public abstract class WebViewManager : IAsyncDisposable
 
         _ = _dispatcher.InvokeAsync(async () =>
         {
-            if (_disposed)
+            if (_disposed && _currentPageContext is null)
             {
                 return;
             }
@@ -163,7 +163,7 @@ public abstract class WebViewManager : IAsyncDisposable
             // renderer exceptions should be fatal.
             try
             {
-                await _ipcReceiver.OnMessageReceivedAsync(_currentPageContext, message);
+                await _ipcReceiver.OnMessageReceivedAsync(_currentPageContext, message, isDisposing: _disposed);
             }
             catch (Exception ex)
             {

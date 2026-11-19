@@ -339,6 +339,86 @@ public class WebViewManagerTests
     }
 
     [Fact]
+    public async Task DisposingWebViewManager_CompletesPendingJSInvocationBeforeDisposingScope()
+    {
+        await using var services = RegisterTestServices().AddTestBlazorWebView().BuildServiceProvider();
+        await using var webViewManager = new TestWebViewManager(services, new TestFileProvider());
+        var componentCaptured = new TaskCompletionSource<ComponentAwaitingJSInvocationOnDisposal>();
+        await webViewManager.AddRootComponentAsync(
+            typeof(ComponentAwaitingJSInvocationOnDisposal),
+            "#app",
+            ParameterView.FromDictionary(new Dictionary<string, object>
+            {
+                [nameof(ComponentAwaitingJSInvocationOnDisposal.Capture)] =
+                    (Action<ComponentAwaitingJSInvocationOnDisposal>)componentCaptured.SetResult,
+            }));
+        webViewManager.ReceiveAttachPageMessage();
+        var component = await componentCaptured.Task.WaitAsync(TimeSpan.FromSeconds(30));
+        var context = webViewManager.CurrentPageContext;
+        Assert.NotNull(context);
+        var scopedService = Assert.Single(services.GetRequiredService<SingletonService>().Services);
+        await webViewManager.Dispatcher.InvokeAsync(() =>
+        {
+            component.PendingInvocation = context.JSRuntime.InvokeAsync<string>("pendingCall").AsTask();
+        });
+        var invocation = component.PendingInvocation;
+        Assert.True(IpcCommon.TryDeserializeOutgoing(
+            webViewManager.SentIpcMessages.Last(), out var messageType, out var args));
+        Assert.Equal(IpcCommon.OutgoingMessageType.BeginInvokeJS, messageType);
+        var invocationId = args[0].GetInt64();
+        var disposal = webViewManager.DisposeAsync().AsTask();
+
+        try
+        {
+            Assert.True(component.DisposalStarted);
+            Assert.False(disposal.IsCompleted);
+            Assert.False(scopedService.Disposed);
+            webViewManager.ReceiveIpcMessage(
+                IpcCommon.IncomingMessageType.EndInvokeJS,
+                invocationId, true, $"[{invocationId},true,\"completed\"]");
+            await Task.Run(() => webViewManager.Dispatcher.InvokeAsync(() => { }));
+
+            Assert.True(invocation.IsCompletedSuccessfully);
+            await disposal.WaitAsync(TimeSpan.FromSeconds(30));
+            Assert.Equal("completed", component.Result);
+            Assert.True(scopedService.Disposed);
+            Assert.Null(webViewManager.CurrentPageContext);
+        }
+        finally
+        {
+            if (!invocation.IsCompleted)
+            {
+                await webViewManager.Dispatcher.InvokeAsync(() =>
+                    Microsoft.JSInterop.Infrastructure.DotNetDispatcher.EndInvokeJS(
+                        context.JSRuntime, $"[{invocationId},true,\"cleanup\"]"));
+            }
+
+            await disposal.WaitAsync(TimeSpan.FromSeconds(30));
+        }
+    }
+
+    private sealed class ComponentAwaitingJSInvocationOnDisposal : ComponentBase, IAsyncDisposable
+    {
+        [Inject]
+        public ScopedService Service { get; set; }
+
+        [Parameter]
+        public Action<ComponentAwaitingJSInvocationOnDisposal> Capture { get; set; }
+
+        public Task<string> PendingInvocation { get; set; }
+        public bool DisposalStarted { get; private set; }
+        public string Result { get; private set; }
+
+        protected override void OnInitialized() => Capture(this);
+
+        public async ValueTask DisposeAsync()
+        {
+            DisposalStarted = true;
+            Result = await PendingInvocation;
+        }
+    }
+
+    [Fact]
     public async Task ActiveWebViewManager_ProcessesRenderAcknowledgement()
     {
         await using var services = RegisterTestServices()
