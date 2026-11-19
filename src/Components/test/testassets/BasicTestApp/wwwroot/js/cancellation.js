@@ -104,6 +104,38 @@ export function initialize(target) {
             const preAborted = target.invokeMethod("Inspect", aborted.signal);
             document.getElementById("sync-js").textContent = `${live}:${preAborted}`;
         },
+        async overtaken() {
+            if (!await target.invokeMethodAsync("DelayNextInboundActivity", 1000)) {
+                document.getElementById("overtaken-js").textContent = "no inbound delay";
+                return;
+            }
+            // The call is sent at once and held back on the server; the abort message follows and is not held back.
+            const started = this.start("overtaken", "wait");
+            this.abort("overtaken");
+            await started;
+        },
+        async collectedDuringCall(abort) {
+            const id = abort ? "collected" : "dropped";
+            if (!await target.invokeMethodAsync("DelayNextInboundActivity", 1000)) {
+                document.getElementById(`${id}-js`).textContent = "no inbound delay";
+                return;
+            }
+            // Nothing keeps the signal after this, so the test can collect it while the call is held back on the server.
+            let controller = new AbortController();
+            const pending = abort
+                ? target.invokeMethodAsync("Receive", controller.signal, id, "wait")
+                : target.invokeMethodAsync("Inspect", controller.signal);
+            if (abort) {
+                controller.abort();
+            }
+            controller = null;
+            document.getElementById(`${id}-js`).textContent = "pending";
+            try {
+                document.getElementById(`${id}-js`).textContent = String(await pending);
+            } catch (error) {
+                document.getElementById(`${id}-js`).textContent = error.message;
+            }
+        },
         releaseControl() {
             releaseControl();
         }

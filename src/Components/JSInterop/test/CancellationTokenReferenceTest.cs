@@ -12,27 +12,96 @@ public class CancellationTokenReferenceTest
     public void IncomingSignalIdSuppliesTokenInOrdinaryArgumentPosition()
     {
         using var runtime = new ReferenceRuntime();
-        var arguments = DotNetDispatcher.ParseArguments(runtime, "Receive", """[{"__abortSignal":5},"value"]""", [typeof(CancellationToken), typeof(string)]);
+        var arguments = DotNetDispatcher.ParseArguments(runtime, "Receive", """[{"__abortSignal":5,"aborted":false},"value"]""", [typeof(CancellationToken), typeof(string)]);
         var token = Assert.IsType<CancellationToken>(arguments[0]);
         Assert.True(token.CanBeCanceled);
         Assert.False(token.IsCancellationRequested);
         Assert.Equal("value", arguments[1]);
         Assert.Equal(1, AbortSignalSourceCount(runtime));
 
-        SendAbortSignalMessage(runtime, "__AbortSignalAborted", 5);
+        SendAbort(runtime, 5);
         Assert.True(token.IsCancellationRequested);
+        Assert.Equal(1, AbortSignalSourceCount(runtime));
+
+        SendRelease(runtime, 5);
         Assert.Equal(0, AbortSignalSourceCount(runtime));
     }
 
     [Fact]
-    public void AlreadyAbortedSignalSuppliesCanceledTokenWithoutTracking()
+    public void AbortedStateSuppliesCanceledTokenTrackedUntilRelease()
     {
         using var runtime = new ReferenceRuntime();
-        var arguments = DotNetDispatcher.ParseArguments(runtime, "Receive", """[{"__abortSignal":0}]""", [typeof(CancellationToken)]);
+        var arguments = DotNetDispatcher.ParseArguments(runtime, "Receive", """[{"__abortSignal":6,"aborted":true}]""", [typeof(CancellationToken)]);
         var token = Assert.IsType<CancellationToken>(arguments[0]);
         Assert.True(token.CanBeCanceled);
         Assert.True(token.IsCancellationRequested);
+        Assert.Equal(1, AbortSignalSourceCount(runtime));
+
+        SendRelease(runtime, 6);
         Assert.Equal(0, AbortSignalSourceCount(runtime));
+    }
+
+    [Fact]
+    public void AbortedStateCancelsTheTokenAnEarlierCallReceived()
+    {
+        using var runtime = new ReferenceRuntime();
+        var first = ReceiveToken(runtime, """[{"__abortSignal":8,"aborted":false}]""");
+        var second = ReceiveToken(runtime, """[{"__abortSignal":8,"aborted":true}]""");
+        Assert.Equal(first, second);
+        Assert.True(first.IsCancellationRequested);
+    }
+
+    // JS sends "released" only after every call carrying the id has completed and the abort was acknowledged,
+    // so the call and the abort are the only messages that can reach .NET in either order.
+    [Theory]
+    [InlineData("call", "abort")]
+    [InlineData("abort", "call")]
+    public void CallAndAbortInEitherOrderCancelTheTokenAndReleaseRemovesIt(string firstMessage, string secondMessage)
+    {
+        using var runtime = new ReferenceRuntime();
+        CancellationToken? token = null;
+        foreach (var message in new[] { firstMessage, secondMessage })
+        {
+            if (message == "call")
+            {
+                token = ReceiveToken(runtime, """[{"__abortSignal":9,"aborted":false}]""");
+            }
+            else
+            {
+                SendAbort(runtime, 9);
+            }
+        }
+
+        Assert.True(token!.Value.IsCancellationRequested);
+        Assert.Equal(1, AbortSignalSourceCount(runtime));
+        SendRelease(runtime, 9);
+        Assert.Equal(0, AbortSignalSourceCount(runtime));
+    }
+
+    [Fact]
+    public async Task AbortIsAcknowledgedAfterCancellationCallbacksRun()
+    {
+        using var runtime = new ReferenceRuntime();
+        var token = ReceiveToken(runtime, """[{"__abortSignal":10,"aborted":false}]""");
+        var callbackRan = false;
+        using var registration = token.Register(() => callbackRan = true);
+
+        SendAbort(runtime, 10, "abort");
+        Assert.True((await runtime.GetResult("abort")).Success);
+        Assert.True(callbackRan);
+    }
+
+    [Fact]
+    public async Task AbortAcknowledgmentReportsCallbackFailure()
+    {
+        using var runtime = new ReferenceRuntime();
+        var token = ReceiveToken(runtime, """[{"__abortSignal":11,"aborted":false}]""");
+        using var registration = token.Register(() => throw new InvalidOperationException("callback failure"));
+
+        SendAbort(runtime, 11, "abort");
+        var result = await runtime.GetResult("abort");
+        Assert.False(result.Success);
+        Assert.Contains("callback failure", result.Exception!.ToString(), StringComparison.Ordinal);
     }
 
     [Fact]
@@ -42,9 +111,9 @@ public class CancellationTokenReferenceTest
         var target = new Target();
         using var targetReference = DotNetObjectReference.Create(target);
         var targetId = runtime.TrackObjectReference(targetReference);
-        var json = """[{"__abortSignal":7},"retained"]""";
+        var json = """[{"__abortSignal":7,"aborted":false},"retained"]""";
         DotNetDispatcher.BeginInvokeDotNet(runtime, new(null, nameof(Target.Retain), targetId, "call"), json);
-        Assert.True((await runtime.Result.Task).Success);
+        Assert.True((await runtime.GetResult("call")).Success);
         Assert.False(target.Token.IsCancellationRequested);
         Assert.Equal("retained", target.Value);
 
@@ -52,7 +121,7 @@ public class CancellationTokenReferenceTest
         Assert.Equal(target.Token, Assert.IsType<CancellationToken>(second[0]));
         Assert.Equal(1, AbortSignalSourceCount(runtime));
 
-        SendAbortSignalMessage(runtime, "__AbortSignalAborted", 7);
+        SendAbort(runtime, 7);
         Assert.True(target.Token.IsCancellationRequested);
     }
 
@@ -60,25 +129,23 @@ public class CancellationTokenReferenceTest
     public void IndependentSignalsDoNotShareCancellation()
     {
         using var runtime = new ReferenceRuntime();
-        var arguments = DotNetDispatcher.ParseArguments(runtime, "Receive", """[{"__abortSignal":1},{"__abortSignal":2}]""", [typeof(CancellationToken), typeof(CancellationToken)]);
+        var arguments = DotNetDispatcher.ParseArguments(runtime, "Receive", """[{"__abortSignal":1,"aborted":false},{"__abortSignal":2,"aborted":false}]""", [typeof(CancellationToken), typeof(CancellationToken)]);
         var first = Assert.IsType<CancellationToken>(arguments[0]);
         var second = Assert.IsType<CancellationToken>(arguments[1]);
         Assert.NotEqual(first, second);
 
-        SendAbortSignalMessage(runtime, "__AbortSignalAborted", 1);
+        SendAbort(runtime, 1);
         Assert.True(first.IsCancellationRequested);
         Assert.False(second.IsCancellationRequested);
-        Assert.Equal(1, AbortSignalSourceCount(runtime));
     }
 
     [Fact]
     public void ReleasingSignalStopsTrackingWithoutCancelingRetainedToken()
     {
         using var runtime = new ReferenceRuntime();
-        var arguments = DotNetDispatcher.ParseArguments(runtime, "Receive", """[{"__abortSignal":3}]""", [typeof(CancellationToken)]);
-        var token = Assert.IsType<CancellationToken>(arguments[0]);
+        var token = ReceiveToken(runtime, """[{"__abortSignal":3,"aborted":false}]""");
 
-        SendAbortSignalMessage(runtime, "__AbortSignalReleased", 3);
+        SendRelease(runtime, 3);
         Assert.Equal(0, AbortSignalSourceCount(runtime));
         Assert.False(token.IsCancellationRequested);
         var invoked = false;
@@ -86,16 +153,13 @@ public class CancellationTokenReferenceTest
         Assert.False(invoked);
     }
 
-    [Theory]
-    [InlineData("__AbortSignalAborted")]
-    [InlineData("__AbortSignalReleased")]
-    public void MessageForUnknownIdIsIgnored(string methodIdentifier)
+    [Fact]
+    public void ReleaseForUnknownIdIsIgnored()
     {
         using var runtime = new ReferenceRuntime();
-        var arguments = DotNetDispatcher.ParseArguments(runtime, "Receive", """[{"__abortSignal":1}]""", [typeof(CancellationToken)]);
-        var token = Assert.IsType<CancellationToken>(arguments[0]);
+        var token = ReceiveToken(runtime, """[{"__abortSignal":1,"aborted":false}]""");
 
-        SendAbortSignalMessage(runtime, methodIdentifier, 42);
+        SendRelease(runtime, 42);
         Assert.False(token.IsCancellationRequested);
         Assert.Equal(1, AbortSignalSourceCount(runtime));
     }
@@ -104,8 +168,7 @@ public class CancellationTokenReferenceTest
     public void DisposingRuntimeStopsTrackingWithoutCancelingTokens()
     {
         var runtime = new ReferenceRuntime();
-        var arguments = DotNetDispatcher.ParseArguments(runtime, "Receive", """[{"__abortSignal":4}]""", [typeof(CancellationToken)]);
-        var token = Assert.IsType<CancellationToken>(arguments[0]);
+        var token = ReceiveToken(runtime, """[{"__abortSignal":4,"aborted":false}]""");
 
         runtime.Dispose();
         Assert.Equal(0, AbortSignalSourceCount(runtime));
@@ -113,9 +176,13 @@ public class CancellationTokenReferenceTest
     }
 
     [Theory]
-    [InlineData("""[{"__abortSignal":-1}]""")]
-    [InlineData("""[{"__abortSignal":"1"}]""")]
-    [InlineData("""[{"__abortSignal":1,"other":2}]""")]
+    [InlineData("""[{"__abortSignal":0,"aborted":false}]""")]
+    [InlineData("""[{"__abortSignal":-1,"aborted":false}]""")]
+    [InlineData("""[{"__abortSignal":"1","aborted":false}]""")]
+    [InlineData("""[{"__abortSignal":1}]""")]
+    [InlineData("""[{"__abortSignal":1,"aborted":"true"}]""")]
+    [InlineData("""[{"__abortSignal":1,"aborted":false,"other":2}]""")]
+    [InlineData("""[{"aborted":false,"__abortSignal":1}]""")]
     [InlineData("""[true]""")]
     public void InvalidIncomingValueIsRejected(string json)
     {
@@ -260,14 +327,21 @@ public class CancellationTokenReferenceTest
         Assert.Throws<ArgumentException>(() => DotNetDispatcher.ParseArguments(runtime, "Receive", "[]", [typeof(CancellationToken)]));
     }
 
-    private static void SendAbortSignalMessage(JSRuntime runtime, string methodIdentifier, long abortSignalId)
-        => DotNetDispatcher.BeginInvokeDotNet(runtime, new("Microsoft.JSInterop", methodIdentifier, 0, null), $"[{abortSignalId}]");
+    private static CancellationToken ReceiveToken(JSRuntime runtime, string json)
+        => Assert.IsType<CancellationToken>(DotNetDispatcher.ParseArguments(runtime, "Receive", json, [typeof(CancellationToken)])[0]);
+
+    // JS sends the abort as an acknowledged call; a null call id is only for tests that ignore the acknowledgment.
+    private static void SendAbort(JSRuntime runtime, long abortSignalId, string? callId = null)
+        => DotNetDispatcher.BeginInvokeDotNet(runtime, new("Microsoft.JSInterop", "__AbortSignalAborted", 0, callId), $"[{abortSignalId}]");
+
+    private static void SendRelease(JSRuntime runtime, long abortSignalId)
+        => DotNetDispatcher.BeginInvokeDotNet(runtime, new("Microsoft.JSInterop", "__AbortSignalReleased", 0, null), $"[{abortSignalId}]");
 
     private static int AbortSignalSourceCount(JSRuntime runtime)
     {
         var field = typeof(JSRuntime).GetField("_abortSignalSources",
             System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.NonPublic)!;
-        return ((System.Collections.Concurrent.ConcurrentDictionary<long, CancellationTokenSource>)field.GetValue(runtime)!).Count;
+        return ((System.Collections.ICollection)field.GetValue(runtime)!).Count;
     }
 
     private static int AutomaticReferenceCount(JSRuntime runtime)
@@ -332,7 +406,12 @@ public class CancellationTokenReferenceTest
         public bool InitialCancellation { get; private set; }
         public bool ThrowOnDispatch { get; init; }
         public int ReferenceCountAtDispatch { get; private set; }
-        public TaskCompletionSource<DotNetInvocationResult> Result { get; } = new(TaskCreationOptions.RunContinuationsAsynchronously);
+        private readonly System.Collections.Concurrent.ConcurrentDictionary<string, TaskCompletionSource<DotNetInvocationResult>> _results = new();
+
+        public Task<DotNetInvocationResult> GetResult(string callId) => GetResultSource(callId).Task;
+
+        private TaskCompletionSource<DotNetInvocationResult> GetResultSource(string callId)
+            => _results.GetOrAdd(callId, static _ => new(TaskCreationOptions.RunContinuationsAsynchronously));
 
         protected override void BeginInvokeJS(in JSInvocationInfo invocationInfo)
         {
@@ -360,6 +439,6 @@ public class CancellationTokenReferenceTest
         }
 
         protected internal override void EndInvokeDotNet(DotNetInvocationInfo invocationInfo, in DotNetInvocationResult invocationResult)
-            => Result.SetResult(invocationResult);
+            => GetResultSource(invocationInfo.CallId!).SetResult(invocationResult);
     }
 }

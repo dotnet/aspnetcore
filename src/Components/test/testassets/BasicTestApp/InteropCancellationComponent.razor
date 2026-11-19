@@ -1,6 +1,7 @@
 @using Microsoft.JSInterop
 @implements IAsyncDisposable
 @inject IJSRuntime JS
+@inject IServiceProvider Services
 
 <button id="start-first" onclick="cancellationTests.start('first', 'wait')">Pass first signal</button>
 <button id="abort-first" onclick="cancellationTests.abort('first')">Abort first signal</button>
@@ -26,6 +27,10 @@
 <button id="start-wrapped" onclick="cancellationTests.wrapped()">Generic signal reference</button>
 <button id="start-sync" onclick="cancellationTests.sync()">Synchronous calls</button>
 <button id="abort-sync" onclick="cancellationTests.abort('sync')">Abort synchronous signal</button>
+<button id="drop-sync" onclick="cancellationTests.drop('sync')">Drop synchronous signal</button>
+<button id="start-overtaken" onclick="cancellationTests.overtaken()">Abort before the delayed call arrives</button>
+<button id="start-collected" onclick="cancellationTests.collectedDuringCall(true)">Abort and drop during the delayed call</button>
+<button id="start-dropped" onclick="cancellationTests.collectedDuringCall(false)">Drop during the delayed call</button>
 <p id="static-js"></p>
 <p id="snapshot-js"></p>
 <p id="concurrent-js"></p>
@@ -34,7 +39,7 @@
 <button id="cancel-control" @onclick="() => controlSource.Cancel()">Cancel managed wait</button>
 <button id="release-control" onclick="cancellationTests.releaseControl()">Complete JS function</button>
 <p id="cancellation-ready">@(module is null ? "loading" : "ready")</p>
-@foreach (var id in new[] { "first", "second", "ignored", "preaborted", "retained", "failure", "outgoing", "control", "sync" })
+@foreach (var id in new[] { "first", "second", "ignored", "preaborted", "retained", "failure", "outgoing", "control", "sync", "overtaken", "collected", "dropped" })
 {
     <p id="@($"{id}-managed")">@(states.GetValueOrDefault(id, "not started"))</p>
     <p id="@($"{id}-js")"></p>
@@ -122,6 +127,14 @@
     public bool Inspect(CancellationToken cancellationToken) => cancellationToken.IsCancellationRequested;
 
     [JSInvokable]
+    public bool DelayNextInboundActivity(int milliseconds)
+    {
+        var delay = Services.GetService<InboundActivityDelay>();
+        delay?.DelayNext(milliseconds);
+        return delay is not null;
+    }
+
+    [JSInvokable]
     public string ReceiveSync(CancellationToken cancellationToken)
     {
         registrations.Add(cancellationToken.Register(() => _ = InvokeAsync(() =>
@@ -150,7 +163,7 @@
         var outgoing = typeof(JSRuntime).GetField("_automaticCancellationReferences", flags);
         var incoming = typeof(JSRuntime).GetField("_abortSignalSources", flags);
         return ((System.Collections.Concurrent.ConcurrentDictionary<long, Action>)outgoing.GetValue(JS)).Count
-            + ((System.Collections.Concurrent.ConcurrentDictionary<long, CancellationTokenSource>)incoming.GetValue(JS)).Count;
+            + ((System.Collections.ICollection)incoming.GetValue(JS)).Count;
     }
 
     [JSInvokable]

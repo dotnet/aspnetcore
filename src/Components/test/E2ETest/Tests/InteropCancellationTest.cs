@@ -136,6 +136,7 @@ public class InteropCancellationTest(
     {
         Click(button);
         Equal("static-js", expected);
+        CollectGarbage();
         Browser.Equal(0, ProjectionCount);
     }
 
@@ -144,6 +145,7 @@ public class InteropCancellationTest(
     {
         Click("start-snapshot");
         Equal("snapshot-js", "True:1,2,3:snapshot:12:1:1");
+        CollectGarbage();
         Browser.Equal(0, ProjectionCount);
     }
 
@@ -152,6 +154,7 @@ public class InteropCancellationTest(
     {
         Click("start-concurrent");
         Equal("concurrent-js", "false:false:true:1");
+        CollectGarbage();
         Browser.Equal(0, ProjectionCount);
     }
 
@@ -186,9 +189,55 @@ public class InteropCancellationTest(
 
         Click("start-sync");
         Equal("sync-js", "True:False:true");
-        Browser.Equal(1, ProjectionCount);
         Click("abort-sync");
         Equal("sync-managed", "canceled after return");
+        Click("drop-sync");
+        CollectGarbage();
+        Browser.Equal(0, ProjectionCount);
+    }
+
+    [Fact]
+    public void AbortThatOvertakesTheCallStillCancelsTokenInServer()
+    {
+        // Only Interactive Server runs CircuitHandlers, which can reorder inbound messages.
+        if (_serverFixture.ExecutionMode != ExecutionMode.Server)
+        {
+            return;
+        }
+
+        Click("start-overtaken");
+        Equal("overtaken-managed", "entered with canceled token");
+        Equal("overtaken-js", "pre-canceled result");
+    }
+
+    [Fact]
+    public void SignalAbortedAndCollectedWhileItsCallIsDelayedStillCancelsAndIsReleased()
+    {
+        if (_serverFixture.ExecutionMode != ExecutionMode.Server)
+        {
+            return;
+        }
+
+        Click("start-collected");
+        CollectGarbage();
+        Equal("collected-managed", "entered with canceled token");
+        Equal("collected-js", "pre-canceled result");
+        CollectGarbage();
+        Browser.Equal(0, ProjectionCount);
+    }
+
+    [Fact]
+    public void SignalCollectedWhileItsCallIsDelayedIsReleasedAfterTheCall()
+    {
+        if (_serverFixture.ExecutionMode != ExecutionMode.Server)
+        {
+            return;
+        }
+
+        Click("start-dropped");
+        CollectGarbage();
+        Equal("dropped-js", "false");
+        CollectGarbage();
         Browser.Equal(0, ProjectionCount);
     }
 
