@@ -568,10 +568,13 @@ class CallDispatcher implements ICallDispatcher {
   }
 
   endInvokeDotNetFromJS(asyncCallId: string, success: boolean, resultJsonOrExceptionMessage: string): void {
+    const callId = parseInt(asyncCallId, 10);
+    // The reply proves .NET has read the call's ids, even if reviving the result below throws.
+    this.endAbortSignalHolds(callId);
     const resultOrError = success
       ? parseJsonWithRevivers(this, resultJsonOrExceptionMessage)
       : new Error(resultJsonOrExceptionMessage);
-    this.completePendingCall(parseInt(asyncCallId, 10), success, resultOrError);
+    this.completePendingCall(callId, success, resultOrError);
   }
 
   invokeDotNetStaticMethod<T>(assemblyName: string, methodIdentifier: string, ...args: any[]): T | null {
@@ -665,17 +668,26 @@ class CallDispatcher implements ICallDispatcher {
     return result;
   }
 
+  private endAbortSignalHolds(asyncCallId: number) {
+    const asyncCall = this._pendingAsyncCalls[asyncCallId];
+    const abortSignals = asyncCall?.abortSignals;
+    if (abortSignals) {
+      asyncCall.abortSignals = undefined;
+      abortSignals.forEach(observed => {
+        observed.pendingCalls--;
+        this.releaseAbortSignalWhenUnused(observed);
+      });
+    }
+  }
+
   private completePendingCall(asyncCallId: number, success: boolean, resultOrError: any) {
     if (!this._pendingAsyncCalls.hasOwnProperty(asyncCallId)) {
       throw new Error(`There is no pending async call with ID ${asyncCallId}.`);
     }
 
+    this.endAbortSignalHolds(asyncCallId);
     const asyncCall = this._pendingAsyncCalls[asyncCallId];
     delete this._pendingAsyncCalls[asyncCallId];
-    asyncCall.abortSignals?.forEach(observed => {
-      observed.pendingCalls--;
-      this.releaseAbortSignalWhenUnused(observed);
-    });
     if (success) {
       asyncCall.resolve(resultOrError);
     } else {
@@ -932,14 +944,15 @@ function createJSCallResult(returnValue: any, resultType: JSCallResultType) {
 let nextByteArrayIndex = 0;
 function stringifyArgs(callDispatcher: CallDispatcher, args: any[] | null, abortSignals?: Set<ObservedAbortSignal>) {
   nextByteArrayIndex = 0;
-  currentCallDispatcher = callDispatcher;
+  // Restored, not cleared, so a nested serialization from an app getter or toJSON leaves the outer one intact.
+  const previousCallDispatcher = currentCallDispatcher;
   const previousAbortSignals = currentAbortSignals;
+  currentCallDispatcher = callDispatcher;
   currentAbortSignals = abortSignals;
   try {
-    const result = JSON.stringify(args, argReplacer);
-    currentCallDispatcher = undefined;
-    return result;
+    return JSON.stringify(args, argReplacer);
   } finally {
+    currentCallDispatcher = previousCallDispatcher;
     currentAbortSignals = previousAbortSignals;
   }
 }
