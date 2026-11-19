@@ -14,8 +14,14 @@ internal static class UrlNormalizer
 
     public static bool HasAbsoluteSchemeAndAuthority(string url, out int schemeDelimiterIndex)
     {
+        if (string.IsNullOrEmpty(url) || !char.IsAsciiLetter(url[0]))
+        {
+            schemeDelimiterIndex = -1;
+            return false;
+        }
+
         schemeDelimiterIndex = url.IndexOf(Uri.SchemeDelimiter, StringComparison.Ordinal);
-        if (schemeDelimiterIndex <= 0 || !IsValidSchemeName(url.AsSpan(0, schemeDelimiterIndex)))
+        if (schemeDelimiterIndex <= 0 || url.AsSpan(1, schemeDelimiterIndex - 1).ContainsAnyExcept(s_validSchemeChars))
         {
             return false;
         }
@@ -25,13 +31,6 @@ internal static class UrlNormalizer
         var authority = delimiterIndex < 0 ? remainder : remainder.Slice(0, delimiterIndex);
 
         return !authority.IsEmpty;
-    }
-
-    private static bool IsValidSchemeName(ReadOnlySpan<char> scheme)
-    {
-        return !scheme.IsEmpty
-            && char.IsAsciiLetter(scheme[0])
-            && !scheme.Slice(1).ContainsAnyExcept(s_validSchemeChars);
     }
 
     // Collapses a leading run of '/' and '\' to a single '/' so a redirect/rewrite target cannot resolve as a
