@@ -976,10 +976,12 @@ public sealed class Virtualize<TItem> : ComponentBase, IVirtualizeJsCallbacks, I
             // re-triggers with refined measurements. This one-shot flag skips the single
             // redundant provider call that follows. At end-of-list, don't skip: refined
             // capacity may reveal that more items are needed to fill the viewport.
+            // A resized viewport may also require more items than the loaded slice contains.
             var skipRefresh = _skipNextDistributionRefresh
                 && _loadedItems != null
                 && _loadedItemsStartIndex == _itemsBefore
-                && _itemsBefore + visibleItemCapacity < _itemCount;
+                && _itemsBefore + visibleItemCapacity < _itemCount
+                && _loadedItems.Count() >= visibleItemCapacity;
             _skipNextDistributionRefresh = false;
 
             if (skipRefresh)

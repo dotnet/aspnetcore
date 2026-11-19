@@ -8,6 +8,7 @@ using Microsoft.AspNetCore.Components.E2ETest.Infrastructure;
 using Microsoft.AspNetCore.Components.E2ETest.Infrastructure.ServerFixtures;
 using Microsoft.AspNetCore.E2ETesting;
 using OpenQA.Selenium;
+using OpenQA.Selenium.Chrome;
 using OpenQA.Selenium.Support.Extensions;
 using Xunit.Abstractions;
 
@@ -163,6 +164,55 @@ public class QuickGridTest : ServerTestBase<ToggleExecutionModeServerFixture<Pro
     {
         app = Browser.MountTestComponent<QuickGridVirtualizeComponent>();
         Browser.Equal("1", () => app.FindElement(By.Id("items-provider-call-count")).Text);
+    }
+
+    [Fact]
+    public void VirtualizedGridLoadsAdditionalRowsAfterTextResize()
+    {
+        var chromeDriver = (ChromeDriver)Browser;
+        var js = (IJavaScriptExecutor)Browser;
+        var originalFontSize = js.ExecuteScript("return document.documentElement.style.fontSize;");
+        chromeDriver.ExecuteCdpCommand("Emulation.setDeviceMetricsOverride", new Dictionary<string, object>
+        {
+            ["width"] = 640,
+            ["height"] = 400,
+            ["deviceScaleFactor"] = 2,
+            ["mobile"] = false,
+        });
+
+        try
+        {
+            js.ExecuteScript("document.documentElement.style.fontSize = '16px';");
+            app = Browser.MountTestComponent<QuickGridTextResizeComponent>();
+            var grid = app.FindElement(By.Id("text-resize-grid"));
+            var dataRows = By.CssSelector("tbody tr[aria-rowindex]:not([data-blazor-virtualize-reserved-height])");
+            var placeholders = By.CssSelector(".grid-cell-placeholder");
+
+            Browser.True(() => grid.FindElements(dataRows).Count > 0);
+            Browser.Equal(0, () => grid.FindElements(placeholders).Count);
+            Browser.Equal("1", () => app.FindElement(By.Id("text-resize-request-count")).Text);
+            var initialRowCount = grid.FindElements(dataRows).Count;
+
+            js.ExecuteScript("document.documentElement.style.fontSize = '32px';");
+
+            Browser.Equal("2", () => app.FindElement(By.Id("text-resize-request-count")).Text);
+            Browser.True(() => grid.FindElements(placeholders).Count > 0);
+
+            var pendingRows = grid.FindElements(By.CssSelector("tbody tr[aria-rowindex]"));
+            Assert.Equal(
+                Enumerable.Range(2, pendingRows.Count).Select(index => index.ToString(System.Globalization.CultureInfo.InvariantCulture)),
+                pendingRows.Select(row => row.GetDomAttribute("aria-rowindex")));
+
+            app.FindElement(By.Id("text-resize-finish-loading")).Click();
+
+            Browser.True(() => grid.FindElements(dataRows).Count > initialRowCount);
+            Browser.Equal(0, () => grid.FindElements(placeholders).Count);
+        }
+        finally
+        {
+            js.ExecuteScript("document.documentElement.style.fontSize = arguments[0];", originalFontSize);
+            chromeDriver.ExecuteCdpCommand("Emulation.clearDeviceMetricsOverride", new Dictionary<string, object>());
+        }
     }
 
     [Fact]
