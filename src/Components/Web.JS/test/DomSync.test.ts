@@ -638,9 +638,9 @@ describe('DomSync', () => {
     expect(newNode.classList.contains('expand')).toBe(true);
   });
 
-  test('should preserve an active modal dialog marked as data permanent', () => {
-    const destination = makeExistingContent(`<dialog data-permanent="dialog"><span>client content</span></dialog>`);
-    const newContent = makeNewContent(`<dialog data-permanent="dialog"><span>server content</span></dialog>`);
+  test('should preserve an active reconnect dialog marked as data permanent', () => {
+    const destination = makeExistingContent(`<dialog id="components-reconnect-modal" data-permanent><span>client content</span></dialog>`);
+    const newContent = makeNewContent(`<dialog id="components-reconnect-modal" data-permanent><span>server content</span></dialog>`);
     const oldDialog = toNodeArray(destination)[0] as HTMLDialogElement;
     jest.spyOn(oldDialog, 'matches').mockReturnValue(true);
     oldDialog.close = () => {};
