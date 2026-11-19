@@ -526,11 +526,11 @@ function init(dotNetHelper: DotNet.DotNetObject, spacerBefore: HTMLElement, spac
     // Don't rely on the cached wasAtBottomLastRender — it may be stale if the user scrolled away.
     const preserveWasAtBottom = anchorModeIs.end && isViewportAtBottom();
 
+    // Save anchor for drift correction. The latch is released when this scroll
+    // event is consumed by handleScroll.
+    scrollActivity.source = ScrollSource.RestoreSnapshot;
+    scrollActivity.ignoreNextScroll();
     if (Math.abs(delta) > 1) {
-      // Save anchor for drift correction. The latch is released when this scroll
-      // event is consumed by handleScroll.
-      scrollActivity.source = ScrollSource.RestoreSnapshot;
-      scrollActivity.ignoreNextScroll();
       scrollCorrectionItemIndex = snapshot.anchorItemIndex;
       pendingScrollCorrection = true;
       scrollElement.scrollTop += delta;
