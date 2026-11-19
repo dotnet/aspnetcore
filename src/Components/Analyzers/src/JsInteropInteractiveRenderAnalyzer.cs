@@ -833,8 +833,9 @@ public sealed class JsInteropInteractiveRenderAnalyzer : DiagnosticAnalyzer
             delegateCreation = directDelegateCreation;
         }
         else if (valueArgument is IConversionOperation conversionOperation
-            && conversionOperation.Operand.Type is not null && conversionOperation.Operand.Type.ContainingNamespace is not null
-            && conversionOperation.Operand.Type.ContainingNamespace.ToString().StartsWith(ComponentsApi.AssemblyName, StringComparison.Ordinal))
+            && conversionOperation.Operand.Type is ITypeSymbol operandType
+            && (operandType.TypeKind == TypeKind.Delegate
+             || conversionOperation.Operand.Type.ContainingNamespace.ToString().StartsWith(ComponentsApi.AssemblyName, StringComparison.Ordinal)))
         {
             // If the value is a conversion operation, search if a delegate is created like RenderFragment or an EventCallback.
             // Multiple delegates at once shouldn't be possible.

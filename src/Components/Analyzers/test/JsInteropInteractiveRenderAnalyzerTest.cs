@@ -23,13 +23,25 @@ namespace Microsoft.AspNetCore.Components
 
     public interface IComponent { }
 
+    // Mirrors the shipping ComponentBase lifecycle contract so that test overrides compile.
     public abstract class ComponentBase : IComponent
     {
-        protected RendererInfo RendererInfo = new();
-        protected virtual void OnAfterRender(bool firstRender) {}
+        protected RendererInfo RendererInfo => new();
+        protected virtual void BuildRenderTree(Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder builder) { }
+        protected virtual void OnInitialized() { }
+        protected virtual Task OnInitializedAsync() => Task.CompletedTask;
+        protected virtual void OnParametersSet() { }
+        protected virtual Task OnParametersSetAsync() => Task.CompletedTask;
+        protected void StateHasChanged() { }
+        protected virtual bool ShouldRender() => true;
+        protected virtual void OnAfterRender(bool firstRender) { }
         protected virtual Task OnAfterRenderAsync(bool firstRender) => Task.CompletedTask;
         protected Task InvokeAsync(Action workItem) => Task.CompletedTask;
         protected Task InvokeAsync(Func<Task> workItem) => Task.CompletedTask;
+    }
+
+    public readonly struct MarkupString
+    {
     }
 
     public abstract class Dispatcher
@@ -81,18 +93,37 @@ namespace Microsoft.AspNetCore.Components
         }
     }
 
+    namespace RenderTree
+    {
+        public readonly struct RenderTreeFrame
+        {
+        }
+    }
+
     namespace Rendering
     {
-        public class RenderTreeBuilder
+        // Mirrors the shipping RenderTreeBuilder overloads so that test calls bind like generated code.
+        public sealed class RenderTreeBuilder
         {
             public void OpenElement(int sequence, string elementName) { }
             public void CloseElement() { }
-            public void AddAttribute<T>(int sequence, string name, T value) { }
             public void AddMarkupContent(int sequence, string markupContent) { }
-            public void SetUpdatesAttributeName(string name) { }
-            public void AddContent(int sequence, object textContent) { }
+            public void AddContent(int sequence, string textContent) { }
+            public void AddContent(int sequence, RenderFragment fragment) { }
             public void AddContent<TValue>(int sequence, RenderFragment<TValue> fragment, TValue value) { }
-            public void OpenComponent<T>(int sequence) where T : IComponent { }
+            public void AddContent(int sequence, MarkupString? markupContent) { }
+            public void AddContent(int sequence, MarkupString markupContent) { }
+            public void AddContent(int sequence, object textContent) { }
+            public void AddAttribute(int sequence, string name) { }
+            public void AddAttribute(int sequence, string name, bool value) { }
+            public void AddAttribute(int sequence, string name, string value) { }
+            public void AddAttribute(int sequence, string name, MulticastDelegate value) { }
+            public void AddAttribute(int sequence, string name, EventCallback value) { }
+            public void AddAttribute<TArgument>(int sequence, string name, EventCallback<TArgument> value) { }
+            public void AddAttribute(int sequence, string name, object value) { }
+            public void AddAttribute(int sequence, Microsoft.AspNetCore.Components.RenderTree.RenderTreeFrame frame) { }
+            public void SetUpdatesAttributeName(string updatesAttributeName) { }
+            public void OpenComponent<TComponent>(int sequence) where TComponent : IComponent { }
             public void AddComponentParameter(int sequence, string name, object value) { }
             public void CloseComponent() { }
         }
@@ -164,6 +195,13 @@ namespace Microsoft.JSInterop
     public sealed class DotNetObjectReference<TValue> : System.IDisposable where TValue : class
     {
         public void Dispose() { }
+    }
+}
+
+namespace ConsoleApplication1.Pages
+{
+    public class MyComponent : Microsoft.AspNetCore.Components.ComponentBase
+    {
     }
 }
 ";
@@ -373,7 +411,7 @@ namespace ConsoleApplication1
         protected override async Task OnInitializedAsync()
         {
             var bCheck = true;
-            var result = bCheck ? await JS.InvokeAsync<double>(""scrollElementIntoView"") : null;
+            var result = bCheck ? await JS.InvokeAsync<double>(""scrollElementIntoView"") : 0;
         }
     }
 }" + BaseComponentDeclarations;
@@ -400,7 +438,7 @@ namespace ConsoleApplication1
 
         protected override async Task OnInitializedAsync()
         {
-            var result = RendererInfo.IsInteractive ? await JS.InvokeAsync<double>(""scrollElementIntoView"") : null;
+            var result = RendererInfo.IsInteractive ? await JS.InvokeAsync<double>(""scrollElementIntoView"") : 0;
         }
     }
 }" + BaseComponentDeclarations;
@@ -587,7 +625,7 @@ namespace ConsoleApplication1
         protected override async Task OnInitializedAsync()
         {
             var result = RendererInfo.IsInteractive ? GetValue() : 0;
-            if (result)
+            if (result > 0)
             {
                 await JS.InvokeVoidAsync(""console.log"", ""This should not fail!"");
             }
@@ -1302,7 +1340,7 @@ namespace ConsoleApplication1
 
         protected override async Task OnInitializedAsync()
         {
-            Console.WriteLine(""This should not fail!"");
+            System.Diagnostics.Debug.WriteLine(""This should not fail!"");
         }
 
         protected async Task SomeOtherMethod()
@@ -1484,17 +1522,17 @@ namespace ConsoleApplication1
 
         protected override void BuildRenderTree(RenderTreeBuilder __builder)
         {
-            __builder.AddAttribute<Action>(1, ""guarded"", () =>
+            __builder.AddAttribute(1, ""guarded"", (Action)(() =>
             {
                 if (!RendererInfo.IsInteractive)
                 {
                     return;
                 }
-            });
-            __builder.AddAttribute<Action>(2, ""unguarded"", () =>
+            }));
+            __builder.AddAttribute(2, ""unguarded"", (Action)(() =>
             {
                 JS.Invoke<double>(""getValue"");
-            });
+            }));
         }
     }
 }" + BaseComponentDeclarations;
@@ -2130,6 +2168,7 @@ namespace ConsoleApplication1
     [InlineData(@"__builder.AddContent<Action>(1, item => b => JS.Invoke<string>(""getValue""), () => { });", 20, 58)]
     [InlineData(@"if (RendererInfo.IsInteractive) { } else { __builder.AddComponentParameter(1, ""OnClick"", EventCallback.Factory.Create<object>(this, () => JS.Invoke<string>(""getValue""))); }", 20, 151)]
     [InlineData(@"if (RendererInfo.IsInteractive) { } else { __builder.AddComponentParameter(1, ""OnClick"", EventCallback.Factory.Create<object>(this, InvokeJS)); }", 15, 13)]
+    [InlineData(@"__builder.AddComponentParameter(1, ""OnClick"", Microsoft.AspNetCore.Components.CompilerServices.RuntimeHelpers.TypeCheck<Action>(() => JS.Invoke<string>(""getValue"")));", 20, 147)]
     public void JSInvokeInBuildRenderTreeWithoutIsInteractiveCheckShouldThrowWarning(string statements, int line, int column)
     {
         VerifyCSharpDiagnostic(CreateBuildRenderTreeTest(statements),
@@ -2146,6 +2185,7 @@ namespace ConsoleApplication1
     [InlineData(@"var interactive = RendererInfo.IsInteractive; if (interactive) { __builder.AddComponentParameter(1, ""OnClick"", EventCallback.Factory.Create<object>(this, InvokeJS)); }")]
     [InlineData(@"if (RendererInfo.IsInteractive) { __builder.AddComponentParameter(1, ""ChildContent"", (RenderFragment)((__builder2) => { __builder2.AddComponentParameter(2, ""OnClick"", EventCallback.Factory.Create<object>(this, InvokeJS)); })); }")]
     [InlineData(@"__builder.AddAttribute(1, ""onclick"", EventCallback.Factory.Create<object>(this, InvokeJS));")]
+    [InlineData(@"if (RendererInfo.IsInteractive) { __builder.AddComponentParameter(1, ""OnClick"", Microsoft.AspNetCore.Components.CompilerServices.RuntimeHelpers.TypeCheck<Action>(() => JS.Invoke<string>(""getValue""))); }")]
     public void JSInvokeInBuildRenderTreeWithIsInteractiveCheckShouldNotThrowWarning(string statements)
     {
         VerifyCSharpDiagnostic(CreateBuildRenderTreeTest(statements));
