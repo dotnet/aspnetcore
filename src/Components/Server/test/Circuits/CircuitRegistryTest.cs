@@ -271,21 +271,19 @@ public class CircuitRegistryTest
     [Fact]
     public async Task Connect_WhilePersistingEvictedCircuit_IsInProgress()
     {
-        // Arrange
         var circuitIdFactory = TestCircuitIdFactory.CreateTestFactory();
         var options = new CircuitOptions
         {
             DisconnectedCircuitMaxRetained = 0, // This will automatically trigger eviction.
         };
 
-        var persistenceCompletionSource = new TaskCompletionSource();
+        var persistenceCompletionSource = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
         var circuitPersistenceProvider = new TestCircuitPersistenceProvider()
         {
             Persisting = persistenceCompletionSource.Task,
         };
 
         var registry = new TestCircuitRegistry(circuitIdFactory, options, circuitPersistenceProvider);
-        registry.BeforeDisconnect = new ManualResetEventSlim();
 
         var serviceCollection = new ServiceCollection();
         serviceCollection.AddSingleton(sp => new ComponentStatePersistenceManager(
@@ -298,30 +296,24 @@ public class CircuitRegistryTest
         registry.Register(circuitHost);
         var client = Mock.Of<ISingleClientProxy>();
         var newId = "new-connection";
+        var timeout = TimeSpan.FromSeconds(10);
 
-        // Act
-        var disconnect = Task.Run(() =>
+        try
         {
-            var task = registry.DisconnectAsync(circuitHost, circuitHost.Client.ConnectionId);
-            return task;
-        });
+            await registry.DisconnectAsync(circuitHost, circuitHost.Client.ConnectionId).WaitAsync(timeout);
+            await circuitPersistenceProvider.PersistenceStarted.WaitAsync(timeout);
+            var result = await registry.ConnectAsync(circuitHost.CircuitId, client, newId, default).WaitAsync(timeout);
 
-        var connect = Task.Run(async () =>
+            Assert.Empty(registry.ConnectedCircuits.Values);
+            Assert.Null(result);
+            Assert.False(registry.DisconnectedCircuits.TryGetValue(circuitHost.CircuitId.Secret, out _));
+        }
+        finally
         {
-            var connectCore = registry.ConnectAsync(circuitHost.CircuitId, client, newId, default);
-            await connectCore;
-        });
+            persistenceCompletionSource.SetResult();
+        }
 
-        registry.BeforeDisconnect.Set();
-
-        await Task.WhenAll(disconnect, connect);
-        persistenceCompletionSource.SetResult();
-        circuitPersistenceProvider.AfterPersist.Wait(TimeSpan.FromSeconds(10));
-        // Assert
-        // We expect the reconnect to fail since the circuit has already been evicted and persisted.
-        Assert.Empty(registry.ConnectedCircuits.Values);
-        Assert.True(circuitPersistenceProvider.PersistCalled);
-        Assert.False(registry.DisconnectedCircuits.TryGetValue(circuitHost.CircuitId.Secret, out _));
+        Assert.True(circuitPersistenceProvider.AfterPersist.Wait(timeout), "Circuit persistence did not complete.");
     }
 
     [Fact]
@@ -651,13 +643,17 @@ public class CircuitRegistryTest
 
     private class TestCircuitPersistenceProvider : ICircuitPersistenceProvider
     {
+        private readonly TaskCompletionSource _persistenceStarted = new(TaskCreationOptions.RunContinuationsAsynchronously);
+
         public Task Persisting { get; set; }
+        public Task PersistenceStarted => _persistenceStarted.Task;
         public ManualResetEventSlim AfterPersist { get; set; } = new ManualResetEventSlim();
         public bool PersistCalled { get; internal set; }
 
         public async Task PersistCircuitAsync(CircuitId circuitId, PersistedCircuitState persistedCircuitState, CancellationToken cancellation = default)
         {
             PersistCalled = true;
+            _persistenceStarted.TrySetResult();
             if (Persisting != null)
             {
                 await Persisting;
