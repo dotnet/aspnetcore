@@ -231,24 +231,23 @@ While it's typically better to use the project-specific build scripts, the repo-
 The Linux x64 package-build jobs run an ABI canary after the build completes.
 An `afterBuild` step targeting the agent host launches a separate runtime-only
 container; Docker is not run inside the build container.
-The test extracts the `aspnetcoretools.linux-x64` package and runs its native tools,
-including certificate and user-secret operations, without an SDK or rebuilding.
+The test mounts the `aspnetcoretools` native publish output read-only and runs
+certificate and user-secret operations without an SDK or rebuilding.
 
-To run it locally after packing the native tools, use Docker and `unzip` on the host:
+To run it locally after building the native tools, use Docker on the host:
 
 ```bash
-bash eng/scripts/run-native-abi-tests.sh artifacts/packages/Release/NonShipping
+bash eng/scripts/run-native-abi-tests.sh artifacts/bin/aspnetcoretools/Release/*/linux-x64/publish
 ```
 
-The default image is `mcr.microsoft.com/dotnet-buildtools/prereqs:ubuntu-18.04-net11.0-abi-test-amd64`.
+The image is `mcr.microsoft.com/dotnet-buildtools/prereqs:ubuntu-18.04-net11.0-abi-test-amd64`.
 Its runtime prerequisites also cover the current main-branch tools.
 Ubuntu 18.04/glibc 2.27 matches the current Bionic cross sysroot.
 If the .NET 12 baseline changes to Ubuntu 20.04, update this gate's image before
 changing the producing runtime/cross-build images; this is not a final .NET 12 baseline decision.
-An alternative image can be supplied as the script's second argument.
-Missing packages, container failures, and failed tool assertions fail the build.
+Missing native output, container failures, and failed tool assertions fail the build.
 Container output is saved under `artifacts/log/NativeAbi`.
-Arm64 and musl are not covered by this gate.
+Package installation, arm64, and musl are not covered by this gate.
 
 ## Complete list of repo dependencies
 
