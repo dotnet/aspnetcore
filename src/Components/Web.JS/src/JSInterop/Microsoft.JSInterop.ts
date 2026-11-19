@@ -944,15 +944,14 @@ function createJSCallResult(returnValue: any, resultType: JSCallResultType) {
 let nextByteArrayIndex = 0;
 function stringifyArgs(callDispatcher: CallDispatcher, args: any[] | null, abortSignals?: Set<ObservedAbortSignal>) {
   nextByteArrayIndex = 0;
-  // Restored, not cleared, so a nested serialization from an app getter or toJSON leaves the outer one intact.
-  const previousCallDispatcher = currentCallDispatcher;
   const previousAbortSignals = currentAbortSignals;
   currentCallDispatcher = callDispatcher;
   currentAbortSignals = abortSignals;
   try {
     return JSON.stringify(args, argReplacer);
   } finally {
-    currentCallDispatcher = previousCallDispatcher;
+    // Cleared, not restored, even on failure: byte array ids cannot nest, so an outer serialization must then fail visibly.
+    currentCallDispatcher = undefined;
     currentAbortSignals = previousAbortSignals;
   }
 }

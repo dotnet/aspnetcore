@@ -451,9 +451,8 @@ public abstract partial class JSRuntime : IJSRuntime, IDisposable
         var source = GetAbortSignalSource(abortSignalId);
         if (aborted)
         {
-            // Observed here because no abort message awaits it if an app listener stopped the abort event.
-            source.Cancel().ContinueWith(static task => _ = task.Exception, CancellationToken.None,
-                TaskContinuationOptions.OnlyOnFaulted | TaskContinuationOptions.ExecuteSynchronously, TaskScheduler.Default);
+            // Left unobserved: with no logger here, TaskScheduler.UnobservedTaskException is the only report of a failing callback.
+            _ = source.Cancel();
         }
 
         return source.Token;
