@@ -654,7 +654,8 @@ function init(dotNetHelper: DotNet.DotNetObject, spacerBefore: HTMLElement, spac
     if (ke.key === 'End' || ke.key === 'Home') {
       // Blazor's @onkeydown:preventDefault runs in its document-level delegate.
       // Listen once on window, which runs after that delegate, and inspect the
-      // original event. If propagation stops first, clean the listener up.
+      // original event. If propagation stops first, clean the listener up on
+      // the next frame so the listener survives the current event.
       const onKeydown = (event: KeyboardEvent) => {
         window.removeEventListener('keydown', onKeydown);
         if (event === ke && !ke.defaultPrevented) {
@@ -662,7 +663,7 @@ function init(dotNetHelper: DotNet.DotNetObject, spacerBefore: HTMLElement, spac
         }
       };
       window.addEventListener('keydown', onKeydown, { once: true });
-      queueMicrotask(() => window.removeEventListener('keydown', onKeydown));
+      requestAnimationFrame(() => window.removeEventListener('keydown', onKeydown));
     } else if (isUserScrollKey(ke.key)) {
       handleUserScrollInput();
     }
