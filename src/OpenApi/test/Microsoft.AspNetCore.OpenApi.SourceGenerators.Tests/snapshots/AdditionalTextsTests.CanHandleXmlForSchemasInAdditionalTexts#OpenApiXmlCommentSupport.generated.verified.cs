@@ -168,6 +168,8 @@ namespace Microsoft.AspNetCore.OpenApi.Generated
         /// Generates a documentation comment ID for a property given its container type and property name.
         /// Example: P:Namespace.ContainingType.PropertyName
         /// </summary>
+        [System.Diagnostics.CodeAnalysis.UnconditionalSuppressMessage("Trimming", "IL2070", Justification = "If reflection metadata is unavailable, the original container type is used.")]
+        [System.Diagnostics.CodeAnalysis.UnconditionalSuppressMessage("Trimming", "IL2075", Justification = "If reflection metadata is unavailable, the original container type is used.")]
         public static string CreateDocumentationId(Type containerType, string propertyName)
         {
             if (containerType == null)
@@ -177,6 +179,16 @@ namespace Microsoft.AspNetCore.OpenApi.Generated
             if (string.IsNullOrEmpty(propertyName))
             {
                 throw new ArgumentException("Property name cannot be null or empty.", nameof(propertyName));
+            }
+
+            // The metadata container can be a derived type, but XML documentation IDs use the declaring type.
+            for (var type = containerType; type is not null; type = type.BaseType)
+            {
+                if (type.GetProperty(propertyName, BindingFlags.Public | BindingFlags.Instance | BindingFlags.DeclaredOnly) is not null)
+                {
+                    containerType = type;
+                    break;
+                }
             }
 
             var sb = new StringBuilder();
