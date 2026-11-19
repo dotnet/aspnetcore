@@ -59,15 +59,21 @@ internal static class UrlNormalizer
         return string.Concat("/", url.AsSpan(firstNonSlash));
     }
 
-    public static PathString CollapseLeadingSlashes(PathString path)
+    public static PathString NormalizeRelativePath(string path)
     {
-        if (!path.HasValue)
+        if (string.IsNullOrEmpty(path))
         {
-            return path;
+            return new PathString("/");
         }
 
-        var collapsed = CollapseLeadingSlashes(path.Value);
+        if (path[0] is not '/' and not '\\')
+        {
+            path = '/' + path;
+        }
 
-        return ReferenceEquals(collapsed, path.Value) ? path : new PathString(collapsed);
+        var decoded = PathString.FromUriComponent(path);
+        var collapsed = CollapseLeadingSlashes(decoded.Value!);
+
+        return ReferenceEquals(collapsed, decoded.Value) ? decoded : new PathString(collapsed);
     }
 }

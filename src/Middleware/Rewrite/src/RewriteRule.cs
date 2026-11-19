@@ -70,30 +70,14 @@ internal sealed class RewriteRule : IRule
                 var split = result.IndexOf('?');
                 if (split >= 0)
                 {
-                    var newPath = UrlNormalizer.CollapseLeadingSlashes(result.Substring(0, split));
-                    if (newPath.Length > 0 && newPath[0] == '/')
-                    {
-                        request.Path = UrlNormalizer.CollapseLeadingSlashes(PathString.FromUriComponent(newPath));
-                    }
-                    else
-                    {
-                        request.Path = UrlNormalizer.CollapseLeadingSlashes(PathString.FromUriComponent('/' + newPath));
-                    }
+                    request.Path = UrlNormalizer.NormalizeRelativePath(result.Substring(0, split));
                     request.QueryString = request.QueryString.Add(
                         QueryString.FromUriComponent(
                             result.Substring(split)));
                 }
                 else
                 {
-                    result = UrlNormalizer.CollapseLeadingSlashes(result);
-                    if (result[0] == '/')
-                    {
-                        request.Path = UrlNormalizer.CollapseLeadingSlashes(PathString.FromUriComponent(result));
-                    }
-                    else
-                    {
-                        request.Path = UrlNormalizer.CollapseLeadingSlashes(PathString.FromUriComponent('/' + result));
-                    }
+                    request.Path = UrlNormalizer.NormalizeRelativePath(result);
                 }
             }
 

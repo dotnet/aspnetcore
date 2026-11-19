@@ -79,7 +79,7 @@ internal sealed class RedirectRule : IRule
                     }
                 }
 
-                if (newPath[0] != '/')
+                if (newPath[0] is not '/' and not '\\')
                 {
                     newPath = '/' + newPath;
                 }
