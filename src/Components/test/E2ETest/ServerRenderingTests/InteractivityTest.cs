@@ -200,6 +200,36 @@ public class InteractivityTest : ServerTestBase<BasicTestAppServerSiteFixture<Ra
         Browser.Equal("3", () => Browser.FindElement(By.Id("count-server-shared")).Text);
     }
 
+    [Theory]
+    [InlineData(true)]
+    [InlineData(false)]
+    public void CacheView_CacheHit_RendersInteractiveComponent(bool useTypeRenderMode)
+    {
+        var url = $"{ServerPathBase}/cache-interactive-component?testId={Guid.NewGuid():N}&useTypeRenderMode={useTypeRenderMode}";
+        string cachedContent = null;
+        string previousUncachedContent = null;
+
+        for (var request = 0; request < 3; request++)
+        {
+            Navigate(url);
+            Browser.Equal("0", () => Browser.FindElement(By.Id("count-server")).Text);
+            Browser.Equal("True", () => Browser.FindElement(By.Id("is-interactive-server")).Text);
+
+            var currentCachedContent = Browser.FindElement(By.Id("cached-content")).Text;
+            var currentUncachedContent = Browser.FindElement(By.Id("uncached-content")).Text;
+            if (request > 0)
+            {
+                Assert.Equal(cachedContent, currentCachedContent);
+                Assert.NotEqual(previousUncachedContent, currentUncachedContent);
+            }
+            cachedContent = currentCachedContent;
+            previousUncachedContent = currentUncachedContent;
+
+            Browser.Click(By.Id("increment-server"));
+            Browser.Equal("1", () => Browser.FindElement(By.Id("count-server")).Text);
+        }
+    }
+
     [Fact]
     public void CanRenderInteractiveWebAssemblyComponentFromRazorClassLibrary()
     {
