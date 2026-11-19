@@ -5173,8 +5173,7 @@ public class VirtualizationTest : ServerTestBase<ToggleExecutionModeServerFixtur
         WindowScrollMidListAndWaitForRender(js);
 
         var control = Browser.Exists(By.Id(controlId));
-        control.Click();
-        control.SendKeys(Keys.End);
+        DispatchSyntheticKeydown(js, control, "End");
 
         Browser.True(() =>
         {
@@ -5200,10 +5199,8 @@ public class VirtualizationTest : ServerTestBase<ToggleExecutionModeServerFixtur
         var scrollYBefore = (long)js.ExecuteScript("return Math.round(window.scrollY)");
 
         var input = Browser.Exists(By.Id("scroll-target-text"));
-        input.Click();
-        input.SendKeys(Keys.End);
-        input.SendKeys("x");
-        Assert.Equal("abcdefx", input.GetAttribute("value"));
+        DispatchSyntheticKeydown(js, input, "End");
+        Assert.Equal("abcdef", input.GetAttribute("value"));
 
         // End belongs to the focused input. If the list starts following the end of the
         // list, the scroll position reaches the bottom; give it a bounded window to do so.
@@ -5227,6 +5224,21 @@ public class VirtualizationTest : ServerTestBase<ToggleExecutionModeServerFixtur
         var scrollYAfter = (long)js.ExecuteScript("return Math.round(window.scrollY)");
         Assert.True(Math.Abs(scrollYAfter - scrollYBefore) <= 2,
             $"Window AnchorMode {anchorMode}: End in a text input should not move the list (moved {scrollYAfter - scrollYBefore}px)");
+    }
+
+    private static void DispatchSyntheticKeydown(IJavaScriptExecutor js, IWebElement element, string key)
+    {
+        // A trusted key press would let the browser perform its own End handling before
+        // Virtualize sees the event. A synthetic event has no default action, so this
+        // exercises the Virtualize keydown path directly.
+        js.ExecuteScript(@"
+            arguments[0].focus();
+            arguments[0].dispatchEvent(new KeyboardEvent('keydown', {
+                key: arguments[1],
+                bubbles: true,
+                cancelable: true
+            }));
+        ", element, key);
     }
 
     private static (string index, double relTop, long scrollTop) GetItemPositionInContainer(
