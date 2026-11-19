@@ -7,7 +7,7 @@ This guide provides step-by-step instructions for investigating, reviewing, and 
 You MUST follow this workflow when investigating or reviewing behavioral issues, implementing behavioral fixes, or implementing new features in the Components area.
 * Add the applicable workflow steps to your `todos` and follow them strictly.
 
-The mandatory sample-to-E2E workflow, including permanent automated test coverage, applies to production feature and bug-fix implementation. Design research, code review, comparative alternatives work, and explicitly throwaway prototypes must honor the requested scope. When feasible, use the Components sample projects and a browser to validate claims at a faithful boundary, but do not add unit or E2E tests solely to satisfy the implementation workflow. State honestly whether validation is source-level, DOM-level, or end-to-end.
+The mandatory sample-validation and permanent-test workflow, including permanent automated regression coverage at the smallest faithful owning boundary, applies to production feature and bug-fix implementation. Design research, code review, comparative alternatives work, and explicitly throwaway prototypes must honor the requested scope. When feasible, use the Components sample projects and a browser to validate claims at a faithful boundary, but do not add unit or E2E tests solely to satisfy the implementation workflow. State honestly whether validation is source-level, DOM-level, or end-to-end.
 
 ### Structural relocations
 
@@ -18,7 +18,7 @@ A pure source, project, or package relocation with intentionally unchanged runti
 - Validate generated project metadata, NuGet and npm package outputs, and every affected area or repository build entry point.
 - Follow the [project relocation checklist](../../docs/AddingNewProjects.md#adding-moving-or-removing-a-project) for added, moved, or removed projects.
 
-If the change alters behavior, or validation reveals a behavioral regression, follow the normal sample-to-E2E workflow in this guide.
+If the change alters behavior, or validation reveals a behavioral regression, follow the normal sample-validation and permanent-test workflow in this guide.
 
 When moving a JavaScript workspace:
 
@@ -42,7 +42,7 @@ For behavioral investigations and reviews:
 - For decisive claims about native browser lifecycle or state behavior, use authoritative documentation and a minimal browser probe. Treat synthesized search results as leads, not evidence.
 - Any test establishes only the downstream response, not producer reachability, if it directly injects callbacks or events or otherwise bypasses the owning producer. An isolated test can provide faithful evidence when it exercises the real producer.
 - Treat faithful non-reproduction as evidence only for the exercised conditions. A single pass does not disprove race-, timing-, load-, browser-, or platform-dependent reachability; narrow the claim to the conditions and evidence it supports. Withdraw only when faithful evidence contradicts the claimed trigger or material effect and no supported materially different condition remains.
-- Do not require E2E to validate a finding when its disputed preconditions and material effects are fully established at a lower faithful boundary. This does not waive E2E coverage required for shipped implementation work.
+- Do not require E2E to validate a finding when its disputed preconditions and material effects are fully established at a lower faithful boundary. For shipped implementation work, select the smallest faithful permanent test surface under [Permanent regression test boundary](#permanent-regression-test-boundary); a focused unit or module test that owns the final observable satisfies that requirement and does not also require E2E.
 
 For implementation work:
 - For a behavioral fix, reproduce the problem at the faithful boundary before attempting the fix. If faithful validation is impractical, state the observed boundary and limitation and do not call the behavioral claim verified.
@@ -69,15 +69,20 @@ Before selecting a permanent test surface, record these five fields:
 - **Selected permanent surface**: the test suite that exercises that producer and observable.
 - **Lower-boundary false-pass risk**: how a lower-level test could pass while the shipped behavior still fails.
 
-Browser-owned user-visible behavior requires permanent coverage in the repository's real-browser suite that owns the production path. For Components-owned behavior, use C# Selenium under `src/Components/test/E2ETest`. When generated template content owns the behavior, use the existing Playwright tests under `src/ProjectTemplates/test/Templates.Blazor.Tests` instead of duplicating the scenario in Components E2E. This boundary includes claims that depend on real DOM measurement, layout and geometry, scrolling, browser observers (`ResizeObserver`, `IntersectionObserver`, and `MutationObserver`), browser scheduling or event ordering, browser-dependent JS interop, navigation, focus and selection, and rendering or rehydration. Extend existing test assets and classes when practical.
+Browser-owned user-visible behavior requires permanent coverage in the repository's real-browser suite that owns the production path. For Components-owned behavior, use C# Selenium under `src/Components/test/E2ETest`. When generated template content owns the behavior, use the existing Playwright tests under `src/ProjectTemplates/test/Templates.Blazor.Tests` instead of duplicating the scenario in Components E2E. This boundary includes claims that depend on real DOM measurement, layout and geometry, scrolling, browser observers (`ResizeObserver`, `IntersectionObserver`, and `MutationObserver`), browser scheduling or event ordering, browser-dependent JS interop, navigation, focus and selection, and browser-observed rendering or rehydration (such as DOM output or the prerender-to-interactive handoff in a real page). Extend existing test assets and classes when practical.
 
 Do not add or retain Jest or `.test.ts` coverage in the production change as proof of the same browser scenario, whether described as primary, supplemental, faster, or more precise. When synthetic geometry, mocked observers or events, or direct state mutation or callback invocation stand in for that browser scenario's real producer, they are temporary diagnostic probes outside the production change and must be removed after the selected real-browser test supersedes them.
 
-Permanent JavaScript or TypeScript unit tests remain appropriate when the JavaScript module's deterministic contract is the final observable and the harness faithfully supplies that contract's inputs. Examples include pure helpers, structural DOM algorithms that operate on ordinary nodes and assert identity or document structure, manager callback or timer-state contracts, and validation-engine contracts. Such tests do not establish that real browser scheduling, layout, observers, or user-visible producer paths are reachable; a claim about those behaviors still requires Selenium. Managed or service behavior that is fully owned and observable below the browser likewise remains at its faithful lower boundary.
+Permanent JavaScript or TypeScript unit tests remain appropriate when the JavaScript module's deterministic contract is the final observable and the harness faithfully supplies that contract's inputs. Examples include pure helpers, structural DOM algorithms that operate on ordinary nodes and assert identity or document structure, manager callback or timer-state contracts, and validation-engine contracts. Such tests do not establish that real browser scheduling, layout, observers, or user-visible producer paths are reachable; a claim about those behaviors still requires Selenium. Managed or service behavior that is fully owned and observable below the browser, including RenderTree diffs and component or service state, remains at its faithful lower boundary (for example, a .NET unit test using `TestRenderer`).
 
 If WebDriver cannot perform or observe one operation, keep the permanent C# Selenium scenario, name the exact WebDriver limitation, and use only the smallest existing JavaScript helper or `IJavaScriptExecutor` snippet for that step. Keep scenario orchestration and the final user-visible assertion in C#.
 
-For browser fixes, require strict red/green evidence: the identical assertion in the selected real-browser suite must fail for the expected reason without the fix and pass with it. Include a nearest-opposite control, meaning the closest scenario that must remain green, and, when meaningful, an adjacent control driven by the same production producer. The fix remains blocked while Jest is its only regression proof.
+For regression fixes, require strict red/green evidence on the permanent test surface selected above: the identical assertion must fail for the expected reason without the fix and pass with it. Keep test scope proportional to the fix:
+
+- Default to one focused regression test (or an additional assertion in an existing test, or a `[Theory]` only when every row exercises the regression and fails without the fix) rather than adding multiple standalone test methods for a localized bug fix.
+- Add a nearest-opposite control assertion only when the fix narrows or flips a branch whose opposite path is not already covered by existing tests; when needed, put it as an assertion inside the same test (or a separate single case), not as a row in the regression `[Theory]` or a multi-test control matrix.
+- When a real-browser E2E test is required by the boundary above, Jest alone is not sufficient regression proof; conversely, when a focused .NET unit test or `Web.JS` `.test.ts` test faithfully covers the owning contract, do not also add or request a Selenium E2E test.
+- Do not add test-only optional parameters, fields, properties, or hooks to production types when the behavior can be exercised through existing entry points.
 
 In Components Selenium tests, synchronize assertions with observable conditions through existing waits such as `Browser.True` and `Browser.Equal`, which poll with `WebDriverWait`, or with explicit test-controlled gates such as `TaskCompletionSource` when managed timing must be controlled. Do not use an arbitrary `Thread.Sleep` as the synchronization mechanism for the regression assertion. Existing bounded polling helpers may sleep between checks when they repeatedly observe the condition and enforce a timeout.
 
@@ -164,6 +169,64 @@ Before expanding validation across this full matrix, state the render modes and 
 5. **Implement permanent tests** - Only after the sample is validated, select the permanent test surface using the boundary above. Browser-owned behavior requires the owning real-browser suite identified there.
 
 6. **Clean up sample code** - After the selected permanent tests are passing, remove the sample code you added to the Samples projects. The sample was only for development and interactive testing; the selected tests now provide the permanent coverage. Use `git checkout -- src/Components/Samples src/Components/WebAssembly/Samples` and `git clean -df -- src/Components/Samples src/Components/WebAssembly/Samples` to remove the sample code.
+
+## Design invariants
+
+Apply these rules to framework code in this area. Before flagging code, check the current
+analyzer, host-assembly boundary, and nearby pattern. Examples are anchors, not exhaustive
+inventories.
+
+### Render modes
+
+- Framework components must be render-mode agnostic so they work when consumed from a Razor
+  Class Library. The app chooses the render mode; framework components do not force one with
+  `@rendermode`.
+- Host-specific APIs and components may live in concrete host assemblies, but that set is
+  deliberately small - adding to it needs a strong reason. Anything intended for broad app or
+  library consumption needs a render-mode-agnostic abstraction.
+
+### `HttpContext` and host services
+
+- Do not use `IHttpContextAccessor` in framework components or services. Components receive
+  `HttpContext` as a cascading parameter:
+
+  ```csharp
+  [CascadingParameter] public HttpContext? HttpContext { get; set; }
+  ```
+
+- Services accept `HttpContext` as a method parameter, never as a constructor dependency.
+- Features consumed by class libraries use a render-mode-agnostic abstraction with an
+  implementation and service registration for each supported host. Antiforgery is the
+  reference pattern.
+
+### Rendering and event dispatch
+
+- Analyzer `BL0012` is authoritative for redundant `StateHasChanged()` calls in
+  `OnInitialized[Async]`, `OnParametersSet[Async]`, and event-callback handlers. Calls from
+  after-render logic, helper methods, or external callbacks may be required; check the
+  analyzer's current scope before flagging them.
+- Do not use `InvokeAsync` to re-enter a synchronization context that framework code is already
+  on. Use it to marshal external callbacks onto the renderer's context.
+  This rule covers `ComponentBase.InvokeAsync` only: `Dispatcher.InvokeAsync` in hosting
+  infrastructure is the intended dispatch point, and `EventCallback.InvokeAsync` is an
+  unrelated callback-invocation API.
+- Do not implement `IHandleEvent` in new components. `ComponentBase` already provides automatic
+  rendering after event handlers.
+
+### Trimming and dependencies
+
+- Handle reflection with trim/AOT annotations such as `[DynamicallyAccessedMembers]`,
+  `[RequiresUnreferencedCode]`, and `[RequiresDynamicCode]`. Do not impose a blanket reflection
+  ban or source-generated-serialization-only rule; JS interop itself uses annotated reflection.
+- Do not add package dependencies to shipping Components projects by default. Any addition
+  needs explicit justification against the nearby project pattern.
+
+### Coordinating async work in tests
+
+Prefer `TaskCompletionSource` to coordinate async work. Do not use `Task.Delay` or
+`Thread.Sleep` to wait for state changes. Legitimate exceptions include real-browser polling,
+duration assertions, analyzer fixture source text that is the input being analyzed, and
+deliberate slow-work simulation.
 
 ## Build Tips
 
@@ -381,6 +444,10 @@ The Selenium E2E tests are located in `src/Components/test/E2ETest`.
 For telemetry or distributed-state behavior, assert the real consumer-visible output rather than only an internal component probe. Capture exported activities, metrics, or state; correlate the scenario with a unique test ID and expose a test endpoint when needed; and assert operation names, tags, links, and platform-specific metadata relevant to the contract.
 
 ### Running E2E Tests
+
+Playwright MCP is used for manual interactive validation of Components samples, not as this
+suite's E2E framework. Adding another Components E2E framework requires agreement from
+Components maintainers.
 
 This E2E suite uses Selenium. To build and run tests:
 

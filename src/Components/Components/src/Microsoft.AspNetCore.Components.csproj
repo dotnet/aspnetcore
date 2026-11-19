@@ -28,6 +28,7 @@
     <Compile Include="$(SharedSourceRoot)LinkerFlags.cs" LinkBase="Shared" />
     <Compile Include="$(SharedSourceRoot)PooledArrayBufferWriter.cs" LinkBase="Shared" />
     <Compile Include="$(SharedSourceRoot)QueryStringEnumerable.cs" LinkBase="Shared" />
+    <Compile Include="$(SharedSourceRoot)QueryStringDecoder.cs" LinkBase="Shared" />
     <Compile Include="$(SharedSourceRoot)Debugger\DictionaryItemDebugView.cs" LinkBase="Shared" />
     <Compile Include="$(SharedSourceRoot)Debugger\DictionaryDebugView.cs" LinkBase="Shared" />
     <Compile Include="$(SharedSourceRoot)UrlDecoder\UrlDecoder.cs" LinkBase="Shared" />
