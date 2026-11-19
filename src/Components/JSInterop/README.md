@@ -56,12 +56,17 @@ pending or returns normally, and a handler that catches cancellation can return 
 normal result. An already-aborted signal still invokes the method with an already
 canceled token. Browser abort reasons are not translated into .NET exceptions.
 
-JavaScript gives each signal an id and serializes it as `{"__abortSignal": <id>}`
-(id 0 for a signal that is already aborted), so the call is sent at once, with no
+JavaScript gives each signal an id and serializes it as
+`{"__abortSignal": <id>, "aborted": <bool>}`, so the call is sent at once, with no
 extra round trip. .NET creates the token's source for that id when it reads the
-arguments. Later, JavaScript sends a one-way "aborted" or "released" message for the
-id. Repeated and concurrent uses of one signal send the same id and share one token
-in that runtime. Explicit generic `createJSObjectReference(signal)` values
+arguments, or when an abort for the id arrives first, which a host can cause by
+reordering inbound messages. On abort, JavaScript sends an acknowledged "aborted"
+call for the id. Once the browser collects the signal, JavaScript sends a one-way
+"released" message, but only after every call that carried the id has completed and
+the abort has been acknowledged, so .NET never sees a message about the id after
+"released". Repeated and concurrent uses of one signal send the same id and share one
+token in that runtime. A signal can only be a call argument, not part of a value
+JavaScript returns to .NET. Explicit generic `createJSObjectReference(signal)` values
 remain generic references, rather than implicitly changing their target type.
 
 ### .NET token to JavaScript signal
@@ -87,7 +92,7 @@ and already-canceled tokens need no live bridge. Each live serialized token occu
 has its own observer, so an earlier signal's cleanup cannot revoke a later in-flight
 projection of the same token.
 
-The runtimes own cleanup. Incoming token sources are released after the abort
+The runtimes own cleanup. Incoming token sources are released after the "released"
 message; outgoing observers are released after notification.
 `WeakRef` and `FinalizationRegistry` also release links when the browser signal is
 collected without cancellation. Collection is nondeterministic and does not request

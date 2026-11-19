@@ -27,8 +27,9 @@ public abstract partial class JSRuntime : IJSRuntime, IDisposable
     // Serialization is synchronous on the owning dispatcher; nested calls restore the previous scope.
     private List<CancellationTokenObserver>? _serializingCancellationReferences;
     private int _automaticCancellationReferencesDisposed;
-    // Keyed by the id the JS side gave the AbortSignal; JS sends "aborted" or "released" for each id.
-    private readonly ConcurrentDictionary<long, CancellationTokenSource> _abortSignalSources = new();
+    // Keyed by the id the JS side gave the AbortSignal. JS sends "released" only after every call carrying the id
+    // has completed and its abort was acknowledged, so an entry may be removed only then.
+    private readonly ConcurrentDictionary<long, AbortSignalSource> _abortSignalSources = new();
 
     internal readonly ArrayBuilder<byte[]> ByteArraysToBeRevived = new();
 
@@ -445,18 +446,27 @@ public abstract partial class JSRuntime : IJSRuntime, IDisposable
         _automaticCancellationReferences.TryRemove(dotNetObjectId, out _);
     }
 
-    // Id 0 is an AbortSignal that was already aborted when JS serialized it.
-    internal CancellationToken GetAbortSignalToken(long abortSignalId)
-        => abortSignalId == 0
-            ? new CancellationToken(canceled: true)
-            : _abortSignalSources.GetOrAdd(abortSignalId, static _ => new CancellationTokenSource()).Token;
+    internal CancellationToken GetAbortSignalToken(long abortSignalId, bool aborted)
+    {
+        var source = GetAbortSignalSource(abortSignalId);
+        if (aborted)
+        {
+            _ = source.Cancel();
+        }
 
+        return source.Token;
+    }
+
+    // Kept after cancellation: a call carrying the id may still arrive after the abort.
     internal Task AbortSignalAborted(long abortSignalId)
-        => _abortSignalSources.TryRemove(abortSignalId, out var source) ? source.CancelAsync() : Task.CompletedTask;
+        => GetAbortSignalSource(abortSignalId).Cancel();
 
     // The source is not disposed, because application code may still hold its token.
     internal void AbortSignalReleased(long abortSignalId)
         => _abortSignalSources.TryRemove(abortSignalId, out _);
+
+    private AbortSignalSource GetAbortSignalSource(long abortSignalId)
+        => _abortSignalSources.GetOrAdd(abortSignalId, static _ => new AbortSignalSource());
 
     /// <summary>
     /// Dispose the JSRuntime.
@@ -471,5 +481,23 @@ public abstract partial class JSRuntime : IJSRuntime, IDisposable
 
         _abortSignalSources.Clear();
         ByteArraysToBeRevived.Dispose();
+    }
+
+    private sealed class AbortSignalSource
+    {
+        private readonly CancellationTokenSource _source = new();
+        private Task? _cancellation;
+
+        public CancellationToken Token => _source.Token;
+
+        // One cancellation shared by the "aborted" state in an argument and the abort message,
+        // so callback failures still reach the abort message's acknowledgment.
+        public Task Cancel()
+        {
+            lock (_source)
+            {
+                return _cancellation ??= _source.CancelAsync();
+            }
+        }
     }
 }
