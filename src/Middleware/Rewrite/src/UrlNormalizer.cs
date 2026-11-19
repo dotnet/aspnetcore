@@ -59,6 +59,8 @@ internal static class UrlNormalizer
         return string.Concat("/", url.AsSpan(firstNonSlash));
     }
 
+    // Ensures a leading slash, percent-decodes into a PathString, and collapses any leading '/' or '\' run
+    // (including '%5C' decoded to '\') to a single '/'.
     public static PathString NormalizeRelativePath(string path)
     {
         if (string.IsNullOrEmpty(path))
