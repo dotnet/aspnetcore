@@ -44,6 +44,8 @@ internal sealed class WebViewJSRuntime : JSRuntime
         BeginInvokeJS(invocationInfo);
     }
 
+    internal bool IsDisconnected => _disconnected;
+
     internal void MarkAsDisconnected()
     {
         _disconnected = true;

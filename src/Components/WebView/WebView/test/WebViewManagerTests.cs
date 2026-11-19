@@ -146,10 +146,11 @@ public class WebViewManagerTests
         var services = RegisterTestServices().AddTestBlazorWebView().BuildServiceProvider();
         var webViewManager = new TestWebViewManager(services, new TestFileProvider());
         webViewManager.ReceiveAttachPageMessage();
-        await webViewManager.AddRootComponentAsync(typeof(PendingJsInteropComponent), "#app", ParameterView.Empty);
+        var renderTask = webViewManager.AddRootComponentAsync(typeof(PendingJsInteropComponent), "#app", ParameterView.Empty);
 
         // Act - replace the page while the component still awaits JS interop
         webViewManager.ReceiveAttachPageMessage();
+        await renderTask;
 
         // Assert - the old page's JSDisconnectedException is not sent on the new page's IPC
         Assert.DoesNotContain(webViewManager.SentIpcMessages, message =>

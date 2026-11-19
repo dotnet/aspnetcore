@@ -166,7 +166,9 @@ public class CircuitHostTest
             serviceScope: new AsyncServiceScope(serviceScope.Object),
             remoteRenderer: remoteRenderer);
 
+        circuitHost.JSRuntime.Initialize(circuitHost.Client);
         var component = new PendingJSInteropComponent(circuitHost.JSRuntime);
+        Assert.False(component.PendingCall.IsCompleted);
         circuitHost.Renderer.AssignRootComponentId(component);
 
         // Act
