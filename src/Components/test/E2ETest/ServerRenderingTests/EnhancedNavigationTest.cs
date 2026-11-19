@@ -719,6 +719,24 @@ public class EnhancedNavigationTest : ServerTestBase<BasicTestAppServerSiteFixtu
     }
 
     [Fact]
+    public void HistoryStateGetsUpdatedOnSameUriNavigationDuringServerNegotiation()
+    {
+        Navigate($"{ServerPathBase}/nav");
+        var js = (IJavaScriptExecutor)Browser;
+        js.ExecuteScript("sessionStorage.setItem('block-server-negotiation', 'true')");
+        Navigate($"{ServerPathBase}/nav/location-changed/server-and-wasm-state");
+        Browser.Exists(By.Id("server-negotiation-blocked"));
+
+        var uri = Browser.Url;
+        Browser.Exists(By.Id("set-history-state")).Click();
+        Browser.Equal("state-from-wasm", () => (string)js.ExecuteScript("return history.state?.userState"));
+        Assert.Equal(uri, Browser.Url);
+
+        js.ExecuteScript("window.unblockServerNegotiation()");
+        Browser.Equal("state-from-wasm", () => Browser.Exists(By.Id("history-state-server")).Text);
+    }
+
+    [Fact]
     public void PreexistingHistoryStateWithoutNavigationDoesNotTriggerReplay()
     {
         Navigate($"{ServerPathBase}/nav/location-changed/server-and-wasm-state");

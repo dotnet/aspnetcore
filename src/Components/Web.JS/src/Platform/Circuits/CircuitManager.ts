@@ -110,6 +110,7 @@ export class CircuitManager implements DotNet.DotNetCallDispatcher {
   }
 
   private async startCore(): Promise<boolean> {
+    resetLastLocationChange();
     this._connection = await this.startConnection();
 
     if (this._connection.state !== HubConnectionState.Connected) {
@@ -118,7 +119,6 @@ export class CircuitManager implements DotNet.DotNetCallDispatcher {
 
     const componentsJson = JSON.stringify(this._componentManager.initialComponents.map(c => descriptorToMarker(c)));
     this._startCircuitUri = navigationManagerFunctions.getLocationHref();
-    resetLastLocationChange();
     try {
       this._circuitId = await this._connection.invoke<string>(
         'StartCircuit',

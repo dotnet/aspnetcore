@@ -213,9 +213,25 @@
             const blockWebassemblySettings = getQueryParam('block-webassembly-settings') === 'true';
             const keepCircuitAlive = sessionStorage.getItem('keep-circuit-alive') === 'true';
             const blockServerRendererAttach = sessionStorage.getItem('block-server-renderer-attach') === 'true';
+            const blockServerNegotiation = sessionStorage.getItem('block-server-negotiation') === 'true';
             sessionStorage.removeItem('block-load-boot-resource');
             sessionStorage.removeItem('enable-classic-initializers');
             sessionStorage.removeItem('block-server-renderer-attach');
+            sessionStorage.removeItem('block-server-negotiation');
+
+            if (blockServerNegotiation) {
+                const fetch = window.fetch;
+                window.fetch = async (input, init) => {
+                    if (typeof input === 'string' && new URL(input, document.baseURI).pathname.endsWith('/_blazor/negotiate')) {
+                        window.fetch = fetch;
+                        await new Promise(resolve => {
+                            window.unblockServerNegotiation = resolve;
+                            appendHiddenParagraph('server-negotiation-blocked');
+                        });
+                    }
+                    return fetch(input, init);
+                };
+            }
 
             if (blockServerRendererAttach) {
                 // Holds back attaching the server renderer until the test unblocks it, simulating a slow
