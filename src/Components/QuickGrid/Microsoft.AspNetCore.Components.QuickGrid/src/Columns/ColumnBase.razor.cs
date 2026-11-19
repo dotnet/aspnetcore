@@ -49,7 +49,7 @@ public abstract partial class ColumnBase<TGridItem>
 
     /// <summary>
     /// Indicates whether the column's filter is currently active, causing a visual indicator to be displayed
-    /// on the column options button.
+    /// on the column options button and the active filter state to be included in its accessible label.
     /// </summary>
     [Parameter] public bool ColumnOptionsActive { get; set; }
 

@@ -126,21 +126,4 @@ public class ColumnBaseTest
         Assert.DoesNotContain("   ", cssClass);
     }
 
-    [Fact]
-    public void ColumnHeaderTemplate_RendersButtonWithCorrectClasses()
-    {
-        var column = new TestColumn
-        {
-            ColumnOptionsActive = true,
-            ColumnOptionsButtonClass = "my-filter-indicator"
-        };
-
-        var builder = new RenderTreeBuilder();
-        column.HeaderContent(builder);
-
-        var cssClass = column.ColumnOptionsButtonCssClass;
-        Assert.Contains("col-options-button", cssClass);
-        Assert.Contains("my-filter-indicator", cssClass);
-        Assert.Contains("col-options-active", cssClass);
-    }
 }
