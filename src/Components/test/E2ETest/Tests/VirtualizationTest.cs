@@ -425,10 +425,19 @@ public class VirtualizationTest : ServerTestBase<ToggleExecutionModeServerFixtur
         Assert.Equal(0, nestedTrCountAfterScroll);
     }
 
-    [Fact]
-    public void FilterGrowth_BackToTopShowsFirstRows()
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public void FilterGrowth_BackToTopShowsFirstRows(bool useTable)
     {
-        Browser.MountTestComponent<VirtualizationFilterGrowth>();
+        if (useTable)
+        {
+            Browser.MountTestComponent<VirtualizationFilterGrowthTable>();
+        }
+        else
+        {
+            Browser.MountTestComponent<VirtualizationFilterGrowth>();
+        }
         var js = (IJavaScriptExecutor)Browser;
 
         Browser.True(() => Browser.Exists(By.Id("filter-row-0")).Displayed, TimeSpan.FromSeconds(10));
