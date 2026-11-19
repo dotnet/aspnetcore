@@ -432,9 +432,10 @@ public class VirtualizationTest : ServerTestBase<ToggleExecutionModeServerFixtur
         var js = (IJavaScriptExecutor)Browser;
 
         Browser.True(
-            () => Browser.FindElements(By.XPath("//td[text()='Loading…']")).Count > 0,
-            TimeSpan.FromSeconds(10), "Expected the gated provider to show placeholders");
-        Assert.Empty(Browser.FindElements(By.CssSelector("#fractional-height-table-container [id^='fractional-row-']")));
+            () => Browser.FindElements(By.CssSelector("#fractional-height-table-container [id^='fractional-row-']")).Count > 0,
+            TimeSpan.FromSeconds(10), "Expected the initial provider load to render rows");
+
+        Browser.Exists(By.Id("gate-fractional-load")).Click();
 
         // Match the report's scroll cadence while the provider is still pending.
         js.ExecuteAsyncScript(@"
@@ -452,6 +453,9 @@ public class VirtualizationTest : ServerTestBase<ToggleExecutionModeServerFixtur
             step();
         ");
 
+        Browser.True(
+            () => Browser.FindElements(By.XPath("//td[text()='Loading…']")).Count > 0,
+            TimeSpan.FromSeconds(10), "Expected the gated provider to show placeholders after scrolling");
         Assert.Empty(Browser.FindElements(By.CssSelector("#fractional-height-table-container [id^='fractional-row-']")));
 
         Browser.Exists(By.Id("release-fractional-load")).Click();

@@ -1,6 +1,7 @@
 @using Microsoft.AspNetCore.Components.Web.Virtualization
 
 <p>Fractional row heights in a table inside a container scroller.</p>
+<button id="gate-fractional-load" @onclick="GateLoad">Gate load</button>
 <button id="release-fractional-load" @onclick="ReleaseLoad">Release load</button>
 
 <div id="fractional-height-table-container" style="height: 350px; overflow-y: auto; border: 1px solid #999;">
@@ -30,12 +31,18 @@
     private const int TotalRows = 20000;
 
     private readonly TaskCompletionSource release = new(TaskCreationOptions.RunContinuationsAsynchronously);
+    private bool gate;
+
+    private void GateLoad() => gate = true;
 
     private void ReleaseLoad() => release.TrySetResult();
 
     private async ValueTask<ItemsProviderResult<int>> LoadAsync(ItemsProviderRequest request)
     {
-        await release.Task;
+        if (gate)
+        {
+            await release.Task;
+        }
         var count = Math.Min(request.Count, TotalRows - request.StartIndex);
         return new ItemsProviderResult<int>(Enumerable.Range(request.StartIndex, count), TotalRows);
     }
