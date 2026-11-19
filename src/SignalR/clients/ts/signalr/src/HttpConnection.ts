@@ -77,8 +77,38 @@ export class HttpConnection implements IConnection {
     public readonly features: any = {};
     public baseUrl: string;
     public connectionId?: string;
-    public onreceive: ((data: string | ArrayBuffer) => void) | null;
-    public onclose: ((e?: Error) => void) | null;
+    private _onReceive: ((data: string | ArrayBuffer) => void) | null = null;
+    private _onClose: ((e?: Error) => void) | null = null;
+
+    public get onReceive(): ((data: string | ArrayBuffer) => void) | null {
+        return this._onReceive;
+    }
+    public set onReceive(value: ((data: string | ArrayBuffer) => void) | null) {
+        this._onReceive = value;
+    }
+
+    public get onClose(): ((e?: Error) => void) | null {
+        return this._onClose;
+    }
+    public set onClose(value: ((e?: Error) => void) | null) {
+        this._onClose = value;
+    }
+
+    /** @deprecated Use {@link HttpConnection.onReceive} instead. */
+    public get onreceive(): ((data: string | ArrayBuffer) => void) | null {
+        return this._onReceive;
+    }
+    public set onreceive(value: ((data: string | ArrayBuffer) => void) | null) {
+        this._onReceive = value;
+    }
+
+    /** @deprecated Use {@link HttpConnection.onClose} instead. */
+    public get onclose(): ((e?: Error) => void) | null {
+        return this._onClose;
+    }
+    public set onclose(value: ((e?: Error) => void) | null) {
+        this._onClose = value;
+    }
 
     private readonly _negotiateVersion: number = 1;
 
@@ -550,9 +580,13 @@ export class HttpConnection implements IConnection {
     }
 
     private _startTransport(url: string, transferFormat: TransferFormat): Promise<void> {
+        // Assign both spellings so custom transports implementing either the
+        // camelCase or the legacy lowercase callback receive the handlers.
         this.transport!.onreceive = this.onreceive;
+        this.transport!.onReceive = this.onreceive;
+        let onClose: (e?: Error) => void;
         if (this.features.reconnect) {
-            this.transport!.onclose = async (e) => {
+            onClose = async (e) => {
                 let callStop = false;
                 if (this.features.reconnect) {
                     try {
@@ -572,8 +606,10 @@ export class HttpConnection implements IConnection {
                 }
             };
         } else {
-            this.transport!.onclose = (e) => this._stopConnection(e);
+            onClose = (e) => this._stopConnection(e);
         }
+        this.transport!.onclose = onClose;
+        this.transport!.onClose = onClose;
         return this.transport!.connect(url, transferFormat);
     }
 

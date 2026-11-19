@@ -17,8 +17,38 @@ export class ServerSentEventsTransport implements ITransport {
     private _eventSource?: EventSource;
     private _url?: string;
 
-    public onreceive: ((data: string | ArrayBuffer) => void) | null;
-    public onclose: ((error?: Error | unknown) => void) | null;
+    private _onReceive: ((data: string | ArrayBuffer) => void) | null = null;
+    private _onClose: ((error?: Error | unknown) => void) | null = null;
+
+    public get onReceive(): ((data: string | ArrayBuffer) => void) | null {
+        return this._onReceive;
+    }
+    public set onReceive(value: ((data: string | ArrayBuffer) => void) | null) {
+        this._onReceive = value;
+    }
+
+    public get onClose(): ((error?: Error | unknown) => void) | null {
+        return this._onClose;
+    }
+    public set onClose(value: ((error?: Error | unknown) => void) | null) {
+        this._onClose = value;
+    }
+
+    /** @deprecated Use {@link ServerSentEventsTransport.onReceive} instead. */
+    public get onreceive(): ((data: string | ArrayBuffer) => void) | null {
+        return this._onReceive;
+    }
+    public set onreceive(value: ((data: string | ArrayBuffer) => void) | null) {
+        this._onReceive = value;
+    }
+
+    /** @deprecated Use {@link ServerSentEventsTransport.onClose} instead. */
+    public get onclose(): ((error?: Error | unknown) => void) | null {
+        return this._onClose;
+    }
+    public set onclose(value: ((error?: Error | unknown) => void) | null) {
+        this._onClose = value;
+    }
 
     constructor(httpClient: HttpClient, accessToken: string | undefined, logger: ILogger,
                 options: IHttpConnectionOptions) {
