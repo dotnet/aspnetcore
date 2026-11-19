@@ -70,7 +70,7 @@ internal sealed partial class DefaultLinkParser : LinkParser, IDisposable
     private List<RouteEndpoint> GetEndpoints<TAddress>(TAddress address)
     {
         var addressingScheme = _serviceProvider.GetRequiredService<IEndpointAddressScheme<TAddress>>();
-        var endpoints = addressingScheme.FindEndpoints(address).OfType<RouteEndpoint>().ToList();
+        var endpoints = DefaultLinkGenerator.ToRouteEndpointList(addressingScheme.FindEndpoints(address));
 
         if (endpoints.Count == 0)
         {

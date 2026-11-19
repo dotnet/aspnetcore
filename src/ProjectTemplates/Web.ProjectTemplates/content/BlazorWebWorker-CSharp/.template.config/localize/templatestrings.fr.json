@@ -1,4 +1,4 @@
-﻿{
+{
   "author": "Microsoft",
   "name": "Blazor Web Worker",
   "description": "Un projet de création d’une bibliothèque de classes qui exécute du code .NET sur un web worker depuis une application Blazor WebAssembly ou Blazor Web.",
