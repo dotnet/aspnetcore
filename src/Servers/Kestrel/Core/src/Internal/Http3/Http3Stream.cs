@@ -996,6 +996,11 @@ internal abstract partial class Http3Stream : HttpProtocol, IHttp3Stream, IHttpS
             InputRemaining -= payload.Length;
         }
 
+        if (payload.IsEmpty)
+        {
+            return Task.CompletedTask;
+        }
+
         lock (_completionLock)
         {
             if (IsAborted || IsAbortedRead)
