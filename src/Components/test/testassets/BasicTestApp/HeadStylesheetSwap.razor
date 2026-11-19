@@ -1,0 +1,20 @@
+@if (removed)
+{
+}
+else if (replacement)
+{
+    <HeadContent><link id="swap-stylesheet" rel="stylesheet" href="head-swap-replacement.css" /></HeadContent>
+}
+else
+{
+    <HeadContent><link id="swap-stylesheet" rel="stylesheet" href="head-swap-initial.css" /></HeadContent>
+}
+
+<button id="swap-head" @onclick="() => replacement = true">Replace stylesheet</button>
+<button id="remove-head-sheet" @onclick="() => removed = true">Remove stylesheet</button>
+<div id="swap-target" style="background-color: red">Stylesheet target</div>
+
+@code {
+    private bool replacement;
+    private bool removed;
+}

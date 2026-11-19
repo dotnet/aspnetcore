@@ -14,6 +14,7 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Infrastructure.ServerFixtures;
 
 public class BlazorWasmTestAppFixture<TProgram> : WebHostServerFixture
 {
+    internal Action<WebApplication> ConfigureGateway { get; set; }
     public readonly bool TestTrimmedApps = typeof(ToggleExecutionModeServerFixture<>).Assembly
         .GetCustomAttributes<AssemblyMetadataAttribute>()
         .First(m => m.Key == "Microsoft.AspNetCore.E2ETesting.TestTrimmedApps")
@@ -92,6 +93,7 @@ public class BlazorWasmTestAppFixture<TProgram> : WebHostServerFixture
         }
 
         var app = BlazorGateway.BuildWebHost(args.ToArray());
+        ConfigureGateway?.Invoke(app);
         app.MapFallbackToFile("index.html");
         return app;
     }
