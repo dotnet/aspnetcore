@@ -1235,6 +1235,107 @@ try {
   assert.equal(discardedOnlyNoopWithVerifierAccepted.status, 0,
     discardedOnlyNoopWithVerifierAccepted.stderr);
 
+  const validDiscardedSummaryBody =
+    'STATUS: NO_FINDINGS\n\nSource-only review of frozen head `0123456789abcdef`.\n\n' +
+    '<details>\n<summary>DISCARDED</summary>\n\n' +
+    '- `example.cs:1` — [DISCARDED] Pre-existing behavior.\n' +
+    '  - Why discarded: Unchanged in merge-base.\n\n</details>';
+
+  const discardedSummaryWithoutVerifierAccepted = runVerifier([
+    ...initialReport,
+    ...safeOutputCall('review-discarded-summary', 'safeoutputs-submit_pull_request_review', {
+      event: 'COMMENT',
+      body: validDiscardedSummaryBody,
+    }),
+  ], '1');
+  assert.equal(discardedSummaryWithoutVerifierAccepted.status, 0,
+    discardedSummaryWithoutVerifierAccepted.stderr);
+
+  const discardedSummaryWithVerifierAccepted = runVerifier([
+    ...initialReport,
+    ...hostedCandidateVerifier(),
+    ...safeOutputCall('review-discarded-summary', 'safeoutputs-submit_pull_request_review', {
+      event: 'COMMENT',
+      body: validDiscardedSummaryBody,
+    }),
+  ], '1');
+  assert.equal(discardedSummaryWithVerifierAccepted.status, 0,
+    discardedSummaryWithVerifierAccepted.stderr);
+
+  const discardedSummaryWithFencedClosingDetailsAccepted = runVerifier([
+    ...initialReport,
+    ...safeOutputCall('review-discarded-fenced-closing', 'safeoutputs-submit_pull_request_review', {
+      event: 'COMMENT',
+      body: 'STATUS: NO_FINDINGS\n\n<details>\n<summary>DISCARDED</summary>\n\n' +
+        '```html\n</details>\n```\n\n- `example.cs:1` — Contradicted.\n\n</details>',
+    }),
+  ], '1');
+  assert.equal(discardedSummaryWithFencedClosingDetailsAccepted.status, 0,
+    discardedSummaryWithFencedClosingDetailsAccepted.stderr);
+
+  const discardedSummaryWithExcessVerifierRejected = runVerifier([
+    ...initialReport,
+    ...hostedCandidateVerifier('verifier-one', 'candidate-verifier-1'),
+    ...hostedCandidateVerifier('verifier-two', 'candidate-verifier-2'),
+    ...safeOutputCall('review-discarded-summary', 'safeoutputs-submit_pull_request_review', {
+      event: 'COMMENT',
+      body: validDiscardedSummaryBody,
+    }),
+  ], '1');
+  assert.notEqual(discardedSummaryWithExcessVerifierRejected.status, 0);
+  assert.match(
+    discardedSummaryWithExcessVerifierRejected.stderr,
+    /Expected at most 1 'review-candidate-verifier'/);
+
+  const discardedSummaryMixedWithNoopWithoutVerifierRejected = runVerifier([
+    ...initialReport,
+    ...safeOutputCall('review-discarded-summary', 'safeoutputs-submit_pull_request_review', {
+      event: 'COMMENT',
+      body: validDiscardedSummaryBody,
+    }),
+    ...safeOutputCall('noop-extra', 'safeoutputs-noop', { message: 'Extra noop.' }),
+  ], '1');
+  assert.notEqual(discardedSummaryMixedWithNoopWithoutVerifierRejected.status, 0);
+  assert.match(
+    discardedSummaryMixedWithNoopWithoutVerifierRejected.stderr,
+    /Findings publication requires 1 'review-candidate-verifier' subagent/);
+
+  const findingsStatusWithDiscardedDetailsWithoutVerifierRejected = runVerifier([
+    ...initialReport,
+    ...safeOutputCall('review-findings-status', 'safeoutputs-submit_pull_request_review', {
+      event: 'COMMENT',
+      body: 'STATUS: FINDINGS\n\n<details><summary>DISCARDED</summary>\nOld behavior.\n</details>',
+    }),
+  ], '1');
+  assert.notEqual(findingsStatusWithDiscardedDetailsWithoutVerifierRejected.status, 0);
+  assert.match(
+    findingsStatusWithDiscardedDetailsWithoutVerifierRejected.stderr,
+    /Findings publication requires 1 'review-candidate-verifier' subagent/);
+
+  const noFindingsWithoutDiscardedDetailsWithoutVerifierRejected = runVerifier([
+    ...initialReport,
+    ...safeOutputCall('review-missing-details', 'safeoutputs-submit_pull_request_review', {
+      event: 'COMMENT',
+      body: 'STATUS: NO_FINDINGS\n\nSource-only review without discarded details.',
+    }),
+  ], '1');
+  assert.notEqual(noFindingsWithoutDiscardedDetailsWithoutVerifierRejected.status, 0);
+  assert.match(
+    noFindingsWithoutDiscardedDetailsWithoutVerifierRejected.stderr,
+    /Findings publication requires 1 'review-candidate-verifier' subagent/);
+
+  const noFindingsWithFencedDiscardedDetailsWithoutVerifierRejected = runVerifier([
+    ...initialReport,
+    ...safeOutputCall('review-fenced-details', 'safeoutputs-submit_pull_request_review', {
+      event: 'COMMENT',
+      body: 'STATUS: NO_FINDINGS\n\n```html\n<details><summary>DISCARDED</summary>\nExample only.\n</details>\n```',
+    }),
+  ], '1');
+  assert.notEqual(noFindingsWithFencedDiscardedDetailsWithoutVerifierRejected.status, 0);
+  assert.match(
+    noFindingsWithFencedDiscardedDetailsWithoutVerifierRejected.stderr,
+    /Findings publication requires 1 'review-candidate-verifier' subagent/);
+
   const verifierDisallowedSkill = runVerifier([
     ...initialReport,
     taskStarted('verifier-skill', 'candidate-verifier', { agentType: 'review-candidate-verifier' }),
