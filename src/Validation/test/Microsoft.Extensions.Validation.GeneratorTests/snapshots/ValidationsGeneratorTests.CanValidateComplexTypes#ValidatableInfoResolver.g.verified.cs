@@ -1105,11 +1105,18 @@ namespace Microsoft.Extensions.Validation.Generated
 
             static ValidatableTypeInfo? TryGetValidatableTypeInfo(global::System.Type superType, global::System.Type actualType, global::Microsoft.Extensions.Validation.ValidationOptions options)
             {
-                if (superType.IsAssignableFrom(actualType) &&
-                    options.TryGetValidatableTypeInfo(superType, out var found)
-                    && found is ValidatableTypeInfo superTypeInfo)
+                if (!superType.IsAssignableFrom(actualType))
                 {
-                    return superTypeInfo;
+                    return null;
+                }
+
+                foreach (var resolver in options.Resolvers)
+                {
+                    if (resolver.TryGetValidatableTypeInfo(superType, out var validatableTypeInfo) &&
+                        validatableTypeInfo is ValidatableTypeInfo concrete)
+                    {
+                        return concrete;
+                    }
                 }
 
                 return null;
