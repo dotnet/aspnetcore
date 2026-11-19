@@ -12,15 +12,15 @@ internal static class UrlNormalizer
     private static readonly SearchValues<char> s_validSchemeChars =
         SearchValues.Create("+-.0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz");
 
-    public static bool HasAbsoluteSchemeAndAuthority(string url, out int schemeSplit)
+    public static bool HasAbsoluteSchemeAndAuthority(string url, out int schemeDelimiterIndex)
     {
-        schemeSplit = url.IndexOf(Uri.SchemeDelimiter, StringComparison.Ordinal);
-        if (schemeSplit <= 0 || !IsValidSchemeName(url.AsSpan(0, schemeSplit)))
+        schemeDelimiterIndex = url.IndexOf(Uri.SchemeDelimiter, StringComparison.Ordinal);
+        if (schemeDelimiterIndex <= 0 || !IsValidSchemeName(url.AsSpan(0, schemeDelimiterIndex)))
         {
             return false;
         }
 
-        var remainder = url.AsSpan(schemeSplit + Uri.SchemeDelimiter.Length);
+        var remainder = url.AsSpan(schemeDelimiterIndex + Uri.SchemeDelimiter.Length);
         var delimiterIndex = remainder.IndexOfAny('/', '?', '#');
         var authority = delimiterIndex < 0 ? remainder : remainder.Slice(0, delimiterIndex);
 

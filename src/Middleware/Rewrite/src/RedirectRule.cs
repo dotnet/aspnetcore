@@ -58,21 +58,21 @@ internal sealed class RedirectRule : IRule
             {
                 var host = default(HostString);
                 string scheme = request.Scheme;
-                if (UrlNormalizer.HasAbsoluteSchemeAndAuthority(newPath, out var schemeSplit))
+                if (UrlNormalizer.HasAbsoluteSchemeAndAuthority(newPath, out var schemeDelimiterIndex))
                 {
-                    scheme = newPath.Substring(0, schemeSplit);
-                    schemeSplit += Uri.SchemeDelimiter.Length;
-                    var pathSplit = newPath.AsSpan(schemeSplit).IndexOfAny('/', '?');
+                    scheme = newPath.Substring(0, schemeDelimiterIndex);
+                    var authorityIndex = schemeDelimiterIndex + Uri.SchemeDelimiter.Length;
+                    var pathSplit = newPath.AsSpan(authorityIndex).IndexOfAny('/', '?');
 
                     if (pathSplit == -1)
                     {
-                        host = new HostString(newPath.Substring(schemeSplit));
+                        host = new HostString(newPath.Substring(authorityIndex));
                         newPath = "/";
                     }
                     else
                     {
-                        pathSplit += schemeSplit;
-                        host = new HostString(newPath.Substring(schemeSplit, pathSplit - schemeSplit));
+                        pathSplit += authorityIndex;
+                        host = new HostString(newPath.Substring(authorityIndex, pathSplit - authorityIndex));
                         newPath = newPath[pathSplit] == '?'
                             ? string.Concat("/", newPath.AsSpan(pathSplit))
                             : newPath.Substring(pathSplit);
