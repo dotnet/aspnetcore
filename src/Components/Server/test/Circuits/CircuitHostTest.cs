@@ -1,6 +1,7 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Collections.Concurrent;
 using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using System.Reflection;
@@ -1251,10 +1252,10 @@ public class CircuitHostTest
         var services = new ServiceCollection()
             .AddSingleton<CircuitHandler>(handler)
             .BuildServiceProvider();
-        var acknowledgedBatches = new List<long>();
+        var acknowledgedBatches = new ConcurrentQueue<long>();
         var client = new Mock<ISingleClientProxy>();
         client.Setup(c => c.SendCoreAsync("JS.EndUpdateRootComponents", It.IsAny<object[]>(), It.IsAny<CancellationToken>()))
-            .Callback((string _, object[] arguments, CancellationToken _) => acknowledgedBatches.Add((long)arguments[0]))
+            .Callback((string _, object[] arguments, CancellationToken _) => acknowledgedBatches.Enqueue((long)arguments[0]))
             .Returns(Task.CompletedTask);
         var renderer = GetRemoteRenderer();
         var circuitHost = TestCircuitHost.Create(
@@ -1295,7 +1296,7 @@ public class CircuitHostTest
         var rootComponents = renderer.GetOrCreateWebRootComponentManager().GetRootComponents().OrderBy(component => component.id).ToArray();
         Assert.Equal([1, 2], rootComponents.Select(component => component.id));
         Assert.Equal(expectedMessage, rootComponents[0].Item3.parameters.GetValueOrDefault<string>(nameof(DynamicallyAddedComponent.Message)));
-        Assert.Equal([1L, 2L], acknowledgedBatches);
+        Assert.Equal([1L, 2L], acknowledgedBatches.Order());
     }
 
     [Fact]
