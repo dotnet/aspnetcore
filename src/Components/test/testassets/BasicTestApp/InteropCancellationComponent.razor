@@ -35,6 +35,8 @@
 <p id="snapshot-js"></p>
 <p id="concurrent-js"></p>
 <p id="wrapped-js"></p>
+<p id="collected-gc"></p>
+<p id="dropped-gc"></p>
 <button id="start-control" @onclick="StartControlCall">Use invocation control token</button>
 <button id="cancel-control" @onclick="() => controlSource.Cancel()">Cancel managed wait</button>
 <button id="release-control" onclick="cancellationTests.releaseControl()">Complete JS function</button>
@@ -127,12 +129,15 @@
     public bool Inspect(CancellationToken cancellationToken) => cancellationToken.IsCancellationRequested;
 
     [JSInvokable]
-    public bool DelayNextInboundActivity(int milliseconds)
+    public bool HoldNextInboundActivity()
     {
-        var delay = Services.GetService<InboundActivityDelay>();
-        delay?.DelayNext(milliseconds);
-        return delay is not null;
+        var gate = Services.GetService<InboundActivityGate>();
+        gate?.HoldNext();
+        return gate is not null;
     }
+
+    [JSInvokable]
+    public void ReleaseHeldInboundActivity() => Services.GetRequiredService<InboundActivityGate>().ReleaseHeld();
 
     [JSInvokable]
     public string ReceiveSync(CancellationToken cancellationToken)

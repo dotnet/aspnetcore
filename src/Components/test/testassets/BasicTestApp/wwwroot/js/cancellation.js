@@ -3,6 +3,9 @@
 
 const references = new Map();
 const retainedSignals = new Map();
+const collectedSignals = new Map();
+const pageFinalizer = new FinalizationRegistry(id => collectedSignals.get(id)?.());
+const nextTask = () => new Promise(resolve => setTimeout(resolve, 0));
 let releaseControl;
 
 export function initialize(target) {
@@ -105,31 +108,39 @@ export function initialize(target) {
             document.getElementById("sync-js").textContent = `${live}:${preAborted}`;
         },
         async overtaken() {
-            if (!await target.invokeMethodAsync("DelayNextInboundActivity", 1000)) {
-                document.getElementById("overtaken-js").textContent = "no inbound delay";
+            if (!await target.invokeMethodAsync("HoldNextInboundActivity")) {
+                document.getElementById("overtaken-js").textContent = "no inbound gate";
                 return;
             }
-            // The call is sent at once and held back on the server; the abort message follows and is not held back.
+            // The server holds the call; the abort message is sent after it but is not held.
             const started = this.start("overtaken", "wait");
             this.abort("overtaken");
+            await nextTask(); // The abort message is deferred by a microtask, so it is sent before the release below.
+            await target.invokeMethodAsync("ReleaseHeldInboundActivity");
             await started;
         },
         async collectedDuringCall(abort) {
             const id = abort ? "collected" : "dropped";
-            if (!await target.invokeMethodAsync("DelayNextInboundActivity", 1000)) {
-                document.getElementById(`${id}-js`).textContent = "no inbound delay";
+            if (!await target.invokeMethodAsync("HoldNextInboundActivity")) {
+                document.getElementById(`${id}-js`).textContent = "no inbound gate";
                 return;
             }
-            // Nothing keeps the signal after this, so the test can collect it while the call is held back on the server.
             let controller = new AbortController();
+            const collected = new Promise(resolve => collectedSignals.set(id, resolve));
+            pageFinalizer.register(controller.signal, id);
             const pending = abort
                 ? target.invokeMethodAsync("Receive", controller.signal, id, "wait")
                 : target.invokeMethodAsync("Inspect", controller.signal);
             if (abort) {
                 controller.abort();
             }
+            // Nothing keeps the signal after this, so the test can collect it while the server holds the call.
             controller = null;
             document.getElementById(`${id}-js`).textContent = "pending";
+            await collected;
+            document.getElementById(`${id}-gc`).textContent = "signal collected";
+            await nextTask(); // Lets the interop's own cleanup callback for the signal run before the release.
+            await target.invokeMethodAsync("ReleaseHeldInboundActivity");
             try {
                 document.getElementById(`${id}-js`).textContent = String(await pending);
             } catch (error) {

@@ -114,6 +114,68 @@ describe("AbortSignal arguments", () => {
         }
     });
 
+    test.each([["call first"], ["abort first"]])("Release waits for both the call reply and the abort reply (%s)", async (order) => {
+        const controller = new AbortController();
+        const call = callWith(controller.signal);
+        controller.abort();
+        await flush();
+        const abort = messages("__AbortSignalAborted")[0];
+        collect(controller.signal);
+
+        complete(order === "call first" ? call : abort);
+        await flush();
+        expect(messages("__AbortSignalReleased")).toHaveLength(0);
+
+        complete(order === "call first" ? abort : call);
+        await flush();
+        expect(messages("__AbortSignalReleased")).toHaveLength(1);
+    });
+
+    test("A reply that cannot be revived still ends the call's hold on the signal", async () => {
+        const signal = new AbortController().signal;
+        const call = callWith(signal);
+
+        expect(() => dispatcher.endInvokeDotNetFromJS(String(call.callId), true, "not json")).toThrow();
+        collect(signal);
+        await flush();
+        expect(messages("__AbortSignalReleased")).toHaveLength(1);
+    });
+
+    test("Nested serialization does not lose the outer call's dispatcher", () => {
+        const signal = new AbortController().signal;
+        const nested = {
+            get value() {
+                dispatcher.invokeDotNetStaticMethodAsync("App", "Nested", 1).catch(() => { });
+                return 1;
+            },
+        };
+        dispatcher.invokeDotNetStaticMethodAsync("App", "Outer", nested, signal).catch(() => { });
+
+        const outer = messages("Outer");
+        expect(outer).toHaveLength(1);
+        expect(JSON.parse(outer[0].argsJson)[1].__abortSignal).toBeGreaterThan(0);
+    });
+
+    test("A call that completes before beginInvokeDotNetFromJS returns is counted", async () => {
+        const inlineSent: SentCall[] = [];
+        const inlineDispatcher: DotNet.ICallDispatcher = DotNet.attachDispatcher({
+            beginInvokeDotNetFromJS: function (callId: number, assemblyName: string | null, methodIdentifier: string, dotNetObjectId: number | null, argsJson: string): void {
+                inlineSent.push({ callId, methodIdentifier, argsJson });
+                if (methodIdentifier === "Receive") {
+                    inlineDispatcher.endInvokeDotNetFromJS(String(callId), true, "null");
+                }
+            },
+            sendByteArray: function (id: number, data: Uint8Array): void { },
+            endInvokeJSFromDotNet: function (callId: number, succeeded: boolean, resultOrError: any): void { },
+        });
+        const signal = new AbortController().signal;
+        await inlineDispatcher.invokeDotNetStaticMethodAsync("App", "Receive", signal);
+
+        collect(signal);
+        await flush();
+        expect(inlineSent.filter(call => call.methodIdentifier === "__AbortSignalReleased")).toHaveLength(1);
+    });
+
     test("A signal in a value returned to .NET is rejected", () => {
         const signal = new AbortController().signal;
         const objectId = DotNet.createJSObjectReference({ getSignal: () => signal })["__jsObjectId"];

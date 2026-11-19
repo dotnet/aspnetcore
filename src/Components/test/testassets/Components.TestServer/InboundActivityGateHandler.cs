@@ -7,19 +7,19 @@ using Microsoft.AspNetCore.Components.Server.Circuits;
 namespace TestServer;
 
 // Stands in for an application handler that awaits before calling next, which lets inbound messages reach the dispatcher out of order.
-public class InboundActivityDelayHandler(InboundActivityDelay delay) : CircuitHandler
+public class InboundActivityGateHandler(InboundActivityGate gate) : CircuitHandler
 {
     public override Func<CircuitInboundActivityContext, Task> CreateInboundActivityHandler(
         Func<CircuitInboundActivityContext, Task> next)
         => context =>
         {
-            var milliseconds = delay.TakeNextDelay();
-            return milliseconds == 0 ? next(context) : DelayThenNext(milliseconds, next, context);
+            var hold = gate.TakeHold();
+            return hold is null ? next(context) : WaitThenNext(hold, next, context);
         };
 
-    private static async Task DelayThenNext(int milliseconds, Func<CircuitInboundActivityContext, Task> next, CircuitInboundActivityContext context)
+    private static async Task WaitThenNext(Task hold, Func<CircuitInboundActivityContext, Task> next, CircuitInboundActivityContext context)
     {
-        await Task.Delay(milliseconds);
+        await hold;
         await next(context);
     }
 }

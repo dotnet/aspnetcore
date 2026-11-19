@@ -46,8 +46,8 @@ public class ServerStartup
         services.AddSingleton<CircuitHandler>(circuitContextAccessor);
         services.AddSingleton(circuitContextAccessor);
 
-        services.AddScoped<BasicTestApp.InboundActivityDelay>();
-        services.AddScoped<CircuitHandler, InboundActivityDelayHandler>();
+        services.AddScoped<BasicTestApp.InboundActivityGate>();
+        services.AddScoped<CircuitHandler, InboundActivityGateHandler>();
 
         services.AddKeyedSingleton(
             "keyed-service-1",

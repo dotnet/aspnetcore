@@ -211,7 +211,7 @@ public class InteropCancellationTest(
     }
 
     [Fact]
-    public void SignalAbortedAndCollectedWhileItsCallIsDelayedStillCancelsAndIsReleased()
+    public void SignalAbortedAndCollectedWhileItsCallIsHeldStillCancelsAndIsReleased()
     {
         if (_serverFixture.ExecutionMode != ExecutionMode.Server)
         {
@@ -219,15 +219,14 @@ public class InteropCancellationTest(
         }
 
         Click("start-collected");
-        CollectGarbage();
+        CollectGarbageUntil("collected-gc", "signal collected");
         Equal("collected-managed", "entered with canceled token");
         Equal("collected-js", "pre-canceled result");
-        CollectGarbage();
         Browser.Equal(0, ProjectionCount);
     }
 
     [Fact]
-    public void SignalCollectedWhileItsCallIsDelayedIsReleasedAfterTheCall()
+    public void SignalCollectedWhileItsCallIsHeldIsReleasedAfterTheCall()
     {
         if (_serverFixture.ExecutionMode != ExecutionMode.Server)
         {
@@ -235,9 +234,8 @@ public class InteropCancellationTest(
         }
 
         Click("start-dropped");
-        CollectGarbage();
+        CollectGarbageUntil("dropped-gc", "signal collected");
         Equal("dropped-js", "false");
-        CollectGarbage();
         Browser.Equal(0, ProjectionCount);
     }
 
@@ -252,4 +250,12 @@ public class InteropCancellationTest(
 
     private void CollectGarbage()
         => ((ChromeDriver)Browser).ExecuteCdpCommand("HeapProfiler.collectGarbage", new Dictionary<string, object>());
+
+    // A forced collection can run before the page drops the signal, so repeat it until the page reports the cleanup.
+    private void CollectGarbageUntil(string id, string expected)
+        => Browser.True(() =>
+        {
+            CollectGarbage();
+            return Browser.FindElement(By.Id(id)).Text == expected;
+        });
 }

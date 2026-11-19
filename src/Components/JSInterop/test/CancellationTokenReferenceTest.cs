@@ -83,12 +83,43 @@ public class CancellationTokenReferenceTest
     {
         using var runtime = new ReferenceRuntime();
         var token = ReceiveToken(runtime, """[{"__abortSignal":10,"aborted":false}]""");
-        var callbackRan = false;
-        using var registration = token.Register(() => callbackRan = true);
+        using var gate = new ManualResetEventSlim();
+        using var registration = token.Register(() => gate.Wait());
 
         SendAbort(runtime, 10, "abort");
-        Assert.True((await runtime.GetResult("abort")).Success);
-        Assert.True(callbackRan);
+        var acknowledgment = runtime.GetResult("abort");
+        await Task.Delay(50);
+        Assert.False(acknowledgment.IsCompleted);
+
+        gate.Set();
+        Assert.True((await acknowledgment).Success);
+    }
+
+    [Fact]
+    public async Task AbortedStateAndAbortMessageShareOneCancellation()
+    {
+        using var runtime = new ReferenceRuntime();
+        var token = ReceiveToken(runtime, """[{"__abortSignal":12,"aborted":false}]""");
+        using var gate = new ManualResetEventSlim();
+        var callbackRuns = 0;
+        using var registration = token.Register(() =>
+        {
+            Interlocked.Increment(ref callbackRuns);
+            gate.Wait();
+            throw new InvalidOperationException("callback failure");
+        });
+
+        ReceiveToken(runtime, """[{"__abortSignal":12,"aborted":true}]""");
+        SendAbort(runtime, 12, "abort");
+        var acknowledgment = runtime.GetResult("abort");
+        await Task.Delay(50);
+        Assert.False(acknowledgment.IsCompleted);
+
+        gate.Set();
+        var result = await acknowledgment;
+        Assert.False(result.Success);
+        Assert.Contains("callback failure", result.Exception!.ToString(), StringComparison.Ordinal);
+        Assert.Equal(1, callbackRuns);
     }
 
     [Fact]
