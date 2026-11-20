@@ -365,6 +365,11 @@ public class RazorComponentEndpointsStartup<TRootComponent>
         endpoints.MapGet("redirect/nonblazor/get", PerformRedirection);
         endpoints.MapPost("redirect/nonblazor/post", PerformRedirection);
 
+        endpoints.MapGet("globally-interactive/startup-redirect", (HttpContext context) =>
+        {
+            context.Response.Redirect($"{context.Request.PathBase}/globally-interactive/startup/Counter");
+        });
+
         // Used when testing enhanced navigation to non-Blazor endpoints
         endpoints.Map("/nav/non-blazor-html-response", async (HttpResponse response) =>
         {

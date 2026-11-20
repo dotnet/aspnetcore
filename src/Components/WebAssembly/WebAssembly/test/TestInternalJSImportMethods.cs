@@ -45,6 +45,12 @@ internal sealed class TestInternalJSImportMethods : IInternalJSImportMethods
     public string NavigationManager_GetLocationHref()
         => "https://www.example.com/awesome-part-that-will-be-truncated-in-tests/cool";
 
+    public string NavigationManager_GetHistoryEntryState()
+        => null;
+
+    public bool NavigationManager_GetLastNavigationWasIntercepted()
+        => false;
+
     public void NavigationManager_SetHasLocationChangingListeners(int rendererId, bool value) { }
 
     public string RegisteredComponents_GetAssembly(int index)

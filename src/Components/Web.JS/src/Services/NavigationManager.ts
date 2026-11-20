@@ -12,6 +12,7 @@ import { IBlazor } from '../GlobalExports';
 let hasRegisteredNavigationEventListeners = false;
 let currentHistoryIndex = 0;
 let currentLocationChangingCallId = 0;
+let lastNavigationWasIntercepted = false;
 
 type NavigationCallbacks = {
   rendererId: WebRendererId;
@@ -35,6 +36,8 @@ export const internalFunctions = {
   refresh,
   getBaseURI: (): string => document.baseURI,
   getLocationHref: (): string => location.href,
+  getHistoryEntryState: (): string | undefined => typeof history.state?.userState === 'string' ? history.state.userState : undefined,
+  getLastNavigationWasIntercepted: (): boolean => lastNavigationWasIntercepted,
   scrollToElement,
 };
 
@@ -260,6 +263,8 @@ async function onBrowserInitiatedPopState(state: PopStateEvent) {
 }
 
 async function notifyLocationChanged(interceptedLink: boolean, internalDestinationHref?: string) {
+  // Retain the notification's provenance even when no renderer is attached to receive it.
+  lastNavigationWasIntercepted = interceptedLink;
   const uri = internalDestinationHref ?? location.href;
 
   await Promise.all(Array.from(navigationCallbacks, async ([rendererId, callbacks]) => {
