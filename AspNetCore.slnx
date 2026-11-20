@@ -1207,10 +1207,6 @@
   <Folder Name="/src/Tools/GetDocumentInsider/">
     <Project Path="src/Tools/GetDocumentInsider/src/GetDocument.Insider.csproj" />
   </Folder>
-  <Folder Name="/src/Tools/Microsoft.dotnet-openapi/">
-    <Project Path="src/Tools/Microsoft.dotnet-openapi/src/Microsoft.dotnet-openapi.csproj" />
-    <Project Path="src/Tools/Microsoft.dotnet-openapi/test/dotnet-microsoft.openapi.Tests.csproj" />
-  </Folder>
   <Folder Name="/src/Tools/NativeAot/">
     <Project Path="src/Tools/NativeAot/aspnetcoretools/aspnetcoretools.csproj" />
     <Project Path="src/Tools/NativeAot/test/Microsoft.AspNetCore.Tools.NativeAot.Tests.csproj" />

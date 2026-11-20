@@ -197,7 +197,6 @@ are expressed as central `<PackageVersion>` items.
       <ItemGroup Label="MSBuild">
         <PackageVersion Include="Microsoft.Build" Version="$(MicrosoftBuildVersion)" />
         <PackageVersion Include="Microsoft.Build.Framework" Version="$(MicrosoftBuildFrameworkVersion)" />
-        <PackageVersion Include="Microsoft.Build.Locator" Version="$(MicrosoftBuildLocatorVersion)" />
         <PackageVersion Include="Microsoft.Build.Utilities.Core" Version="$(MicrosoftBuildUtilitiesCoreVersion)" />
       </ItemGroup>
 

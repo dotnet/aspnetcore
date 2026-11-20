@@ -111,8 +111,6 @@
       "src\\Tools\\GetDocumentInsider\\src\\GetDocument.Insider.csproj",
       "src\\Tools\\GetDocumentInsider\\tests\\GetDocumentInsider.Tests.csproj",
       "src\\Tools\\LinkabilityChecker\\LinkabilityChecker.csproj",
-      "src\\Tools\\Microsoft.dotnet-openapi\\src\\Microsoft.dotnet-openapi.csproj",
-      "src\\Tools\\Microsoft.dotnet-openapi\\test\\dotnet-microsoft.openapi.Tests.csproj",
       "src\\Tools\\NativeAot\\aspnetcoretools\\aspnetcoretools.csproj",
       "src\\Tools\\NativeAot\\test\\Microsoft.AspNetCore.Tools.NativeAot.Tests.csproj",
       "src\\Tools\\dotnet-dev-certs\\src\\dotnet-dev-certs.csproj",
