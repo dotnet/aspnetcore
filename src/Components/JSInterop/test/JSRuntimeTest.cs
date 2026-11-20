@@ -217,6 +217,65 @@ public class JSRuntimeTest
         var exception = Assert.IsType<AggregateException>(task.AsTask().Exception);
         var jsException = Assert.IsType<JSException>(exception.InnerException);
         Assert.Equal("This is a test exception", jsException.Message);
+        Assert.Null(jsException.Name);
+        Assert.Null(jsException.InnerException);
+    }
+
+    [Theory]
+    [InlineData("\"Legacy failure\"", null, "Legacy failure")]
+    [InlineData("null", null, "")]
+    [InlineData("{\"name\":\"AbortError\",\"formattedMessage\":\"Aborted\"}", "AbortError", "Aborted")]
+    public async Task FailedAsyncCallIsRemovedBeforeLaterCompletions(string payload, string? name, string message)
+    {
+        var runtime = new TestJSRuntime();
+        using var cts = new CancellationTokenSource();
+        var task = runtime.InvokeAsync<string>("test identifier", cts.Token);
+        var handle = runtime.BeginInvokeCalls[0].AsyncHandle;
+        var reader = new Utf8JsonReader(Encoding.UTF8.GetBytes(payload));
+        reader.Read();
+
+        Assert.True(runtime.EndInvokeJS(handle, succeeded: false, ref reader));
+        cts.Cancel();
+        var lateReader = new Utf8JsonReader(Encoding.UTF8.GetBytes("invalid"));
+        Assert.False(runtime.EndInvokeJS(handle, succeeded: false, ref lateReader));
+        Assert.Equal(0, lateReader.BytesConsumed);
+
+        var exception = await Assert.ThrowsAsync<JSException>(async () => await task);
+        Assert.Equal(name, exception.Name);
+        Assert.Equal(message, exception.Message);
+        Assert.Null(exception.InnerException);
+    }
+
+    [Fact]
+    public async Task MalformedFailureRemovesPendingCallAndPreservesDecodingCause()
+    {
+        var runtime = new TestJSRuntime();
+        using var cts = new CancellationTokenSource();
+        var task = runtime.InvokeAsync<string>("test identifier", cts.Token);
+        var handle = runtime.BeginInvokeCalls[0].AsyncHandle;
+        var reader = new Utf8JsonReader("{\"formattedMessage\":42}"u8);
+        reader.Read();
+
+        Assert.False(runtime.EndInvokeJS(handle, succeeded: false, ref reader));
+        cts.Cancel();
+        var lateReader = new Utf8JsonReader("invalid"u8);
+        Assert.False(runtime.EndInvokeJS(handle, succeeded: true, ref lateReader));
+        Assert.Equal(0, lateReader.BytesConsumed);
+
+        var exception = await Assert.ThrowsAsync<JSException>(async () => await task);
+        Assert.Null(exception.Name);
+        Assert.IsType<JsonException>(exception.InnerException);
+        Assert.Equal($"An exception occurred executing JS interop: {exception.InnerException.Message}. See InnerException for more details.", exception.Message);
+    }
+
+    [Fact]
+    public void UnknownAsyncCallDoesNotReadFailurePayload()
+    {
+        var runtime = new TestJSRuntime();
+        var reader = new Utf8JsonReader("invalid"u8);
+
+        Assert.False(runtime.EndInvokeJS(123, succeeded: false, ref reader));
+        Assert.Equal(0, reader.BytesConsumed);
     }
 
     [Fact]

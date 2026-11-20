@@ -9,6 +9,11 @@ namespace Microsoft.JSInterop;
 public class JSException : Exception
 {
     /// <summary>
+    /// Gets the JavaScript error name, or <see langword="null"/> if no name was provided.
+    /// </summary>
+    public string? Name { get; }
+
+    /// <summary>
     /// Constructs an instance of <see cref="JSException"/>.
     /// </summary>
     /// <param name="message">The exception message.</param>
@@ -23,5 +28,10 @@ public class JSException : Exception
     /// <param name="innerException">The inner exception.</param>
     public JSException(string message, Exception innerException) : base(message, innerException)
     {
+    }
+
+    internal JSException(string message, string? name, Exception? innerException) : base(message, innerException)
+    {
+        Name = name;
     }
 }

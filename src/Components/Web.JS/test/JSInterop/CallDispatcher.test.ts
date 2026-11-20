@@ -1,4 +1,4 @@
-import { expect } from "@jest/globals";
+import { beforeEach, describe, expect, jest, test } from "@jest/globals";
 import * as DotNet from "../../src/JSInterop/Microsoft.JSInterop";
 
 const jsObjectId = "__jsObjectId";
@@ -14,6 +14,165 @@ const dispatcher: DotNet.ICallDispatcher = DotNet.attachDispatcher(dotNetCallDis
 const getObjectReferenceId = (obj: any) => DotNet.createJSObjectReference(obj)[jsObjectId];
 
 describe("CallDispatcher", () => {
+    describe("asynchronous failure payload", () => {
+        beforeEach(() => { lastAsyncResult = null; });
+
+        describe.each(["throw", "reject"])("%s", (completion) => {
+            test.each<[string, () => Error]>([
+                ["TypeError", () => new TypeError("Wrong type")],
+                ["AbortError", () => new DOMException("Aborted", "AbortError")],
+                ["custom name", () => Object.assign(new Error("Custom failure"), { name: "MyLibraryError" })],
+                ["missing stack", () => Object.assign(new Error("No stack"), { stack: undefined })],
+            ])("preserves Error names and diagnostics: %s", async (_description, createError) => {
+                const error = createError();
+                const testFunc = () => {
+                    if (completion === "throw") {
+                        throw error;
+                    }
+                    return Promise.reject(error);
+                };
+                const objectId = getObjectReferenceId({ testFunc });
+                const formattedMessage = `${error.message}\n${error.stack}`;
+
+                await dispatcher.beginInvokeJSFromDotNet(123, "testFunc", "[]", DotNet.JSCallResultType.Default, objectId, DotNet.JSCallType.FunctionCall);
+
+                expect(lastAsyncResult).toStrictEqual({
+                    callId: 123,
+                    succeeded: false,
+                    resultOrError: JSON.stringify([123, false, { name: error.name, formattedMessage }]),
+                });
+            });
+        });
+
+        test.each(["throw", "reject"])("keeps non-Error values as legacy strings for %s", async (completion) => {
+            const thrownObject = { toString: () => "Custom object", toJSON: () => { throw new Error("Must not serialize thrown objects"); } };
+            for (const [error, expected] of [["name:AbortError\nplain text", "name:AbortError\nplain text"], [null, "null"], [thrownObject, "Custom object"]]) {
+                const testFunc = () => {
+                    if (completion === "throw") {
+                        throw error;
+                    }
+                    return Promise.reject(error);
+                };
+                const objectId = getObjectReferenceId({ testFunc });
+
+                await dispatcher.beginInvokeJSFromDotNet(123, "testFunc", "[]", DotNet.JSCallResultType.Default, objectId, DotNet.JSCallType.FunctionCall);
+
+                expect(lastAsyncResult).toStrictEqual({ callId: 123, succeeded: false, resultOrError: JSON.stringify([123, false, expected]) });
+            }
+        });
+
+        test("does not serialize extra Error properties or a non-string name", async () => {
+            const error = new Error("Failure");
+            Object.defineProperty(error, "name", { value: { toJSON: () => { throw new Error("Must not serialize the name"); } } });
+            Object.defineProperty(error, "extra", { enumerable: true, get: () => { throw new Error("Must not enumerate the error"); } });
+            error.stack = "Original stack";
+            const objectId = getObjectReferenceId({ testFunc: () => { throw error; } });
+
+            await dispatcher.beginInvokeJSFromDotNet(123, "testFunc", "[]", DotNet.JSCallResultType.Default, objectId, DotNet.JSCallType.FunctionCall);
+
+            expect(lastAsyncResult).toStrictEqual({ callId: 123, succeeded: false, resultOrError: JSON.stringify([123, false, { name: null, formattedMessage: "Failure\nOriginal stack" }]) });
+        });
+
+        test("delivers the legacy failure when the name getter throws", async () => {
+            const error = new Error("Original message");
+            error.stack = "Original stack";
+            Object.defineProperty(error, "name", { get: () => { throw new Error("Name getter failed"); } });
+            const endInvokeJSFromDotNet = jest.fn<DotNet.DotNetCallDispatcher["endInvokeJSFromDotNet"]>();
+            const testDispatcher = DotNet.attachDispatcher({ ...dotNetCallDispatcher, endInvokeJSFromDotNet });
+            const objectId = getObjectReferenceId({ testFunc: () => { throw error; } });
+
+            await expect(testDispatcher.beginInvokeJSFromDotNet(456, "testFunc", "[]", DotNet.JSCallResultType.Default, objectId, DotNet.JSCallType.FunctionCall)).resolves.toBeUndefined();
+
+            expect(endInvokeJSFromDotNet).toHaveBeenCalledTimes(1);
+            expect(endInvokeJSFromDotNet.mock.calls).toStrictEqual([[456, false, JSON.stringify([456, false, "Original message\nOriginal stack"])]]);
+        });
+
+        test("reads the name getter once and transmits its string value", async () => {
+            const error = new Error("Original message");
+            error.stack = "Original stack";
+            let nameReads = 0;
+            Object.defineProperty(error, "name", { get: () => { nameReads++; return "MyLibraryError"; } });
+            const endInvokeJSFromDotNet = jest.fn<DotNet.DotNetCallDispatcher["endInvokeJSFromDotNet"]>();
+            const testDispatcher = DotNet.attachDispatcher({ ...dotNetCallDispatcher, endInvokeJSFromDotNet });
+            const objectId = getObjectReferenceId({ testFunc: () => { throw error; } });
+
+            await testDispatcher.beginInvokeJSFromDotNet(789, "testFunc", "[]", DotNet.JSCallResultType.Default, objectId, DotNet.JSCallType.FunctionCall);
+
+            expect(nameReads).toBe(1);
+            expect(endInvokeJSFromDotNet).toHaveBeenCalledTimes(1);
+            expect(endInvokeJSFromDotNet.mock.calls).toStrictEqual([[789, false, JSON.stringify([789, false, { name: "MyLibraryError", formattedMessage: "Original message\nOriginal stack" }])]]);
+        });
+
+        test("propagates a failed error completion without retrying it", async () => {
+            const transportError = new Error("Completion transport failed");
+            const endInvokeJSFromDotNet = jest.fn<DotNet.DotNetCallDispatcher["endInvokeJSFromDotNet"]>(() => { throw transportError; });
+            const testDispatcher = DotNet.attachDispatcher({ ...dotNetCallDispatcher, endInvokeJSFromDotNet });
+            const objectId = getObjectReferenceId({ testFunc: () => { throw new Error("Original failure"); } });
+
+            await expect(testDispatcher.beginInvokeJSFromDotNet(123, "testFunc", "[]", DotNet.JSCallResultType.Default, objectId, DotNet.JSCallType.FunctionCall)).rejects.toBe(transportError);
+
+            expect(endInvokeJSFromDotNet).toHaveBeenCalledTimes(1);
+        });
+
+        test("checks a thrown proxy prototype once and delivers its original failure string", async () => {
+            let prototypeLookups = 0;
+            const error = new Proxy({ toString: () => "Original failure" }, {
+                getPrototypeOf: (target) => {
+                    prototypeLookups++;
+                    if (prototypeLookups > 1) {
+                        throw new Error("Prototype looked up twice");
+                    }
+                    return Reflect.getPrototypeOf(target);
+                },
+            });
+            const endInvokeJSFromDotNet = jest.fn<DotNet.DotNetCallDispatcher["endInvokeJSFromDotNet"]>();
+            const testDispatcher = DotNet.attachDispatcher({ ...dotNetCallDispatcher, endInvokeJSFromDotNet });
+            const objectId = getObjectReferenceId({ testFunc: () => { throw error; } });
+
+            await expect(testDispatcher.beginInvokeJSFromDotNet(246, "testFunc", "[]", DotNet.JSCallResultType.Default, objectId, DotNet.JSCallType.FunctionCall)).resolves.toBeUndefined();
+
+            expect(prototypeLookups).toBe(1);
+            expect(endInvokeJSFromDotNet).toHaveBeenCalledTimes(1);
+            expect(endInvokeJSFromDotNet.mock.calls).toStrictEqual([[246, false, JSON.stringify([246, false, "Original failure"])]]);
+        });
+
+        test("preserves successful completions", async () => {
+            const objectId = getObjectReferenceId({ testFunc: () => Promise.resolve({ value: 42 }) });
+
+            await dispatcher.beginInvokeJSFromDotNet(123, "testFunc", "[]", DotNet.JSCallResultType.Default, objectId, DotNet.JSCallType.FunctionCall);
+
+            expect(lastAsyncResult).toStrictEqual({ callId: 123, succeeded: true, resultOrError: '[123,true,{"value":42}]' });
+        });
+
+        test("does not send completions for zero handles", async () => {
+            let calls = 0;
+            const testFunc = () => { calls++; throw new TypeError("No response needed"); };
+            const objectId = getObjectReferenceId({ testFunc });
+
+            await dispatcher.beginInvokeJSFromDotNet(0, "testFunc", "[]", DotNet.JSCallResultType.Default, objectId, DotNet.JSCallType.FunctionCall);
+
+            expect(calls).toBe(1);
+            expect(lastAsyncResult).toBeNull();
+        });
+
+        test("does not serialize successful results for zero handles", async () => {
+            const value = { toJSON: () => { throw new Error("Must not serialize the result"); } };
+            const objectId = getObjectReferenceId({ testFunc: () => value });
+
+            await dispatcher.beginInvokeJSFromDotNet(0, "testFunc", "[]", DotNet.JSCallResultType.Default, objectId, DotNet.JSCallType.FunctionCall);
+
+            expect(lastAsyncResult).toBeNull();
+        });
+
+        test("leaves synchronous in-process exceptions unchanged", () => {
+            const error = new TypeError("Synchronous failure");
+            const objectId = getObjectReferenceId({ testFunc: () => { throw error; } });
+
+            expect(() => dispatcher.invokeJSFromDotNet("testFunc", "[]", DotNet.JSCallResultType.Default, objectId, DotNet.JSCallType.FunctionCall)).toThrow(error);
+            expect(lastAsyncResult).toBeNull();
+        });
+    });
+
     test("FunctionCall: Function with no arguments is invoked and returns value", () => {
         const testFunc = () => 1;
         const objectId = getObjectReferenceId({ testFunc });
