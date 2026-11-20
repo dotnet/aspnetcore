@@ -58,14 +58,8 @@ internal sealed class RewriteAction : UrlAction
             pattern = Uri.EscapeDataString(pattern);
         }
 
-        // Defense in depth: this rule does not emit a Location header itself, but the rewritten value is
-        // assigned to Request.Path below and a downstream component (or a later rule) may issue a redirect
-        // from it. PathString does not reject a leading '//' or '/\', so neutralize the scheme-relative
-        // shape here rather than auditing every downstream consumer.
-        pattern = UrlNormalizer.CollapseLeadingSlashes(pattern);
-
         // TODO PERF, substrings, object creation, etc.
-        if (pattern.Contains(Uri.SchemeDelimiter, StringComparison.Ordinal))
+        if (UrlNormalizer.HasAbsoluteSchemeAndAuthority(pattern, out _))
         {
             string scheme;
             HostString host;
@@ -95,18 +89,14 @@ internal sealed class RewriteAction : UrlAction
         }
         else
         {
+            // Defense in depth: this rule does not emit a Location header itself, but the rewritten value is
+            // assigned to Request.Path below and a downstream component (or a later rule) may issue a redirect
+            // from it. PathString does not reject a leading '//' or '/\', so neutralize the scheme-relative
+            // shape here rather than auditing every downstream consumer.
             var split = pattern.IndexOf('?');
             if (split >= 0)
             {
-                var path = pattern.Substring(0, split);
-                if (path[0] == '/')
-                {
-                    request.Path = PathString.FromUriComponent(path);
-                }
-                else
-                {
-                    request.Path = PathString.FromUriComponent('/' + path);
-                }
+                request.Path = UrlNormalizer.NormalizeRelativePath(pattern.Substring(0, split));
 
                 if (QueryStringAppend)
                 {
@@ -122,14 +112,7 @@ internal sealed class RewriteAction : UrlAction
             }
             else
             {
-                if (pattern[0] == '/')
-                {
-                    request.Path = PathString.FromUriComponent(pattern);
-                }
-                else
-                {
-                    request.Path = PathString.FromUriComponent('/' + pattern);
-                }
+                request.Path = UrlNormalizer.NormalizeRelativePath(pattern);
 
                 if (QueryStringDelete)
                 {

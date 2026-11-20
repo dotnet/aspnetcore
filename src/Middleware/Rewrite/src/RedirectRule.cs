@@ -43,7 +43,6 @@ internal sealed class RedirectRule : IRule
         if (initMatchResults.Success)
         {
             var newPath = initMatchResults.Result(Replacement);
-            newPath = UrlNormalizer.CollapseLeadingSlashes(newPath);
             var response = context.HttpContext.Response;
 
             response.StatusCode = StatusCode;
@@ -58,29 +57,36 @@ internal sealed class RedirectRule : IRule
             else
             {
                 var host = default(HostString);
-                var schemeSplit = newPath.IndexOf(Uri.SchemeDelimiter, StringComparison.Ordinal);
                 string scheme = request.Scheme;
-                if (schemeSplit >= 0)
+                if (UrlNormalizer.HasAbsoluteSchemeAndAuthority(newPath, out var schemeDelimiterIndex))
                 {
-                    scheme = newPath.Substring(0, schemeSplit);
-                    schemeSplit += Uri.SchemeDelimiter.Length;
-                    var pathSplit = newPath.IndexOf('/', schemeSplit);
+                    scheme = newPath.Substring(0, schemeDelimiterIndex);
+                    var authorityIndex = schemeDelimiterIndex + Uri.SchemeDelimiter.Length;
+                    var pathSplit = newPath.AsSpan(authorityIndex).IndexOfAny('/', '?');
 
                     if (pathSplit == -1)
                     {
-                        host = new HostString(newPath.Substring(schemeSplit));
+                        host = new HostString(newPath.Substring(authorityIndex));
                         newPath = "/";
                     }
                     else
                     {
-                        host = new HostString(newPath.Substring(schemeSplit, pathSplit - schemeSplit));
-                        newPath = newPath.Substring(pathSplit);
+                        pathSplit += authorityIndex;
+                        host = new HostString(newPath.Substring(authorityIndex, pathSplit - authorityIndex));
+                        newPath = newPath[pathSplit] == '?'
+                            ? string.Concat("/", newPath.AsSpan(pathSplit))
+                            : newPath.Substring(pathSplit);
                     }
                 }
 
-                if (newPath[0] != '/')
+                if (newPath[0] is not '/' and not '\\')
                 {
                     newPath = '/' + newPath;
+                }
+
+                if (!host.HasValue)
+                {
+                    newPath = UrlNormalizer.CollapseLeadingSlashes(newPath);
                 }
 
                 var resolvedQuery = request.QueryString;

@@ -1,10 +1,38 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Buffers;
+using Microsoft.AspNetCore.Http;
+
 namespace Microsoft.AspNetCore.Rewrite;
 
 internal static class UrlNormalizer
 {
+    // RFC 3986 section 3.1: scheme = ALPHA *( ALPHA / DIGIT / "+" / "-" / "." ), matching Uri.CheckSchemeName without allocating a substring.
+    private static readonly SearchValues<char> s_validSchemeChars =
+        SearchValues.Create("+-.0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz");
+
+    public static bool HasAbsoluteSchemeAndAuthority(string url, out int schemeDelimiterIndex)
+    {
+        if (string.IsNullOrEmpty(url) || !char.IsAsciiLetter(url[0]))
+        {
+            schemeDelimiterIndex = -1;
+            return false;
+        }
+
+        schemeDelimiterIndex = url.IndexOf(Uri.SchemeDelimiter, StringComparison.Ordinal);
+        if (schemeDelimiterIndex <= 0 || url.AsSpan(1, schemeDelimiterIndex - 1).ContainsAnyExcept(s_validSchemeChars))
+        {
+            return false;
+        }
+
+        var remainder = url.AsSpan(schemeDelimiterIndex + Uri.SchemeDelimiter.Length);
+        var delimiterIndex = remainder.IndexOfAny('/', '?', '#');
+        var authority = delimiterIndex < 0 ? remainder : remainder.Slice(0, delimiterIndex);
+
+        return !authority.IsEmpty;
+    }
+
     // Collapses a leading run of '/' and '\' to a single '/' so a redirect/rewrite target cannot resolve as a
     // scheme-relative authority. Mirrors the rejection predicate in SharedUrlHelper.IsLocalUrl.
     public static string CollapseLeadingSlashes(string url)
@@ -28,5 +56,25 @@ internal static class UrlNormalizer
         }
 
         return string.Concat("/", url.AsSpan(firstNonSlash));
+    }
+
+    // Ensures a leading slash, percent-decodes into a PathString, and collapses any leading '/' or '\' run
+    // (including '%5C' decoded to '\') to a single '/'.
+    public static PathString NormalizeRelativePath(string path)
+    {
+        if (string.IsNullOrEmpty(path))
+        {
+            return new PathString("/");
+        }
+
+        if (path[0] is not '/' and not '\\')
+        {
+            path = '/' + path;
+        }
+
+        var decoded = PathString.FromUriComponent(path);
+        var collapsed = CollapseLeadingSlashes(decoded.Value!);
+
+        return ReferenceEquals(collapsed, decoded.Value) ? decoded : new PathString(collapsed);
     }
 }

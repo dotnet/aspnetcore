@@ -43,11 +43,14 @@ internal sealed class RedirectAction : UrlAction
             return;
         }
 
-        pattern = UrlNormalizer.CollapseLeadingSlashes(pattern);
-
-        if (!pattern.Contains(Uri.SchemeDelimiter, StringComparison.Ordinal) && pattern[0] != '/')
+        if (!UrlNormalizer.HasAbsoluteSchemeAndAuthority(pattern, out _))
         {
-            pattern = '/' + pattern;
+            if (pattern[0] is not '/' and not '\\')
+            {
+                pattern = '/' + pattern;
+            }
+
+            pattern = UrlNormalizer.CollapseLeadingSlashes(pattern);
         }
         response.StatusCode = StatusCode;
 
