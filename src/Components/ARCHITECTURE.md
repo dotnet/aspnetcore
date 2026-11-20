@@ -286,6 +286,8 @@ Prerendering and interactive rendering are separate executions. Prerendering cre
 
 Activation information in the HTML identifies interactive roots and supplies the data needed to create them. It does not transfer ownership of the prerendered component instances. Any state required to avoid recomputation or preserve continuity must be captured during prerendering and restored by the interactive instance.
 
+On the first interactive render, `Web.JS` renders an inert preview and reuses enhanced navigation's DOM diff to preserve compatible prerendered nodes, then binds events and references. Form controls retain user edits when their rendered defaults and relevant markup match; unsupported roots fall back to replacement. Later renders, circuit restoration, and enhanced navigation are unchanged.
+
 A statically rendered parent can establish interactive roots, but the selected render mode defines an execution boundary. Components within an interactive hierarchy execute in the runtime that owns that hierarchy unless another independently activated root is established at an allowed boundary.
 
 ### Navigation and Document Lifetime

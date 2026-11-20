@@ -9,6 +9,7 @@
 // and the SSR DOM merging logic.
 
 export const deferredValuePropname = '_blazorDeferredValue';
+export const internalAttributeNamePrefix = '__internal_';
 
 export function tryApplySpecialProperty(element: Element, name: string, value: string | null) {
   switch (name) {
