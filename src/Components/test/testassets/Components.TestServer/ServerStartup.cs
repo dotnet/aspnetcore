@@ -7,6 +7,7 @@ using Microsoft.AspNetCore.Components.Server.Circuits;
 using Microsoft.AspNetCore.Components.Web;
 using Microsoft.AspNetCore.DataProtection;
 using Microsoft.AspNetCore.Http.Features;
+using Microsoft.AspNetCore.SignalR;
 
 namespace TestServer;
 
@@ -30,6 +31,13 @@ public class ServerStartup
             options.RootComponents.RegisterForJavaScript<BasicTestApp.JavaScriptRootComponentParameterTypes>(
                 "component-with-many-parameters",
                 javaScriptInitializer: "myJsRootComponentInitializers.testInitializer");
+            options.RootComponents.RegisterForJavaScript<BasicTestApp.FormsTest.InputFileComponent>("input-file-metadata");
+        }).AddHubOptions(options =>
+        {
+            if (Configuration.GetValue<long?>(nameof(HubOptions.MaximumReceiveMessageSize)) is { } maximumReceiveMessageSize)
+            {
+                options.MaximumReceiveMessageSize = maximumReceiveMessageSize;
+            }
         });
         services.AddSingleton<ResourceRequestLog>();
         services.AddTransient<BasicTestApp.FormsTest.ValidationComponentDI.SaladChef>();

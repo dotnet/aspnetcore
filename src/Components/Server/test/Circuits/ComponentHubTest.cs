@@ -23,6 +23,27 @@ namespace Microsoft.AspNetCore.Components.Server;
 
 public class ComponentHubTest
 {
+    [Theory]
+    [InlineData(null, true)]
+    [InlineData(32768L, true)]
+    [InlineData(1025L, true)]
+    [InlineData(1024L, false)]
+    [InlineData(512L, false)]
+    public async Task OnConnectedAsyncConfiguresFileListStreaming(long? maximumReceiveMessageSize, bool enabled)
+    {
+        var (client, hub) = InitializeComponentHub(hubOptions: new HubOptions<ComponentHub>
+        {
+            MaximumReceiveMessageSize = maximumReceiveMessageSize,
+        });
+
+        await hub.OnConnectedAsync();
+
+        client.Verify(proxy => proxy.SendCoreAsync(
+            "JS.ConfigureInputFile",
+            It.Is<object[]>(arguments => arguments.Length == 1 && (bool)arguments[0] == enabled),
+            It.IsAny<CancellationToken>()), Times.Once);
+    }
+
     [Fact]
     public async Task CannotStartMultipleCircuits()
     {
@@ -397,7 +418,8 @@ public class ComponentHubTest
         ICircuitPersistenceProvider provider = null,
         ICircuitFactory circuitFactory = null,
         ClaimsPrincipal user = null,
-        IConnectionAuthenticationRefreshFeature userRefreshFeature = null)
+        IConnectionAuthenticationRefreshFeature userRefreshFeature = null,
+        HubOptions<ComponentHub> hubOptions = null)
     {
         deserializer ??= new TestServerComponentDeserializer();
         var ephemeralDataProtectionProvider = new EphemeralDataProtectionProvider();
@@ -426,7 +448,8 @@ public class ComponentHubTest
             circuitRegistry: circuitRegistry,
             circuitPersistenceProvider: circuitPersistenceManager,
             circuitHandleRegistry: circuitHandleRegistry,
-            logger: NullLogger<ComponentHub>.Instance);
+            logger: NullLogger<ComponentHub>.Instance,
+            hubOptions: Options.Create(hubOptions ?? new HubOptions<ComponentHub>()));
 
         // Here we mock out elements of the Hub that are typically configured
         // by SignalR as clients connect to the hub.

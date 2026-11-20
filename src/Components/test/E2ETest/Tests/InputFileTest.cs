@@ -158,6 +158,35 @@ public class InputFileTest : ServerTestBase<ToggleExecutionModeServerFixture<Pro
     }
 
     [Fact]
+    public void CanSelectFilesWithMetadataLargerThanSignalRMessageLimit()
+    {
+        var maxAllowedFiles = Browser.Exists(By.Id("max-allowed-files"));
+        maxAllowedFiles.Clear();
+        maxAllowedFiles.SendKeys("1000\n");
+        Browser.Exists(By.Id("read-file-contents")).Click();
+        var fileNames = Enumerable.Range(1, 400)
+            .Select(index => $"file-{index:D4}-{new string('m', 96)}.txt")
+            .ToArray();
+        var paths = fileNames.Select(name => Path.Combine(_tempDirectory, name)).ToArray();
+        foreach (var path in paths)
+        {
+            File.WriteAllText(path, "x");
+        }
+
+        Assert.True(fileNames.Sum(name => Encoding.UTF8.GetByteCount(name)) > 32 * 1024);
+        Browser.Exists(By.Id("input-file")).SendKeys(string.Join("\n", paths));
+
+        Browser.Equal("400", () => Browser.Exists(By.Id("file-count")).Text);
+        Browser.Equal("1", () => Browser.Exists(By.Id("change-count")).Text);
+        Assert.Equal(fileNames, Browser.FindElements(By.Id("file-name")).Select(element => element.Text));
+        Assert.All(Browser.FindElements(By.Id("file-size")), element => Assert.Equal("1", element.Text));
+
+        Browser.ExecuteJavaScript("document.getElementById('input-file').dispatchEvent(new Event('cancel'));");
+        Browser.Equal("0", () => Browser.Exists(By.Id("file-count")).Text);
+        Browser.Equal("2", () => Browser.Exists(By.Id("change-count")).Text);
+    }
+
+    [Fact]
     public void ThrowsWhenTooManyFilesAreSelected()
     {
         var maxAllowedFilesElement = Browser.Exists(By.Id("max-allowed-files"));
