@@ -588,10 +588,17 @@ public class DefaultApiDescriptionProvider : IApiDescriptionProvider
             var source = bindingContext.BindingSource;
             if (source != null && source.IsGreedy)
             {
-                // We have a definite answer for this model. This is a greedy source like
-                // [FromBody] so there's no need to consider properties.
-                Context.Results.Add(CreateResult(bindingContext, source, containerName));
-                return;
+                // A complex [FromHeader] parameter binds property-by-property, so describe it that way too.
+                if (source != BindingSource.Header ||
+                    bindingContext.ModelMetadata.IsEnumerableType ||
+                    !bindingContext.ModelMetadata.IsComplexType ||
+                    bindingContext.ModelMetadata.Properties.Count == 0)
+                {
+                    // We have a definite answer for this model. This is a greedy source like
+                    // [FromBody] so there's no need to consider properties.
+                    Context.Results.Add(CreateResult(bindingContext, source, containerName));
+                    return;
+                }
             }
 
             var modelMetadata = bindingContext.ModelMetadata;
