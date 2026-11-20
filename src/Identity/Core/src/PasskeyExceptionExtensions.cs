@@ -78,6 +78,9 @@ internal static class PasskeyExceptionExtensions
         public static PasskeyException InvalidAttestationObjectFormat(Exception ex)
             => new("The attestation object had an invalid format.", ex);
 
+        public static PasskeyException DuplicateAttestationObjectKey(string key)
+            => new($"The attestation object contained a duplicate key '{key}'.");
+
         public static PasskeyException MissingAttestationStatementFormat()
             => new("The attestation object did not include an attestation statement format.");
 
