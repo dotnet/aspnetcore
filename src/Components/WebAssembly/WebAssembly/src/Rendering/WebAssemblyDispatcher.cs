@@ -99,7 +99,7 @@ internal sealed class WebAssemblyDispatcher : Dispatcher
                 {
                     if (t.IsFaulted)
                     {
-                        state.tcs.SetException(t.Exception);
+                        state.tcs.SetException(t.Exception.InnerExceptions);
                     }
                     else if (t.IsCanceled)
                     {
@@ -143,7 +143,7 @@ internal sealed class WebAssemblyDispatcher : Dispatcher
                 {
                     if (t.IsFaulted)
                     {
-                        state.tcs.SetException(t.Exception);
+                        state.tcs.SetException(t.Exception.InnerExceptions);
                     }
                     else if (t.IsCanceled)
                     {
