@@ -17,6 +17,7 @@ using Microsoft.AspNetCore.Components.Server.Circuits;
 using Microsoft.AspNetCore.Components.Web;
 using Microsoft.AspNetCore.Localization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.SignalR;
 using Microsoft.Extensions.Localization;
 using TestContentPackage;
 using TestContentPackage.Services;
@@ -108,6 +109,7 @@ public class RazorComponentEndpointsStartup<TRootComponent>
         }
 
         razorComponentsBuilder.AddInteractiveWebAssemblyComponents();
+        services.Configure<HubOptions>(options => options.AddFilter(new HoldStartCircuitFilter()));
 
         if (Configuration.GetValue<bool>("UseHybridCache"))
         {
@@ -134,6 +136,22 @@ public class RazorComponentEndpointsStartup<TRootComponent>
         services.AddScoped<CircuitHandler>(sp => sp.GetRequiredService<PauseTrackingHandler>());
 
         services.AddSingleton<AutoPauseTestStreamGate>();
+    }
+
+    private sealed class HoldStartCircuitFilter : IHubFilter
+    {
+        public async ValueTask<object> InvokeMethodAsync(HubInvocationContext context, Func<HubInvocationContext, ValueTask<object>> next)
+        {
+            var result = await next(context);
+            if (context.HubMethodName == "StartCircuit" &&
+                context.Context.GetHttpContext().Request.Cookies["hold-start-circuit"] == "true")
+            {
+                await Task.Delay(Timeout.Infinite, context.Context.ConnectionAborted)
+                    .ConfigureAwait(ConfigureAwaitOptions.SuppressThrowing);
+            }
+
+            return result;
+        }
     }
 
     // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.

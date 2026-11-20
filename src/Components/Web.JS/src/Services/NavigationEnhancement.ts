@@ -207,17 +207,20 @@ export async function performEnhancedPageLoad(internalDestinationHref: string, i
 
   // First, stop any preceding enhanced page load
   currentEnhancedNavigationAbortController?.abort();
+  currentEnhancedNavigationAbortController = new AbortController();
+  const abortSignal = currentEnhancedNavigationAbortController.signal;
 
   // Notify any interactive runtimes that an enhanced navigation is starting
   notifyEnhancedNavigationListeners(internalDestinationHref, interceptedLink);
+  if (abortSignal.aborted) {
+    return;
+  }
 
   // Notify handlers that enhanced navigation is starting
   navigationEnhancementCallbacks.enhancedNavigationStarted();
 
   // Now request the new page via fetch, and a special header that tells the server we want it to inject
   // framing boundaries to distinguish the initial document and each subsequent streaming SSR update.
-  currentEnhancedNavigationAbortController = new AbortController();
-  const abortSignal = currentEnhancedNavigationAbortController.signal;
   const responsePromise = fetch(internalDestinationHref, Object.assign(<RequestInit>{
     signal: abortSignal,
     mode: 'no-cors', // If there's a redirection to an external origin, even if it enables CORS, we don't want to receive its content and patch it into our DOM on this origin
@@ -273,6 +276,15 @@ export async function performEnhancedPageLoad(internalDestinationHref: string, i
         const previousLocation = location.href;
         if (!isWithinBaseUriSpace(response.url)) {
           if (!isGetRequest) {
+            abortSignal.throwIfAborted();
+
+            // The POST hasn't changed browser history, but renderers were notified of its action URL.
+            if (previousLocation !== internalDestinationHref) {
+              notifyEnhancedNavigationListeners(previousLocation, /* interceptedLink */ false);
+            }
+            abortSignal.throwIfAborted();
+            performingEnhancedPageLoad = false;
+            navigationEnhancementCallbacks.enhancedNavigationCompleted();
             throw new Error('Enhanced navigation does not support non-GET requests that redirect outside the application base URI.');
           }
 

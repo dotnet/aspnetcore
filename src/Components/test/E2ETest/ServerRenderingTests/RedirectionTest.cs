@@ -269,14 +269,24 @@ public class RedirectionTest :
     [Fact]
     public void RedirectEnhancedPostOutsideBaseIsReportedAsUnsupported()
     {
-        ((IJavaScriptExecutor)Browser).ExecuteScript("window.enhancedNavigationError = null; window.addEventListener('unhandledrejection', event => window.enhancedNavigationError = event.reason.message, { once: true });");
+        Navigate($"{ServerPathBase}/redirect?interactive=true");
+        var sourceUri = Browser.Url;
+        Browser.Exists(By.Id("nav-uri-server"));
+        ((IJavaScriptExecutor)Browser).ExecuteScript("""
+            history.replaceState({ userState: 'source-state' }, '');
+            Blazor.addEventListener('enhancednavigationend', () => window.navigationCompleted = true);
+            window.addEventListener('unhandledrejection', event => window.enhancedNavigationError = event.reason.message, { once: true });
+            """);
 
         Browser.Exists(By.CssSelector("#form-nonblazor-enhanced-outside-base button")).Click();
 
         Browser.Equal(
             "Enhanced navigation does not support non-GET requests that redirect outside the application base URI.",
             () => Browser.ExecuteJavaScript<string>("return window.enhancedNavigationError"));
-        Assert.EndsWith("/subdir/redirect", Browser.Url);
+        Assert.Equal(sourceUri, Browser.Url);
+        Browser.Equal(sourceUri, () => Browser.Exists(By.Id("nav-uri-server")).Text);
+        Browser.Equal("source-state", () => Browser.Exists(By.Id("history-state-server")).Text);
+        Assert.True(Browser.ExecuteJavaScript<bool>("return window.navigationCompleted === true"));
         Browser.Exists(By.Id("form-nonblazor-enhanced-outside-base"));
     }
 

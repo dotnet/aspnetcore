@@ -737,6 +737,46 @@ public class EnhancedNavigationTest : ServerTestBase<BasicTestAppServerSiteFixtu
     }
 
     [Fact]
+    public void FailedLocationReplayClosesConnectionBeforeStartCircuitReturns()
+    {
+        Navigate($"{ServerPathBase}/nav");
+        var js = (IJavaScriptExecutor)Browser;
+        js.ExecuteScript("sessionStorage.setItem('block-server-negotiation', 'true')");
+        Navigate($"{ServerPathBase}/nav/location-changed/server-and-wasm-state");
+        Browser.Exists(By.Id("server-negotiation-blocked"));
+        Browser.Exists(By.Id("set-history-state")).Click();
+        Browser.Equal("state-from-wasm", () => Browser.ExecuteJavaScript<string>("return history.state?.userState"));
+
+        js.ExecuteScript("""
+            const hubPath = new URL('_blazor', document.baseURI).pathname;
+            document.cookie = `hold-start-circuit=true; path=${hubPath}`;
+            document.body.insertAdjacentHTML('beforeend', '<div id="blazor-error-ui" style="display: none">Circuit failed</div>');
+
+            const send = WebSocket.prototype.send;
+            WebSocket.prototype.send = function (data) {
+                if (new URL(this.url).pathname === hubPath && data instanceof ArrayBuffer &&
+                    new TextDecoder().decode(data).includes('OnLocationChanged')) {
+                    WebSocket.prototype.send = send;
+                    this.addEventListener('close', () => window.replaySocketClosed = true, { once: true });
+                    throw new Error('Test transport send failure');
+                }
+                return send.call(this, data);
+            };
+            window.unblockServerNegotiation();
+            """);
+
+        try
+        {
+            Browser.True(() => Browser.ExecuteJavaScript<bool>("return window.replaySocketClosed === true"));
+            Browser.True(() => Browser.Exists(By.Id("blazor-error-ui")).Displayed);
+        }
+        finally
+        {
+            js.ExecuteScript("document.cookie = `hold-start-circuit=; max-age=0; path=${new URL('_blazor', document.baseURI).pathname}`");
+        }
+    }
+
+    [Fact]
     public void PreexistingHistoryStateWithoutNavigationDoesNotTriggerReplay()
     {
         Navigate($"{ServerPathBase}/nav/location-changed/server-and-wasm-state");

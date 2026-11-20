@@ -1,6 +1,16 @@
 ﻿@page "/redirect"
 @using Microsoft.AspNetCore.Components.Forms
 
+@if (Interactive)
+{
+    <TestContentPackage.ComponentWithLocationChanged Id="server" @rendermode="@(new InteractiveServerRenderMode(prerender: false))" />
+}
+
+@code {
+    [SupplyParameterFromQuery]
+    public bool Interactive { get; set; }
+}
+
 <h1>Redirections</h1>
 
 <p>
