@@ -35,6 +35,9 @@ public static class ServerRazorComponentsBuilderExtensions
         ArgumentNullException.ThrowIfNull(builder, nameof(builder));
 
         builder.Services.AddServerSideBlazor(configure);
+        builder.Services.AddKeyedSingleton<IComponentRenderMode>(
+            "Microsoft.AspNetCore.Components.ActivityState.Server",
+            RenderMode.InteractiveServer);
         builder.Services.TryAddEnumerable(ServiceDescriptor.Singleton<RenderModeEndpointProvider, CircuitEndpointProvider>());
 
         return new DefaultServerSideBlazorBuilder(builder.Services);

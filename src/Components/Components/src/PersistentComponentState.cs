@@ -4,6 +4,7 @@
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Text.Json;
+using Microsoft.Extensions.Logging;
 using static Microsoft.AspNetCore.Internal.LinkerFlags;
 
 namespace Microsoft.AspNetCore.Components;
@@ -18,6 +19,7 @@ public class PersistentComponentState
 
     private readonly List<PersistComponentStateRegistration> _registeredCallbacks;
     private readonly List<RestoreComponentStateRegistration> _registeredRestoringCallbacks;
+    private ComponentsActivityState? _activityState;
 
     internal PersistentComponentState(
         IDictionary<string, byte[]> currentState,
@@ -32,6 +34,9 @@ public class PersistentComponentState
     internal bool PersistingState { get; set; }
 
     internal RestoreContext CurrentContext { get; private set; } = RestoreContext.InitialValue;
+
+    internal ComponentsActivityState GetActivityState(ILogger logger)
+        => LazyInitializer.EnsureInitialized(ref _activityState, () => new ComponentsActivityState(logger));
 
     internal void InitializeExistingState(IDictionary<string, byte[]> existingState, RestoreContext context)
     {
