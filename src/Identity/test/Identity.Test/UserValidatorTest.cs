@@ -32,7 +32,7 @@ public class UserValidatorTest
         var result = await validator.ValidateAsync(manager, user);
 
         // Assert
-        IdentityResultAssert.IsFailure(result, new IdentityErrorDescriber().InvalidUserName(input));
+        IdentityResultAssert.IsFailure(result, new IdentityErrorDescriber().InvalidUserName(input, manager.Options.User.AllowedUserNameCharacters));
     }
 
     [Theory]

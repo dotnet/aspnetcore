@@ -63,12 +63,12 @@ public class UserValidator<TUser> : IUserValidator<TUser> where TUser : class
         if (string.IsNullOrWhiteSpace(userName))
         {
             errors ??= new List<IdentityError>();
-            errors.Add(Describer.InvalidUserName(userName));
+            errors.Add(Describer.InvalidUserName(userName, manager.Options.User.AllowedUserNameCharacters));
         }
         else if (ContainsDisallowedCharacter(userName, manager.Options.User.AllowedUserNameCharacters))
         {
             errors ??= new List<IdentityError>();
-            errors.Add(Describer.InvalidUserName(userName));
+            errors.Add(Describer.InvalidUserName(userName, manager.Options.User.AllowedUserNameCharacters));
         }
         else
         {
