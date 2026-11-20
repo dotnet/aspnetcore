@@ -476,9 +476,41 @@ public class EditContextAsyncTest
         Assert.True(editContext.IsValidationFaulted());
 
         editContext.OnValidationRequested -= faulting;
+        bool? notifiedIsValid = null;
+        bool? isFormValidDuringNotification = null;
+        editContext.OnValidationStateChanged += (_, args) =>
+        {
+            notifiedIsValid = args.IsValid;
+            isFormValidDuringNotification = editContext.IsFormValid;
+        };
+        editContext.OnValidationRequested += (_, _) => editContext.NotifyValidationStateChanged();
 
         Assert.True(editContext.Validate());
         Assert.False(editContext.IsValidationFaulted());
+        Assert.True(notifiedIsValid);
+        Assert.True(isFormValidDuringNotification);
+        Assert.True(editContext.IsFormValid);
+    }
+
+    [Fact]
+    public async Task Validate_HandlerThrows_PreservesPriorFormFault()
+    {
+        var editContext = new EditContext(new TestModel());
+        EventHandler<ValidationRequestedEventArgs> faulting = (_, args) =>
+            args.AddAsyncValidator(_ => Task.FromException(new InvalidOperationException("failure")));
+        editContext.OnValidationRequested += faulting;
+        Assert.False(await editContext.ValidateAsync());
+        Assert.True(editContext.IsValidationFaulted());
+        editContext.OnValidationRequested -= faulting;
+        var expectedException = new InvalidOperationException("handler failure");
+        editContext.OnValidationRequested += (_, _) => throw expectedException;
+
+        var exception = Assert.Throws<InvalidOperationException>(() => editContext.Validate());
+
+        Assert.Same(expectedException, exception);
+        Assert.True(editContext.IsValidationFaulted());
+        Assert.False(editContext.IsFormValid);
+        Assert.Empty(editContext.GetValidationMessages());
     }
 
     [Fact]
@@ -602,12 +634,23 @@ public class EditContextAsyncTest
         var editContext = new EditContext(new TestModel());
         editContext.OnValidationRequested += (_, args) => args.AddAsyncValidator(_ => Task.FromException(new InvalidOperationException("failure")));
         var notificationCount = 0;
-        editContext.OnValidationStateChanged += (_, _) => notificationCount++;
+        bool? notifiedIsValid = null;
+        bool? isFormValidDuringNotification = null;
+        editContext.OnValidationStateChanged += (_, args) =>
+        {
+            notificationCount++;
+            notifiedIsValid = args.IsValid;
+            isFormValidDuringNotification = editContext.IsFormValid;
+        };
 
         var result = await editContext.ValidateAsync();
 
         Assert.False(result);
         Assert.True(editContext.IsValidationFaulted());
+        Assert.Empty(editContext.GetValidationMessages());
+        Assert.False(notifiedIsValid);
+        Assert.False(isFormValidDuringNotification);
+        Assert.False(editContext.IsFormValid);
         // A synchronously-faulted task never announces the pending state, so only the final settle
         // notification fires (no pending true-then-false pair).
         Assert.Equal(1, notificationCount);
@@ -634,7 +677,15 @@ public class EditContextAsyncTest
         var editContext = new EditContext(new TestModel());
         EventHandler<ValidationRequestedEventArgs> handler = (_, args) => args.AddAsyncValidator(_ => Task.FromException(new InvalidOperationException("failure")));
         editContext.OnValidationRequested += handler;
+        var notifiedStates = new List<bool>();
+        var propertyStates = new List<bool>();
+        editContext.OnValidationStateChanged += (_, args) =>
+        {
+            notifiedStates.Add(args.IsValid);
+            propertyStates.Add(editContext.IsFormValid);
+        };
         Assert.False(await editContext.ValidateAsync());
+        Assert.False(editContext.IsFormValid);
         editContext.OnValidationRequested -= handler;
         editContext.OnValidationRequested += (_, args) => args.AddAsyncValidator(_ => Task.CompletedTask);
 
@@ -642,6 +693,10 @@ public class EditContextAsyncTest
 
         Assert.True(result);
         Assert.False(editContext.IsValidationFaulted());
+        Assert.True(editContext.IsFormValid);
+        Assert.Empty(editContext.GetValidationMessages());
+        Assert.Equal(new[] { false, true }, notifiedStates);
+        Assert.Equal(new[] { false, true }, propertyStates);
     });
 
     [Fact]
