@@ -53,6 +53,7 @@ internal sealed class ComponentsActivityState(ILogger logger)
     {
         _activityLinkStore = activityLinkStore;
         _activitySource = activitySource;
+        _activitySource.LastRouterUnregistered += ApplyPendingState;
         ApplyPendingState();
     }
 
@@ -66,8 +67,6 @@ internal sealed class ComponentsActivityState(ILogger logger)
         // A live interactive router owns its route context, rather than the earlier SSR renderer.
         if (_activitySource!.HasActiveRouter)
         {
-            _pendingState = null;
-            _hasPendingState = false;
             return;
         }
 

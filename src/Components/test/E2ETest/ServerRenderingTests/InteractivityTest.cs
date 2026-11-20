@@ -31,20 +31,43 @@ public class InteractivityTest : ServerTestBase<BasicTestAppServerSiteFixture<Ra
         => InitializeAsync(BrowserFixture.StreamingContext);
 
     [Theory]
-    [InlineData("server", true)]
-    [InlineData("server", false)]
-    [InlineData("webassembly", true)]
-    [InlineData("webassembly", false)]
-    [InlineData("auto", true)]
-    [InlineData("auto", false)]
-    public async Task PerPageActivityLinks_AreRestoredWhenInteractiveRuntimeIsInitialized(string mode, bool prerender)
+    [InlineData("server", true, "server")]
+    [InlineData("server", false, "server")]
+    [InlineData("webassembly", true, "webassembly")]
+    [InlineData("webassembly", false, "webassembly")]
+    [InlineData("auto", true, "server")]
+    [InlineData("auto", false, "webassembly")]
+    public async Task PerPageActivityLinks_AreRestoredWhenInteractiveRuntimeIsInitialized(string mode, bool prerender, string expectedRuntime)
     {
         var testId = Guid.NewGuid().ToString("N");
+        var webAssemblyResourceLoadBlocked = false;
         try
         {
+            if (mode == "auto")
+            {
+                Navigate(ServerPathBase);
+                Browser.Equal("Hello", () => Browser.Exists(By.TagName("h1")).Text);
+
+                if (expectedRuntime == "server")
+                {
+                    BlockWebAssemblyResourceLoad();
+                    webAssemblyResourceLoadBlocked = true;
+                }
+                else
+                {
+                    ForceWebAssemblyResourceCacheMiss();
+                    Navigate($"{ServerPathBase}/streaming-interactivity");
+                    Browser.Equal("Not streaming", () => Browser.FindElement(By.Id("status")).Text);
+                    Browser.Click(By.Id(AddWebAssemblyPrerenderedId));
+                    Browser.Equal("True", () => Browser.FindElement(By.Id("is-interactive-0")).Text);
+                    Browser.Equal("WebAssembly", () => Browser.FindElement(By.Id("render-mode-0")).Text);
+                }
+            }
+
             Navigate($"{ServerPathBase}/activity-links/{mode}/circuit-initialization?activity-links-test-id={testId}&prerender={prerender}");
 
             Browser.Equal("True", () => Browser.FindElement(By.Id("activity-links-interactive")).Text);
+            Browser.Equal(expectedRuntime, () => Browser.FindElement(By.Id("activity-links-runtime")).Text);
             Browser.Click(By.Id("activity-links-trigger"));
             Browser.Equal("1", () => Browser.FindElement(By.Id("activity-links-trigger-count")).Text);
 
@@ -52,10 +75,15 @@ public class InteractivityTest : ServerTestBase<BasicTestAppServerSiteFixture<Ra
             AssertActivityLinksTelemetry(
                 telemetry,
                 "/activity-links/{Mode}/circuit-initialization",
-                expectCircuit: Browser.FindElement(By.Id("activity-links-runtime")).Text == "server");
+                expectCircuit: expectedRuntime == "server");
         }
         finally
         {
+            if (webAssemblyResourceLoadBlocked)
+            {
+                UnblockWebAssemblyResourceLoad();
+            }
+
             await CompleteActivityLinksTelemetryAsync(testId);
         }
     }

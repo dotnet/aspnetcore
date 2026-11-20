@@ -23,6 +23,7 @@ internal class ComponentsActivitySource
 
     internal static bool HasListeners => ActivitySource.HasListeners();
     internal bool HasActiveRouter => _activeRouters.Count > 0;
+    internal event Action? LastRouterUnregistered;
 
     // there is no System.Diagnostics.ActivitySource.IsSupported yet
     [FeatureSwitchDefinition("System.Diagnostics.Metrics.Meter.IsSupported")]
@@ -36,7 +37,13 @@ internal class ComponentsActivitySource
 
     internal void RegisterRouter(Router router) => _activeRouters.Add(router);
 
-    internal void UnregisterRouter(Router router) => _activeRouters.Remove(router);
+    internal void UnregisterRouter(Router router)
+    {
+        if (_activeRouters.Remove(router) && !HasActiveRouter)
+        {
+            LastRouterUnregistered?.Invoke();
+        }
+    }
 
     public ComponentsActivityHandle StartNavigateActivity(string componentType, string route)
     {

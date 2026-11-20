@@ -177,7 +177,8 @@ public class ComponentsActivityStateTest
         Activity stoppedEvent = null;
         listener.ActivityStopped = activity =>
         {
-            if (activity.OperationName == ComponentsActivitySource.OnEventName)
+            if (activity.OperationName == ComponentsActivitySource.OnEventName &&
+                (activity.GetTagItem("aspnetcore.components.type") as string) == typeof(ActivityTestButton).FullName)
             {
                 stoppedEvent = activity;
             }
@@ -261,17 +262,18 @@ public class ComponentsActivityStateTest
         var ssrContext = CreateContext();
         var update = clearRoute ? new ComponentsActivityStateUpdate(null) : CreateState(ssrContext, "/ssr");
 
+        state.Apply(update);
+
         for (var remaining = routerCount - 1; remaining >= 0; remaining--)
         {
             host.RouterCount = remaining;
             await renderer.RenderRootComponentAsync(componentId);
             await renderer.Dispatcher.InvokeAsync(host.Routers[remaining].Dispose);
-            Assert.True(store.TryGetActivityContext(ComponentsActivityLinkStore.Route, out var currentContext, out _));
-
-            state.Apply(update);
 
             if (remaining > 0)
             {
+                Assert.True(store.TryGetActivityContext(ComponentsActivityLinkStore.Route, out var currentContext, out _));
+                Assert.NotEqual(ssrContext, currentContext);
                 AssertRoute(store, currentContext, "/interactive");
             }
             else if (clearRoute)
