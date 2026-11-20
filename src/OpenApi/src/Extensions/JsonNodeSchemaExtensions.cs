@@ -192,6 +192,28 @@ internal static class JsonNodeSchemaExtensions
     }
 
     /// <summary>
+    /// Moves the default value of a constructor parameter associated with the property into the
+    /// x-ref-default annotation when the schema will be componentized.
+    /// </summary>
+    /// <remarks>
+    /// The underlying schema generator writes the default value of an associated constructor parameter
+    /// into the "default" keyword of the property's schema. For componentized schemas, that would apply
+    /// the default to the shared component instead of to the schema reference of this property.
+    /// </remarks>
+    /// <param name="schema">The <see cref="JsonNode"/> produced by the underlying schema generator.</param>
+    /// <param name="propertyInfo">The <see cref="JsonPropertyInfo"/> associated with the schema.</param>
+    internal static void MoveAssociatedParameterDefaultToReference(this JsonNode schema, JsonPropertyInfo propertyInfo)
+    {
+        if (propertyInfo.AssociatedParameter is { HasDefaultValue: true }
+            && schema.WillBeComponentized()
+            && schema.AsObject().TryGetPropertyValue(OpenApiSchemaKeywords.DefaultKeyword, out var defaultValue))
+        {
+            schema.AsObject().Remove(OpenApiSchemaKeywords.DefaultKeyword);
+            schema[OpenApiConstants.RefDefaultAnnotation] = defaultValue;
+        }
+    }
+
+    /// <summary>
     /// Applies the format of known types to the schema.
     /// </summary>
     /// <remarks>
