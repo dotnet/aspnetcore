@@ -134,6 +134,7 @@ public class RazorComponentEndpointsStartup<TRootComponent>
         services.AddScoped<CircuitHandler>(sp => sp.GetRequiredService<PauseTrackingHandler>());
 
         services.AddSingleton<AutoPauseTestStreamGate>();
+        services.AddSingleton<EnhancedNavigationFailureState>();
     }
 
     // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
@@ -366,6 +367,68 @@ public class RazorComponentEndpointsStartup<TRootComponent>
         endpoints.MapPost("redirect/nonblazor/post", PerformRedirection);
 
         // Used when testing enhanced navigation to non-Blazor endpoints
+        endpoints.MapGet("/nav/callback-error", async (HttpContext context, bool framed) =>
+        {
+            const string frameBoundary = "callback-error-frame";
+            context.Response.ContentType = "text/html";
+            context.Response.Headers["blazor-enhanced-nav"] = "allow";
+            if (framed)
+            {
+                context.Response.Headers["ssr-framing"] = frameBoundary;
+            }
+
+            var baseHref = HttpUtility.HtmlEncode($"{context.Request.PathBase}/");
+            var content = $"<html><head><base href='{baseHref}'></head><body><h1>Callback error</h1></body></html>";
+            await context.Response.WriteAsync(framed ? $"{content}<!--{frameBoundary}-->" : content);
+        });
+
+        endpoints.MapMethods("/nav/network-failure-fetch/{id}", ["GET", "POST"], async (
+            string id, HttpContext context, EnhancedNavigationFailureState failures, bool flushResponse, bool framed) =>
+        {
+            var enhanced = context.Request.Headers.Accept.ToString().Contains("blazor-enhanced-nav=on", StringComparison.Ordinal);
+            var state = failures.Get(id);
+            state.RecordRequest(enhanced, isPost: HttpMethods.IsPost(context.Request.Method));
+
+            if (enhanced)
+            {
+                if (flushResponse)
+                {
+                    context.Response.ContentType = "text/html";
+                    context.Response.Headers["blazor-enhanced-nav"] = "allow";
+                    if (framed)
+                    {
+                        const string frameBoundary = "network-failure-frame";
+                        context.Response.Headers["ssr-framing"] = frameBoundary;
+                        await context.Response.WriteAsync($"<html><body><h1 id='network-failure-response-started'>Network failure response</h1><div id='blazor-error-ui' style='display: none'>An unhandled error has occurred.</div></body></html><!--{frameBoundary}-->", context.RequestAborted);
+                    }
+                    else
+                    {
+                        await context.Response.WriteAsync("<html><body><h1 id='network-failure-response-started'>Network failure response</h1></body></html>", context.RequestAborted);
+                    }
+
+                    await context.Response.Body.FlushAsync(context.RequestAborted);
+                    state.RecordResponseStarted();
+                }
+
+                try
+                {
+                    await state.WaitAsync(context.RequestAborted);
+                }
+                catch (OperationCanceledException) when (context.RequestAborted.IsCancellationRequested)
+                {
+                    return;
+                }
+
+                context.Abort();
+                return;
+            }
+
+            context.Response.ContentType = "text/html";
+            await context.Response.WriteAsync(
+                $"<html><body><p id='received-value'>{HttpUtility.HtmlEncode(context.Request.Query["value"])}</p></body></html>",
+                context.RequestAborted);
+        });
+
         endpoints.Map("/nav/non-blazor-html-response", async (HttpResponse response) =>
         {
             response.ContentType = "text/html";
