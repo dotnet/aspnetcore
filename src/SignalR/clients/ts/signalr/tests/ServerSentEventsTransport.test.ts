@@ -3,6 +3,7 @@
 
 import { TransferFormat } from "../src/ITransport";
 
+import { HttpError } from "../src/Errors";
 import { HttpRequest, HttpResponse } from "../src/HttpClient";
 import { ILogger } from "../src/ILogger";
 import { ServerSentEventsTransport } from "../src/ServerSentEventsTransport";
@@ -109,6 +110,37 @@ describe("ServerSentEventsTransport", () => {
                 requestCount++;
                 if (requestCount === 2) {
                     return new HttpResponse(401);
+                }
+                request = r;
+                return "";
+            }), () => "secretToken" + requestCount);
+
+            // AccessTokenHttpClient assumes negotiate was called which would have called accessTokenFactory already
+            // It also assumes the request shouldn't be retried if the factory was called, so we need to make a "negotiate" call
+            // to test the retry behavior for send requests
+            await httpClient.post("");
+            expect(request!.headers!.Authorization).toBe("Bearer secretToken0");
+
+            const sse = await createAndStartSSE(logger, "http://example.com", () => "secretToken", { httpClient });
+
+            await sse.send("");
+
+            expect(request!.headers!.Authorization).toBe("Bearer secretToken2");
+            expect(request!.url).toBe("http://example.com");
+            expect(requestCount).toEqual(3);
+        });
+    });
+
+    it("retries thrown 401 errors on sends", async () => {
+        await VerifyLogger.run(async (logger) => {
+            let request: HttpRequest;
+            let requestCount = 0;
+            const httpClient = new AccessTokenHttpClient(new TestHttpClient().on((r) => {
+                requestCount++;
+                if (requestCount === 2) {
+                    // The inner client throws an HttpError for the 401 rather than returning a response,
+                    // which is what the real fetch/XHR clients do. The retry must still fire.
+                    throw new HttpError("Unauthorized", 401);
                 }
                 request = r;
                 return "";
