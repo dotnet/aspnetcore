@@ -17,6 +17,9 @@ internal sealed class AuthorizationMetrics
 {
     public const string MeterName = "Microsoft.AspNetCore.Authorization";
 
+    private static readonly object BoxedTrue = true;
+    private static readonly object BoxedFalse = false;
+
     private readonly Meter _meter;
     private readonly Counter<long> _authorizedCount;
 
@@ -41,9 +44,9 @@ internal sealed class AuthorizationMetrics
     [MethodImpl(MethodImplOptions.NoInlining)]
     private void AuthorizeAttemptCore(ClaimsPrincipal user, string? policyName, AuthorizationResult? result, Exception? exception)
     {
-        var tags = new TagList([
-            new("aspnetcore.user.is_authenticated", user.Identity?.IsAuthenticated ?? false)
-        ]);
+        // A collection expression isn't used as it can be ~10x slower on x64 with AVX. See https://github.com/dotnet/runtime/issues/133784.
+        var tags = new TagList();
+        tags.Add("aspnetcore.user.is_authenticated", user.Identity?.IsAuthenticated == true ? BoxedTrue : BoxedFalse);
 
         if (policyName is not null)
         {
