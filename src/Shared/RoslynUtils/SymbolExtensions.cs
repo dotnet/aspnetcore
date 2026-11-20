@@ -272,6 +272,8 @@ internal static class SymbolExtensions
             double d when d is double.NegativeInfinity => "double.NegativeInfinity",
             double d when d is double.PositiveInfinity => "double.PositiveInfinity",
             double d when d is double.NaN => "double.NaN",
+            double d when d == 0 && BitConverter.DoubleToInt64Bits(d) < 0 => "-0.0D",
+            decimal d when d == 0 && decimal.GetBits(d)[3] < 0 => $"-{SymbolDisplay.FormatPrimitive(d, false, false)}M",
             decimal d => $"{SymbolDisplay.FormatPrimitive(d, false, false)}M",
             _ => SymbolDisplay.FormatPrimitive(defaultValue, false, false)!,
         };

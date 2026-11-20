@@ -218,6 +218,26 @@ app.MapGet("/", TestAction);
     }
 
     [Theory]
+    [InlineData("double", "-0.0", "double.IsNegative(value)")]
+    [InlineData("decimal", "-0.0m", "decimal.IsNegative(value)")]
+    public async Task DefaultNegativeZero_PreservesSign(string type, string defaultValue, string isNegative)
+    {
+        var source = $$"""
+app.MapGet("/", (HttpContext context, {{type}} value = {{defaultValue}}) =>
+{
+    context.Items["negative"] = {{isNegative}};
+});
+""";
+        var (_, compilation) = await RunGeneratorAsync(source);
+        var endpoint = GetEndpointFromCompilation(compilation);
+        var context = CreateHttpContext();
+
+        await endpoint.RequestDelegate(context);
+
+        Assert.Equal(true, context.Items["negative"]);
+    }
+
+    [Theory]
     [MemberData(nameof(DefaultValues))]
     public async Task RequestDelegatePopulatesParametersWithDefaultValues(string type, string defaultValue, object expectedValue, bool declareConst)
     {
