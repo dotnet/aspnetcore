@@ -5079,6 +5079,7 @@ public class VirtualizationTest : ServerTestBase<ToggleExecutionModeServerFixtur
     [InlineData(false, false)]
     [InlineData(true, false)]
     [InlineData(false, true)]
+    [InlineData(true, true)]
     public void AnchorMode_WindowScroll_End_PrependAtTop_ViewportStaysStable(bool variableHeight, bool useItemsProvider)
     {
         MountWindowScrollAnchorModeComponent("2", variableHeight, useItemsProvider, delay: useItemsProvider);
@@ -5086,7 +5087,14 @@ public class VirtualizationTest : ServerTestBase<ToggleExecutionModeServerFixtur
         var js = (IJavaScriptExecutor)Browser;
         var root = Browser.Exists(By.Id("virtualize-root"));
 
+        WaitForRenderToSettle(root, js, trackScrollHeight: true, useWindowAsViewport: true);
+        // Home also disengages End-mode following before we measure the top viewport.
+        Browser.Exists(By.TagName("body")).SendKeys(Keys.Home);
+        WaitForRenderToSettle(root, js, trackScrollHeight: true, useWindowAsViewport: true);
+        Browser.Equal(0L, () => (long)js.ExecuteScript("return Math.round(window.scrollY)"));
+
         var (indexBefore, topBefore) = GetItemPositionInViewport(js, root, ".item[data-index]");
+        Assert.Equal("0", indexBefore);
 
         Browser.Exists(By.Id("prepend-items")).Click();
         Browser.Contains("Prepended 10 items", () => Browser.Exists(By.Id("status")).Text);
@@ -5097,10 +5105,6 @@ public class VirtualizationTest : ServerTestBase<ToggleExecutionModeServerFixtur
         AssertWindowScrollViewportStaysStable(js, root, indexBefore, topBefore,
             "Window End mode at top: same item should stay at same position after prepend");
     }
-
-    [Fact]
-    public virtual void AnchorMode_WindowScroll_End_PrependAtTop_VariableHeightItemsProvider_ViewportStaysStable()
-        => AnchorMode_WindowScroll_End_PrependAtTop_ViewportStaysStable(variableHeight: true, useItemsProvider: true);
 
     [Theory]
     [InlineData(false, false)]
@@ -5300,16 +5304,18 @@ public class VirtualizationTest : ServerTestBase<ToggleExecutionModeServerFixtur
 
     /// <summary>
     /// Waits for the Virtualize render cycle to settle by checking that the rendered
-    /// item count, scrollTop, and first visible item identity stabilize.
+    /// item count, scroll position, and first visible item identity stabilize.
     /// Use after actions that trigger async rendering (prepend/append with ItemsProvider on Server)
     /// to ensure anchor restore has completed before making single-shot assertions.
     /// Pass <paramref name="itemSelector"/> for containers whose rows are not <c>.item[data-index]</c>.
+    /// Pass <paramref name="useWindowAsViewport"/> when the document is the scroll container.
     /// </summary>
     private void WaitForRenderToSettle(
         IWebElement container,
         IJavaScriptExecutor js,
         string itemSelector = ".item[data-index]",
-        bool trackScrollHeight = false)
+        bool trackScrollHeight = false,
+        bool useWindowAsViewport = false)
     {
         long lastScrollTop = -1;
         long lastScrollHeight = -1;
@@ -5322,18 +5328,23 @@ public class VirtualizationTest : ServerTestBase<ToggleExecutionModeServerFixtur
             var result = js.ExecuteScript(@"
                 var c = arguments[0];
                 var selector = arguments[1];
+                var useWindowAsViewport = arguments[2];
                 var items = c.querySelectorAll(selector);
                 var cr = c.getBoundingClientRect();
+                var viewportTop = useWindowAsViewport ? 1 : cr.top + 2;
+                var viewportBottom = useWindowAsViewport ? window.innerHeight - 1 : cr.bottom - 2;
                 var firstIdx = '';
                 for (var i = 0; i < items.length; i++) {
                     var r = items[i].getBoundingClientRect();
-                    if (r.bottom > cr.top + 2 && r.top < cr.bottom - 2) {
+                    if (r.bottom > viewportTop && r.top < viewportBottom) {
                         firstIdx = items[i].getAttribute('data-index') || items[i].textContent;
                         break;
                     }
                 }
-                return { scrollTop: Math.round(c.scrollTop), scrollHeight: c.scrollHeight, itemCount: items.length, firstIndex: firstIdx };
-            ", container, itemSelector) as Dictionary<string, object>;
+                var scrollTop = useWindowAsViewport ? window.scrollY : c.scrollTop;
+                var scrollHeight = useWindowAsViewport ? document.documentElement.scrollHeight : c.scrollHeight;
+                return { scrollTop: Math.round(scrollTop), scrollHeight: scrollHeight, itemCount: items.length, firstIndex: firstIdx };
+            ", container, itemSelector, useWindowAsViewport) as Dictionary<string, object>;
 
             var scrollTop = Convert.ToInt64(result["scrollTop"], CultureInfo.InvariantCulture);
             var scrollHeight = Convert.ToInt64(result["scrollHeight"], CultureInfo.InvariantCulture);
