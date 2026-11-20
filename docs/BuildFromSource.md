@@ -226,6 +226,31 @@ While it's typically better to use the project-specific build scripts, the repo-
 | `.\eng\build.cmd -test -projects .\src\Framework\test\Microsoft.AspNetCore.App.UnitTests.csproj` | Run all the unit tests in the `Microsoft.AspNetCore.App.UnitTests` project.                                                             |
 | `.\eng\build.cmd -noBuildNative -noBuildManaged`                                                 | Builds the repo and skips native and managed projects, a quicker alternative to `./restore.cmd`. Must be run from the root of the repo. |
 
+### Native tool ABI test
+
+The Linux x64 package-build jobs run an ABI canary after the build completes.
+An `afterBuild` step targeting the agent host launches a separate runtime-only
+container; Docker is not run inside the build container.
+The test mounts the `aspnetcoretools` native publish output read-only and runs
+certificate and user-secret operations without an SDK or rebuilding.
+
+To run it locally after building the native tools, use Docker on the host.
+Select the repository's `DefaultNetCoreTargetFramework` from `eng/Versions.props`
+(`net12.0` on this branch), rather than retained outputs for older frameworks:
+
+```bash
+bash eng/scripts/run-native-abi-tests.sh artifacts/bin/aspnetcoretools/Release/net12.0/linux-x64/publish
+```
+
+The image is `mcr.microsoft.com/dotnet-buildtools/prereqs:ubuntu-18.04-net11.0-abi-test-amd64`.
+Its runtime prerequisites also cover the current main-branch tools.
+Ubuntu 18.04/glibc 2.27 matches the current Bionic cross sysroot.
+If the .NET 12 baseline changes to Ubuntu 20.04, update this gate's image before
+changing the producing runtime/cross-build images; this is not a final .NET 12 baseline decision.
+Missing native output, container failures, and failed tool assertions fail the build.
+Container output is saved under `artifacts/log/NativeAbi`.
+Package installation, arm64, and musl are not covered by this gate.
+
 ## Complete list of repo dependencies
 
 To support building and testing the projects in the repo, several dependencies must be installed. Some dependencies are required regardless of the project area you want to work in. Other dependencies are optional depending on the project. Most required dependencies are installed automatically by the `restore` scripts, included by default in most modern operating systems, or installed automatically by the Visual Studio installer.
