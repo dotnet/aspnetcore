@@ -301,6 +301,8 @@ export async function performEnhancedPageLoad(internalDestinationHref: string, i
         }
       }
 
+      const preserveModalState = isForSamePath(response.url, currentContentUrl);
+
       // Set the currentContentUrl to the location of the last completed navigation.
       if (changeUrl) {
         currentContentUrl = response.url;
@@ -311,7 +313,7 @@ export async function performEnhancedPageLoad(internalDestinationHref: string, i
         // For HTML responses, regardless of the status code, display it
         const parsedHtml = new DOMParser().parseFromString(initialContent, 'text/html');
         navigationEnhancementCallbacks.beforeDomUpdate(parsedHtml);
-        synchronizeDomContent(document, parsedHtml);
+        synchronizeDomContent(document, parsedHtml, { preserveModalState });
         navigationEnhancementCallbacks.documentUpdated();
       } else if (responseContentType?.startsWith('text/') && initialContent) {
         // For any other text-based content, we'll just display it, because that's what
