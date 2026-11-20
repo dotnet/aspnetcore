@@ -414,11 +414,16 @@ internal sealed class Http2FrameWriter
         {
             if (_maxFrameSize != maxFrameSize)
             {
-                // Safe multiply, MaxFrameSize is limited to 2^24-1 bytes by the protocol and by Http2PeerSettings.
-                // Ref: https://datatracker.ietf.org/doc/html/rfc7540#section-4.2
-                _headersEncodingLargeBufferSize = int.Max(_headersEncodingLargeBufferSize, maxFrameSize * HeaderBufferSizeMultiplier);
+                if (maxFrameSize > _headerEncodingBuffer.Length)
+                {
+                    // Safe multiply, MaxFrameSize is limited to 2^24-1 bytes by the protocol and by Http2PeerSettings.
+                    // Ref: https://datatracker.ietf.org/doc/html/rfc7540#section-4.2
+                    _headersEncodingLargeBufferSize = int.Max(_headersEncodingLargeBufferSize, maxFrameSize * HeaderBufferSizeMultiplier);
+                    var newBufferSize = int.Min(_headerEncodingBuffer.Length * HeaderBufferSizeMultiplier, Http2PeerSettings.MaxAllowedMaxFrameSize);
+                    _headerEncodingBuffer = new byte[int.Max(maxFrameSize, newBufferSize)];
+                }
+
                 _maxFrameSize = maxFrameSize;
-                _headerEncodingBuffer = new byte[_maxFrameSize];
             }
         }
     }
@@ -554,7 +559,7 @@ internal sealed class Http2FrameWriter
             // In the case of the headers, there is always a status header to be returned, so BeginEncodeHeaders will not return BufferTooSmall.
             _headersEnumerator.Initialize(headers);
             _outgoingFrame.PrepareHeaders(headerFrameFlags, streamId);
-            var writeResult = HPackHeaderWriter.BeginEncodeHeaders(statusCode, _hpackEncoder, _headersEnumerator, _headerEncodingBuffer, out var payloadLength);
+            var writeResult = HPackHeaderWriter.BeginEncodeHeaders(statusCode, _hpackEncoder, _headersEnumerator, _headerEncodingBuffer.AsSpan(0, _maxFrameSize), out var payloadLength);
             Debug.Assert(writeResult != HeaderWriteResult.BufferTooSmall, "This always writes the status as the first header, and it should never be an over the buffer size.");
             FinishWritingHeadersUnsynchronized(streamId, payloadLength, writeResult);
         }
@@ -596,7 +601,7 @@ internal sealed class Http2FrameWriter
                 // In the case of the trailers, there is no status header to be written, so even the first call to BeginEncodeHeaders can return BufferTooSmall.
                 _outgoingFrame.PrepareHeaders(Http2HeadersFrameFlags.END_STREAM, streamId);
                 _headersEnumerator.Initialize(headers);
-                var writeResult = HPackHeaderWriter.BeginEncodeHeaders(_hpackEncoder, _headersEnumerator, _headerEncodingBuffer, out var payloadLength);
+                var writeResult = HPackHeaderWriter.BeginEncodeHeaders(_hpackEncoder, _headersEnumerator, _headerEncodingBuffer.AsSpan(0, _maxFrameSize), out var payloadLength);
                 FinishWritingHeadersUnsynchronized(streamId, payloadLength, writeResult);
             }
             // Any exception from the HPack encoder can leave the dynamic table in a corrupt state.
