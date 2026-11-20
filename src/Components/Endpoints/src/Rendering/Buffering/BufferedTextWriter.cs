@@ -9,7 +9,6 @@ internal class BufferedTextWriter : TextWriter
 {
     private const int PageSize = 256;
     private readonly TextWriter _underlying;
-    private readonly StringBuilder _charArraySegmentBuilder = new();
     private TextChunkListBuilder _currentOutput;
     private TextChunkListBuilder? _previousOutput;
     private Task _currentFlushAsyncTask = Task.CompletedTask;
@@ -26,7 +25,10 @@ internal class BufferedTextWriter : TextWriter
         => _currentOutput.Add(new TextChunk(value));
 
     public override void Write(char[] buffer, int index, int count)
-        => _currentOutput.Add(new TextChunk(new ArraySegment<char>(buffer, index, count), _charArraySegmentBuilder));
+        => _currentOutput.Add(buffer.AsSpan(index, count));
+
+    public override void Write(ReadOnlySpan<char> buffer)
+        => _currentOutput.Add(buffer);
 
     public override void Write(string? value)
     {
@@ -62,7 +64,7 @@ internal class BufferedTextWriter : TextWriter
         _currentOutput = _previousOutput ?? new(PageSize);
         _previousOutput = outputToFlush;
 
-        await outputToFlush.WriteToAsync(_underlying, _charArraySegmentBuilder.ToString());
+        await outputToFlush.WriteToAsync(_underlying);
         outputToFlush.Clear();
         await _underlying.FlushAsync();
     }
