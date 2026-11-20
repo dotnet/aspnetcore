@@ -52,6 +52,48 @@ public class EndpointHtmlRendererTest
         renderer = GetEndpointHtmlRenderer();
     }
 
+    [Theory]
+    [InlineData("server", true, false)]
+    [InlineData("server", false, false)]
+    [InlineData("wasm", true, false)]
+    [InlineData("wasm", false, false)]
+    [InlineData("auto", true, false)]
+    [InlineData("auto", false, false)]
+    [InlineData("server", true, true)]
+    [InlineData("server", false, true)]
+    [InlineData("wasm", true, true)]
+    [InlineData("wasm", false, true)]
+    [InlineData("auto", true, true)]
+    [InlineData("auto", false, true)]
+    public async Task HasInteractiveComponents_TracksBoundariesRemovedDuringAsyncRendering(
+        string mode, bool prerender, bool retainInteractiveComponent)
+    {
+        var completion = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+        IComponentRenderMode renderMode = mode switch
+        {
+            "server" => new InteractiveServerRenderMode(prerender),
+            "wasm" => new InteractiveWebAssemblyRenderMode(prerender),
+            "auto" => new InteractiveAutoRenderMode(prerender),
+            _ => throw new InvalidOperationException($"Unexpected render mode: {mode}"),
+        };
+        renderer.SetHttpContext(GetHttpContext());
+        var component = new TransientInteractiveHost
+        {
+            Completion = completion.Task,
+            Mode = renderMode,
+            RetainInteractiveComponent = retainInteractiveComponent,
+        };
+
+        var result = await renderer.Dispatcher.InvokeAsync(() => renderer.BeginRenderingComponent(component, ParameterView.Empty));
+        Assert.False(result.QuiescenceTask.IsCompleted);
+        Assert.True(renderer.HasInteractiveComponents);
+
+        completion.SetResult();
+        await result.QuiescenceTask;
+
+        Assert.Equal(retainInteractiveComponent, renderer.HasInteractiveComponents);
+    }
+
     [Fact]
     public async Task DoesNotRenderAfterRendererStopped()
     {
@@ -1894,6 +1936,37 @@ public class EndpointHtmlRendererTest
             builder.AddAttribute(1, "onsubmit", () => { });
             builder.AddNamedEvent("onsubmit", "default");
             builder.CloseElement();
+        }
+    }
+
+    private sealed class TransientInteractiveHost : ComponentBase
+    {
+        public Task Completion { get; set; }
+        public IComponentRenderMode Mode { get; set; }
+        public bool RetainInteractiveComponent { get; set; }
+
+        private bool _ready;
+
+        protected override async Task OnInitializedAsync()
+        {
+            await Completion;
+            _ready = true;
+        }
+
+        protected override void BuildRenderTree(RenderTreeBuilder builder)
+        {
+            if (!_ready)
+            {
+                builder.OpenComponent<SimpleComponent>(0);
+                builder.AddComponentRenderMode(Mode);
+                builder.CloseComponent();
+            }
+            if (RetainInteractiveComponent)
+            {
+                builder.OpenComponent<SimpleComponent>(1);
+                builder.AddComponentRenderMode(Mode);
+                builder.CloseComponent();
+            }
         }
     }
 
