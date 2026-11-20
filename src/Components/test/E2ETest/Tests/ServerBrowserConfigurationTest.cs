@@ -19,9 +19,13 @@ namespace Microsoft.AspNetCore.Components.E2ETests.Tests;
 
 public class ServerBrowserConfigurationTest(
     BrowserFixture browserFixture,
-    BasicTestAppServerSiteFixture<RazorComponentEndpointsStartup<App>> serverFixture,
+    ServerBrowserConfigurationTest.CircuitOptionsFixture serverFixture,
+    ServerBrowserConfigurationTest.DomPreservationFixture domPreservationFixture,
+    ServerBrowserConfigurationTest.NavigationFixture navigationFixture,
     ITestOutputHelper output)
-    : ServerTestBase<BasicTestAppServerSiteFixture<RazorComponentEndpointsStartup<App>>>(browserFixture, serverFixture, output)
+    : ServerTestBase<ServerBrowserConfigurationTest.CircuitOptionsFixture>(browserFixture, serverFixture, output),
+    IClassFixture<ServerBrowserConfigurationTest.DomPreservationFixture>,
+    IClassFixture<ServerBrowserConfigurationTest.NavigationFixture>
 {
     public override Task InitializeAsync()
         => InitializeAsync(BrowserFixture.StreamingContext);
@@ -30,8 +34,7 @@ public class ServerBrowserConfigurationTest(
     public void CircuitInactivityTimeoutAppliesAfterRemovingLastServerComponent()
     {
         const int serverTimeout = 3000;
-        using var fixture = CreateFixture($"--BrowserConfigurationCircuitInactivityTimeoutMs={serverTimeout}");
-        NavigateToStartPage(fixture);
+        NavigateToStartPage(_serverFixture);
 
         var javascript = (IJavaScriptExecutor)Browser;
         javascript.ExecuteScript("""
@@ -55,12 +58,12 @@ public class ServerBrowserConfigurationTest(
     }
 
     [Fact]
-    public void CircuitInactivityTimeoutFromInitializerIsNotOverwrittenByNavigation()
+    public void InitializerOptionsAreNotOverwrittenByNavigation()
     {
         const int initializerTimeout = 500;
-        using var fixture = CreateFixture("--BrowserConfigurationCircuitInactivityTimeoutMs=5000");
-        NavigateToStartPage(fixture, "&initializer-inactivity-timeout");
+        NavigateToStartPage(domPreservationFixture, "&initializer-inactivity-timeout&initializer-circuit-log-trace&initializer-preserve-dom");
 
+        var initialDocument = Browser.FindElement(By.TagName("html"));
         var javascript = (IJavaScriptExecutor)Browser;
         javascript.ExecuteScript("""
             const Socket = window.WebSocket;
@@ -73,8 +76,17 @@ public class ServerBrowserConfigurationTest(
             """);
         javascript.ExecuteScript("Blazor.start({})");
         Browser.True(() => (bool)javascript.ExecuteScript("return window.inactivityTimeoutInitializerRan === true"));
-        Browser.Click(By.Id("add-server-counter-prerendered-link"));
+        Browser.True(() => (bool)javascript.ExecuteScript("return window.circuitLogInitializerRan === true"));
+        Browser.True(() => (bool)javascript.ExecuteScript("return window.preserveDomInitializerRan === true"));
+        javascript.ExecuteScript("Blazor.navigateTo(document.getElementById('add-server-counter-prerendered-link').href)");
         Browser.Equal("True", () => Browser.Exists(By.Id("is-interactive-0")).Text);
+        Assert.False(initialDocument.IsStale());
+        Browser.Manage().Logs.GetLog(LogType.Browser);
+
+        Browser.Click(By.Id("increment-0"));
+        Browser.Equal("1", () => Browser.Exists(By.Id("count-0")).Text);
+        var entries = Browser.Manage().Logs.GetLog(LogType.Browser);
+        Assert.Contains(entries, entry => entry.Message.Contains("Dispatching event with handler id", StringComparison.Ordinal));
 
         javascript.ExecuteScript("window.componentRemovedAt = performance.now()");
         Browser.Click(By.Id("remove-counter-link-0"));
@@ -88,8 +100,7 @@ public class ServerBrowserConfigurationTest(
     [Fact]
     public void CircuitLogLevelControlsEventMessages()
     {
-        using var fixture = CreateFixture($"--BrowserConfigurationLogLevel={BrowserLogLevel.Trace}");
-        NavigateToStartPage(fixture);
+        NavigateToStartPage(_serverFixture);
         StartCounter();
         Browser.Manage().Logs.GetLog(LogType.Browser);
 
@@ -101,29 +112,9 @@ public class ServerBrowserConfigurationTest(
     }
 
     [Fact]
-    public void CircuitLogLevelFromInitializerIsNotOverwrittenByNavigation()
-    {
-        using var fixture = CreateFixture($"--BrowserConfigurationLogLevel={BrowserLogLevel.Error}");
-        NavigateToStartPage(fixture, "&initializer-circuit-log-trace");
-
-        var javascript = (IJavaScriptExecutor)Browser;
-        javascript.ExecuteScript("Blazor.start({})");
-        Browser.True(() => (bool)javascript.ExecuteScript("return window.circuitLogInitializerRan === true"));
-        Browser.Click(By.Id("add-server-counter-prerendered-link"));
-        Browser.Equal("True", () => Browser.Exists(By.Id("is-interactive-0")).Text);
-        Browser.Manage().Logs.GetLog(LogType.Browser);
-
-        Browser.Click(By.Id("increment-0"));
-        Browser.Equal("1", () => Browser.Exists(By.Id("count-0")).Text);
-        var entries = Browser.Manage().Logs.GetLog(LogType.Browser);
-        Assert.Contains(entries, entry => entry.Message.Contains("Dispatching event with handler id", StringComparison.Ordinal));
-    }
-
-    [Fact]
     public void PreserveDomDisabledReloadsFirstNavigationAndBack()
     {
-        using var fixture = CreateFixture("--BrowserConfigurationPreserveDom=false");
-        NavigateToStartPage(fixture);
+        NavigateToStartPage(domPreservationFixture);
 
         var initialDocument = Browser.FindElement(By.TagName("html"));
         ((IJavaScriptExecutor)Browser).ExecuteScript("Blazor.start({})");
@@ -141,10 +132,9 @@ public class ServerBrowserConfigurationTest(
     [Fact]
     public async Task BrowserOptionsAreEmittedOnceForStaticPage()
     {
-        using var fixture = CreateFixture("--BrowserConfigurationPreserveDom=false");
-        NavigateToStartPage(fixture);
+        NavigateToStartPage(domPreservationFixture);
 
-        using var client = new HttpClient { BaseAddress = fixture.RootUri };
+        using var client = new HttpClient { BaseAddress = domPreservationFixture.RootUri };
         var html = await client.GetStringAsync("subdir/streaming-interactivity");
         Assert.DoesNotContain("<!--Blazor:", html, StringComparison.Ordinal);
         var parts = html.Split("<!--Blazor-Configuration:", StringSplitOptions.None);
@@ -157,8 +147,7 @@ public class ServerBrowserConfigurationTest(
     [Fact]
     public void PreserveDomDisabledOnDestinationReloadsFirstNavigationAndPreservesHistory()
     {
-        using var fixture = CreateFixture("--BrowserConfigurationDisableOnCounter=true");
-        NavigateToStartPage(fixture);
+        NavigateToStartPage(navigationFixture);
 
         var initialDocument = Browser.FindElement(By.TagName("html"));
         ((IJavaScriptExecutor)Browser).ExecuteScript("Blazor.start({})");
@@ -179,8 +168,7 @@ public class ServerBrowserConfigurationTest(
     [Fact]
     public void JavaScriptPreserveDomOptionOverridesServerConfiguration()
     {
-        using var fixture = CreateFixture("--BrowserConfigurationPreserveDom=false");
-        NavigateToStartPage(fixture);
+        NavigateToStartPage(domPreservationFixture);
 
         var initialDocument = Browser.FindElement(By.TagName("html"));
         ((IJavaScriptExecutor)Browser).ExecuteScript("Blazor.start({ ssr: { disableDomPreservation: false } })");
@@ -190,33 +178,17 @@ public class ServerBrowserConfigurationTest(
     }
 
     [Fact]
-    public void InitializerPreserveDomOptionOverridesServerConfiguration()
-    {
-        using var fixture = CreateFixture("--BrowserConfigurationPreserveDom=false");
-        NavigateToStartPage(fixture, "&initializer-preserve-dom");
-
-        var initialDocument = Browser.FindElement(By.TagName("html"));
-        var javascript = (IJavaScriptExecutor)Browser;
-        javascript.ExecuteScript("Blazor.start({})");
-        Browser.True(() => (bool)javascript.ExecuteScript("return window.preserveDomInitializerRan === true"));
-        javascript.ExecuteScript("Blazor.navigateTo(document.getElementById('add-server-counter-prerendered-link').href)");
-        Browser.Equal("True", () => Browser.Exists(By.Id("is-interactive-0")).Text);
-        Assert.False(initialDocument.IsStale());
-    }
-
-    [Fact]
     public async Task PreserveDomDisabledOnFormPostDoesNotReplayTheSubmission()
     {
-        using var fixture = CreateFixture("--BrowserConfigurationDisableOnFormPost=true");
         var operationId = Guid.NewGuid().ToString("N");
-        Browser.Navigate(fixture.RootUri, $"{ServerPathBase}/forms/streaming-rendering/{operationId}?suppress-autostart");
+        Browser.Navigate(navigationFixture.RootUri, $"{ServerPathBase}/forms/streaming-rendering/{operationId}?suppress-autostart");
         Browser.Exists(By.Id("send"));
         Browser.Exists(By.Id("call-blazor-start"));
 
         var initialBody = Browser.FindElement(By.TagName("body"));
         ((IJavaScriptExecutor)Browser).ExecuteScript("Blazor.start({})");
         Browser.Equal("True", () => Browser.Exists(By.Id("is-interactive-form")).Text);
-        using var client = new HttpClient { BaseAddress = fixture.RootUri };
+        using var client = new HttpClient { BaseAddress = navigationFixture.RootUri };
         try
         {
             Browser.Click(By.Id("send"));
@@ -239,8 +211,7 @@ public class ServerBrowserConfigurationTest(
     [Fact]
     public void PreserveDomDisabledReplacesStreamingContentAndActivatesFirstComponent()
     {
-        using var fixture = CreateFixture("--BrowserConfigurationPreserveDom=false");
-        Browser.Navigate(fixture.RootUri, $"{ServerPathBase}/streaming-interactivity?ShouldStream=True&suppress-autostart");
+        Browser.Navigate(domPreservationFixture.RootUri, $"{ServerPathBase}/streaming-interactivity?ShouldStream=True&suppress-autostart");
         Browser.Equal("Streaming", () => Browser.Exists(By.Id("status")).Text);
         Browser.Exists(By.Id("call-blazor-start"));
 
@@ -259,8 +230,7 @@ public class ServerBrowserConfigurationTest(
     [Fact]
     public void BrowserConfigurationFromStreamingContentAppliesBeforeCircuitStarts()
     {
-        using var fixture = CreateFixture($"--BrowserConfigurationLogLevel={BrowserLogLevel.Error}", "--BrowserConfigurationTraceOnStreamingCounter=true");
-        Browser.Navigate(fixture.RootUri, $"{ServerPathBase}/streaming-interactivity?ShouldStream=True&suppress-autostart");
+        Browser.Navigate(domPreservationFixture.RootUri, $"{ServerPathBase}/streaming-interactivity?ShouldStream=True&suppress-autostart");
         Browser.Equal("Streaming", () => Browser.Exists(By.Id("status")).Text);
         Browser.Exists(By.Id("call-blazor-start"));
 
@@ -280,12 +250,13 @@ public class ServerBrowserConfigurationTest(
     [Fact]
     public void BrowserConfigurationFromEnhancedNavigationStreamingContentAppliesBeforeCircuitStarts()
     {
-        using var fixture = CreateFixture($"--BrowserConfigurationLogLevel={BrowserLogLevel.Error}", "--BrowserConfigurationTraceOnStreamingCounter=true");
-        NavigateToStartPage(fixture);
+        NavigateToStartPage(domPreservationFixture);
 
-        ((IJavaScriptExecutor)Browser).ExecuteScript("Blazor.start({})");
+        var initialDocument = Browser.FindElement(By.TagName("html"));
+        ((IJavaScriptExecutor)Browser).ExecuteScript("Blazor.start({ ssr: { disableDomPreservation: false } })");
         Browser.Click(By.Id("start-streaming-link"));
         Browser.Equal("Streaming", () => Browser.Exists(By.Id("status")).Text);
+        Assert.False(initialDocument.IsStale());
         Browser.Click(By.Id("add-server-counter-prerendered-link"));
         Browser.Equal("False", () => Browser.Exists(By.Id("is-interactive-0")).Text);
         Browser.Click(By.Id("stop-streaming-link"));
@@ -298,11 +269,12 @@ public class ServerBrowserConfigurationTest(
         Assert.Contains(entries, entry => entry.Message.Contains("Dispatching event with handler id", StringComparison.Ordinal));
     }
 
-    [Fact]
-    public void ReconnectionRetryIntervalControlsTransportAttempts()
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public void ReconnectionRetryIntervalControlsTransportAttempts(bool useInitializer)
     {
-        using var fixture = CreateFixture("--BrowserConfigurationReconnectionMaxRetries=2", "--BrowserConfigurationReconnectionRetryIntervalMs=200");
-        NavigateToStartPage(fixture);
+        NavigateToStartPage(_serverFixture, useInitializer ? "&initializer-retry-interval" : "");
         StartCounter();
 
         var javascript = (IJavaScriptExecutor)Browser;
@@ -324,6 +296,10 @@ public class ServerBrowserConfigurationTest(
             SetOffline(driver, true);
             javascript.ExecuteScript("Blazor._internal.forceCloseConnection()");
             Browser.True(() => Convert.ToInt32(javascript.ExecuteScript("return window.retryTimes.length"), CultureInfo.InvariantCulture) == 2);
+            if (useInitializer)
+            {
+                Browser.True(() => (bool)javascript.ExecuteScript("return window.retryIntervalInitializerRan === true"));
+            }
 
             var elapsed = Convert.ToDouble(javascript.ExecuteScript("return window.retryTimes[1] - window.retryTimes[0]"), CultureInfo.InvariantCulture);
             Assert.InRange(elapsed, 150, 700);
@@ -334,11 +310,41 @@ public class ServerBrowserConfigurationTest(
         }
     }
 
-    private static BasicTestAppServerSiteFixture<RazorComponentEndpointsStartup<App>> CreateFixture(params string[] arguments)
+    public class CircuitOptionsFixture : BasicTestAppServerSiteFixture<RazorComponentEndpointsStartup<App>>
     {
-        var fixture = new BasicTestAppServerSiteFixture<RazorComponentEndpointsStartup<App>>();
-        fixture.AdditionalArguments.AddRange(arguments);
-        return fixture;
+        public CircuitOptionsFixture()
+        {
+            AdditionalArguments.AddRange([
+                "--BrowserConfigurationCircuitInactivityTimeoutMs=3000",
+                $"--BrowserConfigurationLogLevel={BrowserLogLevel.Trace}",
+                "--BrowserConfigurationReconnectionMaxRetries=2",
+                "--BrowserConfigurationReconnectionRetryIntervalMs=200",
+            ]);
+        }
+    }
+
+    public class DomPreservationFixture : BasicTestAppServerSiteFixture<RazorComponentEndpointsStartup<App>>
+    {
+        public DomPreservationFixture()
+        {
+            AdditionalArguments.AddRange([
+                "--BrowserConfigurationPreserveDom=false",
+                $"--BrowserConfigurationLogLevel={BrowserLogLevel.Error}",
+                "--BrowserConfigurationCircuitInactivityTimeoutMs=5000",
+                "--BrowserConfigurationTraceOnStreamingCounter=true",
+            ]);
+        }
+    }
+
+    public class NavigationFixture : BasicTestAppServerSiteFixture<RazorComponentEndpointsStartup<App>>
+    {
+        public NavigationFixture()
+        {
+            AdditionalArguments.AddRange([
+                "--BrowserConfigurationDisableOnCounter=true",
+                "--BrowserConfigurationDisableOnFormPost=true",
+            ]);
+        }
     }
 
     private void NavigateToStartPage(BasicTestAppServerSiteFixture<RazorComponentEndpointsStartup<App>> fixture, string additionalQuery = "")

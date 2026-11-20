@@ -12,6 +12,12 @@ export function beforeWebStart(options) {
         options.ssr.circuitInactivityTimeoutMs = 500;
         window.inactivityTimeoutInitializerRan = true;
     }
+    if (new URLSearchParams(location.search).has('initializer-retry-interval')) {
+        options.circuit.reconnectionOptions.retryIntervalMilliseconds = () => {
+            window.retryIntervalInitializerRan = true;
+            return 200;
+        };
+    }
 }
 
 export function beforeWebAssemblyStart() {
