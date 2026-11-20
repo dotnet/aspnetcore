@@ -608,6 +608,39 @@ app.MapFallback("{*path:nonfile}", (HttpContext context) => "this is {*path:nonf
         Assert.Single(endpoints, e => e.RoutePattern.RawText == "{*path:nonfile}");
     }
 
+    [Theory]
+    [InlineData(false, false)]
+    [InlineData(false, true)]
+    [InlineData(true, false)]
+    [InlineData(true, true)]
+    public async Task RequestDelegateCreation_SupportsMapFallback_MixedOverloads(bool defaultPatternFirst, bool returnsIResult)
+    {
+        var explicitPattern = returnsIResult
+            ? "app.MapFallback(\"/api/{*path}\", () => Results.Content(\"api fallback\"));"
+            : "app.MapFallback(\"/api/{*path}\", () => \"api fallback\");";
+        var defaultPattern = returnsIResult
+            ? "app.MapFallback(() => Results.Content(\"site fallback\"));"
+            : "app.MapFallback(() => \"site fallback\");";
+        var source = defaultPatternFirst
+            ? $"{defaultPattern}\n{explicitPattern}"
+            : $"{explicitPattern}\n{defaultPattern}";
+
+        var (_, compilation) = await RunGeneratorAsync(source);
+        var endpoints = GetEndpointsFromCompilation(compilation).OfType<RouteEndpoint>().ToArray();
+
+        Assert.Equal(2, endpoints.Length);
+        var apiEndpoint = Assert.Single(endpoints, e => e.RoutePattern.RawText == "/api/{*path}");
+        var siteEndpoint = Assert.Single(endpoints, e => e.RoutePattern.RawText == "{*path:nonfile}");
+
+        var apiContext = CreateHttpContext();
+        await apiEndpoint.RequestDelegate(apiContext);
+        await VerifyResponseBodyAsync(apiContext, "api fallback");
+
+        var siteContext = CreateHttpContext();
+        await siteEndpoint.RequestDelegate(siteContext);
+        await VerifyResponseBodyAsync(siteContext, "site fallback");
+    }
+
     [Fact]
     public async Task RequestDelegateHandlesStringValuesFromExplicitQueryStringSource()
     {
