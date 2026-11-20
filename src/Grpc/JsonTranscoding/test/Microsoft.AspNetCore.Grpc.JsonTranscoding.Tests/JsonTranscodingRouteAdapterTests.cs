@@ -16,6 +16,18 @@ namespace Microsoft.AspNetCore.Grpc.JsonTranscoding.Tests;
 
 public class JsonTranscodingRouteAdapterTests
 {
+    [Theory]
+    [InlineData("/v1/items/{resource=public}", "/v1/items/public")]
+    [InlineData("/v1/items/{resource=public}:get", "/v1/items/public:get")]
+    public void SingleLiteralVariable_PreservesLiteralAndBindsValue(string route, string expected)
+    {
+        var adapter = JsonTranscodingRouteAdapter.Parse(HttpRoutePattern.Parse(route));
+        Assert.Equal(expected, adapter.ResolvedRouteTemplate);
+        var context = new DefaultHttpContext();
+        Assert.Single(adapter.RewriteVariableActions)(context);
+        Assert.Equal("public", context.Request.RouteValues["resource"]);
+    }
+
     [Fact]
     public void ParseMultipleVariables()
     {
