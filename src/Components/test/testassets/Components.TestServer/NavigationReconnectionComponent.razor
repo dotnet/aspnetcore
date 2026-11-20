@@ -1,0 +1,39 @@
+﻿@using Microsoft.Extensions.Logging
+@inject NavigationManager Navigation
+@inject NavigationReconnectionCircuitHandler CircuitState
+@inject ILogger<NavigationReconnectionComponent> Logger
+
+<p id="navigation-circuit-id">@CircuitState.CircuitId</p>
+<p id="navigation-connection-up-count">@CircuitState.ConnectionUpCount</p>
+<p id="navigation-target">@_targetUri</p>
+<p id="navigation-pending">@_navigationPending</p>
+<p id="navigation-count">@_count</p>
+
+<button id="navigation-increment" @onclick="Increment">Increment</button>
+<button id="navigation-after-disconnect" @onclick="NavigateAfterDisconnectAsync" disabled="@_navigationPending">Navigate after disconnect</button>
+<button id="navigation-now" @onclick="Navigate">Navigate now</button>
+
+@code {
+    private readonly string _targetUri = $"/subdir/navigation-reconnection-{Guid.NewGuid():N}";
+    private bool _navigationPending;
+    private int _count;
+
+    private void Increment()
+    {
+        _count++;
+    }
+
+    private async Task NavigateAfterDisconnectAsync()
+    {
+        _navigationPending = true;
+        // Release awaited application work only after CircuitRegistry has disconnected the real client.
+        await CircuitState.Disconnected;
+        Navigate();
+    }
+
+    private void Navigate()
+    {
+        Navigation.NavigateTo(_targetUri);
+        Logger.LogInformation(new EventId(1, "NavigationIssued"), "Issued navigation to {Uri}", _targetUri);
+    }
+}
