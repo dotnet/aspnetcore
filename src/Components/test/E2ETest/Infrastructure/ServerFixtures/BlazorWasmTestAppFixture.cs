@@ -6,6 +6,7 @@ using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Components.Gateway;
 using Microsoft.AspNetCore.E2ETesting;
 using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.Routing;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
@@ -14,6 +15,7 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Infrastructure.ServerFixtures;
 
 public class BlazorWasmTestAppFixture<TProgram> : WebHostServerFixture
 {
+    internal Action<IEndpointRouteBuilder> ConfigureEndpoints { get; set; }
     public readonly bool TestTrimmedApps = typeof(ToggleExecutionModeServerFixture<>).Assembly
         .GetCustomAttributes<AssemblyMetadataAttribute>()
         .First(m => m.Key == "Microsoft.AspNetCore.E2ETesting.TestTrimmedApps")
@@ -92,6 +94,7 @@ public class BlazorWasmTestAppFixture<TProgram> : WebHostServerFixture
         }
 
         var app = BlazorGateway.BuildWebHost(args.ToArray());
+        ConfigureEndpoints?.Invoke(app);
         app.MapFallbackToFile("index.html");
         return app;
     }
@@ -103,7 +106,7 @@ public class BlazorWasmTestAppFixture<TProgram> : WebHostServerFixture
             .ConfigureWebHost(webHostBuilder => webHostBuilder
                 .UseKestrel()
                 .UseContentRoot(contentRoot)
-                .UseStartup(_ => new StaticSiteStartup { PathBase = PathBase })
+                .UseStartup(_ => new StaticSiteStartup { PathBase = PathBase, ConfigureEndpoints = ConfigureEndpoints })
                 .UseUrls($"http://{host}:0"))
             .ConfigureLogging((hostingContext, logging) => logging.AddConsole())
             .Build();
@@ -112,6 +115,7 @@ public class BlazorWasmTestAppFixture<TProgram> : WebHostServerFixture
     private class StaticSiteStartup
     {
         public string PathBase { get; init; }
+        public Action<IEndpointRouteBuilder> ConfigureEndpoints { get; init; }
 
         public void ConfigureServices(IServiceCollection serviceCollection)
         {
@@ -134,6 +138,7 @@ public class BlazorWasmTestAppFixture<TProgram> : WebHostServerFixture
 
             app.UseEndpoints(endpoints =>
             {
+                ConfigureEndpoints?.Invoke(endpoints);
                 endpoints.MapFallbackToFile("index.html");
             });
         }

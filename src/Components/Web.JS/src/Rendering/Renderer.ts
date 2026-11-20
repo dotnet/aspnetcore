@@ -8,6 +8,7 @@ import { BrowserRenderer } from './BrowserRenderer';
 import { toLogicalElement, LogicalElement } from './LogicalElements';
 import { getAndRemovePendingRootComponentContainer } from './JSRootComponents';
 import { PendingNavigationFocus, restoreNavigationFocus } from './FocusOnNavigate';
+import { beginHeadStylesheetTransition, endHeadStylesheetTransition } from './HeadStylesheetTransition';
 
 interface BrowserRendererRegistry {
   [browserRendererId: number]: BrowserRenderer;
@@ -65,6 +66,15 @@ export function renderBatch(browserRendererId: number, batch: RenderBatch): void
     throw new Error(`There is no browser renderer with ID ${browserRendererId}.`);
   }
 
+  beginHeadStylesheetTransition();
+  try {
+    applyRenderBatch(browserRenderer, batch);
+  } finally {
+    endHeadStylesheetTransition();
+  }
+}
+
+function applyRenderBatch(browserRenderer: BrowserRenderer, batch: RenderBatch): void {
   const arrayRangeReader = batch.arrayRangeReader;
   const updatedComponentsRange = batch.updatedComponents();
   const updatedComponentsValues = arrayRangeReader.values(updatedComponentsRange);
