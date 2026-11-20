@@ -1,5 +1,23 @@
 export function beforeWebStart(options) {
     options.webAssembly.loadBootResource ??= (type, name) => `WasmMinimal/_framework/${name}`;
+    if (new URLSearchParams(location.search).has('initializer-circuit-log-trace')) {
+        options.circuit.logLevel = 0;
+        window.circuitLogInitializerRan = true;
+    }
+    if (new URLSearchParams(location.search).has('initializer-preserve-dom')) {
+        options.ssr.disableDomPreservation = false;
+        window.preserveDomInitializerRan = true;
+    }
+    if (new URLSearchParams(location.search).has('initializer-inactivity-timeout')) {
+        options.ssr.circuitInactivityTimeoutMs = 500;
+        window.inactivityTimeoutInitializerRan = true;
+    }
+    if (new URLSearchParams(location.search).has('initializer-retry-interval')) {
+        options.circuit.reconnectionOptions.retryIntervalMilliseconds = () => {
+            window.retryIntervalInitializerRan = true;
+            return 200;
+        };
+    }
 }
 
 export function beforeWebAssemblyStart() {
