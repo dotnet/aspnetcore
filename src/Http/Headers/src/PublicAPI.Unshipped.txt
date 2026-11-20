@@ -1,1 +1,2 @@
 #nullable enable
+static Microsoft.Net.Http.Headers.CookieHeaderValue.CheckNameFormat(Microsoft.Extensions.Primitives.StringSegment name, string! parameterName) -> void
