@@ -55,17 +55,6 @@ public class SchedulerBenchmark
         }
     }
 
-    [IterationSetup]
-    public void IterationSetup()
-    {
-        _totalToReport = OuterLoopCount;
-
-        for (var i = 0; i < _counters.Length; i++)
-        {
-            _counters[i].Remaining = InnerLoopCount;
-        }
-    }
-
     [Benchmark(OperationsPerInvoke = OperationsPerInvoke, Baseline = true)]
     public void ThreadPoolScheduler() => Schedule(_threadPoolSchedulers);
 
@@ -77,6 +66,13 @@ public class SchedulerBenchmark
 
     private void Schedule(PipeScheduler[] schedulers)
     {
+        _totalToReport = OuterLoopCount;
+
+        for (var i = 0; i < _counters.Length; i++)
+        {
+            _counters[i].Remaining = InnerLoopCount;
+        }
+
         Parallel.For(0, OuterLoopCount, () => schedulers, _parallelAction, (s) => { });
 
         while (_totalToReport > 0)
