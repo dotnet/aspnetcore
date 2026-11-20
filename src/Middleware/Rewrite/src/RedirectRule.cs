@@ -14,6 +14,8 @@ internal sealed class RedirectRule : IRule
     public Regex InitialMatch { get; }
     public string Replacement { get; }
     public int StatusCode { get; }
+    private readonly bool _canMatchInPlace;
+
     public RedirectRule(string regex, string replacement, int statusCode)
     {
         ArgumentException.ThrowIfNullOrEmpty(regex);
@@ -22,6 +24,7 @@ internal sealed class RedirectRule : IRule
         InitialMatch = new Regex(regex, RegexOptions.Compiled | RegexOptions.CultureInvariant, _regexTimeout);
         Replacement = replacement;
         StatusCode = statusCode;
+        _canMatchInPlace = RegexHelper.CanMatchInPlace(replacement);
     }
 
     public void ApplyRule(RewriteContext context)
@@ -37,7 +40,7 @@ internal sealed class RedirectRule : IRule
         }
         else
         {
-            initMatchResults = InitialMatch.Match(path.ToString().Substring(1));
+            initMatchResults = RegexHelper.MatchAfterLeadingSlash(InitialMatch, path.ToString(), _canMatchInPlace);
         }
 
         if (initMatchResults.Success)

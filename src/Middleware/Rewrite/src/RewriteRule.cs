@@ -14,6 +14,8 @@ internal sealed class RewriteRule : IRule
     public Regex InitialMatch { get; }
     public string Replacement { get; }
     public bool StopProcessing { get; }
+    private readonly bool _canMatchInPlace;
+
     public RewriteRule(string regex, string replacement, bool stopProcessing)
     {
         ArgumentException.ThrowIfNullOrEmpty(regex);
@@ -22,6 +24,7 @@ internal sealed class RewriteRule : IRule
         InitialMatch = new Regex(regex, RegexOptions.Compiled | RegexOptions.CultureInvariant, _regexTimeout);
         Replacement = replacement;
         StopProcessing = stopProcessing;
+        _canMatchInPlace = RegexHelper.CanMatchInPlace(replacement);
     }
 
     public void ApplyRule(RewriteContext context)
@@ -34,7 +37,7 @@ internal sealed class RewriteRule : IRule
         }
         else
         {
-            initMatchResults = InitialMatch.Match(path.ToString().Substring(1));
+            initMatchResults = RegexHelper.MatchAfterLeadingSlash(InitialMatch, path.ToString(), _canMatchInPlace);
         }
 
         if (initMatchResults.Success)
