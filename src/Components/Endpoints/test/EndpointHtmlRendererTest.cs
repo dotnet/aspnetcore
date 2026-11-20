@@ -1443,23 +1443,38 @@ public class EndpointHtmlRendererTest
     }
 
     [Fact]
-    public async Task SectionOutletAndContentInDifferentRenderModes_LogsWarningDuringPrerendering()
+    public async Task SectionOutletAndContentInDifferentRenderModes_ThrowsDuringPrerendering()
     {
         // Arrange
-        var sink = new TestSink();
-        var renderer = GetEndpointHtmlRenderer(loggerFactory: new TestLoggerFactory(sink, enabled: true));
+        var renderer = GetEndpointHtmlRenderer();
         var httpContext = GetHttpContext();
 
         // Act
-        var result = await renderer.PrerenderComponentAsync(
-            httpContext,
-            typeof(SectionOutletAndContentWithDifferentRenderModes),
-            null,
-            ParameterView.Empty);
-        await renderer.Dispatcher.InvokeAsync(() => HtmlContentToString(result));
+        await Assert.ThrowsAsync<InvalidOperationException>(async () =>
+            await renderer.PrerenderComponentAsync(
+                httpContext,
+                typeof(SectionOutletAndContentWithDifferentRenderModes),
+                null,
+                ParameterView.Empty));
+    }
+
+    [Fact]
+    public async Task HeadOutletAndInteractivePageTitle_DoesNotThrowDuringPrerendering()
+    {
+        // Arrange
+        var renderer = GetEndpointHtmlRenderer();
+        var httpContext = GetHttpContext();
+
+        // Act
+        var exception = await Record.ExceptionAsync(async () =>
+            await renderer.PrerenderComponentAsync(
+                httpContext,
+                typeof(HeadOutletAndInteractivePageTitle),
+                null,
+                ParameterView.Empty));
 
         // Assert
-        Assert.Contains(sink.Writes, w => w.EventId.Name == "SectionRenderModeMismatch" && w.LogLevel == LogLevel.Warning);
+        Assert.Null(exception);
     }
 
     [Fact]

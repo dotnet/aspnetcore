@@ -19,8 +19,15 @@ internal sealed partial class SectionRegistry(ILoggerFactory loggerFactory)
         if (!_providersByIdentifier.TryGetValue(identifier, out var providers))
         {
             providers = new();
-            _providersByIdentifier.Add(identifier, providers);
         }
+
+        if ((!isDefaultProvider || providers.Count == 0) &&
+            _subscribersByIdentifier.TryGetValue(identifier, out var subscriber))
+        {
+            ValidateRenderModeCompatibility(identifier, subscriber, provider);
+        }
+
+        _providersByIdentifier.TryAdd(identifier, providers);
 
         if (isDefaultProvider)
         {
@@ -46,6 +53,14 @@ internal sealed partial class SectionRegistry(ILoggerFactory loggerFactory)
             throw new InvalidOperationException($"The provider was not found in the providers list of the given section ID '{identifier}'.");
         }
 
+        if (index == providers.Count - 1 &&
+            index > 0 &&
+            _subscribersByIdentifier.TryGetValue(identifier, out var subscriber) &&
+            !subscriber.IsRendererDisposed)
+        {
+            ValidateRenderModeCompatibility(identifier, subscriber, providers[index - 1]);
+        }
+
         providers.RemoveAt(index);
 
         if (index == providers.Count)
@@ -55,9 +70,9 @@ internal sealed partial class SectionRegistry(ILoggerFactory loggerFactory)
             var contentProvider = GetCurrentProviderContentOrDefault(providers);
             NotifyContentChangedForSubscriber(identifier, contentProvider);
 
-            if (_subscribersByIdentifier.TryGetValue(identifier, out var subscriber))
+            if (_subscribersByIdentifier.TryGetValue(identifier, out var fallbackSubscriber))
             {
-                DetectRenderModeMismatch(identifier, subscriber, contentProvider);
+                DetectRenderModeMismatch(identifier, fallbackSubscriber, contentProvider);
             }
         }
     }
@@ -71,6 +86,7 @@ internal sealed partial class SectionRegistry(ILoggerFactory loggerFactory)
 
         // Notify the new subscriber with any existing content.
         var provider = GetCurrentProviderContentOrDefault(identifier);
+        ValidateRenderModeCompatibility(identifier, subscriber, provider);
         subscriber.ContentUpdated(provider);
 
         _subscribersByIdentifier.Add(identifier, subscriber);
@@ -105,9 +121,36 @@ internal sealed partial class SectionRegistry(ILoggerFactory loggerFactory)
 
             if (_subscribersByIdentifier.TryGetValue(identifier, out var subscriber))
             {
+                ValidateRenderModeCompatibility(identifier, subscriber, provider);
                 DetectRenderModeMismatch(identifier, subscriber, provider);
             }
         }
+    }
+
+    private static void ValidateRenderModeCompatibility(object identifier, SectionOutlet? subscriber, SectionContent? provider)
+    {
+        // Framework-owned head/title sections use BuiltInSectionIdentifier and retain the existing warning behavior.
+        // This validation is intentionally limited to application components sharing this renderer's registry.
+        if (subscriber is null || provider is null || identifier is BuiltInSectionIdentifier)
+        {
+            return;
+        }
+
+        var outletRenderMode = subscriber.SectionRenderMode;
+        var contentRenderMode = provider.SectionRenderMode;
+
+        if (!RenderModesDiffer(outletRenderMode, contentRenderMode))
+        {
+            return;
+        }
+
+        var sectionId = DescribeIdentifier(identifier);
+        throw new InvalidOperationException(
+            $"The content provided to the section '{sectionId}' uses the render mode '{DescribeRenderMode(contentRenderMode)}', " +
+            $"but the matching '{nameof(SectionOutlet)}' uses the render mode '{DescribeRenderMode(outletRenderMode)}'. " +
+            $"A '{nameof(SectionContent)}' and its matching '{nameof(SectionOutlet)}' must use the same render mode, because " +
+            $"the section content is rendered at the location of the '{nameof(SectionOutlet)}'. To fix this, ensure the " +
+            $"'{nameof(SectionContent)}' and the '{nameof(SectionOutlet)}' for the section '{sectionId}' use the same render mode.");
     }
 
     private void DetectRenderModeMismatch(object identifier, SectionOutlet subscriber, SectionContent? provider)
