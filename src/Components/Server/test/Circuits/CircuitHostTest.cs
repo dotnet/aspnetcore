@@ -1,6 +1,7 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Collections.Concurrent;
 using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using System.Reflection;
@@ -1141,12 +1142,15 @@ public class CircuitHostTest
     }
 
     [Fact]
-    public async Task UpdateRootComponents_DoesNotUpdateExistingRootComponent_WhenDescriptorComponentTypeDoesNotMatchRootComponentType()
+    public async Task UpdateRootComponents_DoesNotApplyQueuedUpdate_WhenDescriptorComponentTypeDoesNotMatchRootComponentType()
     {
         // Arrange
+        var renderer = GetRemoteRenderer();
         var circuitHost = TestCircuitHost.Create(
-            remoteRenderer: GetRemoteRenderer(),
+            remoteRenderer: renderer,
             serviceScope: new ServiceCollection().BuildServiceProvider().CreateAsyncScope());
+        var unhandledExceptions = new List<Exception>();
+        circuitHost.UnhandledException += (_, eventArgs) => unhandledExceptions.Add((Exception)eventArgs.ExceptionObject);
 
         // Arrange
         var expectedMessage = "Existing message";
@@ -1155,27 +1159,30 @@ public class CircuitHostTest
             [nameof(DynamicallyAddedComponent.Message)] = expectedMessage,
         });
 
-        await AddComponentAsync<TestComponent>(circuitHost, 2, []);
-
         Dictionary<string, object> parameters = new()
         {
             [nameof(DynamicallyAddedComponent.Message)] = "Updated message",
         };
 
         // Act
-        var evt = await Assert.RaisesAsync<UnhandledExceptionEventArgs>(
-            handler => circuitHost.UnhandledException += new UnhandledExceptionEventHandler(handler),
-            handler => circuitHost.UnhandledException -= new UnhandledExceptionEventHandler(handler),
-            () => UpdateComponentAsync<TestComponent /* Note the incorrect component type */>(circuitHost, 1, parameters));
+        var failedUpdate = circuitHost.UpdateRootComponents(new()
+        {
+            Operations = [CreateRootComponentOperation<TestComponent>(RootComponentOperationType.Update, 1, parameters)],
+        }, null, false, CancellationToken.None);
+        var queuedUpdate = circuitHost.UpdateRootComponents(new()
+        {
+            Operations = [CreateRootComponentOperation<DynamicallyAddedComponent>(RootComponentOperationType.Add, 3)],
+        }, null, false, CancellationToken.None);
+        await Task.WhenAll(failedUpdate, queuedUpdate);
 
         // Assert
         var componentState = ((TestRemoteRenderer)circuitHost.Renderer).GetTestComponentState(0);
         var component = Assert.IsType<DynamicallyAddedComponent>(componentState.Component);
         Assert.Equal(expectedMessage, component.Message);
 
-        Assert.NotNull(evt);
-        var exception = Assert.IsType<InvalidOperationException>(evt.Arguments.ExceptionObject);
+        var exception = Assert.IsType<InvalidOperationException>(Assert.Single(unhandledExceptions));
         Assert.Equal("Cannot update components with mismatching types.", exception.Message);
+        Assert.DoesNotContain(renderer.GetOrCreateWebRootComponentManager().GetRootComponents(), component => component.id == 3);
     }
 
     [Fact]
@@ -1236,6 +1243,295 @@ public class CircuitHostTest
         // Assert
         Assert.Throws<ArgumentException>(() =>
             ((TestRemoteRenderer)circuitHost.Renderer).GetTestComponentState(0));
+    }
+
+    [Fact]
+    public async Task UpdateRootComponents_PreservesBatchDependencies_WhenCircuitHandlerDelaysFirstBatch()
+    {
+        var handler = new BlockingCircuitHandler();
+        var services = new ServiceCollection()
+            .AddSingleton<CircuitHandler>(handler)
+            .BuildServiceProvider();
+        var acknowledgedBatches = new ConcurrentQueue<long>();
+        var client = new Mock<ISingleClientProxy>();
+        client.Setup(c => c.SendCoreAsync("JS.EndUpdateRootComponents", It.IsAny<object[]>(), It.IsAny<CancellationToken>()))
+            .Callback((string _, object[] arguments, CancellationToken _) => acknowledgedBatches.Enqueue((long)arguments[0]))
+            .Returns(Task.CompletedTask);
+        var renderer = GetRemoteRenderer();
+        var circuitHost = TestCircuitHost.Create(
+            remoteRenderer: renderer,
+            serviceScope: services.CreateAsyncScope(),
+            clientProxy: new CircuitClientProxy(client.Object, "connection"));
+        var unhandledExceptions = new List<Exception>();
+        circuitHost.UnhandledException += (_, eventArgs) => unhandledExceptions.Add((Exception)eventArgs.ExceptionObject);
+
+        var firstUpdate = circuitHost.UpdateRootComponents(new()
+        {
+            BatchId = 1,
+            Operations = [CreateRootComponentOperation<DynamicallyAddedComponent>(RootComponentOperationType.Add, 1, componentKey: "component-a")],
+        }, null, false, CancellationToken.None);
+        await handler.WaitForEntryAsync();
+
+        var expectedMessage = "Updated message";
+        var secondUpdate = circuitHost.UpdateRootComponents(new()
+        {
+            BatchId = 2,
+            Operations =
+            [
+                CreateRootComponentOperation<DynamicallyAddedComponent>(RootComponentOperationType.Update, 1, new Dictionary<string, object>
+                {
+                    [nameof(DynamicallyAddedComponent.Message)] = expectedMessage,
+                }, componentKey: "component-a"),
+                CreateRootComponentOperation<DynamicallyAddedComponent>(RootComponentOperationType.Add, 2),
+            ],
+        }, null, false, CancellationToken.None);
+        await renderer.Dispatcher.InvokeAsync(() => { });
+        var secondUpdateCompletedBeforeRelease = secondUpdate.IsCompleted;
+
+        handler.Release();
+        await Task.WhenAll(firstUpdate, secondUpdate);
+
+        Assert.False(secondUpdateCompletedBeforeRelease);
+        Assert.Empty(unhandledExceptions);
+        var rootComponents = renderer.GetOrCreateWebRootComponentManager().GetRootComponents().OrderBy(component => component.id).ToArray();
+        Assert.Equal([1, 2], rootComponents.Select(component => component.id));
+        Assert.Equal(expectedMessage, rootComponents[0].Item3.parameters.GetValueOrDefault<string>(nameof(DynamicallyAddedComponent.Message)));
+        Assert.Equal([1L, 2L], acknowledgedBatches.Order());
+    }
+
+    [Fact]
+    public async Task UpdateRootComponents_CanRemoveRootComponentBeforeInitialRenderReachesQuiescence()
+    {
+        var lifecycle = new CompletesInitializationOnDisposeLifecycle(completeInitializationOnDispose: false);
+        var renderer = GetRemoteRenderer(services => services.AddSingleton(lifecycle));
+        var acknowledgedBatches = new List<long>();
+        var client = new Mock<ISingleClientProxy>();
+        client.Setup(c => c.SendCoreAsync("JS.EndUpdateRootComponents", It.IsAny<object[]>(), It.IsAny<CancellationToken>()))
+            .Callback((string _, object[] arguments, CancellationToken _) => acknowledgedBatches.Add((long)arguments[0]))
+            .Returns(Task.CompletedTask);
+        var circuitHost = TestCircuitHost.Create(
+            remoteRenderer: renderer,
+            serviceScope: new ServiceCollection().BuildServiceProvider().CreateAsyncScope(),
+            clientProxy: new CircuitClientProxy(client.Object, "connection"));
+        var unhandledExceptions = new List<Exception>();
+        circuitHost.UnhandledException += (_, eventArgs) => unhandledExceptions.Add((Exception)eventArgs.ExceptionObject);
+
+        var firstUpdate = circuitHost.UpdateRootComponents(new()
+        {
+            BatchId = 1,
+            Operations = [CreateRootComponentOperation<CompletesInitializationOnDisposeComponent>(RootComponentOperationType.Add, 1)],
+        }, null, false, CancellationToken.None);
+        await lifecycle.InitializationStarted;
+
+        var secondUpdate = circuitHost.UpdateRootComponents(new()
+        {
+            BatchId = 2,
+            Operations =
+            [
+                CreateRootComponentOperation<CompletesInitializationOnDisposeComponent>(RootComponentOperationType.Remove, 1),
+                CreateRootComponentOperation<DynamicallyAddedComponent>(RootComponentOperationType.Add, 2),
+            ],
+        }, null, false, CancellationToken.None);
+
+        try
+        {
+            await secondUpdate.WaitAsync(TimeSpan.FromSeconds(5));
+
+            Assert.True(lifecycle.Disposed);
+            Assert.False(firstUpdate.IsCompleted);
+            Assert.Empty(unhandledExceptions);
+            Assert.Equal([2], renderer.GetOrCreateWebRootComponentManager().GetRootComponents().Select(component => component.id));
+            Assert.Equal([2L], acknowledgedBatches);
+        }
+        finally
+        {
+            lifecycle.ReleaseInitialization();
+            await Task.WhenAll(firstUpdate, secondUpdate);
+            await circuitHost.DisposeAsync();
+        }
+    }
+
+    [Fact]
+    public async Task UpdateRootComponents_CompletesQueuedUpdates_WhenCircuitIsDisposed()
+    {
+        var handler = new BlockingCircuitHandler();
+        var services = new ServiceCollection()
+            .AddSingleton<CircuitHandler>(handler)
+            .BuildServiceProvider();
+        var circuitHost = TestCircuitHost.Create(
+            remoteRenderer: GetRemoteRenderer(),
+            serviceScope: services.CreateAsyncScope());
+
+        var firstUpdate = circuitHost.UpdateRootComponents(new()
+        {
+            BatchId = 1,
+            Operations = [CreateRootComponentOperation<DynamicallyAddedComponent>(RootComponentOperationType.Add, 1)],
+        }, null, false, CancellationToken.None);
+        await handler.WaitForEntryAsync();
+
+        var queuedUpdates = Enumerable.Range(2, 3)
+            .Select(batchId =>
+            {
+                var store = new Mock<IClearableStore>();
+                var update = circuitHost.UpdateRootComponents(new()
+                {
+                    BatchId = batchId,
+                    Operations = [CreateRootComponentOperation<DynamicallyAddedComponent>(RootComponentOperationType.Add, batchId)],
+                }, store.Object, false, CancellationToken.None);
+                return (store, update);
+            })
+            .ToArray();
+
+        await circuitHost.DisposeAsync();
+
+        Assert.All(queuedUpdates, item =>
+        {
+            Assert.True(item.update.IsCompletedSuccessfully);
+            item.store.Verify(store => store.Clear(), Times.Once);
+        });
+
+        handler.Release();
+        await firstUpdate;
+    }
+
+    [Fact]
+    public async Task UpdateRootComponents_RejectsUpdate_WhenPendingQueueLimitIsReached()
+    {
+        var handler = new BlockingCircuitHandler();
+        var services = new ServiceCollection()
+            .AddSingleton<CircuitHandler>(handler)
+            .BuildServiceProvider();
+        var clientErrorSendStarted = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+        var clientErrorSendCompletion = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+        var client = new Mock<ISingleClientProxy>();
+        client.Setup(c => c.SendCoreAsync(It.IsAny<string>(), It.IsAny<object[]>(), It.IsAny<CancellationToken>()))
+            .Returns(Task.CompletedTask);
+        client.Setup(c => c.SendCoreAsync("JS.Error", It.IsAny<object[]>(), It.IsAny<CancellationToken>()))
+            .Callback(() => clientErrorSendStarted.SetResult())
+            .Returns(clientErrorSendCompletion.Task);
+        var clientProxy = new CircuitClientProxy(client.Object, "connection");
+        var circuitHost = TestCircuitHost.Create(
+            remoteRenderer: GetRemoteRenderer(),
+            serviceScope: services.CreateAsyncScope(),
+            clientProxy: clientProxy);
+        var unhandledExceptions = new List<Exception>();
+        circuitHost.UnhandledException += (_, eventArgs) =>
+        {
+            unhandledExceptions.Add((Exception)eventArgs.ExceptionObject);
+            clientProxy.SetDisconnected();
+        };
+
+        var firstUpdate = circuitHost.UpdateRootComponents(new()
+        {
+            BatchId = 1,
+            Operations = [CreateRootComponentOperation<DynamicallyAddedComponent>(RootComponentOperationType.Add, 1)],
+        }, null, false, CancellationToken.None);
+        await handler.WaitForEntryAsync();
+
+        var queuedUpdates = Enumerable.Range(2, 9)
+            .Select(batchId => circuitHost.UpdateRootComponents(new()
+            {
+                BatchId = batchId,
+                Operations = [CreateRootComponentOperation<DynamicallyAddedComponent>(RootComponentOperationType.Add, batchId)],
+            }, null, false, CancellationToken.None))
+            .ToArray();
+        var rejectedStores = new[] { new Mock<IClearableStore>(), new Mock<IClearableStore>() };
+        var rejectedUpdates = rejectedStores.Select((store, index) => circuitHost.UpdateRootComponents(new()
+        {
+            BatchId = 11 + index,
+            Operations = [CreateRootComponentOperation<DynamicallyAddedComponent>(RootComponentOperationType.Add, 11 + index)],
+        }, store.Object, false, CancellationToken.None)).ToArray();
+
+        try
+        {
+            await clientErrorSendStarted.Task.WaitAsync(TimeSpan.FromSeconds(5));
+            await Task.WhenAll(rejectedUpdates).WaitAsync(TimeSpan.FromSeconds(5));
+
+            var exception = Assert.Single(unhandledExceptions);
+            Assert.Equal("The maximum number of pending root component updates has been exceeded.", exception.Message);
+            Assert.False(clientProxy.Connected);
+            Assert.All(rejectedStores, store => store.Verify(rejectedStore => rejectedStore.Clear(), Times.Once));
+            Assert.All(queuedUpdates, update => Assert.False(update.IsCompleted));
+            client.Verify(c => c.SendCoreAsync("JS.Error", It.IsAny<object[]>(), It.IsAny<CancellationToken>()), Times.Once);
+        }
+        finally
+        {
+            clientErrorSendCompletion.TrySetResult();
+            handler.Release();
+            await Task.WhenAll([firstUpdate, .. queuedUpdates, .. rejectedUpdates]);
+            await circuitHost.DisposeAsync();
+        }
+    }
+
+    [Fact]
+    public async Task UpdateRootComponents_DoesNotRejectAppliedUpdates_WhenInitialRenderHasNotReachedQuiescence()
+    {
+        var lifecycle = new CompletesInitializationOnDisposeLifecycle();
+        var activationTracker = new RootComponentActivationTracker(expectedActivations: 10);
+        var renderer = GetRemoteRenderer(services =>
+        {
+            services.AddSingleton(lifecycle);
+            services.AddSingleton(activationTracker);
+        });
+        var circuitHost = TestCircuitHost.Create(
+            remoteRenderer: renderer,
+            serviceScope: new ServiceCollection().BuildServiceProvider().CreateAsyncScope());
+        var unhandledExceptions = new List<Exception>();
+        circuitHost.UnhandledException += (_, eventArgs) => unhandledExceptions.Add((Exception)eventArgs.ExceptionObject);
+
+        var firstUpdate = circuitHost.UpdateRootComponents(new()
+        {
+            BatchId = 1,
+            Operations = [CreateRootComponentOperation<CompletesInitializationOnDisposeComponent>(RootComponentOperationType.Add, 1)],
+        }, null, false, CancellationToken.None);
+        await lifecycle.InitializationStarted;
+
+        var appliedUpdates = Enumerable.Range(2, 10)
+            .Select(batchId => circuitHost.UpdateRootComponents(new()
+            {
+                BatchId = batchId,
+                Operations = [CreateRootComponentOperation<TracksActivationComponent>(RootComponentOperationType.Add, batchId)],
+            }, null, false, CancellationToken.None))
+            .ToArray();
+
+        try
+        {
+            await activationTracker.AllActivated.WaitAsync(TimeSpan.FromSeconds(5));
+
+            Assert.Empty(unhandledExceptions);
+            Assert.Equal(11, renderer.GetOrCreateWebRootComponentManager().GetRootComponents().Count());
+        }
+        finally
+        {
+            lifecycle.ReleaseInitialization();
+            await Task.WhenAll([firstUpdate, .. appliedUpdates]);
+            await circuitHost.DisposeAsync();
+        }
+    }
+
+    [Fact]
+    public async Task UpdateRootComponents_AcknowledgesSuccessfulUpdate_WhenConnectionCancellationIsRequested()
+    {
+        var client = new Mock<ISingleClientProxy>();
+        client.Setup(c => c.SendCoreAsync("JS.EndUpdateRootComponents", It.IsAny<object[]>(), It.IsAny<CancellationToken>()))
+            .Returns(Task.CompletedTask);
+        var circuitHost = TestCircuitHost.Create(
+            remoteRenderer: GetRemoteRenderer(),
+            serviceScope: new ServiceCollection().BuildServiceProvider().CreateAsyncScope(),
+            clientProxy: new CircuitClientProxy(client.Object, "connection"));
+        using var cancellation = new CancellationTokenSource();
+        cancellation.Cancel();
+
+        await circuitHost.UpdateRootComponents(new()
+        {
+            BatchId = 1,
+            Operations = [CreateRootComponentOperation<DynamicallyAddedComponent>(RootComponentOperationType.Add, 1)],
+        }, null, false, cancellation.Token);
+
+        client.Verify(c => c.SendCoreAsync(
+            "JS.EndUpdateRootComponents",
+            It.Is<object[]>(arguments => (long)arguments[0] == 1),
+            It.Is<CancellationToken>(token => !token.IsCancellationRequested)), Times.Once);
     }
 
     [Fact]
@@ -1327,6 +1623,22 @@ public class CircuitHostTest
         Assert.Equal(2, testRenderer.GetOrCreateWebRootComponentManager().GetRootComponents().Count());
     }
 
+    private RootComponentOperation CreateRootComponentOperation<TComponent>(
+        RootComponentOperationType operationType,
+        int ssrComponentId,
+        Dictionary<string, object> parameters = null,
+        string componentKey = "")
+        where TComponent : IComponent
+        => new()
+        {
+            Type = operationType,
+            SsrComponentId = ssrComponentId,
+            Marker = CreateMarker(typeof(TComponent), ssrComponentId.ToString(CultureInfo.InvariantCulture), parameters, componentKey),
+            Descriptor = new(
+                componentType: typeof(TComponent),
+                parameters: CreateWebRootComponentParameters(parameters)),
+        };
+
     private async Task AddComponentAsync<TComponent>(CircuitHost circuitHost, int ssrComponentId, Dictionary<string, object> parameters = null, string componentKey = "")
         where TComponent : IComponent
     {
@@ -1382,10 +1694,11 @@ public class CircuitHostTest
         return new ServerComponentDeserializer(_ephemeralDataProtectionProvider, NullLogger<ServerComponentDeserializer>.Instance, new RootTypeCache(), new ComponentParameterDeserializer(NullLogger<ComponentParameterDeserializer>.Instance, new ComponentParametersTypeCache()));
     }
 
-    private static TestRemoteRenderer GetRemoteRenderer()
+    private static TestRemoteRenderer GetRemoteRenderer(Action<IServiceCollection> configureServices = null)
     {
         var serviceCollection = new ServiceCollection();
         serviceCollection.AddSingleton(new Mock<IJSRuntime>().Object);
+        configureServices?.Invoke(serviceCollection);
         return new TestRemoteRenderer(
             serviceCollection.BuildServiceProvider(),
             Mock.Of<ISingleClientProxy>());
@@ -1651,6 +1964,86 @@ public class CircuitHostTest
         public void Dispose()
         {
             _disposeTcs.SetResult();
+        }
+    }
+
+    private sealed class BlockingCircuitHandler : CircuitHandler
+    {
+        private readonly TaskCompletionSource _entered = new(TaskCreationOptions.RunContinuationsAsynchronously);
+        private readonly TaskCompletionSource _continue = new(TaskCreationOptions.RunContinuationsAsynchronously);
+
+        public override async Task OnCircuitOpenedAsync(Circuit circuit, CancellationToken cancellationToken)
+        {
+            _entered.SetResult();
+            await _continue.Task;
+        }
+
+        public Task WaitForEntryAsync() => _entered.Task;
+
+        public void Release() => _continue.SetResult();
+    }
+
+    private sealed class CompletesInitializationOnDisposeComponent(CompletesInitializationOnDisposeLifecycle lifecycle) : IComponent, IDisposable
+    {
+        public void Attach(RenderHandle renderHandle)
+        {
+        }
+
+        public Task SetParametersAsync(ParameterView parameters)
+        {
+            lifecycle.NotifyInitializationStarted();
+            return lifecycle.Initialization;
+        }
+
+        public void Dispose()
+        {
+            lifecycle.NotifyDisposed();
+        }
+    }
+
+    private sealed class CompletesInitializationOnDisposeLifecycle(bool completeInitializationOnDispose = true)
+    {
+        private readonly TaskCompletionSource _initializationStarted = new(TaskCreationOptions.RunContinuationsAsynchronously);
+        private readonly TaskCompletionSource _initialization = new(TaskCreationOptions.RunContinuationsAsynchronously);
+
+        public Task InitializationStarted => _initializationStarted.Task;
+
+        public Task Initialization => _initialization.Task;
+
+        public bool Disposed { get; private set; }
+
+        public void NotifyInitializationStarted() => _initializationStarted.TrySetResult();
+
+        public void NotifyDisposed()
+        {
+            Disposed = true;
+            if (completeInitializationOnDispose)
+            {
+                _initialization.TrySetResult();
+            }
+        }
+
+        public void ReleaseInitialization() => _initialization.TrySetResult();
+    }
+
+    private sealed class TracksActivationComponent(RootComponentActivationTracker tracker) : ComponentBase
+    {
+        protected override void OnInitialized() => tracker.NotifyActivated();
+    }
+
+    private sealed class RootComponentActivationTracker(int expectedActivations)
+    {
+        private readonly TaskCompletionSource _allActivated = new(TaskCreationOptions.RunContinuationsAsynchronously);
+        private int _activationCount;
+
+        public Task AllActivated => _allActivated.Task;
+
+        public void NotifyActivated()
+        {
+            if (Interlocked.Increment(ref _activationCount) == expectedActivations)
+            {
+                _allActivated.SetResult();
+            }
         }
     }
 
