@@ -329,12 +329,18 @@ public class WsFederationTest
                             OnSecurityTokenReceived = context =>
                             {
                                 context.HttpContext.Items["SecurityTokenReceived"] = true;
+                                context.Properties = new AuthenticationProperties(context.Properties.Items)
+                                {
+                                    RedirectUri = context.Properties.RedirectUri
+                                };
+                                context.HttpContext.Items["ReplacementProperties"] = context.Properties;
                                 return Task.FromResult(0);
                             },
                             OnSecurityTokenValidated = context =>
                             {
                                 Assert.True((bool)context.HttpContext.Items["MessageReceived"], "MessageReceived notification not invoked");
                                 Assert.True((bool)context.HttpContext.Items["SecurityTokenReceived"], "SecurityTokenReceived notification not invoked");
+                                Assert.Same(context.HttpContext.Items["ReplacementProperties"], context.Properties);
 
                                 if (context.Principal != null)
                                 {
