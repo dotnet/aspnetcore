@@ -1,5 +1,7 @@
 # Microsoft.AspNetCore.SpaServices
 
+**Microsoft.AspNetCore.SpaServices is not recommended for production use.**
+
 If you're building an ASP.NET Core application, and want to use Angular, React, Knockout, or another single-page app (SPA) framework, this NuGet package contains useful infrastructure for you.
 
 This package enables:

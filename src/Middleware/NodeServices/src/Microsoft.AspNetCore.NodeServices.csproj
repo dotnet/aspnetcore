@@ -1,7 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <Description>Invoke Node.js modules at runtime in ASP.NET Core applications.</Description>
+    <Description>Invoke Node.js modules at runtime in ASP.NET Core applications. Not recommended for production use.</Description>
     <TargetFramework>netstandard2.0</TargetFramework>
   </PropertyGroup>
 
