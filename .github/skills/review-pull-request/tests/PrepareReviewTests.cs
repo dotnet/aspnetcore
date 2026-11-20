@@ -1700,6 +1700,250 @@ public class PrepareReviewTests
     }
 
     [Theory]
+    [InlineData("receipt")]
+    [InlineData("feedback")]
+    [InlineData("objects")]
+    public async Task ReplaysCapturedInputsAndRejectsChangedEvidence(string mutation)
+    {
+        await using var fixture = await Fixture.CreateAsync();
+        var guidance = fixture.Commit(new Dictionary<string, object>
+        {
+            [".github/skills/review-pull-request/routing.md"] =
+                "| Changed path prefix | Guide |\n| --- | --- |\n| * | docs/CrossCuttingGuidance.md |\n",
+            ["docs/CrossCuttingGuidance.md"] = "# Guide\n## Overarching principles\n- A rule.\n## Topics\n### Topic\n- Another rule.\n",
+            [".github/copilot-instructions.md"] = "# Instructions\n## Security Concerns Are Out of Scope\nDo not review the excluded scope.\n",
+        });
+        fixture.Comments.Add(new JsonObject
+        {
+            ["id"] = 101,
+            ["user"] = new JsonObject { ["login"] = "commenter", ["id"] = 201, ["type"] = "User" },
+            ["body"] = "Captured feedback",
+            ["created_at"] = "2026-10-25T10:03:04Z",
+            ["updated_at"] = "2026-10-25T10:03:04Z",
+            ["html_url"] = "https://example.invalid/comment",
+        });
+        var capture = fixture.Options with
+        {
+            Head = fixture.Head,
+            GuidanceRoot = null,
+            Guidance = $"reviewer/guidance@{guidance}",
+            CaptureReplay = true,
+        };
+        var dependencies = fixture.CreateDependencies();
+        string[] targetArgs = ["--repo", capture.Repo!, "--pr", capture.Pr!, "--head", capture.Head!, "--guidance", capture.Guidance!];
+        Assert.Equal(0, await PrepareReviewProgram.RunAsync(
+            [.. targetArgs, "--capture-replay", "--output", capture.Output], dependencies));
+        var expected = JsonNode.Parse(await File.ReadAllTextAsync(Path.Combine(capture.Output, "manifest.json")))!.AsObject();
+        var replay = capture with { CaptureReplay = false, ReplayFrom = fixture.Output, Output = Path.Combine(fixture.Root, "replay") };
+        fixture.FailApi = fixture.FailFetch = true;
+        Assert.Equal(0, await PrepareReviewProgram.RunAsync(
+            [.. targetArgs, "--replay-from", capture.Output, "--output", replay.Output], dependencies));
+        var actual = JsonNode.Parse(await File.ReadAllTextAsync(Path.Combine(replay.Output, "manifest.json")))!.AsObject();
+        expected.Remove("timingsMs");
+        actual.Remove("timingsMs");
+        Assert.True(JsonNode.DeepEquals(expected, actual));
+        Assert.True(File.Exists(Path.Combine(replay.Output, "manifest.json")));
+
+        var receiptPath = Path.Combine(fixture.Output, "replay-capture.json");
+        if (mutation == "receipt")
+        {
+            await File.AppendAllTextAsync(receiptPath, "\n");
+        }
+        else if (mutation == "feedback")
+        {
+            var bytes = Utf8NoBom.GetBytes((await File.ReadAllTextAsync(receiptPath)).Replace(
+                "Captured feedback", "Changed feedback", StringComparison.Ordinal));
+            await File.WriteAllBytesAsync(receiptPath, bytes);
+            await File.WriteAllTextAsync(Path.Combine(fixture.Output, "replay-capture.sha256"),
+                Convert.ToHexStringLower(SHA256.HashData(bytes)));
+        }
+        else
+        {
+            var objects = Path.Combine(fixture.Output, ".objects", "objects");
+            Directory.Move(objects, Path.Combine(fixture.Root, "missing-objects"));
+            Directory.CreateDirectory(objects);
+        }
+
+        var rejected = replay with { Output = Path.Combine(fixture.Root, "rejected") };
+        var exception = await Assert.ThrowsAsync<InvalidOperationException>(() =>
+            PrepareReviewProgram.PrepareReplayAsync(rejected, producerSourcePath: ProducerSourcePath));
+        Assert.Contains(mutation switch
+        {
+            "receipt" => "does not match its SHA-256",
+            "feedback" => "Replay inputs differ",
+            _ => $"Not a valid object name {fixture.Head}",
+        }, exception.Message);
+        Assert.False(File.Exists(Path.Combine(rejected.Output, "manifest.json")));
+    }
+
+    [Theory]
+    [InlineData("complete")]
+    [InlineData("exact")]
+    [InlineData("exact-binary")]
+    [InlineData("checksum")]
+    [InlineData("feedback")]
+    [InlineData("body")]
+    [InlineData("missing-commit")]
+    [InlineData("missing-blob")]
+    [InlineData("code-only")]
+    [InlineData("receipt-write-fails")]
+    public async Task RebuildsMinimalReceiptOrRejectsChangedOrMissingEvidence(string evidence)
+    {
+        await using var fixture = await Fixture.CreateAsync();
+        var guidance = fixture.Commit(new Dictionary<string, object>
+        {
+            [".github/skills/review-pull-request/routing.md"] =
+                "| Changed path prefix | Guide |\n| --- | --- |\n| * | docs/CrossCuttingGuidance.md |\n",
+            ["docs/CrossCuttingGuidance.md"] = "# Guide\n## Overarching principles\n- A rule.\n## Topics\n### Topic\n- Another rule.\n",
+            [".github/copilot-instructions.md"] = "# Instructions\n## Security Concerns Are Out of Scope\nDo not review the excluded scope.\n",
+        });
+        fixture.Comments.Add(new JsonObject
+        {
+            ["id"] = 101,
+            ["body"] = "Captured feedback\r\n\u2603",
+            ["created_at"] = "2026-10-25T10:03:04Z",
+            ["updated_at"] = "2026-10-25T10:03:04Z",
+        });
+        if (evidence == "exact")
+        {
+            const string ChangedPath = "src/Value.cs";
+            const string Prefix = "public class C\n{\n    public int Value()\n    {\n        // one\n        // two\n        // three\n        return ";
+            fixture.BaseTip = fixture.MergeBase = fixture.Commit(new Dictionary<string, object> { [ChangedPath] = Prefix + "1;\n    }\n}\n" });
+            var head = fixture.Commit(new Dictionary<string, object> { [ChangedPath] = Prefix + "2;\n    }\n}\n" }, fixture.MergeBase);
+            fixture.Pull["head"]!["sha"] = head;
+            fixture.Pull["changed_files"] = 1;
+            fixture.Files = new JsonArray(new JsonObject
+            {
+                ["filename"] = ChangedPath,
+                ["status"] = "modified",
+                ["sha"] = Utf8NoBom.GetString(PrepareReviewProgram.Run("git", PrepareReviewProgram.GitArguments(
+                    "--git-dir", fixture.Repository, "rev-parse", $"{head}:{ChangedPath}"))).Trim(),
+                ["additions"] = 1,
+                ["deletions"] = 1,
+                ["changes"] = 2,
+            });
+            await File.WriteAllTextAsync(Path.Combine(fixture.Repository, "info", "attributes"), "*.cs diff=csharp\n", Utf8NoBom);
+            fixture.Diff = PrepareReviewProgram.Run("git", PrepareReviewProgram.GitArguments(
+                "--git-dir", fixture.Repository, "diff", "--abbrev=12", fixture.MergeBase, head));
+            var hunk = Assert.Single(Utf8NoBom.GetString(fixture.Diff).Split('\n'), line => line.StartsWith("@@", StringComparison.Ordinal));
+            Assert.EndsWith("public int Value()", hunk, StringComparison.Ordinal);
+        }
+        else if (evidence == "exact-binary")
+        {
+            fixture.ConfigureBinaryChange("modified", "rest");
+            Assert.Contains("Binary files ", Utf8NoBom.GetString(fixture.Diff), StringComparison.Ordinal);
+        }
+        var receiptPath = Path.Combine(fixture.Root, "receipt.json");
+        var capture = fixture.Options with
+        {
+            GuidanceRoot = null,
+            Guidance = $"reviewer/guidance@{guidance}",
+            Receipt = receiptPath,
+        };
+        if (evidence == "receipt-write-fails")
+        {
+            await using var existing = new FileStream(receiptPath, FileMode.CreateNew, FileAccess.ReadWrite, FileShare.None);
+            await Assert.ThrowsAsync<IOException>(() => fixture.PrepareAsync(capture));
+            Assert.False(File.Exists(Path.Combine(fixture.Output, "manifest.json")));
+            return;
+        }
+        var manifest = await fixture.PrepareAsync(capture);
+        if (evidence == "code-only")
+        {
+            var output = Path.Combine(fixture.Root, "code-only");
+            Assert.Equal(0, await PrepareReviewProgram.RunAsync([
+                "--code-only", "--objects", fixture.Repository, "--output", output,
+                "--head", fixture.Pull["head"]!["sha"]!.GetValue<string>(), "--base-tip", fixture.BaseTip,
+                "--merge-base", fixture.MergeBase, "--base-ref", "main", "--guidance", $"reviewer/guidance@{guidance}",
+                "--title", "Fix caching",
+            ], new(ProducerSourcePath: ProducerSourcePath)));
+            var rebuilt = JsonNode.Parse(await File.ReadAllBytesAsync(Path.Combine(output, "manifest.json")))!;
+            Assert.True(JsonNode.DeepEquals(manifest["sources"], rebuilt["sources"]));
+            Assert.True(JsonNode.DeepEquals(manifest["guidance"], rebuilt["guidance"]));
+            var pull = JsonNode.Parse(await File.ReadAllBytesAsync(Path.Combine(output, "pull.json")))!.AsObject();
+            Assert.True(pull.ContainsKey("body"));
+            Assert.Null(pull["body"]);
+            Assert.Equal("Fix caching", pull["title"]!.GetValue<string>());
+            var feedbackText = await File.ReadAllTextAsync(Path.Combine(output, "feedback.json"));
+            Assert.EndsWith("\n", feedbackText, StringComparison.Ordinal);
+            var feedback = JsonNode.Parse(feedbackText);
+            Assert.True(JsonNode.DeepEquals(JsonNode.Parse("""{"comments":[],"reviews":[],"inline":[]}"""), feedback));
+            Assert.False(Directory.Exists(Path.Combine(output, "required", "pull")));
+            Assert.False(Directory.Exists(Path.Combine(output, "required", "feedback")));
+            return;
+        }
+        Assert.True(File.Exists(Path.Combine(fixture.Output, "manifest.json")));
+        var receipt = JsonNode.Parse(await File.ReadAllBytesAsync(receiptPath))!.AsObject();
+        var stored = receipt["files"]!.AsObject();
+        const string CommentBody = "required/feedback/comments/101.source";
+        Assert.Equal(new[] { "feedback.json", "pull.json", CommentBody, "required/pull/body.source" },
+            stored.Select(pair => pair.Key).Order(StringComparer.Ordinal));
+        Assert.Equal(manifest["artifacts"]!["diff.patch"]!.GetValue<string>(), receipt["hashes"]!["diff.patch"]!.GetValue<string>());
+        Assert.Equal(manifest["artifacts"]!["files.json"]!.GetValue<string>(), receipt["hashes"]!["files.json"]!.GetValue<string>());
+        var rebuild = new PrepareReviewProgram.Options(null, null, Path.Combine(fixture.Root, "rebuilt"),
+            RebuildFromReceipt: receiptPath, ObjectStore: fixture.Repository);
+        if (evidence is "complete" or "exact" or "exact-binary")
+        {
+            var verdict = await PrepareReviewProgram.RebuildReceiptAsync(rebuild, ProducerSourcePath);
+            var matches = verdict["matches"]!.AsArray().Select(node => node!.GetValue<string>()).ToArray();
+            var mismatches = verdict["mismatches"]!.AsArray().Select(node => node!.GetValue<string>()).ToArray();
+            Assert.Equal(evidence == "complete" ? "reconstructed" : "captured-exact", verdict["verdict"]!.GetValue<string>());
+            if (evidence != "complete")
+            {
+                Assert.Empty(mismatches);
+                Assert.Equal(receipt["hashes"]!.AsObject().Select(pair => pair.Key), matches);
+            }
+            else
+            {
+                Assert.Contains("manifest", mismatches);
+                Assert.Contains("files.json", mismatches);
+                Assert.Equal(new[] { "pull.json", "feedback.json", "sources.head", "sources.mergeBase", "sources.baseTip", "guidance", "requiredText" },
+                    matches.Where(name => name != "diff.patch"));
+            }
+            Assert.True(File.Exists(Path.Combine(rebuild.Output, "manifest.json")));
+            var rebuilt = JsonNode.Parse(await File.ReadAllBytesAsync(Path.Combine(rebuild.Output, "manifest.json")))!;
+            foreach (var (name, value) in stored)
+            {
+                Assert.Equal(Convert.FromBase64String(value!.GetValue<string>()),
+                    await File.ReadAllBytesAsync(Path.Combine(rebuild.Output, name)));
+            }
+            Assert.Equal(manifest["artifacts"]!["diff.patch"]!.GetValue<string>() != rebuilt["artifacts"]!["diff.patch"]!.GetValue<string>(),
+                mismatches.Contains("diff.patch", StringComparer.Ordinal));
+            return;
+        }
+
+        if (evidence is "missing-commit" or "missing-blob")
+        {
+            var id = evidence == "missing-commit" ? fixture.Head : fixture.Files[0]!["sha"]!.GetValue<string>();
+            var objectPath = Path.Combine(fixture.Repository, "objects", id[..2], id[2..]);
+            File.SetAttributes(objectPath, FileAttributes.Normal);
+            File.Delete(objectPath);
+            var verdict = await PrepareReviewProgram.RebuildReceiptAsync(rebuild, ProducerSourcePath);
+            Assert.Equal("unavailable", verdict["verdict"]!.GetValue<string>());
+        }
+        else
+        {
+            stored[evidence == "body" ? CommentBody : "feedback.json"] = Convert.ToBase64String("Changed feedback"u8);
+            if (evidence != "checksum")
+            {
+                receipt.Remove("checksum");
+                var compact = string.Concat(PrepareReviewProgram.SerializeJson(receipt).Split('\n')
+                    .Select(line => line.Trim().Replace("\": ", "\":", StringComparison.Ordinal)));
+                receipt["checksum"] = Convert.ToHexStringLower(SHA256.HashData(Utf8NoBom.GetBytes(compact)));
+            }
+            await File.WriteAllTextAsync(receiptPath, PrepareReviewProgram.SerializeJson(receipt), Utf8NoBom);
+            var error = await Assert.ThrowsAsync<InvalidOperationException>(() => PrepareReviewProgram.RebuildReceiptAsync(rebuild, ProducerSourcePath));
+            Assert.Contains(evidence switch
+            {
+                "checksum" => "SHA-256 checksum",
+                "feedback" => "feedback.json does not match",
+                _ => "body does not match",
+            }, error.Message);
+        }
+        Assert.False(File.Exists(Path.Combine(rebuild.Output, "manifest.json")));
+    }
+
+    [Theory]
     [InlineData("scope")]
     [InlineData("reason")]
     [InlineData("legacy")]
