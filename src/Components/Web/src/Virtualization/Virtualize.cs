@@ -48,6 +48,8 @@ public sealed class Virtualize<TItem> : ComponentBase, IVirtualizeJsCallbacks, I
 
     private IEnumerable<TItem>? _loadedItems;
 
+    private int _loadedItemCount;
+
     private TItem? _previousFirstLoadedItem;
 
     private int _previousFirstLoadedItemIndex = -1;
@@ -624,6 +626,9 @@ public sealed class Virtualize<TItem> : ComponentBase, IVirtualizeJsCallbacks, I
             builder.CloseRegion();
         }
 
+        // Only count items already enumerated by rendering, not the provider's entire sequence.
+        _loadedItemCount = _loadedItemsStartIndex == _itemsBefore ? _lastRenderedItemCount : 0;
+
         _lastRenderedPlaceholderCount = Math.Max(0, lastItemIndex - _itemsBefore - _lastRenderedItemCount);
 
         builder.OpenRegion(6);
@@ -981,7 +986,7 @@ public sealed class Virtualize<TItem> : ComponentBase, IVirtualizeJsCallbacks, I
                 && _loadedItems != null
                 && _loadedItemsStartIndex == _itemsBefore
                 && _itemsBefore + visibleItemCapacity < _itemCount
-                && _loadedItems.Count() >= visibleItemCapacity;
+                && _loadedItemCount >= visibleItemCapacity;
             _skipNextDistributionRefresh = false;
 
             if (skipRefresh)
@@ -1143,6 +1148,7 @@ public sealed class Virtualize<TItem> : ComponentBase, IVirtualizeJsCallbacks, I
 
             _itemCount = result.TotalItemCount;
             _loadedItems = result.Items;
+            _loadedItemCount = 0;
             _loadedItemsStartIndex = _itemsBefore;
 
             // For DefaultItemsProvider, capture the first loaded item so we can detect

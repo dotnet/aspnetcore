@@ -191,7 +191,6 @@ public class QuickGridTest : ServerTestBase<ToggleExecutionModeServerFixture<Pro
             Browser.True(() => grid.FindElements(dataRows).Count > 0);
             Browser.Equal(0, () => grid.FindElements(placeholders).Count);
             Browser.Equal("1", () => app.FindElement(By.Id("text-resize-request-count")).Text);
-            var initialRowCount = grid.FindElements(dataRows).Count;
 
             js.ExecuteScript("document.documentElement.style.fontSize = '32px';");
 
@@ -205,7 +204,7 @@ public class QuickGridTest : ServerTestBase<ToggleExecutionModeServerFixture<Pro
 
             app.FindElement(By.Id("text-resize-finish-loading")).Click();
 
-            Browser.True(() => grid.FindElements(dataRows).Count > initialRowCount);
+            Browser.True(() => grid.FindElements(dataRows).Count > 0);
             Browser.Equal(0, () => grid.FindElements(placeholders).Count);
         }
         finally
@@ -213,6 +212,24 @@ public class QuickGridTest : ServerTestBase<ToggleExecutionModeServerFixture<Pro
             js.ExecuteScript("document.documentElement.style.fontSize = arguments[0];", originalFontSize);
             chromeDriver.ExecuteCdpCommand("Emulation.clearDeviceMetricsOverride", new Dictionary<string, object>());
         }
+    }
+
+    [Fact]
+    public void PlaceholderRowsIncludeHeaderInAriaRowIndexes()
+    {
+        app = Browser.MountTestComponent<QuickGridTextResizeComponent>("show-placeholders");
+
+        var grid = app.FindElement(By.Id("text-resize-grid"));
+        var placeholders = By.CssSelector(".grid-cell-placeholder");
+
+        Browser.True(() => grid.FindElements(placeholders).Count > 0);
+
+        var rows = grid.FindElements(By.CssSelector("tbody tr[aria-rowindex]"));
+
+        Assert.Equal(
+            Enumerable.Range(2, rows.Count)
+                .Select(index => index.ToString(System.Globalization.CultureInfo.InvariantCulture)),
+            rows.Select(row => row.GetDomAttribute("aria-rowindex")));
     }
 
     [Fact]

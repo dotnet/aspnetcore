@@ -22,6 +22,8 @@
 <button id="text-resize-finish-loading" @onclick="() => _finishLoading.TrySetResult()">Finish loading</button>
 
 @code {
+    [Parameter] public string TestConfiguration { get; set; }
+
     private readonly TaskCompletionSource _finishLoading = new(TaskCreationOptions.RunContinuationsAsynchronously);
     private GridItemsProvider<Person> _itemsProvider = default!;
     private int _requestCount;
@@ -41,6 +43,11 @@
         }
 
         var count = Math.Min(request.Count ?? 200, Math.Max(0, 200 - request.StartIndex));
+        if (TestConfiguration == "show-placeholders")
+        {
+            count = Math.Min(count, 5);
+        }
+
         var items = Enumerable.Range(request.StartIndex, count)
             .Select(i => new Person($"Person {i + 1:D3}", $"City {i + 1:D3}"))
             .ToArray();
