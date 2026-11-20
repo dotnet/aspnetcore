@@ -12,6 +12,74 @@ using Microsoft.Extensions.DependencyInjection;
 
 public class CustomSchemaTransformerTests : OpenApiDocumentServiceTestBase
 {
+    [Theory]
+    [InlineData("document", false)]
+    [InlineData("document", true)]
+    [InlineData("operation", false)]
+    [InlineData("operation", true)]
+    [InlineData("schema", false)]
+    [InlineData("schema", true)]
+    public async Task GetOrCreateSchemaAsync_PreservesNullableObjectProperties(string transformerKind, bool collection)
+    {
+        var builder = CreateBuilder();
+        builder.MapGet("/detail", () => new NullableDetail("example", DateTimeOffset.UnixEpoch));
+        builder.MapGet("/entry", () => new NullableEntry(1, null));
+        builder.MapGet("/trigger", () => new NullabilityTrigger(1));
+
+        var options = new OpenApiOptions();
+        var type = collection ? typeof(IReadOnlyList<NullableEntry>) : typeof(NullableEntry);
+        if (transformerKind == "document")
+        {
+            options.AddDocumentTransformer(async (document, context, cancellationToken) =>
+            {
+                document.AddComponent("Generated", await context.GetOrCreateSchemaAsync(type, cancellationToken: cancellationToken));
+            });
+        }
+        else if (transformerKind == "operation")
+        {
+            options.AddOperationTransformer(async (operation, context, cancellationToken) =>
+            {
+                if (context.Description.RelativePath == "trigger")
+                {
+                    var generated = await context.GetOrCreateSchemaAsync(type, cancellationToken: cancellationToken);
+                    context.Document.AddComponent("Generated", generated);
+                    operation.Responses["200"].Content["application/json"] = new OpenApiMediaType { Schema = generated };
+                }
+            });
+        }
+        else
+        {
+            options.AddSchemaTransformer(async (schema, context, cancellationToken) =>
+            {
+                if (context.JsonTypeInfo.Type == typeof(NullabilityTrigger))
+                {
+                    context.Document.AddComponent("Generated", await context.GetOrCreateSchemaAsync(type, cancellationToken: cancellationToken));
+                }
+            });
+        }
+
+        await VerifyOpenApiDocument(builder, options, document =>
+        {
+            var generated = document.Components.Schemas["Generated"];
+            var entry = collection ? generated.Items : generated;
+            Assert.Contains("detail", entry.Required);
+            var detail = entry.Properties["detail"];
+            Assert.Collection(detail.OneOf,
+                nullable => Assert.Equal(JsonSchemaType.Null, nullable.Type),
+                value => Assert.Equal(JsonSchemaType.Object, value.Type));
+            Assert.False(document.Components.Schemas["NullableDetail"].Type.Value.HasFlag(JsonSchemaType.Null));
+            var directResponse = document.Paths["/detail"].Operations[HttpMethod.Get].Responses["200"].Content["application/json"].Schema;
+            Assert.IsType<OpenApiSchemaReference>(directResponse);
+            Assert.Equal(JsonSchemaType.Object, directResponse.Type);
+        });
+    }
+
+#nullable enable
+    private sealed record NullableEntry(long Id, NullableDetail? Detail);
+    private sealed record NullableDetail(string Text, DateTimeOffset At);
+    private sealed record NullabilityTrigger(int Id);
+#nullable restore
+
     [Fact]
     public async Task CustomSchemaTransformer_CanInsertSchemaIntoDocumentFromOperationTransformer()
     {

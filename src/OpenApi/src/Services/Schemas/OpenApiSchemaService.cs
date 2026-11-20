@@ -246,7 +246,7 @@ internal sealed class OpenApiSchemaService(
         }
     }
 
-    internal async Task<OpenApiSchema> GetOrCreateUnresolvedSchemaAsync(OpenApiDocument? document, Type type, IServiceProvider scopedServiceProvider, IOpenApiSchemaTransformer[] schemaTransformers, ApiParameterDescription? parameterDescription = null, CancellationToken cancellationToken = default)
+    internal async Task<OpenApiSchema> GetOrCreateUnresolvedSchemaAsync(OpenApiDocument? document, Type type, IServiceProvider scopedServiceProvider, IOpenApiSchemaTransformer[] schemaTransformers, ApiParameterDescription? parameterDescription = null, CancellationToken cancellationToken = default, bool applyNullablePropertySchemas = true)
     {
         var schemaAsJsonObject = CreateSchema(type);
         if (parameterDescription is not null)
@@ -259,7 +259,70 @@ internal sealed class OpenApiSchemaService(
         Debug.Assert(deserializedSchema != null, "The schema should have been deserialized successfully and materialize a non-null value.");
         var schema = deserializedSchema.Schema;
         await ApplySchemaTransformersAsync(document, schema, type, scopedServiceProvider, schemaTransformers, parameterDescription, cancellationToken);
+        if (applyNullablePropertySchemas)
+        {
+            // Transformer callers keep nested schemas inline and do not pass through
+            // ResolveReferenceForSchema, which normally materializes nullable properties.
+            ApplyNullablePropertySchemas(schema);
+        }
         return schema;
+    }
+
+    private static void ApplyNullablePropertySchemas(IOpenApiSchema inputSchema)
+    {
+        // References can point at components shared with non-nullable usages.
+        if (inputSchema is not OpenApiSchema schema)
+        {
+            return;
+        }
+
+        if (schema.Properties is not null)
+        {
+            foreach (var (key, propertyValue) in schema.Properties.ToList())
+            {
+                ApplyNullablePropertySchemas(propertyValue);
+                if (propertyValue is OpenApiSchema propertySchema &&
+                    propertySchema.Metadata?.TryGetValue(OpenApiConstants.NullableProperty, out var isNullableProperty) == true &&
+                    isNullableProperty is true)
+                {
+                    schema.Properties[key] = propertySchema.CreateOneOfNullableWrapper();
+                }
+            }
+        }
+
+        if (schema.AnyOf is not null)
+        {
+            foreach (var child in schema.AnyOf)
+            {
+                ApplyNullablePropertySchemas(child);
+            }
+        }
+        if (schema.AllOf is not null)
+        {
+            foreach (var child in schema.AllOf)
+            {
+                ApplyNullablePropertySchemas(child);
+            }
+        }
+        if (schema.OneOf is not null)
+        {
+            foreach (var child in schema.OneOf)
+            {
+                ApplyNullablePropertySchemas(child);
+            }
+        }
+        if (schema.Items is not null)
+        {
+            ApplyNullablePropertySchemas(schema.Items);
+        }
+        if (schema.AdditionalProperties is not null)
+        {
+            ApplyNullablePropertySchemas(schema.AdditionalProperties);
+        }
+        if (schema.Not is not null)
+        {
+            ApplyNullablePropertySchemas(schema.Not);
+        }
     }
 
     internal async Task<IOpenApiSchema> GetOrCreateSchemaAsync(OpenApiDocument document, Type type, IServiceProvider scopedServiceProvider, IOpenApiSchemaTransformer[] schemaTransformers, ApiParameterDescription? parameterDescription = null, CancellationToken cancellationToken = default)
@@ -288,7 +351,7 @@ internal sealed class OpenApiSchemaService(
             }
         }
 
-        var schema = await GetOrCreateUnresolvedSchemaAsync(document, type, scopedServiceProvider, schemaTransformers, parameterDescription, cancellationToken);
+        var schema = await GetOrCreateUnresolvedSchemaAsync(document, type, scopedServiceProvider, schemaTransformers, parameterDescription, cancellationToken, applyNullablePropertySchemas: false);
 
         if (inlineEnumParam)
         {
