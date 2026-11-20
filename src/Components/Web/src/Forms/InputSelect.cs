@@ -83,7 +83,7 @@ public class InputSelect<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTy
         return base.FormatValueAsString(value);
     }
 
-    private void SetCurrentValueAsStringArray(string?[]? value)
+    internal void SetCurrentValueAsStringArray(string?[]? value)
     {
         CurrentValue = BindConverter.TryConvertTo<TValue>(value, CultureInfo.CurrentCulture, out var result)
             ? result

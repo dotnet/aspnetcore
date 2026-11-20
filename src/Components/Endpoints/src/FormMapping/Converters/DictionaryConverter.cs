@@ -30,7 +30,7 @@ internal sealed class DictionaryConverter<TDictionary, TDictionaryPolicy, TBuffe
         ref FormDataReader context,
         Type type,
         FormDataMapperOptions options,
-        [NotNullWhen(true)] out TDictionary? result,
+        out TDictionary? result,
         out bool found)
     {
         TValue currentValue;
@@ -43,7 +43,7 @@ internal sealed class DictionaryConverter<TDictionary, TDictionaryPolicy, TBuffe
         found = keys.HasValues();
         if (!found)
         {
-            result = default!;
+            result = default;
             return true;
         }
 
