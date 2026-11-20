@@ -153,12 +153,17 @@ public abstract class WebViewManager : IAsyncDisposable
 
         _ = _dispatcher.InvokeAsync(async () =>
         {
+            if (_disposed && _currentPageContext is null)
+            {
+                return;
+            }
+
             // TODO: Verify this produces the correct exception-surfacing behaviors.
             // For example, JS interop exceptions should flow back into JS, whereas
             // renderer exceptions should be fatal.
             try
             {
-                await _ipcReceiver.OnMessageReceivedAsync(_currentPageContext, message);
+                await _ipcReceiver.OnMessageReceivedAsync(_currentPageContext, message, isDisposing: _disposed);
             }
             catch (Exception ex)
             {
@@ -215,12 +220,23 @@ public abstract class WebViewManager : IAsyncDisposable
 
     internal async Task AttachToPageAsync(string baseUrl, string startUrl)
     {
+        if (_disposed)
+        {
+            return;
+        }
+
         // If there was some previous attached page, dispose all its resources. We're not eagerly disposing
         // page contexts when the user navigates away, because we don't get notified about that. We could
         // change this if any important reason emerges.
         if (_currentPageContext != null)
         {
             await _currentPageContext.DisposeAsync();
+        }
+
+        // Disposal may have started while the previous page's scope was being disposed.
+        if (_disposed)
+        {
+            return;
         }
 
         var serviceScope = _provider.CreateAsyncScope();
@@ -263,7 +279,14 @@ public abstract class WebViewManager : IAsyncDisposable
 
             if (_currentPageContext != null)
             {
-                await _currentPageContext.DisposeAsync();
+                try
+                {
+                    await _currentPageContext.DisposeAsync();
+                }
+                finally
+                {
+                    _currentPageContext = null;
+                }
             }
         }
     }

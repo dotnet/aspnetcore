@@ -1301,7 +1301,7 @@ public abstract partial class Renderer : IDisposable, IAsyncDisposable
 
             try
             {
-                var task = componentState.DisposeAsync();
+                var task = componentState.DisposeAsyncWithSubscriptionCleanup();
                 if (task.IsCompletedSuccessfully)
                 {
                     // If it's a IValueTaskSource backed ValueTask,
@@ -1323,6 +1323,8 @@ public abstract partial class Renderer : IDisposable, IAsyncDisposable
 
         _componentStateById.Clear(); // So we know they were all disposed
         _componentStateByComponent.Clear();
+        _eventBindings.Clear();
+        _eventHandlerIdReplacements.Clear();
         _batchBuilder.Dispose();
 
         NotifyExceptions(exceptions);

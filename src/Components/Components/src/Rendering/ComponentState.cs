@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Diagnostics;
+using System.Runtime.ExceptionServices;
 using Microsoft.AspNetCore.Components.RenderTree;
 using Microsoft.AspNetCore.Components.Sections;
 
@@ -317,15 +318,81 @@ public class ComponentState : IAsyncDisposable
 
     private void RemoveCascadingParameterSubscriptions()
     {
+        List<Exception>? exceptions = null;
         var numCascadingParameters = _cascadingParameters!.Count;
         for (var i = 0; i < numCascadingParameters; i++)
         {
             var supplier = _cascadingParameters[i].ValueSupplier;
             if (!supplier.IsFixed)
             {
-                supplier.Unsubscribe(this, _cascadingParameters[i].ParameterInfo);
+                try
+                {
+                    supplier.Unsubscribe(this, _cascadingParameters[i].ParameterInfo);
+                }
+                catch (Exception exception)
+                {
+                    exceptions ??= new();
+                    exceptions.Add(exception);
+                }
             }
         }
+
+        if (exceptions?.Count == 1)
+        {
+            ExceptionDispatchInfo.Throw(exceptions[0]);
+        }
+        else if (exceptions is not null)
+        {
+            throw new AggregateException(exceptions);
+        }
+    }
+
+    internal ValueTask DisposeAsyncWithSubscriptionCleanup()
+    {
+        _componentWasDisposed = true;
+
+        if (_hasAnyCascadingParameterSubscriptions)
+        {
+            try
+            {
+                RemoveCascadingParameterSubscriptions();
+            }
+            catch (Exception exception)
+            {
+                try
+                {
+                    var disposalTask = DisposeAsync();
+                    if (!disposalTask.IsCompleted)
+                    {
+                        return DisposeAfterSubscriptionFailureAsync(exception, disposalTask);
+                    }
+
+                    disposalTask.GetAwaiter().GetResult();
+                }
+                catch (Exception componentException)
+                {
+                    throw new AggregateException(exception, componentException);
+                }
+
+                ExceptionDispatchInfo.Throw(exception);
+            }
+        }
+
+        return DisposeAsync();
+    }
+
+    private static async ValueTask DisposeAfterSubscriptionFailureAsync(Exception subscriptionException, ValueTask disposalTask)
+    {
+        try
+        {
+            await disposalTask;
+        }
+        catch (Exception componentException)
+        {
+            throw new AggregateException(subscriptionException, componentException);
+        }
+
+        ExceptionDispatchInfo.Throw(subscriptionException);
     }
 
     /// <summary>
@@ -364,12 +431,7 @@ public class ComponentState : IAsyncDisposable
         // We don't expect these things to throw.
         RenderTreeDiffBuilder.DisposeFrames(batchBuilder, ComponentId, CurrentRenderTree.GetFrames());
 
-        if (_hasAnyCascadingParameterSubscriptions)
-        {
-            RemoveCascadingParameterSubscriptions();
-        }
-
-        return DisposeAsync();
+        return DisposeAsyncWithSubscriptionCleanup();
     }
 
     /// <summary>
