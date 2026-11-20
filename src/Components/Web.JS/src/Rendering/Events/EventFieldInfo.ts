@@ -5,11 +5,19 @@ export class EventFieldInfo {
   constructor(public componentId: number, public fieldValue: string | boolean) {
   }
 
-  public static fromEvent(componentId: number, event: Event): EventFieldInfo | null {
-    const elem = event.target;
+  public static fromEvent(componentId: number, event: Event, eventArgs: unknown): EventFieldInfo | null {
+    const elem = event.composedPath()[0] ?? event.target;
     if (elem instanceof Element) {
       const fieldData = getFormFieldData(elem);
       if (fieldData) {
+        if (elem !== event.target) {
+          // The renderer updates the host's bound attribute, so compare with its parsed event value
+          // rather than reading the host again or tracking a different display value.
+          if (!eventArgs || typeof eventArgs !== 'object' || !('value' in eventArgs) || eventArgs.value !== fieldData.value) {
+            return null;
+          }
+        }
+
         return new EventFieldInfo(componentId, fieldData.value);
       }
     }

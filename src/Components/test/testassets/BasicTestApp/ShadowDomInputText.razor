@@ -1,0 +1,4 @@
+@inherits Microsoft.AspNetCore.Components.Forms.InputText
+
+<shadow-dom-input @attributes="AdditionalAttributes" class="@CssClass"
+                  @bind-value="CurrentValueAsString" @bind-value:event="oninput" @ref="Element"></shadow-dom-input>
