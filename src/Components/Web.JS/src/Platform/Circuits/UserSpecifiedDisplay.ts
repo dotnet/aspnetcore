@@ -3,6 +3,7 @@
 
 import { ReconnectDisplay, ReconnectDisplayUpdateOptions } from './ReconnectDisplay';
 import { ReconnectStateChangedEvent } from './ReconnectStateChangedEvent';
+import { markAsDataPermanentElement } from '../../Rendering/DomMerging/DataPermanentElementSync';
 
 export class UserSpecifiedDisplay implements ReconnectDisplay {
   static readonly ShowClassName = 'components-reconnect-show';
@@ -33,6 +34,8 @@ export class UserSpecifiedDisplay implements ReconnectDisplay {
 
   constructor(private dialog: HTMLElement, private readonly document: Document, maxRetries?: number) {
     this.document = document;
+    // Reconnect display bindings require this element to retain its identity across enhanced navigation.
+    markAsDataPermanentElement(dialog);
 
     if (maxRetries !== undefined) {
       const maxRetriesElement = this.document.getElementById(UserSpecifiedDisplay.MaxRetriesId);
