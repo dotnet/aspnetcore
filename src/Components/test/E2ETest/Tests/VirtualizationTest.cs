@@ -426,6 +426,53 @@ public class VirtualizationTest : ServerTestBase<ToggleExecutionModeServerFixtur
     }
 
     [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public void FilterGrowth_BackToTopShowsFirstRows(bool useTable)
+    {
+        if (useTable)
+        {
+            Browser.MountTestComponent<VirtualizationFilterGrowthTable>();
+        }
+        else
+        {
+            Browser.MountTestComponent<VirtualizationFilterGrowth>();
+        }
+        var js = (IJavaScriptExecutor)Browser;
+
+        Browser.True(() => Browser.Exists(By.Id("filter-row-0")).Displayed, TimeSpan.FromSeconds(10));
+
+        var input = Browser.Exists(By.Id("filter-input"));
+        input.SendKeys("fizz");
+        Browser.Contains("334 rows", () => Browser.Exists(By.Id("visible-count")).Text);
+
+        js.ExecuteScript("document.getElementById('filter-list').scrollTop = 3000;");
+        Browser.True(
+            () => (long)js.ExecuteScript("return Math.round(document.getElementById('filter-list').scrollTop)") >= 2900,
+            TimeSpan.FromSeconds(10));
+
+        // Wait for the observer/.NET round trip to render the scrolled window,
+        // not just for the assigned scrollTop value.
+        Browser.True(
+            () => (bool)js.ExecuteScript(
+                "return !document.getElementById('filter-row-0') && Array.from(document.querySelectorAll('[id^=\"filter-row-\"]')).some(el => parseInt(el.id.split('-').pop()) > 50);"),
+            TimeSpan.FromSeconds(10),
+            "The filtered window should render around row 300 before the list grows");
+
+        // Clearing the filter grows the list. Regardless of the growth handling, a
+        // scripted scroll back to the top must move the rendered window with it.
+        Browser.Exists(By.Id("clear-filter")).Click();
+        Browser.Contains("1000 rows", () => Browser.Exists(By.Id("visible-count")).Text);
+
+        Browser.Exists(By.Id("back-to-top")).Click();
+
+        Browser.True(
+            () => Browser.Exists(By.Id("filter-row-0")).Displayed,
+            TimeSpan.FromSeconds(10),
+            "Back to top should render the first rows instead of leaving the viewport blank");
+    }
+
+    [Theory]
     [InlineData(true)]
     [InlineData(false)]
     public void CanLimitMaxItemsRendered(bool useAppContext)

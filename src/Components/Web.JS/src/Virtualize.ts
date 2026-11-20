@@ -522,19 +522,17 @@ function init(dotNetHelper: DotNet.DotNetObject, spacerBefore: HTMLElement, spac
     }
     const delta = newOffset - snapshot.anchorOffset;
 
-    // Save anchor for drift correction.
+    // End mode: only carry the at-bottom state forward if the viewport is actually at the bottom right now.
+    // Don't rely on the cached wasAtBottomLastRender — it may be stale if the user scrolled away.
+    const preserveWasAtBottom = anchorModeIs.end && isViewportAtBottom();
+
+    // Save anchor for drift correction. The latch is released when this scroll
+    // event is consumed by handleScroll.
     scrollActivity.source = ScrollSource.RestoreSnapshot;
     scrollActivity.ignoreNextScroll();
     if (Math.abs(delta) > 1) {
       scrollCorrectionItemIndex = snapshot.anchorItemIndex;
       pendingScrollCorrection = true;
-    }
-
-    // End mode: only carry the at-bottom state forward if the viewport is actually at the bottom right now.
-    // Don't rely on the cached wasAtBottomLastRender — it may be stale if the user scrolled away.
-    const preserveWasAtBottom = anchorModeIs.end && isViewportAtBottom();
-
-    if (Math.abs(delta) > 1) {
       scrollElement.scrollTop += delta;
     }
 
@@ -671,7 +669,20 @@ function init(dotNetHelper: DotNet.DotNetObject, spacerBefore: HTMLElement, spac
   }
 
   function handleScroll(): void {
-    if (convergence.isConverging() || scrollActivity.consumeIgnoreScroll()) {
+    if (convergence.isConverging()) {
+      return;
+    }
+    if (scrollActivity.consumeIgnoreScroll()) {
+      // The restore's own scroll has been delivered. Release its latch after the
+      // current frame so any additional scroll events from the same restore are
+      // still treated as self-scrolls, but a later user scroll is not.
+      if (scrollActivity.source === ScrollSource.RestoreSnapshot) {
+        requestAnimationFrame(() => {
+          if (scrollActivity.source === ScrollSource.RestoreSnapshot) {
+            scrollActivity.source = ScrollSource.None;
+          }
+        });
+      }
       return;
     }
 
