@@ -4,6 +4,7 @@
 using System.Runtime.ExceptionServices;
 using Microsoft.AspNetCore.Components.Rendering;
 using Microsoft.AspNetCore.Components.RenderTree;
+using Microsoft.AspNetCore.Components.Test.Helpers;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Testing;
@@ -221,6 +222,167 @@ public class SectionRegistryTest
         Assert.Null(exception);
     }
 
+    [Fact]
+    public void RemovingActiveProvider_ExposesMismatchedFallback_Throws()
+    {
+        var includeActiveContent = true;
+        var renderer = new SectionsTestRenderer(new TestSink())
+        {
+            OutletRenderMode = new RenderModeA(),
+            ContentRenderMode = new RenderModeA(),
+            ContentRenderModes = [new RenderModeA(), new RenderModeB()],
+        };
+
+        RenderFragment host = builder =>
+        {
+            if (includeActiveContent)
+            {
+                builder.OpenComponent<SectionContent>(0);
+                builder.AddComponentParameter(1, nameof(SectionContent.SectionName), "test-section");
+                builder.AddComponentParameter(2, nameof(SectionContent.ChildContent), (RenderFragment)(b => b.AddContent(0, "Active content")));
+                builder.CloseComponent();
+            }
+
+            builder.OpenComponent<SectionOutlet>(3);
+            builder.AddComponentParameter(4, nameof(SectionOutlet.SectionName), "test-section");
+            builder.CloseComponent();
+
+            builder.OpenComponent<SectionContent>(5);
+            builder.AddComponentParameter(6, nameof(SectionContent.SectionName), "test-section");
+            builder.AddComponentParameter(7, nameof(SectionContent.IsDefaultContent), true);
+            builder.AddComponentParameter(8, nameof(SectionContent.ChildContent), (RenderFragment)(b => b.AddContent(0, "Hidden content")));
+            builder.CloseComponent();
+        };
+
+        var hostComponent = new PassthroughComponent(host);
+        var componentId = renderer.AssignRootComponentId(hostComponent);
+        renderer.RenderRootComponent(componentId);
+
+        includeActiveContent = false;
+        var exception = Assert.Throws<InvalidOperationException>(() =>
+            renderer.Dispatcher.InvokeAsync(hostComponent.TriggerRender).GetAwaiter().GetResult());
+
+        Assert.Contains("RenderModeB", exception.Message);
+    }
+
+    [Fact]
+    public void DisposingRenderer_WithMismatchedFallbackProvider_DoesNotThrow()
+    {
+        var renderer = new SectionsTestRenderer(new TestSink())
+        {
+            OutletRenderMode = new RenderModeA(),
+            ContentRenderMode = new RenderModeA(),
+            ContentRenderModes = [new RenderModeA(), new RenderModeB()],
+        };
+
+        RenderFragment host = builder =>
+        {
+            builder.OpenComponent<SectionContent>(0);
+            builder.AddComponentParameter(1, nameof(SectionContent.SectionName), "test-section");
+            builder.AddComponentParameter(2, nameof(SectionContent.ChildContent), (RenderFragment)(b => b.AddContent(0, "Active content")));
+            builder.CloseComponent();
+
+            builder.OpenComponent<SectionOutlet>(3);
+            builder.AddComponentParameter(4, nameof(SectionOutlet.SectionName), "test-section");
+            builder.CloseComponent();
+
+            builder.OpenComponent<SectionContent>(5);
+            builder.AddComponentParameter(6, nameof(SectionContent.SectionName), "test-section");
+            builder.AddComponentParameter(7, nameof(SectionContent.IsDefaultContent), true);
+            builder.AddComponentParameter(8, nameof(SectionContent.ChildContent), (RenderFragment)(b => b.AddContent(0, "Hidden content")));
+            builder.CloseComponent();
+        };
+
+        var componentId = renderer.AssignRootComponentId(new PassthroughComponent(host));
+        renderer.RenderRootComponent(componentId);
+
+        var exception = Record.Exception(renderer.Dispose);
+
+        Assert.Null(exception);
+    }
+
+    [Fact]
+    public void ContentRebindingWithMismatchedOutlet_IsHandledByErrorBoundary()
+    {
+        var contentName = "old-section";
+        TestErrorBoundary errorBoundary = null;
+        var renderer = new SectionsTestRenderer(new TestSink())
+        {
+            OutletRenderMode = new RenderModeB(),
+            ContentRenderMode = new RenderModeA(),
+        };
+
+        RenderFragment host = builder =>
+        {
+            builder.OpenComponent<SectionOutlet>(0);
+            builder.AddComponentParameter(1, nameof(SectionOutlet.SectionName), "new-section");
+            builder.CloseComponent();
+
+            builder.OpenComponent<TestErrorBoundary>(2);
+            builder.AddComponentParameter(3, nameof(TestErrorBoundary.ChildContent), (RenderFragment)(childBuilder =>
+            {
+                childBuilder.OpenComponent<SectionContent>(0);
+                childBuilder.AddComponentParameter(1, nameof(SectionContent.SectionName), contentName);
+                childBuilder.AddComponentParameter(2, nameof(SectionContent.ChildContent), (RenderFragment)(b => b.AddContent(0, "Section content")));
+                childBuilder.CloseComponent();
+            }));
+            builder.AddComponentReferenceCapture(4, component => errorBoundary = (TestErrorBoundary)component);
+            builder.CloseComponent();
+        };
+
+        var hostComponent = new PassthroughComponent(host);
+        var componentId = renderer.AssignRootComponentId(hostComponent);
+        renderer.RenderRootComponent(componentId);
+
+        contentName = "new-section";
+        var exception = Record.Exception(() =>
+            renderer.Dispatcher.InvokeAsync(hostComponent.TriggerRender).GetAwaiter().GetResult());
+
+        Assert.Null(exception);
+        Assert.IsType<InvalidOperationException>(errorBoundary.ReceivedException);
+    }
+
+    [Fact]
+    public void OutletRebindingWithMismatchedContent_IsHandledByErrorBoundary()
+    {
+        var outletName = "old-section";
+        TestErrorBoundary errorBoundary = null;
+        var renderer = new SectionsTestRenderer(new TestSink())
+        {
+            OutletRenderMode = new RenderModeA(),
+            ContentRenderMode = new RenderModeB(),
+        };
+
+        RenderFragment host = builder =>
+        {
+            builder.OpenComponent<SectionContent>(0);
+            builder.AddComponentParameter(1, nameof(SectionContent.SectionName), "new-section");
+            builder.AddComponentParameter(2, nameof(SectionContent.ChildContent), (RenderFragment)(b => b.AddContent(0, "Section content")));
+            builder.CloseComponent();
+
+            builder.OpenComponent<TestErrorBoundary>(3);
+            builder.AddComponentParameter(4, nameof(TestErrorBoundary.ChildContent), (RenderFragment)(childBuilder =>
+            {
+                childBuilder.OpenComponent<SectionOutlet>(0);
+                childBuilder.AddComponentParameter(1, nameof(SectionOutlet.SectionName), outletName);
+                childBuilder.CloseComponent();
+            }));
+            builder.AddComponentReferenceCapture(5, component => errorBoundary = (TestErrorBoundary)component);
+            builder.CloseComponent();
+        };
+
+        var hostComponent = new PassthroughComponent(host);
+        var componentId = renderer.AssignRootComponentId(hostComponent);
+        renderer.RenderRootComponent(componentId);
+
+        outletName = "new-section";
+        var exception = Record.Exception(() =>
+            renderer.Dispatcher.InvokeAsync(hostComponent.TriggerRender).GetAwaiter().GetResult());
+
+        Assert.Null(exception);
+        Assert.IsType<InvalidOperationException>(errorBoundary.ReceivedException);
+    }
+
     private static IReadOnlyList<WriteContext> GetWrites(TestSink sink, string eventName)
         => sink.Writes.Where(w => w.EventId.Name == eventName).ToList();
 
@@ -299,8 +461,23 @@ public class SectionRegistryTest
             => _renderHandle.Render(renderFragment);
     }
 
+    private sealed class TestErrorBoundary : AutoRenderComponent, IErrorBoundary
+    {
+        [Parameter] public RenderFragment ChildContent { get; set; }
+
+        public Exception ReceivedException { get; private set; }
+
+        protected override void BuildRenderTree(RenderTreeBuilder builder)
+            => ChildContent(builder);
+
+        public void HandleException(Exception error)
+            => ReceivedException = error;
+    }
+
     private sealed class SectionsTestRenderer : Renderer
     {
+        private int _contentRenderModeIndex;
+
         public SectionsTestRenderer(TestSink sink)
             : base(new ServiceCollection().BuildServiceProvider(), new TestLoggerFactory(sink, enabled: true))
         {
@@ -310,6 +487,8 @@ public class SectionRegistryTest
         public IComponentRenderMode OutletRenderMode { get; set; }
 
         public IComponentRenderMode ContentRenderMode { get; set; }
+
+        public IReadOnlyList<IComponentRenderMode> ContentRenderModes { get; set; }
 
         public override Dispatcher Dispatcher { get; }
 
@@ -332,6 +511,7 @@ public class SectionRegistryTest
             => component switch
             {
                 SectionOutlet => OutletRenderMode,
+                SectionContent when ContentRenderModes is not null && _contentRenderModeIndex < ContentRenderModes.Count => ContentRenderModes[_contentRenderModeIndex++],
                 SectionContent => ContentRenderMode,
                 _ => null,
             };

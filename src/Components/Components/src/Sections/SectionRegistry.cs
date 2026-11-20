@@ -55,7 +55,8 @@ internal sealed partial class SectionRegistry(ILoggerFactory loggerFactory)
 
         if (index == providers.Count - 1 &&
             index > 0 &&
-            _subscribersByIdentifier.TryGetValue(identifier, out var subscriber))
+            _subscribersByIdentifier.TryGetValue(identifier, out var subscriber) &&
+            !subscriber.IsRendererDisposed)
         {
             ValidateRenderModeCompatibility(identifier, subscriber, providers[index - 1]);
         }

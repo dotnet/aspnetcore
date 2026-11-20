@@ -73,6 +73,8 @@ public sealed class SectionContent : IComponent, IDisposable
             if (_registeredIdentifier is not null)
             {
                 _registry.RemoveProvider(_registeredIdentifier, this);
+                _registeredIdentifier = null;
+                _registeredIsDefaultContent = null;
             }
 
             _registry.AddProvider(identifier, this, IsDefaultContent);
@@ -115,6 +117,8 @@ public sealed class SectionContent : IComponent, IDisposable
         if (_registeredIdentifier is not null)
         {
             _registry.RemoveProvider(_registeredIdentifier, this);
+            _registeredIdentifier = null;
+            _registeredIsDefaultContent = null;
         }
     }
 }

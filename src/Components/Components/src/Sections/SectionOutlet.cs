@@ -18,6 +18,8 @@ public sealed class SectionOutlet : IComponent, IDisposable
 
     internal IComponentRenderMode? SectionRenderMode { get; private set; }
 
+    internal bool IsRendererDisposed => _renderHandle.IsRendererDisposed;
+
     /// <summary>
     /// Gets or sets the <see cref="string"/> ID that determines which <see cref="SectionContent"/> instances will provide
     /// content to this instance.
@@ -67,6 +69,7 @@ public sealed class SectionOutlet : IComponent, IDisposable
             if (_subscribedIdentifier is not null)
             {
                 _registry.Unsubscribe(_subscribedIdentifier);
+                _subscribedIdentifier = null;
             }
 
             _registry.Subscribe(identifier, this);
@@ -113,6 +116,7 @@ public sealed class SectionOutlet : IComponent, IDisposable
         if (_subscribedIdentifier is not null)
         {
             _registry.Unsubscribe(_subscribedIdentifier);
+            _subscribedIdentifier = null;
         }
     }
 
