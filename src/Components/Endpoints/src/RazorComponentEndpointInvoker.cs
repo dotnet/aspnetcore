@@ -166,7 +166,7 @@ internal partial class RazorComponentEndpointInvoker : IRazorComponentEndpointIn
             await _renderer.SendStreamingUpdatesAsync(context, quiesceTask, bufferWriter);
             if (_renderer.NotFoundEventArgs != null)
             {
-                await _renderer.SetNotFoundWhenResponseHasStarted();
+                await _renderer.SetNotFoundWhenResponseHasStarted(bufferWriter);
             }
         }
         else
