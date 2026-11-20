@@ -1,6 +1,7 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Buffers.Binary;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
@@ -184,7 +185,7 @@ public class DistributedSession : ISession
                 var data = _cache.Get(_sessionKey);
                 if (data != null)
                 {
-                    Deserialize(new MemoryStream(data));
+                    Deserialize(data);
                 }
                 else if (!_isNewSessionKey)
                 {
@@ -222,7 +223,7 @@ public class DistributedSession : ISession
                     var data = await _cache.GetAsync(_sessionKey, cts.Token);
                     if (data != null)
                     {
-                        Deserialize(new MemoryStream(data));
+                        Deserialize(data);
                     }
                     else if (!_isNewSessionKey)
                     {
@@ -270,15 +271,14 @@ public class DistributedSession : ISession
                     }
                 }
 
-                var stream = new MemoryStream();
-                Serialize(stream);
+                var serialized = Serialize();
 
                 try
                 {
                     cts.Token.ThrowIfCancellationRequested();
                     await _cache.SetAsync(
                         _sessionKey,
-                        stream.ToArray(),
+                        serialized,
                         new DistributedCacheEntryOptions().SetSlidingExpiration(_idleTimeout),
                         cts.Token);
                     _isModified = false;
@@ -314,40 +314,74 @@ public class DistributedSession : ISession
     //   UTF-8 encoded key name byte[]
     //   data byte length: 4 bytes, range 0-2,147,483,647
     //   data byte[]
-    private void Serialize(Stream output)
+    private byte[] Serialize()
     {
-        output.WriteByte(SerializationRevision);
-        SerializeNumAs3Bytes(output, _store.Count);
-        output.Write(IdBytes, 0, IdByteCount);
+        var count = _store.Count;
+        if (count < 0 || 0xFFFFFF < count)
+        {
+            throw new ArgumentOutOfRangeException("num", Resources.Exception_InvalidToSerializeIn3Bytes);
+        }
+
+        var idBytes = IdBytes;
+
+        // Compute the exact size up front so the payload is written into a single right-sized array.
+        var length = 1 + 3 + IdByteCount;
+        foreach (var entry in _store)
+        {
+            var keyLength = entry.Key.KeyBytes.Length;
+            if (ushort.MaxValue < keyLength)
+            {
+                throw new ArgumentOutOfRangeException("num", Resources.Exception_InvalidToSerializeIn2Bytes);
+            }
+            length = checked(length + 2 + keyLength + 4 + entry.Value.Length);
+        }
+
+        var output = new byte[length];
+        var span = output.AsSpan();
+
+        span[0] = SerializationRevision;
+        span[1] = (byte)(count >> 16);
+        span[2] = (byte)(0xFF & (count >> 8));
+        span[3] = (byte)(0xFF & count);
+        idBytes.AsSpan(0, IdByteCount).CopyTo(span.Slice(4));
+        span = span.Slice(4 + IdByteCount);
 
         foreach (var entry in _store)
         {
             var keyBytes = entry.Key.KeyBytes;
-            SerializeNumAs2Bytes(output, keyBytes.Length);
-            output.Write(keyBytes, 0, keyBytes.Length);
-            SerializeNumAs4Bytes(output, entry.Value.Length);
-            output.Write(entry.Value, 0, entry.Value.Length);
+            BinaryPrimitives.WriteUInt16BigEndian(span, (ushort)keyBytes.Length);
+            keyBytes.CopyTo(span.Slice(2));
+            span = span.Slice(2 + keyBytes.Length);
+
+            var value = entry.Value;
+            BinaryPrimitives.WriteInt32BigEndian(span, value.Length);
+            value.CopyTo(span.Slice(4));
+            span = span.Slice(4 + value.Length);
         }
+
+        Debug.Assert(span.IsEmpty);
+        return output;
     }
 
-    private void Deserialize(Stream content)
+    private void Deserialize(byte[] content)
     {
-        if (content == null || content.ReadByte() != SerializationRevision)
+        var reader = new PayloadReader(content);
+        if (reader.ReadByte() != SerializationRevision)
         {
             // Replace the un-readable format.
             _isModified = true;
             return;
         }
 
-        var expectedEntries = DeserializeNumFrom3Bytes(content);
-        _sessionIdBytes = ReadBytes(content, IdByteCount);
+        var expectedEntries = reader.ReadByte() << 16 | reader.ReadByte() << 8 | reader.ReadByte();
+        _sessionIdBytes = reader.ReadBytes(IdByteCount);
 
         for (var i = 0; i < expectedEntries; i++)
         {
-            var keyLength = DeserializeNumFrom2Bytes(content);
-            var key = new EncodedKey(ReadBytes(content, keyLength));
-            var dataLength = DeserializeNumFrom4Bytes(content);
-            _store.SetValue(key, ReadBytes(content, dataLength));
+            var keyLength = reader.ReadByte() << 8 | reader.ReadByte();
+            var key = new EncodedKey(reader.ReadBytes(keyLength));
+            var dataLength = reader.ReadByte() << 24 | reader.ReadByte() << 16 | reader.ReadByte() << 8 | reader.ReadByte();
+            _store.SetValue(key, reader.ReadBytes(dataLength));
         }
 
         if (_logger.IsEnabled(LogLevel.Debug))
@@ -357,68 +391,36 @@ public class DistributedSession : ISession
         }
     }
 
-    private static void SerializeNumAs2Bytes(Stream output, int num)
+    // Mirrors the semantics of reading from a MemoryStream: ReadByte returns -1 past the end of the data
+    // and ReadBytes throws EndOfStreamException when not enough data remains.
+    private struct PayloadReader(byte[] data)
     {
-        if (num < 0 || ushort.MaxValue < num)
+        private readonly byte[] _data = data;
+        private int _position;
+
+        public int ReadByte()
         {
-            throw new ArgumentOutOfRangeException(nameof(num), Resources.Exception_InvalidToSerializeIn2Bytes);
+            var position = _position;
+            if ((uint)position < (uint)_data.Length)
+            {
+                _position = position + 1;
+                return _data[position];
+            }
+            return -1;
         }
-        output.WriteByte((byte)(num >> 8));
-        output.WriteByte((byte)(0xFF & num));
-    }
 
-    private static int DeserializeNumFrom2Bytes(Stream content)
-    {
-        return content.ReadByte() << 8 | content.ReadByte();
-    }
-
-    private static void SerializeNumAs3Bytes(Stream output, int num)
-    {
-        if (num < 0 || 0xFFFFFF < num)
+        public byte[] ReadBytes(int count)
         {
-            throw new ArgumentOutOfRangeException(nameof(num), Resources.Exception_InvalidToSerializeIn3Bytes);
-        }
-        output.WriteByte((byte)(num >> 16));
-        output.WriteByte((byte)(0xFF & (num >> 8)));
-        output.WriteByte((byte)(0xFF & num));
-    }
-
-    private static int DeserializeNumFrom3Bytes(Stream content)
-    {
-        return content.ReadByte() << 16 | content.ReadByte() << 8 | content.ReadByte();
-    }
-
-    private static void SerializeNumAs4Bytes(Stream output, int num)
-    {
-        if (num < 0)
-        {
-            throw new ArgumentOutOfRangeException(nameof(num), Resources.Exception_NumberShouldNotBeNegative);
-        }
-        output.WriteByte((byte)(num >> 24));
-        output.WriteByte((byte)(0xFF & (num >> 16)));
-        output.WriteByte((byte)(0xFF & (num >> 8)));
-        output.WriteByte((byte)(0xFF & num));
-    }
-
-    private static int DeserializeNumFrom4Bytes(Stream content)
-    {
-        return content.ReadByte() << 24 | content.ReadByte() << 16 | content.ReadByte() << 8 | content.ReadByte();
-    }
-
-    private static byte[] ReadBytes(Stream stream, int count)
-    {
-        var output = new byte[count];
-        var total = 0;
-        while (total < count)
-        {
-            var read = stream.Read(output, total, count - total);
-            if (read == 0)
+            var output = new byte[count];
+            var available = _data.Length - _position;
+            if (available < count)
             {
                 throw new EndOfStreamException();
             }
-            total += read;
+            _data.AsSpan(_position, count).CopyTo(output);
+            _position += count;
+            return output;
         }
-        return output;
     }
 
     private sealed class DistributedSessionDebugView(DistributedSession session)
