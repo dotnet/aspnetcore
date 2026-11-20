@@ -95,7 +95,11 @@ public class RazorComponentsEndpointRouteBuilderExtensionsTest
                 Assert.Same(firstMetadata, registered[0].Metadata.GetRequiredMetadata<RootMetadata>());
                 Assert.Same(secondMetadata, registered[1].Metadata.GetRequiredMetadata<RootMetadata>());
                 Assert.All(registered, endpoint =>
-                    Assert.Equal(rewrittenPath, endpoint.Metadata.GetRequiredMetadata<IRouteDiagnosticsMetadata>().Route));
+                {
+                    Assert.IsNotAssignableFrom<IRouteDiagnosticsMetadata>(
+                        endpoint.Metadata.GetRequiredMetadata<BlazorWebEndpointMetadata>());
+                    Assert.Equal(rewrittenPath, endpoint.Metadata.GetRequiredMetadata<IRouteDiagnosticsMetadata>().Route);
+                });
             }
         });
         var pipeline = application.Build();
