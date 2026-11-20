@@ -40,6 +40,74 @@ namespace Microsoft.AspNetCore.Identity.FunctionalTests;
 
 public class MapIdentityApiTests : LoggedTest
 {
+    [Theory]
+    [InlineData("enable")]
+    [InlineData("disable")]
+    [InlineData("reset")]
+    [InlineData("initialize")]
+    [InlineData("recovery")]
+    public async Task TwoFactor_FailedPersistenceReturnsValidationProblem(string operation)
+    {
+        await using var app = await CreateAppAsync(services =>
+        {
+            AddIdentityApiEndpoints(services);
+            services.AddSingleton(new TwoFactorFailureControl { Operation = operation });
+            services.AddScoped<UserManager<ApplicationUser>, FailingTwoFactorUserManager>();
+        });
+        using var client = app.GetTestClient();
+        await RegisterAsync(client);
+        var loginResponse = await client.PostAsJsonAsync("/identity/login", new { Email, Password });
+        var loginContent = await loginResponse.Content.ReadFromJsonAsync<JsonElement>();
+        client.DefaultRequestHeaders.Authorization = new("Bearer", loginContent.GetProperty("accessToken").GetString());
+        var request = new
+        {
+            Enable = operation == "enable" ? (bool?)true : operation == "disable" ? false : null,
+            ResetSharedKey = operation == "reset",
+            ResetRecoveryCodes = operation == "recovery",
+            TwoFactorCode = "valid"
+        };
+
+        var response = await client.PostAsJsonAsync("/identity/manage/2fa", request);
+
+        await AssertValidationProblemAsync(response, operation == "recovery" ? "RecoveryCodeGenerationFailed" : "ConcurrencyFailure");
+    }
+
+    private sealed class TwoFactorFailureControl
+    {
+        public string Operation { get; init; } = string.Empty;
+    }
+
+    private sealed class FailingTwoFactorUserManager(
+        IUserStore<ApplicationUser> store,
+        IOptions<IdentityOptions> optionsAccessor,
+        IPasswordHasher<ApplicationUser> passwordHasher,
+        IEnumerable<IUserValidator<ApplicationUser>> userValidators,
+        IEnumerable<IPasswordValidator<ApplicationUser>> passwordValidators,
+        ILookupNormalizer keyNormalizer,
+        IdentityErrorDescriber errors,
+        IServiceProvider services,
+        ILogger<UserManager<ApplicationUser>> logger,
+        TwoFactorFailureControl failure)
+        : UserManager<ApplicationUser>(store, optionsAccessor, passwordHasher, userValidators, passwordValidators, keyNormalizer, errors, services, logger)
+    {
+        public override Task<IdentityResult> SetTwoFactorEnabledAsync(ApplicationUser user, bool enabled) =>
+            failure.Operation is "enable" or "disable"
+                ? Task.FromResult(IdentityResult.Failed(ErrorDescriber.ConcurrencyFailure()))
+                : base.SetTwoFactorEnabledAsync(user, enabled);
+
+        public override Task<IdentityResult> ResetAuthenticatorKeyAsync(ApplicationUser user) =>
+            failure.Operation is "reset" or "initialize"
+                ? Task.FromResult(IdentityResult.Failed(ErrorDescriber.ConcurrencyFailure()))
+                : base.ResetAuthenticatorKeyAsync(user);
+
+        public override Task<IEnumerable<string>?> GenerateNewTwoFactorRecoveryCodesAsync(ApplicationUser user, int number) =>
+            failure.Operation == "recovery"
+                ? Task.FromResult<IEnumerable<string>?>(null)
+                : base.GenerateNewTwoFactorRecoveryCodesAsync(user, number);
+
+        public override Task<bool> VerifyTwoFactorTokenAsync(ApplicationUser user, string tokenProvider, string token) => Task.FromResult(true);
+    }
+
     private const string KnownEmail = "known@example.com";
     private static string Email { get; } = $"{Guid.NewGuid()}@example.com";
     private static string Password { get; } = "[PLACEHOLDER]-1a";
