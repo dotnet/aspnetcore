@@ -4,6 +4,7 @@ using System.Globalization;
 using System.Security.Claims;
 using System.ComponentModel.DataAnnotations;
 using System.Reflection;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Primitives;
 
@@ -243,6 +244,20 @@ app.MapGet("/{id}", TestAction);
         var requiredAttributes = CustomAttributeExtensions.GetCustomAttributes<RequiredAttribute>(parameterBindingMetadata.ParameterInfo).ToArray();
 
         Assert.Equal(2, requiredAttributes.Length);
+    }
+
+    [Fact]
+    public async Task AsParameters_WithOnlyServiceProperty_DoesNotAddAcceptsMetadata()
+    {
+        var source = """
+app.MapGet("/", ([AsParameters] ParametersWithService args) => args.Service.TestServiceMethod());
+""";
+
+        var (_, compilation) = await RunGeneratorAsync(source);
+        var serviceProvider = CreateServiceProvider(serviceCollection => serviceCollection.AddSingleton(new TestService()));
+        var endpoint = GetEndpointFromCompilation(compilation, serviceProvider: serviceProvider);
+
+        Assert.DoesNotContain(endpoint.Metadata, m => m is Microsoft.AspNetCore.Http.Metadata.IAcceptsMetadata);
     }
 
     [Fact]
