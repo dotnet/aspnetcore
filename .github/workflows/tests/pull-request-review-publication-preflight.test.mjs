@@ -282,7 +282,7 @@ const cases = [
   }, true, [1]],
   ['run 43875900411 keeps unresolved r4586400680 and drops discarded r4586400709',
     historicalMixed, true, [1]],
-  ['all discarded inline candidates become one no-findings noop', {
+  ['all discarded inline candidates become one no-findings review summary', {
     items: [
       { ...comment(), body: '[DISCARDED] First old behavior.' },
       { ...comment(), body: 'Second old behavior.\nConfidence: discarded' },
@@ -290,6 +290,24 @@ const cases = [
     ],
     errors: [],
   }, true, [0, 1]],
+  ['native no-findings review with discarded details', {
+    items: [{
+      ...review(),
+      event: 'COMMENT',
+      body: 'STATUS: NO_FINDINGS\n\nSource-only review of frozen head `0123456789abcdef`.\n\n' +
+        '<details>\n<summary>DISCARDED</summary>\n\n' +
+        '- `src/Http/Routing/src/Endpoint.cs:42` — [DISCARDED] Pre-existing behavior.\n' +
+        '  - Why discarded: Identical at merge-base.\n\n</details>',
+    }],
+    errors: [],
+  }, true],
+  ['native no-findings review with default comment event', {
+    items: [{
+      ...review(),
+      body: 'STATUS: NO_FINDINGS\n<details><summary>DISCARDED</summary>\n[DISCARDED] Old and head match.\n</details>',
+    }],
+    errors: [],
+  }, true],
   ['discarded audit summary with real finding', {
     items: [
       { ...comment(), body: 'Real regression.\nConfidence: verified' },
@@ -323,6 +341,138 @@ const cases = [
   }, false],
   ['comment only', { items: [comment()], errors: [] }, false],
   ['review only', { items: [review()], errors: [] }, false],
+  ['review only without status line', {
+    items: [{
+      ...review(),
+      event: 'COMMENT',
+      body: 'Source-only review of frozen head `0123456789abcdef`.\n\n' +
+        '<details><summary>DISCARDED</summary>\n[DISCARDED] Old and head match.\n</details>',
+    }],
+    errors: [],
+  }, false],
+  ['review only with findings status and discarded details', {
+    items: [{
+      ...review(),
+      event: 'COMMENT',
+      body: 'STATUS: FINDINGS\n\n<details><summary>DISCARDED</summary>\n[DISCARDED] Old and head match.\n</details>',
+    }],
+    errors: [],
+  }, false],
+  ['no-findings review without discarded details', {
+    items: [{
+      ...review(),
+      event: 'COMMENT',
+      body: 'STATUS: NO_FINDINGS\n\nSource-only review with no discarded details block.',
+    }],
+    errors: [],
+  }, false],
+  ['no-findings review with empty discarded details', {
+    items: [{
+      ...review(),
+      event: 'COMMENT',
+      body: 'STATUS: NO_FINDINGS\n\n<details><summary>DISCARDED</summary>\n   \n</details>',
+    }],
+    errors: [],
+  }, false],
+  ['no-findings review with comment-only discarded details before other details', {
+    items: [{
+      ...review(),
+      event: 'COMMENT',
+      body: 'STATUS: NO_FINDINGS\n\n<details><summary>DISCARDED</summary><!-- empty --></details>\n' +
+        '<details><summary>NOTES</summary>\nNon-empty unrelated details.\n</details>',
+    }],
+    errors: [],
+  }, false],
+  ['no-findings review with fenced discarded details example only', {
+    items: [{
+      ...review(),
+      event: 'COMMENT',
+      body: 'STATUS: NO_FINDINGS\n\n```html\n<details><summary>DISCARDED</summary>\nExample only.\n</details>\n```',
+    }],
+    errors: [],
+  }, false],
+  ['no-findings review with inline-code discarded details only', {
+    items: [{
+      ...review(),
+      event: 'COMMENT',
+      body: 'STATUS: NO_FINDINGS\n\nNo `<details><summary>DISCARDED</summary>example</details>` block.',
+    }],
+    errors: [],
+  }, false],
+  ['no-findings review with unclosed fence inside discarded details', {
+    items: [{
+      ...review(),
+      event: 'COMMENT',
+      body: 'STATUS: NO_FINDINGS\n\n<details>\n<summary>DISCARDED</summary>\n\n```csharp\nvar x = 1;\n</details>',
+    }],
+    errors: [],
+  }, false],
+  ['no-findings review with real discarded details containing fenced snippet', {
+    items: [{
+      ...review(),
+      event: 'COMMENT',
+      body: 'STATUS: NO_FINDINGS\n\n<details>\n<summary>DISCARDED</summary>\n\n' +
+        '- `src/Foo.cs:10` — Contradicted.\n\n```csharp\nreturn true;\n```\n\n</details>',
+    }],
+    errors: [],
+  }, true],
+  ['no-findings review with real discarded details containing fenced closing details tag', {
+    items: [{
+      ...review(),
+      event: 'COMMENT',
+      body: 'STATUS: NO_FINDINGS\n\n<details>\n<summary>DISCARDED</summary>\n\n' +
+        '```html\n</details>\n```\n\n- `src/Foo.cs:10` — Contradicted.\n\n</details>',
+    }],
+    errors: [],
+  }, true],
+  ['no-findings review with request changes event', {
+    items: [{
+      ...review(),
+      event: 'REQUEST_CHANGES',
+      body: 'STATUS: NO_FINDINGS\n\n<details><summary>DISCARDED</summary>\n[DISCARDED] Old and head match.\n</details>',
+    }],
+    errors: [],
+  }, false],
+  ['no-findings review with approve event', {
+    items: [{
+      ...review(),
+      event: 'APPROVE',
+      body: 'STATUS: NO_FINDINGS\n\n<details><summary>DISCARDED</summary>\n[DISCARDED] Old and head match.\n</details>',
+    }],
+    errors: [],
+  }, false],
+  ['findings with request changes event', {
+    items: [
+      { ...comment(), body: 'Real regression.\nConfidence: verified' },
+      { ...review(), event: 'REQUEST_CHANGES', body: 'One finding.' },
+    ],
+    errors: [],
+  }, false],
+  ['no-findings review combined with noop', {
+    items: [
+      {
+        ...review(),
+        event: 'COMMENT',
+        body: 'STATUS: NO_FINDINGS\n\n<details><summary>DISCARDED</summary>\n[DISCARDED] Old and head match.\n</details>',
+      },
+      { type: 'noop' },
+    ],
+    errors: [],
+  }, false],
+  ['no-findings review combined with status comment', {
+    items: [
+      {
+        ...review(),
+        event: 'COMMENT',
+        body: 'STATUS: NO_FINDINGS\n\n<details><summary>DISCARDED</summary>\n[DISCARDED] Old and head match.\n</details>',
+      },
+      {
+        type: 'add_comment',
+        body: 'Review not published (BLOCKED): Reason\n\nNo partial findings were published.',
+      },
+    ],
+    errors: [],
+  }, false],
   ['too many findings', findings(6), false],
   ['signal only', { items: [{ type: 'report_incomplete', reason: 'Reason' }], errors: [] }, false],
   ['status only', {
@@ -424,8 +574,11 @@ for (const filename of [workflowSource, workflowLock]) {
         const remaining = input.items.filter((_, index) => !dropped.includes(index));
         if (dropped.length > 0 && !remaining.some(item => item.type === 'create_pull_request_review_comment')) {
           assert.equal(result.output.items.length, 1);
-          assert.equal(result.output.items[0].type, 'noop');
-          assert.match(result.output.items[0].message, /^STATUS: NO_FINDINGS\b/);
+          assert.equal(result.output.items[0].type, 'submit_pull_request_review');
+          assert.equal(result.output.items[0].event, 'COMMENT');
+          assert.match(result.output.items[0].body, /^STATUS: NO_FINDINGS(?:\r?\n|$)/);
+          assert.match(result.output.items[0].body,
+            /<details\b[^>]*>\s*<summary\b[^>]*>[ \t]*(?:\*\*|__)?[ \t]*DISCARDED\b[^\r\n<]*<\/summary>[\s\S]*?\S[\s\S]*?<\/details>/i);
           assert.deepEqual(result.output, { ...input, items: result.output.items });
         } else {
           assert.deepEqual(result.output, { ...input, items: remaining });
@@ -437,6 +590,141 @@ for (const filename of [workflowSource, workflowLock]) {
     } else {
       assert.equal(result.rawOutput, input?.rawJson ?? JSON.stringify(input),
         `${name} must not rewrite a rejected publication set.`);
+    }
+  }
+
+  const syntheticModelToken = ['gp', 't-0-unit'].join('');
+  const rewrittenAllDiscarded = execute(script, {
+    items: [
+      {
+        ...comment(),
+        path: 'src/Http/Routing/src/Endpoint.cs',
+        line: 42,
+        side: 'RIGHT',
+        body: '**[DISCARDED] Route pattern fallback is unchanged**\n\n' +
+          '**Why discarded:** Merge-base `Endpoint.cs:40-44` follows the same branch.',
+      },
+      {
+        ...comment(),
+        path: '.github/agents/review-guide-worker.agent.md',
+        start_line: 10,
+        line: 14,
+        side: 'RIGHT',
+        body: '**[P3][DISCARDED] Agent prompt boundary is unchanged**\n\n' +
+          '**Why discarded:** Identical in merge-base `.github/agents/review-guide-worker.agent.md:10-14`.',
+      },
+      {
+        ...review(),
+        event: 'COMMENT',
+        body: 'Source-only review of frozen head `0123456789abcdef`.\n\n' +
+          `Worker profile: \`review-guide-worker\`; verifier: \`review-candidate-verifier\`; ` +
+          `requested runtime: \`${syntheticModelToken}\`; bundle: \`/tmp/gh-aw/review-bundle/manifest.json\`.`,
+      },
+    ],
+    errors: [],
+  });
+  if (rewrittenAllDiscarded.failures.length > 0 || rewrittenAllDiscarded.error !== undefined) {
+    mismatches.push(`${path.basename(filename)} rewritten all-discarded synthesis failed: ` +
+      `${rewrittenAllDiscarded.error ?? rewrittenAllDiscarded.failures.join('; ')}`);
+  } else {
+    try {
+      const summary = rewrittenAllDiscarded.output.items[0];
+      assert.equal(rewrittenAllDiscarded.output.items.length, 1);
+      assert.equal(summary.type, 'submit_pull_request_review');
+      assert.equal(summary.event, 'COMMENT');
+      assert.match(summary.body, /^STATUS: NO_FINDINGS\r?\n\r?\nSource-only review of frozen head `0123456789abcdef`\./);
+      assert.match(summary.body, /`src\/Http\/Routing\/src\/Endpoint\.cs:42`/);
+      assert.match(summary.body, /`\.github\/agents\/review-guide-worker\.agent\.md:10-14`/);
+      assert.match(summary.body, /Merge-base `Endpoint\.cs:40-44` follows the same branch\./);
+      assert.ok(!summary.body.includes(syntheticModelToken), 'Rewritten summary must strip model identifiers.');
+      assert.ok(!summary.body.includes('/tmp/gh-aw'), 'Rewritten summary must strip runner bundle paths.');
+      assert.doesNotMatch(summary.body, /Worker profile:\s*`?review-guide-worker`?/);
+      assert.doesNotMatch(summary.body, /verifier:\s*`?review-candidate-verifier`?/);
+    } catch (error) {
+      mismatches.push(`${path.basename(filename)} rewritten all-discarded synthesis assertion failed: ${error.message}`);
+    }
+  }
+
+  const mergedIntoExistingBlock = execute(script, {
+    items: [
+      {
+        ...comment(),
+        path: 'src/Http/Routing/src/Existing.cs',
+        line: 10,
+        side: 'RIGHT',
+        body: '[DISCARDED] Already listed in summary\n\nWhy discarded: Duplicate of pre-filtered summary entry.',
+      },
+      {
+        ...comment(),
+        path: 'src/Http/Routing/src/Existing.cs',
+        line: 1,
+        side: 'RIGHT',
+        body: '[DISCARDED] Distinct line-prefix candidate\n\nWhy discarded: Guarded at line 1.',
+      },
+      {
+        ...comment(),
+        path: 'src/Http/Routing/src/NewlyRemoved.cs',
+        line: 42,
+        side: 'RIGHT',
+        body: '[DISCARDED] Removed inline candidate\n\nWhy discarded: Guarded at caller.',
+      },
+      {
+        ...review(),
+        event: 'COMMENT',
+        body: 'STATUS: FINDINGS\n\nSource-only review of frozen head `0123456789abcdef`.\n\n' +
+          '<details>\n<summary>DISCARDED</summary>\n\n' +
+          '- `src/Http/Routing/src/Existing.cs:10` — Pre-filtered discard.\n  Why discarded: Unchanged in merge-base.\n\n' +
+          '</details>',
+      },
+    ],
+    errors: [],
+  });
+  if (mergedIntoExistingBlock.failures.length > 0 || mergedIntoExistingBlock.error !== undefined) {
+    mismatches.push(`${path.basename(filename)} merge into existing discarded block failed: ` +
+      `${mergedIntoExistingBlock.error ?? mergedIntoExistingBlock.failures.join('; ')}`);
+  } else {
+    try {
+      const summary = mergedIntoExistingBlock.output.items[0];
+      assert.equal(mergedIntoExistingBlock.output.items.length, 1);
+      assert.match(summary.body, /^STATUS: NO_FINDINGS\b/);
+      assert.equal([...summary.body.matchAll(/`src\/Http\/Routing\/src\/Existing\.cs:10`/g)].length, 1,
+        'Existing discarded entry should not be duplicated.');
+      assert.match(summary.body, /`src\/Http\/Routing\/src\/Existing\.cs:1`(?!0)/,
+        'Line-prefix candidate (:1 vs :10) must not be falsely deduplicated.');
+      assert.match(summary.body, /`src\/Http\/Routing\/src\/NewlyRemoved\.cs:42`/,
+        'Newly removed inline discard must be merged into existing DISCARDED block.');
+      assert.match(summary.body, /Why discarded: Guarded at caller\./);
+    } catch (error) {
+      mismatches.push(`${path.basename(filename)} merge into existing discarded block assertion failed: ${error.message}`);
+    }
+  }
+
+  const nativeDiscardedSummarySanitized = execute(script, {
+    items: [{
+      ...review(),
+      event: 'COMMENT',
+      body: 'STATUS: NO_FINDINGS\n\n' +
+        `Reviewed with \`${syntheticModelToken}\` and \`review-guide-worker\` in \`/tmp/gh-aw/bundle\`.\n\n` +
+        '<details>\n<summary>DISCARDED</summary>\n\n' +
+        '- `.github/agents/review-guide-worker.agent.md:10` — Unchanged.\n  Why discarded: Identical in merge-base.\n\n' +
+        '</details>',
+    }],
+    errors: [],
+  });
+  if (nativeDiscardedSummarySanitized.failures.length > 0 || nativeDiscardedSummarySanitized.error !== undefined) {
+    mismatches.push(`${path.basename(filename)} native discarded summary sanitization failed: ` +
+      `${nativeDiscardedSummarySanitized.error ?? nativeDiscardedSummarySanitized.failures.join('; ')}`);
+  } else {
+    try {
+      const summary = nativeDiscardedSummarySanitized.output.items[0];
+      assert.ok(!summary.body.includes(syntheticModelToken),
+        'Native NO_FINDINGS summary must strip model identifiers.');
+      assert.ok(!summary.body.includes('/tmp/gh-aw'),
+        'Native NO_FINDINGS summary must strip runner bundle paths.');
+      assert.doesNotMatch(summary.body, /and `review-guide-worker`/);
+      assert.match(summary.body, /`\.github\/agents\/review-guide-worker\.agent\.md:10`/);
+    } catch (error) {
+      mismatches.push(`${path.basename(filename)} native discarded summary sanitization assertion failed: ${error.message}`);
     }
   }
 }

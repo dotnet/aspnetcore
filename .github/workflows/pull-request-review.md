@@ -499,14 +499,56 @@ post-steps:
           }
         }
 
-        const reviewComments = events.filter(event =>
+        const safeOutputStarts = events.filter(event =>
           isTopLevelToolStart(event) &&
+          typeof event.data?.toolName === 'string' &&
+          event.data.toolName.startsWith('safeoutputs-'));
+        const reviewComments = safeOutputStarts.filter(event =>
           event.data?.toolName === 'safeoutputs-create_pull_request_review_comment');
-        const reviewSubmissions = events.filter(event =>
-          isTopLevelToolStart(event) &&
+        const reviewSubmissions = safeOutputStarts.filter(event =>
           event.data?.toolName === 'safeoutputs-submit_pull_request_review');
+        const maskNonHtml = body => {
+          let fence = '';
+          return body.split(/(\r?\n)/).map(part => {
+            if (part === '\n' || part === '\r\n') {
+              return part;
+            }
+            const line = part.replace(/^(?: {0,3}> ?)+/, '');
+            if (fence) {
+              if (new RegExp(`^ {0,3}${fence[0]}{${fence.length},}[ \\t]*$`).test(line)) {
+                fence = '';
+              }
+              return 'x'.repeat(part.length);
+            }
+            const open = line.match(/^ {0,3}(`{3,}|~{3,})/);
+            if (open && (open[1][0] !== '`' || !line.slice(open[0].length).includes('`'))) {
+              fence = open[1];
+              return 'x'.repeat(part.length);
+            }
+            return /^(?: {4}|\t)/.test(part)
+              ? 'x'.repeat(part.length)
+              : part.replace(/(`+)[^`]*?\1/g, span => 'x'.repeat(span.length));
+          }).join('').replace(/<!--[\s\S]*?(?:-->|$)/g, comment => comment.replace(/[^\r\n]/g, ' '));
+        };
+        const hasDiscardedDetails = body =>
+          [...maskNonHtml(body).matchAll(
+            /<details\b[^>]*>\s*<summary\b[^>]*>[ \t]*(?:\*\*|__)?[ \t]*DISCARDED(?=$|[<*_:\s])[^\r\n<]*<\/summary>([\s\S]*?)<\/details>/gi)]
+            .some(match => match[1].trim().length > 0);
+        const isNoFindingsDiscardedReviewInput = input =>
+          input !== null && typeof input === 'object' && !Array.isArray(input) &&
+          (input.event === undefined || input.event === 'COMMENT') &&
+          typeof input.body === 'string' &&
+          /^[ \t]*STATUS:[ \t]*NO_FINDINGS[ \t]*(?:\r?\n|$)/.test(
+            input.body.replace(/^(?:[ \t]*\r?\n)+/, '')) &&
+          hasDiscardedDetails(input.body);
+        const discardedSummaryPublication =
+          safeOutputStarts.length === 1 &&
+          reviewComments.length === 0 &&
+          reviewSubmissions.length === 1 &&
+          isNoFindingsDiscardedReviewInput(toolInput(reviewSubmissions[0]));
         const hasFindingsPublication =
-          reviewComments.length > 0 || reviewSubmissions.length > 0;
+          reviewComments.length > 0 ||
+          (reviewSubmissions.length > 0 && !discardedSummaryPublication);
         if (hasFindingsPublication && verifiers.size !== 1) {
           violations.push(
             `Findings publication requires 1 '${verifierAgentName}' subagent, but recorded ${verifiers.size}.`);
@@ -748,9 +790,104 @@ safe-outputs:
                 lines.some(line => /^Why[ \t]+discarded[ \t]*:/i.test(line)) ||
                 lines.some(line => /^Confidence[ \t]*:[ \t]*`?discarded`?[ \t]*$/i.test(line));
             };
+            const maskNonHtml = body => {
+              let fence = '';
+              return body.split(/(\r?\n)/).map(part => {
+                if (part === '\n' || part === '\r\n') {
+                  return part;
+                }
+                const line = part.replace(/^(?: {0,3}> ?)+/, '');
+                if (fence) {
+                  if (new RegExp(`^ {0,3}${fence[0]}{${fence.length},}[ \\t]*$`).test(line)) {
+                    fence = '';
+                  }
+                  return 'x'.repeat(part.length);
+                }
+                const open = line.match(/^ {0,3}(`{3,}|~{3,})/);
+                if (open && (open[1][0] !== '`' || !line.slice(open[0].length).includes('`'))) {
+                  fence = open[1];
+                  return 'x'.repeat(part.length);
+                }
+                return /^(?: {4}|\t)/.test(part)
+                  ? 'x'.repeat(part.length)
+                  : part.replace(/(`+)[^`]*?\1/g, span => 'x'.repeat(span.length));
+              }).join('').replace(/<!--[\s\S]*?(?:-->|$)/g, comment => comment.replace(/[^\r\n]/g, ' '));
+            };
+            const findDiscardedDetailsBlocks = body => typeof body !== 'string' ? [] :
+              [...maskNonHtml(body).matchAll(
+                /<details\b[^>]*>\s*<summary\b[^>]*>[ \t]*(?:\*\*|__)?[ \t]*DISCARDED(?=$|[<*_:\s])[^\r\n<]*<\/summary>([\s\S]*?)<\/details>/gi)]
+                .filter(match => match[1].trim().length > 0);
+            const hasDiscardedDetailsBlock = body => findDiscardedDetailsBlocks(body).length > 0;
+            const escapeRegExp = value => value.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+            const isRepresentedInDiscardedDetails = (item, existingInner) => {
+              const path = typeof item.path === 'string' ? item.path.trim() : '';
+              const hasLine = Number.isInteger(item.line) && item.line > 0;
+              const hasStartLine = Number.isInteger(item.start_line) && item.start_line > 0 &&
+                hasLine && item.start_line !== item.line;
+              const escapedPath = escapeRegExp(path);
+              if (path.length > 0 && hasLine) {
+                return (hasStartLine && new RegExp(
+                    `(?<![/\\\\a-zA-Z0-9._-])${escapedPath}:${item.start_line}-${item.line}(?![0-9])`).test(existingInner)) ||
+                  new RegExp(`(?<![/\\\\a-zA-Z0-9._-])${escapedPath}:${item.line}(?![0-9-])`).test(existingInner);
+              }
+              if (path.length > 0) {
+                return new RegExp(`(?<![/\\\\a-zA-Z0-9._-])${escapedPath}(?![/\\\\a-zA-Z0-9._:-])`).test(existingInner);
+              }
+              const headline = (typeof item.body === 'string' ? item.body.trim() : '')
+                .replace(/^(?:(?:[-*+]|\d+[.)]|#{1,6})[ \t]+)+/, '')
+                .split(/\r?\n/)[0]?.trim() ?? '';
+              return headline.length > 0 && existingInner.includes(headline);
+            };
+            const isNoFindingsDiscardedReview = item =>
+              isObject(item) &&
+              (item.event === undefined || item.event === 'COMMENT') &&
+              typeof item.body === 'string' &&
+              /^[ \t]*STATUS:[ \t]*NO_FINDINGS[ \t]*(?:\r?\n|$)/.test(
+                item.body.replace(/^(?:[ \t]*\r?\n)+/, '')) &&
+              hasDiscardedDetailsBlock(item.body);
+            const sanitizeSummaryBody = text => text
+              .replace(
+                /(?<![/\\a-z0-9._-])(`?)\b(?:gpt|claude|gemini|grok|mai-code|o[134])-(?=[0-9a-z._-]*\d)[0-9a-z._-]+\b\1(?![/\\])/gi,
+                'the configured model')
+              .replace(
+                /(?<![/\\a-z0-9_-])(`?)\breview-guide-worker\b\1(?![/\\]|\.[a-z0-9_-])/g,
+                'per-guide worker')
+              .replace(
+                /(?<![/\\a-z0-9_-])(`?)\breview-candidate-verifier\b\1(?![/\\]|\.[a-z0-9_-])/g,
+                'candidate verifier')
+              .replace(/(`?)\/tmp\/gh-aw(?:\/[^\s`<>)]*)?\1/g, 'the frozen review bundle')
+              .replace(/(?<![a-z0-9])(`?)[a-z]:\\[^\s`<>)]+\1/gi, 'local path');
+            const formatDiscardedEntry = item => {
+              const hasLine = Number.isInteger(item.line) && item.line > 0;
+              const hasStartLine = Number.isInteger(item.start_line) && item.start_line > 0 &&
+                hasLine && item.start_line !== item.line;
+              const location = typeof item.path === 'string' && item.path.trim().length > 0
+                ? `\`${item.path.trim()}${hasStartLine ? `:${item.start_line}-${item.line}` : hasLine ? `:${item.line}` : ''}\``
+                : '';
+              const rawBody = typeof item.body === 'string' ? item.body.trim() : '';
+              if (location.length > 0) {
+                if (/^ {0,3}(?:`{3,}|~{3,}|>)|^(?: {4}|\t)/.test(rawBody)) {
+                  return [`- ${location}`, '',
+                    ...rawBody.split(/\r?\n/).map(line => line.length > 0 ? `  ${line}` : '')].join('\n');
+                }
+                const normalized = rawBody.replace(/^(?:(?:[-*+]|\d+[.)]|#{1,6})[ \t]+)+/, '');
+                const lines = normalized.split(/\r?\n/);
+                return [`- ${location} — ${lines[0] ?? '[DISCARDED]'}`,
+                  ...lines.slice(1).map(line => line.length > 0 ? `  ${line}` : '')].join('\n');
+              }
+              if (/^(?:[-*+]|\d+[.)])[ \t]+/.test(rawBody)) {
+                return rawBody;
+              }
+              const lines = rawBody.split(/\r?\n/);
+              return [`- ${lines[0] ?? '[DISCARDED]'}`,
+                ...lines.slice(1).map(line => line.length > 0 ? `  ${line}` : '')].join('\n');
+            };
             const count = type => output.items.filter(item => item.type === type).length;
             const comments = count('create_pull_request_review_comment');
-            const reviews = count('submit_pull_request_review');
+            const reviewItems = output.items.filter(item => item.type === 'submit_pull_request_review');
+            const reviews = reviewItems.length;
+            const validReviewEvents = reviewItems.every(item =>
+              item.event === undefined || item.event === 'COMMENT');
             const noop = count('noop');
             const statusComments = output.items.filter(item => item.type === 'add_comment');
             const incompleteItems = output.items.filter(item =>
@@ -766,14 +903,23 @@ safe-outputs:
                   `Review not published (${status}): ${incompleteReason}\n\nNo partial findings were published.`)
               : [];
             const findings = comments >= 1 && comments <= 5 && reviews === 1 &&
-              output.items.length === comments + 1;
+              validReviewEvents && output.items.length === comments + 1;
+            const discardedSummary = comments === 0 && reviews === 1 &&
+              output.items.length === 1 && isNoFindingsDiscardedReview(reviewItems[0]);
             const clean = noop === 1 && output.items.length === 1;
             const stopped = incompleteItems.length === 1 && statusComments.length === 1 &&
               output.items.length === 2 && typeof statusComments[0].body === 'string' &&
               expectedStatusBodies.includes(statusComments[0].body);
-            if (!findings && !clean && !stopped) {
+            if (!findings && !discardedSummary && !clean && !stopped) {
               core.setFailed('Incomplete or partial review output cannot be published.');
               return;
+            }
+            if (discardedSummary) {
+              const sanitized = sanitizeSummaryBody(reviewItems[0].body);
+              if (sanitized !== reviewItems[0].body) {
+                reviewItems[0].body = sanitized;
+                fs.writeFileSync(filename, JSON.stringify(output));
+              }
             }
             const discarded = output.items.filter(item =>
               item.type === 'create_pull_request_review_comment' &&
@@ -783,14 +929,39 @@ safe-outputs:
               output.items = output.items.filter(item => !discarded.includes(item));
               const remaining = comments - discarded.length;
               if (remaining === 0) {
-                output.items = [{
-                  type: 'noop',
-                  message: 'STATUS: NO_FINDINGS\nAll inline candidates were discarded; see the original agent output for details.',
-                }];
+                const reviewItem = output.items[0];
+                reviewItem.event = 'COMMENT';
+                let summaryBody = typeof reviewItem.body === 'string' ? reviewItem.body : '';
+                summaryBody = summaryBody.replace(/^(?:[ \t]*\r?\n)+/, '');
+                if (/^[ \t]*STATUS:[ \t]*[^\r\n]*/i.test(summaryBody)) {
+                  summaryBody = summaryBody.replace(/^[ \t]*STATUS:[ \t]*[^\r\n]*/, 'STATUS: NO_FINDINGS');
+                } else {
+                  summaryBody = summaryBody.length > 0
+                    ? `STATUS: NO_FINDINGS\n\n${summaryBody}`
+                    : 'STATUS: NO_FINDINGS';
+                }
+                const blocks = findDiscardedDetailsBlocks(summaryBody);
+                if (blocks.length === 0) {
+                  const entries = discarded.map(formatDiscardedEntry).join('\n\n');
+                  summaryBody = `${summaryBody.trimEnd()}\n\n<details>\n<summary>DISCARDED</summary>\n\n${entries}\n\n</details>`;
+                } else {
+                  const existingInner = blocks.map(
+                    match => summaryBody.slice(match.index, match.index + match[0].length)).join('\n');
+                  const missing = discarded.filter(item => !isRepresentedInDiscardedDetails(item, existingInner));
+                  if (missing.length > 0) {
+                    const target = blocks[blocks.length - 1];
+                    const closeTagIndex = target.index + target[0].length - '</details>'.length;
+                    const missingEntries = missing.map(formatDiscardedEntry).join('\n\n');
+                    summaryBody = `${summaryBody.slice(0, closeTagIndex).trimEnd()}\n\n${missingEntries}\n\n</details>${summaryBody.slice(target.index + target[0].length)}`;
+                  }
+                }
+                reviewItem.body = sanitizeSummaryBody(summaryBody);
               }
               fs.writeFileSync(filename, JSON.stringify(output));
-              core.notice(`Removed ${discarded.length} discarded inline candidate(s); ${remaining} inline finding(s) remain. ` +
-                'The original agent artifact retains the discarded candidates.');
+              core.notice(remaining === 0
+                ? `Moved ${discarded.length} discarded inline candidate(s) into a STATUS: NO_FINDINGS review summary; 0 inline findings remain.`
+                : `Removed ${discarded.length} discarded inline candidate(s); ${remaining} inline finding(s) remain. ` +
+                  'The original agent artifact retains the discarded candidates.');
             }
 
 jobs:
@@ -1048,9 +1219,8 @@ attempt, and allow the restricted-worker verifier to fail closed.
 Map only the skill's exact structured status:
 
 - `FINDINGS`: require one to five `NEW_FINDINGS` entries, then use the review outputs below.
-- `NO_FINDINGS`: invoke `noop` exactly once, with no review or status-comment output.
-  Disclosed existing feedback and unresolved or discarded summary candidates do not change this mapping.
-  When every candidate is discarded, require `NO_FINDINGS` and this `noop` path.
+- `NO_FINDINGS` with one or more concrete candidates recorded in `DISCARDED` (such as candidates disproved during pre-verification coordinator checks or dropped as contradicted by `review-candidate-verifier`; never routine negative guide checks where no defect candidate was proposed, and never candidates retained only in `UNRESOLVED`): emit zero `create_pull_request_review_comment` calls and invoke `submit_pull_request_review` once with event `COMMENT`, no `noop`, and no status-comment output. Its `body` must begin with `STATUS: NO_FINDINGS` on the first non-empty line, include the frozen SHA, summarize existing-feedback coverage, any non-inline unresolved candidates, per-guide completion, immutable provenance, test boundary, uncovered areas, and source-only limitations, and place all `DISCARDED` candidates inside a non-empty collapsed `<details>` block whose `<summary>` is `DISCARDED` (recording each candidate's repo-relative `path:line` and `Why discarded:` source proof).
+- `NO_FINDINGS` with zero `DISCARDED` candidates: invoke `noop` exactly once, with no review or status-comment output. Disclosed existing feedback and summary-only `UNRESOLVED` notes without any `DISCARDED` candidate keep this quiet `noop` path.
 - `BLOCKED` or `INCOMPLETE`: use the incomplete-publication path below, with no review or `noop`.
 
 A missing or unknown status, missing required result fields, contradictory status/payload,
@@ -1076,12 +1246,20 @@ supported `jobs.safe_outputs.pre-steps` hook rechecks the live head inside that 
 publication. Neither read is atomic with publication; the trusted `commit-id` pins
 attribution to the reviewed SHA if a push races the in-job check.
 
+Never include model names or identifiers, internal custom-agent or session names, local or runner
+filesystem paths, or security discussion in any GitHub-published safe-output body
+(`submit_pull_request_review`, `create_pull_request_review_comment`, or `add_comment`).
+Keep runtime model, reasoning-effort, worker-profile, and local bundle-path telemetry strictly
+in the final structured assistant response, and cite only repository-relative `path:line`
+anchors and immutable Git commit SHAs in published review text.
+
 Never publish a `DISCARDED` candidate as an inline comment or count it in `NEW_FINDINGS`.
 As a publication backstop, the trusted preflight removes an erroneously emitted discarded
 inline item without withholding surviving findings or changing their review summary.
-If none survive, it replaces the all-discarded review with a `NO_FINDINGS` noop, not an
-empty `FINDINGS` review. The original agent artifact retains the discarded payloads;
-a PR-visible no-findings audit comment is outside this adapter's current contract.
+If none survive, it removes all inline items and rewrites the single `submit_pull_request_review`
+item into a body-only `COMMENT` review starting with `STATUS: NO_FINDINGS` and enclosing the
+discarded candidates in a collapsed `<details>` section headed `DISCARDED`, rather than
+publishing inline `[DISCARDED]` comments or an empty `FINDINGS` review.
 For `FINDINGS`, emit one `create_pull_request_review_comment` per selected entry, preserving
 the skill's format and order, then exactly one `submit_pull_request_review` with event `COMMENT`. Use only
 the triggering PR and include the frozen SHA in the review text. Both handlers are pinned by
