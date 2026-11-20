@@ -639,10 +639,10 @@ public class UserManager<TUser> : IDisposable where TUser : class
         try
         {
             ThrowIfDisposed();
-            var passwordStore = GetPasswordStore();
+            _ = GetPasswordStore();
             ArgumentNullThrowHelper.ThrowIfNull(user);
             ArgumentNullThrowHelper.ThrowIfNull(password);
-            var result = await UpdatePasswordHash(passwordStore, user, password).ConfigureAwait(false);
+            var result = await UpdatePasswordHash(user, password, validatePassword: true).ConfigureAwait(false);
             if (!result.Succeeded)
             {
                 _metrics?.CreateUser(typeof(TUser).FullName!, result, startTimeStamp);
@@ -794,7 +794,7 @@ public class UserManager<TUser> : IDisposable where TUser : class
         if (result == PasswordVerificationResult.SuccessRehashNeeded)
         {
             var startTimeStamp = Stopwatch.GetTimestamp();
-            await UpdatePasswordHash(passwordStore, user, password, validatePassword: false).ConfigureAwait(false);
+            await UpdatePasswordHash(user, password, validatePassword: false).ConfigureAwait(false);
             await UpdateUserAndRecordMetricAsync(user, UserUpdateType.PasswordRehash, startTimeStamp).ConfigureAwait(false);
         }
 
@@ -856,7 +856,7 @@ public class UserManager<TUser> : IDisposable where TUser : class
             Logger.LogDebug(LoggerEventIds.UserAlreadyHasPassword, "User already has a password.");
             return IdentityResult.Failed(ErrorDescriber.UserAlreadyHasPassword());
         }
-        var result = await UpdatePasswordHash(passwordStore, user, password).ConfigureAwait(false);
+        var result = await UpdatePasswordHash(user, password, validatePassword: true).ConfigureAwait(false);
         if (!result.Succeeded)
         {
             return result;
@@ -899,7 +899,7 @@ public class UserManager<TUser> : IDisposable where TUser : class
 
         if (await VerifyPasswordAsync(passwordStore, user, currentPassword).ConfigureAwait(false) != PasswordVerificationResult.Failed)
         {
-            var updateResult = await UpdatePasswordHash(passwordStore, user, newPassword).ConfigureAwait(false);
+            var updateResult = await UpdatePasswordHash(user, newPassword, validatePassword: true).ConfigureAwait(false);
             if (!updateResult.Succeeded)
             {
                 return updateResult;
