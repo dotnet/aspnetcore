@@ -65,7 +65,10 @@ public static class DotNetDispatcher
             return null;
         }
 
-        return JsonSerializer.Serialize(syncResult, jsRuntime.JsonSerializerOptions);
+        // Returning is the send, so the tokens cannot be linked after it.
+        var resultJson = jsRuntime.SerializeForJS(syncResult, out var resultTokens);
+        jsRuntime.LinkCancellationTokens(resultTokens);
+        return resultJson;
     }
 
     /// <summary>
@@ -137,9 +140,10 @@ public static class DotNetDispatcher
         }
         else
         {
-            var syncResultJson = JsonSerializer.Serialize(syncResult, jsRuntime.JsonSerializerOptions);
+            var syncResultJson = jsRuntime.SerializeForJS(syncResult, out var resultTokens);
             var dispatchResult = new DotNetInvocationResult(syncResultJson);
             jsRuntime.EndInvokeDotNet(invocationInfo, dispatchResult);
+            jsRuntime.LinkCancellationTokens(resultTokens);
         }
     }
 
@@ -162,8 +166,9 @@ public static class DotNetDispatcher
         }
 
         var result = isNonGenericTask ? null : TaskGenericsUtil.GetTaskResult(task);
-        var resultJson = JsonSerializer.Serialize(result, jsRuntime.JsonSerializerOptions);
+        var resultJson = jsRuntime.SerializeForJS(result, out var resultTokens);
         jsRuntime.EndInvokeDotNet(invocationInfo, new DotNetInvocationResult(resultJson));
+        jsRuntime.LinkCancellationTokens(resultTokens);
     }
 
     private static object? InvokeSynchronously(JSRuntime jsRuntime, in DotNetInvocationInfo callInfo, IDotNetObjectReference? objectReference, string argsJson, out Type? returnType)

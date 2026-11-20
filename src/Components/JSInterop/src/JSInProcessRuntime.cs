@@ -44,7 +44,8 @@ public abstract class JSInProcessRuntime : JSRuntime, IJSInProcessRuntime
     [RequiresUnreferencedCode("JSON serialization and deserialization might require types that cannot be statically analyzed.")]
     internal TValue Invoke<[DynamicallyAccessedMembers(JsonSerialized)] TValue>(string identifier, long targetInstanceId, JSCallType callType, params object?[]? args)
     {
-        var argsJson = args is not null && args.Length != 0 ? JsonSerializer.Serialize(args, JsonSerializerOptions) : "[]";
+        List<(long Id, CancellationToken Token)>? argumentTokens = null;
+        var argsJson = args is not null && args.Length != 0 ? SerializeForJS(args, out argumentTokens) : "[]";
         var resultType = JSCallResultTypeHelper.FromGeneric<TValue>();
         var invocationInfo = new JSInvocationInfo
         {
@@ -56,7 +57,16 @@ public abstract class JSInProcessRuntime : JSRuntime, IJSInProcessRuntime
             ArgsJson = argsJson,
         };
 
-        var resultJson = InvokeJS(invocationInfo);
+        string? resultJson;
+        try
+        {
+            resultJson = InvokeJS(invocationInfo);
+        }
+        finally
+        {
+            // Also when the JS function throws: JS has already revived the arguments by then.
+            LinkCancellationTokens(argumentTokens);
+        }
 
         // While the result of deserialization could be null, we're making a
         // quality of life decision and letting users explicitly determine if they expect

@@ -18,6 +18,9 @@ const byteArrayRefKey = '__byte[]';
 const dotNetStreamRefKey = '__dotNetStream';
 const jsStreamReferenceLengthKey = '__jsStreamReferenceLength';
 const abortSignalKey = '__abortSignal';
+const cancellationTokenKey = '__dotNetCancellationToken';
+const cancellationTokenCanceledIdentifier = '__CancellationTokenCanceled';
+const cancellationTokenReleasedIdentifier = '__CancellationTokenReleased';
 
 // If undefined, no dispatcher has been attached yet.
 // If null, this means more than one dispatcher was attached, so no default can be determined.
@@ -95,47 +98,6 @@ windowObject._cachedHandlers.set('import', { [JSCallType.FunctionCall]: (url: an
 }});
 
 let nextJsObjectId = 1; // Start at 1 because zero is reserved for "window"
-
-const signalControllers = new WeakMap<AbortSignal, AbortController>();
-const signalFinalizer = new FinalizationRegistry<AutomaticSignalObservation>(releaseSignalObservation);
-
-interface AutomaticSignalObservation {
-  reference: DotNetObject;
-  released: boolean;
-}
-
-function releaseSignalObservation(observation: AutomaticSignalObservation): void {
-  if (!observation.released) {
-    observation.released = true;
-    signalFinalizer.unregister(observation);
-    observation.reference.invokeMethodAsync<void>('Release').catch(error => console.error(error));
-  }
-}
-
-function observeCancellation(observation: AutomaticSignalObservation, signal: WeakRef<AbortSignal>): void {
-  observation.reference.invokeMethodAsync<boolean>('WaitForCancellationAsync').then(canceled => {
-    const target = signal.deref();
-    if (target && canceled) {
-      signalControllers.get(target)!.abort();
-    }
-  }).finally(() => releaseSignalObservation(observation)).catch(error => console.error(error));
-}
-
-function createAbortSignal(reference: DotNetObject | null, isCancellationRequested: boolean): AbortSignal {
-  const controller = new AbortController();
-  if (isCancellationRequested) {
-    controller.abort();
-  }
-
-  if (reference) {
-    const observation = { reference, released: false };
-    signalControllers.set(controller.signal, controller);
-    signalFinalizer.register(controller.signal, observation, observation);
-    observeCancellation(observation, new WeakRef(controller.signal));
-  }
-
-  return controller.signal;
-}
 
 // Never references the signal: it is the FinalizationRegistry's held value, which would keep the signal alive.
 interface ObservedAbortSignal {
@@ -467,8 +429,42 @@ class CallDispatcher implements ICallDispatcher {
 
   private _nextAbortSignalId = 1;
 
+  // Held strongly until .NET cancels or releases the id: a browser operation such as fetch does not keep its signal alive.
+  private readonly _cancellationTokenControllers = new Map<number, AbortController>();
+
   // eslint-disable-next-line no-empty-function
   constructor(private readonly _dotNetCallDispatcher: DotNetCallDispatcher) {
+  }
+
+  reviveCancellationToken(id: number | null, isCancellationRequested: boolean): AbortSignal {
+    const controller = new AbortController();
+    if (isCancellationRequested) {
+      controller.abort();
+    }
+
+    if (id !== null) {
+      this._cancellationTokenControllers.set(id, controller);
+    }
+
+    return controller.signal;
+  }
+
+  private tryProcessCancellationTokenMessage(identifier: string, argsJson: string | null): boolean {
+    const canceled = identifier === cancellationTokenCanceledIdentifier;
+    if (!canceled && identifier !== cancellationTokenReleasedIdentifier) {
+      return false;
+    }
+
+    for (const id of JSON.parse(argsJson!) as number[]) {
+      const controller = this._cancellationTokenControllers.get(id);
+      // Removed first, because abort runs the listeners synchronously.
+      this._cancellationTokenControllers.delete(id);
+      if (canceled) {
+        controller?.abort();
+      }
+    }
+
+    return true;
   }
 
   getDotNetCallDispatcher(): DotNetCallDispatcher {
@@ -562,6 +558,10 @@ class CallDispatcher implements ICallDispatcher {
   }
 
   processJSCall(targetInstanceId: number, identifier: string, callType: JSCallType, argsJson: string | null) {
+    if (targetInstanceId === windowJSObjectId && this.tryProcessCancellationTokenMessage(identifier, argsJson)) {
+      return undefined;
+    }
+
     const args = parseJsonWithRevivers(this, argsJson) ?? [];
     const func = findJSFunction(identifier, targetInstanceId, callType);
     return func(...args);
@@ -859,8 +859,8 @@ export class DotNetObject {
 
 attachReviver(function reviveReference(key: any, value: any) {
   if (value && typeof value === 'object') {
-    if (value.hasOwnProperty('__dotNetCancellationToken')) {
-      return createAbortSignal(value.__dotNetCancellationToken, value.isCancellationRequested);
+    if (value.hasOwnProperty(cancellationTokenKey)) {
+      return currentCallDispatcher!.reviveCancellationToken(value[cancellationTokenKey], value.isCancellationRequested);
     } else if (value.hasOwnProperty(dotNetObjectRefKey)) {
       return new DotNetObject(value[dotNetObjectRefKey], currentCallDispatcher!);
     } else if (value.hasOwnProperty(jsObjectIdKey)) {

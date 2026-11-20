@@ -11,13 +11,11 @@ internal sealed class CancellationTokenJsonConverter : JsonConverter<Cancellatio
     private static readonly JsonEncodedText AbortSignalKey = JsonEncodedText.Encode("__abortSignal");
     private static readonly JsonEncodedText AbortedKey = JsonEncodedText.Encode("aborted");
 
-    private readonly DotNetObjectReferenceJsonConverter<CancellationTokenObserver> _observerConverter;
     private readonly JSRuntime _jsRuntime;
 
     public CancellationTokenJsonConverter(JSRuntime jsRuntime)
     {
         _jsRuntime = jsRuntime;
-        _observerConverter = new(jsRuntime);
     }
 
     public override CancellationToken Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
@@ -52,18 +50,19 @@ internal sealed class CancellationTokenJsonConverter : JsonConverter<Cancellatio
     public override void Write(Utf8JsonWriter writer, CancellationToken value, JsonSerializerOptions options)
     {
         writer.WriteStartObject();
+        // Read once: a cancellation after this point reaches JS as an abort for the id.
+        var isCancellationRequested = value.IsCancellationRequested;
         writer.WritePropertyName("__dotNetCancellationToken");
-        if (value.CanBeCanceled && !value.IsCancellationRequested)
+        if (value.CanBeCanceled && !isCancellationRequested)
         {
-            var observer = _jsRuntime.CreateCancellationTokenObserver(value);
-            _observerConverter.Write(writer, observer.Reference, options);
+            writer.WriteNumberValue(_jsRuntime.AddSerializingCancellationToken(value));
         }
         else
         {
             writer.WriteNullValue();
         }
 
-        writer.WriteBoolean("isCancellationRequested", value.IsCancellationRequested);
+        writer.WriteBoolean("isCancellationRequested", isCancellationRequested);
         writer.WriteEndObject();
     }
 }

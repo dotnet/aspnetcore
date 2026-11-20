@@ -88,24 +88,30 @@ globalThis.yolo = async function (signal) {
 JavaScript receives a native `AbortSignal`, not a JSON token or a promise wrapper.
 A pre-canceled token produces an aborted signal before the JavaScript function
 starts. A signal can be retained after the call returns. `CancellationToken.None`
-and already-canceled tokens need no live bridge. Each live serialized token occurrence
-has its own observer, so an earlier signal's cleanup cannot revoke a later in-flight
-projection of the same token.
+and already-canceled tokens need no live bridge. A token can also be part of a value
+a .NET method returns to JavaScript.
 
-The runtimes own cleanup. Incoming token sources are released after the "released"
-message; outgoing observers are released after notification.
-`WeakRef` and `FinalizationRegistry` also release links when the browser signal is
-collected without cancellation. Collection is nondeterministic and does not request
-cancellation. Live signals can retain their registrations and interop references.
-Managed runtime disposal clears remaining automatic references. Browser cleanup after
+.NET gives each live serialized token occurrence a new id and serializes it as
+`{"__dotNetCancellationToken": <id>, "isCancellationRequested": false}`. JavaScript
+keeps the `AbortController` for that id strongly, because a browser operation such as
+`fetch` does not keep its signal alive. .NET registers on the token only after the
+message that carries the id is sent, so an abort never reaches JavaScript before its
+id. On cancellation, .NET sends a one-way "canceled" message for the id, and
+JavaScript aborts the signal and forgets the id. Only the token's registration holds
+the .NET side of the link, so once the `CancellationTokenSource` is disposed or
+collected, the next .NET call to JavaScript after a garbage collection sends a one-way
+"released" message, and JavaScript forgets the id without aborting. A source that
+lives as long as the app keeps one id per serialized occurrence until it is canceled.
+Managed runtime disposal unregisters the remaining links. Browser cleanup after
 transport loss or runtime teardown needs separate host/lifecycle validation.
 
 The `CancellationToken` controlling `IJSRuntime.InvokeAsync` is separate from these
 arguments: `args: [cts.Token]` is intentional. The separate invocation-control token
 still cancels only the managed wait and does not become an AbortSignal or stop the
 JavaScript function. There is no operation-cancellation mode, forced promise rejection,
-or application-owned reference lifetime. Async bridge notification/cleanup failures
-are reported to the browser console.
+or application-owned reference lifetime. Failures of the JavaScript-to-.NET abort
+acknowledgment are reported to the browser console; failures to send the .NET-to-JavaScript
+"canceled" and "released" messages are ignored.
 
 The marshalling convention is experimental and requires API review.
 Both directions have Server and WebAssembly browser scenarios in `InteropCancellationTest`.
