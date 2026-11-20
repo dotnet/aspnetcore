@@ -45,6 +45,52 @@ public class GetDocumentTests(ITestOutputHelper output)
     }
 
     [Fact]
+    public void GetDocument_WithTimeout_Works()
+    {
+        // Arrange
+        var outputPath = Directory.CreateDirectory(Path.Combine(Path.GetTempPath(), Path.GetRandomFileName()));
+        var app = new Program(_console);
+
+        // Act
+        app.Run([
+            "--assembly", _testAppAssembly,
+            "--project", _testAppProject,
+            "--framework", _testAppFrameworkMoniker,
+            "--tools-directory", _toolsDirectory,
+            "--output", outputPath.FullName,
+            "--file-list", Path.Combine(outputPath.FullName, "file-list.cache"),
+            "--timeout", "120"
+        ], new GetDocumentCommand(_console), throwOnUnexpectedArg: false);
+
+        // Assert
+        using var stream = new MemoryStream(File.ReadAllBytes(Path.Combine(outputPath.FullName, "Sample.json")));
+        var result = OpenApiDocument.Load(stream, "json");
+        Assert.Equal("GetDocumentSample | v1", result.Document.Info.Title);
+    }
+
+    [Fact]
+    public void GetDocument_WithInvalidTimeout_Errors()
+    {
+        // Arrange
+        var outputPath = Directory.CreateDirectory(Path.Combine(Path.GetTempPath(), Path.GetRandomFileName()));
+        var app = new Program(_console);
+
+        // Act
+        app.Run([
+            "--assembly", _testAppAssembly,
+            "--project", _testAppProject,
+            "--framework", _testAppFrameworkMoniker,
+            "--tools-directory", _toolsDirectory,
+            "--output", outputPath.FullName,
+            "--file-list", Path.Combine(outputPath.FullName, "file-list.cache"),
+            "--timeout", "invalid"
+        ], new GetDocumentCommand(_console), throwOnUnexpectedArg: false);
+
+        // Assert
+        Assert.Contains("The --timeout option must be a positive integer number of seconds.", _console.GetOutput());
+    }
+
+    [Fact]
     public void GetDocument_WithOpenApiVersion_Works()
     {
         // Arrange

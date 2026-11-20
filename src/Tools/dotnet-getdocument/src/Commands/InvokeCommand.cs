@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Runtime.Versioning;
@@ -19,6 +20,7 @@ internal sealed class InvokeCommand : HelpCommandBase
 
     private readonly ProjectOptions _projectOptions = new ProjectOptions();
     private IList<string> _args;
+    private CommandOption _timeout;
 
     public InvokeCommand(IConsole console) : base(console)
     {
@@ -29,6 +31,7 @@ internal sealed class InvokeCommand : HelpCommandBase
         base.Configure(command);
 
         _projectOptions.Configure(command);
+        _timeout = command.Option("--timeout <seconds>", "Timeout for each document generation in seconds. Defaults to 60.", CommandOptionType.SingleValue);
         _args = command.RemainingArguments;
     }
 
@@ -163,7 +166,18 @@ internal sealed class InvokeCommand : HelpCommandBase
                 args.Add("--verbose");
             }
 
-            return Exe.Run(executable, args, Reporter);
+            var timeout = TimeSpan.FromSeconds(GetTimeoutSeconds());
+            if (_timeout.HasValue())
+            {
+                args.Add("--timeout");
+                args.Add(((int)timeout.TotalSeconds).ToString(CultureInfo.InvariantCulture));
+            }
+
+            // Keep a fixed floor for application startup. The per-document timeout only
+            // bounds a single document; deriving the whole child-process lifetime from a
+            // small value would abort before the application starts.
+            var processTimeout = TimeSpan.FromSeconds(Math.Max(120, timeout.TotalSeconds * 2));
+            return Exe.Run(executable, args, Reporter, timeout: processTimeout);
         }
         finally
         {
@@ -187,5 +201,21 @@ internal sealed class InvokeCommand : HelpCommandBase
                 }
             }
         }
+    }
+
+    private int GetTimeoutSeconds()
+    {
+        var value = _timeout.Value();
+        if (string.IsNullOrEmpty(value))
+        {
+            return 60;
+        }
+
+        if (!int.TryParse(value, out var seconds) || seconds <= 0)
+        {
+            throw new CommandException("The --timeout option must be a positive integer number of seconds.");
+        }
+
+        return seconds;
     }
 }

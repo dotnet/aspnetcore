@@ -158,7 +158,7 @@
     <value>Method '{0}' of type '{1}' has unsupported return type '{2}'. Must return '{3}'.</value>
   </data>
   <data name="MethodTimedOut" xml:space="preserve">
-    <value>Method '{0}' of type '{1}' timed out. Must complete execution within {2} minute.</value>
+    <value>Method '{0}' of type '{1}' timed out. Must complete execution within {2} seconds.</value>
   </data>
   <data name="MethodIsStatic" xml:space="preserve">
     <value>Method '{0}' of type '{1}' is static. Must be an instance method.</value>

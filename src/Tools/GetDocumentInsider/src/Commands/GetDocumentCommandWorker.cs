@@ -370,10 +370,10 @@ internal sealed class GetDocumentCommandWorker
                 return null;
             }
 
-            var finished = resultTask.Wait(TimeSpan.FromMinutes(1));
+            var finished = resultTask.Wait(_context.Timeout);
             if (!finished)
             {
-                _reporter.WriteError(Resources.FormatMethodTimedOut(GenerateMethodName, DocumentService, 1));
+                _reporter.WriteError(Resources.FormatMethodTimedOut(GenerateMethodName, DocumentService, (int)_context.Timeout.TotalSeconds));
                 return null;
             }
         }

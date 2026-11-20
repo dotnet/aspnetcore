@@ -46,5 +46,11 @@ public class GetDocumentCommandContext
     /// </summary>
     public string Environment { get; set; }
 
+    /// <summary>
+    /// The maximum time each document generation may take before it is aborted.
+    /// The default is one minute.
+    /// </summary>
+    public TimeSpan Timeout { get; set; } = TimeSpan.FromMinutes(1);
+
     public IReporter Reporter { get; set; }
 }
