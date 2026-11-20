@@ -1,0 +1,19 @@
+@if (replacement)
+{
+    <HeadContent>
+        <link rel="stylesheet" href="head-swap-idless-replacement.css" />
+    </HeadContent>
+}
+else
+{
+    <HeadContent>
+        <link rel="stylesheet" href="head-swap-initial.css" />
+    </HeadContent>
+}
+
+<button id="swap-head-without-ids" @onclick="() => replacement = true">Replace stylesheet without IDs</button>
+<div id="swap-target" style="background-color: red">Stylesheet target</div>
+
+@code {
+    private bool replacement;
+}
