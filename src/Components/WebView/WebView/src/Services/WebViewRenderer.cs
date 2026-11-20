@@ -4,6 +4,7 @@
 using System.Diagnostics.CodeAnalysis;
 using Microsoft.AspNetCore.Components.RenderTree;
 using Microsoft.AspNetCore.Components.Web.Infrastructure;
+using Microsoft.JSInterop;
 using Microsoft.Extensions.Logging;
 using static Microsoft.AspNetCore.Internal.LinkerFlags;
 
@@ -15,6 +16,7 @@ internal sealed class WebViewRenderer : WebRenderer
     private readonly Queue<UnacknowledgedRenderBatch> _unacknowledgedRenderBatches = new();
     private readonly Dispatcher _dispatcher;
     private readonly IpcSender _ipcSender;
+    private readonly WebViewJSRuntime _jsRuntime;
     private long nextRenderBatchId = 1;
 
     public WebViewRenderer(
@@ -28,6 +30,7 @@ internal sealed class WebViewRenderer : WebRenderer
     {
         _dispatcher = dispatcher;
         _ipcSender = ipcSender;
+        _jsRuntime = jsRuntime;
 
         ElementReferenceContext = jsRuntime.ElementReferenceContext;
     }
@@ -40,8 +43,36 @@ internal sealed class WebViewRenderer : WebRenderer
 
     protected override void HandleException(Exception exception)
     {
+        // A disconnected JS runtime is expected while a page is being replaced or
+        // disposed. Reporting it through the replacement page's IPC would terminate
+        // the new document before it can attach.
+        if (_jsRuntime.IsDisconnected && IsDisconnectFailure(exception))
+        {
+            return;
+        }
+
         // Notify the JS code so it can show the in-app UI
         _ipcSender.NotifyUnhandledException(exception);
+    }
+
+    private static bool IsDisconnectFailure(Exception exception)
+    {
+        if (exception is JSDisconnectedException)
+        {
+            return true;
+        }
+        if (exception is AggregateException aggregate && aggregate.InnerExceptions.Count > 0)
+        {
+            foreach (var inner in aggregate.InnerExceptions)
+            {
+                if (!IsDisconnectFailure(inner))
+                {
+                    return false;
+                }
+            }
+            return true;
+        }
+        return false;
     }
 
     protected override Task UpdateDisplayAsync(in RenderBatch renderBatch)
