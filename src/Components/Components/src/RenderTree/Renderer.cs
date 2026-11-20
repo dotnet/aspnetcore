@@ -500,8 +500,8 @@ public abstract partial class Renderer : IDisposable, IAsyncDisposable
         string methodName = null;
         if (ComponentsActivitySource.IsSupported && ComponentActivitySource != null)
         {
-            receiverName ??= (callback.Receiver?.GetType() ?? callback.Delegate.Target?.GetType())?.FullName;
-            methodName ??= callback.Delegate.Method?.Name;
+            receiverName ??= (callback.Receiver?.GetType() ?? callback.Delegate?.Target?.GetType())?.FullName;
+            methodName ??= callback.Delegate?.Method?.Name;
             activityHandle = ComponentsActivitySource.StartHandleEventActivity(receiverName, methodName, attributeName);
         }
 
@@ -555,8 +555,8 @@ public abstract partial class Renderer : IDisposable, IAsyncDisposable
             // collect metrics
             if (ComponentsMetrics.IsSupported && ComponentMetrics != null && ComponentMetrics.IsEventEnabled)
             {
-                receiverName ??= (callback.Receiver?.GetType() ?? callback.Delegate.Target?.GetType())?.FullName;
-                methodName ??= callback.Delegate.Method?.Name;
+                receiverName ??= (callback.Receiver?.GetType() ?? callback.Delegate?.Target?.GetType())?.FullName;
+                methodName ??= callback.Delegate?.Method?.Name;
                 _ = ComponentMetrics.CaptureEventDuration(task, eventStartTimestamp, receiverName, methodName, attributeName);
             }
 
@@ -570,8 +570,8 @@ public abstract partial class Renderer : IDisposable, IAsyncDisposable
         {
             if (ComponentsMetrics.IsSupported && ComponentMetrics != null && ComponentMetrics.IsEventEnabled)
             {
-                receiverName ??= (callback.Receiver?.GetType() ?? callback.Delegate.Target?.GetType())?.FullName;
-                methodName ??= callback.Delegate.Method?.Name;
+                receiverName ??= (callback.Receiver?.GetType() ?? callback.Delegate?.Target?.GetType())?.FullName;
+                methodName ??= callback.Delegate?.Method?.Name;
                 ComponentMetrics.FailEventSync(e, eventStartTimestamp, receiverName, methodName, attributeName);
             }
 
