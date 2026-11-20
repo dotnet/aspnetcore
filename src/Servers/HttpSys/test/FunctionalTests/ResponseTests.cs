@@ -259,6 +259,31 @@ public class ResponseTests : LoggedTest
     }
 
     [ConditionalFact]
+    public async Task Response_OnCompletedThrows_StillCallsRemainingOnCompletedAndLogsError()
+    {
+        var onCompletedCalled = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+        using (Utilities.CreateHttpServer(out var address, httpContext =>
+        {
+            // OnCompleted callbacks run last to first, so this one runs after the throwing callback below.
+            httpContext.Response.OnCompleted(() =>
+            {
+                onCompletedCalled.SetResult();
+                return Task.CompletedTask;
+            });
+            httpContext.Response.OnCompleted(() => throw new InvalidTimeZoneException("Failed OnCompleted"));
+            return httpContext.Response.WriteAsync("Hello World");
+        }, LoggerFactory))
+        {
+            var response = await SendRequestAsync(address);
+            Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+            Assert.Equal("Hello World", await response.Content.ReadAsStringAsync());
+            await onCompletedCalled.Task.TimeoutAfter(TimeSpan.FromSeconds(5));
+        }
+
+        Assert.Contains(TestSink.Writes, w => w.EventId.Name == "OnCompletedError" && w.Exception is InvalidTimeZoneException);
+    }
+
+    [ConditionalFact]
     public async Task ClientDisconnectsBeforeResponse_ResponseCanStillBeModified()
     {
         var readStarted = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);

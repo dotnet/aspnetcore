@@ -29,5 +29,8 @@ internal partial class RequestContext
 
         [LoggerMessage(LoggerEventIds.QueryTlsCipherSuiteError, LogLevel.Debug, "Failed to invoke QueryTlsCipherSuite; RequestId: {RequestId}; Win32 Error code: {Win32Error}", EventName = "QueryTlsCipherSuiteError")]
         public static partial void QueryTlsCipherSuiteError(ILogger logger, ulong requestId, uint win32Error);
+
+        [LoggerMessage(LoggerEventIds.OnCompletedError, LogLevel.Error, "An exception was thrown by an OnCompleted callback.", EventName = "OnCompletedError")]
+        public static partial void OnCompletedError(ILogger logger, Exception exception);
     }
 }
