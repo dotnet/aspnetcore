@@ -961,6 +961,92 @@ public class EnhancedNavigationTest : ServerTestBase<BasicTestAppServerSiteFixtu
         Assert.DoesNotContain(logs, log => log.Message.Contains("Error"));
     }
 
+    [Fact]
+    public void ReturnUrlIsPreservedWhenNavigatingToSecuredPageViaMenuDuringEnhancedNavigation()
+    {
+        Navigate($"{ServerPathBase}/authorize-home");
+        Browser.Equal("Authorize Home Page", () => Browser.Exists(By.TagName("h1")).Text);
+        Browser.Exists(By.Id("interactive-ready"));
+
+        var htmlElement = Browser.Exists(By.TagName("html"));
+        Browser.Exists(By.TagName("nav")).FindElement(By.LinkText("Weather")).Click();
+
+        Browser.Equal("Login Page", () => Browser.Exists(By.TagName("h1")).Text);
+        Browser.False(() => htmlElement.IsStale());
+        Browser.Exists(By.Id("login-interactive-ready"));
+
+        var expectedReturnUrl = $"{ServerPathBase}/weather";
+        Browser.Equal(expectedReturnUrl, () => Browser.Exists(By.Id("login-returnurl")).Text);
+        Browser.Contains($"ReturnUrl={Uri.EscapeDataString(expectedReturnUrl)}", () => Browser.Exists(By.Id("login-nav-uri")).Text);
+    }
+
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public void FullPageLoadIsUsedWhenEnhancedNavigationRedirectsOutsideBaseUri(bool useFormPost)
+    {
+        Navigate($"{ServerPathBase}/authorize-home");
+        Browser.Exists(By.Id("interactive-ready"));
+        Browser.GetBrowserLogs(LogLevel.Warning);
+
+        var htmlElement = Browser.Exists(By.TagName("html"));
+        Browser.Exists(By.Id(useFormPost ? "submit-redirect-outside-base" : "redirect-outside-base")).Click();
+
+        Browser.True(() => htmlElement.IsStale());
+        Browser.Exists(By.Id("login-interactive-ready"));
+
+        var expectedReturnUrl = $"{ServerPathBase}/redirect/outside-base";
+        var expectedUri = new Uri(_serverFixture.RootUri, $"/outside-base/account/login?ReturnUrl={Uri.EscapeDataString(expectedReturnUrl)}").AbsoluteUri;
+        Browser.Equal(expectedUri, () => Browser.Url);
+        Browser.Equal(expectedReturnUrl, () => Browser.Exists(By.Id("login-returnurl")).Text);
+        Browser.Equal(expectedUri, () => Browser.Exists(By.Id("login-nav-uri")).Text);
+        Assert.DoesNotContain(Browser.GetBrowserLogs(LogLevel.Warning), log => log.Message.Contains("Location change to") && log.Message.Contains("failed"));
+
+        Browser.Navigate().Back();
+        Browser.Equal("Authorize Home Page", () => Browser.Exists(By.TagName("h1")).Text);
+        Browser.Exists(By.Id("interactive-ready"));
+
+        Browser.Navigate().Forward();
+        Browser.Exists(By.Id("login-interactive-ready"));
+        Browser.Equal(expectedUri, () => Browser.Url);
+        Browser.Equal(expectedReturnUrl, () => Browser.Exists(By.Id("login-returnurl")).Text);
+    }
+
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public void StreamingRedirectOnlyUpdatesOldDocumentWithinBaseUri(bool outsideBase)
+    {
+        Navigate($"{ServerPathBase}/authorize-home");
+        Browser.Exists(By.Id("interactive-ready"));
+        var htmlElement = Browser.Exists(By.TagName("html"));
+        var destination = $"redirect/streaming?outsideBase={outsideBase}&operation={Guid.NewGuid():N}";
+
+        // The intermediate document can be replaced before WebDriver observes it, so record the actual DOM mutation.
+        Browser.ExecuteJavaScript("""
+            sessionStorage.removeItem('streaming-redirect-error');
+            new MutationObserver(() => {
+                if (document.documentElement.textContent.includes('There was an unhandled exception on the current request')) {
+                    sessionStorage.setItem('streaming-redirect-error', 'true');
+                }
+            }).observe(document.documentElement, { childList: true, subtree: true });
+            arguments[0].href = arguments[1];
+            """, Browser.Exists(By.Id("redirect-outside-base")), destination);
+        Browser.Exists(By.Id("redirect-outside-base")).Click();
+
+        if (outsideBase)
+        {
+            Browser.Exists(By.Id("streaming-redirect-destination"));
+            Browser.True(() => htmlElement.IsStale());
+            Assert.Null(Browser.ExecuteJavaScript<string>("return sessionStorage.getItem('streaming-redirect-error');"));
+        }
+        else
+        {
+            Browser.Contains("There was an unhandled exception on the current request", () => Browser.FindElement(By.TagName("html")).Text);
+            Assert.False(htmlElement.IsStale());
+        }
+    }
+
     private void AssertScrollPositionCorrect(bool useEnhancedNavigation, long previousScrollPosition)
     {
         // from some reason, scroll position sometimes differs by 1 pixel between enhanced and browser's navigation
