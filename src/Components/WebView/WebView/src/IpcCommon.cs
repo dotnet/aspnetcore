@@ -24,25 +24,22 @@ internal sealed class IpcCommon
 
     private static string Serialize(string messageType, object[] args)
     {
-        // We could come up with something a little more low-level here if we
-        // wanted to avoid a couple of allocations
-        var messageTypeAndArgs = args.Prepend(messageType);
-
         // Note we do NOT need the JSRuntime specific JsonSerializerOptions as the args needing special handling
         // (JS/DotNetObjectReference & Byte Arrays) have already been serialized earlier in the JSRuntime.
         // We run the serialization here to add the `messageType`.
-        return $"{_ipcMessagePrefix}{JsonSerializer.Serialize(messageTypeAndArgs, JsonSerializerOptionsProvider.Options)}";
+        return $"{_ipcMessagePrefix}{JsonSerializer.Serialize(args.Prepend(messageType), IpcJsonSerializerContext.Default.MessageSequence)}";
     }
 
     private static bool TryDeserialize<T>(string message, out T messageType, out ArraySegment<JsonElement> args)
+        where T : struct, Enum
     {
         // We don't want to get confused by unrelated messages that the developer is sending
         // over the same webview IPC channel, so ignore anything else
         if (message != null && message.StartsWith(_ipcMessagePrefix, StringComparison.Ordinal))
         {
             var messageAfterPrefix = message.AsSpan(_ipcMessagePrefix.Length);
-            var parsed = (JsonElement[])JsonSerializer.Deserialize(messageAfterPrefix, typeof(JsonElement[]), JsonSerializerOptionsProvider.Options);
-            messageType = (T)Enum.Parse(typeof(T), parsed[0].GetString());
+            var parsed = JsonSerializer.Deserialize(messageAfterPrefix, IpcJsonSerializerContext.Default.JsonElementArray);
+            messageType = Enum.Parse<T>(parsed[0].GetString());
             args = new ArraySegment<JsonElement>(parsed, 1, parsed.Length - 1);
             return true;
         }
