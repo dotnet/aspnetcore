@@ -22,6 +22,9 @@ internal sealed class WebAssemblyComponentState : ComponentState
         _renderer = renderer;
     }
 
+    public override ValueTask DisposeAsync()
+        => _renderer.TrackComponentDisposal(this, base.DisposeAsync());
+
     protected override object? GetComponentKey()
     {
         var markerKey = _renderer.GetMarkerKey(this);

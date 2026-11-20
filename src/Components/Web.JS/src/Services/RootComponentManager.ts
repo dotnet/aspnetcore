@@ -7,6 +7,7 @@ export interface RootComponentManager<InitialComponentsDescriptorType> {
   initialComponents: InitialComponentsDescriptorType[];
   onAfterRenderBatch?(browserRendererId: number): void;
   onAfterUpdateRootComponents?(batchId: number): void;
+  onRendererDisposed?(browserRendererId: number): void;
   onComponentReload?(browserRendererId: number): void;
   resolveRootComponent(ssrComponentId: number): ComponentDescriptor;
 }
