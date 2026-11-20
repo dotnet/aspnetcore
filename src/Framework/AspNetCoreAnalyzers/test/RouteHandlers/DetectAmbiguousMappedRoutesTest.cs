@@ -31,6 +31,22 @@ void Hello() { }
     }
 
     [Fact]
+    public async Task DuplicateRoutes_MapBesideMapGet_NoDiagnostics()
+    {
+        // Arrange
+        var source = @"
+using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Http;
+var app = WebApplication.Create();
+app.MapGet(""/items/{id}"", (string id) => ""get"");
+app.Map(""/items/{id}"", context => context.Response.WriteAsync(""other""));
+";
+
+        // Act & Assert
+        await VerifyCS.VerifyAnalyzerAsync(source);
+    }
+
+    [Fact]
     public async Task DuplicateRoutes_SameHttpMethod_HasRequestDelegate_HasDiagnostics()
     {
         // Arrange
