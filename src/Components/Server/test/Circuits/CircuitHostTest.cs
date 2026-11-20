@@ -1327,6 +1327,351 @@ public class CircuitHostTest
         Assert.Equal(2, testRenderer.GetOrCreateWebRootComponentManager().GetRootComponents().Count());
     }
 
+    [Fact]
+    public async Task UpdateRootComponents_AppliesDependentBatchAfterBlockedCircuitHandler()
+    {
+        var handler = new BlockingCircuitHandler();
+        var services = new ServiceCollection().AddSingleton<CircuitHandler>(handler).BuildServiceProvider();
+        var renderer = GetRemoteRenderer();
+        var circuitHost = TestCircuitHost.Create(remoteRenderer: renderer, serviceScope: services.CreateAsyncScope());
+        var errors = new List<Exception>();
+        circuitHost.UnhandledException += (_, e) => errors.Add((Exception)e.ExceptionObject);
+
+        var firstUpdate = circuitHost.UpdateRootComponents(new()
+        {
+            Operations = [CreateRootComponentOperation<DynamicallyAddedComponent>(RootComponentOperationType.Add, 1, componentKey: "first")],
+        }, null, false, CancellationToken.None);
+        await handler.WaitForEntryAsync();
+
+        var secondUpdate = circuitHost.UpdateRootComponents(new()
+        {
+            Operations =
+            [
+                CreateRootComponentOperation<DynamicallyAddedComponent>(RootComponentOperationType.Update, 1,
+                    new() { [nameof(DynamicallyAddedComponent.Message)] = "Updated", }, "first"),
+                CreateRootComponentOperation<DynamicallyAddedComponent>(RootComponentOperationType.Add, 2),
+            ],
+        }, null, false, CancellationToken.None);
+        await renderer.Dispatcher.InvokeAsync(() => { });
+
+        try
+        {
+            Assert.False(secondUpdate.IsCompleted);
+            Assert.Empty(renderer.GetOrCreateWebRootComponentManager().GetRootComponents());
+        }
+        finally
+        {
+            handler.Release();
+        }
+        await Task.WhenAll(firstUpdate, secondUpdate).WaitAsync(TimeSpan.FromSeconds(5));
+
+        Assert.Empty(errors);
+        Assert.Equal([1, 2], renderer.GetOrCreateWebRootComponentManager().GetRootComponents().Select(c => c.id).Order());
+        Assert.Equal("Updated", Assert.IsType<DynamicallyAddedComponent>(renderer.GetTestComponentState(0).Component).Message);
+    }
+
+    [Fact]
+    public async Task UpdateRootComponents_WaitsForAsyncInboundMiddlewareBeforeNext()
+    {
+        var handler = new BlockingInboundActivityCircuitHandler();
+        var services = new ServiceCollection().AddSingleton<CircuitHandler>(handler).BuildServiceProvider();
+        var renderer = GetRemoteRenderer();
+        var circuitHost = TestCircuitHost.Create(remoteRenderer: renderer, serviceScope: services.CreateAsyncScope());
+
+        var firstUpdate = circuitHost.UpdateRootComponents(new()
+        {
+            Operations = [CreateRootComponentOperation<DynamicallyAddedComponent>(RootComponentOperationType.Add, 1)],
+        }, null, false, CancellationToken.None);
+        await handler.WaitForEntryAsync();
+
+        var secondUpdate = circuitHost.UpdateRootComponents(new()
+        {
+            Operations = [CreateRootComponentOperation<DynamicallyAddedComponent>(RootComponentOperationType.Add, 2)],
+        }, null, false, CancellationToken.None);
+        await renderer.Dispatcher.InvokeAsync(() => { });
+
+        try
+        {
+            Assert.False(secondUpdate.IsCompleted);
+            Assert.Empty(renderer.GetOrCreateWebRootComponentManager().GetRootComponents());
+        }
+        finally
+        {
+            handler.Release();
+        }
+        await Task.WhenAll(firstUpdate, secondUpdate).WaitAsync(TimeSpan.FromSeconds(5));
+        Assert.Equal([1, 2], renderer.GetOrCreateWebRootComponentManager().GetRootComponents().Select(c => c.id).Order());
+    }
+
+    [Fact]
+    public async Task UpdateRootComponents_DoesNotWaitForPostNextInboundMiddleware()
+    {
+        var handler = new BlockingPostNextCircuitHandler();
+        var services = new ServiceCollection().AddSingleton<CircuitHandler>(handler).BuildServiceProvider();
+        var renderer = GetRemoteRenderer();
+        var circuitHost = TestCircuitHost.Create(remoteRenderer: renderer, serviceScope: services.CreateAsyncScope());
+
+        var firstUpdate = circuitHost.UpdateRootComponents(new()
+        {
+            Operations = [CreateRootComponentOperation<DynamicallyAddedComponent>(RootComponentOperationType.Add, 1)],
+        }, null, false, CancellationToken.None);
+        await handler.WaitForEntryAsync();
+
+        var secondUpdate = circuitHost.UpdateRootComponents(new()
+        {
+            Operations = [CreateRootComponentOperation<DynamicallyAddedComponent>(RootComponentOperationType.Add, 2)],
+        }, null, false, CancellationToken.None);
+
+        try
+        {
+            await secondUpdate.WaitAsync(TimeSpan.FromSeconds(5));
+            Assert.False(firstUpdate.IsCompleted);
+            Assert.Equal([1, 2], renderer.GetOrCreateWebRootComponentManager().GetRootComponents().Select(c => c.id).Order());
+        }
+        finally
+        {
+            handler.Release();
+        }
+
+        await firstUpdate.WaitAsync(TimeSpan.FromSeconds(5));
+    }
+
+    [Fact]
+    public async Task UpdateRootComponents_ReleasesSuccessorWhenInboundMiddlewareShortCircuits()
+    {
+        var handler = new ShortCircuitInboundActivityHandler();
+        var services = new ServiceCollection().AddSingleton<CircuitHandler>(handler).BuildServiceProvider();
+        var shortCircuitAcknowledgementStarted = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+        var releaseShortCircuitAcknowledgement = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+        var successorAcknowledgementStarted = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+        var client = new Mock<ISingleClientProxy>();
+        client.Setup(c => c.SendCoreAsync("JS.EndUpdateRootComponents", It.IsAny<object[]>(), It.IsAny<CancellationToken>()))
+            .Returns((string _, object[] args, CancellationToken _) =>
+            {
+                if ((long)args[0] == 2)
+                {
+                    shortCircuitAcknowledgementStarted.SetResult();
+                    return releaseShortCircuitAcknowledgement.Task;
+                }
+
+                if ((long)args[0] == 3)
+                {
+                    successorAcknowledgementStarted.SetResult();
+                }
+
+                return Task.CompletedTask;
+            });
+        var renderer = GetRemoteRenderer();
+        var circuitHost = TestCircuitHost.Create(
+            remoteRenderer: renderer,
+            serviceScope: services.CreateAsyncScope(),
+            clientProxy: new CircuitClientProxy(client.Object, "connection"));
+
+        var firstUpdate = circuitHost.UpdateRootComponents(new()
+        {
+            BatchId = 1,
+            Operations = [CreateRootComponentOperation<DynamicallyAddedComponent>(RootComponentOperationType.Add, 1)],
+        }, null, false, CancellationToken.None);
+        await firstUpdate.WaitAsync(TimeSpan.FromSeconds(5));
+        var shortCircuitedUpdate = circuitHost.UpdateRootComponents(new()
+        {
+            BatchId = 2,
+            Operations = [CreateRootComponentOperation<DynamicallyAddedComponent>(RootComponentOperationType.Add, 2)],
+        }, null, false, CancellationToken.None);
+        await shortCircuitAcknowledgementStarted.Task.WaitAsync(TimeSpan.FromSeconds(5));
+        var successorUpdate = circuitHost.UpdateRootComponents(new()
+        {
+            BatchId = 3,
+            Operations = [CreateRootComponentOperation<DynamicallyAddedComponent>(RootComponentOperationType.Add, 3)],
+        }, null, false, CancellationToken.None);
+
+        try
+        {
+            await successorAcknowledgementStarted.Task.WaitAsync(TimeSpan.FromSeconds(5));
+            Assert.False(shortCircuitedUpdate.IsCompleted);
+            Assert.Equal([1, 3], renderer.GetOrCreateWebRootComponentManager().GetRootComponents().Select(c => c.id).Order());
+        }
+        finally
+        {
+            releaseShortCircuitAcknowledgement.SetResult();
+        }
+
+        await Task.WhenAll(shortCircuitedUpdate, successorUpdate).WaitAsync(TimeSpan.FromSeconds(5));
+    }
+
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task UpdateRootComponents_DoesNotApplySuccessorAfterHandlerFailure(bool failDuringInboundActivity)
+    {
+        var handler = new FailingCircuitHandler(failDuringInboundActivity);
+        var services = new ServiceCollection().AddSingleton<CircuitHandler>(handler).BuildServiceProvider();
+        var releaseErrorNotification = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+        var client = new Mock<ISingleClientProxy>();
+        client.Setup(c => c.SendCoreAsync(It.IsAny<string>(), It.IsAny<object[]>(), It.IsAny<CancellationToken>()))
+            .Returns(Task.CompletedTask);
+        client.Setup(c => c.SendCoreAsync("JS.Error", It.IsAny<object[]>(), It.IsAny<CancellationToken>()))
+            .Returns(releaseErrorNotification.Task);
+        var renderer = GetRemoteRenderer();
+        var circuitHost = TestCircuitHost.Create(
+            remoteRenderer: renderer,
+            serviceScope: services.CreateAsyncScope(),
+            clientProxy: new CircuitClientProxy(client.Object, "connection"));
+        var unhandledException = new TaskCompletionSource<Exception>(TaskCreationOptions.RunContinuationsAsynchronously);
+        var reportedExceptions = new List<Exception>();
+        circuitHost.UnhandledException += (_, e) =>
+        {
+            reportedExceptions.Add((Exception)e.ExceptionObject);
+            unhandledException.TrySetResult((Exception)e.ExceptionObject);
+        };
+
+        var firstUpdate = circuitHost.UpdateRootComponents(new()
+        {
+            BatchId = 1,
+            Operations = [CreateRootComponentOperation<DynamicallyAddedComponent>(RootComponentOperationType.Add, 1)],
+        }, null, false, CancellationToken.None);
+        await handler.WaitForFailureAsync();
+
+        var secondUpdate = circuitHost.UpdateRootComponents(new()
+        {
+            BatchId = 2,
+            Operations = [CreateRootComponentOperation<DynamicallyAddedComponent>(RootComponentOperationType.Add, 2)],
+        }, null, false, CancellationToken.None);
+        await renderer.Dispatcher.InvokeAsync(() => { });
+        try
+        {
+            Assert.False(secondUpdate.IsCompleted);
+        }
+        finally
+        {
+            handler.Fail();
+        }
+        var exception = await unhandledException.Task.WaitAsync(TimeSpan.FromSeconds(5));
+        try
+        {
+            await secondUpdate.WaitAsync(TimeSpan.FromSeconds(5));
+            Assert.False(firstUpdate.IsCompleted);
+        }
+        finally
+        {
+            releaseErrorNotification.SetResult();
+        }
+        await firstUpdate.WaitAsync(TimeSpan.FromSeconds(5));
+
+        var handlerException = failDuringInboundActivity
+            ? exception
+            : Assert.Single(Assert.IsType<AggregateException>(exception).InnerExceptions);
+        Assert.Equal(FailingCircuitHandler.ExceptionMessage, handlerException.Message);
+        Assert.Single(reportedExceptions);
+        Assert.Empty(renderer.GetOrCreateWebRootComponentManager().GetRootComponents());
+        client.Verify(c => c.SendCoreAsync("JS.Error", It.IsAny<object[]>(), It.IsAny<CancellationToken>()), Times.Once);
+        client.Verify(c => c.SendCoreAsync("JS.EndUpdateRootComponents",
+            It.IsAny<object[]>(), It.IsAny<CancellationToken>()), Times.Never);
+    }
+
+    [Fact]
+    public async Task UpdateRootComponents_DoesNotApplyNewBatchAfterPostNextHandlerFailure()
+    {
+        var handler = new FailingPostNextCircuitHandler();
+        var services = new ServiceCollection().AddSingleton<CircuitHandler>(handler).BuildServiceProvider();
+        var client = new Mock<ISingleClientProxy>();
+        client.Setup(c => c.SendCoreAsync(It.IsAny<string>(), It.IsAny<object[]>(), It.IsAny<CancellationToken>()))
+            .Returns(Task.CompletedTask);
+        var renderer = GetRemoteRenderer();
+        var circuitHost = TestCircuitHost.Create(
+            remoteRenderer: renderer,
+            serviceScope: services.CreateAsyncScope(),
+            clientProxy: new CircuitClientProxy(client.Object, "connection"));
+        var unhandledException = new TaskCompletionSource<Exception>(TaskCreationOptions.RunContinuationsAsynchronously);
+        circuitHost.UnhandledException += (_, e) => unhandledException.TrySetResult((Exception)e.ExceptionObject);
+
+        var firstUpdate = circuitHost.UpdateRootComponents(new()
+        {
+            BatchId = 1,
+            Operations = [CreateRootComponentOperation<DynamicallyAddedComponent>(RootComponentOperationType.Add, 1)],
+        }, null, false, CancellationToken.None);
+        await handler.WaitForEntryAsync().WaitAsync(TimeSpan.FromSeconds(5));
+
+        var secondUpdate = circuitHost.UpdateRootComponents(new()
+        {
+            BatchId = 2,
+            Operations = [CreateRootComponentOperation<DynamicallyAddedComponent>(RootComponentOperationType.Add, 2)],
+        }, null, false, CancellationToken.None);
+        try
+        {
+            await secondUpdate.WaitAsync(TimeSpan.FromSeconds(5));
+            Assert.Equal([1, 2], renderer.GetOrCreateWebRootComponentManager().GetRootComponents().Select(c => c.id).Order());
+        }
+        finally
+        {
+            handler.Fail();
+        }
+
+        var exception = await unhandledException.Task.WaitAsync(TimeSpan.FromSeconds(5));
+        await firstUpdate.WaitAsync(TimeSpan.FromSeconds(5));
+        Assert.Equal(FailingPostNextCircuitHandler.ExceptionMessage, exception.Message);
+
+        await circuitHost.UpdateRootComponents(new()
+        {
+            BatchId = 3,
+            Operations = [CreateRootComponentOperation<DynamicallyAddedComponent>(RootComponentOperationType.Add, 3)],
+        }, null, false, CancellationToken.None).WaitAsync(TimeSpan.FromSeconds(5));
+
+        Assert.Equal([1, 2], renderer.GetOrCreateWebRootComponentManager().GetRootComponents().Select(c => c.id).Order());
+        client.Verify(c => c.SendCoreAsync("JS.Error", It.IsAny<object[]>(), It.IsAny<CancellationToken>()), Times.Once);
+        client.Verify(c => c.SendCoreAsync("JS.EndUpdateRootComponents",
+            It.Is<object[]>(args => (long)args[0] == 3), It.IsAny<CancellationToken>()), Times.Never);
+    }
+
+    [Fact]
+    public async Task UpdateRootComponents_DoesNotWaitForPreviousAcknowledgement()
+    {
+        var firstAcknowledgement = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+        var secondAcknowledgement = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+        var client = new Mock<ISingleClientProxy>();
+        client.Setup(c => c.SendCoreAsync("JS.EndUpdateRootComponents", It.IsAny<object[]>(), It.IsAny<CancellationToken>()))
+            .Returns((string _, object[] args, CancellationToken _) =>
+            {
+                if ((long)args[0] == 1)
+                {
+                    return firstAcknowledgement.Task;
+                }
+
+                secondAcknowledgement.SetResult();
+                return Task.CompletedTask;
+            });
+        var circuitHost = TestCircuitHost.Create(
+            remoteRenderer: GetRemoteRenderer(),
+            clientProxy: new CircuitClientProxy(client.Object, "connection"));
+
+        var firstUpdate = circuitHost.UpdateRootComponents(new()
+        {
+            BatchId = 1,
+            Operations = [CreateRootComponentOperation<DynamicallyAddedComponent>(RootComponentOperationType.Add, 1)],
+        }, null, false, CancellationToken.None);
+        var secondUpdate = circuitHost.UpdateRootComponents(new()
+        {
+            BatchId = 2,
+            Operations = [CreateRootComponentOperation<DynamicallyAddedComponent>(RootComponentOperationType.Add, 2)],
+        }, null, false, CancellationToken.None);
+
+        await secondAcknowledgement.Task.WaitAsync(TimeSpan.FromSeconds(5));
+        Assert.False(firstUpdate.IsCompleted);
+        firstAcknowledgement.SetResult();
+        await Task.WhenAll(firstUpdate, secondUpdate).WaitAsync(TimeSpan.FromSeconds(5));
+    }
+
+    private RootComponentOperation CreateRootComponentOperation<TComponent>(
+        RootComponentOperationType type, int id, Dictionary<string, object> parameters = null, string componentKey = "")
+        where TComponent : IComponent
+        => new()
+        {
+            Type = type,
+            SsrComponentId = id,
+            Marker = CreateMarker(typeof(TComponent), id.ToString(CultureInfo.InvariantCulture), parameters, componentKey),
+            Descriptor = new(typeof(TComponent), CreateWebRootComponentParameters(parameters)),
+        };
+
     private async Task AddComponentAsync<TComponent>(CircuitHost circuitHost, int ssrComponentId, Dictionary<string, object> parameters = null, string componentKey = "")
         where TComponent : IComponent
     {
@@ -1703,5 +2048,133 @@ public class CircuitHostTest
 
         public Task PersistStateAsync(IReadOnlyDictionary<string, byte[]> state) => throw new NotImplementedException();
         internal void Continue() => _tcs.SetResult();
+    }
+
+    private sealed class BlockingCircuitHandler : CircuitHandler
+    {
+        private readonly TaskCompletionSource _entered = new(TaskCreationOptions.RunContinuationsAsynchronously);
+        private readonly TaskCompletionSource _continue = new(TaskCreationOptions.RunContinuationsAsynchronously);
+
+        public override async Task OnCircuitOpenedAsync(Circuit circuit, CancellationToken cancellationToken)
+        {
+            _entered.SetResult();
+            await _continue.Task;
+        }
+
+        public Task WaitForEntryAsync() => _entered.Task;
+        public void Release() => _continue.SetResult();
+    }
+
+    private sealed class BlockingInboundActivityCircuitHandler : CircuitHandler
+    {
+        private readonly TaskCompletionSource _entered = new(TaskCreationOptions.RunContinuationsAsynchronously);
+        private readonly TaskCompletionSource _continue = new(TaskCreationOptions.RunContinuationsAsynchronously);
+        private int _invocations;
+
+        public override Func<CircuitInboundActivityContext, Task> CreateInboundActivityHandler(
+            Func<CircuitInboundActivityContext, Task> next)
+            => async context =>
+            {
+                if (Interlocked.Increment(ref _invocations) == 1)
+                {
+                    _entered.SetResult();
+                    await _continue.Task;
+                }
+
+                await next(context);
+            };
+
+        public Task WaitForEntryAsync() => _entered.Task;
+        public void Release() => _continue.SetResult();
+    }
+
+    private sealed class FailingCircuitHandler(bool failDuringInboundActivity) : CircuitHandler
+    {
+        public const string ExceptionMessage = "Circuit handler failure.";
+
+        private readonly TaskCompletionSource _entered = new(TaskCreationOptions.RunContinuationsAsynchronously);
+        private readonly TaskCompletionSource _fail = new(TaskCreationOptions.RunContinuationsAsynchronously);
+        private int _invocations;
+
+        public override Task OnCircuitOpenedAsync(Circuit circuit, CancellationToken cancellationToken)
+            => failDuringInboundActivity ? Task.CompletedTask : FailAsync();
+
+        public override Func<CircuitInboundActivityContext, Task> CreateInboundActivityHandler(
+            Func<CircuitInboundActivityContext, Task> next)
+            => async context =>
+            {
+                if (failDuringInboundActivity && Interlocked.Increment(ref _invocations) == 1)
+                {
+                    await FailAsync();
+                }
+
+                await next(context);
+            };
+
+        private async Task FailAsync()
+        {
+            _entered.SetResult();
+            await _fail.Task;
+            throw new InvalidOperationException(ExceptionMessage);
+        }
+
+        public Task WaitForFailureAsync() => _entered.Task;
+        public void Fail() => _fail.SetResult();
+    }
+
+    private sealed class FailingPostNextCircuitHandler : CircuitHandler
+    {
+        public const string ExceptionMessage = "Post-next handler failure.";
+
+        private readonly TaskCompletionSource _entered = new(TaskCreationOptions.RunContinuationsAsynchronously);
+        private readonly TaskCompletionSource _fail = new(TaskCreationOptions.RunContinuationsAsynchronously);
+        private int _invocations;
+
+        public override Func<CircuitInboundActivityContext, Task> CreateInboundActivityHandler(
+            Func<CircuitInboundActivityContext, Task> next)
+            => async context =>
+            {
+                await next(context);
+                if (Interlocked.Increment(ref _invocations) == 1)
+                {
+                    _entered.SetResult();
+                    await _fail.Task;
+                    throw new InvalidOperationException(ExceptionMessage);
+                }
+            };
+
+        public Task WaitForEntryAsync() => _entered.Task;
+        public void Fail() => _fail.SetResult();
+    }
+
+    private sealed class BlockingPostNextCircuitHandler : CircuitHandler
+    {
+        private readonly TaskCompletionSource _entered = new(TaskCreationOptions.RunContinuationsAsynchronously);
+        private readonly TaskCompletionSource _continue = new(TaskCreationOptions.RunContinuationsAsynchronously);
+        private int _invocations;
+
+        public override Func<CircuitInboundActivityContext, Task> CreateInboundActivityHandler(
+            Func<CircuitInboundActivityContext, Task> next)
+            => async context =>
+            {
+                await next(context);
+                if (Interlocked.Increment(ref _invocations) == 1)
+                {
+                    _entered.SetResult();
+                    await _continue.Task;
+                }
+            };
+
+        public Task WaitForEntryAsync() => _entered.Task;
+        public void Release() => _continue.SetResult();
+    }
+
+    private sealed class ShortCircuitInboundActivityHandler : CircuitHandler
+    {
+        private int _invocations;
+
+        public override Func<CircuitInboundActivityContext, Task> CreateInboundActivityHandler(
+            Func<CircuitInboundActivityContext, Task> next)
+            => context => Interlocked.Increment(ref _invocations) == 2 ? Task.CompletedTask : next(context);
     }
 }
