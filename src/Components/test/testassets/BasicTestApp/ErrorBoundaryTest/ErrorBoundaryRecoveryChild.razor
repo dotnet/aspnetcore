@@ -1,0 +1,18 @@
+@if (NestingDepth > 0)
+{
+    <ErrorBoundaryRecoveryChild NestingDepth="@(NestingDepth - 1)" OnAttempt="@OnAttempt" />
+}
+
+@code {
+    [Parameter] public int NestingDepth { get; set; }
+    [Parameter] public Action OnAttempt { get; set; }
+
+    protected override void OnInitialized()
+    {
+        if (NestingDepth == 0)
+        {
+            OnAttempt();
+            throw new InvalidOperationException("Initialization failed.");
+        }
+    }
+}
