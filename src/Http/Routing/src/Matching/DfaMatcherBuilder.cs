@@ -31,8 +31,6 @@ internal sealed class DfaMatcherBuilder : MatcherBuilder
     private readonly List<(RoutePatternPathSegment pathSegment, int segmentIndex)> _complexSegments;
     private readonly List<KeyValuePair<string, IRouteConstraint>> _constraints;
 
-    private int _stateIndex;
-
     // Caches the per-endpoint candidate data while building the matcher. The same endpoint usually
     // appears in many DFA states, and the slots/captures/constraints only depend on the endpoint.
     private Dictionary<Endpoint, Candidate> _candidateCache;
@@ -110,11 +108,53 @@ internal sealed class DfaMatcherBuilder : MatcherBuilder
             dfaWorker.ProcessLevel(depth);
         }
 
-        // Build the trees of policy nodes (like HTTP methods). Post-order traversal
-        // means that we won't have infinite recursion.
-        root.Visit(ApplyPolicies);
+        // Build the trees of policy nodes (like HTTP methods) after visiting the path children.
+        VisitGraph(root, ApplyPolicies);
 
         return root;
+    }
+
+    internal static void VisitGraph(DfaNode root, Action<DfaNode> visitor)
+    {
+        var visited = new HashSet<DfaNode>(ReferenceEqualityComparer.Instance);
+        Visit(root);
+
+        void Visit(DfaNode node)
+        {
+            // A node may be shared or have a catch-all self-loop.
+            if (!visited.Add(node))
+            {
+                return;
+            }
+
+            if (node.Literals is not null)
+            {
+                foreach (var child in node.Literals.Values)
+                {
+                    Visit(child);
+                }
+            }
+
+            if (node.Parameters is not null)
+            {
+                Visit(node.Parameters);
+            }
+
+            if (node.CatchAll is not null)
+            {
+                Visit(node.CatchAll);
+            }
+
+            if (node.PolicyEdges is not null)
+            {
+                foreach (var child in node.PolicyEdges.Values)
+                {
+                    Visit(child);
+                }
+            }
+
+            visitor(node);
+        }
     }
 
     private sealed class CachingParameterPolicyFactory : ParameterPolicyFactory
@@ -164,12 +204,17 @@ internal sealed class DfaMatcherBuilder : MatcherBuilder
 
     private sealed class DfaBuilderWorker
     {
+        private const int UnshareableWorkList = -1;
+
         private List<DfaBuilderWorkerWorkItem> _previousWork;
         private List<DfaBuilderWorkerWorkItem> _work;
         private int _workCount;
         private readonly Comparer<DfaBuilderWorkerWorkItem> _precedenceDigitComparer;
         private readonly bool _includeLabel;
         private readonly ParameterPolicyFactory _parameterPolicyFactory;
+        private readonly Dictionary<DfaNode, (DfaNode Parent, string Literal, int WorkListId)> _nextNodes = new(ReferenceEqualityComparer.Instance);
+        private Dictionary<int, int> _extendedWorkLists;
+        private List<DfaNode> _workListNodes;
 
         public DfaBuilderWorker(
             List<DfaBuilderWorkerWorkItem> work,
@@ -242,14 +287,111 @@ internal sealed class DfaMatcherBuilder : MatcherBuilder
 
                 if (nextParents.Count > 0)
                 {
+                    TrackWorkLists(endpoint, nextParents);
                     nextWorkCount++;
                 }
             }
+
+            ShareSubtrees(nextWork, nextWorkCount);
+            _nextNodes.Clear();
 
             // Prepare to process the next stage.
             _previousWork = _work;
             _work = nextWork;
             _workCount = nextWorkCount;
+        }
+
+        private void TrackWorkLists(RouteEndpoint endpoint, List<DfaNode> parents)
+        {
+            // A route that reaches only one node makes that node's list unique.
+            // Parameter policies can produce a separate stateful constraint for each state.
+            if (parents.Count == 1 || endpoint.RoutePattern.ParameterPolicies.Count != 0)
+            {
+                for (var j = 0; j < parents.Count; j++)
+                {
+                    var parent = parents[j];
+                    var info = _nextNodes[parent];
+                    info.WorkListId = UnshareableWorkList;
+                    _nextNodes[parent] = info;
+                }
+
+                return;
+            }
+
+            _extendedWorkLists ??= new Dictionary<int, int>();
+            _workListNodes ??= new List<DfaNode>();
+
+            // Each work item extends all its parents' lists with the same route. Assign a new
+            // ID for each distinct prefix so equal IDs always represent equal lists at this depth.
+            for (var j = 0; j < parents.Count; j++)
+            {
+                var parent = parents[j];
+                var info = _nextNodes[parent];
+                if (info.WorkListId == UnshareableWorkList)
+                {
+                    continue;
+                }
+
+                if (!_extendedWorkLists.TryGetValue(info.WorkListId, out var extendedId))
+                {
+                    extendedId = _workListNodes.Count + 1; // Zero represents the empty list.
+                    _extendedWorkLists.Add(info.WorkListId, extendedId);
+                    _workListNodes.Add(null);
+                }
+
+                info.WorkListId = extendedId;
+                _nextNodes[parent] = info;
+            }
+
+            _extendedWorkLists.Clear();
+        }
+
+        private void ShareSubtrees(List<DfaBuilderWorkerWorkItem> nextWork, int nextWorkCount)
+        {
+            if (_workListNodes is null || _workListNodes.Count == 0)
+            {
+                return;
+            }
+
+            // Expand each work list once. Walk backwards to prefer the parameter path, which
+            // parameter expansion adds after its literal siblings.
+            for (var i = 0; i < nextWorkCount; i++)
+            {
+                var parents = nextWork[i].Parents;
+                for (var j = parents.Count - 1; j >= 0; j--)
+                {
+                    var parent = parents[j];
+                    var info = _nextNodes[parent];
+                    if (info.WorkListId == UnshareableWorkList)
+                    {
+                        continue;
+                    }
+
+                    var index = info.WorkListId - 1;
+                    var shared = _workListNodes[index];
+                    if (shared is null)
+                    {
+                        _workListNodes[index] = parent;
+                    }
+                    else if (!ReferenceEquals(shared, parent))
+                    {
+                        if (info.Literal is null)
+                        {
+                            info.Parent.Parameters = shared;
+                        }
+                        else
+                        {
+                            info.Parent.Literals[info.Literal] = shared;
+                        }
+
+                        parents[j] = null;
+                    }
+                }
+
+                parents.RemoveAll(static parent => parent is null);
+            }
+
+            _workListNodes.Clear();
         }
 
         private void ProcessSegment(
@@ -265,7 +407,7 @@ internal sealed class DfaMatcherBuilder : MatcherBuilder
                 var parameterPart = part as RoutePatternParameterPart;
                 if (segment.IsSimple && part is RoutePatternLiteralPart literalPart)
                 {
-                    AddLiteralNode(_includeLabel, nextParents, parent, literalPart.Content);
+                    AddLiteralNode(nextParents, parent, literalPart.Content);
                 }
                 else if (segment.IsSimple && parameterPart != null && parameterPart.IsCatchAll)
                 {
@@ -318,6 +460,7 @@ internal sealed class DfaMatcherBuilder : MatcherBuilder
                             PathDepth = parent.PathDepth + 1,
                             Label = _includeLabel ? parent.Label + "{...}/" : null,
                         };
+                        _nextNodes.Add(parent.Parameters, (parent, null, 0));
                     }
 
                     if (parent.Literals != null)
@@ -355,6 +498,7 @@ internal sealed class DfaMatcherBuilder : MatcherBuilder
                             PathDepth = parent.PathDepth + 1,
                             Label = _includeLabel ? parent.Label + "{...}/" : null,
                         };
+                        _nextNodes.Add(parent.Parameters, (parent, null, 0));
                     }
 
                     if (parent.Literals != null)
@@ -492,24 +636,25 @@ internal sealed class DfaMatcherBuilder : MatcherBuilder
 
             var literalValue = requiredValue?.ToString() ?? throw new InvalidOperationException($"Required value for literal '{parameterPart.Name}' must evaluate to a non-null string.");
 
-            AddLiteralNode(_includeLabel, nextParents, parent, literalValue);
+            AddLiteralNode(nextParents, parent, literalValue);
         }
-    }
 
-    private static void AddLiteralNode(bool includeLabel, List<DfaNode> nextParents, DfaNode parent, string literal)
-    {
-        if (parent.Literals == null ||
-            !parent.Literals.TryGetValue(literal, out var next))
+        private void AddLiteralNode(List<DfaNode> nextParents, DfaNode parent, string literal)
         {
-            next = new DfaNode()
+            if (parent.Literals == null ||
+                !parent.Literals.TryGetValue(literal, out var next))
             {
-                PathDepth = parent.PathDepth + 1,
-                Label = includeLabel ? parent.Label + literal + "/" : null,
-            };
-            parent.AddLiteral(literal, next);
-        }
+                next = new DfaNode()
+                {
+                    PathDepth = parent.PathDepth + 1,
+                    Label = _includeLabel ? parent.Label + literal + "/" : null,
+                };
+                parent.AddLiteral(literal, next);
+                _nextNodes.Add(next, (parent, literal, 0));
+            }
 
-        nextParents.Add(next);
+            nextParents.Add(next);
+        }
     }
 
     private static RoutePatternPathSegment GetCurrentSegment(RouteEndpoint endpoint, int depth)
@@ -558,12 +703,11 @@ internal sealed class DfaMatcherBuilder : MatcherBuilder
         // State count is the number of nodes plus an exit state
         var stateCount = 1;
         var maxSegmentCount = 0;
-        root.Visit((node) =>
+        VisitGraph(root, (node) =>
         {
             stateCount++;
             maxSegmentCount = Math.Max(maxSegmentCount, node.PathDepth);
         });
-        _stateIndex = 0;
 
         // The max segment count is the maximum path-node-depth +1. We need
         // the +1 to capture any additional content after the 'last' segment.
@@ -571,11 +715,12 @@ internal sealed class DfaMatcherBuilder : MatcherBuilder
 
         var states = new DfaState[stateCount];
         var exitDestination = stateCount - 1;
+        var stateIndices = new Dictionary<DfaNode, int>(exitDestination, ReferenceEqualityComparer.Instance);
 
         _candidateCache = new Dictionary<Endpoint, Candidate>(_endpoints.Count, ReferenceEqualityComparer.Instance);
         try
         {
-            AddNode(root, states, exitDestination);
+            AddNode(root, states, exitDestination, stateIndices);
         }
         finally
         {
@@ -595,11 +740,13 @@ internal sealed class DfaMatcherBuilder : MatcherBuilder
     private int AddNode(
         DfaNode node,
         DfaState[] states,
-        int exitDestination)
+        int exitDestination,
+        Dictionary<DfaNode, int> stateIndices)
     {
         node.Matches?.Sort(_comparer);
 
-        var currentStateIndex = _stateIndex;
+        var currentStateIndex = stateIndices.Count;
+        stateIndices.Add(node, currentStateIndex);
 
         var currentDefaultDestination = exitDestination;
         var currentExitDestination = exitDestination;
@@ -690,15 +837,13 @@ internal sealed class DfaMatcherBuilder : MatcherBuilder
 
         int Transition(DfaNode next)
         {
-            // Break cycles
-            if (ReferenceEquals(node, next))
+            if (stateIndices.TryGetValue(next, out var nextStateIndex))
             {
-                return _stateIndex;
+                return nextStateIndex;
             }
             else
             {
-                _stateIndex++;
-                return AddNode(next, states, exitDestination);
+                return AddNode(next, states, exitDestination, stateIndices);
             }
         }
     }
