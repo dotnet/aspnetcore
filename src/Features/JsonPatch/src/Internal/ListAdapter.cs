@@ -181,7 +181,11 @@ public class ListAdapter : IAdapter
         }
 
         var currentValue = list[positionInfo.Index];
-        if (!JToken.DeepEquals(JsonConvert.SerializeObject(currentValue), JsonConvert.SerializeObject(convertedValue)))
+        var serializerSettings = new JsonSerializerSettings()
+        {
+            ContractResolver = contractResolver
+        };
+        if (!JToken.DeepEquals(JsonConvert.SerializeObject(currentValue, serializerSettings), JsonConvert.SerializeObject(convertedValue, serializerSettings)))
         {
             errorMessage = Resources.FormatValueAtListPositionNotEqualToTestValue(currentValue, value, positionInfo.Index);
             return false;

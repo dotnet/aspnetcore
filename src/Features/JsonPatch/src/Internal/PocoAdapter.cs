@@ -164,7 +164,11 @@ public class PocoAdapter : IAdapter
         }
 
         var currentValue = jsonProperty.ValueProvider.GetValue(target);
-        if (!JToken.DeepEquals(JsonConvert.SerializeObject(currentValue), JsonConvert.SerializeObject(convertedValue)))
+        var serializerSettings = new JsonSerializerSettings()
+        {
+            ContractResolver = contractResolver
+        };
+        if (!JToken.DeepEquals(JsonConvert.SerializeObject(currentValue, serializerSettings), JsonConvert.SerializeObject(convertedValue, serializerSettings)))
         {
             errorMessage = Resources.FormatValueNotEqualToTestValue(currentValue, value, segment);
             return false;

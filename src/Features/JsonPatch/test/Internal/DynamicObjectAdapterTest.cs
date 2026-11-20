@@ -291,4 +291,23 @@ public class DynamicObjectAdapterTest
         Assert.False(testStatus);
         Assert.Equal(expectedErrorMessage, errorMessage);
     }
+
+    [Fact]
+    public void TryTest_UsesContractResolver_ToCompareValues()
+    {
+        // Arrange
+        var adapter = new DynamicObjectAdapter();
+        dynamic target = new DynamicTestObject();
+        target.NewProperty = new Code("ABCD1234");
+        var segment = "NewProperty";
+        var resolver = new CodeContractResolver();
+        var expectedErrorMessage = $"The current value 'ABCD1234' at path '{segment}' is not equal to the test value 'ZZZZZZZZ'.";
+
+        // Act
+        var testStatus = adapter.TryTest(target, segment, resolver, "ZZZZZZZZ", out string errorMessage);
+
+        // Assert
+        Assert.False(testStatus);
+        Assert.Equal(expectedErrorMessage, errorMessage);
+    }
 }
