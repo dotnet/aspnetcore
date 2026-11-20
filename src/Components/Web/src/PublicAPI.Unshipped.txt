@@ -1,1 +1,3 @@
 #nullable enable
+Microsoft.AspNetCore.Components.Routing.NavLink.InactiveClass.get -> string?
+Microsoft.AspNetCore.Components.Routing.NavLink.InactiveClass.set -> void
