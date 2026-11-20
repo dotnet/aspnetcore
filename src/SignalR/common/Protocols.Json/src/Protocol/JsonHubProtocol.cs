@@ -199,7 +199,8 @@ public sealed class JsonHubProtocol : IHubProtocol
                                 throw new InvalidDataException($"Expected '{TargetPropertyName}' to be of type {JsonTokenType.String}.");
                             }
 
-                            if (!reader.HasValueSequence)
+                            // ValueSpan is the raw (still escaped) JSON, so only use it for the lookup when there's nothing to unescape.
+                            if (!reader.HasValueSequence && !reader.ValueIsEscaped)
                             {
                                 target = binder.GetTarget(reader.ValueSpan) ?? reader.GetString();
                             }
