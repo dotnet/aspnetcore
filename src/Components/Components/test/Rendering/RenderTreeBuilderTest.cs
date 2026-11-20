@@ -2047,7 +2047,7 @@ public class RenderTreeBuilderTest
 
         // Act/Assert
         var ex = Assert.Throws<InvalidOperationException>(() => builder.AssertTreeIsValid(component));
-        Assert.StartsWith($"Render output is invalid for component of type '{typeof(TestComponent).FullName}'. A frame of type 'Element' was left unclosed.", ex.Message);
+        AssertUnbalancedFramesMessage(ex.Message, RenderTreeFrameType.Element);
     }
 
     [Fact]
@@ -2062,7 +2062,7 @@ public class RenderTreeBuilderTest
 
         // Act/Assert
         var ex = Assert.Throws<InvalidOperationException>(() => builder.AssertTreeIsValid(component));
-        Assert.StartsWith($"Render output is invalid for component of type '{typeof(TestComponent).FullName}'. A frame of type 'Component' was left unclosed.", ex.Message);
+        AssertUnbalancedFramesMessage(ex.Message, RenderTreeFrameType.Component);
     }
 
     [Fact]
@@ -2077,7 +2077,42 @@ public class RenderTreeBuilderTest
 
         // Act/Assert
         var ex = Assert.Throws<InvalidOperationException>(() => builder.AssertTreeIsValid(component));
-        Assert.StartsWith($"Render output is invalid for component of type '{typeof(TestComponent).FullName}'. A frame of type 'Region' was left unclosed.", ex.Message);
+        AssertUnbalancedFramesMessage(ex.Message, RenderTreeFrameType.Region);
+    }
+
+    [Fact]
+    public void ReportsBreakInsideRenderLoopAsInvalid()
+    {
+        var builder = new RenderTreeBuilder();
+        var component = new TestComponent();
+
+        builder.OpenElement(0, "ul");
+        foreach (var item in new[] { "a", "b", "c" })
+        {
+            builder.OpenElement(1, "li");
+            builder.AddContent(2, item);
+            if (item == "a")
+            {
+                break;
+            }
+            builder.CloseElement();
+        }
+        builder.CloseElement();
+
+        var ex = Assert.Throws<InvalidOperationException>(() => builder.AssertTreeIsValid(component));
+        AssertUnbalancedFramesMessage(ex.Message, RenderTreeFrameType.Element);
+    }
+
+    private static void AssertUnbalancedFramesMessage(string message, RenderTreeFrameType frameType)
+    {
+        Assert.Equal(
+            $"Render output is invalid for component of type '{typeof(TestComponent).FullName}'. " +
+            $"A frame of type '{frameType}' was left unclosed. Every frame opened by OpenElement, " +
+            $"OpenComponent, or OpenRegion must be closed by a matching call to CloseElement, CloseComponent, or " +
+            $"CloseRegion. This can occur when control flow skips a closing call but the render fragment still " +
+            $"completes normally, such as with break, continue, return, goto, or a caught exception. " +
+            $"See https://learn.microsoft.com/aspnet/core/blazor/advanced-scenarios.",
+            message);
     }
 
     [Fact]
