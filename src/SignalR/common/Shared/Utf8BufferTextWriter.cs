@@ -202,7 +202,7 @@ internal sealed class Utf8BufferTextWriter : TextWriter
         if (_memoryUsed > 0)
         {
             _bufferWriter!.Advance(_memoryUsed);
-            _memory = _memory.Slice(_memoryUsed, _memory.Length - _memoryUsed);
+            _memory = Memory<byte>.Empty;
             _memoryUsed = 0;
         }
     }
