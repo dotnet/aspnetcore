@@ -16,6 +16,11 @@ internal class ResourceCollectionConvention(ResourceCollectionResolver resolver)
 
     public void OnBeforeCreateEndpoints(RazorComponentEndpointUpdateContext context)
     {
+        _collectionUrl = null;
+        _collectionEndpointImportMap = null;
+        _collection = null;
+        _collectionImportMap = null;
+
         if (resolver.IsRegistered(context.Options.ManifestPath))
         {
             _collection = resolver.ResolveResourceCollection(context.Options.ManifestPath);

@@ -19,6 +19,7 @@ public sealed class RazorComponentsEndpointConventionBuilder : IEndpointConventi
     private readonly List<Action<EndpointBuilder>> _conventions;
     private readonly List<Action<EndpointBuilder>> _finallyConventions;
     private readonly List<Action<ComponentApplicationBuilder>> _componentApplicationBuilderActions;
+    private readonly Action _configurationChanged;
 
     internal RazorComponentsEndpointConventionBuilder(
         object @lock,
@@ -26,7 +27,8 @@ public sealed class RazorComponentsEndpointConventionBuilder : IEndpointConventi
         RazorComponentDataSourceOptions options,
         List<Action<EndpointBuilder>> conventions,
         List<Action<EndpointBuilder>> finallyConventions,
-        List<Action<ComponentApplicationBuilder>> componentApplicationBuilderActions)
+        List<Action<ComponentApplicationBuilder>> componentApplicationBuilderActions,
+        Action configurationChanged)
     {
         _lock = @lock;
         EndpointRouteBuilder = endpointRouteBuilder;
@@ -34,17 +36,36 @@ public sealed class RazorComponentsEndpointConventionBuilder : IEndpointConventi
         _conventions = conventions;
         _finallyConventions = finallyConventions;
         _componentApplicationBuilderActions = componentApplicationBuilderActions;
+        _configurationChanged = configurationChanged;
     }
 
     internal List<Action<ComponentApplicationBuilder>> ComponentApplicationBuilderActions => _componentApplicationBuilderActions;
 
-    internal string? ManifestPath { get => _options.ManifestPath; set => _options.ManifestPath = value; }
+    internal string? ManifestPath
+    {
+        get => _options.ManifestPath;
+        set
+        {
+            _options.ManifestPath = value;
+            _configurationChanged();
+        }
+    }
 
     internal bool ResourceCollectionConventionRegistered { get; set; }
 
     internal IEndpointRouteBuilder EndpointRouteBuilder { get; }
 
     internal event Action<RazorComponentEndpointUpdateContext>? BeforeCreateEndpoints;
+
+    internal void AddComponentApplicationBuilderAction(Action<ComponentApplicationBuilder> action)
+    {
+        lock (_lock)
+        {
+            _componentApplicationBuilderActions.Add(action);
+        }
+
+        _configurationChanged();
+    }
 
     /// <inheritdoc/>
     public void Add(Action<EndpointBuilder> convention)
@@ -57,6 +78,8 @@ public sealed class RazorComponentsEndpointConventionBuilder : IEndpointConventi
         {
             _conventions.Add(convention);
         }
+
+        _configurationChanged();
     }
 
     /// <inheritdoc/>
@@ -68,11 +91,18 @@ public sealed class RazorComponentsEndpointConventionBuilder : IEndpointConventi
         {
             _finallyConventions.Add(finallyConvention);
         }
+
+        _configurationChanged();
     }
 
     internal void AddRenderMode(IComponentRenderMode renderMode)
     {
-        _options.ConfiguredRenderModes.Add(renderMode);
+        lock (_lock)
+        {
+            _options.ConfiguredRenderModes.Add(renderMode);
+        }
+
+        _configurationChanged();
     }
 
     internal void OnBeforeCreateEndpoints(RazorComponentEndpointUpdateContext endpointContext) =>

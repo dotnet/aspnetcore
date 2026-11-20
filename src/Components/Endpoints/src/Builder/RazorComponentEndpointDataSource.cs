@@ -54,7 +54,8 @@ internal class RazorComponentEndpointDataSource<[DynamicallyAccessedMembers(Comp
             _options,
             _conventions,
             _finallyConventions,
-            _componentApplicationBuilderActions);
+            _componentApplicationBuilderActions,
+            UpdateEndpointsIfInitialized);
 
         _cancellationTokenSource = new CancellationTokenSource();
         _changeToken = new CancellationChangeToken(_cancellationTokenSource.Token);
@@ -92,6 +93,17 @@ internal class RazorComponentEndpointDataSource<[DynamicallyAccessedMembers(Comp
                 {
                     UpdateEndpoints();
                 }
+            }
+        }
+    }
+
+    private void UpdateEndpointsIfInitialized()
+    {
+        lock (_lock)
+        {
+            if (_endpoints is not null)
+            {
+                UpdateEndpoints();
             }
         }
     }

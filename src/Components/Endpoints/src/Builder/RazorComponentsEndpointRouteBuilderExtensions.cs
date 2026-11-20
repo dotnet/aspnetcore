@@ -42,12 +42,19 @@ public static class RazorComponentsEndpointRouteBuilderExtensions
     private static RazorComponentEndpointDataSource<TRootComponent> GetOrCreateDataSource<[DynamicallyAccessedMembers(Component)] TRootComponent>(
         IEndpointRouteBuilder endpoints)
     {
-        var dataSource = endpoints.DataSources.OfType<RazorComponentEndpointDataSource<TRootComponent>>().FirstOrDefault();
+        var collection = endpoints.DataSources.OfType<RazorComponentEndpointDataSourceCollection>().FirstOrDefault();
+        if (collection is null)
+        {
+            collection = new RazorComponentEndpointDataSourceCollection();
+            endpoints.DataSources.Add(collection);
+        }
+
+        var dataSource = collection.DataSources.OfType<RazorComponentEndpointDataSource<TRootComponent>>().FirstOrDefault();
         if (dataSource == null)
         {
             var factory = endpoints.ServiceProvider.GetRequiredService<RazorComponentEndpointDataSourceFactory>();
             dataSource = factory.CreateDataSource<TRootComponent>(endpoints);
-            endpoints.DataSources.Add(dataSource);
+            collection.Add(dataSource);
         }
 
         return dataSource;

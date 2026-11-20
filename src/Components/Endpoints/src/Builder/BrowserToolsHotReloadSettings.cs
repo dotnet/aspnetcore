@@ -18,6 +18,7 @@ internal static class BrowserToolsHotReloadSettings
 
     private const string DotNetWatchEnvironmentVariable = "DOTNET_WATCH";
     private const string DisabledResponse = """{ "hotReload": false }""";
+    private static readonly BlazorWebEndpointMetadata _endpointMetadata = new(RoutePatternFactory.Parse(Path));
 
     public static EndpointBuilder? GetEndpoint(IServiceProvider services)
     {
@@ -32,13 +33,14 @@ internal static class BrowserToolsHotReloadSettings
 
         var builder = new RouteEndpointBuilder(
             WriteResponse,
-            RoutePatternFactory.Parse(Path),
+            _endpointMetadata.RoutePattern,
             int.MaxValue)
         {
             DisplayName = "Browser tools Hot Reload settings",
         };
 
         builder.Metadata.Add(new HttpMethodMetadata([HttpMethods.Get]));
+        builder.Metadata.Add(_endpointMetadata);
 
         return builder;
     }

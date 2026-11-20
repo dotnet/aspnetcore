@@ -30,6 +30,7 @@ validation guidance rather than defining a separate architecture.
 - Root-component and render-mode APIs must carry only serializable parameters and required metadata across process or host boundaries, including parameter definitions needed for unmatched values.
 - Cover Auto activation with both cached and uncached WebAssembly resources, including resources becoming available while an existing root remains active.
 - If a host cannot understand a known render-mode marker or descriptor, ignore unsupported host-specific markers where safe instead of failing unrelated startup paths.
+- Share duplicate framework endpoints only within the same endpoint route builder and only when their route, handler, order, and metadata are equivalent. Different root conventions or overlapping route groups must not be resolved by arbitrarily selecting one root's metadata.
 
 ### Prerendering, static SSR, streaming, and state persistence
 
