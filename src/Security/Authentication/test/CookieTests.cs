@@ -318,6 +318,49 @@ public class CookieTests : SharedAuthenticationTests<CookieAuthenticationOptions
         }
     }
 
+    // A store that keeps to ITicketStore but recycles the keys it has released. This is allowed
+    // because StoreAsync only promises to return the key the ticket was stored under, not a key
+    // that has never been used before.
+    private class KeyReusingTestTicketStore : ITicketStore
+    {
+        private const string KeyPrefix = "AuthSessionStore-";
+        private readonly Queue<string> _releasedKeys = new Queue<string>();
+
+        public readonly Dictionary<string, AuthenticationTicket> Store = new Dictionary<string, AuthenticationTicket>();
+
+        public async Task<string> StoreAsync(AuthenticationTicket ticket)
+        {
+            var key = _releasedKeys.Count > 0
+                ? _releasedKeys.Dequeue()
+                : KeyPrefix + Guid.NewGuid().ToString();
+            await RenewAsync(key, ticket);
+            return key;
+        }
+
+        public Task RenewAsync(string key, AuthenticationTicket ticket)
+        {
+            Store[key] = ticket;
+            return Task.FromResult(0);
+        }
+
+        public Task<AuthenticationTicket> RetrieveAsync(string key)
+        {
+            AuthenticationTicket ticket;
+            Store.TryGetValue(key, out ticket);
+            return Task.FromResult(ticket);
+        }
+
+        public Task RemoveAsync(string key)
+        {
+            if (Store.Remove(key))
+            {
+                _releasedKeys.Enqueue(key);
+            }
+
+            return Task.FromResult(0);
+        }
+    }
+
     [Fact]
     public async Task SignInWithTicketStoreWorks()
     {
@@ -448,6 +491,119 @@ public class CookieTests : SharedAuthenticationTests<CookieAuthenticationOptions
         // than the pre-signout Alice identity.
         var transaction3 = await SendAsync(server, "http://example.com/me/Cookies", authCookieNameValue);
         Assert.Equal("Bob", FindClaimValue(transaction3, ClaimTypes.Name));
+    }
+
+    [Theory]
+    [InlineData(true)]
+    [InlineData(false)]
+    public async Task SignInRotatesSessionKeyOnlyWhenRequested(bool rotate)
+    {
+        var sessionStore = new TestTicketStore();
+        using var host = await CreateHostWithServices(s =>
+        {
+            s.AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme).AddCookie(o =>
+            {
+                o.TimeProvider = _timeProvider;
+                o.SessionStore = sessionStore;
+            });
+        }, async context =>
+        {
+            if (context.Request.Query.ContainsKey("signinasbob"))
+            {
+                // Sign in a different principal without signing out first, which is what
+                // ASP.NET Core Identity does on password sign-in.
+                var bob = new ClaimsIdentity(new GenericIdentity("Bob", "Cookies"));
+                await context.SignInAsync(
+                    CookieAuthenticationDefaults.AuthenticationScheme,
+                    new ClaimsPrincipal(bob),
+                    new AuthenticationProperties { RotateSessionKey = rotate });
+            }
+            else
+            {
+                await SignInAsAlice(context);
+            }
+        });
+
+        using var server = host.GetTestServer();
+
+        // Establish a session as Alice and keep her cookie.
+        var transaction1 = await SendAsync(server, "http://example.com/testpath");
+        var key1 = Assert.Single(sessionStore.Store.Keys);
+
+        // Sign in as Bob while Alice's cookie is attached to the request.
+        var transaction2 = await SendAsync(server, "http://example.com/testpath?signinasbob=1", transaction1.CookieNameValue);
+        var key2 = Assert.Single(sessionStore.Store.Keys);
+
+        if (rotate)
+        {
+            // The incoming session key must not be reused, and the ticket it pointed at must
+            // be gone, so the cookie that came in can no longer reach Bob's ticket.
+            // See https://github.com/dotnet/aspnetcore/issues/47503.
+            Assert.NotEqual(key1, key2);
+
+            var transaction3 = await SendAsync(server, "http://example.com/me/Cookies", transaction1.CookieNameValue);
+            Assert.Null(FindClaimValue(transaction3, ClaimTypes.Name));
+        }
+        else
+        {
+            // Default behavior is unchanged: the key is renewed in place so that concurrent
+            // requests holding the same cookie keep working.
+            // See https://github.com/dotnet/aspnetcore/issues/22135.
+            Assert.Equal(key1, key2);
+
+            var transaction3 = await SendAsync(server, "http://example.com/me/Cookies", transaction1.CookieNameValue);
+            Assert.Equal("Bob", FindClaimValue(transaction3, ClaimTypes.Name));
+        }
+
+        // Either way the cookie handed back by the sign-in response authenticates as Bob.
+        var transaction4 = await SendAsync(server, "http://example.com/me/Cookies", transaction2.CookieNameValue);
+        Assert.Equal("Bob", FindClaimValue(transaction4, ClaimTypes.Name));
+    }
+
+    [Fact]
+    public async Task SignInRotatesSessionKeyWhenStoreRecyclesReleasedKeys()
+    {
+        var sessionStore = new KeyReusingTestTicketStore();
+        using var host = await CreateHostWithServices(s =>
+        {
+            s.AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme).AddCookie(o =>
+            {
+                o.TimeProvider = _timeProvider;
+                o.SessionStore = sessionStore;
+            });
+        }, async context =>
+        {
+            if (context.Request.Query.ContainsKey("signinasbob"))
+            {
+                var bob = new ClaimsIdentity(new GenericIdentity("Bob", "Cookies"));
+                await context.SignInAsync(
+                    CookieAuthenticationDefaults.AuthenticationScheme,
+                    new ClaimsPrincipal(bob),
+                    new AuthenticationProperties { RotateSessionKey = true });
+            }
+            else
+            {
+                await SignInAsAlice(context);
+            }
+        });
+
+        using var server = host.GetTestServer();
+
+        var transaction1 = await SendAsync(server, "http://example.com/testpath");
+        var key1 = Assert.Single(sessionStore.Store.Keys);
+
+        var transaction2 = await SendAsync(server, "http://example.com/testpath?signinasbob=1", transaction1.CookieNameValue);
+        var key2 = Assert.Single(sessionStore.Store.Keys);
+
+        // The store hands released keys back out, so rotation must store the new ticket while the
+        // incoming key is still reserved rather than freeing that key first.
+        Assert.NotEqual(key1, key2);
+
+        var transaction3 = await SendAsync(server, "http://example.com/me/Cookies", transaction1.CookieNameValue);
+        Assert.Null(FindClaimValue(transaction3, ClaimTypes.Name));
+
+        var transaction4 = await SendAsync(server, "http://example.com/me/Cookies", transaction2.CookieNameValue);
+        Assert.Equal("Bob", FindClaimValue(transaction4, ClaimTypes.Name));
     }
 
     [Fact]
