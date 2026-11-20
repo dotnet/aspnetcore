@@ -9,6 +9,18 @@ namespace Microsoft.AspNetCore.Http;
 public class HostStringTests
 {
     [Theory]
+    [InlineData("::1", "[::1]")]
+    [InlineData("2001:db8:a0b:12f0::1", "[2001:db8:a0b:12f0::1]")]
+    [InlineData("::", "[::]")]
+    public void ToUriComponent_AddsMissingIpv6Brackets(string value, string expected)
+    {
+        var host = new HostString(value);
+
+        Assert.Equal(expected, host.ToUriComponent());
+        Assert.Equal(expected, host.ToString());
+    }
+
+    [Theory]
     [InlineData(0)]
     [InlineData(-1)]
     public void CtorThrows_IfPortIsNotGreaterThanZero(int port)
