@@ -1643,7 +1643,7 @@ public class DfaMatcherBuilderTest
         // Assert
         Assert.NotNull(root);
         var count = 0;
-        root.Visit(node => count++);
+        DfaMatcherBuilder.VisitGraph(root, node => count++);
 
         // Without filtering it would have resulted in millions of nodes, several GB of memory and minutes
         Assert.Equal(759, count);
@@ -2163,10 +2163,10 @@ public class DfaMatcherBuilderTest
         // Assert
         Assert.NotNull(root);
         var count = 0;
-        root.Visit(node => count++);
+        DfaMatcherBuilder.VisitGraph(root, node => count++);
 
         // Without filtering it would have resulted in several order of magnitudes more nodes and much more memory
-        Assert.Equal(2964, count);
+        Assert.Equal(1912, count);
     }
 
     // Another regression test based on OData models
@@ -2381,10 +2381,10 @@ public class DfaMatcherBuilderTest
         // Assert
         Assert.NotNull(root);
         var count = 0;
-        root.Visit(node => count++);
+        DfaMatcherBuilder.VisitGraph(root, node => count++);
 
         // Without filtering it would have resulted in several order of magnitudes more nodes and much more memory
-        Assert.Equal(1453, count);
+        Assert.Equal(571, count);
     }
 
     // Regression test for https://github.com/dotnet/aspnetcore/issues/16579
@@ -3621,9 +3621,178 @@ public class DfaMatcherBuilderTest
             => parameterPolicy is StatefulRouteConstraint ? new StatefulRouteConstraint() : _inner.Create(parameter, parameterPolicy);
     }
 
+    [Fact]
+    public async Task Build_SharesParameterSubtreeBelowLiteralSiblings()
+    {
+        var literal = CreateEndpoint("/a/items/details");
+        var otherLiteral = CreateEndpoint("/b/index");
+        var parameter = CreateEndpoint("/{prefix}/items/info/{*rest}", metadata: new[] { new HttpMethodMetadata(new[] { "GET" }) });
+        var builder = new DfaMatcherBuilder(
+            NullLoggerFactory.Instance,
+            CreateParameterPolicyFactory(),
+            new DefaultEndpointSelector(),
+            new MatcherPolicy[] { new HttpMethodMatcherPolicy() });
+        builder.AddEndpoint(literal);
+        builder.AddEndpoint(otherLiteral);
+        builder.AddEndpoint(parameter);
+
+        var graph = builder.BuildDfaTree();
+        var parameterItems = graph.Parameters.Literals["items"];
+        Assert.Same(parameterItems, graph.Literals["b"].Literals["items"]);
+        Assert.NotSame(parameterItems, graph.Literals["a"].Literals["items"]);
+        Assert.Same(parameterItems.Literals["info"], graph.Literals["a"].Literals["items"].Literals["info"]);
+
+        var matcher = Assert.IsType<DfaMatcher>(builder.Build());
+
+        var parameterCandidates = FindCandidates(matcher, "/other/items/info/more/segments");
+        Assert.Same(parameter, Assert.Single(parameterCandidates).Endpoint);
+        Assert.Same(parameterCandidates, FindCandidates(matcher, "/a/items/info/more/segments"));
+        Assert.Same(parameterCandidates, FindCandidates(matcher, "/b/items/info/more/segments"));
+        Assert.Same(literal, Assert.Single(FindCandidates(matcher, "/a/items/details")).Endpoint);
+        Assert.Empty(FindCandidates(matcher, "/b/items/details"));
+        Assert.Same(parameter, Assert.Single(FindCandidates(matcher, "/b/items/info")).Endpoint);
+        Assert.Empty(FindCandidates(matcher, "/b/missing"));
+
+        var context = new DefaultHttpContext();
+        context.Request.Method = "GET";
+        context.Request.Path = "/b/items/info/more/segments";
+        await matcher.MatchAsync(context);
+
+        Assert.Same(parameter, context.GetEndpoint());
+        Assert.Equal("b", context.Request.RouteValues["prefix"]);
+        Assert.Equal("more/segments", context.Request.RouteValues["rest"]);
+    }
+
+    [Fact]
+    public void Build_SharesSubtreesWithTheSameRouteWork()
+    {
+        var literal = CreateEndpoint("/a/items/info");
+        var otherLiteral = CreateEndpoint("/b/index");
+        var parameter = CreateEndpoint("/{prefix}/items/info");
+        var fallback = CreateEndpoint("/{prefix}/items/{item}");
+        var builder = CreateDfaMatcherBuilder();
+        builder.AddEndpoint(literal);
+        builder.AddEndpoint(otherLiteral);
+        builder.AddEndpoint(parameter);
+        builder.AddEndpoint(fallback);
+
+        var graph = builder.BuildDfaTree();
+        var parameterItems = graph.Parameters.Literals["items"];
+        Assert.Same(parameterItems, graph.Literals["b"].Literals["items"]);
+        Assert.NotSame(parameterItems, graph.Literals["a"].Literals["items"]);
+
+        var matcher = Assert.IsType<DfaMatcher>(builder.Build());
+        var candidates = FindCandidates(matcher, "/other/items/info");
+        Assert.Equal(new Endpoint[] { parameter, fallback }, candidates.Select(c => c.Endpoint));
+        Assert.Same(candidates, FindCandidates(matcher, "/b/items/info"));
+        Assert.Equal(new Endpoint[] { literal, parameter, fallback }, FindCandidates(matcher, "/a/items/info").Select(c => c.Endpoint));
+        Assert.Same(fallback, Assert.Single(FindCandidates(matcher, "/a/items/other")).Endpoint);
+    }
+
+    [Fact]
+    public void BuildDfaTree_SharesChildrenWithCustomNodeBuilderPolicy()
+    {
+        var literal = CreateEndpoint("/a/index");
+        var parameter = CreateEndpoint("/{prefix}/items", metadata: new[] { new TestMetadata1(state: 1) });
+        var builder = CreateDfaMatcherBuilder(new TestMetadata1MatcherPolicy());
+        builder.AddEndpoint(literal);
+        builder.AddEndpoint(parameter);
+
+        var graph = builder.BuildDfaTree();
+        var items = graph.Parameters.Literals["items"];
+        Assert.Same(items, graph.Literals["a"].Literals["items"]);
+        Assert.Same(parameter, Assert.Single(items.PolicyEdges[1].Matches));
+    }
+
+    [Fact]
+    public void Build_DoesNotShareSubtreesWithStatefulConstraints()
+    {
+        var literal = CreateEndpoint("/a/index");
+        var parameter = CreateEndpoint("/{prefix:stateful}/items");
+        var builder = CreateDfaMatcherBuilder();
+        builder.AddEndpoint(literal);
+        builder.AddEndpoint(parameter);
+        var matcher = Assert.IsType<DfaMatcher>(builder.Build());
+
+        var literalCandidate = Assert.Single(FindCandidates(matcher, "/a/items"));
+        var parameterCandidate = Assert.Single(FindCandidates(matcher, "/other/items"));
+        Assert.Same(parameter, literalCandidate.Endpoint);
+        Assert.Same(parameter, parameterCandidate.Endpoint);
+        Assert.NotSame(Assert.Single(literalCandidate.Constraints).Value, Assert.Single(parameterCandidate.Constraints).Value);
+    }
+
+    [Fact]
+    public void BuildDfaTree_SharesComplexSegmentBelowDistinctParents()
+    {
+        var featured = CreateEndpoint("/store/inventory/atlas-deluxe/details");
+        var details = CreateEndpoint("/{tenant}/inventory/{sku}-{edition}/details");
+        var stock = CreateEndpoint("/{tenant}/inventory/{sku}-{edition}/stock");
+        var builder = CreateDfaMatcherBuilder();
+        builder.AddEndpoint(featured);
+        builder.AddEndpoint(details);
+        builder.AddEndpoint(stock);
+
+        var graph = builder.BuildDfaTree();
+
+        var storeInventory = graph.Literals["store"].Literals["inventory"];
+        var genericInventory = graph.Parameters.Literals["inventory"];
+        Assert.NotSame(storeInventory, genericInventory);
+
+        var sharedComplexSegment = genericInventory.Parameters;
+        Assert.Same(sharedComplexSegment, storeInventory.Parameters);
+        Assert.Same(details, Assert.Single(sharedComplexSegment.Literals["details"].Matches));
+        Assert.Same(stock, Assert.Single(sharedComplexSegment.Literals["stock"].Matches));
+        Assert.Equal(new Endpoint[] { featured, details }, storeInventory.Literals["atlas-deluxe"].Literals["details"].Matches);
+    }
+
+    [Fact]
+    public void BuildDfaTree_DoesNotShareConstrainedParameterWorkWithMatchingLiteral()
+    {
+        var lines = CreateEndpoint("/orders/{id:int}/lines");
+        var builder = CreateDfaMatcherBuilder();
+        builder.AddEndpoint(CreateEndpoint("/orders/42/receipt"));
+        builder.AddEndpoint(CreateEndpoint("/orders/current/receipt"));
+        builder.AddEndpoint(lines);
+
+        var orders = builder.BuildDfaTree().Literals["orders"];
+
+        var literalLines = orders.Literals["42"].Literals["lines"];
+        var parameterLines = orders.Parameters.Literals["lines"];
+        Assert.NotSame(literalLines, parameterLines);
+        Assert.Same(lines, Assert.Single(literalLines.Matches));
+        Assert.Same(lines, Assert.Single(parameterLines.Matches));
+        Assert.DoesNotContain("lines", orders.Literals["current"].Literals.Keys);
+    }
+
+    [Fact]
+    public void BuildDfaTree_DoesNotShareConstrainedCatchAllWorkAcrossPrefixes()
+    {
+        var index = CreateEndpoint("/library/{shelf}/archive/pages/index");
+        var page = CreateEndpoint("/library/{shelf}/archive/pages/{**page:nonfile}");
+        var builder = CreateDfaMatcherBuilder();
+        builder.AddEndpoint(CreateEndpoint("/library/local/pin"));
+        builder.AddEndpoint(index);
+        builder.AddEndpoint(page);
+
+        var library = builder.BuildDfaTree().Literals["library"];
+
+        var localPages = library.Literals["local"].Literals["archive"].Literals["pages"];
+        var genericPages = library.Parameters.Literals["archive"].Literals["pages"];
+        Assert.NotSame(localPages, genericPages);
+        Assert.NotSame(localPages.Literals["index"], genericPages.Literals["index"]);
+        Assert.Equal(new Endpoint[] { index, page }, localPages.Literals["index"].Matches);
+        Assert.Equal(new Endpoint[] { index, page }, genericPages.Literals["index"].Matches);
+
+        Assert.NotSame(localPages.CatchAll, genericPages.CatchAll);
+        Assert.Same(page, Assert.Single(localPages.CatchAll.Matches));
+        Assert.Same(page, Assert.Single(genericPages.CatchAll.Matches));
+        Assert.Same(localPages.CatchAll, localPages.CatchAll.Parameters);
+    }
+
     private static Candidate[] FindCandidates(DfaMatcher matcher, string path)
     {
         var httpContext = new DefaultHttpContext();
+        httpContext.Request.Method = "GET";
         httpContext.Request.Path = path;
         var buffer = new PathSegment[10];
         var count = FastPathTokenizer.Tokenize(path, buffer);
