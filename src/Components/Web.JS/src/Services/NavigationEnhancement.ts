@@ -332,6 +332,7 @@ export async function performEnhancedPageLoad(internalDestinationHref: string, i
 
           synchronizeAttributes(document.documentElement, parsedHtml.documentElement);
           synchronizeDomContent(document.documentElement, parsedHtml.documentElement, /* preserveExisting */ false);
+          replaceDocumentLevelComments(parsedHtml);
         } else {
           synchronizeDomContent(document, parsedHtml);
         }
@@ -491,4 +492,19 @@ function retryEnhancedNavAsFullPageLoad(internalDestinationHref: string, warn = 
   }
   history.replaceState(null, '', internalDestinationHref + '?');
   location.replace(internalDestinationHref);
+}
+
+// Comments after </html>, such as persisted component state, are children of the document rather than <html>.
+function replaceDocumentLevelComments(newDocument: Document) {
+  for (const node of Array.from(document.childNodes)) {
+    if (node.nodeType === Node.COMMENT_NODE) {
+      document.removeChild(node);
+    }
+  }
+
+  for (const node of Array.from(newDocument.childNodes)) {
+    if (node.nodeType === Node.COMMENT_NODE) {
+      document.appendChild(document.importNode(node, true));
+    }
+  }
 }

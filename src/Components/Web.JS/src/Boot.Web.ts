@@ -91,8 +91,9 @@ function boot(options?: Partial<WebStartOptions>) : Promise<void> {
   };
 
   attachComponentDescriptorHandler(rootComponentManager);
-  attachStreamingRenderingListener(options?.ssr, navigationEnhancementCallbacks);
+  // Attach navigation first, since defining the streaming element can synchronously process buffered batches.
   attachProgressivelyEnhancedNavigationListener(navigationEnhancementCallbacks);
+  attachStreamingRenderingListener(options?.ssr, navigationEnhancementCallbacks);
 
   enableFocusOnNavigate(jsEventRegistry);
 
@@ -142,9 +143,24 @@ function onInitialDomContentLoaded(options: Partial<WebStartOptions>) {
     },
   });
   const initializerCircuitOptions = new Proxy(initialCircuitOptions, {
+    get(target, property, receiver) {
+      const value = Reflect.get(target, property, receiver);
+      return property === 'reconnectionOptions' && value
+        ? new Proxy(value, {
+          set(reconnectionTarget, reconnectionProperty, reconnectionValue) {
+            if (reconnectionProperty === 'retryIntervalMilliseconds') {
+              initialOptions.reconnectionRetryIntervalMilliseconds = reconnectionValue;
+            }
+            return Reflect.set(reconnectionTarget, reconnectionProperty, reconnectionValue);
+          },
+        })
+        : value;
+    },
     set(target, property, value) {
       if (property === 'logLevel') {
         initialOptions.circuitLogLevel = value;
+      } else if (property === 'reconnectionOptions' && value?.retryIntervalMilliseconds !== undefined) {
+        initialOptions.reconnectionRetryIntervalMilliseconds = value.retryIntervalMilliseconds;
       }
       return Reflect.set(target, property, value);
     },
