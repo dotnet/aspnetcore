@@ -101,13 +101,8 @@ internal static class MvcFacts
 
     private static INamedTypeSymbol? GetDeclaringType(IMethodSymbol method)
     {
-        while (method.IsOverride)
+        while (method.IsOverride && method.OverriddenMethod != null)
         {
-            if (method.OverriddenMethod == null)
-            {
-                return null;
-            }
-
             method = method.OverriddenMethod;
         }
 
