@@ -428,6 +428,40 @@ public class ChunkedRequestTests : LoggedTest
     }
 
     [Fact]
+    public async Task TrailingHeaderColonInValueIsParsed()
+    {
+        string trailerValue = null;
+        var testContext = new TestServiceContext(LoggerFactory);
+        await using (var server = new TestServer(async httpContext =>
+        {
+            await httpContext.Request.Body.CopyToAsync(Stream.Null);
+            trailerValue = httpContext.Request.GetTrailer("X-Trailer-Header");
+        }, testContext))
+        {
+            using (var connection = server.CreateConnection())
+            {
+                await connection.Send(
+                    "POST / HTTP/1.1",
+                    "Host:",
+                    "Transfer-Encoding: chunked",
+                    "",
+                    "0",
+                    "X-Trailer-Header: value:part",
+                    "",
+                    "");
+                await connection.Receive(
+                    "HTTP/1.1 200 OK",
+                    "Content-Length: 0",
+                    $"Date: {testContext.DateHeaderValue}",
+                    "",
+                    "");
+            }
+
+            Assert.Equal("value:part", trailerValue);
+        }
+    }
+
+    [Fact]
     public async Task TrailingHeadersAreParsedWithPipe()
     {
         var requestCount = 10;
@@ -729,6 +763,64 @@ public class ChunkedRequestTests : LoggedTest
                 await connection.Send(fullRequest);
                 await connection.Receive(expectedFullResponse);
             }
+        }
+    }
+
+    [Theory]
+    [InlineData("X-Trailer-Header: va\0lue")]
+    [InlineData("X-Trailer-Header: val\rue")]
+    [InlineData("X-Trailer-Header: valu\ne")]
+    [InlineData("X-Tra\0iler-Header: value")]
+    [InlineData("X-Trail\ner-Header: value")]
+    [InlineData("X-Tr\railer-Header: value")]
+    [InlineData("X-T\u0080railer-Header: value")]
+    [InlineData("X-Trailer-Header: va\u0080lue")]
+    [InlineData(": value")]
+    public async Task InvalidTrailingHeaders_ConnectionClosed(string trailerHeader)
+    {
+        var requestCount = 0;
+        var testContext = new TestServiceContext(LoggerFactory);
+        await using (var server = new TestServer(httpContext =>
+        {
+            requestCount++;
+            return Task.CompletedTask;
+        }, testContext))
+        {
+            IEnumerable<string> sendSequence = new string[] {
+                    "POST / HTTP/1.1",
+                    "Host:",
+                    "Transfer-Encoding: chunked",
+                    "Trailer: X-Trailer-Header",
+                    "",
+                    "A",
+                    $"HelloChunk",
+                    "0",
+                    string.Concat(trailerHeader),
+                    "" };
+
+            sendSequence = sendSequence.Concat(new string[] {
+                    "POST / HTTP/1.1",
+                    "Host:",
+                    "Content-Length: 7",
+                    "",
+                    "Goodbye"
+                });
+
+            var fullRequest = sendSequence.ToArray();
+
+            using (var connection = server.CreateConnection())
+            {
+                await connection.Send(fullRequest);
+                // Still get a 200 because the bad trailer headers aren't processed until after the response is started
+                // but the connection should be closed so further processing doesn't occur.
+                await connection.ReceiveEnd("HTTP/1.1 200 OK",
+                    "Content-Length: 0",
+                    $"Date: {testContext.DateHeaderValue}",
+                    "",
+                    "");
+            }
+
+            Assert.Equal(1, requestCount);
         }
     }
 
