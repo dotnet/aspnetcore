@@ -254,10 +254,14 @@ file abstract class ValidatableTypeInfo : ValidatableInfo, global::Microsoft.Ext
 
     private static void HandleValidationResultForValidatableObject(global::System.ComponentModel.DataAnnotations.ValidationResult validationResult, string errorPrefix, object? value, global::Microsoft.Extensions.Validation.ValidateContext context)
     {
-        if (validationResult != global::System.ComponentModel.DataAnnotations.ValidationResult.Success && validationResult.ErrorMessage is not null)
+        if (validationResult != global::System.ComponentModel.DataAnnotations.ValidationResult.Success)
         {
-            // Create a validation error for each member name that is provided
+            // Fall back to a default message when the validatable object does not provide one so
+            // that a non-success result is never silently dropped.
             // We don't support automatic localization of IValidatableObject messages
+            var errorMessage = EnsureNonEmptyErrorMessage(validationResult.ErrorMessage);
+
+            // Create a validation error for each member name that is provided
             foreach (var memberName in validationResult.MemberNames)
             {
                 var key = string.IsNullOrEmpty(errorPrefix) ? memberName : $"{errorPrefix}.{memberName}";
@@ -265,7 +269,7 @@ file abstract class ValidatableTypeInfo : ValidatableInfo, global::Microsoft.Ext
                 {
                     Name = memberName,
                     Path = key,
-                    ErrorMessage = validationResult.ErrorMessage,
+                    ErrorMessage = errorMessage,
                     Container = value,
                 };
                 context.AddValidationError(errorContext);
@@ -278,7 +282,7 @@ file abstract class ValidatableTypeInfo : ValidatableInfo, global::Microsoft.Ext
                 {
                     Name = string.Empty,
                     Path = string.Empty,
-                    ErrorMessage = validationResult.ErrorMessage,
+                    ErrorMessage = errorMessage,
                     Container = value,
                 };
                 context.AddValidationError(errorContext);
@@ -346,18 +350,15 @@ file abstract class ValidatableTypeInfo : ValidatableInfo, global::Microsoft.Ext
                 attribute,
                 result);
 
-            if (errorMessage is not null)
+            var key = string.IsNullOrEmpty(context.CurrentValidationPath) ? memberName : $"{context.CurrentValidationPath}.{memberName}";
+            var errorContext = new global::Microsoft.Extensions.Validation.ValidationError()
             {
-                var key = string.IsNullOrEmpty(context.CurrentValidationPath) ? memberName : $"{context.CurrentValidationPath}.{memberName}";
-                var errorContext = new global::Microsoft.Extensions.Validation.ValidationError()
-                {
-                    Name = memberName,
-                    Path = key,
-                    ErrorMessage = errorMessage,
-                    Container = container,
-                };
-                context.AddValidationError(errorContext);
-            }
+                Name = memberName,
+                Path = key,
+                ErrorMessage = errorMessage,
+                Container = container,
+            };
+            context.AddValidationError(errorContext);
         }
 
         if (!global::System.Linq.Enumerable.Any(result.MemberNames))
@@ -371,17 +372,14 @@ file abstract class ValidatableTypeInfo : ValidatableInfo, global::Microsoft.Ext
                 attribute,
                 result);
 
-            if (errorMessage is not null)
+            var errorContext = new global::Microsoft.Extensions.Validation.ValidationError()
             {
-                var errorContext = new global::Microsoft.Extensions.Validation.ValidationError()
-                {
-                    Name = string.Empty,
-                    Path = context.CurrentValidationPath,
-                    ErrorMessage = errorMessage,
-                    Container = container,
-                };
-                context.AddValidationError(errorContext);
-            }
+                Name = string.Empty,
+                Path = context.CurrentValidationPath,
+                ErrorMessage = errorMessage,
+                Container = container,
+            };
+            context.AddValidationError(errorContext);
         }
     }
 }

@@ -505,7 +505,7 @@ namespace Microsoft.Extensions.Validation.Generated
             return false;
         }
 
-        private protected static string? ResolveAttributeErrorMessage(
+        private protected static string ResolveAttributeErrorMessage(
             global::Microsoft.Extensions.Validation.ValidateContext context,
             string? memberName,
             string displayName,
@@ -515,12 +515,12 @@ namespace Microsoft.Extensions.Validation.Generated
         {
             if (attribute.ErrorMessageResourceType is not null)
             {
-                return result.ErrorMessage;
+                return EnsureNonEmptyErrorMessage(result.ErrorMessage);
             }
 
             if (context.ServiceProvider?.GetService(typeof(global::Microsoft.Extensions.Localization.IStringLocalizerFactory)) is not global::Microsoft.Extensions.Localization.IStringLocalizerFactory localizerFactory)
             {
-                return result.ErrorMessage;
+                return EnsureNonEmptyErrorMessage(result.ErrorMessage);
             }
 
             var localizer = LocalizationHelpers.CreateStringLocalizer(context, declaringType, localizerFactory);
@@ -528,11 +528,19 @@ namespace Microsoft.Extensions.Validation.Generated
             var localizedTemplate = LocalizationHelpers.FindLocalizedTemplate(localizer, attribute, memberName, declaringType);
             if (localizedTemplate is null)
             {
-                return result.ErrorMessage;
+                return EnsureNonEmptyErrorMessage(result.ErrorMessage);
             }
 
-            return attribute.FormatMessage(localizedTemplate, displayName);
+            return EnsureNonEmptyErrorMessage(attribute.FormatMessage(localizedTemplate, displayName));
         }
+
+        // A non-success validation result must always surface with a non-empty message. Some sources
+        // (for example an IValidatableObject or a ValidationAttribute.FormatMessage override) can return
+        // a null or empty message, and dropping the error in that case would fail-open.
+        private protected const string DefaultValidationErrorMessage = "The value is invalid.";
+
+        private protected static string EnsureNonEmptyErrorMessage(string? errorMessage)
+            => string.IsNullOrEmpty(errorMessage) ? DefaultValidationErrorMessage : errorMessage;
 
         private protected async global::System.Threading.Tasks.Task ValidateAttributesAsync(
             global::Microsoft.Extensions.Validation.ValidateContext context,
@@ -1011,10 +1019,14 @@ namespace Microsoft.Extensions.Validation.Generated
 
         private static void HandleValidationResultForValidatableObject(global::System.ComponentModel.DataAnnotations.ValidationResult validationResult, string errorPrefix, object? value, global::Microsoft.Extensions.Validation.ValidateContext context)
         {
-            if (validationResult != global::System.ComponentModel.DataAnnotations.ValidationResult.Success && validationResult.ErrorMessage is not null)
+            if (validationResult != global::System.ComponentModel.DataAnnotations.ValidationResult.Success)
             {
-                // Create a validation error for each member name that is provided
+                // Fall back to a default message when the validatable object does not provide one so
+                // that a non-success result is never silently dropped.
                 // We don't support automatic localization of IValidatableObject messages
+                var errorMessage = EnsureNonEmptyErrorMessage(validationResult.ErrorMessage);
+
+                // Create a validation error for each member name that is provided
                 foreach (var memberName in validationResult.MemberNames)
                 {
                     var key = string.IsNullOrEmpty(errorPrefix) ? memberName : $"{errorPrefix}.{memberName}";
@@ -1022,7 +1034,7 @@ namespace Microsoft.Extensions.Validation.Generated
                     {
                         Name = memberName,
                         Path = key,
-                        ErrorMessage = validationResult.ErrorMessage,
+                        ErrorMessage = errorMessage,
                         Container = value,
                     };
                     context.AddValidationError(errorContext);
@@ -1035,7 +1047,7 @@ namespace Microsoft.Extensions.Validation.Generated
                     {
                         Name = string.Empty,
                         Path = string.Empty,
-                        ErrorMessage = validationResult.ErrorMessage,
+                        ErrorMessage = errorMessage,
                         Container = value,
                     };
                     context.AddValidationError(errorContext);
@@ -1103,18 +1115,15 @@ namespace Microsoft.Extensions.Validation.Generated
                     attribute,
                     result);
 
-                if (errorMessage is not null)
+                var key = string.IsNullOrEmpty(context.CurrentValidationPath) ? memberName : $"{context.CurrentValidationPath}.{memberName}";
+                var errorContext = new global::Microsoft.Extensions.Validation.ValidationError()
                 {
-                    var key = string.IsNullOrEmpty(context.CurrentValidationPath) ? memberName : $"{context.CurrentValidationPath}.{memberName}";
-                    var errorContext = new global::Microsoft.Extensions.Validation.ValidationError()
-                    {
-                        Name = memberName,
-                        Path = key,
-                        ErrorMessage = errorMessage,
-                        Container = container,
-                    };
-                    context.AddValidationError(errorContext);
-                }
+                    Name = memberName,
+                    Path = key,
+                    ErrorMessage = errorMessage,
+                    Container = container,
+                };
+                context.AddValidationError(errorContext);
             }
 
             if (!global::System.Linq.Enumerable.Any(result.MemberNames))
@@ -1128,17 +1137,14 @@ namespace Microsoft.Extensions.Validation.Generated
                     attribute,
                     result);
 
-                if (errorMessage is not null)
+                var errorContext = new global::Microsoft.Extensions.Validation.ValidationError()
                 {
-                    var errorContext = new global::Microsoft.Extensions.Validation.ValidationError()
-                    {
-                        Name = string.Empty,
-                        Path = context.CurrentValidationPath,
-                        ErrorMessage = errorMessage,
-                        Container = container,
-                    };
-                    context.AddValidationError(errorContext);
-                }
+                    Name = string.Empty,
+                    Path = context.CurrentValidationPath,
+                    ErrorMessage = errorMessage,
+                    Container = container,
+                };
+                context.AddValidationError(errorContext);
             }
         }
     }
@@ -1433,17 +1439,14 @@ namespace Microsoft.Extensions.Validation.Generated
                 attribute,
                 result);
 
-            if (errorMessage is not null)
+            var errorContext = new global::Microsoft.Extensions.Validation.ValidationError()
             {
-                var errorContext = new global::Microsoft.Extensions.Validation.ValidationError()
-                {
-                    Name = Name,
-                    Path = context.CurrentValidationPath,
-                    ErrorMessage = errorMessage,
-                    Container = container,
-                };
-                context.AddValidationError(errorContext);
-            }
+                Name = Name,
+                Path = context.CurrentValidationPath,
+                ErrorMessage = errorMessage,
+                Container = container,
+            };
+            context.AddValidationError(errorContext);
         }
     }
 
@@ -1636,18 +1639,15 @@ namespace Microsoft.Extensions.Validation.Generated
                 attribute,
                 result);
 
-            if (errorMessage is not null)
+            var key = string.IsNullOrEmpty(context.CurrentValidationPath) ? Name : $"{context.CurrentValidationPath}.{Name}";
+            var errorContext = new global::Microsoft.Extensions.Validation.ValidationError()
             {
-                var key = string.IsNullOrEmpty(context.CurrentValidationPath) ? Name : $"{context.CurrentValidationPath}.{Name}";
-                var errorContext = new global::Microsoft.Extensions.Validation.ValidationError()
-                {
-                    Name = Name,
-                    Path = key,
-                    ErrorMessage = errorMessage,
-                    Container = null,
-                };
-                context.AddValidationError(errorContext);
-            }
+                Name = Name,
+                Path = key,
+                ErrorMessage = errorMessage,
+                Container = null,
+            };
+            context.AddValidationError(errorContext);
         }
     }
 

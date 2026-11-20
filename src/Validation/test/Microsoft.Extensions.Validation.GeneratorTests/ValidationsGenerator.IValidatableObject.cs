@@ -382,4 +382,104 @@ public class NestedClass : IValidatableObject
             }
         });
     }
+
+    [Fact]
+    public async Task EmitsFallbackMessageWhenIValidatableObjectMessageIsNullOrEmpty()
+    {
+        var source = """
+using System;
+using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
+using System.Runtime.CompilerServices;
+using System.Threading;
+using System.Threading.Tasks;
+using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Http;
+using Microsoft.Extensions.Validation;
+using Microsoft.AspNetCore.Routing;
+using Microsoft.Extensions.DependencyInjection;
+
+var builder = WebApplication.CreateBuilder();
+builder.Services.AddValidation();
+
+var app = builder.Build();
+
+app.MapPost("/null-message", (NullMessageValidatable model) => Results.Ok(model));
+app.MapPost("/empty-message", (EmptyMessageValidatable model) => Results.Ok(model));
+app.MapPost("/member-null-message", (MemberMessageValidatable model) => Results.Ok(model));
+app.MapPost("/async-null-message", (AsyncNullMessageValidatable model) => Results.Ok(model));
+
+app.Run();
+
+public class NullMessageValidatable : IValidatableObject
+{
+    public string? Value { get; set; }
+
+    public IEnumerable<ValidationResult> Validate(ValidationContext validationContext)
+    {
+        yield return new ValidationResult(null);
+    }
+}
+
+public class EmptyMessageValidatable : IValidatableObject
+{
+    public string? Value { get; set; }
+
+    public IEnumerable<ValidationResult> Validate(ValidationContext validationContext)
+    {
+        yield return new ValidationResult(string.Empty);
+    }
+}
+
+public class MemberMessageValidatable : IValidatableObject
+{
+    public string? Value { get; set; }
+
+    public IEnumerable<ValidationResult> Validate(ValidationContext validationContext)
+    {
+        yield return new ValidationResult(null, [nameof(Value)]);
+    }
+}
+
+public class AsyncNullMessageValidatable : IAsyncValidatableObject
+{
+    public string? Value { get; set; }
+
+    public IEnumerable<ValidationResult> Validate(ValidationContext validationContext) => throw new NotImplementedException();
+
+    public async IAsyncEnumerable<ValidationResult> ValidateAsync(ValidationContext validationContext, [EnumeratorCancellation] CancellationToken cancellationToken = default)
+    {
+        await Task.Yield();
+        yield return new ValidationResult(null);
+    }
+}
+""";
+
+        await Verify(source, out var compilation);
+
+        const string fallbackMessage = "The value is invalid.";
+
+        await AssertFallbackError("/null-message", expectedKey: string.Empty);
+        await AssertFallbackError("/empty-message", expectedKey: string.Empty);
+        await AssertFallbackError("/member-null-message", expectedKey: "Value");
+        await AssertFallbackError("/async-null-message", expectedKey: string.Empty);
+
+        async Task AssertFallbackError(string route, string expectedKey)
+        {
+            await VerifyEndpoint(compilation, route, async (endpoint, serviceProvider) =>
+            {
+                var httpContext = CreateHttpContextWithPayload("""{ "Value": "anything" }""", serviceProvider);
+
+                await endpoint.RequestDelegate(httpContext);
+
+                var problemDetails = await AssertBadRequest(httpContext);
+                Assert.Collection(problemDetails.Errors,
+                    error =>
+                    {
+                        Assert.Equal(expectedKey, error.Key);
+                        Assert.Collection(error.Value, msg => Assert.Equal(fallbackMessage, msg));
+                    });
+            });
+        }
+    }
 }
