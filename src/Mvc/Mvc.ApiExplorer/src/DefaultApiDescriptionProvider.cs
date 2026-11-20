@@ -4,6 +4,7 @@
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
+using System.Text;
 using Microsoft.AspNetCore.Http.Metadata;
 using Microsoft.AspNetCore.Mvc.Abstractions;
 using Microsoft.AspNetCore.Mvc.ActionConstraints;
@@ -107,7 +108,7 @@ public class DefaultApiDescriptionProvider : IApiDescriptionProvider
             HttpMethod = httpMethod,
             RelativePath = GetRelativePath(parsedTemplate),
             RoutePattern = action.AttributeRouteInfo?.Template is not null
-                ? RoutePatternFactory.Parse(action.AttributeRouteInfo.Template)
+                ? RoutePatternFactory.Parse(LowercaseRouteTemplateLiterals(action.AttributeRouteInfo.Template))
                 : null,
         };
 
@@ -429,6 +430,54 @@ public class DefaultApiDescriptionProvider : IApiDescriptionProvider
         }
 
         return string.Join("/", segments);
+    }
+
+    private string LowercaseRouteTemplateLiterals(string template)
+    {
+        if (!_routeOptions.LowercaseUrls)
+        {
+            return template;
+        }
+
+        // Lowercase only the literal parts of the template so the route pattern matches the
+        // URLs LinkGenerator produces, while preserving parameter names, inline constraints and defaults.
+        // Doubled braces are escapes in the routing grammar, both inside and outside parameters.
+        var builder = new StringBuilder(template.Length);
+        var inParameter = false;
+        for (var i = 0; i < template.Length; i++)
+        {
+            var c = template[i];
+            if (c == '{')
+            {
+                builder.Append(c);
+                if (i + 1 < template.Length && template[i + 1] == '{')
+                {
+                    builder.Append(template[++i]);
+                }
+                else
+                {
+                    inParameter = true;
+                }
+            }
+            else if (c == '}')
+            {
+                builder.Append(c);
+                if (i + 1 < template.Length && template[i + 1] == '}')
+                {
+                    builder.Append(template[++i]);
+                }
+                else
+                {
+                    inParameter = false;
+                }
+            }
+            else
+            {
+                builder.Append(inParameter ? c : char.ToLowerInvariant(c));
+            }
+        }
+
+        return builder.ToString();
     }
 
     private IReadOnlyList<ApiRequestFormat> GetSupportedFormats(MediaTypeCollection contentTypes, Type type)
