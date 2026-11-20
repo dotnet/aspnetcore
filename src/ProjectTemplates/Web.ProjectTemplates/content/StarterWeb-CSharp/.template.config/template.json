@@ -317,6 +317,12 @@
       },
       "replaces": "44300"
     },
+    "StyleBundleName": {
+      "type": "derived",
+      "valueSource": "name",
+      "valueTransform": "identity",
+      "replaces": "StyleBundleName"
+    },
     "OrganizationalAuth": {
       "type": "computed",
       "value": "(auth == \"SingleOrg\" || auth == \"MultiOrg\")"
