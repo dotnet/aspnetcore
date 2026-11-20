@@ -1,4 +1,4 @@
-﻿customElements.define('all-accepted-credentials-signal', class extends HTMLElement {
+customElements.define('all-accepted-credentials-signal', class extends HTMLElement {
     static observedAttributes = ['options'];
 
     connectedCallback() {
