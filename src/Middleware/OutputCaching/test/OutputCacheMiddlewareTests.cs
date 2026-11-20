@@ -1304,6 +1304,52 @@ public abstract class OutputCacheMiddlewareTests
             LoggedMessage.ResponseCached);
     }
 
+    [Fact]
+    public void TryGetRequestPolicies_ReturnsFalse_WhenNoPolicies()
+    {
+        var middleware = TestUtils.CreateTestMiddleware();
+        var httpContext = new DefaultHttpContext();
+
+        Assert.False(middleware.TryGetRequestPolicies(httpContext, out var policies));
+        Assert.Empty(policies);
+    }
+
+    [Fact]
+    public void TryGetRequestPolicies_ReturnsBaseEndpointAndAttributePoliciesInOrder()
+    {
+        var basePolicy1 = new RefreshableCachePolicy();
+        var basePolicy2 = new RefreshableCachePolicy();
+        var endpointPolicy = new RefreshableCachePolicy();
+        var options = new OutputCacheOptions();
+        options.AddBasePolicy(basePolicy1);
+        options.AddBasePolicy(basePolicy2);
+        var middleware = TestUtils.CreateTestMiddleware(options: options);
+
+        var attribute = new OutputCacheAttribute();
+        var httpContext = new DefaultHttpContext();
+        httpContext.SetEndpoint(new Endpoint(null, new EndpointMetadataCollection(endpointPolicy, attribute), "Test"));
+
+        Assert.True(middleware.TryGetRequestPolicies(httpContext, out var policies));
+        Assert.Collection(policies,
+            p => Assert.Same(basePolicy1, p),
+            p => Assert.Same(basePolicy2, p),
+            p => Assert.Same(endpointPolicy, p),
+            p => Assert.Same(attribute.BuildPolicy(), p));
+    }
+
+    [Fact]
+    public void TryGetRequestPolicies_ReturnsEndpointPolicyWithoutBasePolicies()
+    {
+        var endpointPolicy = new RefreshableCachePolicy();
+        var middleware = TestUtils.CreateTestMiddleware();
+
+        var httpContext = new DefaultHttpContext();
+        httpContext.SetEndpoint(new Endpoint(null, new EndpointMetadataCollection(endpointPolicy), "Test"));
+
+        Assert.True(middleware.TryGetRequestPolicies(httpContext, out var policies));
+        Assert.Same(endpointPolicy, Assert.Single(policies));
+    }
+
     public class RefreshableCachePolicy : IOutputCachePolicy
     {
         public ValueTask CacheRequestAsync(OutputCacheContext context, CancellationToken cancellation)
