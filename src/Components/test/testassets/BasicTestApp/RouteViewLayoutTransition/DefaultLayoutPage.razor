@@ -1,0 +1,10 @@
+@page "/route-view-layout-transition/default/{Value?}"
+@inherits TrackedPageBase
+
+<h1 id="page-name">@nameof(DefaultLayoutPage)</h1>
+<p>Value: <code id="page-value">@Value</code></p>
+
+@code {
+    [Parameter]
+    public string Value { get; set; } = string.Empty;
+}

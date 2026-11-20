@@ -1,0 +1,17 @@
+@inherits LayoutComponentBase
+
+<nav>
+    <a id="navigate-default-layout" href="route-view-layout-transition/default/first">Default Layout Page</a>
+    <a id="navigate-alternate-layout" href="route-view-layout-transition/alternate/second">Alternate Layout Page</a>
+</nav>
+
+<div>
+    @Body
+</div>
+
+<ComponentLifecycleLog />
+
+@code {
+    [CascadingParameter]
+    protected CascadingStateProvider State { get; set; } = default!;
+}

@@ -1,0 +1,31 @@
+@implements IDisposable
+
+<div id="instantiation-log">
+    @foreach (var entry in Entries)
+    {
+        <div><code>@entry</code></div>
+    }
+</div>
+
+@code {
+    private IReadOnlyList<string> Entries = InstantiationTrace.Entries;
+
+    protected override void OnInitialized()
+    {
+        InstantiationTrace.Changed += OnChanged;
+    }
+
+    private void OnChanged()
+    {
+        _ = InvokeAsync(() =>
+        {
+            Entries = InstantiationTrace.Entries;
+            StateHasChanged();
+        });
+    }
+
+    public void Dispose()
+    {
+        InstantiationTrace.Changed -= OnChanged;
+    }
+}

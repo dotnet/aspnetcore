@@ -73,21 +73,30 @@ public class RouteView : IComponent
     [UnconditionalSuppressMessage("Trimming", "IL2118", Justification = "Layout components are preserved because the LayoutAttribute constructor parameter is correctly annotated.")]
     protected virtual void Render(RenderTreeBuilder builder)
     {
+        // An old layout can replay this fragment after RouteData changes, so capture its matching route.
+        var routeData = RouteData;
         var pageLayoutType = _layoutAttributeCache
-            .GetOrAdd(RouteData.PageType, static type => type.GetCustomAttribute<LayoutAttribute>()?.LayoutType)
+            .GetOrAdd(routeData.PageType, static type => type.GetCustomAttribute<LayoutAttribute>()?.LayoutType)
             ?? DefaultLayout;
 
         builder.OpenComponent<LayoutView>(0);
         builder.AddComponentParameter(1, nameof(LayoutView.Layout), pageLayoutType);
-        builder.AddComponentParameter(2, nameof(LayoutView.ChildContent), (RenderFragment)RenderPageWithParameters);
+        builder.AddComponentParameter(2, nameof(LayoutView.ChildContent), (RenderFragment)(contentBuilder => RenderPageWithParameters(contentBuilder, routeData)));
         builder.CloseComponent();
     }
 
-    private void RenderPageWithParameters(RenderTreeBuilder builder)
+    private void RenderPageWithParameters(RenderTreeBuilder builder, RouteData routeData)
     {
-        builder.OpenComponent(0, RouteData.PageType);
+        // A retained page must receive current parameters even when its layout replays an older fragment.
+        // Keep the captured route for other page types so an outgoing layout cannot create the destination page.
+        if (routeData.PageType == RouteData.PageType)
+        {
+            routeData = RouteData;
+        }
 
-        foreach (var kvp in RouteData.RouteValues)
+        builder.OpenComponent(0, routeData.PageType);
+
+        foreach (var kvp in routeData.RouteValues)
         {
             builder.AddComponentParameter(1, kvp.Key, kvp.Value);
         }
