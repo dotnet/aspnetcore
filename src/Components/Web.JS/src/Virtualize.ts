@@ -657,10 +657,63 @@ function init(dotNetHelper: DotNet.DotNetObject, spacerBefore: HTMLElement, spac
     return ['ArrowUp', 'ArrowDown', 'PageUp', 'PageDown', ' '].includes(key);
   }
 
+  function isEditableElement(target: EventTarget | null): boolean {
+    if (!(target instanceof HTMLElement)) {
+      return false;
+    }
+    if (target.isContentEditable) {
+      return true;
+    }
+    const tagName = target.tagName;
+    if (tagName === 'INPUT') {
+      const type = (target as HTMLInputElement).type;
+      return type !== 'button'
+        && type !== 'checkbox'
+        && type !== 'hidden'
+        && type !== 'image'
+        && type !== 'radio'
+        && type !== 'reset'
+        && type !== 'submit';
+    }
+    return tagName === 'TEXTAREA' || tagName === 'SELECT';
+  }
+
+  function isEditableTarget(e: KeyboardEvent): boolean {
+    // A keydown inside a shadow root is retargeted to the host at a document
+    // listener, so inspect the composed path. Use the first HTML element: its
+    // isContentEditable already accounts for an editable ancestor and for a
+    // contenteditable="false" island inside that ancestor.
+    const path = typeof e.composedPath === 'function' ? e.composedPath() : [e.target];
+    const target = path.find((node): node is HTMLElement => node instanceof HTMLElement);
+    return target !== undefined && isEditableElement(target);
+  }
+
   const keydownTarget: EventTarget = scrollContainer || document;
   function handleJumpKeys(e: Event): void {
     const ke = e as KeyboardEvent;
-    if (ke.key === 'End') {
+    if (isEditableTarget(ke)) {
+      return;
+    }
+    if (ke.key === 'End' || ke.key === 'Home') {
+      // Blazor's @onkeydown:preventDefault runs in its document-level delegate.
+      // Listen once on window, which runs after that delegate, and inspect the
+      // original event. If propagation stops first, clean the listener up on
+      // the next frame so the listener survives the current event.
+      const onKeydown = (event: KeyboardEvent) => {
+        window.removeEventListener('keydown', onKeydown);
+        if (event === ke && !ke.defaultPrevented) {
+          handleJumpKey(ke.key);
+        }
+      };
+      window.addEventListener('keydown', onKeydown, { once: true });
+      requestAnimationFrame(() => window.removeEventListener('keydown', onKeydown));
+    } else if (isUserScrollKey(ke.key)) {
+      handleUserScrollInput();
+    }
+  }
+
+  function handleJumpKey(key: string): void {
+    if (key === 'End') {
       interruptProgrammaticScroll();
       scrollActivity.source = ScrollSource.UserScroll;
       reobserveSpacers();
@@ -674,7 +727,7 @@ function init(dotNetHelper: DotNet.DotNetObject, spacerBefore: HTMLElement, spac
       if (!convergence.bottom && spacerAfter.offsetHeight > 0) {
         startConvergenceObserving('bottom');
       }
-    } else if (ke.key === 'Home') {
+    } else if (key === 'Home') {
       interruptProgrammaticScroll();
       scrollActivity.source = ScrollSource.UserScroll;
       reobserveSpacers();
@@ -685,8 +738,6 @@ function init(dotNetHelper: DotNet.DotNetObject, spacerBefore: HTMLElement, spac
       if (!convergence.top && spacerBefore.offsetHeight > 0) {
         startConvergenceObserving('top');
       }
-    } else if (isUserScrollKey(ke.key)) {
-      handleUserScrollInput();
     }
   }
 
