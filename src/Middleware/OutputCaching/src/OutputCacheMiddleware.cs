@@ -147,6 +147,10 @@ internal sealed class OutputCacheMiddleware
                         // The current request was processed, nothing more to do
                         if (executed)
                         {
+                            // The response body was buffered in memory while the cache entry was finalized,
+                            // so a slow client reading this (leader) response no longer delays the waiters.
+                            // Flush the buffered body to this client now.
+                            await FlushResponseBodyAsync(context);
                             return;
                         }
 
@@ -160,6 +164,12 @@ internal sealed class OutputCacheMiddleware
                     }
 
                     await ExecuteResponseAsync();
+                    if (context.AllowLocking)
+                    {
+                        // With locking enabled the response body was buffered in memory rather than streamed,
+                        // so it needs to be flushed to the client now that the cache entry is finalized.
+                        await FlushResponseBodyAsync(context);
+                    }
                     return;
 
                     async Task<OutputCacheEntry?> ExecuteResponseAsync()
@@ -428,6 +438,7 @@ internal sealed class OutputCacheMiddleware
 
             var contentLength = context.HttpContext.Response.ContentLength;
             var cachedResponseBody = context.OutputCacheStream.GetCachedResponseBody();
+            context.ResponseBody = cachedResponseBody;
 
             if (!contentLength.HasValue || contentLength == cachedResponseBody.Length
                 || (cachedResponseBody.Length == 0
@@ -461,6 +472,32 @@ internal sealed class OutputCacheMiddleware
         }
 
         return false;
+    }
+
+    private static async Task FlushResponseBodyAsync(OutputCacheContext context)
+    {
+        var body = context.ResponseBody;
+
+        // The response wasn't stored (e.g. not cacheable) so the buffered body is still
+        // in the stream's buffer rather than in the cache entry.
+        if (body.IsEmpty && context.OutputCacheStream.BufferingEnabled)
+        {
+            body = context.OutputCacheStream.GetCachedResponseBody();
+        }
+
+        if (body.IsEmpty)
+        {
+            return;
+        }
+
+        try
+        {
+            await RecyclableReadOnlySequenceSegment.CopyToAsync(body, context.HttpContext.Response.BodyWriter, context.HttpContext.RequestAborted);
+        }
+        catch (OperationCanceledException)
+        {
+            context.HttpContext.Abort();
+        }
     }
 
     /// <summary>
@@ -506,7 +543,8 @@ internal sealed class OutputCacheMiddleware
             context.OriginalResponseStream,
             _options.MaximumBodySize,
             StreamUtilities.BodySegmentSize,
-            () => StartResponse(context));
+            () => StartResponse(context),
+            bufferResponseBody: context.AllowLocking);
         context.HttpContext.Response.Body = context.OutputCacheStream;
     }
 
