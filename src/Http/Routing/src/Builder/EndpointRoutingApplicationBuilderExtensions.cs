@@ -34,6 +34,17 @@ public static class EndpointRoutingApplicationBuilderExtensions
     /// and <see cref="UseEndpoints(IApplicationBuilder, Action{IEndpointRouteBuilder})"/> may observe or change the
     /// <see cref="Endpoint"/> associated with the <see cref="HttpContext"/>.
     /// </para>
+    /// <para>
+    /// A <c>WebApplication</c> adds routing automatically when endpoints are mapped and this method is not
+    /// called explicitly. Call this method when the application must control where route matching occurs relative to
+    /// other middleware. Middleware that changes request data used for matching runs before routing. Middleware that
+    /// depends on the selected endpoint runs after routing.
+    /// </para>
+    /// <para>
+    /// If the request is rerouted and a different endpoint is selected, middleware that depends on endpoint metadata,
+    /// such as authorization, must run after the final routing pass. Routing does not rewind the middleware pipeline
+    /// or clear state owned by other middleware.
+    /// </para>
     /// </remarks>
     public static IApplicationBuilder UseRouting(this IApplicationBuilder builder)
     {
