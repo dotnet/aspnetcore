@@ -957,6 +957,219 @@ public class RenderTreeBuilderTest
     }
 
     [Theory]
+    [InlineData(true, false, true)]
+    [InlineData(false, false, true)]
+    [InlineData(true, true, false)]
+    [InlineData(false, true, false)]
+    [InlineData(true, true, true)]
+    [InlineData(false, true, true)]
+    public void AddAttribute_InputBooleanBinding_UsesCheckedAttribute(bool value, bool typeAfterValue, bool hasBinding)
+    {
+        using var builder = new RenderTreeBuilder();
+        builder.OpenElement(0, "input");
+        if (!typeAfterValue)
+        {
+            builder.AddAttribute(1, "type", "checkbox");
+        }
+
+        builder.AddAttribute(2, "value", BindConverter.FormatValue(value));
+        Assert.Equal(1 + (typeAfterValue ? 0 : 1) + (value ? 1 : 0), builder.GetFrames().Count);
+        if (hasBinding)
+        {
+            builder.AddAttribute(3, "onchange", EventCallback.Factory.CreateBinder<bool>(builder, _ => { }, value));
+            builder.SetUpdatesAttributeName("value");
+        }
+
+        if (typeAfterValue)
+        {
+            builder.AddAttribute(4, "type", "checkbox");
+        }
+
+        builder.CloseElement();
+
+        var frames = builder.GetFrames();
+        AssertFrame.Element(frames.Array[0], "input", 2 + (value ? 1 : 0) + (hasBinding ? 1 : 0), 0);
+        var attributes = frames.AsEnumerable().Skip(1).ToArray();
+        var target = hasBinding ? "checked" : "value";
+        Assert.DoesNotContain(attributes, frame => frame.AttributeName == (hasBinding ? "value" : "checked"));
+        if (hasBinding)
+        {
+            Assert.Equal("checked", Assert.Single(attributes, frame => frame.AttributeName == "onchange").AttributeEventUpdatesAttributeName);
+        }
+
+        Assert.Equal("checkbox", Assert.Single(attributes, frame => frame.AttributeName == "type").AttributeValue);
+        if (value)
+        {
+            AssertFrame.Attribute(Assert.Single(attributes, frame => frame.AttributeName == target), target, true, 2);
+        }
+        else
+        {
+            Assert.DoesNotContain(attributes, frame => frame.AttributeName == target);
+        }
+    }
+
+    [Theory]
+    [InlineData("")]
+    [InlineData("True")]
+    [InlineData(null)]
+    public void AddAttribute_InputStringBinding_PreservesValueAttribute(string value)
+    {
+        using var builder = new RenderTreeBuilder();
+        builder.OpenElement(0, "input");
+        builder.AddAttribute(1, "type", "checkbox");
+        builder.AddAttribute(2, "value", BindConverter.FormatValue(value));
+        builder.AddAttribute(3, "onchange", EventCallback.Factory.CreateBinder<string>(builder, _ => { }, value));
+        builder.SetUpdatesAttributeName("value");
+        builder.CloseElement();
+
+        var attributes = builder.GetFrames().AsEnumerable().Skip(1).ToArray();
+        Assert.Equal(value is null ? 2 : 3, attributes.Length);
+        Assert.DoesNotContain(attributes, frame => frame.AttributeName == "checked");
+        Assert.Equal("value", Assert.Single(attributes, frame => frame.AttributeName == "onchange").AttributeEventUpdatesAttributeName);
+        if (value is not null)
+        {
+            AssertFrame.Attribute(Assert.Single(attributes, frame => frame.AttributeName == "value"), "value", value, 2);
+        }
+        else
+        {
+            Assert.DoesNotContain(attributes, frame => frame.AttributeName == "value");
+        }
+    }
+
+    [Theory]
+    [InlineData(true, false)]
+    [InlineData(false, false)]
+    [InlineData(null, false)]
+    [InlineData(true, true)]
+    [InlineData(false, true)]
+    [InlineData(null, true)]
+    public void AddAttribute_InputBooleanBinding_PreservesExplicitCheckedAttribute(bool? checkedValue, bool useAttributeSplat)
+    {
+        using var builder = new RenderTreeBuilder();
+        builder.OpenElement(0, "input");
+        builder.AddAttribute(1, "type", "checkbox");
+        builder.AddAttribute(2, "checked", useAttributeSplat ? !checkedValue : checkedValue);
+        builder.AddAttribute(3, "value", true);
+        builder.AddAttribute(4, "onchange", EventCallback.Factory.CreateBinder<bool>(builder, _ => { }, true));
+        builder.SetUpdatesAttributeName("value");
+        if (useAttributeSplat)
+        {
+            builder.AddMultipleAttributes(5, new Dictionary<string, object> { ["checked"] = checkedValue });
+        }
+
+        builder.CloseElement();
+
+        var attributes = builder.GetFrames().AsEnumerable().Skip(1).ToArray();
+        Assert.Equal(checkedValue is true ? 4 : 3, attributes.Length);
+        if (checkedValue is true)
+        {
+            AssertFrame.Attribute(Assert.Single(attributes, frame => frame.AttributeName == "checked"),
+                "checked", true, useAttributeSplat ? 5 : 2);
+        }
+        else
+        {
+            Assert.DoesNotContain(attributes, frame => frame.AttributeName == "checked");
+        }
+
+        Assert.Equal("value", Assert.Single(attributes, frame => frame.AttributeName == "onchange").AttributeEventUpdatesAttributeName);
+        AssertFrame.Attribute(Assert.Single(attributes, frame => frame.AttributeName == "value"), "value", true, 3);
+    }
+
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public void Clear_InputCheckedTracking_DoesNotAffectNextRender(bool closeFirstInput)
+    {
+        using var builder = new RenderTreeBuilder();
+        builder.OpenElement(0, "input");
+        builder.AddAttribute(1, "checked", false);
+        if (closeFirstInput)
+        {
+            builder.CloseElement();
+        }
+
+        builder.Clear();
+        builder.OpenElement(0, "input");
+        builder.AddAttribute(1, "type", "checkbox");
+        builder.AddAttribute(2, "value", true);
+        builder.AddAttribute(3, "onchange", EventCallback.Factory.CreateBinder<bool>(builder, _ => { }, true));
+        builder.SetUpdatesAttributeName("value");
+        builder.CloseElement();
+
+        Assert.Collection(builder.GetFrames().AsEnumerable(),
+            frame => AssertFrame.Element(frame, "input", 4, 0),
+            frame => AssertFrame.Attribute(frame, "type", "checkbox", 1),
+            frame => AssertFrame.Attribute(frame, "checked", true, 2),
+            frame => Assert.Equal("checked", frame.AttributeEventUpdatesAttributeName));
+    }
+
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public void AddAttribute_InputValueOverride_PreservesValuelessAndBooleanDistinction(bool overrideWithBoolean)
+    {
+        using var builder = new RenderTreeBuilder();
+        builder.OpenElement(0, "input");
+        builder.AddAttribute(1, "type", "checkbox");
+        builder.AddMultipleAttributes(2, Array.Empty<KeyValuePair<string, object>>());
+        if (overrideWithBoolean)
+        {
+            builder.AddAttribute(3, "value");
+            AssertFrame.Attribute(builder.GetFrames().Array[2], "value", true, 3);
+            builder.AddAttribute(4, "value", true);
+        }
+        else
+        {
+            builder.AddAttribute(3, "value", true);
+            builder.AddAttribute(4, "value");
+        }
+
+        builder.AddAttribute(5, "onchange", EventCallback.Factory.CreateBinder<bool>(builder, _ => { }, true));
+        builder.SetUpdatesAttributeName("value");
+        builder.CloseElement();
+
+        var target = overrideWithBoolean ? "checked" : "value";
+        Assert.Collection(builder.GetFrames().AsEnumerable(),
+            frame => AssertFrame.Element(frame, "input", 4, 0),
+            frame => AssertFrame.Attribute(frame, "type", "checkbox", 1),
+            frame => AssertFrame.Attribute(frame, target, true, 4),
+            frame => Assert.Equal(target, frame.AttributeEventUpdatesAttributeName));
+    }
+
+    [Theory]
+    [InlineData(true)]
+    [InlineData(false)]
+    public void AddMultipleAttributes_InputBooleanBinding_UsesEffectiveValue(bool value)
+    {
+        using var builder = new RenderTreeBuilder();
+        builder.OpenElement(0, "input");
+        builder.AddAttribute(1, "type", "text");
+        builder.AddAttribute(2, "value", "overridden");
+        builder.AddMultipleAttributes(3, new Dictionary<string, object>
+        {
+            ["type"] = "CHECKBOX",
+            ["value"] = value,
+        });
+        builder.AddAttribute(4, "onchange", EventCallback.Factory.CreateBinder<bool>(builder, _ => { }, value));
+        builder.SetUpdatesAttributeName("value");
+        builder.CloseElement();
+
+        var attributes = builder.GetFrames().AsEnumerable().Skip(1).ToArray();
+        Assert.Equal(value ? 3 : 2, attributes.Length);
+        Assert.Equal("CHECKBOX", Assert.Single(attributes, frame => frame.AttributeName == "type").AttributeValue);
+        Assert.Equal("checked", Assert.Single(attributes, frame => frame.AttributeName == "onchange").AttributeEventUpdatesAttributeName);
+        Assert.DoesNotContain(attributes, frame => frame.AttributeName == "value");
+        if (value)
+        {
+            AssertFrame.Attribute(Assert.Single(attributes, frame => frame.AttributeName == "checked"), "checked", true, 3);
+        }
+        else
+        {
+            Assert.DoesNotContain(attributes, frame => frame.AttributeName == "checked");
+        }
+    }
+
+    [Theory]
     [InlineData(false)]
     [InlineData(true)]
     public void AddComponentParameter_Component_Bool_SetsAttributeValue(bool value)

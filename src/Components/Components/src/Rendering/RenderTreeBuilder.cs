@@ -31,6 +31,7 @@ public sealed class RenderTreeBuilder : IDisposable
     private RenderTreeFrameType? _lastNonAttributeFrameType;
     private bool _hasSeenAddMultipleAttributes;
     private Dictionary<string, int>? _seenAttributeNames;
+    private Stack<InputAttributeState>? _inputAttributeStates;
 
     /// <summary>
     /// The reserved parameter name used for supplying child content.
@@ -73,6 +74,11 @@ public sealed class RenderTreeBuilder : IDisposable
         if (_hasSeenAddMultipleAttributes)
         {
             ProcessDuplicateAttributes(first: indexOfEntryBeingClosed + 1);
+        }
+
+        if (string.Equals(_entries.Buffer[indexOfEntryBeingClosed].ElementNameField, "input", StringComparison.OrdinalIgnoreCase))
+        {
+            ProcessInputValueAttribute(indexOfEntryBeingClosed);
         }
 
         _entries.Buffer[indexOfEntryBeingClosed].ElementSubtreeLengthField = _entries.Count - indexOfEntryBeingClosed;
@@ -174,6 +180,7 @@ public sealed class RenderTreeBuilder : IDisposable
             throw new InvalidOperationException($"Valueless attributes may only be added immediately after frames of type {RenderTreeFrameType.Element}");
         }
 
+        TrackInputAttribute(name, isBooleanValue: false, isOmitted: false);
         _entries.AppendAttribute(sequence, name, ElementBoolTrueValue);
     }
 
@@ -185,6 +192,9 @@ public sealed class RenderTreeBuilder : IDisposable
     /// The attribute is associated with the most recently added element. If the value is <c>false</c> and the
     /// current element is not a component, the frame will be omitted.
     /// </para>
+    /// <para>
+    /// A Boolean value binding on a checkbox input is represented by its checked attribute.
+    /// </para>
     /// </summary>
     /// <param name="sequence">An integer that represents the position of the instruction in the source code.</param>
     /// <param name="name">The name of the attribute.</param>
@@ -192,6 +202,7 @@ public sealed class RenderTreeBuilder : IDisposable
     public void AddAttribute(int sequence, string name, bool value)
     {
         AssertCanAddAttribute();
+        TrackInputAttribute(name, isBooleanValue: true, isOmitted: !value);
         if (_lastNonAttributeFrameType == RenderTreeFrameType.Component)
         {
             _entries.AppendAttribute(sequence, name, value ? BoxedTrue : BoxedFalse);
@@ -223,6 +234,7 @@ public sealed class RenderTreeBuilder : IDisposable
     public void AddAttribute(int sequence, string name, string? value)
     {
         AssertCanAddAttribute();
+        TrackInputAttribute(name, isBooleanValue: false, isOmitted: value is null);
         if (value != null || _lastNonAttributeFrameType == RenderTreeFrameType.Component)
         {
             _entries.AppendAttribute(sequence, name, value);
@@ -248,6 +260,7 @@ public sealed class RenderTreeBuilder : IDisposable
     public void AddAttribute(int sequence, string name, MulticastDelegate? value)
     {
         AssertCanAddAttribute();
+        TrackInputAttribute(name, isBooleanValue: false, isOmitted: value is null);
         if (value != null || _lastNonAttributeFrameType == RenderTreeFrameType.Component)
         {
             _entries.AppendAttribute(sequence, name, value);
@@ -277,6 +290,7 @@ public sealed class RenderTreeBuilder : IDisposable
     public void AddAttribute(int sequence, string name, EventCallback value)
     {
         AssertCanAddAttribute();
+        TrackInputAttribute(name, isBooleanValue: false, isOmitted: !value.RequiresExplicitReceiver && !value.HasDelegate);
         if (_lastNonAttributeFrameType == RenderTreeFrameType.Component)
         {
             // Since this is a component, we need to preserve the type of the EventCallback, so we have
@@ -321,6 +335,7 @@ public sealed class RenderTreeBuilder : IDisposable
     public void AddAttribute<TArgument>(int sequence, string name, EventCallback<TArgument> value)
     {
         AssertCanAddAttribute();
+        TrackInputAttribute(name, isBooleanValue: false, isOmitted: !value.RequiresExplicitReceiver && !value.HasDelegate);
         if (_lastNonAttributeFrameType == RenderTreeFrameType.Component)
         {
             // Since this is a component, we need to preserve the type of the EventCallback, so we have
@@ -361,6 +376,8 @@ public sealed class RenderTreeBuilder : IDisposable
         // types that AddAttribute special cases.
         if (_lastNonAttributeFrameType == RenderTreeFrameType.Element)
         {
+            TrackInputAttribute(name, isBooleanValue: value is bool,
+                isOmitted: value is null or false || value is IEventCallback { HasDelegate: false });
             if (value == null)
             {
                 // Treat 'null' attribute values for elements as a conditional attribute.
@@ -429,6 +446,7 @@ public sealed class RenderTreeBuilder : IDisposable
         }
 
         AssertCanAddAttribute();
+        TrackInputAttribute(frame.AttributeNameField, isBooleanValue: frame.AttributeValueField is bool, isOmitted: false);
         frame.SequenceField = sequence;
         _entries.Append(frame);
     }
@@ -754,6 +772,7 @@ public sealed class RenderTreeBuilder : IDisposable
         _lastNonAttributeFrameType = null;
         _hasSeenAddMultipleAttributes = false;
         _seenAttributeNames?.Clear();
+        _inputAttributeStates?.Clear();
     }
 
     // internal because this should only be used during the post-event tree patching logic
@@ -815,6 +834,113 @@ public sealed class RenderTreeBuilder : IDisposable
             // could cause undefined behavior in diffing.
             ref var invalidFrame = ref _entries.Buffer[_openElementIndices.Peek()];
             throw new InvalidOperationException($"Render output is invalid for component of type '{component.GetType().FullName}'. A frame of type '{invalidFrame.FrameType}' was left unclosed. Do not use try/catch inside rendering logic, because partial output cannot be undone.");
+        }
+    }
+
+    private void TrackInputAttribute(string name, bool isBooleanValue, bool isOmitted)
+    {
+        var isValue = name == "value";
+        if ((!isValue && (!isOmitted || !string.Equals(name, "checked", StringComparison.OrdinalIgnoreCase)))
+            || _lastNonAttributeFrameType != RenderTreeFrameType.Element)
+        {
+            return;
+        }
+
+        var elementIndex = _openElementIndices.Peek();
+        if (!string.Equals(_entries.Buffer[elementIndex].ElementNameField, "input", StringComparison.OrdinalIgnoreCase))
+        {
+            return;
+        }
+
+        var hasState = _inputAttributeStates is { Count: > 0 } && _inputAttributeStates.Peek().ElementIndex == elementIndex;
+        if (!hasState && isValue && !isBooleanValue)
+        {
+            return;
+        }
+
+        var states = _inputAttributeStates ??= new Stack<InputAttributeState>();
+        var state = hasState ? states.Pop() : new InputAttributeState { ElementIndex = elementIndex };
+        if (isValue)
+        {
+            // Omitted values only replace earlier frames when duplicate-attribute processing runs.
+            if (!isOmitted)
+            {
+                state.ValueIsBoolean = isBooleanValue;
+            }
+
+            state.OmittedValueIsBoolean = isOmitted && isBooleanValue;
+        }
+        else
+        {
+            state.HasExplicitCheckedAttribute = true;
+        }
+
+        states.Push(state);
+    }
+
+    private struct InputAttributeState
+    {
+        public int ElementIndex;
+        public bool ValueIsBoolean;
+        public bool OmittedValueIsBoolean;
+        public bool HasExplicitCheckedAttribute;
+    }
+
+    private void ProcessInputValueAttribute(int elementIndex)
+    {
+        if (_inputAttributeStates is not { Count: > 0 } states || states.Peek().ElementIndex != elementIndex)
+        {
+            return;
+        }
+
+        var state = states.Pop();
+        var buffer = _entries.Buffer;
+        var valueIndex = -1;
+        var attributesEnd = elementIndex + 1;
+        var isCheckbox = false;
+        var hasValueBinding = false;
+        var hasCheckedAttribute = state.HasExplicitCheckedAttribute;
+
+        for (; attributesEnd < _entries.Count && buffer[attributesEnd].FrameTypeField == RenderTreeFrameType.Attribute; attributesEnd++)
+        {
+            ref var attribute = ref buffer[attributesEnd];
+            switch (attribute.AttributeNameField)
+            {
+                case var typeName when string.Equals(typeName, "type", StringComparison.OrdinalIgnoreCase):
+                    isCheckbox = attribute.AttributeValueField is string type
+                        && string.Equals(type, "checkbox", StringComparison.OrdinalIgnoreCase);
+                    break;
+                case "value":
+                    valueIndex = attributesEnd;
+                    break;
+                case var checkedName when string.Equals(checkedName, "checked", StringComparison.OrdinalIgnoreCase):
+                    hasCheckedAttribute = true;
+                    break;
+            }
+
+            hasValueBinding |= attribute.AttributeEventUpdatesAttributeNameField == "value";
+        }
+
+        var isBooleanValue = valueIndex >= 0 ? state.ValueIsBoolean : state.OmittedValueIsBoolean;
+        if (!isBooleanValue)
+        {
+            return;
+        }
+
+        if (isCheckbox && hasValueBinding && !hasCheckedAttribute)
+        {
+            if (valueIndex >= 0)
+            {
+                buffer[valueIndex].AttributeNameField = "checked";
+            }
+
+            for (var i = elementIndex + 1; i < attributesEnd; i++)
+            {
+                if (buffer[i].AttributeEventUpdatesAttributeNameField == "value")
+                {
+                    buffer[i].AttributeEventUpdatesAttributeNameField = "checked";
+                }
+            }
         }
     }
 
