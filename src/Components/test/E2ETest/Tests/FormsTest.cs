@@ -213,6 +213,105 @@ public class FormsTest : ServerTestBase<ToggleExecutionModeServerFixture<Program
         Browser.Empty(messagesAccessor);
     }
 
+    [Theory]
+    [InlineData("null-string", "-1")]
+    [InlineData("null-number", "-1")]
+    [InlineData("null-placeholder", "1")]
+    public void InputSelectWithInitialNullValueSelectsEmptyValue(string id, string selectedIndex)
+    {
+        var appElement = Browser.MountTestComponent<InputSelectNullValueComponent>();
+        var select = appElement.FindElement(By.Id(id));
+        const string expectedModel = "Text=<null>; Number=<null>; TextWithPlaceholder=<null>";
+
+        Browser.Equal(selectedIndex, () => select.GetDomProperty("selectedIndex"));
+        Browser.Equal("", () => select.GetDomProperty("value"));
+        Browser.Equal(expectedModel, () => appElement.FindElement(By.Id("current-model")).Text);
+
+        appElement.FindElement(By.Id("submit-model")).Click();
+
+        Browser.Equal(expectedModel, () => appElement.FindElement(By.Id("submitted-model")).Text);
+        Browser.Equal(selectedIndex, () => select.GetDomProperty("selectedIndex"));
+    }
+
+    [Fact]
+    public void InputSelectWithNullValuesPreservesBindingAndResetBehavior()
+    {
+        var appElement = Browser.MountTestComponent<InputSelectNullValueComponent>();
+        var textSelect = new SelectElement(appElement.FindElement(By.Id("null-string")));
+        var numberSelect = new SelectElement(appElement.FindElement(By.Id("null-number")));
+        var placeholderSelect = new SelectElement(appElement.FindElement(By.Id("null-placeholder")));
+
+        textSelect.SelectByValue("B");
+        numberSelect.SelectByValue("2");
+        placeholderSelect.SelectByValue("B");
+        AssertState("Text=\"B\"; Number=2; TextWithPlaceholder=\"B\"", "1", "1", "2");
+
+        placeholderSelect.SelectByValue("");
+        AssertState("Text=\"B\"; Number=2; TextWithPlaceholder=\"\"", "1", "1", "1");
+
+        appElement.FindElement(By.Id("reset-null")).Click();
+        AssertState("Text=<null>; Number=<null>; TextWithPlaceholder=<null>", "-1", "-1", "1");
+
+        void AssertState(string expectedModel, string textIndex, string numberIndex, string placeholderIndex)
+        {
+            Browser.Equal(expectedModel, () => appElement.FindElement(By.Id("current-model")).Text);
+            Browser.Equal(textIndex, () => textSelect.WrappedElement.GetDomProperty("selectedIndex"));
+            Browser.Equal(numberIndex, () => numberSelect.WrappedElement.GetDomProperty("selectedIndex"));
+            Browser.Equal(placeholderIndex, () => placeholderSelect.WrappedElement.GetDomProperty("selectedIndex"));
+
+            appElement.FindElement(By.Id("submit-model")).Click();
+
+            Browser.Equal(expectedModel, () => appElement.FindElement(By.Id("submitted-model")).Text);
+        }
+    }
+
+    [Theory]
+    [InlineData("selected-placeholder", "-1")]
+    [InlineData("selected-empty-placeholder", "0")]
+    public void InputSelectNullValueOverridesSelectedPlaceholder(string id, string initialIndex)
+    {
+        var appElement = Browser.MountTestComponent<InputSelectNullValueComponent>();
+        var select = new SelectElement(appElement.FindElement(By.Id(id)));
+
+        Browser.Equal(initialIndex, () => select.WrappedElement.GetDomProperty("selectedIndex"));
+        Browser.Equal("", () => select.WrappedElement.GetDomProperty("value"));
+        Browser.Equal("<null>; <null>", () => appElement.FindElement(By.Id("selected-placeholder-model")).Text);
+
+        select.SelectByValue("US");
+
+        Browser.Equal("US", () => select.WrappedElement.GetDomProperty("value"));
+        Browser.Equal("1", () => select.WrappedElement.GetDomProperty("selectedIndex"));
+        Browser.Equal(id == "selected-placeholder" ? "\"US\"; <null>" : "<null>; \"US\"",
+            () => appElement.FindElement(By.Id("selected-placeholder-model")).Text);
+
+        appElement.FindElement(By.Id("reset-selected-placeholders")).Click();
+
+        Browser.Equal("<null>; <null>", () => appElement.FindElement(By.Id("selected-placeholder-model")).Text);
+        Browser.Equal(initialIndex, () => select.WrappedElement.GetDomProperty("selectedIndex"));
+        Browser.Equal("", () => select.WrappedElement.GetDomProperty("value"));
+    }
+
+    [Fact]
+    public void InputSelectWithNullableEnumPreservesSelectionAndReset()
+    {
+        var appElement = Browser.MountTestComponent<InputSelectNullValueComponent>();
+        var select = new SelectElement(appElement.FindElement(By.Id("null-enum")));
+        var value = appElement.FindElement(By.Id("enum-value"));
+
+        Browser.Equal("-1", () => select.WrappedElement.GetDomProperty("selectedIndex"));
+        Browser.Equal("<null>", () => value.Text);
+
+        select.SelectByValue("Second");
+
+        Browser.Equal("Second", () => value.Text);
+        Browser.Equal("1", () => select.WrappedElement.GetDomProperty("selectedIndex"));
+
+        appElement.FindElement(By.Id("reset-enum")).Click();
+
+        Browser.Equal("<null>", () => value.Text);
+        Browser.Equal("-1", () => select.WrappedElement.GetDomProperty("selectedIndex"));
+    }
+
     [Fact]
     public void InputSelectInteractsWithEditContext()
     {
