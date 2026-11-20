@@ -1,0 +1,20 @@
+@page "/cache-interactive-component"
+@using Components.TestServer.RazorComponents
+
+<CacheView ExpiresAfter="TimeSpan.FromHours(1)" VaryByQuery="testId,useTypeRenderMode">
+    <p id="cached-content">@Guid.NewGuid()</p>
+    @if (UseTypeRenderMode)
+    {
+        <ServerInteractiveCounter />
+    }
+    else
+    {
+        <TestContentPackage.Counter @rendermode="RenderMode.InteractiveServer" IncrementAmount="1" IdSuffix="server" />
+    }
+</CacheView>
+<p id="uncached-content">@Guid.NewGuid()</p>
+
+@code {
+    [SupplyParameterFromQuery]
+    public bool UseTypeRenderMode { get; set; }
+}

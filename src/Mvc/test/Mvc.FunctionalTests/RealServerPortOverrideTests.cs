@@ -95,6 +95,34 @@ public class RealServerPortOverrideTests
         await AssertDynamicLoopbackEndpoint(factory);
     }
 
+    [Fact]
+    public async Task PortOverrideIsAppliedWhenStartupServicesThrow()
+    {
+        using var listener = new TcpListener(IPAddress.Loopback, 0);
+        listener.Start();
+        var applicationPort = ((IPEndPoint)listener.LocalEndpoint).Port;
+
+        await using var factory = new ConfiguredFactory<BasicWebSite.Program>(builder =>
+        {
+            builder.UseUrls($"http://127.0.0.1:{applicationPort}")
+                .CaptureStartupErrors(true)
+                .UseSetting(WebHostDefaults.DetailedErrorsKey, "true");
+            builder.ConfigureServices(services => services.AddSingleton<IStartup>(new ThrowingStartup()));
+        });
+        factory.UseKestrel(0);
+
+        using var client = factory.CreateClient();
+        var server = factory.Services.GetRequiredService<IServer>();
+        var address = new Uri(Assert.Single(server.Features.Get<IServerAddressesFeature>()!.Addresses));
+        Assert.Equal(IPAddress.Loopback.ToString(), address.Host);
+        Assert.NotEqual(applicationPort, address.Port);
+        Assert.Equal(address, client.BaseAddress);
+
+        using var response = await client.GetAsync("/");
+        Assert.Equal(HttpStatusCode.InternalServerError, response.StatusCode);
+        Assert.Contains("Startup services failed.", await response.Content.ReadAsStringAsync());
+    }
+
     private static async Task AssertDynamicLoopbackEndpoint<TEntryPoint>(WebApplicationFactory<TEntryPoint> factory)
         where TEntryPoint : class
     {
@@ -127,5 +155,18 @@ public class RealServerPortOverrideTests
     {
         public Action<IApplicationBuilder> Configure(Action<IApplicationBuilder> next) =>
             app => app.Run(_ => Task.CompletedTask);
+    }
+
+    private sealed class ThrowingStartup : IStartup
+    {
+        public IServiceProvider ConfigureServices(IServiceCollection services)
+        {
+            throw new InvalidOperationException("Startup services failed.");
+        }
+
+        public void Configure(IApplicationBuilder app)
+        {
+            throw new InvalidOperationException("Startup configuration should not run.");
+        }
     }
 }
