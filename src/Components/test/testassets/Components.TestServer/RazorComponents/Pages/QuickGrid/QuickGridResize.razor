@@ -1,0 +1,59 @@
+@page "/quickgrid-resize"
+@rendermode RenderMode.InteractiveServer
+@using Microsoft.AspNetCore.Components.QuickGrid
+
+<HeadContent>
+    <link rel="stylesheet" href="@Assets["Components.TestServer.styles.css"]" />
+</HeadContent>
+
+<button id="toggle-resize" disabled="@(!ready)" @onclick="() => resize = !resize">Toggle resizing</button>
+<button id="dispose-resize-grid" disabled="@(!ready)" @onclick="DisposeGrid">Dispose grid</button>
+<p id="resize-disposal-result">@disposalResult</p>
+
+<div id="resize-grid" dir="@(RightToLeft ? "rtl" : "ltr")">
+    <QuickGrid @ref="grid" Items="items" ColumnResize="resize" style="width: 600px">
+        <PropertyColumn Property="@(item => item.Name)" />
+        <TemplateColumn Title="Details">
+            @if (Nested)
+            {
+                <div id="nested-resize-grid">
+                    <QuickGrid Items="items" ColumnResize="true" style="width: 240px">
+                        <PropertyColumn Property="@(item => item.Name)" />
+                        <PropertyColumn Property="@(item => item.Value)" />
+                    </QuickGrid>
+                </div>
+            }
+        </TemplateColumn>
+    </QuickGrid>
+</div>
+
+@code {
+    [SupplyParameterFromQuery] public bool InitiallyEnabled { get; set; }
+    [SupplyParameterFromQuery] public bool Nested { get; set; }
+    [SupplyParameterFromQuery] public bool RightToLeft { get; set; }
+
+    private readonly IQueryable<Item> items = new[] { new Item("First", 1) }.AsQueryable();
+    private QuickGrid<Item> grid;
+    private bool resize;
+    private bool ready;
+    private string disposalResult;
+
+    private record Item(string Name, int Value);
+
+    protected override void OnInitialized() => resize = InitiallyEnabled;
+
+    protected override void OnAfterRender(bool firstRender)
+    {
+        if (firstRender)
+        {
+            ready = true;
+            StateHasChanged();
+        }
+    }
+
+    private async Task DisposeGrid()
+    {
+        await grid.DisposeAsync();
+        disposalResult = "Completed";
+    }
+}
