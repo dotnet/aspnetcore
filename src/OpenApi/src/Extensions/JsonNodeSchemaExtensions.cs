@@ -329,7 +329,13 @@ internal static class JsonNodeSchemaExtensions
         {
             if (parameterInfo.HasDefaultValue)
             {
-                schema.ApplyDefaultValue(parameterInfo.DefaultValue, jsonTypeInfo);
+                var defaultValue = parameterInfo.DefaultValue;
+                if (defaultValue is not null && Nullable.GetUnderlyingType(parameterInfo.ParameterType) is { IsEnum: true } enumType)
+                {
+                    defaultValue = Enum.ToObject(enumType, defaultValue);
+                }
+
+                schema.ApplyDefaultValue(defaultValue, jsonTypeInfo);
             }
             else if (parameterInfo.GetCustomAttributes<DefaultValueAttribute>().LastOrDefault() is { } defaultValueAttribute)
             {
