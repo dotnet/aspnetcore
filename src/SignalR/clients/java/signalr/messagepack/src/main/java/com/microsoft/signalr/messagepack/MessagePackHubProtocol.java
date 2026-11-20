@@ -16,6 +16,7 @@ import java.util.Map;
 
 import org.msgpack.core.MessageBufferPacker;
 import org.msgpack.core.MessageFormat;
+import org.msgpack.core.MessageInsufficientBufferException;
 import org.msgpack.core.MessagePack;
 import org.msgpack.core.MessagePackException;
 import org.msgpack.core.MessagePacker;
@@ -85,6 +86,10 @@ public class MessagePackHubProtocol implements HubProtocol {
             } catch (IOException ex) {
                 throw new RuntimeException("Error reading length header.", ex);
             }
+            int payloadStart = payload.position();
+            int payloadLimit = payload.limit();
+            int messageEnd = payloadStart + length;
+            payload.limit(messageEnd);
             // Instantiate MessageUnpacker
             try(MessageUnpacker unpacker = MessagePack.newDefaultUnpacker(payload)) {
 
@@ -93,16 +98,16 @@ public class MessagePackHubProtocol implements HubProtocol {
 
                 switch (messageType) {
                     case INVOCATION:
-                        hubMessages.add(createInvocationMessage(unpacker, binder, itemCount, payload));
+                        hubMessages.add(createInvocationMessage(unpacker, binder, itemCount, payload, length));
                         break;
                     case STREAM_ITEM:
-                        hubMessages.add(createStreamItemMessage(unpacker, binder, payload));
+                        hubMessages.add(createStreamItemMessage(unpacker, binder, payload, length));
                         break;
                     case COMPLETION:
-                        hubMessages.add(createCompletionMessage(unpacker, binder, payload));
+                        hubMessages.add(createCompletionMessage(unpacker, binder, payload, length));
                         break;
                     case STREAM_INVOCATION:
-                        hubMessages.add(createStreamInvocationMessage(unpacker, binder, itemCount, payload));
+                        hubMessages.add(createStreamInvocationMessage(unpacker, binder, itemCount, payload, length));
                         break;
                     case CANCEL_INVOCATION:
                         hubMessages.add(createCancelInvocationMessage(unpacker));
@@ -134,10 +139,30 @@ public class MessagePackHubProtocol implements HubProtocol {
                 // Returning a ByteBuffer rather than a Buffer. This causes issues on Android - see https://github.com/dotnet/aspnetcore/pull/26614
                 ((Buffer) payload).position(payload.position() + readBytes);
             } catch (MessagePackException | IOException ex) {
+                if (ex instanceof MessageInsufficientBufferException && payloadLimit > messageEnd
+                        && !hasCompleteMessageAt(payload, messageEnd, payloadLimit)) {
+                    throw new RuntimeException(String.format("MessagePack message was length %d but claimed to be length %d.", length + 1, length));
+                }
                 throw new RuntimeException("Error reading MessagePack data.", ex);
+            } finally {
+                payload.limit(payloadLimit);
             }
         }
         return hubMessages;
+    }
+
+    private boolean hasCompleteMessageAt(ByteBuffer payload, int position, int limit) {
+        ByteBuffer remaining = payload.duplicate();
+        remaining.clear();
+        remaining.limit(limit);
+        remaining.position(position);
+
+        try {
+            int length = Utils.readLengthHeader(remaining);
+            return remaining.remaining() >= length;
+        } catch (IOException | RuntimeException ex) {
+            return false;
+        }
     }
 
     @Override
@@ -190,7 +215,7 @@ public class MessagePackHubProtocol implements HubProtocol {
         }
     }
 
-    private HubMessage createInvocationMessage(MessageUnpacker unpacker, InvocationBinder binder, int itemCount, ByteBuffer payload) throws IOException {
+    private HubMessage createInvocationMessage(MessageUnpacker unpacker, InvocationBinder binder, int itemCount, ByteBuffer payload, int messageLength) throws IOException {
         Map<String, String> headers = readHeaders(unpacker);
 
         // invocationId may be nil
@@ -210,7 +235,7 @@ public class MessagePackHubProtocol implements HubProtocol {
         Object[] arguments = null;
         try {
             List<Type> types = binder.getParameterTypes(target);
-            arguments = bindArguments(unpacker, types, payload);
+            arguments = bindArguments(unpacker, types, payload, messageLength);
         } catch (Exception ex) {
             return new InvocationBindingFailureMessage(invocationId, target, ex);
         }
@@ -224,13 +249,13 @@ public class MessagePackHubProtocol implements HubProtocol {
         return new InvocationMessage(headers, invocationId, target, arguments, streams);
     }
 
-    private HubMessage createStreamItemMessage(MessageUnpacker unpacker, InvocationBinder binder, ByteBuffer payload) throws IOException {
+    private HubMessage createStreamItemMessage(MessageUnpacker unpacker, InvocationBinder binder, ByteBuffer payload, int messageLength) throws IOException {
         Map<String, String> headers = readHeaders(unpacker);
         String invocationId = unpacker.unpackString();
         Object value;
         try {
             Type itemType = binder.getReturnType(invocationId);
-            value = readValue(unpacker, itemType, payload, true);
+            value = readValue(unpacker, itemType, payload, true, messageLength);
         } catch (Exception ex) {
             return new StreamBindingFailureMessage(invocationId, ex);
         }
@@ -238,7 +263,7 @@ public class MessagePackHubProtocol implements HubProtocol {
         return new StreamItem(headers, invocationId, value);
     }
 
-    private HubMessage createCompletionMessage(MessageUnpacker unpacker, InvocationBinder binder, ByteBuffer payload) throws IOException {
+    private HubMessage createCompletionMessage(MessageUnpacker unpacker, InvocationBinder binder, ByteBuffer payload, int messageLength) throws IOException {
         Map<String, String> headers = readHeaders(unpacker);
         String invocationId = unpacker.unpackString();
         int resultKind = unpacker.unpackInt();
@@ -254,7 +279,7 @@ public class MessagePackHubProtocol implements HubProtocol {
                 break;
             case NON_VOID_RESULT:
                 Type itemType = binder.getReturnType(invocationId);
-                result = readValue(unpacker, itemType, payload, true);
+                result = readValue(unpacker, itemType, payload, true, messageLength);
                 break;
             default:
                 throw new RuntimeException("Invalid invocation result kind.");
@@ -263,7 +288,7 @@ public class MessagePackHubProtocol implements HubProtocol {
         return new CompletionMessage(headers, invocationId, result, error);
     }
 
-    private HubMessage createStreamInvocationMessage(MessageUnpacker unpacker, InvocationBinder binder, int itemCount, ByteBuffer payload) throws IOException {
+    private HubMessage createStreamInvocationMessage(MessageUnpacker unpacker, InvocationBinder binder, int itemCount, ByteBuffer payload, int messageLength) throws IOException {
         Map<String, String> headers = readHeaders(unpacker);
         String invocationId = unpacker.unpackString();
         String target = unpacker.unpackString();
@@ -271,7 +296,7 @@ public class MessagePackHubProtocol implements HubProtocol {
         Object[] arguments = null;
         try {
             List<Type> types = binder.getParameterTypes(target);
-            arguments = bindArguments(unpacker, types, payload);
+            arguments = bindArguments(unpacker, types, payload, messageLength);
         } catch (Exception ex) {
             return new InvocationBindingFailureMessage(invocationId, target, ex);
         }
@@ -508,7 +533,7 @@ public class MessagePackHubProtocol implements HubProtocol {
         }
     }
 
-    private Object[] bindArguments(MessageUnpacker unpacker, List<Type> paramTypes, ByteBuffer payload) throws IOException {
+    private Object[] bindArguments(MessageUnpacker unpacker, List<Type> paramTypes, ByteBuffer payload, int messageLength) throws IOException {
         int argumentCount = unpacker.unpackArrayHeader();
 
         if (paramTypes.size() != argumentCount) {
@@ -518,13 +543,13 @@ public class MessagePackHubProtocol implements HubProtocol {
         Object[] arguments = new Object[argumentCount];
 
         for (int i = 0; i < argumentCount; i++) {
-            arguments[i] = readValue(unpacker, paramTypes.get(i), payload, true);
+            arguments[i] = readValue(unpacker, paramTypes.get(i), payload, true, messageLength);
         }
 
         return arguments;
     }
 
-    private Object readValue(MessageUnpacker unpacker, Type itemType, ByteBuffer payload, boolean outermostCall) throws IOException {
+    private Object readValue(MessageUnpacker unpacker, Type itemType, ByteBuffer payload, boolean outermostCall, int messageLength) throws IOException {
         Class<?> itemClass = Utils.typeToClass(itemType);
         MessageFormat messageFormat = unpacker.getNextFormat();
         ValueType valueType = messageFormat.getValueType();
@@ -575,6 +600,9 @@ public class MessagePackHubProtocol implements HubProtocol {
                 break;
             case BINARY:
                 length = unpacker.unpackBinaryHeader();
+                if (length > messageLength - unpacker.getTotalReadBytes()) {
+                    throw new IOException("Binary value length exceeds the remaining message length.");
+                }
                 byte[] binaryValue = new byte[length];
                 unpacker.readPayload(binaryValue);
                 item = binaryValue;
@@ -583,7 +611,7 @@ public class MessagePackHubProtocol implements HubProtocol {
                 readBytesStart = unpacker.getTotalReadBytes();
                 length = unpacker.unpackArrayHeader();
                 for (int i = 0; i < length; i++) {
-                    readValue(unpacker, Object.class, payload, false);
+                    readValue(unpacker, Object.class, payload, false, messageLength);
                 }
                 if (outermostCall) {
                     // Check how many bytes we've read, grab that from the payload, and deserialize with objectMapper
@@ -603,8 +631,8 @@ public class MessagePackHubProtocol implements HubProtocol {
                 readBytesStart = unpacker.getTotalReadBytes();
                 length = unpacker.unpackMapHeader();
                 for (int i = 0; i < length; i++) {
-                    readValue(unpacker, Object.class, payload, false);
-                    readValue(unpacker, Object.class, payload, false);
+                    readValue(unpacker, Object.class, payload, false, messageLength);
+                    readValue(unpacker, Object.class, payload, false, messageLength);
                 }
                 if (outermostCall) {
                     // Check how many bytes we've read, grab that from the payload, and deserialize with objectMapper
