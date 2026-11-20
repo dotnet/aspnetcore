@@ -279,6 +279,10 @@ async function notifyLocationChanged(interceptedLink: boolean, internalDestinati
     latestLocationChangedNotificationSequenceByRenderer.set(rendererId, notificationSequence);
   }
 
+  // WebAssembly can synchronously supersede this navigation before Server sends it over SignalR.
+  callbacksToNotify.sort(([left], [right]) =>
+    Number(right === WebRendererId.WebAssembly) - Number(left === WebRendererId.WebAssembly));
+
   await Promise.all(callbacksToNotify.map(async ([rendererId, callbacks]) => {
     if (latestLocationChangedNotificationSequenceByRenderer.get(rendererId) === notificationSequence && isRendererAttached(rendererId)) {
       await callbacks.locationChanged(uri, state, interceptedLink);

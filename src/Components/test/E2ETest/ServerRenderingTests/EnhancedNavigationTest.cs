@@ -682,16 +682,18 @@ public class EnhancedNavigationTest : ServerTestBase<BasicTestAppServerSiteFixtu
         Browser.Equal("1", () => Browser.Exists(By.Id("query-server")).Text);
     }
 
-    [Fact]
-    public void SupersededLocationChangeDoesNotReachTheServerRenderer()
+    [Theory]
+    [InlineData("server")]
+    [InlineData("wasm")]
+    public void SupersededLocationChangeDoesNotReachTheServerRenderer(string firstRenderer)
     {
-        // Register the WebAssembly navigation callback before starting Server in the same document.
-        Navigate($"{ServerPathBase}/nav/location-changed/wasm");
-        Browser.Exists(By.Id("nav-uri-wasm"));
+        Navigate($"{ServerPathBase}/nav/location-changed/{firstRenderer}");
+        Browser.Exists(By.Id($"nav-uri-{firstRenderer}"));
         var js = (IJavaScriptExecutor)Browser;
         js.ExecuteScript("Blazor.navigateTo('nav/location-changed/server-and-wasm')");
-        Browser.Exists(By.Id("nav-uri-server"));
+        Browser.Contains("/server-and-wasm", () => Browser.Exists(By.Id("nav-uri-server")).Text);
         Browser.Contains("/server-and-wasm", () => Browser.Exists(By.Id("nav-uri-wasm")).Text);
+        var serverLocationChanges = int.Parse(Browser.Exists(By.Id("location-changed-count-server")).Text, CultureInfo.InvariantCulture);
 
         js.ExecuteScript("Blazor.navigateTo('nav/location-changed/server-and-wasm?superseded=1')");
 
@@ -700,6 +702,7 @@ public class EnhancedNavigationTest : ServerTestBase<BasicTestAppServerSiteFixtu
         Browser.Equal("2", () => Browser.Exists(By.Id("query-server")).Text);
         Browser.Contains("query=2", () => Browser.Exists(By.Id("nav-uri-wasm")).Text);
         Browser.Equal("2", () => Browser.Exists(By.Id("query-wasm")).Text);
+        Assert.Equal((serverLocationChanges + 1).ToString(CultureInfo.InvariantCulture), Browser.FindElement(By.Id("location-changed-count-server")).Text);
     }
 
     [Fact]
