@@ -32,6 +32,7 @@ public class FormPipeReader
     // Used for other encodings
     private readonly byte[]? _otherEqualEncoding;
     private readonly byte[]? _otherAndEncoding;
+    private readonly bool _decodeEscapedBytesWithEncoding;
 
     private readonly PipeReader _pipeReader;
     private readonly Encoding _encoding;
@@ -65,6 +66,29 @@ public class FormPipeReader
         {
             _otherEqualEncoding = _encoding.GetBytes("=");
             _otherAndEncoding = _encoding.GetBytes("&");
+
+            // In ASCII-compatible encodings other than UTF-8 (e.g. GBK, Shift_JIS, Latin1), %XX escapes are bytes
+            // in that encoding, so they must be un-escaped before the bytes are decoded.
+            _decodeEscapedBytesWithEncoding = _encoding.CodePage != Encoding.UTF8.CodePage
+                && EncodesFormEscapeCharactersAsAscii(_encoding);
+        }
+    }
+
+    private static bool EncodesFormEscapeCharactersAsAscii(Encoding encoding)
+    {
+        var expected = "=&%+"u8;
+        Span<byte> actual = stackalloc byte[expected.Length];
+
+        try
+        {
+            // TryGetBytes returns false when the encoding needs more bytes than ASCII (e.g. UTF-16), which isn't ASCII-compatible.
+            return encoding.TryGetBytes("=&%+", actual, out var bytesWritten)
+                && actual.Slice(0, bytesWritten).SequenceEqual(expected);
+        }
+        catch (EncoderFallbackException)
+        {
+            // The encoding can't represent '%' or '+', so keep decoding with the slow path.
+            return false;
         }
     }
 
@@ -446,6 +470,15 @@ public class FormPipeReader
                 throw new InvalidDataException("The form value contains invalid characters.", ex);
             }
         }
+        else if (_decodeEscapedBytesWithEncoding)
+        {
+            // We need to create a Span from a ReadOnlySpan. This cast is safe because the memory is still held by the pipe
+            // We will also create a string from it by the end of the function.
+            var span = MemoryMarshal.CreateSpan(ref MemoryMarshal.GetReference(readOnlySpan), readOnlySpan.Length);
+
+            var bytes = UnescapeFormBytesInPlace(span);
+            return _encoding.GetString(span.Slice(0, bytes));
+        }
         else
         {
             // Slow path for Unicode and other encodings.
@@ -454,6 +487,31 @@ public class FormPipeReader
             decodedString = decodedString.Replace('+', ' ');
             return Uri.UnescapeDataString(decodedString);
         }
+    }
+
+    // Replaces '+' with ' ' and valid %XX escapes with the byte they represent. Invalid escapes are left as is.
+    private static int UnescapeFormBytesInPlace(Span<byte> buffer)
+    {
+        var destination = 0;
+        for (var source = 0; source < buffer.Length; source++)
+        {
+            var current = buffer[source];
+            if (current == (byte)'+')
+            {
+                current = (byte)' ';
+            }
+            else if (current == (byte)'%'
+                && source < buffer.Length - 2
+                && byte.TryParse(buffer.Slice(source + 1, 2), NumberStyles.AllowHexSpecifier, CultureInfo.InvariantCulture, out var unescaped))
+            {
+                current = unescaped;
+                source += 2;
+            }
+
+            buffer[destination++] = current;
+        }
+
+        return destination;
     }
 
     private ReadOnlySpan<byte> GetEqualsForEncoding()
