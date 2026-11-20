@@ -77,22 +77,22 @@ internal sealed class RuleBuilder
                 switch (input.OperationType)
                 {
                     case OperationType.Equal:
-                        match = new IntegerMatch(input.Operand, IntegerOperationType.Equal);
+                        match = new IntegerMatch(input.Operand, IntegerOperationType.Equal, input.Invert);
                         break;
                     case OperationType.Greater:
-                        match = new IntegerMatch(input.Operand, IntegerOperationType.Greater);
+                        match = new IntegerMatch(input.Operand, IntegerOperationType.Greater, input.Invert);
                         break;
                     case OperationType.GreaterEqual:
-                        match = new IntegerMatch(input.Operand, IntegerOperationType.GreaterEqual);
+                        match = new IntegerMatch(input.Operand, IntegerOperationType.GreaterEqual, input.Invert);
                         break;
                     case OperationType.Less:
-                        match = new IntegerMatch(input.Operand, IntegerOperationType.Less);
+                        match = new IntegerMatch(input.Operand, IntegerOperationType.Less, input.Invert);
                         break;
                     case OperationType.LessEqual:
-                        match = new IntegerMatch(input.Operand, IntegerOperationType.LessEqual);
+                        match = new IntegerMatch(input.Operand, IntegerOperationType.LessEqual, input.Invert);
                         break;
                     case OperationType.NotEqual:
-                        match = new IntegerMatch(input.Operand, IntegerOperationType.NotEqual);
+                        match = new IntegerMatch(input.Operand, IntegerOperationType.NotEqual, input.Invert);
                         break;
                     default:
                         throw new ArgumentException("Invalid operation for integer comparison.");
@@ -103,19 +103,19 @@ internal sealed class RuleBuilder
                 switch (input.OperationType)
                 {
                     case OperationType.Equal:
-                        match = new StringMatch(input.Operand, StringOperationType.Equal, input.Invert);
+                        match = new StringMatch(input.Operand, StringOperationType.Equal, ignoreCase: flags.HasFlag(FlagType.NoCase), negate: input.Invert);
                         break;
                     case OperationType.Greater:
-                        match = new StringMatch(input.Operand, StringOperationType.Greater, input.Invert);
+                        match = new StringMatch(input.Operand, StringOperationType.Greater, ignoreCase: flags.HasFlag(FlagType.NoCase), negate: input.Invert);
                         break;
                     case OperationType.GreaterEqual:
-                        match = new StringMatch(input.Operand, StringOperationType.GreaterEqual, input.Invert);
+                        match = new StringMatch(input.Operand, StringOperationType.GreaterEqual, ignoreCase: flags.HasFlag(FlagType.NoCase), negate: input.Invert);
                         break;
                     case OperationType.Less:
-                        match = new StringMatch(input.Operand, StringOperationType.Less, input.Invert);
+                        match = new StringMatch(input.Operand, StringOperationType.Less, ignoreCase: flags.HasFlag(FlagType.NoCase), negate: input.Invert);
                         break;
                     case OperationType.LessEqual:
-                        match = new StringMatch(input.Operand, StringOperationType.LessEqual, input.Invert);
+                        match = new StringMatch(input.Operand, StringOperationType.LessEqual, ignoreCase: flags.HasFlag(FlagType.NoCase), negate: input.Invert);
                         break;
                     default:
                         throw new ArgumentException("Invalid operation for string comparison.");
