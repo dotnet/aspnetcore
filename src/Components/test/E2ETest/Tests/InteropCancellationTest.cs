@@ -116,17 +116,38 @@ public class InteropCancellationTest(
         Equal("outgoing-managed", "returned normally");
     }
 
+    // A browser operation such as fetch does not keep its signal alive, so the interop must.
     [Fact]
-    public void UnreachableOutputSignalReleasesAutomaticReferences()
+    public void SignalDroppedByJavaScriptIsStillAbortedWhenTokenIsCanceled()
     {
         Click("start-outgoing");
         Equal("outgoing-js", "native signal retained");
-        Browser.Equal(1, ProjectionCount);
         Click("drop-outgoing");
         CollectGarbage();
-        Browser.Equal(0, ProjectionCount);
         Click("cancel-outgoing");
-        Equal("outgoing-js", "native signal retained");
+        Equal("outgoing-js", "aborted in JS");
+        Browser.Equal(0, ProjectionCount);
+    }
+
+    [Fact]
+    public void SignalIsReleasedAfterTokenSourceIsDisposedAndCollected()
+    {
+        Click("start-disposable");
+        Equal("disposable-managed", "returned normally");
+        Click("collect-dotnet");
+        Equal("disposable-managed", "collected in .NET");
+        CollectGarbageUntil("disposable-gc", "signal collected");
+        Browser.Equal(0, ProjectionCount);
+    }
+
+    [Fact]
+    public void TokenReturnedFromDotNetBecomesSignalThatCancelAborts()
+    {
+        Click("start-returned");
+        Equal("returned-js", "native signal received");
+        CollectGarbage();
+        Click("cancel-returned");
+        Equal("returned-js", "aborted in JS");
     }
 
     [Theory]

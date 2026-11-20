@@ -20,6 +20,10 @@
 <button id="start-outgoing-pre" @onclick="SendCanceledToken">Pass canceled token</button>
 <button id="cancel-outgoing" @onclick="() => outgoingSource.Cancel()">Cancel outgoing token</button>
 <button id="drop-outgoing" onclick="cancellationTests.dropOutgoing()">Drop outgoing signal</button>
+<button id="start-disposable" @onclick="SendDisposableToken">Pass token of a disposed source</button>
+<button id="collect-dotnet" @onclick="CollectThenCallJS">Collect .NET garbage, then call JS</button>
+<button id="start-returned" onclick="cancellationTests.returned()">Return token to JS</button>
+<button id="cancel-returned" @onclick="() => returnedSource.Cancel()">Cancel returned token</button>
 <button id="start-static" onclick="cancellationTests.staticInvocation(false)">Static raw signal</button>
 <button id="start-static-pre" onclick="cancellationTests.staticInvocation(true)">Static aborted signal</button>
 <button id="start-snapshot" onclick="cancellationTests.snapshot()">Snapshot arguments</button>
@@ -37,11 +41,12 @@
 <p id="wrapped-js"></p>
 <p id="collected-gc"></p>
 <p id="dropped-gc"></p>
+<p id="disposable-gc"></p>
 <button id="start-control" @onclick="StartControlCall">Use invocation control token</button>
 <button id="cancel-control" @onclick="() => controlSource.Cancel()">Cancel managed wait</button>
 <button id="release-control" onclick="cancellationTests.releaseControl()">Complete JS function</button>
 <p id="cancellation-ready">@(module is null ? "loading" : "ready")</p>
-@foreach (var id in new[] { "first", "second", "ignored", "preaborted", "retained", "failure", "outgoing", "control", "sync", "overtaken", "collected", "dropped" })
+@foreach (var id in new[] { "first", "second", "ignored", "preaborted", "retained", "failure", "outgoing", "control", "sync", "overtaken", "collected", "dropped", "disposable", "returned" })
 {
     <p id="@($"{id}-managed")">@(states.GetValueOrDefault(id, "not started"))</p>
     <p id="@($"{id}-js")"></p>
@@ -54,6 +59,7 @@
     private readonly List<CancellationTokenRegistration> registrations = new();
     private readonly CancellationTokenSource outgoingSource = new();
     private readonly CancellationTokenSource controlSource = new();
+    private readonly CancellationTokenSource returnedSource = new();
     private DotNetObjectReference<InteropCancellationComponent> reference;
     private IJSObjectReference module;
 
@@ -165,10 +171,8 @@
     public int AutomaticProjectionCount()
     {
         var flags = System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.NonPublic;
-        var outgoing = typeof(JSRuntime).GetField("_automaticCancellationReferences", flags);
-        var incoming = typeof(JSRuntime).GetField("_abortSignalSources", flags);
-        return ((System.Collections.Concurrent.ConcurrentDictionary<long, Action>)outgoing.GetValue(JS)).Count
-            + ((System.Collections.ICollection)incoming.GetValue(JS)).Count;
+        int Count(string name) => (typeof(JSRuntime).GetField(name, flags)?.GetValue(JS) as System.Collections.ICollection)?.Count ?? 0;
+        return Count("_automaticCancellationReferences") + Count("_cancellationTokenLinks") + Count("_abortSignalSources");
     }
 
     [JSInvokable]
@@ -200,6 +204,23 @@
         outgoingSource.Cancel();
         await SendToken();
     }
+
+    private async Task SendDisposableToken()
+    {
+        using var source = new CancellationTokenSource();
+        states["disposable"] = await module.InvokeAsync<string>("receiveAndForget", "disposable", source.Token);
+    }
+
+    // A weak reference is cleared by the collection itself, so no finalizer needs to run.
+    private async Task CollectThenCallJS()
+    {
+        GC.Collect();
+        await module.InvokeVoidAsync("noop");
+        states["disposable"] = "collected in .NET";
+    }
+
+    [JSInvokable]
+    public CancellationToken GetReturnedToken() => returnedSource.Token;
 
     private async Task StartControlCall()
     {
@@ -240,5 +261,6 @@
         reference?.Dispose();
         outgoingSource.Dispose();
         controlSource.Dispose();
+        returnedSource.Dispose();
     }
 }

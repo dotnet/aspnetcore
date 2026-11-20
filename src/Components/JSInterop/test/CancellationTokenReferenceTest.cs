@@ -1,6 +1,7 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Runtime.CompilerServices;
 using System.Text.Json;
 using Microsoft.JSInterop.Infrastructure;
 
@@ -246,24 +247,25 @@ public class CancellationTokenReferenceTest
     }
 
     [Fact]
-    public async Task OutgoingReferenceUsesExistingObjectReferenceSerialization()
+    public async Task OutgoingTokenIsWrittenAsIdAndCancelSendsOneAbortAfterTheCall()
     {
         using var runtime = new ReferenceRuntime();
         using var source = new CancellationTokenSource();
         await runtime.InvokeVoidAsync("receive", CancellationToken.None, source.Token);
-        var observer = runtime.LastObserver!;
-        Assert.False(observer.Value.WaitForCancellationAsync().IsCompleted);
+        var id = TokenId(runtime.Sent[0]);
+        Assert.True(id > 0);
+        Assert.Equal($$"""[{"__dotNetCancellationToken":{{id}},"isCancellationRequested":false}]""", runtime.Sent[0].ArgsJson);
+
         source.Cancel();
-        Assert.True(await observer.Value.WaitForCancellationAsync());
-        observer.Value.Release();
-        Assert.Throws<ObjectDisposedException>(() => observer.Value);
-        Assert.Equal(0, AutomaticReferenceCount(runtime));
+        source.Cancel();
+        AssertSent(runtime, "receive", Canceled(id));
+        Assert.Equal(0, runtime.Sent[1].AsyncHandle);
     }
 
     [Theory]
     [InlineData(false)]
     [InlineData(true)]
-    public async Task OutgoingSnapshotAndObserverReflectInitialCancellation(bool isCanceled)
+    public async Task NoneAndCanceledTokensAreWrittenWithoutIdAndSendNothingLater(bool isCanceled)
     {
         using var runtime = new ReferenceRuntime();
         using var source = new CancellationTokenSource();
@@ -274,85 +276,119 @@ public class CancellationTokenReferenceTest
 
         var token = isCanceled ? source.Token : CancellationToken.None;
         await runtime.InvokeVoidAsync("receive", CancellationToken.None, token);
-        Assert.Equal(isCanceled, runtime.InitialCancellation);
-        Assert.Null(runtime.LastObserver);
-        Assert.Equal(0, AutomaticReferenceCount(runtime));
+        Assert.Equal($$"""[{"__dotNetCancellationToken":null,"isCancellationRequested":{{(isCanceled ? "true" : "false")}}}]""", runtime.Sent[0].ArgsJson);
+
+        CollectGarbage();
+        await runtime.InvokeVoidAsync("other");
+        AssertSent(runtime, "receive", "other");
     }
 
     [Fact]
-    public async Task DisposingOutgoingReferenceStopsObservationWithoutCancelingToken()
+    public async Task CancelDuringSerializationSendsAbortAfterTheCall()
+    {
+        using var runtime = new ReferenceRuntime();
+        using var source = new CancellationTokenSource();
+        await runtime.InvokeVoidAsync("receive", CancellationToken.None, [source.Token, new CancelingValue(source)]);
+        var id = TokenId(runtime.Sent[0]);
+        AssertSent(runtime, "receive", Canceled(id));
+    }
+
+    [Fact]
+    public async Task RepeatedOccurrencesGetIndependentIds()
+    {
+        using var runtime = new ReferenceRuntime();
+        using var source = new CancellationTokenSource();
+        await runtime.InvokeVoidAsync("receive", CancellationToken.None, [source.Token, source.Token]);
+        await runtime.InvokeVoidAsync("receive", CancellationToken.None, source.Token);
+        long[] ids = [TokenId(runtime.Sent[0], 0), TokenId(runtime.Sent[0], 1), TokenId(runtime.Sent[1])];
+        Assert.Equal(3, ids.Distinct().Count());
+
+        source.Cancel();
+        Assert.Equal(ids.Select(Canceled).Order(), runtime.Sent.Skip(2).Select(Describe).Order());
+    }
+
+    [Fact]
+    public async Task LiveSourceIsNotReleasedByCollectionAndStillCancels()
     {
         using var runtime = new ReferenceRuntime();
         using var source = new CancellationTokenSource();
         await runtime.InvokeVoidAsync("receive", CancellationToken.None, source.Token);
-        var notification = runtime.LastObserver!.Value.WaitForCancellationAsync();
-        runtime.Dispose();
-        Assert.False(await notification);
-        Assert.False(source.IsCancellationRequested);
+        var id = TokenId(runtime.Sent[0]);
+
+        CollectGarbage();
+        await runtime.InvokeVoidAsync("other");
         source.Cancel();
-        Assert.False(await notification);
+        AssertSent(runtime, "receive", "other", Canceled(id));
     }
 
     [Fact]
-    public void SerializationFailureRollsBackAutomaticReferences()
+    public async Task DisposedSourceIsReleasedAtTheNextCallAfterCollection()
+    {
+        using var runtime = new ReferenceRuntime();
+        var source = new CancellationTokenSource();
+        await runtime.InvokeVoidAsync("receive", CancellationToken.None, source.Token);
+        var id = TokenId(runtime.Sent[0]);
+
+        source.Dispose();
+        CollectGarbage();
+        await runtime.InvokeVoidAsync("other");
+        await runtime.InvokeVoidAsync("other");
+        AssertSent(runtime, "receive", "other", Released(id), "other");
+        Assert.Equal(0, runtime.Sent[2].AsyncHandle);
+    }
+
+    [Fact]
+    public async Task UnreachableSourceIsNotKeptAliveAndIsReleasedAfterCollection()
+    {
+        using var runtime = new ReferenceRuntime();
+        var source = SendTokenOfUnreachableSource(runtime);
+        var id = TokenId(runtime.Sent[0]);
+
+        CollectGarbage();
+        Assert.False(source.IsAlive);
+        await runtime.InvokeVoidAsync("other");
+        AssertSent(runtime, "receive", "other", Released(id));
+    }
+
+    [Fact]
+    public void SerializationFailureSendsNothingLater()
     {
         using var runtime = new ReferenceRuntime();
         using var source = new CancellationTokenSource();
         Assert.Throws<InvalidOperationException>(() => runtime.InvokeAsync<string>(
             "receive", CancellationToken.None, [source.Token, new ThrowingValue()]));
-        Assert.Equal(0, AutomaticReferenceCount(runtime));
+        source.Cancel();
+        Assert.Empty(runtime.Sent);
     }
 
     [Fact]
-    public void DispatchFailureRollsBackAutomaticReferencesBeforeBrowserReceivesThem()
+    public void DispatchFailureSendsNothingLater()
     {
         using var runtime = new ReferenceRuntime { ThrowOnDispatch = true };
         using var source = new CancellationTokenSource();
         Assert.Throws<InvalidOperationException>(() => runtime.InvokeAsync<string>(
             "receive", CancellationToken.None, [source.Token]));
-        Assert.Equal(1, runtime.ReferenceCountAtDispatch);
-        Assert.Equal(0, AutomaticReferenceCount(runtime));
         source.Cancel();
-        Assert.Equal(0, AutomaticReferenceCount(runtime));
+        AssertSent(runtime, "receive");
     }
 
     [Fact]
-    public async Task RepeatedRawTokenOccurrencesHaveIndependentReferenceLifetimes()
-    {
-        using var runtime = new ReferenceRuntime();
-        using var source = new CancellationTokenSource();
-        await runtime.InvokeVoidAsync("receive", CancellationToken.None, source.Token);
-        var first = runtime.LastObserver!;
-        await runtime.InvokeVoidAsync("receive", CancellationToken.None, source.Token);
-        var second = runtime.LastObserver!;
-        Assert.NotSame(first, second);
-        Assert.Equal(2, AutomaticReferenceCount(runtime));
-        first.Value.Release();
-        Assert.Equal(1, AutomaticReferenceCount(runtime));
-        source.Cancel();
-        Assert.True(await second.Value.WaitForCancellationAsync());
-        second.Value.Release();
-        Assert.Equal(0, AutomaticReferenceCount(runtime));
-    }
-
-    [Fact]
-    public async Task SerializationRollbackDoesNotReleaseNestedInvocationProjection()
+    public void NestedCallDuringFailedSerializationKeepsItsToken()
     {
         using var runtime = new ReferenceRuntime();
         using var outer = new CancellationTokenSource();
         using var inner = new CancellationTokenSource();
         Assert.Throws<InvalidOperationException>(() => runtime.InvokeAsync<string>(
             "receive", CancellationToken.None, [outer.Token, new NestedThrowingValue(runtime, inner.Token)]));
-        Assert.Equal(1, AutomaticReferenceCount(runtime));
-        var observer = runtime.LastObserver!;
+        var id = TokenId(runtime.Sent[0]);
+
+        outer.Cancel();
         inner.Cancel();
-        Assert.True(await observer.Value.WaitForCancellationAsync());
-        observer.Value.Release();
-        Assert.Equal(0, AutomaticReferenceCount(runtime));
+        AssertSent(runtime, "receive", Canceled(id));
     }
 
     [Fact]
-    public void SerializationRollbackUsesRuntimeScopeAcrossExecutionContexts()
+    public void TokenWrittenInsideAnotherExecutionContextIsDroppedWithTheFailedCall()
     {
         using var runtime = new ReferenceRuntime();
         using var source = new CancellationTokenSource();
@@ -360,18 +396,100 @@ public class CancellationTokenReferenceTest
         Assert.NotNull(context);
         Assert.Throws<InvalidOperationException>(() => runtime.InvokeAsync<string>(
             "receive", CancellationToken.None, [new ExecutionContextThrowingValue(runtime, source.Token, context)]));
-        Assert.Equal(0, AutomaticReferenceCount(runtime));
+        source.Cancel();
+        Assert.Empty(runtime.Sent);
     }
 
     [Fact]
-    public void DisposedRuntimeCannotAllocateAnotherAutomaticProjection()
+    public void TokenSerializedOutsideAnInteropMessageIsRejected()
+    {
+        using var runtime = new ReferenceRuntime();
+        using var source = new CancellationTokenSource();
+        Assert.Throws<InvalidOperationException>(() => JsonSerializer.Serialize(source.Token, runtime.JsonSerializerOptions));
+    }
+
+    [Fact]
+    public async Task DisposingRuntimeStopsAborts()
+    {
+        var runtime = new ReferenceRuntime();
+        using var source = new CancellationTokenSource();
+        await runtime.InvokeVoidAsync("receive", CancellationToken.None, source.Token);
+
+        runtime.Dispose();
+        source.Cancel();
+        AssertSent(runtime, "receive");
+    }
+
+    [Fact]
+    public void LongLivedSourceDoesNotKeepDisposedRuntimeAlive()
+    {
+        using var source = new CancellationTokenSource();
+        var runtime = SendTokenThenDisposeRuntime(source.Token);
+
+        CollectGarbage();
+        Assert.False(runtime.IsAlive);
+        source.Cancel();
+    }
+
+    [Fact]
+    public void DisposedRuntimeRejectsTokens()
     {
         var runtime = new ReferenceRuntime();
         runtime.Dispose();
         using var source = new CancellationTokenSource();
         Assert.Throws<ObjectDisposedException>(() => runtime.InvokeAsync<string>(
             "receive", CancellationToken.None, [source.Token]));
-        Assert.Equal(0, AutomaticReferenceCount(runtime));
+        Assert.Empty(runtime.Sent);
+    }
+
+    [Fact]
+    public void SynchronousCallLinksTokenAfterItReturns()
+    {
+        using var runtime = new ReferenceRuntime();
+        using var source = new CancellationTokenSource();
+        runtime.InvokeVoid("receiveSync", source.Token, new CancelingValue(source));
+        var id = TokenId(runtime.Sent[0]);
+        AssertSent(runtime, "receiveSync", Canceled(id));
+    }
+
+    [Fact]
+    public void TokenInSynchronousResultIsLinked()
+    {
+        using var runtime = new ReferenceRuntime();
+        var target = new TokenTarget();
+        var targetId = runtime.TrackObjectReference(DotNetObjectReference.Create(target));
+        var resultJson = DotNetDispatcher.Invoke(runtime, new(null, nameof(TokenTarget.GetToken), targetId, null), "[]");
+        var id = TokenId(resultJson!);
+
+        target.Source.Cancel();
+        AssertSent(runtime, Canceled(id));
+    }
+
+    [Fact]
+    public void TokenInAsynchronousResultIsLinkedAfterTheResultIsSent()
+    {
+        using var runtime = new ReferenceRuntime();
+        var target = new TokenTarget();
+        var targetId = runtime.TrackObjectReference(DotNetObjectReference.Create(target));
+        DotNetDispatcher.BeginInvokeDotNet(runtime, new(null, nameof(TokenTarget.GetCancelingResult), targetId, "call"), "[]");
+        var id = TokenId(runtime.Sent[0].ArgsJson!, "token");
+        AssertSent(runtime, "result:call", Canceled(id));
+    }
+
+    [Fact]
+    public async Task TokenInTaskResultIsLinkedAfterTheResultIsSent()
+    {
+        using var runtime = new ReferenceRuntime();
+        var target = new TokenTarget();
+        var targetId = runtime.TrackObjectReference(DotNetObjectReference.Create(target));
+        DotNetDispatcher.BeginInvokeDotNet(runtime, new(null, nameof(TokenTarget.GetTokenLaterAsync), targetId, "call"), "[]");
+        Assert.Empty(runtime.Sent);
+
+        target.Completion.SetResult();
+        var result = await runtime.GetResult("call");
+        var id = TokenId(result.ResultJson!);
+        target.Source.Cancel();
+        AssertSent(runtime, "result:call", Canceled(id));
     }
 
     [Fact]
@@ -398,17 +516,72 @@ public class CancellationTokenReferenceTest
         return ((System.Collections.ICollection)field.GetValue(runtime)!).Count;
     }
 
-    private static int AutomaticReferenceCount(JSRuntime runtime)
+    private static void AssertSent(ReferenceRuntime runtime, params string[] expected)
+        => Assert.Equal(expected, runtime.Sent.Select(Describe));
+
+    private static string Canceled(long id) => $"__CancellationTokenCanceled[{id}]";
+
+    private static string Released(long id) => $"__CancellationTokenReleased[{id}]";
+
+    // The identifier alone for ordinary calls; the one-way cancellation messages also show their ids.
+    private static string Describe(SentMessage message)
+        => message.Identifier.StartsWith("__CancellationToken", StringComparison.Ordinal)
+            ? message.Identifier + message.ArgsJson
+            : message.Identifier;
+
+    private static long TokenId(SentMessage message, int index = 0)
     {
-        var field = typeof(JSRuntime).GetField("_automaticCancellationReferences",
-            System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.NonPublic)!;
-        var references = (System.Collections.Concurrent.ConcurrentDictionary<long, Action>)field.GetValue(runtime)!;
-        return references.Count;
+        using var document = JsonDocument.Parse(message.ArgsJson!);
+        return document.RootElement[index].GetProperty("__dotNetCancellationToken").GetInt64();
+    }
+
+    private static long TokenId(string json, string? property = null)
+    {
+        using var document = JsonDocument.Parse(json);
+        var element = property is null ? document.RootElement : document.RootElement.GetProperty(property);
+        return element.GetProperty("__dotNetCancellationToken").GetInt64();
+    }
+
+    private static void CollectGarbage()
+    {
+        GC.Collect();
+        GC.WaitForPendingFinalizers();
+        GC.Collect();
+    }
+
+    [MethodImpl(MethodImplOptions.NoInlining)]
+    private static WeakReference SendTokenOfUnreachableSource(ReferenceRuntime runtime)
+    {
+        var source = new CancellationTokenSource();
+        Assert.True(runtime.InvokeVoidAsync("receive", CancellationToken.None, source.Token).IsCompletedSuccessfully);
+        return new WeakReference(source);
+    }
+
+    [MethodImpl(MethodImplOptions.NoInlining)]
+    private static WeakReference SendTokenThenDisposeRuntime(CancellationToken token)
+    {
+        var runtime = new ReferenceRuntime();
+        Assert.True(runtime.InvokeVoidAsync("receive", CancellationToken.None, token).IsCompletedSuccessfully);
+        runtime.Dispose();
+        return new WeakReference(runtime);
     }
 
     public sealed class ThrowingValue
     {
         public string Value => throw new InvalidOperationException("serialization failure");
+    }
+
+    // Serialized after the token, so the token is canceled between its serialization and the send.
+    public sealed class CancelingValue(CancellationTokenSource source)
+    {
+        public string Value
+        {
+            get
+            {
+                source.Cancel();
+                return "canceled";
+            }
+        }
     }
 
     private sealed class NestedThrowingValue(ReferenceRuntime runtime, CancellationToken token)
@@ -430,11 +603,7 @@ public class CancellationTokenReferenceTest
         {
             get
             {
-                ExecutionContext.Run(context, _ =>
-                {
-                    JsonSerializer.Serialize(token, runtime.JsonSerializerOptions);
-                    Assert.Equal(1, AutomaticReferenceCount(runtime));
-                }, null);
+                ExecutionContext.Run(context, _ => JsonSerializer.Serialize(token, runtime.JsonSerializerOptions), null);
                 throw new InvalidOperationException("serialization failure");
             }
         }
@@ -454,12 +623,37 @@ public class CancellationTokenReferenceTest
         }
     }
 
-    private sealed class ReferenceRuntime : TestJSRuntime
+    public sealed class TokenTarget
     {
-        public DotNetObjectReference<CancellationTokenObserver>? LastObserver { get; private set; }
-        public bool InitialCancellation { get; private set; }
+        public CancellationTokenSource Source { get; } = new();
+        public TaskCompletionSource Completion { get; } = new();
+
+        [JSInvokable]
+        public CancellationToken GetToken() => Source.Token;
+
+        [JSInvokable]
+        public CancelingResult GetCancelingResult() => new(Source);
+
+        [JSInvokable]
+        public async Task<CancellationToken> GetTokenLaterAsync()
+        {
+            await Completion.Task;
+            return Source.Token;
+        }
+    }
+
+    public sealed class CancelingResult(CancellationTokenSource source)
+    {
+        public CancellationToken Token => source.Token;
+        public CancelingValue Value { get; } = new(source);
+    }
+
+    private sealed record SentMessage(long AsyncHandle, string Identifier, string? ArgsJson);
+
+    private sealed class ReferenceRuntime : JSInProcessRuntime
+    {
+        public List<SentMessage> Sent { get; } = [];
         public bool ThrowOnDispatch { get; init; }
-        public int ReferenceCountAtDispatch { get; private set; }
         private readonly System.Collections.Concurrent.ConcurrentDictionary<string, TaskCompletionSource<DotNetInvocationResult>> _results = new();
 
         public Task<DotNetInvocationResult> GetResult(string callId) => GetResultSource(callId).Task;
@@ -467,32 +661,40 @@ public class CancellationTokenReferenceTest
         private TaskCompletionSource<DotNetInvocationResult> GetResultSource(string callId)
             => _results.GetOrAdd(callId, static _ => new(TaskCreationOptions.RunContinuationsAsynchronously));
 
+        protected override string? InvokeJS(string identifier, string? argsJson, JSCallResultType resultType, long targetInstanceId)
+            => throw new NotImplementedException();
+
+        protected override string? InvokeJS(in JSInvocationInfo invocationInfo)
+        {
+            Sent.Add(new(invocationInfo.AsyncHandle, invocationInfo.Identifier, invocationInfo.ArgsJson));
+            return null;
+        }
+
+        protected override void BeginInvokeJS(long taskId, string identifier, string? argsJson, JSCallResultType resultType, long targetInstanceId)
+            => throw new NotImplementedException();
+
         protected override void BeginInvokeJS(in JSInvocationInfo invocationInfo)
         {
-            ReferenceCountAtDispatch = AutomaticReferenceCount(this);
+            Sent.Add(new(invocationInfo.AsyncHandle, invocationInfo.Identifier, invocationInfo.ArgsJson));
             if (ThrowOnDispatch)
             {
                 throw new InvalidOperationException("dispatch failure");
             }
-            var result = "null";
-            if (invocationInfo.Identifier == "receive")
-            {
-                using var args = JsonDocument.Parse(invocationInfo.ArgsJson!);
-                var descriptor = args.RootElement[0];
-                var reference = descriptor.GetProperty("__dotNetCancellationToken");
-                LastObserver = reference.ValueKind == JsonValueKind.Null ? null :
-                    Assert.IsType<DotNetObjectReference<CancellationTokenObserver>>(GetObjectReference(reference.GetProperty("__dotNetObject").GetInt64()));
-                InitialCancellation = descriptor.GetProperty("isCancellationRequested").GetBoolean();
-            }
-            else
-            {
-                throw new InvalidOperationException(invocationInfo.Identifier);
-            }
 
-            DotNetDispatcher.EndInvokeJS(this, $"[{invocationInfo.AsyncHandle},true,{result}]");
+            if (invocationInfo.AsyncHandle != 0)
+            {
+                DotNetDispatcher.EndInvokeJS(this, $"[{invocationInfo.AsyncHandle},true,null]");
+            }
         }
 
         protected internal override void EndInvokeDotNet(DotNetInvocationInfo invocationInfo, in DotNetInvocationResult invocationResult)
-            => GetResultSource(invocationInfo.CallId!).SetResult(invocationResult);
+        {
+            Sent.Add(new(0, $"result:{invocationInfo.CallId}", invocationResult.ResultJson));
+            GetResultSource(invocationInfo.CallId!).SetResult(invocationResult);
+        }
+
+        protected internal override void SendByteArray(int id, byte[] data)
+        {
+        }
     }
 }

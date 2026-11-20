@@ -48,6 +48,12 @@ export function initialize(target) {
         dropOutgoing() {
             retainedSignals.clear();
         },
+        async returned() {
+            // Not kept, so only the interop can keep the signal alive until the token is canceled.
+            const signal = await target.invokeMethodAsync("GetReturnedToken");
+            document.getElementById("returned-js").textContent = signal instanceof AbortSignal ? "native signal received" : "not a signal";
+            signal.addEventListener("abort", () => document.getElementById("returned-js").textContent = "aborted in JS", { once: true });
+        },
         count() {
             return target.invokeMethodAsync("AutomaticProjectionCount");
         },
@@ -167,6 +173,15 @@ export function receive(id, signal) {
             error => document.getElementById(`${id}-listeners`).textContent = error.name);
     }
     return "returned normally";
+}
+
+export function receiveAndForget(id, signal) {
+    collectedSignals.set(id, () => document.getElementById(`${id}-gc`).textContent = "signal collected");
+    pageFinalizer.register(signal, id);
+    return "returned normally";
+}
+
+export function noop() {
 }
 
 export async function waitIgnoringSignal(id, signal) {
