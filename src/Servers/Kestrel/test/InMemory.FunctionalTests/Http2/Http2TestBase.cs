@@ -437,7 +437,16 @@ public class Http2TestBase : TestApplicationErrorLoggerLoggedTest, IDisposable, 
 
     void IHttpStreamHeadersHandler.OnHeader(ReadOnlySpan<byte> name, ReadOnlySpan<byte> value)
     {
-        var nameStr = name.GetHeaderName();
+        string nameStr;
+        if (name.StartsWith((byte)':'))
+        {
+            // Don't include ':' when getting the header name as that would throw during validation
+            nameStr = $":{name.Slice(1).GetHeaderName()}";
+        }
+        else
+        {
+            nameStr = name.GetHeaderName();
+        }
         _decodedHeaders[nameStr] = value.GetRequestHeaderString(nameStr, _serviceContext.ServerOptions.RequestHeaderEncodingSelector, checkForNewlineChars: true);
     }
 

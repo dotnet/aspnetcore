@@ -299,7 +299,7 @@ internal abstract partial class HttpHeaders : IHeaderDictionary
         }
     }
 
-    public static void ValidateHeaderNameCharacters(string headerCharacters)
+    public static void ValidateHeaderNameCharacters(ReadOnlySpan<char> headerCharacters)
     {
         var invalid = HttpCharacters.IndexOfInvalidTokenChar(headerCharacters);
         if (invalid >= 0)

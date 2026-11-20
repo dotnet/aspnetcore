@@ -60,19 +60,30 @@ public class BadHttpRequestTests : LoggedTest
             { "Header: va\0lue".EscapeNonPrintable(), ("Header: va\0lue", "Malformed request: invalid headers.") },
             { "Head\x80r: value".EscapeNonPrintable(), ("Head\x80r: value", "Invalid characters in header name.") },
             { "Header: valu\x80".EscapeNonPrintable(), ("Header: valu\x80", "Malformed request: invalid headers.") },
+            { "Hea\nder: value".EscapeNonPrintable(), ("Hea\nder: value", "Invalid request header: 'Hea\\x0A'") },
+            { "Hea\rder: value".EscapeNonPrintable(), ("Hea\rder: value", "Invalid request header: 'Hea\\x0Dd'") },
+            { "Hea\r\nder: value".EscapeNonPrintable(), ("Hea\r\nder: value", "Invalid request header: 'Hea\\x0D\\x0A'") },
+            { "Header: val\rue".EscapeNonPrintable(), ("Header: val\rue", "Invalid request header: 'Header: val\\x0Du'") },
+            { "Header: va\nlue".EscapeNonPrintable(), ("Header: va\nlue", "Invalid request header: 'Header: va\\x0A'") },
         };
 
-    public static TheoryData<string> BadHeaderDataNames => new TheoryData<string>
+    public static TheoryData<string> BadHeaderDataNames
+    {
+        get
         {
-            "Hea\0der: value".EscapeNonPrintable(),
-            "Header: va\0lue".EscapeNonPrintable(),
-            "Head\x80r: value".EscapeNonPrintable(),
-            "Header: valu\x80".EscapeNonPrintable()
-        };
+            var data = new TheoryData<string>();
+            foreach (var key in BadHeaderData.Keys)
+            {
+                data.Add(key);
+            }
+
+            return data;
+        }
+    }
 
     [Theory]
     [MemberData(nameof(BadHeaderDataNames))]
-    public Task BadRequestWhenHeaderNameContainsNonASCIIOrNullCharacters(string dataName)
+    public Task BadRequestWhenHeaderContainsNonASCIIOrNullCharacters(string dataName)
     {
         // Using dictionary of input data to avoid invalid strings in the xml test results
         var header = BadHeaderData[dataName].header;

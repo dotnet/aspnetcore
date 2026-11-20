@@ -13,16 +13,15 @@ using Microsoft.AspNetCore.Connections;
 using Microsoft.AspNetCore.Connections.Features;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Features;
+using Microsoft.AspNetCore.InternalTesting;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Features;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure;
-using Microsoft.AspNetCore.InternalTesting;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Primitives;
 using Microsoft.Net.Http.Headers;
 using Moq;
-using Microsoft.Extensions.Diagnostics.Metrics.Testing;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests;
 
@@ -2426,6 +2425,26 @@ public class Http2ConnectionTests : Http2TestBase
 
         await StopConnectionAsync(expectedLastStreamId: 3, ignoreNonGoAwayFrames: false);
 
+        AssertConnectionNoError();
+    }
+
+    [Fact]
+    public async Task HEADERS_Received_WithTrailers_ColonInValue_Available()
+    {
+        await InitializeConnectionAsync(_readTrailersApplication);
+
+        await SendHeadersAsync(1, Http2HeadersFrameFlags.END_HEADERS, _browserRequestHeaders);
+        var trailers = new[] { new KeyValuePair<string, string>("trailer-colon", "value:part") };
+        await SendHeadersAsync(1, Http2HeadersFrameFlags.END_HEADERS | Http2HeadersFrameFlags.END_STREAM, trailers);
+
+        await ExpectAsync(Http2FrameType.HEADERS,
+            withLength: 36,
+            withFlags: (byte)(Http2HeadersFrameFlags.END_HEADERS | Http2HeadersFrameFlags.END_STREAM),
+            withStreamId: 1);
+
+        Assert.Equal("value:part", _receivedTrailers["trailer-colon"]);
+
+        await StopConnectionAsync(expectedLastStreamId: 1, ignoreNonGoAwayFrames: false);
         AssertConnectionNoError();
     }
 
@@ -6524,6 +6543,60 @@ public class Http2ConnectionTests : Http2TestBase
                     CoreStrings.BadRequest_MalformedRequestInvalidHeaders
                 }
             };
+
+            // Null in header name
+            data.Add(new byte[] { 0x00, 0x02 }
+                .Concat(Encoding.ASCII.GetBytes("a\0"))
+                .Concat(new byte[] { 0x01, (byte)'0' })
+                .ToArray(), CoreStrings.BadRequest_InvalidCharactersInHeaderName);
+
+            // Colon in header name
+            data.Add(new byte[] { 0x00, 0x03 }
+                .Concat(Encoding.ASCII.GetBytes("a:b"))
+                .Concat(new byte[] { 0x01, (byte)'0' })
+                .ToArray(), CoreStrings.BadRequest_MalformedRequestInvalidHeaders);
+
+            // Non-ASCII in header name
+            data.Add(new byte[] { 0x00, 0x03 }
+                .Concat(Encoding.UTF8.GetBytes("aż"))
+                .Concat(new byte[] { 0x01, (byte)'0' })
+                .ToArray(), CoreStrings.BadRequest_InvalidCharactersInHeaderName);
+
+            // Carriage return in header name
+            data.Add(new byte[] { 0x00, 0x02 }
+                .Concat(Encoding.ASCII.GetBytes("a\r"))
+                .Concat(new byte[] { 0x01, (byte)'0' })
+                .ToArray(), CoreStrings.BadRequest_MalformedRequestInvalidHeaders);
+
+            // Newline in header name
+            data.Add(new byte[] { 0x00, 0x02 }
+                .Concat(Encoding.ASCII.GetBytes("a\n"))
+                .Concat(new byte[] { 0x01, (byte)'0' })
+                .ToArray(), CoreStrings.BadRequest_MalformedRequestInvalidHeaders);
+
+            // Carriage return in header value
+            data.Add(new byte[] { 0x00, 0x02 }
+                .Concat(Encoding.ASCII.GetBytes("ab"))
+                .Concat(new byte[] { 0x02, (byte)'0', (byte)'\r' })
+                .ToArray(), CoreStrings.BadRequest_MalformedRequestInvalidHeaders);
+
+            // Newline in header value
+            data.Add(new byte[] { 0x00, 0x02 }
+                .Concat(Encoding.ASCII.GetBytes("ab"))
+                .Concat(new byte[] { 0x02, (byte)'0', (byte)'\n' })
+                .ToArray(), CoreStrings.BadRequest_MalformedRequestInvalidHeaders);
+
+            // Null in header value
+            data.Add(new byte[] { 0x00, 0x02 }
+                .Concat(Encoding.ASCII.GetBytes("ab"))
+                .Concat(new byte[] { 0x02, (byte)'0', (byte)'\0' })
+                .ToArray(), CoreStrings.BadRequest_MalformedRequestInvalidHeaders);
+
+            // Non-ASCII in header value (Latin1 as UTF8 and ASCII are supported in header value)
+            data.Add(new byte[] { 0x00, 0x02 }
+                .Concat(Encoding.ASCII.GetBytes("ab"))
+                .Concat(new byte[] { 0x02, (byte)'0', (byte)128, })
+                .ToArray(), CoreStrings.BadRequest_MalformedRequestInvalidHeaders);
 
             return data;
         }
