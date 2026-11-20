@@ -417,12 +417,23 @@ public class FileExtensionContentTypeProvider : IContentTypeProvider
     {
         ArgumentNullException.ThrowIfNull(mapping);
         Mappings = mapping;
+
+        // Only use the alternate lookup for an exact Dictionary<string, string> so a derived type
+        // that re-implements IDictionary<string, string>.TryGetValue keeps being called.
+        if (mapping.GetType() == typeof(Dictionary<string, string>) &&
+            ((Dictionary<string, string>)mapping).TryGetAlternateLookup(out _spanLookup))
+        {
+            _useSpanLookup = true;
+        }
     }
 
     /// <summary>
     /// The cross reference table of file extensions and content-types.
     /// </summary>
     public IDictionary<string, string> Mappings { get; private set; }
+
+    private readonly Dictionary<string, string>.AlternateLookup<ReadOnlySpan<char>> _spanLookup;
+    private readonly bool _useSpanLookup;
 
     /// <summary>
     /// Given a file path, determine the MIME type
@@ -432,16 +443,23 @@ public class FileExtensionContentTypeProvider : IContentTypeProvider
     /// <returns>True if MIME type could be determined</returns>
     public bool TryGetContentType(string subpath, [MaybeNullWhen(false)] out string contentType)
     {
-        var extension = GetExtension(subpath);
-        if (extension == null)
+        var index = GetExtensionIndex(subpath);
+        if (index < 0)
         {
             contentType = null;
             return false;
         }
-        return Mappings.TryGetValue(extension, out contentType);
+
+        // Avoid allocating the extension substring when the mappings support span lookups.
+        if (_useSpanLookup)
+        {
+            return _spanLookup.TryGetValue(subpath.AsSpan(index), out contentType);
+        }
+
+        return Mappings.TryGetValue(subpath.Substring(index), out contentType);
     }
 
-    private static string? GetExtension(string path)
+    private static int GetExtensionIndex(string path)
     {
         // Don't use Path.GetExtension as that may throw an exception if there are
         // invalid characters in the path. Invalid characters should be handled
@@ -449,15 +467,9 @@ public class FileExtensionContentTypeProvider : IContentTypeProvider
 
         if (string.IsNullOrWhiteSpace(path))
         {
-            return null;
+            return -1;
         }
 
-        int index = path.LastIndexOf('.');
-        if (index < 0)
-        {
-            return null;
-        }
-
-        return path.Substring(index);
+        return path.LastIndexOf('.');
     }
 }
