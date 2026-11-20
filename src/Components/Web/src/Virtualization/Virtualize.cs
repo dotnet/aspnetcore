@@ -44,6 +44,10 @@ public sealed class Virtualize<TItem> : ComponentBase, IVirtualizeJsCallbacks, I
 
     private float _itemSize;
 
+    private float _lastRenderedItemSize;
+
+    private (int ItemsBefore, float ItemSize)? _pendingScrollRecalibration;
+
     private float _lastSetItemSize;
 
     private IEnumerable<TItem>? _loadedItems;
@@ -563,10 +567,26 @@ public sealed class Virtualize<TItem> : ComponentBase, IVirtualizeJsCallbacks, I
             throw oldRefreshException;
         }
 
+        var itemSize = GetItemHeight();
+        var scrollRecalibration = _pendingScrollRecalibration;
+        _pendingScrollRecalibration = null;
+
         builder.OpenElement(0, SpacerElement);
         builder.AddAttribute(1, "data-blazor-virtualize-reserved-height", GetSpacerHeightPx(_itemsBefore));
         builder.AddAttribute(2, "aria-hidden", "true");
-        builder.AddElementReferenceCapture(3, elementReference => _spacerBefore = elementReference);
+        if (scrollRecalibration is { } recalibration
+            && recalibration.ItemsBefore == _itemsBefore
+            && recalibration.ItemSize == itemSize
+            && _itemsBefore > 0
+            && _lastRenderedItemSize > 0 && itemSize > 0 && _lastRenderedItemSize != itemSize
+            && (AnchorMode & VirtualizeAnchorMode.End) != 0
+            && !_pendingAnchorRestore && !_pendingScrollToBottom && _currentScrollCts is null)
+        {
+            // Carry both estimates in the render that changes them, not in an after-render interop call.
+            builder.AddAttribute(3, "data-blazor-virtualize-scroll-recalibration", string.Create(CultureInfo.InvariantCulture, $"{_lastRenderedItemSize}:{itemSize}"));
+        }
+        _lastRenderedItemSize = itemSize;
+        builder.AddElementReferenceCapture(4, elementReference => _spacerBefore = elementReference);
         builder.CloseElement();
 
         var lastItemIndex = Math.Min(_itemsBefore + _visibleItemCapacity, _itemCount);
@@ -732,7 +752,8 @@ public sealed class Virtualize<TItem> : ComponentBase, IVirtualizeJsCallbacks, I
             itemsBefore--;
         }
 
-        UpdateItemDistribution(itemsBefore, visibleItemCapacity, unusedItemCapacity);
+        UpdateItemDistribution(itemsBefore, visibleItemCapacity, unusedItemCapacity,
+            preserveScrollOnRecalibration: (AnchorMode & VirtualizeAnchorMode.End) != 0);
     }
 
     void IVirtualizeJsCallbacks.OnAfterSpacerVisible(float spacerSize, float spacerSeparation, float containerSize, SpacerVisibilityReason reason)
@@ -856,9 +877,8 @@ public sealed class Virtualize<TItem> : ComponentBase, IVirtualizeJsCallbacks, I
         }
     }
 
-    private float GetEffectiveItemSizeForStaleSpacer()
+    private float GetEffectiveItemSize(float effectiveItemSize)
     {
-        var effectiveItemSize = GetItemHeight();
         if (effectiveItemSize <= 0 || float.IsNaN(effectiveItemSize) || float.IsInfinity(effectiveItemSize))
         {
             effectiveItemSize = _itemSize > 0 ? _itemSize : ItemSize;
@@ -908,14 +928,15 @@ public sealed class Virtualize<TItem> : ComponentBase, IVirtualizeJsCallbacks, I
     {
         var hadNewMeasurements = AccumulateMeasurement(spacerSeparation);
         RecalibrateItemSize(spacerSeparation);
-        var effectiveItemSize = GetEffectiveItemSizeForStaleSpacer();
+        var spacerItemSize = GetEffectiveItemSize(_lastRenderedItemSize);
+        var effectiveItemSize = GetEffectiveItemSize(GetItemHeight());
 
         // This AppContext data was added as a stopgap for .NET 8 and earlier, since it was added in a patch
         // where we couldn't add new public API. For backcompat we still support the AppContext setting, but
         // new applications should use the much more convenient MaxItemCount parameter.
         var maxItemCount = GetMaximumItemCapacity();
 
-        itemsInSpacer = Math.Max(0, (int)Math.Floor(spacerSize / effectiveItemSize) - OverscanCount);
+        itemsInSpacer = Math.Max(0, (int)Math.Floor(spacerSize / spacerItemSize) - OverscanCount);
         visibleItemCapacity = (int)Math.Ceiling(containerSize / effectiveItemSize) + 2 * OverscanCount;
         unusedItemCapacity = Math.Max(0, visibleItemCapacity - maxItemCount);
         visibleItemCapacity -= unusedItemCapacity;
@@ -956,7 +977,8 @@ public sealed class Virtualize<TItem> : ComponentBase, IVirtualizeJsCallbacks, I
         return _visibleItemCapacity;
     }
 
-    private void UpdateItemDistribution(int itemsBefore, int visibleItemCapacity, int unusedItemCapacity)
+    private void UpdateItemDistribution(
+        int itemsBefore, int visibleItemCapacity, int unusedItemCapacity, bool preserveScrollOnRecalibration = false)
     {
         // If the itemcount just changed to a lower number, and we're already scrolled past the end of the new
         // reduced set of items, clamp the scroll position to the new maximum
@@ -971,6 +993,7 @@ public sealed class Virtualize<TItem> : ComponentBase, IVirtualizeJsCallbacks, I
             _itemsBefore = itemsBefore;
             _visibleItemCapacity = visibleItemCapacity;
             _unusedItemCapacity = unusedItemCapacity;
+            _pendingScrollRecalibration = preserveScrollOnRecalibration ? (itemsBefore, GetItemHeight()) : null;
 
             // After a successful data load, the ResizeObserver→IntersectionObserver cycle
             // re-triggers with refined measurements. This one-shot flag skips the single

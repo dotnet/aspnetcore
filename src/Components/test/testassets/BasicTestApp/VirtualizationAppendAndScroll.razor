@@ -1,0 +1,48 @@
+@using Microsoft.AspNetCore.Components.Web.Virtualization
+
+<select id="anchor-mode-select" @bind="anchorMode">
+    <option value="1">Start</option>
+    <option value="2">End</option>
+</select>
+<button id="append-one-item" @onclick="Append" disabled="@InteractionUnavailable">Add at end</button>
+<button id="scroll-to-end" @onclick="ScrollToEndAsync" disabled="@InteractionUnavailable">Go to end</button>
+<p id="total-item-count">@items.Count</p>
+<div id="scroll-container" data-anchor-mode="@anchorMode" tabindex="0"
+     style="height: 420px; overflow-y: auto; border: 1px solid black;">
+    <Virtualize @ref="virtualizer" Items="items" Context="item" ItemSize="120" OverscanCount="5" AnchorMode="@((VirtualizeAnchorMode)anchorMode)">
+        <article @key="item" class="item" data-index="@item"
+                 style="box-sizing: border-box; height: @(item % 5 == 0 ? 240 : 120)px; padding: 16px; border-bottom: 1px solid gray;">
+            Item @item
+            @if (item % 5 == 0)
+            {
+                <p>Additional details for this item.</p>
+            }
+        </article>
+    </Virtualize>
+</div>
+<p id="scroll-status">@status</p>
+
+@code {
+    private List<int> items = [.. Enumerable.Range(1, 10_000)];
+    private Virtualize<int> virtualizer = default!;
+    private int anchorMode = 1;
+    private bool jumping;
+    private string status = "Ready";
+    private bool InteractionUnavailable => !RendererInfo.IsInteractive || jumping;
+
+    private void Append() => items = [.. items, items.Count + 1];
+
+    private async Task ScrollToEndAsync()
+    {
+        jumping = true;
+        try
+        {
+            await virtualizer.ScrollToItemAsync(items.Count - 1);
+            status = $"Completed: {items.Count}";
+        }
+        finally
+        {
+            jumping = false;
+        }
+    }
+}
