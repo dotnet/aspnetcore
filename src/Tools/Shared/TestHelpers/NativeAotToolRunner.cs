@@ -34,7 +34,7 @@ public static class NativeAotToolRunner
             WorkingDirectory = workingDirectory ?? AppContext.BaseDirectory,
             RedirectStandardError = true,
             RedirectStandardOutput = true,
-            UseShellExecute = false,
+            InheritedHandles = [],
         };
 
         foreach (var argument in arguments)
@@ -61,13 +61,13 @@ public static class NativeAotToolRunner
 
         process.Start();
 
-        var stdoutTask = process.StandardOutput.ReadToEndAsync();
-        var stderrTask = process.StandardError.ReadToEndAsync();
+        Task<(string StandardOutput, string StandardError)> outputTask = process.ReadAllTextAsync();
 
         using var cts = new CancellationTokenSource(timeout ?? DefaultTimeout);
+        ProcessExitStatus status;
         try
         {
-            await process.WaitForExitAsync(cts.Token);
+            status = await process.WaitForExitStatusAsync(cts.Token);
         }
         catch (OperationCanceledException)
         {
@@ -83,14 +83,13 @@ public static class NativeAotToolRunner
             throw new TimeoutException($"Timed out after {(timeout ?? DefaultTimeout).TotalSeconds} seconds running '{commandLine}'.");
         }
 
-        var stdout = await stdoutTask;
-        var stderr = await stderrTask;
+        (string stdout, string stderr) = await outputTask;
 
-        output.WriteLine($"Exit code: {process.ExitCode}");
+        output.WriteLine($"Exit code: {status.ExitCode}");
         WriteOutput(output, "stdout", stdout);
         WriteOutput(output, "stderr", stderr);
 
-        return new NativeAotToolResult(process.ExitCode, stdout, stderr);
+        return new NativeAotToolResult(status.ExitCode, stdout, stderr);
     }
 
     public static Dictionary<string, string> CreateIsolatedUserProfileEnvironment(TemporaryDirectory directory)

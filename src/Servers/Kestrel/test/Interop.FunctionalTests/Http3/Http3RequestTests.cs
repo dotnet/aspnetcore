@@ -1903,6 +1903,7 @@ public class Http3RequestTests : LoggedTest
     }
 
     [ConditionalFact]
+    [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/69582", OperatingSystems.Linux)]
     [MsQuicSupported]
     public async Task ConnectionLifetimeNotificationFeature_RequestClose_ConnectionEnds()
     {

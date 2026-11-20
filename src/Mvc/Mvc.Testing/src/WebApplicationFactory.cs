@@ -217,10 +217,26 @@ public partial class WebApplicationFactory<TEntryPoint> : IDisposable, IAsyncDis
 
         var host = builder.Build();
 
+        if (_kestrelPort is int port)
+        {
+            // Captured startup service errors bypass startup filters on the legacy host.
+            TryConfigureServerPort(GetServerAddressFeature(host), port);
+        }
+
         host.Start();
         return host;
     }
 #pragma warning restore ASPDEPR008 // IWebHost is obsolete
+
+    private static void TryConfigureServerPort(IServerAddressesFeature? serverAddressFeature, int port)
+    {
+        if (serverAddressFeature is not null)
+        {
+            serverAddressFeature.Addresses.Clear();
+            serverAddressFeature.Addresses.Add($"http://127.0.0.1:{port}");
+            serverAddressFeature.PreferHostingUrls = true;
+        }
+    }
 
     private void ConfigureBuilderToUseKestrel(IWebHostBuilder builder)
     {
@@ -248,13 +264,7 @@ public partial class WebApplicationFactory<TEntryPoint> : IDisposable, IAsyncDis
         {
             // Configure addresses during the app's startup, before Kestrel binds, including
             // when a minimal app starts on its own thread.
-            var serverAddressFeature = server.Features.Get<IServerAddressesFeature>();
-            if (serverAddressFeature is not null)
-            {
-                serverAddressFeature.Addresses.Clear();
-                serverAddressFeature.Addresses.Add($"http://127.0.0.1:{port}");
-                serverAddressFeature.PreferHostingUrls = true;
-            }
+            TryConfigureServerPort(server.Features.Get<IServerAddressesFeature>(), port);
 
             return next;
         }
