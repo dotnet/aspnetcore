@@ -262,6 +262,37 @@ public class ServerSentEventsResultTests
         }
     }
 
+        [Fact]
+    public async Task ExecuteAsync_FlowsRequestAbortedToGeneratorEnumeratorCancellationToken()
+    {
+        // Arrange
+        var timeout = TimeSpan.FromSeconds(30);
+        var cts = new CancellationTokenSource();
+        var httpContext = GetHttpContext();
+        httpContext.RequestAborted = cts.Token;
+        var generatorStarted = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+        var generatorTokenCancelled = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+
+        // The token is NOT passed here. It can only reach the generator through GetAsyncEnumerator(token).
+        var result = TypedResults.ServerSentEvents(GetEvents());
+
+        // Act
+        var executeTask = result.ExecuteAsync(httpContext);
+        await generatorStarted.Task.WaitAsync(timeout);
+        cts.Cancel();
+
+        // Assert
+        await generatorTokenCancelled.Task.WaitAsync(timeout);
+        await Assert.ThrowsAnyAsync<OperationCanceledException>(() => executeTask.WaitAsync(timeout));
+
+        async IAsyncEnumerable<string> GetEvents([EnumeratorCancellation] CancellationToken cancellationToken = default)
+        {
+            cancellationToken.Register(() => generatorTokenCancelled.TrySetResult());
+            generatorStarted.TrySetResult();
+            await Task.Delay(Timeout.Infinite, cancellationToken);
+            yield return "unreachable";
+        }
+    }
     [Fact]
     public async Task ExecuteAsync_DisablesBuffering()
     {
