@@ -99,12 +99,6 @@ public class JObjectAdapter : IAdapter
             return false;
         }
 
-        if (currentValue == null || string.IsNullOrEmpty(currentValue.ToString()))
-        {
-            errorMessage = Resources.FormatValueForTargetSegmentCannotBeNullOrEmpty(segment);
-            return false;
-        }
-
         if (!JToken.DeepEquals(JsonConvert.SerializeObject(currentValue), JsonConvert.SerializeObject(value)))
         {
             errorMessage = Resources.FormatValueNotEqualToTestValue(currentValue, value, segment);

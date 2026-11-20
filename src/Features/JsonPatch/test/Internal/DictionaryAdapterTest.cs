@@ -334,4 +334,79 @@ public class DictionaryAdapterTest
         Assert.False(testStatus);
         Assert.Equal(expectedErrorMessage, errorMessage);
     }
+
+    [Fact]
+    public void Test_DoesNotThrowException_IfValueIsNull()
+    {
+        // Arrange
+        var key = "Name";
+        var dictionary = new Dictionary<string, object>();
+        dictionary[key] = null;
+        var dictionaryAdapter = new DictionaryAdapter<string, object>();
+        var resolver = new DefaultContractResolver();
+
+        // Act
+        var testStatus = dictionaryAdapter.TryTest(dictionary, key, resolver, null, out var message);
+
+        //Assert
+        Assert.True(testStatus);
+        Assert.True(string.IsNullOrEmpty(message), "Expected no error message");
+    }
+
+    [Fact]
+    public void Test_ThrowsJsonPatchException_IfValueIsNullAndTestValueIsNotNull()
+    {
+        // Arrange
+        var key = "Name";
+        var dictionary = new Dictionary<string, object>();
+        dictionary[key] = null;
+        var dictionaryAdapter = new DictionaryAdapter<string, object>();
+        var resolver = new DefaultContractResolver();
+        var expectedErrorMessage = "The current value '' at path 'Name' is not equal to the test value 'John'.";
+
+        // Act
+        var testStatus = dictionaryAdapter.TryTest(dictionary, key, resolver, "John", out var errorMessage);
+
+        //Assert
+        Assert.False(testStatus);
+        Assert.Equal(expectedErrorMessage, errorMessage);
+    }
+
+    [Fact]
+    public void Test_ThrowsJsonPatchException_IfValueIsNotNullAndTestValueIsNull()
+    {
+        // Arrange
+        var key = "Name";
+        var dictionary = new Dictionary<string, object>();
+        dictionary[key] = "James";
+        var dictionaryAdapter = new DictionaryAdapter<string, object>();
+        var resolver = new DefaultContractResolver();
+        var expectedErrorMessage = "The current value 'James' at path 'Name' is not equal to the test value ''.";
+
+        // Act
+        var testStatus = dictionaryAdapter.TryTest(dictionary, key, resolver, null, out var errorMessage);
+
+        //Assert
+        Assert.False(testStatus);
+        Assert.Equal(expectedErrorMessage, errorMessage);
+    }
+
+    [Fact]
+    public void Test_ThrowsJsonPatchException_IfValueIsNullAndTestValueIsEmptyString()
+    {
+        // Arrange
+        var key = "Age";
+        var dictionary = new Dictionary<string, int?>();
+        dictionary[key] = null;
+        var dictionaryAdapter = new DictionaryAdapter<string, int?>();
+        var resolver = new DefaultContractResolver();
+        var expectedErrorMessage = "The current value '' at path 'Age' is not equal to the test value ''.";
+
+        // Act
+        var testStatus = dictionaryAdapter.TryTest(dictionary, key, resolver, "", out var errorMessage);
+
+        //Assert
+        Assert.False(testStatus);
+        Assert.Equal(expectedErrorMessage, errorMessage);
+    }
 }

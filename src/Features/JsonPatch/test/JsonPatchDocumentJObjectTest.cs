@@ -172,4 +172,88 @@ public class JsonPatchDocumentJObjectTest
         // Assert
         Assert.Equal(JTokenType.Null, model.CustomData["Email"].Type);
     }
+
+    [Fact]
+    public void ApplyTo_Model_Test_NullValue()
+    {
+        // Arrange
+        var model = new ObjectWithJObject { CustomData = new JObject { ["Email"] = null, ["Name"] = "Bar" } };
+        var patch = new JsonPatchDocument<ObjectWithJObject>();
+
+        patch.Operations.Add(new Operation<ObjectWithJObject>("test", "/CustomData/Email", null, null));
+        patch.Operations.Add(new Operation<ObjectWithJObject>("replace", "/CustomData/Email", null, "foo@bar.com"));
+
+        // Act
+        patch.ApplyTo(model);
+
+        // Assert
+        Assert.Equal("foo@bar.com", model.CustomData["Email"].Value<string>());
+    }
+
+    [Fact]
+    public void ApplyTo_Model_Test_NullValue_FailsWhenValueIsNotNull()
+    {
+        // Arrange
+        var model = new ObjectWithJObject { CustomData = JObject.FromObject(new { Email = "foo@bar.com", Name = "Bar" }) };
+        var patch = new JsonPatchDocument<ObjectWithJObject>();
+
+        patch.Operations.Add(new Operation<ObjectWithJObject>("test", "/CustomData/Email", null, null));
+        patch.Operations.Add(new Operation<ObjectWithJObject>("replace", "/CustomData/Email", null, "foo@baz.com"));
+
+        // Act
+        var exception = Assert.Throws<JsonPatchException>(() => patch.ApplyTo(model));
+
+        // Assert
+        Assert.Equal("The current value 'foo@bar.com' at path 'Email' is not equal to the test value ''.", exception.Message);
+        Assert.Equal("foo@bar.com", model.CustomData["Email"].Value<string>());
+    }
+
+    [Fact]
+    public void ApplyTo_Model_Test_FailsWhenValueIsNull()
+    {
+        // Arrange
+        var model = new ObjectWithJObject { CustomData = new JObject { ["Email"] = null, ["Name"] = "Bar" } };
+        var patch = new JsonPatchDocument<ObjectWithJObject>();
+
+        patch.Operations.Add(new Operation<ObjectWithJObject>("test", "/CustomData/Email", null, "foo@bar.com"));
+
+        // Act
+        var exception = Assert.Throws<JsonPatchException>(() => patch.ApplyTo(model));
+
+        // Assert
+        Assert.Equal("The current value '' at path 'Email' is not equal to the test value 'foo@bar.com'.", exception.Message);
+    }
+
+    [Fact]
+    public void ApplyTo_Model_Test_EmptyString()
+    {
+        // Arrange
+        var model = new ObjectWithJObject { CustomData = JObject.FromObject(new { Email = "", Name = "Bar" }) };
+        var patch = new JsonPatchDocument<ObjectWithJObject>();
+
+        patch.Operations.Add(new Operation<ObjectWithJObject>("test", "/CustomData/Email", null, ""));
+        patch.Operations.Add(new Operation<ObjectWithJObject>("replace", "/CustomData/Email", null, "foo@bar.com"));
+
+        // Act
+        patch.ApplyTo(model);
+
+        // Assert
+        Assert.Equal("foo@bar.com", model.CustomData["Email"].Value<string>());
+    }
+
+    [Fact]
+    public void ApplyTo_Model_Test_EmptyString_FailsWhenValueIsNotEmpty()
+    {
+        // Arrange
+        var model = new ObjectWithJObject { CustomData = JObject.FromObject(new { Email = "foo@bar.com", Name = "Bar" }) };
+        var patch = new JsonPatchDocument<ObjectWithJObject>();
+
+        patch.Operations.Add(new Operation<ObjectWithJObject>("test", "/CustomData/Email", null, ""));
+
+        // Act
+        var exception = Assert.Throws<JsonPatchException>(() => patch.ApplyTo(model));
+
+        // Assert
+        Assert.Equal("The current value 'foo@bar.com' at path 'Email' is not equal to the test value ''.", exception.Message);
+    }
 }
