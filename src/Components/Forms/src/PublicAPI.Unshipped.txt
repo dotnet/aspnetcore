@@ -1,1 +1,5 @@
 #nullable enable
+*REMOVED*Microsoft.AspNetCore.Components.Forms.ValidationMessageStore.Add(System.Linq.Expressions.Expression<System.Func<object!>!>! accessor, string! message) -> void
+*REMOVED*Microsoft.AspNetCore.Components.Forms.ValidationMessageStore.Add(System.Linq.Expressions.Expression<System.Func<object!>!>! accessor, System.Collections.Generic.IEnumerable<string!>! messages) -> void
+Microsoft.AspNetCore.Components.Forms.ValidationMessageStore.Add<TField>(System.Linq.Expressions.Expression<System.Func<TField>!>! accessor, string! message) -> void
+Microsoft.AspNetCore.Components.Forms.ValidationMessageStore.Add<TField>(System.Linq.Expressions.Expression<System.Func<TField>!>! accessor, System.Collections.Generic.IEnumerable<string!>! messages) -> void
