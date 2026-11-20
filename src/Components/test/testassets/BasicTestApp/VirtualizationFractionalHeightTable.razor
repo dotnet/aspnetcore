@@ -1,0 +1,49 @@
+@using Microsoft.AspNetCore.Components.Web.Virtualization
+
+<p>Fractional row heights in a table inside a container scroller.</p>
+<button id="gate-fractional-load" @onclick="GateLoad">Gate load</button>
+<button id="release-fractional-load" @onclick="ReleaseLoad">Release load</button>
+
+<div id="fractional-height-table-container" style="height: 350px; overflow-y: auto; border: 1px solid #999;">
+    <table style="width: 100%; border-spacing: 0;">
+        <tbody>
+            <Virtualize ItemsProvider="LoadAsync" Context="row" SpacerElement="tr" ItemSize="50" OverscanCount="3">
+                <ItemContent>
+                    <tr><td id="fractional-row-@row" class="fractional-row">Row @row</td></tr>
+                </ItemContent>
+                <Placeholder>
+                    <tr><td>Loading…</td></tr>
+                </Placeholder>
+            </Virtualize>
+        </tbody>
+    </table>
+</div>
+
+<style>
+    #fractional-height-table-container td {
+        padding: 16px;
+        line-height: 20.02px;
+        border-bottom: 1px solid #ccc;
+    }
+</style>
+
+@code {
+    private const int TotalRows = 20000;
+
+    private readonly TaskCompletionSource release = new(TaskCreationOptions.RunContinuationsAsynchronously);
+    private bool gate;
+
+    private void GateLoad() => gate = true;
+
+    private void ReleaseLoad() => release.TrySetResult();
+
+    private async ValueTask<ItemsProviderResult<int>> LoadAsync(ItemsProviderRequest request)
+    {
+        if (gate)
+        {
+            await release.Task;
+        }
+        var count = Math.Min(request.Count, TotalRows - request.StartIndex);
+        return new ItemsProviderResult<int>(Enumerable.Range(request.StartIndex, count), TotalRows);
+    }
+}

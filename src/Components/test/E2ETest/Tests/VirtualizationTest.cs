@@ -541,6 +541,66 @@ public class VirtualizationTest : ServerTestBase<ToggleExecutionModeServerFixtur
         Assert.Equal(0, nestedTrCountAfterScroll);
     }
 
+    [Fact]
+    public void VariableHeightTable_FractionalRowHeights_KeepViewportFilled()
+    {
+        Browser.MountTestComponent<VirtualizationFractionalHeightTable>();
+        var js = (IJavaScriptExecutor)Browser;
+
+        Browser.True(
+            () => Browser.FindElements(By.CssSelector("#fractional-height-table-container [id^='fractional-row-']")).Count > 0,
+            TimeSpan.FromSeconds(10), "Expected the initial provider load to render rows");
+
+        Browser.Exists(By.Id("gate-fractional-load")).Click();
+
+        // Match the report's scroll cadence while the provider is still pending.
+        js.ExecuteAsyncScript(@"
+            var container = document.getElementById('fractional-height-table-container');
+            var done = arguments[arguments.length - 1];
+            var steps = 0;
+            function step() {
+                container.scrollTop += 120;
+                if (++steps < 25) {
+                    setTimeout(step, 60);
+                } else {
+                    done();
+                }
+            }
+            step();
+        ");
+
+        Browser.True(
+            () => Browser.FindElements(By.XPath("//td[text()='Loading…']")).Count > 0,
+            TimeSpan.FromSeconds(10), "Expected the gated provider to show placeholders after scrolling");
+        Assert.Empty(Browser.FindElements(By.CssSelector("#fractional-height-table-container [id^='fractional-row-']")));
+
+        Browser.Exists(By.Id("release-fractional-load")).Click();
+
+        Browser.True(
+            () => Browser.FindElements(By.CssSelector("#fractional-height-table-container [id^='fractional-row-']")).Count > 0,
+            TimeSpan.FromSeconds(10), "Expected real rows after releasing the provider");
+
+        Browser.True(() =>
+        {
+            var filled = js.ExecuteScript(@"
+                var container = document.getElementById('fractional-height-table-container');
+                var containerRect = container.getBoundingClientRect();
+                var rows = container.querySelectorAll('[id^=""fractional-row-""]');
+                var visibleHeight = 0;
+                for (var i = 0; i < rows.length; i++) {
+                    var rect = rows[i].getBoundingClientRect();
+                    var top = Math.max(rect.top, containerRect.top);
+                    var bottom = Math.min(rect.bottom, containerRect.bottom);
+                    if (bottom > top) {
+                        visibleHeight += bottom - top;
+                    }
+                }
+                return visibleHeight >= containerRect.height * 0.5;
+            ");
+            return filled is bool isFilled && isFilled;
+        }, TimeSpan.FromSeconds(10), "Fractional-height table should fill at least half of the viewport after scrolling");
+    }
+
     [Theory]
     [InlineData(true)]
     [InlineData(false)]
