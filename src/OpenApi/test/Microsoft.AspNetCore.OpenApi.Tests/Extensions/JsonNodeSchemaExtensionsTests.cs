@@ -3,6 +3,7 @@
 
 using System.ComponentModel.DataAnnotations;
 using System.Globalization;
+using System.Text.Json;
 using System.Text.Json.Nodes;
 
 namespace Microsoft.AspNetCore.OpenApi.Tests;
@@ -146,5 +147,42 @@ public static class JsonNodeSchemaExtensionsTests
         Assert.False(schema.TryGetPropertyValue("maximum", out _));
         Assert.False(schema.TryGetPropertyValue("exclusiveMinimum", out _));
         Assert.False(schema.TryGetPropertyValue("exclusiveMaximum", out _));
+    }
+
+    [Theory]
+    // int32 literal for uint64 — what F# emits for DefaultParameterValue(10) on a uint64 parameter
+    [InlineData(typeof(ulong), 10, (ulong)10)]
+    // uint32 literal for uint64 — F# DefaultParameterValue(10ul) on uint64
+    [InlineData(typeof(ulong), (uint)10, (ulong)10)]
+    // int32 literal for int64 — common numeric promotion case
+    [InlineData(typeof(long), 10, (long)10)]
+    // int32 literal for int16
+    [InlineData(typeof(short), 10, (short)10)]
+    public static void ApplyDefaultValue_ConvertsLiteralTypeMismatch(Type targetType, object defaultValue, object expected)
+    {
+        // Arrange — simulates what happens when DefaultParameterValue carries a literal whose
+        // CLR type doesn't exactly match the parameter type (e.g. F# int32 literal on uint64).
+        var schema = new JsonObject();
+        var jsonTypeInfo = JsonSerializerOptions.Default.GetTypeInfo(targetType);
+
+        // Act — must not throw InvalidCastException
+        schema.ApplyDefaultValue(defaultValue, jsonTypeInfo);
+
+        // Assert
+        Assert.Equal(expected, JsonSerializer.Deserialize(schema["default"]!, targetType));
+    }
+
+    [Fact]
+    public static void ApplyDefaultValue_SkipsNonConvertibleTypeMismatch()
+    {
+        // Arrange — a string default on a ulong parameter cannot be converted; should not throw.
+        var schema = new JsonObject();
+        var jsonTypeInfo = JsonSerializerOptions.Default.GetTypeInfo<ulong>();
+
+        // Act
+        schema.ApplyDefaultValue("not-a-number", jsonTypeInfo);
+
+        // Assert — default should be absent rather than throwing
+        Assert.False(schema.TryGetPropertyValue("default", out _));
     }
 }
