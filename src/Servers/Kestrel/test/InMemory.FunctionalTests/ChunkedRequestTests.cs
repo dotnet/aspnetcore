@@ -732,8 +732,11 @@ public class ChunkedRequestTests : LoggedTest
         }
     }
 
-    [Fact]
-    public async Task InvalidLengthResultsIn400()
+    [Theory]
+    [InlineData("Cii")]
+    [InlineData("80000000")]
+    [InlineData("FFFFFFFF")]
+    public async Task InvalidLengthResultsIn400(string chunkSize)
     {
         var testContext = new TestServiceContext(LoggerFactory);
         await using (var server = new TestServer(async httpContext =>
@@ -761,7 +764,7 @@ public class ChunkedRequestTests : LoggedTest
                     "Host:",
                     "Transfer-Encoding: chunked",
                     "",
-                    "Cii");
+                    chunkSize);
 
                 await connection.Receive(
                     "HTTP/1.1 400 Bad Request",
