@@ -33,9 +33,7 @@ export function endHeadStylesheetTransition(): void {
   for (const link of outgoing) {
     const transition = pending.get(link);
     const previous = transition?.previous ?? link;
-    const replacement = link.id
-      ? incoming.find(candidate => candidate.id === link.id)
-      : outgoing.length === 1 && incoming.length === 1 && !incoming[0].id ? incoming[0] : undefined;
+    const replacement = link.id ? incoming.find(candidate => candidate.id === link.id) : undefined;
 
     if (transition) {
       pending.delete(link);

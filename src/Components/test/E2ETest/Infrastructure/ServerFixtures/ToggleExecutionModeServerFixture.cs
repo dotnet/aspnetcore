@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Routing;
 using Microsoft.Extensions.Hosting;
 
 namespace Microsoft.AspNetCore.Components.E2ETest.Infrastructure.ServerFixtures;
@@ -13,7 +14,7 @@ public class ToggleExecutionModeServerFixture<TClientProgram>
 
     public IHost Host { get; set; }
 
-    internal Action<WebApplication> ConfigureGateway { get; set; }
+    internal Action<IEndpointRouteBuilder> ConfigureEndpoints { get; set; }
 
     public ExecutionMode ExecutionMode { get; set; } = ExecutionMode.Client;
 
@@ -34,7 +35,7 @@ public class ToggleExecutionModeServerFixture<TClientProgram>
         {
             var underlying = new BlazorWasmTestAppFixture<TClientProgram>();
             underlying.PathBase = "/subdir";
-            underlying.ConfigureGateway = ConfigureGateway;
+            underlying.ConfigureEndpoints = ConfigureEndpoints;
             _serverToDispose = underlying;
             var uri = underlying.RootUri.AbsoluteUri; // As a side-effect, this starts the server
 

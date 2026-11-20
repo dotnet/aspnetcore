@@ -30,15 +30,26 @@ public class HeadModificationTest : ServerTestBase<HeadModificationTest.HeadModi
     {
         internal TaskCompletionSource Requested { get; } = new(TaskCreationOptions.RunContinuationsAsynchronously);
         internal TaskCompletionSource Release { get; } = new(TaskCreationOptions.RunContinuationsAsynchronously);
+        internal TaskCompletionSource IdlessRequested { get; } = new(TaskCreationOptions.RunContinuationsAsynchronously);
+        internal TaskCompletionSource IdlessRelease { get; } = new(TaskCreationOptions.RunContinuationsAsynchronously);
 
         public HeadModificationFixture()
         {
-            ConfigureGateway = app => app.MapGet("/head-swap-replacement.css", async (CancellationToken cancellationToken) =>
+            ConfigureEndpoints = endpoints =>
             {
-                Requested.TrySetResult();
-                await Release.Task.WaitAsync(cancellationToken);
-                return Microsoft.AspNetCore.Http.Results.Text("#swap-target { background-color: green !important; }", "text/css");
-            });
+                endpoints.MapGet("/head-swap-replacement.css", async (CancellationToken cancellationToken) =>
+                {
+                    Requested.TrySetResult();
+                    await Release.Task.WaitAsync(cancellationToken);
+                    return Microsoft.AspNetCore.Http.Results.Text("#swap-target { background-color: green !important; }", "text/css");
+                });
+                endpoints.MapGet("/head-swap-idless-replacement.css", async (CancellationToken cancellationToken) =>
+                {
+                    IdlessRequested.TrySetResult();
+                    await IdlessRelease.Task.WaitAsync(cancellationToken);
+                    return Microsoft.AspNetCore.Http.Results.Text("#swap-target { background-color: green !important; }", "text/css");
+                });
+            };
         }
     }
 
@@ -74,6 +85,27 @@ public class HeadModificationTest : ServerTestBase<HeadModificationTest.HeadModi
         Browser.FindElement(By.Id("remove-head-sheet")).Click();
 
         Browser.Equal("rgba(255, 0, 0, 1)", () => target.GetCssValue("background-color"));
+    }
+
+    [Fact]
+    public async Task UnmatchedStylesheetsWithoutIdsAreNotTreatedAsReplacements()
+    {
+        Browser.MountTestComponent<HeadStylesheetSwapWithoutIds>();
+        var target = Browser.Exists(By.Id("swap-target"));
+        Browser.Equal("rgba(0, 0, 255, 1)", () => target.GetCssValue("background-color"));
+
+        try
+        {
+            Browser.FindElement(By.Id("swap-head-without-ids")).Click();
+            await _serverFixture.IdlessRequested.Task.WaitAsync(TimeSpan.FromSeconds(15));
+            Assert.Equal("rgba(255, 0, 0, 1)", target.GetCssValue("background-color"));
+        }
+        finally
+        {
+            _serverFixture.IdlessRelease.TrySetResult();
+        }
+
+        Browser.Equal("rgba(0, 128, 0, 1)", () => target.GetCssValue("background-color"));
     }
 
     [Fact]
