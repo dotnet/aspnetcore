@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Diagnostics.CodeAnalysis;
+using System.Linq;
 
 namespace Microsoft.AspNetCore.OpenApi;
 
@@ -23,7 +24,7 @@ internal static class OpenApiSchemaExtensions
 
     public static void MakeArrayItemsNullable(this IOpenApiSchema schema)
     {
-        if (schema is not OpenApiSchema { Items: { } items } arraySchema)
+        if (schema is not OpenApiSchema { Items: { } items } arraySchema || items.IsAlreadyNullable())
         {
             return;
         }
@@ -36,6 +37,38 @@ internal static class OpenApiSchemaExtensions
         {
             arraySchema.Items = items.CreateOneOfNullableWrapper();
         }
+    }
+
+    private static bool IsAlreadyNullable(this IOpenApiSchema schema)
+    {
+        // Use the IOpenApiSchema interface members directly (rather than pattern-matching on
+        // OpenApiSchema) so that schema references (e.g. "$ref" to a componentized schema) are
+        // also handled correctly, since they proxy these properties to their target schema.
+        if (schema.Type is { } schemaType && schemaType.HasFlag(JsonSchemaType.Null))
+        {
+            return true;
+        }
+
+        // An inline enum schema (e.g. for a nullable enum type with no $ref) represents
+        // nullability by including a `null` entry in its `enum` list rather than setting
+        // the `type` keyword, so check for that case too.
+        if (schema.Enum is { } enumValues && enumValues.Any(static value => value is null))
+        {
+            return true;
+        }
+
+        if (schema.OneOf is { } oneOfSchemas)
+        {
+            foreach (var oneOfSchema in oneOfSchemas)
+            {
+                if (oneOfSchema.Type is { } oneOfSchemaType && oneOfSchemaType.HasFlag(JsonSchemaType.Null))
+                {
+                    return true;
+                }
+            }
+        }
+
+        return false;
     }
 
     public static bool IsComponentizedSchema(this OpenApiSchema schema)
