@@ -7,6 +7,7 @@ using System.Net.WebSockets;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.InternalTesting;
 using Microsoft.Net.Http.Headers;
+using Microsoft.AspNetCore.Http.Features;
 
 namespace Microsoft.AspNetCore.WebSockets.Test;
 
@@ -165,6 +166,57 @@ public class WebSocketCompressionMiddlewareTests : LoggedTest
         }
     }
 
+    [Fact]
+    public async Task CompressionSettingDoesNotLeakBetweenDefaultAcceptContexts()
+    {
+        var requestCount = 0;
+
+        await using (var server = KestrelWebSocketHelpers.CreateServer(LoggerFactory, out var port, async context =>
+        {
+            requestCount++;
+
+            if (requestCount == 1)
+            {
+                var feature = context.Features.GetRequiredFeature<IHttpWebSocketFeature>();
+                context.Features.Set<IHttpWebSocketFeature>(new MutatingWebSocketFeature(feature));
+            }
+
+            Assert.True(context.WebSockets.IsWebSocketRequest);
+            using var webSocket = await context.WebSockets.AcceptWebSocketAsync();
+        }))
+        {
+            using (var client = new HttpClient())
+            {
+                var uri = new UriBuilder(new Uri($"ws://127.0.0.1:{port}/"));
+                uri.Scheme = "http";
+
+                // The first connection simulates Interactive Server Components enabling compression.
+                using (var request = new HttpRequestMessage(HttpMethod.Get, uri.ToString()))
+                {
+                    SetGenericWebSocketRequest(request);
+                    request.Headers.Add(HeaderNames.SecWebSocketExtensions, "permessage-deflate");
+
+                    var response = await client.SendAsync(request);
+
+                    Assert.Equal(HttpStatusCode.SwitchingProtocols, response.StatusCode);
+                    Assert.True(response.Headers.Contains(HeaderNames.SecWebSocketExtensions));
+                }
+
+                // Compression should not leak into a subsequent unrelated connection.
+                using (var request = new HttpRequestMessage(HttpMethod.Get, uri.ToString()))
+                {
+                    SetGenericWebSocketRequest(request);
+                    request.Headers.Add(HeaderNames.SecWebSocketExtensions, "permessage-deflate");
+
+                    var response = await client.SendAsync(request);
+
+                    Assert.Equal(HttpStatusCode.SwitchingProtocols, response.StatusCode);
+                    Assert.False(response.Headers.Contains(HeaderNames.SecWebSocketExtensions));
+                }
+            }
+        }
+    }
+
     private static void SetGenericWebSocketRequest(HttpRequestMessage request)
     {
         request.Headers.Connection.Clear();
@@ -174,5 +226,24 @@ public class WebSocketCompressionMiddlewareTests : LoggedTest
         request.Headers.Add(HeaderNames.SecWebSocketVersion, "13");
         // SecWebSocketKey required to be 16 bytes
         request.Headers.Add(HeaderNames.SecWebSocketKey, Convert.ToBase64String(new byte[] { 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16 }, Base64FormattingOptions.None));
+    }
+
+    private sealed class MutatingWebSocketFeature : IHttpWebSocketFeature
+    {
+        private readonly IHttpWebSocketFeature _inner;
+
+        public MutatingWebSocketFeature(IHttpWebSocketFeature inner)
+        {
+            _inner = inner;
+        }
+
+        public bool IsWebSocketRequest => _inner.IsWebSocketRequest;
+
+        public Task<WebSocket> AcceptAsync(WebSocketAcceptContext context)
+        {
+            context.DangerousEnableCompression = true;
+
+            return _inner.AcceptAsync(context);
+        }
     }
 }
