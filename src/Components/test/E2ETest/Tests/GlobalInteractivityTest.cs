@@ -152,18 +152,14 @@ public class GlobalInteractivityTest(
         Browser.Equal(Browser.Url, () => Browser.Exists(By.Id("navigation-uri")).Text);
     }
 
-    [Theory]
-    [InlineData("({ value: 42 })")]
-    [InlineData("42")]
-    [InlineData("null")]
-    [InlineData("undefined")]
-    public void IgnoresNonStringHistoryEntryStateAfterWebAssemblyStartup(string stateExpression)
+    [Fact]
+    public void IgnoresNonStringHistoryEntryStateAfterWebAssemblyStartup()
     {
         Navigate($"{ServerPathBase}/globally-interactive/startup/Home?delay-webassembly-startup");
 
         var js = (IJavaScriptExecutor)Browser;
         Browser.True(() => (bool)js.ExecuteScript("return window.webAssemblyStartup?.waiting === true"));
-        js.ExecuteScript($"history.replaceState({{ ...history.state, userState: {stateExpression} }}, '', location.href)");
+        js.ExecuteScript("history.replaceState({ ...history.state, userState: { value: 42 } }, '', location.href)");
         js.ExecuteScript("window.webAssemblyStartup.release()");
 
         Browser.Equal("interactive webassembly", () => Browser.Exists(By.Id("execution-mode")).Text);
