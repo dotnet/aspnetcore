@@ -6,6 +6,7 @@
 
   <ItemGroup>
     <Compile Include="$(IdentityTestSharedSourceRoot)**\*.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)..\..\..\test\InMemory.Test\InMemoryUserStore.cs" Link="InMemoryUserStore.cs" />
     <Content Include="config.json" CopyToOutputDirectory="PreserveNewest" CopyToPublishDirectory="PreserveNewest" />
   </ItemGroup>
 

@@ -429,7 +429,9 @@ public abstract class UserStoreBase<TUser, [DynamicallyAccessedMembers(Dynamical
         cancellationToken.ThrowIfCancellationRequested();
         ThrowIfDisposed();
         var userLogin = await FindUserLoginAsync(loginProvider, providerKey, cancellationToken).ConfigureAwait(false);
-        if (userLogin != null)
+        if (userLogin != null &&
+            string.Equals(userLogin.LoginProvider, loginProvider, StringComparison.Ordinal) &&
+            string.Equals(userLogin.ProviderKey, providerKey, StringComparison.Ordinal))
         {
             return await FindUserAsync(userLogin.UserId, cancellationToken).ConfigureAwait(false);
         }
