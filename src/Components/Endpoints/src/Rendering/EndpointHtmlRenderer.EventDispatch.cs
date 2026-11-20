@@ -11,6 +11,7 @@ using Microsoft.AspNetCore.WebUtilities;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using System.Buffers;
+using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using System.Linq;
 using System.Text;
@@ -146,7 +147,8 @@ internal partial class EndpointHtmlRenderer
         if (renderBatch.NamedEventChanges is { } changes)
         {
             ProcessNamedSubmitEventRemovals(changes);
-            ProcessNamedSubmitEventAdditions(changes);
+            var disposedComponentIds = renderBatch.DisposedComponentIDs;
+            ProcessNamedSubmitEventAdditions(changes, disposedComponentIds.Array.AsSpan(0, disposedComponentIds.Count));
         }
     }
 
@@ -174,7 +176,7 @@ internal partial class EndpointHtmlRenderer
         }
     }
 
-    private void ProcessNamedSubmitEventAdditions(ArrayRange<NamedEventChange> changes)
+    private void ProcessNamedSubmitEventAdditions(ArrayRange<NamedEventChange> changes, ReadOnlySpan<int> disposedComponentIds)
     {
         var changesCount = changes.Count;
         var changesArray = changes.Array;
@@ -184,10 +186,29 @@ internal partial class EndpointHtmlRenderer
             if (change.ChangeType == NamedEventChangeType.Added
                 && string.Equals(change.EventType, "onsubmit", StringComparison.Ordinal))
             {
-                if (TryCreateScopeQualifiedEventName(change.ComponentId, change.AssignedName, out var scopeQualifiedName))
+                // An error boundary can dispose a component in the same batch that added its named events.
+                // Keyed replacement can also record the new event before removing the old one at this location.
+                if (disposedComponentIds.Contains(change.ComponentId)
+                    || !TryGetRemainingNamedSubmitEventName(change.ComponentId, change.FrameIndex, out var assignedName))
                 {
-                    var locationsForName = GetOrAddNewToDictionary(_namedSubmitEventsByScopeQualifiedName, scopeQualifiedName);
+                    continue;
+                }
+
+                if (TryCreateScopeQualifiedEventName(change.ComponentId, assignedName, out var scopeQualifiedName))
+                {
                     var location = (change.ComponentId, change.FrameIndex);
+                    // The same batch can record more than one addition for a form that remains at this location.
+                    if (_namedSubmitEventsByLocation.TryGetValue(location, out var existingName))
+                    {
+                        if (string.Equals(existingName, scopeQualifiedName, StringComparison.Ordinal))
+                        {
+                            continue;
+                        }
+
+                        throw new InvalidOperationException($"A single named submit event is tracked more than once at the same location.");
+                    }
+
+                    var locationsForName = GetOrAddNewToDictionary(_namedSubmitEventsByScopeQualifiedName, scopeQualifiedName);
                     if (!locationsForName.Add(location))
                     {
                         // This shouldn't be possible, since each NamedEvent frame innately has a distinct location
@@ -198,6 +219,27 @@ internal partial class EndpointHtmlRenderer
                 }
             }
         }
+    }
+
+    private bool TryGetRemainingNamedSubmitEventName(int componentId, int frameIndex, [NotNullWhen(true)] out string? assignedName)
+    {
+        var frames = GetCurrentRenderTreeFrames(componentId);
+        if ((uint)frameIndex >= (uint)frames.Count)
+        {
+            assignedName = null;
+            return false;
+        }
+
+        ref var frame = ref frames.Array[frameIndex];
+        if (frame.FrameType != RenderTreeFrameType.NamedEvent
+            || !string.Equals(frame.NamedEventType, "onsubmit", StringComparison.Ordinal))
+        {
+            assignedName = null;
+            return false;
+        }
+
+        assignedName = frame.NamedEventAssignedName;
+        return true;
     }
 
     private static TVal GetOrAddNewToDictionary<TKey, TVal>(Dictionary<TKey, TVal> dictionary, TKey key) where TKey: notnull where TVal: new()
