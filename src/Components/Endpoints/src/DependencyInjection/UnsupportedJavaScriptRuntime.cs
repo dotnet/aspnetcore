@@ -11,27 +11,35 @@ internal sealed class UnsupportedJavaScriptRuntime : IJSRuntime
 {
     private const string Message = "JavaScript interop calls cannot be issued during server-side static rendering, because the page has not yet loaded in the browser. Statically-rendered components must wrap any JavaScript interop calls in conditional logic to ensure those interop calls are not attempted during static rendering.";
 
+    [RequiresUnreferencedCode("JSON serialization and deserialization might require types that cannot be statically analyzed.")]
     public ValueTask<TValue> InvokeAsync<[DynamicallyAccessedMembers(JsonSerialized)] TValue>(string identifier, CancellationToken cancellationToken, object?[]? args)
         => throw new InvalidOperationException(Message);
 
+    [RequiresUnreferencedCode("JSON serialization and deserialization might require types that cannot be statically analyzed.")]
     ValueTask<TValue> IJSRuntime.InvokeAsync<[DynamicallyAccessedMembers(JsonSerialized)] TValue>(string identifier, object?[]? args)
         => throw new InvalidOperationException(Message);
 
+    [RequiresUnreferencedCode("JSON serialization and deserialization might require types that cannot be statically analyzed.")]
     public ValueTask<IJSObjectReference> InvokeConstructorAsync(string identifier, object?[]? args)
         => throw new InvalidOperationException(Message);
 
+    [RequiresUnreferencedCode("JSON serialization and deserialization might require types that cannot be statically analyzed.")]
     public ValueTask<IJSObjectReference> InvokeConstructorAsync(string identifier, CancellationToken cancellationToken, object?[]? args)
         => throw new InvalidOperationException(Message);
 
+    [RequiresUnreferencedCode("JSON serialization and deserialization might require types that cannot be statically analyzed.")]
     public ValueTask<TValue> GetValueAsync<[DynamicallyAccessedMembers(JsonSerialized)] TValue>(string identifier)
         => throw new InvalidOperationException(Message);
 
+    [RequiresUnreferencedCode("JSON serialization and deserialization might require types that cannot be statically analyzed.")]
     public ValueTask<TValue> GetValueAsync<[DynamicallyAccessedMembers(JsonSerialized)] TValue>(string identifier, CancellationToken cancellationToken)
         => throw new InvalidOperationException(Message);
 
+    [RequiresUnreferencedCode("JSON serialization and deserialization might require types that cannot be statically analyzed.")]
     public ValueTask SetValueAsync<[DynamicallyAccessedMembers(JsonSerialized)] TValue>(string identifier, TValue value)
         => throw new InvalidOperationException(Message);
 
+    [RequiresUnreferencedCode("JSON serialization and deserialization might require types that cannot be statically analyzed.")]
     public ValueTask SetValueAsync<[DynamicallyAccessedMembers(JsonSerialized)] TValue>(string identifier, TValue value, CancellationToken cancellationToken)
         => throw new InvalidOperationException(Message);
 }

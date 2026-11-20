@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Buffers;
+using System.Diagnostics.CodeAnalysis;
 using Microsoft.JSInterop;
 
 namespace Microsoft.AspNetCore.Components;
@@ -12,6 +13,7 @@ namespace Microsoft.AspNetCore.Components;
 /// </Summary>
 internal static class TransmitDataStreamToJS
 {
+    [UnconditionalSuppressMessage("Trimming", "IL2026", Justification = "The calls serialize only strings, primitive values, and byte arrays.")]
     internal static async Task TransmitStreamAsync(IJSRuntime runtime, string methodIdentifier, long streamId, DotNetStreamReference dotNetStreamReference)
     {
         var buffer = ArrayPool<byte>.Shared.Rent(32 * 1024);

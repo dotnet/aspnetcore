@@ -1,6 +1,7 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Diagnostics.CodeAnalysis;
 using Microsoft.JSInterop;
 
 namespace Microsoft.AspNetCore.Components;
@@ -94,6 +95,7 @@ internal sealed class PullFromJSDataStream : Stream
         }
     }
 
+    [UnconditionalSuppressMessage("Trimming", "IL2026", Justification = "The call uses the framework's stream-reference converter, primitive offsets, and the byte-array result type.")]
     private async ValueTask<byte[]> RequestDataFromJSAsync(int numBytesToRead)
     {
         numBytesToRead = (int)Math.Min(numBytesToRead, _totalLength - _offset);

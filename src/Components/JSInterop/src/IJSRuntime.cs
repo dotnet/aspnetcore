@@ -22,6 +22,7 @@ public interface IJSRuntime
     /// <param name="identifier">An identifier for the function to invoke. For example, the value <c>"someScope.someFunction"</c> will invoke the function <c>window.someScope.someFunction</c>.</param>
     /// <param name="args">JSON-serializable arguments.</param>
     /// <returns>An instance of <typeparamref name="TValue"/> obtained by JSON-deserializing the return value.</returns>
+    [RequiresUnreferencedCode("JSON serialization and deserialization might require types that cannot be statically analyzed.")]
     ValueTask<TValue> InvokeAsync<[DynamicallyAccessedMembers(JsonSerialized)] TValue>(string identifier, object?[]? args);
 
     /// <summary>
@@ -35,6 +36,7 @@ public interface IJSRuntime
     /// </param>
     /// <param name="args">JSON-serializable arguments.</param>
     /// <returns>An instance of <typeparamref name="TValue"/> obtained by JSON-deserializing the return value.</returns>
+    [RequiresUnreferencedCode("JSON serialization and deserialization might require types that cannot be statically analyzed.")]
     ValueTask<TValue> InvokeAsync<[DynamicallyAccessedMembers(JsonSerialized)] TValue>(string identifier, CancellationToken cancellationToken, object?[]? args);
 
     /// <summary>
@@ -43,6 +45,7 @@ public interface IJSRuntime
     /// <param name="identifier">An identifier for the constructor function to invoke. For example, the value <c>"someScope.SomeClass"</c> will invoke the constructor <c>window.someScope.SomeClass</c>.</param>
     /// <param name="args">JSON-serializable arguments.</param>
     /// <returns>An <see cref="IJSObjectReference"/> instance that represents the created JS object.</returns>
+    [RequiresUnreferencedCode("JSON serialization and deserialization might require types that cannot be statically analyzed.")]
     ValueTask<IJSObjectReference> InvokeConstructorAsync(string identifier, object?[]? args)
         => throw new NotImplementedException();
 
@@ -56,6 +59,7 @@ public interface IJSRuntime
     /// </param>
     /// <param name="args">JSON-serializable arguments.</param>
     /// <returns>An <see cref="IJSObjectReference"/> instance that represents the created JS object.</returns>
+    [RequiresUnreferencedCode("JSON serialization and deserialization might require types that cannot be statically analyzed.")]
     ValueTask<IJSObjectReference> InvokeConstructorAsync(string identifier, CancellationToken cancellationToken, object?[]? args)
         => throw new NotImplementedException();
 
@@ -65,6 +69,7 @@ public interface IJSRuntime
     /// <typeparam name="TValue">The JSON-serializable return type.</typeparam>
     /// <param name="identifier">An identifier for the property to read. For example, the value <c>"someScope.someProp"</c> will read the value of the property <c>window.someScope.someProp</c>.</param>
     /// <returns>An instance of <typeparamref name="TValue"/> obtained by JSON-deserializing the return value.</returns>
+    [RequiresUnreferencedCode("JSON serialization and deserialization might require types that cannot be statically analyzed.")]
     ValueTask<TValue> GetValueAsync<[DynamicallyAccessedMembers(JsonSerialized)] TValue>(string identifier)
        => throw new NotImplementedException();
 
@@ -78,6 +83,7 @@ public interface IJSRuntime
     /// (<see cref="JSRuntime.DefaultAsyncTimeout"/>) from being applied.
     /// </param>
     /// <returns>An instance of <typeparamref name="TValue"/> obtained by JSON-deserializing the return value.</returns>
+    [RequiresUnreferencedCode("JSON serialization and deserialization might require types that cannot be statically analyzed.")]
     ValueTask<TValue> GetValueAsync<[DynamicallyAccessedMembers(JsonSerialized)] TValue>(string identifier, CancellationToken cancellationToken)
         => throw new NotImplementedException();
 
@@ -88,6 +94,7 @@ public interface IJSRuntime
     /// <param name="identifier">An identifier for the property to set. For example, the value <c>"someScope.someProp"</c> will update the property <c>window.someScope.someProp</c>.</param>
     /// <param name="value">JSON-serializable value.</param>
     /// <returns>A <see cref="ValueTask"/> that represents the asynchronous invocation operation.</returns>
+    [RequiresUnreferencedCode("JSON serialization and deserialization might require types that cannot be statically analyzed.")]
     ValueTask SetValueAsync<[DynamicallyAccessedMembers(JsonSerialized)] TValue>(string identifier, TValue value)
         => throw new NotImplementedException();
 
@@ -102,6 +109,7 @@ public interface IJSRuntime
     /// (<see cref="JSRuntime.DefaultAsyncTimeout"/>) from being applied.
     /// </param>
     /// <returns>A <see cref="ValueTask"/> that represents the asynchronous invocation operation.</returns>
+    [RequiresUnreferencedCode("JSON serialization and deserialization might require types that cannot be statically analyzed.")]
     ValueTask SetValueAsync<[DynamicallyAccessedMembers(JsonSerialized)] TValue>(string identifier, TValue value, CancellationToken cancellationToken)
         => throw new NotImplementedException();
 }
