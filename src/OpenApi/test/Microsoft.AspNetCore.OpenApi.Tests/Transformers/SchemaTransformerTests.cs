@@ -3,6 +3,7 @@
 
 using System.Globalization;
 using System.Net.Http;
+using System.Text.Json.Serialization;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.InternalTesting;
 using Microsoft.AspNetCore.Mvc;
@@ -520,6 +521,31 @@ public class SchemaTransformerTests : OpenApiDocumentServiceTestBase
     }
 
     [Fact]
+    public async Task SchemaTransformer_DoesNotReceiveIgnoredPropertyMetadataForPolymorphicDiscriminator()
+    {
+        var builder = CreateBuilder();
+
+        builder.MapPost("/account", (IgnoredDiscriminatorAccount account) => { });
+
+        var options = new OpenApiOptions();
+        options.AddSchemaTransformer((schema, context, cancellationToken) =>
+        {
+            // The discriminator node is created by the framework. The ignored CLR property that
+            // shares its name must not be exposed to transformers as that node's metadata.
+            Assert.NotEqual(typeof(IgnoredDiscriminatorRole), context.JsonTypeInfo.Type);
+            Assert.False(context.JsonPropertyInfo is { Get: null, Set: null });
+            return Task.CompletedTask;
+        });
+
+        await VerifyOpenApiDocument(builder, options, document =>
+        {
+            var requestSchema = document.Paths["/account"].Operations[HttpMethod.Post].RequestBody.Content["application/json"].Schema;
+            Assert.NotNull(requestSchema.AnyOf);
+            Assert.Equal(2, requestSchema.AnyOf.Count);
+        });
+    }
+
+    [Fact]
     public async Task SchemaTransformer_CanModifyPropertiesInAnItemsType()
     {
         var builder = CreateBuilder();
@@ -964,6 +990,32 @@ public class SchemaTransformerTests : OpenApiDocumentServiceTestBase
 
         // Should not throw InvalidOperationException: Collection was modified; enumeration operation may not execute.
         await VerifyOpenApiDocument(builder, options, document => { });
+    }
+
+    [JsonPolymorphic(TypeDiscriminatorPropertyName = "role")]
+    [JsonDerivedType(typeof(IgnoredDiscriminatorEmployee), "employee")]
+    [JsonDerivedType(typeof(IgnoredDiscriminatorMerchant), "merchant")]
+    private abstract class IgnoredDiscriminatorAccount
+    {
+        [JsonIgnore]
+        [JsonPropertyName("role")]
+        public IgnoredDiscriminatorRole Role { get; set; }
+    }
+
+    private class IgnoredDiscriminatorEmployee : IgnoredDiscriminatorAccount
+    {
+        public string Name { get; set; }
+    }
+
+    private class IgnoredDiscriminatorMerchant : IgnoredDiscriminatorAccount
+    {
+        public string Company { get; set; }
+    }
+
+    private enum IgnoredDiscriminatorRole
+    {
+        Employee,
+        Merchant,
     }
 
     private class PolymorphicContainer
