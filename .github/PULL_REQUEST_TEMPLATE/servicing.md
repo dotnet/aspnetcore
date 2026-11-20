@@ -37,9 +37,3 @@ Fixes #{bug number} (in this specific format)
 - [ ] Yes
 - [ ] No
 - [ ] N/A
-
-----
-
-## When servicing release/2.3
-
-- [ ] Make necessary changes in eng/PatchConfig.props
