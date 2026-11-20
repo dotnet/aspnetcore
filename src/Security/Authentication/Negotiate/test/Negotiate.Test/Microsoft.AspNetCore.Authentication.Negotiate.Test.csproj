@@ -22,6 +22,7 @@
     <ProjectReference Include="$(RepoRoot)src\Http\Routing\src\Microsoft.AspNetCore.Routing.csproj" />
     <ProjectReference Include="$(RepoRoot)src\Middleware\Diagnostics.Abstractions\src\Microsoft.AspNetCore.Diagnostics.Abstractions.csproj" />
     <ProjectReference Include="$(RepoRoot)src\Middleware\Diagnostics\src\Microsoft.AspNetCore.Diagnostics.csproj" />
+    <ProjectReference Include="$(RepoRoot)src\Middleware\HttpOverrides\src\Microsoft.AspNetCore.HttpOverrides.csproj" />
     <ProjectReference Include="$(RepoRoot)src\Security\Authentication\Core\src\Microsoft.AspNetCore.Authentication.csproj" />
     <ProjectReference Include="$(RepoRoot)src\Security\Authentication\Negotiate\src\Microsoft.AspNetCore.Authentication.Negotiate.csproj" />
     <ProjectReference Include="$(RepoRoot)src\Security\Authorization\Core\src\Microsoft.AspNetCore.Authorization.csproj" />
