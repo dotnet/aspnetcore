@@ -383,7 +383,7 @@ public class RazorComponentEndpointsStartup<TRootComponent>
         });
 
         endpoints.MapMethods("/nav/network-failure-fetch/{id}", ["GET", "POST"], async (
-            string id, HttpContext context, EnhancedNavigationFailureState failures) =>
+            string id, HttpContext context, EnhancedNavigationFailureState failures, bool flushResponse, bool framed) =>
         {
             var enhanced = context.Request.Headers.Accept.ToString().Contains("blazor-enhanced-nav=on", StringComparison.Ordinal);
             var state = failures.Get(id);
@@ -391,6 +391,25 @@ public class RazorComponentEndpointsStartup<TRootComponent>
 
             if (enhanced)
             {
+                if (flushResponse)
+                {
+                    context.Response.ContentType = "text/html";
+                    context.Response.Headers["blazor-enhanced-nav"] = "allow";
+                    if (framed)
+                    {
+                        const string frameBoundary = "network-failure-frame";
+                        context.Response.Headers["ssr-framing"] = frameBoundary;
+                        await context.Response.WriteAsync($"<html><body><h1 id='network-failure-response-started'>Network failure response</h1><div id='blazor-error-ui' style='display: none'>An unhandled error has occurred.</div></body></html><!--{frameBoundary}-->", context.RequestAborted);
+                    }
+                    else
+                    {
+                        await context.Response.WriteAsync("<html><body><h1 id='network-failure-response-started'>Network failure response</h1></body></html>", context.RequestAborted);
+                    }
+
+                    await context.Response.Body.FlushAsync(context.RequestAborted);
+                    state.RecordResponseStarted();
+                }
+
                 try
                 {
                     await state.WaitAsync(context.RequestAborted);

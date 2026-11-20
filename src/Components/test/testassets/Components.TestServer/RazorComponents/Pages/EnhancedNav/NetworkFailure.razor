@@ -10,6 +10,8 @@
 
 <form action="@Action" method="post" data-enhance @formname="network-failure">
     <AntiforgeryToken />
+    <input name="flushResponse" type="hidden" value="@FlushResponse.ToString().ToLowerInvariant()" />
+    <input name="framed" type="hidden" value="@Framed.ToString().ToLowerInvariant()" />
     <input id="submitted-value" name="value" value="hello &amp; world" />
     <button id="failed-get-form" type="submit" formmethod="@Formmethod">Submit GET</button>
     <button id="failed-post" type="submit" formmethod="post">Submit POST</button>
@@ -54,10 +56,16 @@ else if (IncludeErrorUi)
     [SupplyParameterFromQuery]
     private bool ReplaceErrorUi { get; set; }
 
+    [SupplyParameterFromQuery]
+    private bool FlushResponse { get; set; }
+
+    [SupplyParameterFromQuery]
+    private bool Framed { get; set; }
+
     [CascadingParameter]
     private HttpContext HttpContext { get; set; } = default!;
 
-    private string Action => $"nav/network-failure-fetch/{Id}";
+    private string Action => $"nav/network-failure-fetch/{Id}?flushResponse={FlushResponse.ToString().ToLowerInvariant()}&framed={Framed.ToString().ToLowerInvariant()}";
 
     protected override void OnInitialized()
     {

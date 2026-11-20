@@ -194,14 +194,14 @@ function onDocumentSubmit(event: SubmitEvent) {
       }
     }
 
-    performEnhancedPageLoad(url.toString(), /* interceptedLink */ false, fetchOptions).catch(error => {
+    performEnhancedPageLoad(url.toString(), /* interceptedLink */ false, fetchOptions, undefined, true, true).catch(error => {
       console.error(error);
       showErrorNotification();
     });
   }
 }
 
-export async function performEnhancedPageLoad(internalDestinationHref: string, interceptedLink: boolean, fetchOptions?: RequestInit, treatAsRedirectionFromMethod?: 'get' | 'post', changeUrl = true) {
+export async function performEnhancedPageLoad(internalDestinationHref: string, interceptedLink: boolean, fetchOptions?: RequestInit, treatAsRedirectionFromMethod?: 'get' | 'post', changeUrl = true, suppressErrorIfSuperseded = false) {
   performingEnhancedPageLoad = true;
 
   // First, stop any preceding enhanced page load
@@ -235,11 +235,12 @@ export async function performEnhancedPageLoad(internalDestinationHref: string, i
     },
   }, fetchOptions));
   const isGetRequest = !fetchOptions?.method || fetchOptions.method.toLowerCase() === 'get';
+  let shouldAppendHistoryEntry = changeUrl && treatAsRedirectionFromMethod === 'post';
   let response: Response;
   try {
     response = await responsePromise;
   } catch (ex) {
-    handleEnhancedNavigationFailure(ex, internalDestinationHref, isGetRequest, abortController, true);
+    handleEnhancedNavigationFailure(ex, internalDestinationHref, isGetRequest, abortController, true, shouldAppendHistoryEntry, changeUrl, suppressErrorIfSuperseded);
     return;
   }
 
@@ -296,6 +297,7 @@ export async function performEnhancedPageLoad(internalDestinationHref: string, i
           }
         }
         internalDestinationHref = response.url;
+        shouldAppendHistoryEntry = false;
       }
 
       // For enhanced nav redirecting to an external URL, we'll get a special Blazor-specific redirection command
@@ -366,7 +368,7 @@ export async function performEnhancedPageLoad(internalDestinationHref: string, i
   } catch (ex) {
     const isResponseReadFailure = ex instanceof ResponseReadError;
     const originalError = isResponseReadFailure ? ex.cause : ex;
-    handleEnhancedNavigationFailure(originalError, internalDestinationHref, isGetRequest, abortController, isResponseReadFailure);
+    handleEnhancedNavigationFailure(originalError, internalDestinationHref, isGetRequest, abortController, isResponseReadFailure, shouldAppendHistoryEntry, changeUrl, suppressErrorIfSuperseded);
     return;
   }
 
@@ -395,23 +397,34 @@ export async function performEnhancedPageLoad(internalDestinationHref: string, i
   }
 }
 
-function handleEnhancedNavigationFailure(ex: unknown, internalDestinationHref: string, isGetRequest: boolean, abortController: AbortController, isResponseReadFailure: boolean) {
+function handleEnhancedNavigationFailure(ex: unknown, internalDestinationHref: string, isGetRequest: boolean, abortController: AbortController, isResponseReadFailure: boolean, shouldAppendHistoryEntry: boolean, changeUrl: boolean, suppressErrorIfSuperseded: boolean) {
   if (isResponseReadFailure && ex instanceof Error && ex.name === 'AbortError' && abortController.signal.aborted) {
     return;
   }
 
   if (isResponseReadFailure && isGetRequest && currentEnhancedNavigationAbortController === abortController) {
+    const locationBeforeCompletion = location.href;
     performingEnhancedPageLoad = false;
     navigationEnhancementCallbacks.enhancedNavigationCompleted();
-    if (currentEnhancedNavigationAbortController === abortController && !abortController.signal.aborted) {
-      retryEnhancedNavAsFullPageLoad(internalDestinationHref);
-    }
+    // Give native navigation scheduled by an enhancednavigationend listener a chance to start.
+    requestAnimationFrame(() => {
+      if (currentEnhancedNavigationAbortController === abortController && !abortController.signal.aborted && location.href === locationBeforeCompletion) {
+        if (shouldAppendHistoryEntry && location.href !== internalDestinationHref) {
+          history.pushState(null, '', internalDestinationHref);
+        }
+
+        retryEnhancedNavAsFullPageLoad(internalDestinationHref, changeUrl);
+      }
+    });
     return;
   }
 
   if (currentEnhancedNavigationAbortController === abortController) {
     performingEnhancedPageLoad = false;
     navigationEnhancementCallbacks.enhancedNavigationCompleted();
+    if (suppressErrorIfSuperseded && currentEnhancedNavigationAbortController !== abortController) {
+      return;
+    }
   }
 
   throw ex;
@@ -519,11 +532,15 @@ function enhancedNavigationIsEnabledForForm(form: HTMLFormElement): boolean {
     && attributeValue === '' || attributeValue?.toLowerCase() === 'true';
 }
 
-function retryEnhancedNavAsFullPageLoad(internalDestinationHref: string) {
-  // The ? trick here is the same workaround as described in #10839, and without it, the user
-  // would not be able to use the back button afterwards.
+function retryEnhancedNavAsFullPageLoad(internalDestinationHref: string, changeUrl = true) {
   console.warn(`Enhanced navigation failed for destination ${internalDestinationHref}. Falling back to full page load.`);
-  history.replaceState(null, '', internalDestinationHref + '?');
-  location.replace(internalDestinationHref);
+  if (changeUrl) {
+    // The ? trick here is the same workaround as described in #10839, and without it, the user
+    // would not be able to use the back button afterwards.
+    history.replaceState(null, '', internalDestinationHref + '?');
+    location.replace(internalDestinationHref);
+  } else {
+    location.reload();
+  }
 }
 

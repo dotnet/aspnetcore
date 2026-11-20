@@ -19,10 +19,12 @@ public sealed class EnhancedNavigationFailureState
         private int _enhancedRequests;
         private int _fullPageRequests;
         private int _postRequests;
+        private int _responsesStarted;
 
         public int EnhancedRequests => Volatile.Read(ref _enhancedRequests);
         public int FullPageRequests => Volatile.Read(ref _fullPageRequests);
         public int PostRequests => Volatile.Read(ref _postRequests);
+        public int ResponsesStarted => Volatile.Read(ref _responsesStarted);
 
         public void RecordRequest(bool enhanced, bool isPost)
         {
@@ -40,6 +42,8 @@ public sealed class EnhancedNavigationFailureState
                 Interlocked.Increment(ref _postRequests);
             }
         }
+
+        public void RecordResponseStarted() => Interlocked.Increment(ref _responsesStarted);
 
         public Task WaitAsync(CancellationToken cancellationToken) => _release.Task.WaitAsync(cancellationToken);
 
