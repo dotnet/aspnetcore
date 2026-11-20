@@ -15479,7 +15479,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                         break;
                     case 38: // Header: "Content-Length"
                         Debug.Assert(_currentBits == 0);
-                        _current = new KeyValuePair<string, StringValues>(HeaderNames.ContentLength, HeaderUtilities.FormatNonNegativeInt64(_collection._contentLength.GetValueOrDefault()));
+                        _current = new KeyValuePair<string, StringValues>(HeaderNames.ContentLength, _formatContentLength ? HeaderUtilities.FormatNonNegativeInt64(_collection._contentLength.GetValueOrDefault()) : default(StringValues));
                         _currentKnownType = KnownHeaderType.ContentLength;
                         _next = -1;
                         return true;

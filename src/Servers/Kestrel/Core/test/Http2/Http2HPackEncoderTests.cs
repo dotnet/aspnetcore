@@ -1,6 +1,7 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Globalization;
 using System.Net.Http.HPack;
 using System.Text;
 using Microsoft.AspNetCore.Http;
@@ -666,6 +667,83 @@ public class Http2HPackEncoderTests
         var enumerator = new Http2HeadersEnumerator();
         enumerator.Initialize(groupedHeaders);
         return enumerator;
+    }
+
+    [Theory]
+    [InlineData(0L)]
+    [InlineData(9L)]
+    [InlineData(299L)]
+    [InlineData(300L)]
+    [InlineData(1024L)]
+    [InlineData(long.MaxValue)]
+    public void BeginEncodeHeaders_ContentLength_MatchesStringEncoding(long contentLength)
+    {
+        var value = contentLength.ToString(CultureInfo.InvariantCulture);
+
+        Span<byte> expected = new byte[64];
+        expected[0] = 0x88; // :status 200
+        Assert.True(HPackEncoder.EncodeLiteralHeaderFieldWithoutIndexing(H2StaticTable.ContentLength, value, valueEncoding: null, expected.Slice(1), out var expectedLength));
+        expectedLength += 1;
+
+        // Default encoding selector uses the Content-Length fast path.
+        var headers = new HttpResponseHeaders();
+        headers.ContentLength = contentLength;
+        var enumerator = new Http2HeadersEnumerator();
+        enumerator.Initialize(headers);
+
+        Span<byte> buffer = new byte[64];
+        var hpackEncoder = new DynamicHPackEncoder();
+        Assert.Equal(HeaderWriteResult.Done, HPackHeaderWriter.BeginEncodeHeaders(200, hpackEncoder, enumerator, buffer, out var length));
+        Assert.Equal(BitConverter.ToString(expected.Slice(0, expectedLength).ToArray()), BitConverter.ToString(buffer.Slice(0, length).ToArray()));
+        Assert.Empty(GetHeaderEntries(hpackEncoder));
+
+        // Custom encoding selector uses the string path.
+        var customHeaders = new HttpResponseHeaders(_ => null);
+        customHeaders.ContentLength = contentLength;
+        var customEnumerator = new Http2HeadersEnumerator();
+        customEnumerator.Initialize(customHeaders);
+
+        buffer.Clear();
+        Assert.Equal(HeaderWriteResult.Done, HPackHeaderWriter.BeginEncodeHeaders(200, new DynamicHPackEncoder(), customEnumerator, buffer, out length));
+        Assert.Equal(BitConverter.ToString(expected.Slice(0, expectedLength).ToArray()), BitConverter.ToString(buffer.Slice(0, length).ToArray()));
+    }
+
+    [Theory]
+    [InlineData(9L)]
+    [InlineData(1024L)]
+    [InlineData(long.MaxValue)]
+    public void BeginEncodeHeaders_ContentLength_BufferTooSmall_MatchesStringEncoding(long contentLength)
+    {
+        for (var bufferSize = 1; bufferSize < 32; bufferSize++)
+        {
+            var fast = Encode(KestrelServerOptions.DefaultHeaderEncodingSelector, bufferSize);
+            var slow = Encode(_ => null, bufferSize);
+            Assert.Equal(slow, fast);
+        }
+
+        (HeaderWriteResult, string, string) Encode(Func<string, Encoding> encodingSelector, int bufferSize)
+        {
+            var headers = new HttpResponseHeaders(encodingSelector);
+            headers.ContentLength = contentLength;
+            ((IHeaderDictionary)headers).ContentType = "text/plain";
+            var enumerator = new Http2HeadersEnumerator();
+            enumerator.Initialize(headers);
+
+            var buffer = new byte[bufferSize];
+            var result = HPackHeaderWriter.BeginEncodeHeaders(200, new DynamicHPackEncoder(), enumerator, buffer, out var length);
+            var written = BitConverter.ToString(buffer, 0, length);
+
+            var remaining = new List<string>();
+            if (result != HeaderWriteResult.Done)
+            {
+                do
+                {
+                    remaining.Add(enumerator.Current.Key + ": " + enumerator.Current.Value);
+                } while (enumerator.MoveNext());
+            }
+
+            return (result, written, string.Join(";", remaining));
+        }
     }
 
     private EncoderHeaderEntry GetHeaderEntry(DynamicHPackEncoder encoder, int index)
