@@ -37,9 +37,14 @@ public partial class ValidationsGeneratorTestBase : LoggedTestBase
     private static readonly CSharpParseOptions ParseOptions = new CSharpParseOptions(LanguageVersion.Preview)
         .WithFeatures([new KeyValuePair<string, string>("InterceptorsNamespaces", "Microsoft.Extensions.Validation.Generated")]);
 
-    internal static Task Verify(string source, out Compilation compilation)
+    internal static Task Verify(string source, out Compilation compilation, IEnumerable<MetadataReference> additionalReferences = null)
     {
         var references = GetMetadataReferences();
+        if (additionalReferences is not null)
+        {
+            references = references.Concat(additionalReferences);
+        }
+
         var inputCompilation = CSharpCompilation.Create("ValidationsGeneratorSample",
             [CSharpSyntaxTree.ParseText(source, options: ParseOptions, path: "Program.cs")],
             references,
@@ -129,6 +134,32 @@ public partial class ValidationsGeneratorTestBase : LoggedTestBase
 
         peStream.Seek(0, SeekOrigin.Begin);
         return MetadataReference.CreateFromStream(peStream);
+    }
+
+    // Unlike CompileToMetadataReference, this runs the validations generator on the library (so its own AddValidation
+    // call is intercepted) and loads the library into the default load context so a compiled app can bind to it at runtime.
+    internal static MetadataReference CompileAndLoadReferencedAssembly(string source)
+    {
+        var assemblyName = $"ReferencedAssembly-{Guid.NewGuid()}";
+        var compilation = CSharpCompilation.Create(assemblyName,
+            [CSharpSyntaxTree.ParseText(source, options: ParseOptions, path: "Library.cs")],
+            GetMetadataReferences(),
+            new CSharpCompilationOptions(OutputKind.DynamicallyLinkedLibrary));
+
+        var driver = CSharpGeneratorDriver.Create(generators: [new ValidationsGenerator().AsSourceGenerator()], parseOptions: ParseOptions)
+            .RunGeneratorsAndUpdateCompilation(compilation, out var outputCompilation, out _);
+        Assert.Single(driver.GetRunResult().GeneratedTrees);
+
+        using var peStream = new MemoryStream();
+        var emitResult = outputCompilation.Emit(peStream);
+        Assert.True(
+            emitResult.Success,
+            $"Failed to compile referenced assembly '{assemblyName}':{Environment.NewLine}{string.Join(Environment.NewLine, emitResult.Diagnostics)}");
+
+        peStream.Seek(0, SeekOrigin.Begin);
+        AssemblyLoadContext.Default.LoadFromStream(peStream);
+
+        return MetadataReference.CreateFromImage(peStream.ToArray());
     }
 
     internal static async Task VerifyValidatableType(Compilation compilation, string typeName, Func<ValidationOptions, Type, Task> verifyFunc)
