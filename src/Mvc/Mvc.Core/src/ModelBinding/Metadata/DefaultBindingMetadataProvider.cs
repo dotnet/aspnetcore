@@ -159,7 +159,23 @@ internal sealed class DefaultBindingMetadataProvider : IBindingMetadataProvider
                         .OfType<BindingBehaviorAttribute>()
                         .FirstOrDefault();
             case ModelMetadataKind.Parameter:
-                return context.ParameterAttributes!.OfType<BindingBehaviorAttribute>().FirstOrDefault();
+                var parameterBehavior = context.ParameterAttributes!.OfType<BindingBehaviorAttribute>().FirstOrDefault();
+                if (parameterBehavior != null)
+                {
+                    return parameterBehavior;
+                }
+
+                // A record's primary-constructor parameter should inherit [BindNever]/[BindRequired] from
+                // the record type, as properties do via ContainerType. Action parameters (MethodInfo) are unaffected.
+                if (context.Key.ParameterInfo!.Member is ConstructorInfo constructorInfo)
+                {
+                    return constructorInfo.DeclaringType!
+                        .GetCustomAttributes(typeof(BindingBehaviorAttribute), inherit: true)
+                        .OfType<BindingBehaviorAttribute>()
+                        .FirstOrDefault();
+                }
+
+                return null;
             default:
                 return null;
         }
