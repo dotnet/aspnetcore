@@ -43,6 +43,42 @@ describe("auto reconnect", () => {
         });
     });
 
+    it("camelCase onReconnecting and onReconnected are invoked", async () => {
+        await VerifyLogger.run(async (logger) => {
+            const reconnectedPromise = new PromiseSource();
+            let onReconnectingCount = 0;
+            let onReconnectedCount = 0;
+
+            const connection = new TestConnection();
+            const hubConnection = HubConnection.create(connection, logger, new JsonHubProtocol(), {
+                    nextRetryDelayInMilliseconds() {
+                        return 0;
+                    },
+                });
+
+            hubConnection.onReconnecting(() => {
+                onReconnectingCount++;
+            });
+
+            hubConnection.onReconnected(() => {
+                onReconnectedCount++;
+                reconnectedPromise.resolve();
+            });
+
+            await hubConnection.start();
+
+            // Typically this would be called by the transport
+            connection.onclose!(new Error("Connection lost"));
+
+            await reconnectedPromise;
+
+            expect(onReconnectingCount).toBe(1);
+            expect(onReconnectedCount).toBe(1);
+
+            await hubConnection.stop();
+        });
+    });
+
     it("can be opted into", async () => {
         await VerifyLogger.run(async (logger) => {
             const reconnectedPromise = new PromiseSource();

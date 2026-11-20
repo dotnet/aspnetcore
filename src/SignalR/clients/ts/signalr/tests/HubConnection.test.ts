@@ -2032,6 +2032,44 @@ describe("HubConnection", () => {
             });
         });
 
+        it("camelCase onClose callbacks receive error", async () => {
+            await VerifyLogger.run(async (logger) => {
+                const connection = new TestConnection();
+                const hubConnection = createHubConnection(connection, logger);
+                await hubConnection.start();
+
+                try {
+                    let error: Error | undefined;
+                    hubConnection.onClose((e) => error = e);
+
+                    // Typically this would be called by the transport
+                    connection.onclose!(new Error("Test error."));
+                    expect(error!.message).toBe("Test error.");
+                } finally {
+                    await hubConnection.stop();
+                }
+            });
+        });
+
+        it("onClose and legacy onclose callbacks are both invoked", async () => {
+            await VerifyLogger.run(async (logger) => {
+                const connection = new TestConnection();
+                const hubConnection = createHubConnection(connection, logger);
+                await hubConnection.start();
+
+                try {
+                    let invocations = 0;
+                    hubConnection.onClose(() => invocations++);
+                    hubConnection.onclose(() => invocations++);
+                    // Typically this would be called by the transport
+                    connection.onclose!();
+                    expect(invocations).toBe(2);
+                } finally {
+                    await hubConnection.stop();
+                }
+            });
+        });
+
         it("callbacks receive error", async () => {
             await VerifyLogger.run(async (logger) => {
                 const connection = new TestConnection();
