@@ -107,45 +107,68 @@ internal sealed class OpenApiSchemaService(
                 schema.ApplyNullabilityContextInfo(jsonPropertyInfo);
             }
             var underlyingType = Nullable.GetUnderlyingType(context.TypeInfo.Type) ?? context.TypeInfo.Type;
-            var typeAttributes = underlyingType.GetCustomAttributes(inherit: false);
-            if (typeAttributes.OfType<DescriptionAttribute>().LastOrDefault() is { } typeDescriptionAttribute)
+            // Only materialize the attributes we look for instead of every attribute declared on the type.
+            var typeDescriptionAttributes = underlyingType.GetCustomAttributes(typeof(DescriptionAttribute), inherit: false);
+            if (typeDescriptionAttributes.Length > 0)
             {
-                schema[OpenApiSchemaKeywords.DescriptionKeyword] = typeDescriptionAttribute.Description;
+                schema[OpenApiSchemaKeywords.DescriptionKeyword] = ((DescriptionAttribute)typeDescriptionAttributes[^1]).Description;
             }
-            if (typeAttributes.OfType<ObsoleteAttribute>().Any())
+            if (underlyingType.IsDefined(typeof(ObsoleteAttribute), inherit: false))
             {
                 schema[OpenApiSchemaKeywords.DeprecatedKeyword] = true;
             }
             if (context.PropertyInfo is { AttributeProvider: { } attributeProvider })
             {
                 var propertyAttributes = attributeProvider.GetCustomAttributes(inherit: false);
-                if (propertyAttributes.OfType<ValidationAttribute>() is { } validationAttributes)
+                var hasValidationAttribute = false;
+                var isObsolete = false;
+                DefaultValueAttribute? defaultValueAttribute = null;
+                DescriptionAttribute? descriptionAttribute = null;
+                foreach (var attribute in propertyAttributes)
                 {
-                    schema.ApplyValidationAttributes(validationAttributes);
+                    switch (attribute)
+                    {
+                        case ValidationAttribute:
+                            hasValidationAttribute = true;
+                            break;
+                        case DefaultValueAttribute defaultValue:
+                            defaultValueAttribute = defaultValue;
+                            break;
+                        case DescriptionAttribute description:
+                            descriptionAttribute = description;
+                            break;
+                        case ObsoleteAttribute:
+                            isObsolete = true;
+                            break;
+                    }
                 }
-                if (propertyAttributes.OfType<DefaultValueAttribute>().LastOrDefault() is { } defaultValueAttribute)
+                if (hasValidationAttribute)
+                {
+                    schema.ApplyValidationAttributes(propertyAttributes.OfType<ValidationAttribute>());
+                }
+                if (defaultValueAttribute is not null)
                 {
                     schema.ApplyDefaultValue(defaultValueAttribute.Value, context.TypeInfo);
                 }
                 var isInlinedSchema = !schema.WillBeComponentized();
                 if (isInlinedSchema)
                 {
-                    if (propertyAttributes.OfType<DescriptionAttribute>().LastOrDefault() is { } descriptionAttribute)
+                    if (descriptionAttribute is not null)
                     {
                         schema[OpenApiSchemaKeywords.DescriptionKeyword] = descriptionAttribute.Description;
                     }
-                    if (propertyAttributes.OfType<ObsoleteAttribute>().Any())
+                    if (isObsolete)
                     {
                         schema[OpenApiSchemaKeywords.DeprecatedKeyword] = true;
                     }
                 }
                 else
                 {
-                    if (propertyAttributes.OfType<DescriptionAttribute>().LastOrDefault() is { } descriptionAttribute)
+                    if (descriptionAttribute is not null)
                     {
                         schema[OpenApiConstants.RefDescriptionAnnotation] = descriptionAttribute.Description;
                     }
-                    if (propertyAttributes.OfType<ObsoleteAttribute>().Any())
+                    if (isObsolete)
                     {
                         schema[OpenApiConstants.RefDeprecatedAnnotation] = true;
                     }
