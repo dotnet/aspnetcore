@@ -97,7 +97,7 @@ internal partial class RedisOutputCacheStore : IOutputCacheStore, IOutputCacheBu
                 // approx every 5 minutes, with some randomization to prevent spikes of pile-on
                 var secondsWithJitter = 300 + Random.Shared.Next(-30, 30);
                 Debug.Assert(secondsWithJitter >= 270 && secondsWithJitter <= 330);
-                await Task.Delay(TimeSpan.FromSeconds(secondsWithJitter)).ConfigureAwait(false);
+                await Task.Delay(TimeSpan.FromSeconds(secondsWithJitter), _disposalCancellation.Token).ConfigureAwait(false);
                 try
                 {
                     if (GarbageCollectionEnabled)
@@ -115,6 +115,10 @@ internal partial class RedisOutputCacheStore : IOutputCacheStore, IOutputCacheBu
                     RedisOutputCacheGCTransientFault(_logger, ex);
                 }
             }
+        }
+        catch (OperationCanceledException) when (_disposed)
+        {
+            // The store is shutting down.
         }
         catch (Exception ex)
         {
