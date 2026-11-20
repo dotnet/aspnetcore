@@ -578,6 +578,7 @@ public class UserOnlyStore<TUser, TContext, TKey, TUserClaim, TUserLogin, TUserT
                 IsBackedUp = passkey.IsBackedUp,
                 AttestationObject = passkey.AttestationObject,
                 ClientDataJson = passkey.ClientDataJson,
+                Aaguid = passkey.Aaguid,
             },
         };
     }
