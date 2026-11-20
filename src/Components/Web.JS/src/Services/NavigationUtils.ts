@@ -6,6 +6,7 @@ import { WebRendererId } from '../Rendering/WebRendererId';
 let interactiveRouterRendererId: WebRendererId | undefined = undefined;
 let programmaticEnhancedNavigationHandler: typeof performProgrammaticEnhancedNavigation | undefined;
 let enhancedNavigationListener: typeof notifyEnhancedNavigationListeners | undefined;
+let lastLocationChange: { uri: string; intercepted: boolean } | undefined;
 
 /**
  * Checks if a click event corresponds to an <a> tag referencing a URL within the base href, and that interception
@@ -84,8 +85,26 @@ export function attachEnhancedNavigationListener(listener: typeof enhancedNaviga
   enhancedNavigationListener = listener;
 }
 
-export function notifyEnhancedNavigationListeners(internalDestinationHref: string, interceptedLink: boolean) {
-  enhancedNavigationListener?.(internalDestinationHref, interceptedLink);
+export function notifyEnhancedNavigationListeners(internalDestinationHref: string, interceptedLink: boolean, rendererId?: WebRendererId) {
+  enhancedNavigationListener?.(internalDestinationHref, interceptedLink, rendererId);
+}
+
+export function recordLocationChange(uri: string, intercepted: boolean): void {
+  if (uri === location.href) {
+    lastLocationChange = { uri, intercepted };
+  }
+}
+
+export function resetLastLocationChange(): void {
+  lastLocationChange = undefined;
+}
+
+export function wasLocationChangeRecordedFor(uri: string): boolean {
+  return lastLocationChange?.uri === uri;
+}
+
+export function wasLastLocationChangeIntercepted(uri: string): boolean {
+  return lastLocationChange?.uri === uri && lastLocationChange.intercepted;
 }
 
 export function hasProgrammaticEnhancedNavigationHandler(): boolean {

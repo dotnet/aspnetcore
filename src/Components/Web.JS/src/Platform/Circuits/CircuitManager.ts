@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 import { internalFunctions as navigationManagerFunctions } from '../../Services/NavigationManager';
+import { resetLastLocationChange, wasLastLocationChangeIntercepted, wasLocationChangeRecordedFor } from '../../Services/NavigationUtils';
 import { toLogicalRootCommentElement, LogicalElement, toLogicalElement } from '../../Rendering/LogicalElements';
 import { ServerComponentDescriptor, descriptorToMarker, discoverServerPersistedState } from '../../Services/ComponentDescriptorDiscovery';
 import { HttpTransportType, HubConnection, HubConnectionBuilder, HubConnectionState, LogLevel } from '@microsoft/signalr';
@@ -43,6 +44,10 @@ export class CircuitManager implements DotNet.DotNetCallDispatcher {
   private _circuitId?: string;
 
   private _startPromise?: Promise<boolean>;
+
+  private _startCircuitUri?: string;
+
+  private _locationReplayFailed = false;
 
   private _renderingFailed = false;
 
@@ -105,6 +110,7 @@ export class CircuitManager implements DotNet.DotNetCallDispatcher {
   }
 
   private async startCore(): Promise<boolean> {
+    resetLastLocationChange();
     this._connection = await this.startConnection();
 
     if (this._connection.state !== HubConnectionState.Connected) {
@@ -112,13 +118,22 @@ export class CircuitManager implements DotNet.DotNetCallDispatcher {
     }
 
     const componentsJson = JSON.stringify(this._componentManager.initialComponents.map(c => descriptorToMarker(c)));
-    this._circuitId = await this._connection.invoke<string>(
-      'StartCircuit',
-      navigationManagerFunctions.getBaseURI(),
-      navigationManagerFunctions.getLocationHref(),
-      componentsJson,
-      this._applicationState || ''
-    );
+    this._startCircuitUri = navigationManagerFunctions.getLocationHref();
+    try {
+      this._circuitId = await this._connection.invoke<string>(
+        'StartCircuit',
+        navigationManagerFunctions.getBaseURI(),
+        this._startCircuitUri,
+        componentsJson,
+        this._applicationState || ''
+      );
+    } catch (error) {
+      if (this._locationReplayFailed) {
+        this._logger.log(LogLevel.Error, `Failed to start the circuit: ${error}`);
+        return false;
+      }
+      throw error;
+    }
 
     if (!this._circuitId) {
       return false;
@@ -530,6 +545,20 @@ export class CircuitManager implements DotNet.DotNetCallDispatcher {
     }
   }
 
+  public onRendererAttached(): void {
+    // Location changes are not delivered to the circuit until its renderer attaches, so
+    // URI or history state changes after 'StartCircuit' would otherwise be lost.
+    const startCircuitUri = this._startCircuitUri;
+    this._startCircuitUri = undefined;
+    const uri = navigationManagerFunctions.getLocationHref();
+    const state = history.state?.userState;
+    if (startCircuitUri !== undefined && (uri !== startCircuitUri || (typeof state === 'string' && wasLocationChangeRecordedFor(uri)))) {
+      this.sendLocationChanged(uri, state, wasLastLocationChangeIntercepted(uri)).catch(error => {
+        this.handleLocationReplayFailure(error);
+      });
+    }
+  }
+
   public sendLocationChanged(uri: string, state: string | undefined, intercepted: boolean): Promise<void> {
     return this._connection!.send('OnLocationChanged', uri, state, intercepted);
   }
@@ -573,7 +602,15 @@ export class CircuitManager implements DotNet.DotNetCallDispatcher {
 
     // Disconnect on errors.
     // Trying to call methods on the connection after its been closed will throw.
-    this.disconnect();
+    const disconnectPromise = this._circuitId ? this.disconnect() : this._connection?.stop();
+    disconnectPromise?.catch(error => this._logger.log(LogLevel.Error, `Failed to disconnect the circuit: ${error}`));
+  }
+
+  private handleLocationReplayFailure(error: Error): void {
+    this._locationReplayFailed = true;
+    this._renderingFailed = true;
+    this.unhandledError(error);
+    showErrorNotification();
   }
 
   private getDisconnectFormData(): FormData {

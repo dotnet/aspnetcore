@@ -7,6 +7,7 @@ using Microsoft.AspNetCore.Components.E2ETest.Infrastructure.ServerFixtures;
 using Microsoft.AspNetCore.E2ETesting;
 using Microsoft.AspNetCore.InternalTesting;
 using OpenQA.Selenium;
+using OpenQA.Selenium.Support.Extensions;
 using TestServer;
 using Xunit.Abstractions;
 
@@ -263,6 +264,30 @@ public class RedirectionTest :
         Browser.Navigate().Back();
         Browser.Equal("Redirections", () => _originalH1Element.Text);
         Assert.EndsWith("/subdir/redirect", Browser.Url);
+    }
+
+    [Fact]
+    public void RedirectEnhancedPostOutsideBaseIsReportedAsUnsupported()
+    {
+        Navigate($"{ServerPathBase}/redirect?interactive=true");
+        var sourceUri = Browser.Url;
+        Browser.Exists(By.Id("nav-uri-server"));
+        ((IJavaScriptExecutor)Browser).ExecuteScript("""
+            history.replaceState({ userState: 'source-state' }, '');
+            Blazor.addEventListener('enhancednavigationend', () => window.navigationCompleted = true);
+            window.addEventListener('unhandledrejection', event => window.enhancedNavigationError = event.reason.message, { once: true });
+            """);
+
+        Browser.Exists(By.CssSelector("#form-nonblazor-enhanced-outside-base button")).Click();
+
+        Browser.Equal(
+            "Enhanced navigation does not support non-GET requests that redirect outside the application base URI.",
+            () => Browser.ExecuteJavaScript<string>("return window.enhancedNavigationError"));
+        Assert.Equal(sourceUri, Browser.Url);
+        Browser.Equal(sourceUri, () => Browser.Exists(By.Id("nav-uri-server")).Text);
+        Browser.Equal("source-state", () => Browser.Exists(By.Id("history-state-server")).Text);
+        Assert.True(Browser.ExecuteJavaScript<bool>("return window.navigationCompleted === true"));
+        Browser.Exists(By.Id("form-nonblazor-enhanced-outside-base"));
     }
 
     // There's no RedirectEnhancedNonBlazorPostToExternal case as it's explicitly unsupported

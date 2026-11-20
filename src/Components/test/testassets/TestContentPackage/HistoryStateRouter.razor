@@ -1,0 +1,20 @@
+@using Microsoft.AspNetCore.Components.Routing
+@inject NavigationManager Navigation
+
+<Router AppAssembly="@typeof(HistoryStateRouter).Assembly">
+    <Found Context="routeData"></Found>
+    <NotFound></NotFound>
+</Router>
+
+<button id="set-history-state" @onclick="SetHistoryState">Set history state</button>
+
+@code {
+    private void SetHistoryState()
+    {
+        Navigation.NavigateTo(Navigation.Uri, new NavigationOptions
+        {
+            HistoryEntryState = "state-from-wasm",
+            ReplaceHistoryEntry = true,
+        });
+    }
+}
