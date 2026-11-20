@@ -28,7 +28,8 @@ internal class TestCircuitHost : CircuitHost
         RemoteRenderer remoteRenderer = null,
         IReadOnlyList<ComponentDescriptor> descriptors = null,
         CircuitHandler[] handlers = null,
-        CircuitClientProxy clientProxy = null)
+        CircuitClientProxy clientProxy = null,
+        ILogger logger = null)
     {
         clientProxy = clientProxy ?? new CircuitClientProxy(Mock.Of<ISingleClientProxy>(), Guid.NewGuid().ToString());
         var jsRuntime = new RemoteJSRuntime(Options.Create(new CircuitOptions()), Options.Create(new HubOptions<ComponentHub>()), Mock.Of<ILogger<RemoteJSRuntime>>());
@@ -77,6 +78,6 @@ internal class TestCircuitHost : CircuitHost
             handlers,
             circuitMetrics,
             circuitActivitySource,
-            NullLogger<CircuitHost>.Instance);
+            logger ?? NullLogger<CircuitHost>.Instance);
     }
 }

@@ -490,6 +490,84 @@ public class CircuitRegistryTest
     }
 
     [Fact]
+    public async Task PauseCircuitAsync_DisposesCircuitWhenQueuedActivationFails()
+    {
+        var (registry, persistenceProvider) = CreateRegistryWithProvider();
+        await using var services = new ServiceCollection()
+            .AddLogging()
+            .AddSingleton<IJSRuntime>(Mock.Of<IJSRuntime>())
+            .AddScoped<ComponentStatePersistenceManager>()
+            .AddScoped<PauseFailureState>()
+            .BuildServiceProvider();
+        var scope = services.CreateAsyncScope();
+        var state = scope.ServiceProvider.GetRequiredService<PauseFailureState>();
+        var options = new CircuitOptions();
+        var client = new CircuitClientProxy(Mock.Of<ISingleClientProxy>(), "connection");
+        var jsRuntime = new RemoteJSRuntime(
+            Options.Create(options),
+            Options.Create(new HubOptions<ComponentHub>()),
+            NullLogger<RemoteJSRuntime>.Instance);
+        var renderer = new RemoteRenderer(
+            scope.ServiceProvider,
+            NullLoggerFactory.Instance,
+            options,
+            client,
+            Mock.Of<IServerComponentDeserializer>(),
+            NullLogger.Instance,
+            jsRuntime,
+            new CircuitJSComponentInterop(options));
+        var host = TestCircuitHost.Create(serviceScope: scope, remoteRenderer: renderer, clientProxy: client);
+        var errors = new List<Exception>();
+        host.UnhandledException += (_, args) => errors.Add((Exception)args.ExceptionObject);
+        registry.Register(host);
+        var initial = host.UpdateRootComponents(new()
+        {
+            Operations = [CreateAddOperation<PendingPauseComponent>(0)],
+        }, null, false, CancellationToken.None);
+        Task navigation = Task.CompletedTask;
+        try
+        {
+            await state.InitializationStarted.Task.WaitAsync(TimeSpan.FromSeconds(10));
+            navigation = host.UpdateRootComponents(new()
+            {
+                Operations = [CreateAddOperation<FailingPauseComponent>(1)],
+            }, null, false, CancellationToken.None);
+            await renderer.Dispatcher.InvokeAsync(() => { });
+            Assert.False(initial.IsCompleted);
+            Assert.False(navigation.IsCompleted);
+            Assert.False(state.ActivationAttempted);
+
+            await registry.PauseCircuitAsync(host, client.ConnectionId).WaitAsync(TimeSpan.FromSeconds(10));
+
+            Assert.True(state.ActivationAttempted);
+            Assert.Contains("Queued activation failed.", Assert.Single(errors).ToString());
+            Assert.True(state.ComponentDisposed);
+            Assert.Equal(1, state.ScopeDisposalCount);
+            Assert.Null(host.Handle.CircuitHost);
+            Assert.False(client.Connected);
+            Assert.Empty(registry.ConnectedCircuits);
+            Assert.Equal(0, registry.DisconnectedCircuits.Count);
+            Assert.False(persistenceProvider.PersistCalled);
+            await Task.WhenAll(initial, navigation).WaitAsync(TimeSpan.FromSeconds(10));
+        }
+        finally
+        {
+            await host.DisposeAsync();
+            state.InitializationRelease.TrySetResult();
+            await Task.WhenAll(initial, navigation).WaitAsync(TimeSpan.FromSeconds(10));
+        }
+
+        static RootComponentOperation CreateAddOperation<TComponent>(int ssrComponentId) where TComponent : IComponent
+            => new()
+            {
+                Type = RootComponentOperationType.Add,
+                SsrComponentId = ssrComponentId,
+                Marker = ComponentMarker.Create(ComponentMarker.ServerMarkerType, false, new ComponentMarkerKey(typeof(TComponent).Name, "")),
+                Descriptor = new(typeof(TComponent), WebRootComponentParameters.Empty),
+            };
+    }
+
+    [Fact]
     public async Task ConnectAsync_ReturnsNull_ForPausedCircuit()
     {
         // Arrange
@@ -586,6 +664,55 @@ public class CircuitRegistryTest
         Assert.Same(circuitHost, connected);
         Assert.Equal("connection-B", circuitHost.Client.ConnectionId);
         Assert.False(persistenceProvider.PersistCalled);
+    }
+
+    private sealed class PauseFailureState : IAsyncDisposable
+    {
+        public TaskCompletionSource InitializationStarted { get; } = new(TaskCreationOptions.RunContinuationsAsynchronously);
+        public TaskCompletionSource InitializationRelease { get; } = new(TaskCreationOptions.RunContinuationsAsynchronously);
+        public bool ActivationAttempted { get; set; }
+        public bool ComponentDisposed { get; set; }
+        public int ScopeDisposalCount { get; private set; }
+
+        public ValueTask DisposeAsync()
+        {
+            ScopeDisposalCount++;
+            return ValueTask.CompletedTask;
+        }
+    }
+
+    private sealed class PendingPauseComponent(PauseFailureState state) : IComponent, IDisposable
+    {
+        public void Attach(RenderHandle renderHandle)
+        {
+        }
+
+        public Task SetParametersAsync(ParameterView parameters)
+        {
+            state.InitializationStarted.TrySetResult();
+            return state.InitializationRelease.Task;
+        }
+
+        public void Dispose()
+        {
+            state.ComponentDisposed = true;
+            state.InitializationRelease.TrySetResult();
+        }
+    }
+
+    private sealed class FailingPauseComponent : IComponent
+    {
+        public FailingPauseComponent(PauseFailureState state)
+        {
+            state.ActivationAttempted = true;
+            throw new InvalidOperationException("Queued activation failed.");
+        }
+
+        public void Attach(RenderHandle renderHandle)
+        {
+        }
+
+        public Task SetParametersAsync(ParameterView parameters) => Task.CompletedTask;
     }
 
     private class TestCircuitRegistry : CircuitRegistry

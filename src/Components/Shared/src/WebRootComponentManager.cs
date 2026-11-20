@@ -3,6 +3,7 @@
 
 using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
+using System.Linq;
 using static Microsoft.AspNetCore.Internal.LinkerFlags;
 
 #if COMPONENTS_SERVER
@@ -32,6 +33,8 @@ internal partial class WebAssemblyRenderer
     {
         private readonly Dictionary<int, WebRootComponent> _webRootComponents = new();
         private Task _currentUpdateTask = Task.CompletedTask;
+        private Task _currentParameterUpdateTask = Task.CompletedTask;
+        private List<Action>? _pendingRootComponentInitializations;
 
         public async Task AddRootComponentAsync(
             int ssrComponentId,
@@ -51,10 +54,9 @@ internal partial class WebAssemblyRenderer
                 throw new InvalidOperationException($"A root component with SSR component ID {ssrComponentId} already exists.");
             }
 
-            var component = WebRootComponent.Create(renderer, componentType, ssrComponentId, key, parameters);
+            var component = WebRootComponent.Create(renderer, componentType, ssrComponentId, key, parameters, _pendingRootComponentInitializations);
             _webRootComponents.Add(ssrComponentId, component);
-            await _currentUpdateTask;
-            await component.RenderAsync(renderer);
+            await component.RenderAsync(renderer, _currentUpdateTask);
         }
 
         public Task UpdateRootComponentAsync(
@@ -64,7 +66,7 @@ internal partial class WebAssemblyRenderer
             WebRootComponentParameters newParameters)
         {
             var component = GetRequiredWebRootComponent(ssrComponentId);
-            return component.UpdateAsync(renderer, newComponentType, newKey, newParameters, _currentUpdateTask);
+            return component.UpdateAsync(renderer, newComponentType, newKey, newParameters, _currentUpdateTask, _currentParameterUpdateTask, _pendingRootComponentInitializations);
         }
 
         public void RemoveRootComponent(int ssrComponentId)
@@ -108,10 +110,15 @@ internal partial class WebAssemblyRenderer
             return default;
         }
 
-        internal void SetCurrentUpdateTask(Task postStateTask)
+        internal void SetCurrentUpdateTask(Task postStateTask, List<Action>? pendingRootComponentInitializations = null, Task? parameterUpdateTask = null)
         {
             _currentUpdateTask = postStateTask;
+            _currentParameterUpdateTask = parameterUpdateTask ?? postStateTask;
+            _pendingRootComponentInitializations = pendingRootComponentInitializations;
         }
+
+        internal Task WaitForPendingRenderStartsAsync()
+            => Task.WhenAll(_webRootComponents.Values.Select(component => component.RenderStarted));
 
         private sealed class WebRootComponent
         {
@@ -122,13 +129,19 @@ internal partial class WebAssemblyRenderer
 
             private WebRootComponentParameters _latestParameters;
             private int _interactiveComponentId;
+            private int _version;
+            private bool _removed;
+
+            public bool IsInitialized => _interactiveComponentId >= 0;
+            public Task RenderStarted { get; private set; } = Task.CompletedTask;
 
             public static WebRootComponent Create(
                 Renderer renderer,
                 [DynamicallyAccessedMembers(Component)] Type componentType,
                 int ssrComponentId,
                 ComponentMarkerKey? key,
-                WebRootComponentParameters initialParameters)
+                WebRootComponentParameters initialParameters,
+                List<Action>? pendingRootComponentInitializations)
             {
                 if (!key.HasValue)
                 {
@@ -136,9 +149,17 @@ internal partial class WebAssemblyRenderer
                 }
 
                 var ssrComponentIdString = ssrComponentId.ToString(CultureInfo.InvariantCulture);
-                var interactiveComponentId = renderer.AddRootComponent(componentType, ssrComponentIdString);
+                var interactiveComponentId = pendingRootComponentInitializations is null
+                    ? renderer.AddRootComponent(componentType, ssrComponentIdString)
+                    : -1;
 
-                return new(componentType, ssrComponentIdString, key.Value, interactiveComponentId, initialParameters);
+                var component = new WebRootComponent(componentType, ssrComponentIdString, key.Value, interactiveComponentId, initialParameters);
+                if (pendingRootComponentInitializations is not null)
+                {
+                    component.EnqueueInitialization(renderer, pendingRootComponentInitializations);
+                }
+
+                return component;
             }
 
             private WebRootComponent(
@@ -172,7 +193,9 @@ internal partial class WebAssemblyRenderer
                 [DynamicallyAccessedMembers(Component)] Type newComponentType,
                 ComponentMarkerKey? newKey,
                 WebRootComponentParameters newParameters,
-                Task currentUpdateTask)
+                Task currentUpdateTask,
+                Task parameterUpdateTask,
+                List<Action>? pendingRootComponentInitializations)
             {
                 if (_componentType != newComponentType)
                 {
@@ -196,7 +219,7 @@ internal partial class WebAssemblyRenderer
                     // We can supply new parameters if the key has a @key value, because that means the client
                     // opted in to dynamic parameter updates.
                     _latestParameters = newParameters;
-                    return RenderAsync(renderer, currentUpdateTask);
+                    return RenderAsync(renderer, IsInitialized ? parameterUpdateTask : currentUpdateTask);
                 }
                 else
                 {
@@ -211,28 +234,78 @@ internal partial class WebAssemblyRenderer
                         // it and replace it with a new one. This is because it's the client's choice how to
                         // match prerendered components with existing components, and we don't want to allow
                         // clients to maliciously assign parameters to the wrong component.
-                        renderer.RemoveRootComponent(_interactiveComponentId);
-                        _interactiveComponentId = renderer.AddRootComponent(_componentType, _ssrComponentIdString);
+                        if (IsInitialized)
+                        {
+                            renderer.RemoveRootComponent(_interactiveComponentId);
+                        }
+                        _version++;
+                        _interactiveComponentId = pendingRootComponentInitializations is null
+                            ? renderer.AddRootComponent(_componentType, _ssrComponentIdString)
+                            : -1;
+                        if (pendingRootComponentInitializations is not null)
+                        {
+                            EnqueueInitialization(renderer, pendingRootComponentInitializations);
+                        }
                         _latestParameters = newParameters;
                         return RenderAsync(renderer, currentUpdateTask);
                     }
                 }
             }
 
-            public Task RenderAsync(Renderer renderer)
-            {
-                return renderer.RenderRootComponentAsync(_interactiveComponentId, _latestParameters.Parameters);
-            }
-
             public async Task RenderAsync(Renderer renderer, Task updateTask)
             {
-                await updateTask;
-                await renderer.RenderRootComponentAsync(_interactiveComponentId, _latestParameters.Parameters);
+                var version = _version;
+                var renderStarted = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+                RenderStarted = renderStarted.Task;
+                var renderTask = Task.CompletedTask;
+                try
+                {
+                    await updateTask;
+                    if (!_removed && version == _version && IsInitialized)
+                    {
+                        renderTask = renderer.RenderRootComponentAsync(_interactiveComponentId, _latestParameters.Parameters);
+                    }
+                }
+                finally
+                {
+                    renderStarted.SetResult();
+                }
+
+                await renderTask;
+            }
+
+            private void EnqueueInitialization(Renderer renderer, List<Action> pendingRootComponentInitializations)
+            {
+                var version = _version;
+                var executionContext = ExecutionContext.Capture();
+                pendingRootComponentInitializations.Add(() =>
+                {
+                    if (!_removed && version == _version)
+                    {
+                        if (executionContext is null)
+                        {
+                            Initialize(null);
+                        }
+                        else
+                        {
+                            ExecutionContext.Run(executionContext, Initialize, null);
+                        }
+                    }
+                });
+
+                void Initialize(object? state)
+                {
+                    _interactiveComponentId = renderer.AddRootComponent(_componentType, _ssrComponentIdString);
+                }
             }
 
             public void Remove(Renderer renderer)
             {
-                renderer.RemoveRootComponent(_interactiveComponentId);
+                _removed = true;
+                if (IsInitialized)
+                {
+                    renderer.RemoveRootComponent(_interactiveComponentId);
+                }
             }
         }
     }

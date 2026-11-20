@@ -1,0 +1,15 @@
+<p id="startup-state-status">@(RendererInfo.IsInteractive ? "interactive" : "static")</p>
+<p id="startup-state-value">@Value</p>
+<button id="startup-state-click" @onclick="() => _count++">@_count</button>
+
+@code {
+    private int _count;
+
+    [PersistentState(AllowUpdates = true)]
+    public string? Value { get; set; }
+
+    protected override void OnInitialized()
+    {
+        Value ??= RendererInfo.IsInteractive ? "not restored" : Guid.NewGuid().ToString();
+    }
+}

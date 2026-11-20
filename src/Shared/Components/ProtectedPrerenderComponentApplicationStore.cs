@@ -40,6 +40,8 @@ internal sealed class ProtectedPrerenderComponentApplicationStore : PrerenderCom
         renderMode is null ||
         renderMode is InteractiveServerRenderMode || renderMode is InteractiveAutoRenderMode;
 
+    public bool IsEmpty => ExistingState.Count == 0;
+
     public void Clear()
     {
         ExistingState.Clear();
@@ -48,5 +50,7 @@ internal sealed class ProtectedPrerenderComponentApplicationStore : PrerenderCom
 
 internal interface IClearableStore : IPersistentComponentStateStore
 {
+    bool IsEmpty { get; }
+
     void Clear();
 }

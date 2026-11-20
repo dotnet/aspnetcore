@@ -6,11 +6,14 @@ using System.Globalization;
 using System.Reflection;
 using System.Text.Json;
 using Microsoft.AspNetCore.Components.Endpoints;
+using Microsoft.AspNetCore.Components.Infrastructure;
 using Microsoft.AspNetCore.Components.Rendering;
 using Microsoft.AspNetCore.DataProtection;
 using Microsoft.AspNetCore.SignalR;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
+using Microsoft.Extensions.Logging.Testing;
 using Microsoft.Extensions.Options;
 using Microsoft.JSInterop;
 using Moq;
@@ -1156,6 +1159,7 @@ public class CircuitHostTest
         });
 
         await AddComponentAsync<TestComponent>(circuitHost, 2, []);
+        Assert.IsType<TestComponent>(((TestRemoteRenderer)circuitHost.Renderer).GetTestComponentState(1).Component);
 
         Dictionary<string, object> parameters = new()
         {
@@ -1308,6 +1312,7 @@ public class CircuitHostTest
         };
 
         var updateTask = circuitHost.UpdateRootComponents(batch, store, false, CancellationToken.None);
+        await store.RestoreStarted.Task.WaitAsync(TimeSpan.FromSeconds(10));
         Assert.Equal(2, testRenderer.GetOrCreateWebRootComponentManager().GetRootComponents().Count());
         var dynamicallyAddedComponent1 = Assert.IsType<DynamicallyAddedComponent>(testRenderer.GetTestComponentState(3).Component);
         dynamicallyAddedComponent1.Updated = new ManualResetEvent(false);
@@ -1327,7 +1332,881 @@ public class CircuitHostTest
         Assert.Equal(2, testRenderer.GetOrCreateWebRootComponentManager().GetRootComponents().Count());
     }
 
-    private async Task AddComponentAsync<TComponent>(CircuitHost circuitHost, int ssrComponentId, Dictionary<string, object> parameters = null, string componentKey = "")
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task UpdateRootComponents_KeyedParametersCancelInitialWork(bool hasInitialState)
+    {
+        var state = new ParameterCancellationState();
+        await using var services = new ServiceCollection()
+            .AddLogging()
+            .AddSingleton<IJSRuntime>(Mock.Of<IJSRuntime>())
+            .AddSingleton<ComponentStatePersistenceManager>()
+            .AddSingleton(sp => sp.GetRequiredService<ComponentStatePersistenceManager>().State)
+            .AddSingleton(state)
+            .BuildServiceProvider();
+        var renderer = new TestRemoteRenderer(services, Mock.Of<ISingleClientProxy>());
+        var host = TestCircuitHost.Create(remoteRenderer: renderer, serviceScope: services.CreateAsyncScope());
+        var errors = new List<object>();
+        host.UnhandledException += (_, args) => errors.Add(args.ExceptionObject);
+        var initialStore = CreateStore();
+        if (hasInitialState)
+        {
+            initialStore.ExistingState.Add("initial", JsonSerializer.SerializeToUtf8Bytes("restored"));
+        }
+        var initial = AddComponentAsync<ParameterCancellationComponent>(host, 1,
+            new() { [nameof(ParameterCancellationComponent.Id)] = 1 }, componentKey: "retained", store: initialStore);
+        Task update = Task.CompletedTask;
+        try
+        {
+            await state.Started.Task.WaitAsync(TimeSpan.FromSeconds(10));
+            var component = await renderer.Dispatcher.InvokeAsync(() => renderer.GetTestComponentState(0).Component);
+            Assert.False(initial.IsCompleted);
+            Assert.Equal(hasInitialState ? "restored" : null, state.InitialValue);
+            Assert.Empty(initialStore.ExistingState);
+            var restoredIds = new List<int>();
+            using var subscription = host.Services.GetRequiredService<ComponentStatePersistenceManager>().State.RegisterOnRestoring(
+                () => restoredIds.Add(((ParameterCancellationComponent)component).Id),
+                new RestoreOptions { AllowUpdates = true });
+            var parameters = new Dictionary<string, object> { [nameof(ParameterCancellationComponent.Id)] = 2 };
+            update = host.UpdateRootComponents(new()
+            {
+                Operations =
+                [
+                    new()
+                    {
+                        Type = RootComponentOperationType.Update,
+                        SsrComponentId = 1,
+                        Marker = CreateMarker(typeof(ParameterCancellationComponent), "1", parameters, "retained"),
+                        Descriptor = new(typeof(ParameterCancellationComponent), CreateWebRootComponentParameters(parameters)),
+                    },
+                ],
+            }, CreateStore(), false, CancellationToken.None);
+
+            await state.Cancelled.Task.WaitAsync(TimeSpan.FromSeconds(10));
+            await state.UpdatedRender.Task.WaitAsync(TimeSpan.FromSeconds(10));
+            await Task.WhenAll(initial, update).WaitAsync(TimeSpan.FromSeconds(10));
+            await renderer.Dispatcher.InvokeAsync(() =>
+            {
+                Assert.Same(component, renderer.GetTestComponentState(0).Component);
+                Assert.Equal(2, state.RenderedId);
+                Assert.Contains(2, restoredIds);
+                Assert.Empty(errors);
+            });
+        }
+        finally
+        {
+            await host.DisposeAsync();
+            await Task.WhenAll(initial, update).WaitAsync(TimeSpan.FromSeconds(10));
+        }
+    }
+
+    [Fact]
+    public async Task UpdateRootComponents_StateFreeKeyedUpdateWaitsForEarlierRestore()
+    {
+        var renderer = GetRemoteRenderer();
+        var host = TestCircuitHost.Create(remoteRenderer: renderer);
+        await AddComponentAsync<DynamicallyAddedComponent>(host, 1,
+            new() { [nameof(DynamicallyAddedComponent.Message)] = "initial" }, componentKey: "retained", store: CreateStore());
+        var store = new TestComponentApplicationStore(new() { ["unconsumed"] = [1] });
+        var restore = Update("restoring", store);
+        Task next = Task.CompletedTask;
+        var restoreReleased = false;
+        try
+        {
+            await store.RestoreStarted.Task.WaitAsync(TimeSpan.FromSeconds(10));
+            next = Update("latest", CreateStore());
+            await renderer.Dispatcher.InvokeAsync(() =>
+                Assert.Equal("initial", Assert.IsType<DynamicallyAddedComponent>(renderer.GetTestComponentState(0).Component).Message));
+            Assert.False(restore.IsCompleted);
+            Assert.False(next.IsCompleted);
+
+            store.Continue();
+            restoreReleased = true;
+            await Task.WhenAll(restore, next).WaitAsync(TimeSpan.FromSeconds(10));
+            await renderer.Dispatcher.InvokeAsync(() =>
+                Assert.Equal("latest", Assert.IsType<DynamicallyAddedComponent>(renderer.GetTestComponentState(0).Component).Message));
+        }
+        finally
+        {
+            if (!restoreReleased)
+            {
+                store.Continue();
+            }
+            await host.DisposeAsync();
+            await Task.WhenAll(restore, next).WaitAsync(TimeSpan.FromSeconds(10));
+        }
+
+        Task Update(string message, IClearableStore updateStore)
+        {
+            var parameters = new Dictionary<string, object> { [nameof(DynamicallyAddedComponent.Message)] = message };
+            return host.UpdateRootComponents(new()
+            {
+                Operations =
+                [
+                    new()
+                    {
+                        Type = RootComponentOperationType.Update,
+                        SsrComponentId = 1,
+                        Marker = CreateMarker(typeof(DynamicallyAddedComponent), "1", parameters, "retained"),
+                        Descriptor = new(typeof(DynamicallyAddedComponent), CreateWebRootComponentParameters(parameters)),
+                    },
+                ],
+            }, updateStore, false, CancellationToken.None);
+        }
+    }
+
+    [Fact]
+    public async Task UpdateRootComponents_SerializesInitialStateLifetimeThroughQuiescence()
+    {
+        var renderer = GetRemoteRenderer();
+        var circuitHost = TestCircuitHost.Create(remoteRenderer: renderer);
+        var state = circuitHost.Services.GetRequiredService<ComponentStatePersistenceManager>().State;
+        var existingState = new Dictionary<string, byte[]> { ["untaken"] = JsonSerializer.SerializeToUtf8Bytes("initial") };
+        var store = new TestComponentApplicationStore(existingState);
+        store.Continue();
+        var release = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+        var entered = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+        var rendered = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+        var errors = new List<object>();
+        circuitHost.UnhandledException += (_, args) => errors.Add(args.ExceptionObject);
+
+        var first = circuitHost.UpdateRootComponents(new()
+        {
+            Operations = [CreateGatedAddOperation(1, release.Task, entered, rendered)]
+        }, store, false, CancellationToken.None);
+        await entered.Task.WaitAsync(TimeSpan.FromSeconds(10));
+        var secondStore = new TestComponentApplicationStore(new() { ["next"] = JsonSerializer.SerializeToUtf8Bytes("next") });
+        secondStore.Continue();
+        var secondRendered = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+        var second = circuitHost.UpdateRootComponents(new()
+        {
+            Operations = [CreateGatedAddOperation(2, Task.CompletedTask, new(), secondRendered)]
+        }, secondStore, false, CancellationToken.None);
+
+        try
+        {
+            await renderer.Dispatcher.InvokeAsync(() => { });
+            Assert.False(first.IsCompleted);
+            Assert.False(second.IsCompleted);
+            Assert.False(secondRendered.Task.IsCompleted);
+            Assert.False(store.Cleared);
+            Assert.True(existingState.ContainsKey("untaken"));
+        }
+        finally
+        {
+            release.TrySetResult();
+            await Task.WhenAll(first, second).WaitAsync(TimeSpan.FromSeconds(10));
+        }
+
+        await rendered.Task.WaitAsync(TimeSpan.FromSeconds(10));
+        await secondRendered.Task.WaitAsync(TimeSpan.FromSeconds(10));
+        Assert.True(store.Cleared);
+        Assert.Empty(existingState);
+        Assert.Empty(errors);
+        Assert.False(state.TryTakeFromJson<string>("untaken", out _));
+    }
+
+    [Fact]
+    public async Task UpdateRootComponents_SerializesLaterRestoreThroughStoreClear()
+    {
+        var renderer = GetRemoteRenderer();
+        var circuitHost = TestCircuitHost.Create(remoteRenderer: renderer);
+        var initialStore = new TestComponentApplicationStore(new());
+        initialStore.Continue();
+        await AddComponentAsync<DynamicallyAddedComponent>(circuitHost, 0, store: initialStore);
+        var state = circuitHost.Services.GetRequiredService<ComponentStatePersistenceManager>().State;
+        var restored = new TaskCompletionSource<string>(TaskCreationOptions.RunContinuationsAsynchronously);
+        using var subscription = state.RegisterOnRestoring(() =>
+        {
+            if (state.TryTakeFromJson<string>("untaken", out var value))
+            {
+                restored.TrySetResult(value);
+            }
+        }, new RestoreOptions { AllowUpdates = true });
+        var store = new TestComponentApplicationStore(new() { ["untaken"] = JsonSerializer.SerializeToUtf8Bytes("later") });
+        var nextStore = new TestComponentApplicationStore(new());
+        nextStore.Continue();
+        var restore = circuitHost.UpdateRootComponents(new() { Operations = [] }, store, false, CancellationToken.None);
+        await store.RestoreStarted.Task.WaitAsync(TimeSpan.FromSeconds(10));
+        var next = circuitHost.UpdateRootComponents(new() { Operations = [] }, nextStore, false, CancellationToken.None);
+
+        try
+        {
+            await renderer.Dispatcher.InvokeAsync(() => { });
+            Assert.False(restore.IsCompleted);
+            Assert.False(store.Cleared);
+            Assert.False(next.IsCompleted);
+            Assert.False(nextStore.RestoreStarted.Task.IsCompleted);
+        }
+        finally
+        {
+            store.Continue();
+            await Task.WhenAll(restore, next).WaitAsync(TimeSpan.FromSeconds(10));
+        }
+
+        Assert.True(store.Cleared);
+        Assert.True(nextStore.Cleared);
+        Assert.Equal("later", await restored.Task.WaitAsync(TimeSpan.FromSeconds(10)));
+    }
+
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task UpdateRootComponents_SkipsQueuedRestoreAndRenderAfterFailureOrDisposal(bool disposeCircuit)
+    {
+        var renderer = GetRemoteRenderer();
+        var proxy = new Mock<ISingleClientProxy>();
+        var circuitHost = TestCircuitHost.Create(
+            remoteRenderer: renderer,
+            clientProxy: new CircuitClientProxy(proxy.Object, "connection"));
+        await AddComponentAsync<DynamicallyAddedComponent>(circuitHost, 0);
+        var store = new TestComponentApplicationStore(new());
+        var nextStore = new TestComponentApplicationStore(new());
+        nextStore.Continue();
+        var entered = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+        var rendered = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+        var errors = new List<object>();
+        circuitHost.UnhandledException += (_, args) => errors.Add(args.ExceptionObject);
+        var expected = new InvalidOperationException("Restore failed.");
+        var first = circuitHost.UpdateRootComponents(new() { BatchId = 1, Operations = [] }, store, false, CancellationToken.None);
+        await store.RestoreStarted.Task.WaitAsync(TimeSpan.FromSeconds(10));
+        var next = circuitHost.UpdateRootComponents(new()
+        {
+            BatchId = 2,
+            Operations = [CreateGatedAddOperation(1, Task.CompletedTask, entered, rendered)],
+        }, nextStore, false, CancellationToken.None);
+
+        try
+        {
+            await renderer.Dispatcher.InvokeAsync(() => { });
+            Assert.False(next.IsCompleted);
+            Assert.False(nextStore.RestoreStarted.Task.IsCompleted);
+            if (disposeCircuit)
+            {
+                await circuitHost.DisposeAsync();
+                Assert.Null(circuitHost.Handle.CircuitHost);
+                Assert.False(next.IsCompleted);
+            }
+        }
+        finally
+        {
+            if (disposeCircuit)
+            {
+                store.Continue();
+            }
+            else
+            {
+                store.Fail(expected);
+            }
+
+            await Task.WhenAll(first, next).WaitAsync(TimeSpan.FromSeconds(10));
+        }
+
+        Assert.True(store.Cleared);
+        Assert.False(nextStore.RestoreStarted.Task.IsCompleted);
+        Assert.True(nextStore.Cleared);
+        Assert.False(entered.Task.IsCompleted);
+        Assert.False(rendered.Task.IsCompleted);
+        if (disposeCircuit)
+        {
+            Assert.Empty(errors);
+        }
+        else
+        {
+            Assert.Same(expected, Assert.Single(errors));
+            Assert.Equal(2, renderer.GetOrCreateWebRootComponentManager().GetRootComponents().Count());
+        }
+
+        proxy.Verify(c => c.SendCoreAsync("JS.EndUpdateRootComponents", It.Is<object[]>(args => (long)args[0] == 2), It.IsAny<CancellationToken>()), Times.Never);
+        proxy.Verify(c => c.SendCoreAsync("JS.EndUpdateRootComponents", It.IsAny<object[]>(), It.IsAny<CancellationToken>()), Times.Exactly(disposeCircuit ? 2 : 1));
+        proxy.Verify(c => c.SendCoreAsync("JS.Error", It.IsAny<object[]>(), It.IsAny<CancellationToken>()), Times.Exactly(disposeCircuit ? 0 : 1));
+    }
+
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task UpdateRootComponents_RemovesRootsWhileInitialRenderIsPending(bool addPendingRoot)
+    {
+        var renderer = GetRemoteRenderer();
+        var circuitHost = TestCircuitHost.Create(remoteRenderer: renderer);
+        var store = new TestComponentApplicationStore(new());
+        store.Continue();
+        var release = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+        var entered = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+        var rendered = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+        var pendingRendered = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+        var nextRendered = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+        var errors = new List<object>();
+        circuitHost.UnhandledException += (_, args) => errors.Add(args.ExceptionObject);
+        var first = circuitHost.UpdateRootComponents(new()
+        {
+            Operations = [CreateGatedAddOperation(1, release.Task, entered, rendered, disposal: release)]
+        }, store, false, CancellationToken.None);
+        Task pending = Task.CompletedTask;
+        Task next = Task.CompletedTask;
+
+        try
+        {
+            await entered.Task.WaitAsync(TimeSpan.FromSeconds(10));
+            if (addPendingRoot)
+            {
+                pending = circuitHost.UpdateRootComponents(new()
+                {
+                    Operations = [CreateGatedAddOperation(2, Task.CompletedTask, new(), pendingRendered)]
+                }, null, false, CancellationToken.None);
+                await renderer.Dispatcher.InvokeAsync(() => { });
+                Assert.False(pendingRendered.Task.IsCompleted);
+            }
+
+            var operations = new List<RootComponentOperation>
+            {
+                new() { Type = RootComponentOperationType.Remove, SsrComponentId = 1 },
+            };
+            if (addPendingRoot)
+            {
+                operations.Add(new() { Type = RootComponentOperationType.Remove, SsrComponentId = 2 });
+            }
+            operations.Add(CreateGatedAddOperation(3, Task.CompletedTask, new(), nextRendered));
+            next = circuitHost.UpdateRootComponents(new()
+            {
+                Operations = [.. operations]
+            }, null, false, CancellationToken.None);
+
+            await Task.WhenAll(first, pending, next).WaitAsync(TimeSpan.FromSeconds(10));
+            await nextRendered.Task.WaitAsync(TimeSpan.FromSeconds(10));
+            Assert.True(release.Task.IsCompletedSuccessfully);
+            Assert.False(rendered.Task.IsCompleted);
+            Assert.False(pendingRendered.Task.IsCompleted);
+            Assert.True(store.Cleared);
+            Assert.Empty(errors);
+            Assert.Single(renderer.GetOrCreateWebRootComponentManager().GetRootComponents());
+        }
+        finally
+        {
+            release.TrySetResult();
+            await Task.WhenAll(first, pending, next).WaitAsync(TimeSpan.FromSeconds(10));
+        }
+    }
+
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task UpdateRootComponents_IsolatesReplacementCreationFromPreviousState(bool preserveInstance)
+    {
+        var renderer = GetRemoteRenderer();
+        var circuitHost = TestCircuitHost.Create(remoteRenderer: renderer);
+        var release = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+        var entered = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+        var errors = new List<object>();
+        circuitHost.UnhandledException += (_, args) => errors.Add(args.ExceptionObject);
+        var first = circuitHost.UpdateRootComponents(new()
+        {
+            Operations =
+            [
+                CreateGatedAddOperation(0, release.Task, entered, new()),
+                CreateOperation(RootComponentOperationType.Add, "A"),
+            ],
+        }, null, false, CancellationToken.None);
+        Task second = Task.CompletedTask;
+        Task third = Task.CompletedTask;
+        await entered.Task.WaitAsync(TimeSpan.FromSeconds(10));
+        var original = await renderer.Dispatcher.InvokeAsync(() =>
+            Assert.IsType<DynamicallyAddedComponent>(renderer.GetTestComponentState(1).Component));
+
+        try
+        {
+            second = circuitHost.UpdateRootComponents(new()
+            {
+                Operations = [CreateOperation(RootComponentOperationType.Update, "B")],
+            }, null, false, CancellationToken.None);
+            third = circuitHost.UpdateRootComponents(new()
+            {
+                Operations = [CreateOperation(RootComponentOperationType.Update, "C")],
+            }, null, false, CancellationToken.None);
+
+            await renderer.Dispatcher.InvokeAsync(() =>
+            {
+                Assert.Equal(!preserveInstance, original.WaitForDisposeAsync().IsCompleted);
+                Assert.Throws<ArgumentException>(() => renderer.GetTestComponentState(2));
+            });
+        }
+        finally
+        {
+            release.TrySetResult();
+            await Task.WhenAll(first, second, third).WaitAsync(TimeSpan.FromSeconds(10));
+        }
+
+        await renderer.Dispatcher.InvokeAsync(() =>
+        {
+            var current = Assert.IsType<DynamicallyAddedComponent>(
+                renderer.GetTestComponentState(preserveInstance ? 1 : 2).Component);
+            Assert.Equal("C", current.Message);
+            if (preserveInstance)
+            {
+                Assert.Same(original, current);
+            }
+            else
+            {
+                Assert.NotSame(original, current);
+            }
+        });
+        Assert.Empty(errors);
+
+        RootComponentOperation CreateOperation(RootComponentOperationType type, string message)
+        {
+            var parameters = new Dictionary<string, object> { [nameof(DynamicallyAddedComponent.Message)] = message };
+            return new()
+            {
+                Type = type,
+                SsrComponentId = 1,
+                Marker = CreateMarker(typeof(DynamicallyAddedComponent), "1", parameters, preserveInstance ? "preserved" : ""),
+                Descriptor = new(typeof(DynamicallyAddedComponent), CreateWebRootComponentParameters(parameters)),
+            };
+        }
+    }
+
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task UpdateRootComponents_DoesNotWaitForPreviousAcknowledgment(bool initialBatch)
+    {
+        var renderer = GetRemoteRenderer();
+        var proxy = new Mock<ISingleClientProxy>();
+        var circuitHost = TestCircuitHost.Create(
+            remoteRenderer: renderer,
+            clientProxy: new CircuitClientProxy(proxy.Object, "connection"));
+        if (!initialBatch)
+        {
+            await AddComponentAsync<DynamicallyAddedComponent>(circuitHost, 0);
+        }
+
+        var release = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+        var sending = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+        proxy.Setup(c => c.SendCoreAsync("JS.EndUpdateRootComponents", It.Is<object[]>(args => (long)args[0] == 1), It.IsAny<CancellationToken>()))
+            .Callback(() => sending.TrySetResult())
+            .Returns(release.Task);
+        var store = new TestComponentApplicationStore(new());
+        store.Continue();
+        var first = circuitHost.UpdateRootComponents(new()
+        {
+            BatchId = 1,
+            Operations = [CreateGatedAddOperation(1, Task.CompletedTask, new(), new())],
+        }, store, false, CancellationToken.None);
+        Task next = Task.CompletedTask;
+        var errors = new List<object>();
+        circuitHost.UnhandledException += (_, args) => errors.Add(args.ExceptionObject);
+
+        try
+        {
+            await sending.Task.WaitAsync(TimeSpan.FromSeconds(10));
+            Assert.True(store.Cleared);
+            var nextStore = new TestComponentApplicationStore(new());
+            nextStore.Continue();
+            var nextRendered = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+            next = circuitHost.UpdateRootComponents(new()
+            {
+                BatchId = 2,
+                Operations =
+                [
+                    new() { Type = RootComponentOperationType.Remove, SsrComponentId = 1 },
+                    CreateGatedAddOperation(2, Task.CompletedTask, new(), nextRendered),
+                ],
+            }, nextStore, false, CancellationToken.None);
+
+            await next.WaitAsync(TimeSpan.FromSeconds(10));
+            await nextRendered.Task.WaitAsync(TimeSpan.FromSeconds(10));
+            Assert.True(nextStore.Cleared);
+            Assert.False(first.IsCompleted);
+            Assert.Empty(errors);
+            proxy.Verify(c => c.SendCoreAsync("JS.EndUpdateRootComponents", It.Is<object[]>(args => (long)args[0] == 2), It.IsAny<CancellationToken>()), Times.Once);
+        }
+        finally
+        {
+            release.TrySetResult();
+            await Task.WhenAll(first, next).WaitAsync(TimeSpan.FromSeconds(10));
+        }
+    }
+
+    [Fact]
+    public async Task UpdateRootComponents_LaterBatchesDoNotWaitForRenderQuiescence()
+    {
+        var renderer = GetRemoteRenderer();
+        var circuitHost = TestCircuitHost.Create(remoteRenderer: renderer);
+        var initialStore = new TestComponentApplicationStore(new());
+        initialStore.Continue();
+        await AddComponentAsync<DynamicallyAddedComponent>(circuitHost, 0, store: initialStore);
+        var store = new TestComponentApplicationStore(new());
+        store.Continue();
+        var release = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+        var entered = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+        var rendered = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+        var update = circuitHost.UpdateRootComponents(new()
+        {
+            Operations = [CreateGatedAddOperation(1, release.Task, entered, rendered)]
+        }, store, false, CancellationToken.None);
+
+        try
+        {
+            await entered.Task.WaitAsync(TimeSpan.FromSeconds(10));
+            await update.WaitAsync(TimeSpan.FromSeconds(10));
+            Assert.True(store.Cleared);
+            Assert.False(rendered.Task.IsCompleted);
+            var nextRendered = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+            await circuitHost.UpdateRootComponents(new()
+            {
+                Operations = [CreateGatedAddOperation(2, Task.CompletedTask, new(), nextRendered)]
+            }, null, false, CancellationToken.None).WaitAsync(TimeSpan.FromSeconds(10));
+            await nextRendered.Task.WaitAsync(TimeSpan.FromSeconds(10));
+            Assert.False(rendered.Task.IsCompleted);
+        }
+        finally
+        {
+            release.TrySetResult();
+            await rendered.Task.WaitAsync(TimeSpan.FromSeconds(10));
+        }
+    }
+
+    [Theory]
+    [InlineData(false, false)]
+    [InlineData(true, false)]
+    [InlineData(false, true)]
+    [InlineData(true, true)]
+    public async Task UpdateRootComponents_ReportsLaterRestoreFailureOnce(bool includeOperations, bool cancelRestore)
+    {
+        var renderer = GetRemoteRenderer();
+        var proxy = new Mock<ISingleClientProxy>();
+        var sink = new TestSink();
+        var circuitHost = TestCircuitHost.Create(
+            remoteRenderer: renderer,
+            clientProxy: new CircuitClientProxy(proxy.Object, "connection"),
+            logger: new TestLogger(nameof(CircuitHost), sink, enabled: true));
+        var initialStore = new TestComponentApplicationStore(new());
+        initialStore.Continue();
+        await AddComponentAsync<DynamicallyAddedComponent>(circuitHost, 0, store: initialStore);
+        var store = new TestComponentApplicationStore(new());
+        Exception expected = cancelRestore
+            ? new OperationCanceledException("Restore canceled.")
+            : new InvalidOperationException("Restore failed.");
+        var errors = new List<object>();
+        circuitHost.UnhandledException += (_, args) => errors.Add(args.ExceptionObject);
+        var original = Assert.IsType<DynamicallyAddedComponent>(renderer.GetTestComponentState(0).Component);
+        var entered = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+        var rendered = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+        var update = circuitHost.UpdateRootComponents(new()
+        {
+            Operations = includeOperations
+                ? [
+                    CreateGatedAddOperation(1, Task.CompletedTask, entered, rendered),
+                    new()
+                    {
+                        Type = RootComponentOperationType.Update,
+                        SsrComponentId = 0,
+                        Marker = CreateMarker(typeof(DynamicallyAddedComponent), "0"),
+                        Descriptor = new(typeof(DynamicallyAddedComponent), CreateWebRootComponentParameters(new Dictionary<string, object>
+                        {
+                            [nameof(DynamicallyAddedComponent.Message)] = "Updated message",
+                        })),
+                    },
+                ]
+                : [],
+        }, store, false, CancellationToken.None);
+        await store.RestoreStarted.Task.WaitAsync(TimeSpan.FromSeconds(10));
+        if (includeOperations)
+        {
+            await original.WaitForDisposeAsync().WaitAsync(TimeSpan.FromSeconds(10));
+            Assert.Equal(2, renderer.GetOrCreateWebRootComponentManager().GetRootComponents().Count());
+            Assert.Equal("Default message", Assert.IsType<DynamicallyAddedComponent>(renderer.GetTestComponentState(2).Component).Message);
+            Assert.False(entered.Task.IsCompleted);
+        }
+
+        store.Fail(expected);
+        await update.WaitAsync(TimeSpan.FromSeconds(10));
+        await renderer.Dispatcher.InvokeAsync(() => { });
+
+        Assert.Same(expected, Assert.Single(errors));
+        Assert.True(store.Cleared);
+        Assert.False(entered.Task.IsCompleted);
+        Assert.False(rendered.Task.IsCompleted);
+        if (includeOperations)
+        {
+            Assert.Equal("Default message", Assert.IsType<DynamicallyAddedComponent>(renderer.GetTestComponentState(2).Component).Message);
+        }
+
+        Assert.Same(expected, Assert.Single(sink.Writes, entry => entry.EventId.Name == "UpdateRootComponentsFailed").Exception);
+        Assert.Single(sink.Writes, entry => entry.EventId.Name == "UpdateRootComponentsSucceeded");
+        proxy.Verify(c => c.SendCoreAsync("JS.Error", It.IsAny<object[]>(), It.IsAny<CancellationToken>()), Times.Once);
+        proxy.Verify(c => c.SendCoreAsync("JS.EndUpdateRootComponents", It.IsAny<object[]>(), It.IsAny<CancellationToken>()), Times.Once);
+    }
+
+    [Fact]
+    public async Task UpdateRootComponents_ReportsDetachedAddValidationFailure()
+    {
+        var sink = new TestSink();
+        var circuitHost = TestCircuitHost.Create(
+            remoteRenderer: GetRemoteRenderer(),
+            logger: new TestLogger(nameof(CircuitHost), sink, enabled: true));
+        await AddComponentAsync<DynamicallyAddedComponent>(circuitHost, 1);
+        var error = new TaskCompletionSource<object>(TaskCreationOptions.RunContinuationsAsynchronously);
+        circuitHost.UnhandledException += (_, args) => error.TrySetResult(args.ExceptionObject);
+
+        await AddComponentAsync<DynamicallyAddedComponent>(circuitHost, 1);
+
+        var exception = Assert.IsType<InvalidOperationException>(await error.Task.WaitAsync(TimeSpan.FromSeconds(10)));
+        Assert.Equal("A root component with SSR component ID 1 already exists.", exception.Message);
+        Assert.Same(exception, Assert.Single(sink.Writes, entry => entry.EventId.Name == "UpdateRootComponentsFailed").Exception);
+        Assert.DoesNotContain(sink.Writes, entry => entry.LogLevel >= LogLevel.Warning);
+    }
+
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task UpdateRootComponents_ReportsOperationFailureBeforeInitialQuiescence(bool failInboundHandler)
+    {
+        var renderer = GetRemoteRenderer();
+        var handler = new Mock<CircuitHandler>();
+        var activities = 0;
+        var expected = new InvalidOperationException("Inbound activity failed.");
+        handler.Setup(h => h.CreateInboundActivityHandler(It.IsAny<Func<CircuitInboundActivityContext, Task>>()))
+            .Returns((Func<CircuitInboundActivityContext, Task> next) => context =>
+            {
+                if (++activities == 2 && failInboundHandler)
+                {
+                    throw expected;
+                }
+
+                return next(context);
+            });
+        var services = new ServiceCollection()
+            .AddLogging()
+            .AddSingleton<ComponentStatePersistenceManager>()
+            .AddSingleton<CircuitHandler>(handler.Object)
+            .BuildServiceProvider();
+        var host = TestCircuitHost.Create(remoteRenderer: renderer, serviceScope: services.CreateAsyncScope());
+        var release = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+        var entered = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+        var store = new TestComponentApplicationStore(new() { ["unconsumed"] = [1] });
+        store.Continue();
+        var errors = new List<object>();
+        host.UnhandledException += (_, args) => errors.Add(args.ExceptionObject);
+        var initial = host.UpdateRootComponents(new()
+        {
+            Operations = [CreateGatedAddOperation(1, release.Task, entered, new(), disposal: release)],
+        }, store, false, CancellationToken.None);
+        Task failed = Task.CompletedTask;
+        try
+        {
+            await entered.Task.WaitAsync(TimeSpan.FromSeconds(10));
+            failed = host.UpdateRootComponents(new()
+            {
+                Operations = [new() { Type = RootComponentOperationType.Remove, SsrComponentId = 99 }],
+            }, null, false, CancellationToken.None);
+
+            await failed.WaitAsync(TimeSpan.FromSeconds(10));
+            var error = Assert.IsType<InvalidOperationException>(Assert.Single(errors));
+            if (failInboundHandler)
+            {
+                Assert.Same(expected, error);
+            }
+            else
+            {
+                Assert.Equal("No root component exists with SSR component ID 99.", error.Message);
+            }
+            Assert.False(initial.IsCompleted);
+            Assert.False(store.Cleared);
+        }
+        finally
+        {
+            await host.DisposeAsync();
+            release.TrySetResult();
+            await Task.WhenAll(initial, failed).WaitAsync(TimeSpan.FromSeconds(10));
+        }
+
+        Assert.True(store.Cleared);
+    }
+
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task UpdateRootComponents_PreservesInboundContextDuringDeferredActivation(bool replaceRoot)
+    {
+        var context = new AsyncLocal<string>();
+        var handler = new Mock<CircuitHandler>();
+        var activities = 0;
+        handler.Setup(h => h.CreateInboundActivityHandler(It.IsAny<Func<CircuitInboundActivityContext, Task>>()))
+            .Returns((Func<CircuitInboundActivityContext, Task> next) => async activity =>
+            {
+                context.Value = $"activity-{++activities}";
+                await next(activity);
+                context.Value = null;
+            });
+        var services = new ServiceCollection()
+            .AddSingleton(context)
+            .AddSingleton<IJSRuntime>(Mock.Of<IJSRuntime>())
+            .AddTransient(_ => new ActivationContextService(context.Value))
+            .AddSingleton<CircuitHandler>(handler.Object)
+            .BuildServiceProvider();
+        var renderer = new TestRemoteRenderer(services, Mock.Of<ISingleClientProxy>());
+        var host = TestCircuitHost.Create(remoteRenderer: renderer, serviceScope: services.CreateAsyncScope());
+        if (replaceRoot)
+        {
+            await AddComponentAsync<ActivationContextComponent>(host, 1, new() { [nameof(ActivationContextComponent.Message)] = "initial" });
+            await UpdateComponentAsync<ActivationContextComponent>(host, 1, new() { [nameof(ActivationContextComponent.Message)] = "replacement" });
+        }
+        else
+        {
+            await AddComponentAsync<DynamicallyAddedComponent>(host, 0);
+            await AddComponentAsync<ActivationContextComponent>(host, 1);
+        }
+
+        await renderer.Dispatcher.InvokeAsync(() =>
+        {
+            var component = Assert.IsType<ActivationContextComponent>(renderer.GetTestComponentState(1).Component);
+            Assert.Equal("activity-2", component.FactoryContext);
+            Assert.Equal("activity-2", component.ConstructorContext);
+            Assert.Equal("activity-2", component.AttachContext);
+        });
+        Assert.Null(context.Value);
+        await host.DisposeAsync();
+    }
+
+    [Fact]
+    public async Task PauseCircuit_PreservesQueuedRootStateWithoutWaitingForInitialQuiescence()
+    {
+        var source = CreatePersistenceHost();
+        var initialSourceStore = new TestComponentApplicationStore(new());
+        initialSourceStore.Continue();
+        await AddComponentAsync<PersistentRootComponent>(source.Host, 1, store: initialSourceStore);
+        var navigationState = new Dictionary<string, byte[]>();
+        await source.Renderer.Dispatcher.InvokeAsync(async () =>
+        {
+            var component = Assert.IsType<PersistentRootComponent>(source.Renderer.GetTestComponentState(0).Component);
+            component.Value = "navigation value";
+            await source.Persistence.PersistStateAsync(new TestComponentApplicationStore(navigationState), source.Renderer);
+        });
+        await source.Host.DisposeAsync();
+
+        var active = CreatePersistenceHost();
+        var release = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+        var entered = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+        var initialStore = new TestComponentApplicationStore(new() { ["unconsumed"] = [1] });
+        initialStore.Continue();
+        var initial = active.Host.UpdateRootComponents(new()
+        {
+            Operations = [CreateGatedAddOperation(0, release.Task, entered, new())],
+        }, initialStore, false, CancellationToken.None);
+        Task navigation = Task.CompletedTask;
+        try
+        {
+            await entered.Task.WaitAsync(TimeSpan.FromSeconds(10));
+            var navigationStore = new TestComponentApplicationStore(navigationState);
+            navigationStore.Continue();
+            navigation = active.Host.UpdateRootComponents(new()
+            {
+                Operations =
+                [
+                    new()
+                    {
+                        Type = RootComponentOperationType.Add,
+                        SsrComponentId = 1,
+                        Marker = CreateMarker(typeof(PersistentRootComponent), "1"),
+                        Descriptor = new(typeof(PersistentRootComponent), WebRootComponentParameters.Empty),
+                    },
+                    new() { Type = RootComponentOperationType.Remove, SsrComponentId = 0 },
+                ],
+            }, navigationStore, false, CancellationToken.None);
+            await active.Renderer.Dispatcher.InvokeAsync(() => { });
+            Assert.False(navigation.IsCompleted);
+
+            PersistedCircuitState snapshot = null;
+            var provider = new Mock<ICircuitPersistenceProvider>();
+            provider.Setup(p => p.PersistCircuitAsync(It.IsAny<CircuitId>(), It.IsAny<PersistedCircuitState>(), It.IsAny<CancellationToken>()))
+                .Callback((CircuitId id, PersistedCircuitState state, CancellationToken cancellation) => snapshot = state)
+                .Returns(Task.CompletedTask);
+            var persistence = new CircuitPersistenceManager(
+                Options.Create(new CircuitOptions()),
+                new ServerComponentSerializer(_ephemeralDataProtectionProvider),
+                provider.Object,
+                _ephemeralDataProtectionProvider);
+
+            await persistence.PauseCircuitAsync(active.Host).WaitAsync(TimeSpan.FromSeconds(10));
+            Assert.False(release.Task.IsCompleted);
+            Assert.NotNull(snapshot);
+            Assert.Contains(snapshot.ApplicationState.Values, value => JsonSerializer.Deserialize<string>(value) == "navigation value");
+            Assert.True(initialStore.Cleared);
+            provider.Setup(p => p.RestoreCircuitAsync(active.Host.CircuitId, It.IsAny<CancellationToken>())).ReturnsAsync(snapshot);
+            var restored = await persistence.ResumeCircuitAsync(active.Host.CircuitId);
+            var marker = Assert.Single(JsonSerializer.Deserialize<Dictionary<int, ComponentMarker>>(restored.RootComponents));
+            Assert.Equal(1, marker.Key);
+            Assert.True(CreateDeserializer().TryDeserializeWebRootComponentDescriptor(marker.Value, out var descriptor));
+            await active.Host.DisposeAsync();
+
+            var resumed = CreatePersistenceHost();
+            try
+            {
+                var store = new TestComponentApplicationStore(new Dictionary<string, byte[]>(restored.ApplicationState));
+                store.Continue();
+                await resumed.Host.UpdateRootComponents(new()
+                {
+                    Operations =
+                    [
+                        new()
+                        {
+                            Type = RootComponentOperationType.Add,
+                            SsrComponentId = 1,
+                            Marker = marker.Value,
+                            Descriptor = descriptor,
+                        },
+                    ],
+                }, store, isRestore: true, CancellationToken.None).WaitAsync(TimeSpan.FromSeconds(10));
+                await resumed.Renderer.Dispatcher.InvokeAsync(() =>
+                    Assert.Equal("navigation value", Assert.IsType<PersistentRootComponent>(resumed.Renderer.GetTestComponentState(0).Component).Value));
+            }
+            finally
+            {
+                await resumed.Host.DisposeAsync();
+            }
+        }
+        finally
+        {
+            await active.Host.DisposeAsync();
+            release.TrySetResult();
+            await Task.WhenAll(initial, navigation).WaitAsync(TimeSpan.FromSeconds(10));
+        }
+
+        (CircuitHost Host, TestRemoteRenderer Renderer, ComponentStatePersistenceManager Persistence) CreatePersistenceHost()
+        {
+            var services = new ServiceCollection()
+                .AddLogging()
+                .AddSingleton<IJSRuntime>(Mock.Of<IJSRuntime>())
+                .AddSupplyValueFromPersistentComponentStateProvider()
+                .AddSingleton<ComponentStatePersistenceManager>()
+                .AddSingleton(sp => sp.GetRequiredService<ComponentStatePersistenceManager>().State)
+                .BuildServiceProvider();
+            var renderer = new TestRemoteRenderer(services, Mock.Of<ISingleClientProxy>());
+            var host = TestCircuitHost.Create(serviceScope: services.CreateAsyncScope(), remoteRenderer: renderer);
+            return (host, renderer, services.GetRequiredService<ComponentStatePersistenceManager>());
+        }
+    }
+
+    private RootComponentOperation CreateGatedAddOperation(int ssrComponentId, Task gate, TaskCompletionSource entered, TaskCompletionSource rendered, TaskCompletionSource disposal = null)
+    {
+        return new()
+        {
+            Type = RootComponentOperationType.Add,
+            SsrComponentId = ssrComponentId,
+            Marker = CreateMarker(typeof(GatedComponent), ssrComponentId.ToString(CultureInfo.InvariantCulture)),
+            Descriptor = new(typeof(GatedComponent), new WebRootComponentParameters(ParameterView.FromDictionary(new Dictionary<string, object>
+            {
+                [nameof(GatedComponent.Gate)] = gate,
+                [nameof(GatedComponent.Entered)] = entered,
+                [nameof(GatedComponent.Rendered)] = rendered,
+                [nameof(GatedComponent.Disposal)] = disposal,
+            }), [], [])),
+        };
+    }
+
+    private async Task AddComponentAsync<TComponent>(CircuitHost circuitHost, int ssrComponentId, Dictionary<string, object> parameters = null, string componentKey = "", IClearableStore store = null)
         where TComponent : IComponent
     {
         var addOperation = new RootComponentOperation
@@ -1341,7 +2220,7 @@ public class CircuitHostTest
         };
 
         // Add component
-        await circuitHost.UpdateRootComponents(new() { Operations = [addOperation] }, null, false, CancellationToken.None);
+        await circuitHost.UpdateRootComponents(new() { Operations = [addOperation] }, store, false, CancellationToken.None);
     }
 
     private async Task UpdateComponentAsync<TComponent>(CircuitHost circuitHost, int ssrComponentId, Dictionary<string, object> parameters = null, string componentKey = "")
@@ -1654,6 +2533,7 @@ public class CircuitHostTest
         }
     }
 
+    [method: ActivatorUtilitiesConstructor]
     private class TestComponent() : IComponent, IHandleAfterRender
     {
         private RenderHandle _renderHandle;
@@ -1689,19 +2569,172 @@ public class CircuitHostTest
         }
     }
 
+    private sealed class ParameterCancellationState
+    {
+        public TaskCompletionSource Started { get; } = new(TaskCreationOptions.RunContinuationsAsynchronously);
+        public TaskCompletionSource Cancelled { get; } = new(TaskCreationOptions.RunContinuationsAsynchronously);
+        public TaskCompletionSource UpdatedRender { get; } = new(TaskCreationOptions.RunContinuationsAsynchronously);
+        public int RenderedId { get; set; }
+        public string InitialValue { get; set; }
+    }
+
+    private sealed class ParameterCancellationComponent(ParameterCancellationState state, PersistentComponentState persistentState) : ComponentBase, IDisposable
+    {
+        private CancellationTokenSource _request;
+
+        [Parameter]
+        public int Id { get; set; }
+
+        protected override async Task OnParametersSetAsync()
+        {
+            _request?.Cancel();
+            _request?.Dispose();
+            _request = new CancellationTokenSource();
+            var request = _request;
+            if (Id == 1)
+            {
+                if (persistentState.TryTakeFromJson<string>("initial", out var value))
+                {
+                    state.InitialValue = value;
+                }
+                state.Started.TrySetResult();
+                try
+                {
+                    await Task.Delay(Timeout.InfiniteTimeSpan, request.Token);
+                }
+                catch (OperationCanceledException) when (request.IsCancellationRequested)
+                {
+                    state.Cancelled.TrySetResult();
+                }
+            }
+        }
+
+        protected override void BuildRenderTree(RenderTreeBuilder builder)
+        {
+            builder.AddContent(0, Id);
+            state.RenderedId = Id;
+            if (Id == 2)
+            {
+                state.UpdatedRender.TrySetResult();
+            }
+        }
+
+        public void Dispose()
+        {
+            _request?.Cancel();
+            _request?.Dispose();
+        }
+    }
+
+    private sealed class PersistentRootComponent : IComponent
+    {
+        [PersistentState(AllowUpdates = true)]
+        public string Value { get; set; }
+
+        public void Attach(RenderHandle renderHandle)
+        {
+        }
+
+        public Task SetParametersAsync(ParameterView parameters)
+        {
+            parameters.SetParameterProperties(this);
+            Value ??= "default";
+            return Task.CompletedTask;
+        }
+    }
+
+    private sealed record ActivationContextService(string Value);
+
+    private sealed class ActivationContextComponent(AsyncLocal<string> context, ActivationContextService service) : IComponent
+    {
+        public string FactoryContext { get; } = service.Value;
+        public string ConstructorContext { get; } = context.Value;
+        public string AttachContext { get; private set; }
+
+        [Parameter]
+        public string Message { get; set; }
+
+        public void Attach(RenderHandle renderHandle) => AttachContext = context.Value;
+
+        public Task SetParametersAsync(ParameterView parameters)
+        {
+            parameters.SetParameterProperties(this);
+            return Task.CompletedTask;
+        }
+    }
+
+    private class GatedComponent : IComponent, IDisposable
+    {
+        private RenderHandle _renderHandle;
+        private bool _disposed;
+
+        [Parameter]
+        public Task Gate { get; set; }
+
+        [Parameter]
+        public TaskCompletionSource Entered { get; set; }
+
+        [Parameter]
+        public TaskCompletionSource Rendered { get; set; }
+
+        [Parameter]
+        public TaskCompletionSource Disposal { get; set; }
+
+        public void Attach(RenderHandle renderHandle) => _renderHandle = renderHandle;
+
+        public async Task SetParametersAsync(ParameterView parameters)
+        {
+            parameters.SetParameterProperties(this);
+            Entered.TrySetResult();
+            await Gate;
+            if (!_disposed)
+            {
+                _renderHandle.Render(builder =>
+                {
+                    builder.AddContent(0, "Rendered");
+                    Rendered.TrySetResult();
+                });
+            }
+        }
+
+        public void Dispose()
+        {
+            _disposed = true;
+            Disposal?.TrySetResult();
+        }
+    }
+
     private class TestComponentApplicationStore(Dictionary<string, byte[]> dictionary) : IPersistentComponentStateStore, IClearableStore
     {
         private readonly TaskCompletionSource _tcs = new();
 
-        public void Clear() => dictionary.Clear();
+        public TaskCompletionSource RestoreStarted { get; } = new(TaskCreationOptions.RunContinuationsAsynchronously);
+        public bool Cleared { get; private set; }
+        public bool IsEmpty => dictionary.Count == 0;
+
+        public void Clear()
+        {
+            Cleared = true;
+            dictionary.Clear();
+        }
 
         public async Task<IDictionary<string, byte[]>> GetPersistedStateAsync()
         {
+            RestoreStarted.TrySetResult();
             await _tcs.Task;
             return dictionary;
         }
 
-        public Task PersistStateAsync(IReadOnlyDictionary<string, byte[]> state) => throw new NotImplementedException();
+        public Task PersistStateAsync(IReadOnlyDictionary<string, byte[]> state)
+        {
+            foreach (var (key, value) in state)
+            {
+                dictionary.Add(key, value);
+            }
+
+            return Task.CompletedTask;
+        }
         internal void Continue() => _tcs.SetResult();
+        internal void Fail(Exception exception) => _tcs.SetException(exception);
     }
 }
