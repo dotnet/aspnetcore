@@ -142,7 +142,7 @@ internal sealed class OutputCacheMiddleware
 
                     if (context.AllowLocking && !string.IsNullOrEmpty(context.CacheKey))
                     {
-                        var cacheEntry = await _requestDispatcher.ScheduleAsync(context.CacheKey, key => ExecuteResponseAsync());
+                        var cacheEntry = await _requestDispatcher.ScheduleAsync(context.CacheKey, key => ExecuteResponseAsync(), cancellationToken: httpContext.RequestAborted);
 
                         // The current request was processed, nothing more to do
                         if (executed)
