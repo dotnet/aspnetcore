@@ -48,6 +48,18 @@ public abstract partial class ColumnBase<TGridItem>
     [Parameter] public RenderFragment? ColumnOptions { get; set; }
 
     /// <summary>
+    /// Indicates whether the column's filter is currently active, causing a visual indicator to be displayed
+    /// on the column options button and the active filter state to be included in its accessible label.
+    /// </summary>
+    [Parameter] public bool ColumnOptionsActive { get; set; }
+
+    /// <summary>
+    /// An optional CSS class name to apply to the column options button. This allows custom styling of the
+    /// filter indicator.
+    /// </summary>
+    [Parameter] public string? ColumnOptionsButtonClass { get; set; }
+
+    /// <summary>
     /// Indicates whether the data should be sortable by this column.
     ///
     /// The default value may vary according to the column type (for example, a <see cref="TemplateColumn{TGridItem}" />
@@ -120,6 +132,25 @@ public abstract partial class ColumnBase<TGridItem>
         {
             string displayName = string.IsNullOrWhiteSpace(Title) ? "(unnamed)" : Title;
             throw new InvalidOperationException($"Column '{displayName}' expects item type '{typeof(TGridItem).FullName}', which does not match the parent QuickGrid's item type.");
+        }
+    }
+
+    internal string ColumnOptionsButtonCssClass
+    {
+        get
+        {
+            var result = "col-options-button";
+            if (!string.IsNullOrWhiteSpace(ColumnOptionsButtonClass))
+            {
+                result += " " + ColumnOptionsButtonClass.Trim();
+            }
+
+            if (ColumnOptionsActive)
+            {
+                result += " col-options-active";
+            }
+
+            return result;
         }
     }
 }

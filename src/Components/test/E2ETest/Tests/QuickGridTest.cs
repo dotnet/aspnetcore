@@ -165,6 +165,65 @@ public class QuickGridTest : ServerTestBase<ToggleExecutionModeServerFixture<Pro
         Browser.Equal("1", () => app.FindElement(By.Id("items-provider-call-count")).Text);
     }
 
+    [Theory]
+    [InlineData("Start")]
+    [InlineData("Center")]
+    [InlineData("End")]
+    [InlineData("Left")]
+    [InlineData("Right")]
+    public void ColumnOptionsIndicatesActiveFilter(string alignment)
+    {
+        app.FindElement(By.CssSelector($"#first-name-alignment option[value='{alignment}']")).Click();
+
+        var column = Browser.Exists(By.CssSelector($"#grid thead th:nth-child(2).col-justify-{alignment.ToLowerInvariant()}"));
+        var button = column.FindElement(By.ClassName("col-options-button"));
+
+        AssertOptionsState(active: false, expanded: false);
+        Browser.Equal("43", () => app.FindElement(By.CssSelector(".paginator > .summary > strong")).Text);
+
+        button.Click();
+        var search = Browser.Exists(By.CssSelector("#grid input[type=search]"));
+        AssertOptionsState(active: false, expanded: true);
+
+        search.SendKeys("Julie");
+
+        Browser.Equal("1", () => app.FindElement(By.CssSelector(".paginator > .summary > strong")).Text);
+        Browser.Equal("Julie", () => app.FindElement(By.CssSelector("#grid tbody tr td:nth-child(2)")).Text);
+        AssertOptionsState(active: true, expanded: true);
+
+        column.FindElement(By.Id("close-column-options")).Click();
+        Browser.DoesNotExist(By.CssSelector("#grid .col-options"));
+        AssertOptionsState(active: true, expanded: false);
+
+        button.Click();
+        search = Browser.Exists(By.CssSelector("#grid input[type=search]"));
+        search.SendKeys(Keys.Control + "a" + Keys.Null + Keys.Backspace);
+
+        Browser.Equal("43", () => app.FindElement(By.CssSelector(".paginator > .summary > strong")).Text);
+        AssertOptionsState(active: false, expanded: true);
+
+        column.FindElement(By.Id("close-column-options")).Click();
+        Browser.DoesNotExist(By.CssSelector("#grid .col-options"));
+        AssertOptionsState(active: false, expanded: false);
+
+        void AssertOptionsState(bool active, bool expanded)
+        {
+            Browser.Equal(active ? "col-options-button custom-filter-button col-options-active" : "col-options-button custom-filter-button",
+                () => button.GetDomAttribute("class"));
+            Browser.Equal(active ? "Column options (filter active)" : "Column options", () => button.GetDomAttribute("aria-label"));
+            Browser.Equal(expanded ? "true" : "false", () => button.GetDomAttribute("aria-expanded"));
+            Assert.Equal("Column options", button.GetDomAttribute("title"));
+
+            // WebDriver cannot query pseudo-elements, so inspect the rendered indicator's computed style.
+            Browser.Equal(active, () => Browser.ExecuteJavaScript<bool>(@"
+                const indicator = getComputedStyle(arguments[0], '::after');
+                return indicator.content !== 'none' && indicator.content !== 'normal'
+                    && parseFloat(indicator.width) > 0 && parseFloat(indicator.height) > 0
+                    && indicator.backgroundColor !== 'rgba(0, 0, 0, 0)'
+                    && indicator.backgroundColor !== 'transparent';", button));
+        }
+    }
+
     [Fact]
     public void VirtualizedRowCountIncludesHeaderAfterLoading()
     {

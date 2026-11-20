@@ -1,4 +1,4 @@
-@using Microsoft.AspNetCore.Components.Rendering
+﻿@using Microsoft.AspNetCore.Components.Rendering
 @using Microsoft.AspNetCore.Components.Web
 @using Microsoft.AspNetCore.Components.Web.Virtualization
 @namespace Microsoft.AspNetCore.Components.QuickGrid
@@ -20,7 +20,7 @@
         {
             @if (ColumnOptions is not null && (Align != Align.Right && Align != Align.End))
             {
-                <button class="col-options-button" type="button" title="Column options" aria-expanded="@(Grid.IsColumnOptionsVisible(this) ? "true" : "false")" @onclick="@(() => Grid.ShowColumnOptionsAsync(this))"></button>
+                <button class="@ColumnOptionsButtonCssClass" type="button" title="Column options" aria-label="@(ColumnOptionsActive ? "Column options (filter active)" : "Column options")" aria-expanded="@(Grid.IsColumnOptionsVisible(this) ? "true" : "false")" @onclick="@(() => Grid.ShowColumnOptionsAsync(this))"></button>
             }
 
             if (Sortable.HasValue ? Sortable.Value : IsSortableByDefault())
@@ -55,7 +55,7 @@
 
             @if (ColumnOptions is not null && (Align == Align.Right || Align == Align.End))
             {
-                <button class="col-options-button" type="button" title="Column options" aria-expanded="@(Grid.IsColumnOptionsVisible(this) ? "true" : "false")" @onclick="@(() => Grid.ShowColumnOptionsAsync(this))"></button>
+                <button class="@ColumnOptionsButtonCssClass" type="button" title="Column options" aria-label="@(ColumnOptionsActive ? "Column options (filter active)" : "Column options")" aria-expanded="@(Grid.IsColumnOptionsVisible(this) ? "true" : "false")" @onclick="@(() => Grid.ShowColumnOptionsAsync(this))"></button>
             }
         }
     }
