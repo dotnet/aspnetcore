@@ -78,8 +78,8 @@ public class RouteViewTest
         Assert.Collection(testLayoutFrames,
             frame => AssertFrame.Text(frame, "Layout starts here", sequence: 0),
             frame => AssertFrame.Region(frame, subtreeLength: 3),
-            frame => AssertFrame.Component<ComponentWithLayout>(frame, sequence: 0, subtreeLength: 2),
-            frame => AssertFrame.Attribute(frame, nameof(ComponentWithLayout.Message), "Test message", sequence: 1),
+            frame => AssertFrame.Component<ComponentWithLayout>(frame, sequence: 1, subtreeLength: 2),
+            frame => AssertFrame.Attribute(frame, nameof(ComponentWithLayout.Message), "Test message", sequence: 2),
             frame => AssertFrame.Text(frame, "Layout ends here", sequence: 2));
 
         // Assert: page itself is rendered, having received parameters from the original route data
@@ -163,6 +163,27 @@ public class RouteViewTest
             frame => AssertFrame.Attribute(frame, nameof(LayoutView.ChildContent), sequence: 2));
     }
 
+    [Fact]
+    public void DoesNotReuseLayoutInstanceWhenSameComponentBecomesThePage()
+    {
+        _renderer.Dispatcher.InvokeAsync(() => _routeViewComponent.SetParametersAsync(ParameterView.FromDictionary(new Dictionary<string, object>
+            {
+                { nameof(RouteView.RouteData), new RouteData(typeof(RoutableLayoutChildPage), new Dictionary<string, object>()) },
+            })));
+        var layoutInstanceId = _renderer.Batches.Single().GetComponentFrames<RoutableLayoutPage>().Single().ComponentId;
+
+        _renderer.Dispatcher.InvokeAsync(() => _routeViewComponent.SetParametersAsync(ParameterView.FromDictionary(new Dictionary<string, object>
+            {
+                { nameof(RouteView.RouteData), new RouteData(typeof(RoutableLayoutPage), new Dictionary<string, object>()) },
+            })));
+
+        var batch = _renderer.Batches[1];
+        Assert.Contains(layoutInstanceId, batch.DisposedComponentIDs);
+        var pageInstanceId = batch.GetComponentFrames<RoutableLayoutPage>().Single().ComponentId;
+        Assert.Collection(_renderer.GetCurrentRenderTreeFrames(pageInstanceId).AsEnumerable(),
+            frame => AssertFrame.Text(frame, "Parent page", sequence: 0));
+    }
+
     private class RouteViewTestNavigationManager : NavigationManager
     {
         public RouteViewTestNavigationManager() =>
@@ -206,6 +227,34 @@ public class RouteViewTest
             builder.AddContent(0, "Layout starts here");
             builder.AddContent(1, Body);
             builder.AddContent(2, "Layout ends here");
+        }
+    }
+
+    [Layout(typeof(TestLayout))]
+    private class RoutableLayoutPage : AutoRenderComponent
+    {
+        [Parameter]
+        public RenderFragment Body { get; set; }
+
+        protected override void BuildRenderTree(RenderTreeBuilder builder)
+        {
+            if (Body is null)
+            {
+                builder.AddContent(0, "Parent page");
+            }
+            else
+            {
+                builder.AddContent(1, Body);
+            }
+        }
+    }
+
+    [Layout(typeof(RoutableLayoutPage))]
+    private class RoutableLayoutChildPage : AutoRenderComponent
+    {
+        protected override void BuildRenderTree(RenderTreeBuilder builder)
+        {
+            builder.AddContent(0, "Child page");
         }
     }
 

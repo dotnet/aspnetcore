@@ -152,6 +152,37 @@ public class RoutingTest : ServerTestBase<ToggleExecutionModeServerFixture<Progr
     }
 
     [Fact]
+    public void CanArriveAtRoutableLayoutPage()
+    {
+        SetUrlViaPushState("/routable-layout");
+
+        var app = Browser.MountTestComponent<TestRouter>();
+
+        Browser.Equal("Parent page", () => app.FindElement(By.Id("test-info")).Text);
+        Browser.Equal(1, () => app.FindElements(By.CssSelector(".routable-layout > h1")).Count);
+    }
+
+    [Fact]
+    public void CanNavigateFromChildToRoutableLayoutPage()
+    {
+        SetUrlViaPushState("/routable-layout/child");
+
+        var app = Browser.MountTestComponent<TestRouter>();
+        Browser.Equal("Child page", () => app.FindElement(By.Id("test-info")).Text);
+        Browser.Equal(1, () => app.FindElements(By.CssSelector(".routable-layout > h1")).Count);
+
+        app.FindElement(By.Id("routable-layout-parent")).Click();
+
+        Browser.Equal("Parent page", () => app.FindElement(By.Id("test-info")).Text);
+        Browser.Equal(1, () => app.FindElements(By.CssSelector(".routable-layout > h1")).Count);
+
+        app.FindElement(By.Id("routable-layout-child")).Click();
+
+        Browser.Equal("Child page", () => app.FindElement(By.Id("test-info")).Text);
+        Browser.Equal(1, () => app.FindElements(By.CssSelector(".routable-layout > h1")).Count);
+    }
+
+    [Fact]
     public void CanFollowLinkToOtherPageWithCtrlClick()
     {
         // On macOS we need to hold the command key not the control for opening a popup
