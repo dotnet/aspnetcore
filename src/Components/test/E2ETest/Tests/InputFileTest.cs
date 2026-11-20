@@ -8,6 +8,8 @@ using BasicTestApp.FormsTest;
 using Microsoft.AspNetCore.Components.E2ETest.Infrastructure;
 using Microsoft.AspNetCore.Components.E2ETest.Infrastructure.ServerFixtures;
 using Microsoft.AspNetCore.E2ETesting;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging.Testing;
 using OpenQA.Selenium;
 using OpenQA.Selenium.Support.Extensions;
 using Xunit.Abstractions;
@@ -219,6 +221,133 @@ public class InputFileTest : ServerTestBase<ToggleExecutionModeServerFixture<Pro
 
         // Wait a moment for the event to be processed and verify the file list was cleared
         Browser.Equal("0", () => Browser.Exists(By.Id("file-count")).Text);
+    }
+
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public void OnChangeExceptionIsHandledByErrorBoundary(bool asynchronous)
+    {
+        Browser.MountTestComponent<InputFileExceptionComponent>();
+        if (asynchronous)
+        {
+            Browser.Exists(By.Id("throw-asynchronously")).Click();
+        }
+
+        var file = TempFile.Create(_tempDirectory, "txt", "InputFile exception handling");
+        Browser.Exists(By.Id("exception-input-file")).SendKeys(file.Path);
+
+        Browser.Equal("InputFile change failed", () => Browser.Exists(By.Id("input-file-error")).Text);
+        Browser.Empty(() => Browser.FindElements(By.Id("outer-input-file-error")));
+        Browser.Equal("none", () => Browser.Exists(By.Id("blazor-error-ui")).GetCssValue("display"));
+        Browser.Exists(By.Id("input-file-increment")).Click();
+        Browser.Equal("1", () => Browser.Exists(By.Id("input-file-count")).Text);
+
+        Browser.Exists(By.Id("throw-on-change")).Click();
+        Browser.Exists(By.Id("recover-input-file")).Click();
+        Browser.Exists(By.Id("exception-input-file")).SendKeys(file.Path);
+
+        Browser.Equal(file.Name, () => Browser.Exists(By.Id("selected-file-name")).Text);
+        Browser.Empty(() => Browser.FindElements(By.Id("input-file-error")));
+        Browser.Equal("none", () => Browser.Exists(By.Id("blazor-error-ui")).GetCssValue("display"));
+    }
+
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public void OnChangeExceptionWithoutErrorBoundaryIsFatal(bool asynchronous)
+    {
+        Browser.MountTestComponent<InputFileExceptionComponent>();
+        Browser.Exists(By.Id("use-error-boundary")).Click();
+        if (asynchronous)
+        {
+            Browser.Exists(By.Id("throw-asynchronously")).Click();
+        }
+
+        var sink = _serverFixture.ExecutionMode == ExecutionMode.Server
+            ? _serverFixture.Host.Services.GetRequiredService<TestSink>()
+            : null;
+        var previousLogCount = sink?.Writes.Count ?? 0;
+        var file = TempFile.Create(_tempDirectory, "txt", "InputFile exception handling");
+        Browser.Exists(By.Id("exception-input-file")).SendKeys(file.Path);
+
+        AssertFatalError(sink, previousLogCount);
+    }
+
+    [Theory]
+    [InlineData(true, true)]
+    [InlineData(false, true)]
+    [InlineData(true, false)]
+    public void OnChangeCompletesAfterInputIsRemoved(bool useErrorBoundary, bool throwOnChange)
+    {
+        Browser.MountTestComponent<InputFileExceptionComponent>();
+        if (!useErrorBoundary)
+        {
+            Browser.Exists(By.Id("use-error-boundary")).Click();
+        }
+        if (!throwOnChange)
+        {
+            Browser.Exists(By.Id("throw-on-change")).Click();
+        }
+        Browser.Exists(By.Id("remove-input")).Click();
+        var sink = _serverFixture.ExecutionMode == ExecutionMode.Server
+            ? _serverFixture.Host.Services.GetRequiredService<TestSink>()
+            : null;
+        var previousLogCount = sink?.Writes.Count ?? 0;
+        var file = TempFile.Create(_tempDirectory, "txt", "InputFile disposal");
+        Browser.Exists(By.Id("exception-input-file")).SendKeys(file.Path);
+        Browser.Equal("True", () => Browser.Exists(By.Id("callback-pending")).Text);
+        Browser.Empty(() => Browser.FindElements(By.Id("exception-input-file")));
+        Browser.Exists(By.Id("complete-callback")).Click();
+
+        if (throwOnChange && !useErrorBoundary)
+        {
+            AssertFatalError(sink, previousLogCount);
+            return;
+        }
+
+        if (throwOnChange)
+        {
+            Browser.Equal("InputFile change failed", () => Browser.Exists(By.Id("input-file-error")).Text);
+            Browser.Empty(() => Browser.FindElements(By.Id("outer-input-file-error")));
+        }
+        else
+        {
+            Browser.Equal(file.Name, () => Browser.Exists(By.Id("selected-file-name")).Text);
+            Browser.Empty(() => Browser.FindElements(By.Id("input-file-error")));
+        }
+        Browser.Equal("none", () => Browser.Exists(By.Id("blazor-error-ui")).GetCssValue("display"));
+        Browser.Exists(By.Id("input-file-increment")).Click();
+        Browser.Equal("1", () => Browser.Exists(By.Id("input-file-count")).Text);
+    }
+
+    private void AssertFatalError(TestSink sink, int previousLogCount)
+    {
+        Browser.Equal("block", () => Browser.Exists(By.Id("blazor-error-ui")).GetCssValue("display"));
+        if (sink is not null)
+        {
+            Browser.True(() => sink.Writes.Skip(previousLogCount).Any(write =>
+                write.EventId.Name == "CircuitUnhandledException" &&
+                write.Exception is InvalidOperationException { Message: "InputFile change failed" }));
+            var failure = sink.Writes.Skip(previousLogCount).First(write =>
+                write.EventId.Name == "CircuitUnhandledException" &&
+                write.Exception is InvalidOperationException { Message: "InputFile change failed" });
+            var circuitId = Assert.IsAssignableFrom<IEnumerable<KeyValuePair<string, object>>>(failure.State)
+                .Single(pair => pair.Key == "CircuitId").Value;
+            Browser.True(() => sink.Writes.Skip(previousLogCount).Any(write =>
+                write.EventId.Name == "DisposeSucceeded" &&
+                write.State is IEnumerable<KeyValuePair<string, object>> state &&
+                state.Any(pair => pair.Key == "CircuitId" && Equals(pair.Value, circuitId))));
+        }
+        else
+        {
+            var logs = new List<LogEntry>();
+            Browser.True(() =>
+            {
+                logs.AddRange(Browser.Manage().Logs.GetLog(LogType.Browser));
+                return logs.Any(log => log.Message.Contains("InputFile change failed", StringComparison.Ordinal));
+            });
+        }
     }
 
     public void Dispose()

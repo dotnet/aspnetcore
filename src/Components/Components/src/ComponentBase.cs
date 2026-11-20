@@ -226,6 +226,9 @@ public abstract class ComponentBase : IComponent, IHandleEvent, IHandleAfterRend
     protected Task DispatchExceptionAsync(Exception exception)
         => _renderHandle.DispatchExceptionAsync(exception);
 
+    internal Task InvokeWithErrorHandlingAsync(Func<Task> callback)
+        => _renderHandle.InvokeWithErrorHandlingAsync(callback);
+
     void IComponent.Attach(RenderHandle renderHandle)
     {
         // This implicitly means a ComponentBase can only be associated with a single
