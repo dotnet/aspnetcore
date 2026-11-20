@@ -50,6 +50,9 @@
             const circuitOptions = {
                 logLevel: 0
             };
+            if (params.get('single-reconnect-attempt') === 'true') {
+                circuitOptions.reconnectionOptions = { maxRetries: 1 };
+            }
             if (params.get('auto-pause') === 'true') {
                 window.autoPauseEvents = [];
             }

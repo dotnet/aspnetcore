@@ -133,6 +133,12 @@ public class RazorComponentEndpointsStartup<TRootComponent>
         services.AddScoped<PauseTrackingHandler>();
         services.AddScoped<CircuitHandler>(sp => sp.GetRequiredService<PauseTrackingHandler>());
 
+        if (Configuration.GetValue<bool>("EnableCircuitPersistenceTestGate"))
+        {
+            services.AddSingleton<CircuitPersistenceTestGate>();
+            services.AddSingleton<CircuitHandler>(sp => sp.GetRequiredService<CircuitPersistenceTestGate>());
+        }
+
         services.AddSingleton<AutoPauseTestStreamGate>();
     }
 
