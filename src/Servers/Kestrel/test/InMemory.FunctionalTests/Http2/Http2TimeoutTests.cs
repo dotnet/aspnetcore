@@ -505,6 +505,73 @@ public class Http2TimeoutTests : Http2TestBase
     }
 
     [Fact]
+    public async Task DATA_Sent_AfterFlowControlResumes_AbortsConnectionWhenSubsequentWriteTimesOut()
+    {
+        var limits = _serviceContext.ServerOptions.Limits;
+        limits.MinResponseDataRate = new MinDataRate(480, TimeSpan.FromSeconds(2.5));
+        _clientSettings.InitialWindowSize = 6;
+
+        var timingWrites = 0;
+        var secondWriteBlocked = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+        _mockTimeoutControl.Setup(c => c.StartTimingWrite()).Callback(() =>
+        {
+            _timeoutControl.StartTimingWrite();
+            if (Interlocked.Increment(ref timingWrites) == 2)
+            {
+                secondWriteBlocked.SetResult();
+            }
+        });
+
+        await InitializeConnectionAsync(_echoApplication);
+        await StartStreamAsync(1, _browserRequestHeaders, endStream: false);
+        await SendDataAsync(1, _helloWorldBytes, endStream: false);
+
+        await ExpectAsync(Http2FrameType.HEADERS,
+            withLength: 32,
+            withFlags: (byte)Http2HeadersFrameFlags.END_HEADERS,
+            withStreamId: 1);
+        await ExpectAsync(Http2FrameType.DATA,
+            withLength: 6,
+            withFlags: (byte)Http2DataFrameFlags.NONE,
+            withStreamId: 1);
+
+        await SendWindowUpdateAsync(1, 100);
+        await ExpectAsync(Http2FrameType.DATA,
+            withLength: 6,
+            withFlags: (byte)Http2DataFrameFlags.NONE,
+            withStreamId: 1);
+
+        // Process a write without flow-control backpressure before blocking again.
+        await SendDataAsync(1, new byte[1], endStream: false);
+        await ExpectAsync(Http2FrameType.DATA,
+            withLength: 1,
+            withFlags: (byte)Http2DataFrameFlags.NONE,
+            withStreamId: 1);
+
+        await SendDataAsync(1, new byte[100], endStream: true);
+        await ExpectAsync(Http2FrameType.DATA,
+            withLength: 93,
+            withFlags: (byte)Http2DataFrameFlags.NONE,
+            withStreamId: 1);
+        await secondWriteBlocked.Task.DefaultTimeout();
+
+        TriggerTick();
+        AdvanceTime(TimeSpan.FromSeconds(_bytesReceived / limits.MinResponseDataRate.BytesPerSecond) +
+            limits.MinResponseDataRate.GracePeriod + Heartbeat.Interval - TimeSpan.FromSeconds(.5));
+        _mockTimeoutHandler.Verify(h => h.OnTimeout(It.IsAny<TimeoutReason>()), Times.Never);
+
+        AdvanceTime(TimeSpan.FromSeconds(1));
+        _mockTimeoutHandler.Verify(h => h.OnTimeout(TimeoutReason.WriteDataRate), Times.Once);
+
+        await WaitForConnectionErrorAsync<ConnectionAbortedException>(
+            ignoreNonGoAwayFrames: false,
+            expectedLastStreamId: int.MaxValue,
+            Http2ErrorCode.INTERNAL_ERROR,
+            null);
+        AssertConnectionEndReason(ConnectionEndReason.MinResponseDataRate);
+    }
+
+    [Fact]
     public async Task DATA_Sent_TooSlowlyDueToOutputFlowControlOnLargeWrite_AbortsConnectionAfterRateTimeout()
     {
         var limits = _serviceContext.ServerOptions.Limits;
