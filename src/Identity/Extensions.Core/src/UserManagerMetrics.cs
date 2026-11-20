@@ -5,6 +5,7 @@ using System;
 using System.Diagnostics;
 using System.Diagnostics.Metrics;
 using System.Linq;
+using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Internal;
@@ -30,6 +31,14 @@ internal sealed class UserManagerMetrics : IDisposable
     private readonly Counter<long> _checkPasswordAttemptsCounter;
     private readonly Counter<long> _verifyTokenAttemptsCounter;
     private readonly Counter<long> _generateTokensCounter;
+
+    // Meters are cached per IMeterFactory and instruments are cached per Meter, so the instruments created by
+    // the constructor are shared by every instance created from the same factory. Cache the instance per factory
+    // to avoid recreating it for every scoped manager. The table is private and keys are weakly held.
+    private static readonly ConditionalWeakTable<IMeterFactory, UserManagerMetrics> s_cache = new();
+
+    public static UserManagerMetrics GetOrCreate(IMeterFactory meterFactory)
+        => s_cache.GetValue(meterFactory, static factory => new UserManagerMetrics(factory));
 
     public UserManagerMetrics(IMeterFactory meterFactory)
     {
