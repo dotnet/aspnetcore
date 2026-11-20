@@ -1,0 +1,59 @@
+@using Microsoft.AspNetCore.Components.QuickGrid
+@using System.Linq
+
+<style>
+    #text-resize-main { max-width: 72rem; margin: 0 auto; padding: 1rem; }
+    #text-resize-grid { height: 18rem; overflow-y: auto; }
+    #text-resize-grid .quickgrid { width: 100%; border-collapse: separate; border-spacing: 0.125rem; }
+    #text-resize-grid td { height: 3.125rem; padding: 0; }
+</style>
+
+<main id="text-resize-main">
+    <h1>Grid</h1>
+    <div id="text-resize-grid">
+        <QuickGrid TGridItem="Person" ItemsProvider="_itemsProvider" Virtualize="true">
+            <PropertyColumn Property="p => p.Name" Title="Name" />
+            <PropertyColumn Property="p => p.City" Title="City" />
+        </QuickGrid>
+    </div>
+</main>
+
+<p id="text-resize-request-count">@_requestCount</p>
+<button id="text-resize-finish-loading" @onclick="() => _finishLoading.TrySetResult()">Finish loading</button>
+
+@code {
+    [Parameter] public string TestConfiguration { get; set; }
+
+    private readonly TaskCompletionSource _finishLoading = new(TaskCreationOptions.RunContinuationsAsynchronously);
+    private GridItemsProvider<Person> _itemsProvider = default!;
+    private int _requestCount;
+
+    protected override void OnInitialized()
+    {
+        _itemsProvider = Load;
+    }
+
+    private async ValueTask<GridItemsProviderResult<Person>> Load(GridItemsProviderRequest<Person> request)
+    {
+        _requestCount++;
+        StateHasChanged();
+        if (_requestCount > 1)
+        {
+            await _finishLoading.Task.WaitAsync(request.CancellationToken);
+        }
+
+        var count = Math.Min(request.Count ?? 200, Math.Max(0, 200 - request.StartIndex));
+        if (TestConfiguration == "show-placeholders")
+        {
+            count = Math.Min(count, 5);
+        }
+
+        var items = Enumerable.Range(request.StartIndex, count)
+            .Select(i => new Person($"Person {i + 1:D3}", $"City {i + 1:D3}"))
+            .ToArray();
+
+        return GridItemsProviderResult.From(items, 200);
+    }
+
+    private record Person(string Name, string City);
+}

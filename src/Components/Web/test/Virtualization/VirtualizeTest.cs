@@ -103,6 +103,127 @@ public class VirtualizeTest
     }
 
     [Fact]
+    public async Task Virtualize_EnumeratesLazyItemsOnlyWhenRendering()
+    {
+        var requests = new List<ItemsProviderRequest>();
+        var yieldedItemCount = 0;
+        var templateInvocationCount = 0;
+        var renderedItems = new List<int>();
+
+        IEnumerable<int> GetItems(ItemsProviderRequest request)
+        {
+            for (var i = 0; i < request.Count; i++)
+            {
+                yieldedItemCount++;
+                yield return request.StartIndex + i;
+            }
+        }
+
+        ValueTask<ItemsProviderResult<int>> provider(ItemsProviderRequest request)
+        {
+            requests.Add(request);
+            return ValueTask.FromResult(new ItemsProviderResult<int>(GetItems(request), 1000));
+        }
+
+        var (virtualize, renderer) = await CreateRenderedVirtualize(
+            50f,
+            1000,
+            provider,
+            item => builder =>
+            {
+                templateInvocationCount++;
+                renderedItems.Add(item);
+                builder.AddContent(0, item);
+            });
+        renderer.ShouldHandleExceptions = true;
+        var callbacks = (IVirtualizeJsCallbacks)virtualize;
+
+        await renderer.Dispatcher.InvokeAsync(() =>
+            callbacks.OnBeforeSpacerVisible(0f, 0f, 500f, SpacerVisibilityReason.ViewportFill));
+
+        var firstRequest = Assert.Single(requests);
+        Assert.Equal(0, firstRequest.StartIndex);
+        Assert.Equal(40, firstRequest.Count);
+        Assert.Equal(40, virtualize._lastRenderedItemCount);
+        Assert.Equal(Enumerable.Range(0, 40), renderedItems);
+        Assert.Equal(templateInvocationCount, yieldedItemCount);
+        Assert.Empty(renderer.HandledExceptions);
+
+        renderedItems.Clear();
+        await renderer.Dispatcher.InvokeAsync(() =>
+            callbacks.OnBeforeSpacerVisible(0f, 2000f, 1000f, SpacerVisibilityReason.ViewportFill));
+
+        Assert.Equal(2, requests.Count);
+        Assert.Equal(0, requests[1].StartIndex);
+        Assert.Equal(50, requests[1].Count);
+        Assert.Equal(50, virtualize._lastRenderedItemCount);
+        Assert.Equal(Enumerable.Range(0, 50), renderedItems);
+        Assert.Equal(templateInvocationCount, yieldedItemCount);
+        Assert.Empty(renderer.HandledExceptions);
+
+        renderedItems.Clear();
+        await renderer.Dispatcher.InvokeAsync(() =>
+            callbacks.OnBeforeSpacerVisible(0f, 2500f, 250f, SpacerVisibilityReason.ViewportFill));
+
+        Assert.Equal(2, requests.Count);
+        Assert.Equal(35, virtualize._lastRenderedItemCount);
+        Assert.Equal(Enumerable.Range(0, 35), renderedItems);
+        Assert.Equal(templateInvocationCount, yieldedItemCount);
+        Assert.Empty(renderer.HandledExceptions);
+    }
+
+    [Fact]
+    public async Task Virtualize_DispatchesLazyEnumerationExceptionThroughRendererWhenSkippingRefresh()
+    {
+        var requests = new List<ItemsProviderRequest>();
+        var throwOnEnumeration = false;
+        var exception = new InvalidOperationException("Thrown from lazy items enumeration.");
+
+        IEnumerable<int> GetItems(ItemsProviderRequest request)
+        {
+            if (throwOnEnumeration)
+            {
+                throw exception;
+            }
+
+            for (var i = 0; i < request.Count; i++)
+            {
+                yield return request.StartIndex + i;
+            }
+        }
+
+        ValueTask<ItemsProviderResult<int>> provider(ItemsProviderRequest request)
+        {
+            requests.Add(request);
+            return ValueTask.FromResult(new ItemsProviderResult<int>(GetItems(request), 1000));
+        }
+
+        var (virtualize, renderer) = await CreateRenderedVirtualize(
+            50f,
+            1000,
+            provider,
+            item => builder => builder.AddContent(0, item));
+        renderer.ShouldHandleExceptions = true;
+        var callbacks = (IVirtualizeJsCallbacks)virtualize;
+
+        await renderer.Dispatcher.InvokeAsync(() =>
+            callbacks.OnBeforeSpacerVisible(0f, 0f, 500f, SpacerVisibilityReason.ViewportFill));
+
+        var request = Assert.Single(requests);
+        Assert.Equal(0, request.StartIndex);
+        Assert.Equal(40, request.Count);
+        Assert.Equal(40, virtualize._lastRenderedItemCount);
+        Assert.Empty(renderer.HandledExceptions);
+
+        throwOnEnumeration = true;
+        await renderer.Dispatcher.InvokeAsync(() =>
+            callbacks.OnBeforeSpacerVisible(0f, 2000f, 250f, SpacerVisibilityReason.ViewportFill));
+
+        Assert.Single(requests);
+        Assert.Same(exception, Assert.Single(renderer.HandledExceptions));
+    }
+
+    [Fact]
     public async Task Virtualize_MeasurementsUpdateRunningAverage()
     {
         // Use fixed items with a template so items actually render
