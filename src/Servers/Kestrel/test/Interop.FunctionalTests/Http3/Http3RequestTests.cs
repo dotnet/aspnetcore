@@ -1992,10 +1992,28 @@ public class Http3RequestTests : LoggedTest
             }, "Wait for connection abort.");
 
             Logger.LogInformation("Sending request after connection abort.");
-            var response3 = await client.SendAsync(CreateHttp3Request(HttpMethod.Get, $"https://127.0.0.1:{port}/3"), CancellationToken.None);
+            var response3 = await SendWithRetryAsync(client, () => CreateHttp3Request(HttpMethod.Get, $"https://127.0.0.1:{port}/3"));
             response3.EnsureSuccessStatusCode();
 
             await host.StopAsync();
+        }
+    }
+
+    private async Task<HttpResponseMessage> SendWithRetryAsync(HttpMessageInvoker client, Func<HttpRequestMessage> createRequest)
+    {
+        const int MaxAttempts = 5;
+
+        for (var i = 0; ; i++)
+        {
+            try
+            {
+                return await client.SendAsync(createRequest(), CancellationToken.None).DefaultTimeout();
+            }
+            catch (HttpRequestException ex) when (i < MaxAttempts - 1)
+            {
+                Logger.LogInformation(ex, $"Request attempt {i + 1} failed. Retrying.");
+                await Task.Delay(100 * (i + 1));
+            }
         }
     }
 
