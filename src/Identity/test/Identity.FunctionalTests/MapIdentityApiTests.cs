@@ -1508,6 +1508,57 @@ public class MapIdentityApiTests : LoggedTest
     }
 
     [Fact]
+    public async Task TwoFactorReturnsValidationProblemWhenUserUpdateFails()
+    {
+        var updateFailures = new UserUpdateFailureSwitch();
+
+        await using var app = await CreateAppAsync(services =>
+        {
+            AddIdentityApiEndpoints(services).AddUserManager<FailingUpdateUserManager>();
+            services.AddSingleton(updateFailures);
+        });
+        using var client = app.GetTestClient();
+
+        await RegisterAsync(client);
+        await LoginAsync(client);
+
+        updateFailures.Enabled = true;
+
+        // Initializing the missing shared key fails to save.
+        await AssertValidationProblemAsync(await client.PostAsJsonAsync("/identity/manage/2fa", new object()),
+            "ConcurrencyFailure");
+
+        updateFailures.Enabled = false;
+
+        var twoFactorKeyResponse = await client.PostAsJsonAsync("/identity/manage/2fa", new object());
+        var twoFactorKeyContent = await twoFactorKeyResponse.Content.ReadFromJsonAsync<JsonElement>();
+        var sharedKey = twoFactorKeyContent.GetProperty("sharedKey").GetString();
+
+        var keyBytes = Base32.FromBase32(sharedKey);
+        var unixTimestamp = DateTimeOffset.UtcNow.ToUnixTimeSeconds();
+        var timestep = Convert.ToInt64(unixTimestamp / 30);
+        var twoFactorCode = Rfc6238AuthenticationService.ComputeTotp(keyBytes, (ulong)timestep, modifierBytes: null).ToString(CultureInfo.InvariantCulture);
+
+        updateFailures.Enabled = true;
+
+        await AssertValidationProblemAsync(await client.PostAsJsonAsync("/identity/manage/2fa", new { ResetSharedKey = true }),
+            "ConcurrencyFailure");
+        await AssertValidationProblemAsync(await client.PostAsJsonAsync("/identity/manage/2fa", new { ResetRecoveryCodes = true }),
+            "RecoveryCodeGenerationFailed");
+        await AssertValidationProblemAsync(await client.PostAsJsonAsync("/identity/manage/2fa", new { twoFactorCode, Enable = true }),
+            "ConcurrencyFailure");
+
+        updateFailures.Enabled = false;
+
+        // None of the failed updates were persisted.
+        var unchangedResponse = await client.PostAsJsonAsync("/identity/manage/2fa", new object());
+        var unchangedContent = await unchangedResponse.Content.ReadFromJsonAsync<JsonElement>();
+        Assert.Equal(sharedKey, unchangedContent.GetProperty("sharedKey").GetString());
+        Assert.False(unchangedContent.GetProperty("isTwoFactorEnabled").GetBoolean());
+        Assert.Equal(0, unchangedContent.GetProperty("recoveryCodesLeft").GetInt32());
+    }
+
+    [Fact]
     public async Task CanUsePersistentTwoFactorCookies()
     {
         await using var app = await CreateAppAsync();
@@ -2556,6 +2607,31 @@ public class MapIdentityApiTests : LoggedTest
                 isBackedUp: true,
                 attestationObject: [7, 8, 9],
                 clientDataJson: [10, 11, 12]);
+    }
+
+    private sealed class UserUpdateFailureSwitch
+    {
+        public bool Enabled { get; set; }
+    }
+
+    // Simulates a store update failure, such as an optimistic concurrency conflict, after the user entity was modified in memory.
+    private sealed class FailingUpdateUserManager(
+        IUserStore<ApplicationUser> store,
+        IOptions<IdentityOptions> optionsAccessor,
+        IPasswordHasher<ApplicationUser> passwordHasher,
+        IEnumerable<IUserValidator<ApplicationUser>> userValidators,
+        IEnumerable<IPasswordValidator<ApplicationUser>> passwordValidators,
+        ILookupNormalizer keyNormalizer,
+        IdentityErrorDescriber errors,
+        IServiceProvider services,
+        ILogger<UserManager<ApplicationUser>> logger,
+        UserUpdateFailureSwitch updateFailures)
+        : UserManager<ApplicationUser>(store, optionsAccessor, passwordHasher, userValidators, passwordValidators, keyNormalizer, errors, services, logger)
+    {
+        protected override Task<IdentityResult> UpdateUserAsync(ApplicationUser user)
+            => updateFailures.Enabled
+                ? Task.FromResult(IdentityResult.Failed(ErrorDescriber.ConcurrencyFailure()))
+                : base.UpdateUserAsync(user);
     }
 
     private sealed class TestEmailSender : IEmailSender

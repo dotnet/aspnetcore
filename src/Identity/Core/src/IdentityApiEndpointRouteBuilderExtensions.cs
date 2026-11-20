@@ -529,23 +529,41 @@ public static class IdentityApiEndpointRouteBuilderExtensions
                         "The 2fa token provided by the request was invalid. A valid 2fa token is required to enable 2fa.");
                 }
 
-                await userManager.SetTwoFactorEnabledAsync(user, true);
+                var enableResult = await userManager.SetTwoFactorEnabledAsync(user, true);
+                if (!enableResult.Succeeded)
+                {
+                    return CreateValidationProblem(enableResult);
+                }
             }
             else if (tfaRequest.Enable == false || tfaRequest.ResetSharedKey)
             {
-                await userManager.SetTwoFactorEnabledAsync(user, false);
+                var disableResult = await userManager.SetTwoFactorEnabledAsync(user, false);
+                if (!disableResult.Succeeded)
+                {
+                    return CreateValidationProblem(disableResult);
+                }
             }
 
             if (tfaRequest.ResetSharedKey)
             {
-                await userManager.ResetAuthenticatorKeyAsync(user);
+                var resetResult = await userManager.ResetAuthenticatorKeyAsync(user);
+                if (!resetResult.Succeeded)
+                {
+                    return CreateValidationProblem(resetResult);
+                }
             }
 
             string[]? recoveryCodes = null;
             if (tfaRequest.ResetRecoveryCodes || (tfaRequest.Enable == true && await userManager.CountRecoveryCodesAsync(user) == 0))
             {
                 var recoveryCodesEnumerable = await userManager.GenerateNewTwoFactorRecoveryCodesAsync(user, 10);
-                recoveryCodes = recoveryCodesEnumerable?.ToArray();
+                if (recoveryCodesEnumerable is null)
+                {
+                    return CreateValidationProblem("RecoveryCodeGenerationFailed",
+                        "The 2fa recovery codes could not be saved.");
+                }
+
+                recoveryCodes = recoveryCodesEnumerable.ToArray();
             }
 
             if (tfaRequest.ForgetMachine)
@@ -556,7 +574,12 @@ public static class IdentityApiEndpointRouteBuilderExtensions
             var key = await userManager.GetAuthenticatorKeyAsync(user);
             if (string.IsNullOrEmpty(key))
             {
-                await userManager.ResetAuthenticatorKeyAsync(user);
+                var resetResult = await userManager.ResetAuthenticatorKeyAsync(user);
+                if (!resetResult.Succeeded)
+                {
+                    return CreateValidationProblem(resetResult);
+                }
+
                 key = await userManager.GetAuthenticatorKeyAsync(user);
 
                 if (string.IsNullOrEmpty(key))
