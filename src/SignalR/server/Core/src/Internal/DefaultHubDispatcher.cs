@@ -467,22 +467,21 @@ internal sealed partial class DefaultHubDispatcher<[DynamicallyAccessedMembers(H
 
                         // Register the CancellationTokenSource if present so CancelInvocationMessage can cancel it
                         var ctsRegistered = false;
-                        if (cts != null && !string.IsNullOrEmpty(hubMethodInvocationMessage.InvocationId))
-                        {
-                            if (!connection.ActiveRequestCancellationSources.TryAdd(hubMethodInvocationMessage.InvocationId!, cts))
-                            {
-                                Log.InvocationIdInUse(logger, hubMethodInvocationMessage.InvocationId);
-                                await SendInvocationError(hubMethodInvocationMessage.InvocationId, connection,
-                                    $"Invocation ID '{hubMethodInvocationMessage.InvocationId}' is already in use.");
-                                cts.Dispose();
-                                return;
-                            }
-                            ctsRegistered = true;
-                        }
-
                         object? result;
                         try
                         {
+                            if (cts != null && !string.IsNullOrEmpty(hubMethodInvocationMessage.InvocationId))
+                            {
+                                if (!connection.ActiveRequestCancellationSources.TryAdd(hubMethodInvocationMessage.InvocationId!, cts))
+                                {
+                                    Log.InvocationIdInUse(logger, hubMethodInvocationMessage.InvocationId);
+                                    await SendInvocationError(hubMethodInvocationMessage.InvocationId, connection,
+                                        $"Invocation ID '{hubMethodInvocationMessage.InvocationId}' is already in use.");
+                                    return;
+                                }
+                                ctsRegistered = true;
+                            }
+
                             result = await dispatcher.ExecuteHubMethod(
                                 methodExecutor, hub, arguments, hubCallerContext, scope.ServiceProvider);
                             Log.SendingResult(logger, hubMethodInvocationMessage.InvocationId, methodExecutor);
