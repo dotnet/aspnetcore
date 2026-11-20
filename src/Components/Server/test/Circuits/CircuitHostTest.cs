@@ -1332,28 +1332,38 @@ public class CircuitHostTest
         Assert.Equal(2, testRenderer.GetOrCreateWebRootComponentManager().GetRootComponents().Count());
     }
 
-    [Fact]
-    public async Task UpdateRootComponents_KeyedParametersCancelInitialWork()
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task UpdateRootComponents_KeyedParametersCancelInitialWork(bool hasInitialState)
     {
         var state = new ParameterCancellationState();
         await using var services = new ServiceCollection()
             .AddLogging()
             .AddSingleton<IJSRuntime>(Mock.Of<IJSRuntime>())
             .AddSingleton<ComponentStatePersistenceManager>()
+            .AddSingleton(sp => sp.GetRequiredService<ComponentStatePersistenceManager>().State)
             .AddSingleton(state)
             .BuildServiceProvider();
         var renderer = new TestRemoteRenderer(services, Mock.Of<ISingleClientProxy>());
         var host = TestCircuitHost.Create(remoteRenderer: renderer, serviceScope: services.CreateAsyncScope());
         var errors = new List<object>();
         host.UnhandledException += (_, args) => errors.Add(args.ExceptionObject);
+        var initialStore = CreateStore();
+        if (hasInitialState)
+        {
+            initialStore.ExistingState.Add("initial", JsonSerializer.SerializeToUtf8Bytes("restored"));
+        }
         var initial = AddComponentAsync<ParameterCancellationComponent>(host, 1,
-            new() { [nameof(ParameterCancellationComponent.Id)] = 1 }, componentKey: "retained", store: CreateStore());
+            new() { [nameof(ParameterCancellationComponent.Id)] = 1 }, componentKey: "retained", store: initialStore);
         Task update = Task.CompletedTask;
         try
         {
             await state.Started.Task.WaitAsync(TimeSpan.FromSeconds(10));
             var component = await renderer.Dispatcher.InvokeAsync(() => renderer.GetTestComponentState(0).Component);
             Assert.False(initial.IsCompleted);
+            Assert.Equal(hasInitialState ? "restored" : null, state.InitialValue);
+            Assert.Empty(initialStore.ExistingState);
             var restoredIds = new List<int>();
             using var subscription = host.Services.GetRequiredService<ComponentStatePersistenceManager>().State.RegisterOnRestoring(
                 () => restoredIds.Add(((ParameterCancellationComponent)component).Id),
@@ -2565,9 +2575,10 @@ public class CircuitHostTest
         public TaskCompletionSource Cancelled { get; } = new(TaskCreationOptions.RunContinuationsAsynchronously);
         public TaskCompletionSource UpdatedRender { get; } = new(TaskCreationOptions.RunContinuationsAsynchronously);
         public int RenderedId { get; set; }
+        public string InitialValue { get; set; }
     }
 
-    private sealed class ParameterCancellationComponent(ParameterCancellationState state) : ComponentBase, IDisposable
+    private sealed class ParameterCancellationComponent(ParameterCancellationState state, PersistentComponentState persistentState) : ComponentBase, IDisposable
     {
         private CancellationTokenSource _request;
 
@@ -2582,6 +2593,10 @@ public class CircuitHostTest
             var request = _request;
             if (Id == 1)
             {
+                if (persistentState.TryTakeFromJson<string>("initial", out var value))
+                {
+                    state.InitialValue = value;
+                }
                 state.Started.TrySetResult();
                 try
                 {

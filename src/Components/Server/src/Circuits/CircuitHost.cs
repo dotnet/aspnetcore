@@ -871,7 +871,7 @@ internal partial class CircuitHost : IAsyncDisposable
                     // Retained roots may need new parameters to cancel the work holding initial quiescence.
                     var parameterUpdateTask = store is null || store.IsEmpty
                         ? WaitForRootComponentParametersAsync(_rootComponentParameterTask)
-                        : shouldWaitForQuiescence ? stateCompletionSource.Task : postRemovalTask;
+                        : postRemovalTask;
                     _rootComponentParameterTask = parameterUpdateTask;
                     var operationsTask = PerformRootComponentOperations(operations, shouldWaitForQuiescence, postRemovalTask, parameterUpdateTask, operationsCompletionSource, pendingRootComponentInitializations);
 
