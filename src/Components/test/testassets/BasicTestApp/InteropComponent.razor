@@ -7,6 +7,8 @@
 @inject IJSRuntime JSRuntime
 
 <button id="btn-interop" @onclick="InvokeInteropAsync">Invoke interop!</button>
+<button id="btn-concurrent-js-streams" @onclick="ReadConcurrentJSStreamsAsync">Read concurrent JS streams</button>
+<p id="concurrent-js-streams-result">@ConcurrentJSStreamsResult</p>
 
 <div>
     <h1>Invocations</h1>
@@ -72,8 +74,53 @@
     public IDictionary<string, object> ReceiveDotNetObjectByRefAsyncResult { get; set; } = new Dictionary<string, object>();
 
     public bool DoneWithInterop { get; set; }
+    public string ConcurrentJSStreamsResult { get; set; }
 
     public ElementReference element;
+
+    private async Task ReadConcurrentJSStreamsAsync()
+    {
+        var streamReferences = await JSRuntime.InvokeAsync<IJSStreamReference[]>("getConcurrentLargeJSStreams");
+        var streams = new List<Stream>();
+
+        try
+        {
+            foreach (var streamReference in streamReferences)
+            {
+                streams.Add(await streamReference.OpenReadStreamAsync(maxAllowedSize: 500_000));
+            }
+
+            foreach (var stream in streams)
+            {
+                using var memoryStream = new MemoryStream();
+                await stream.CopyToAsync(memoryStream);
+                var bytes = memoryStream.ToArray();
+                if (bytes.Length != 500_000 || bytes.Where((value, index) => value != index % 256).Any())
+                {
+                    ConcurrentJSStreamsResult = "Failure: Stream contents did not match.";
+                    return;
+                }
+            }
+
+            ConcurrentJSStreamsResult = "Success";
+        }
+        catch (Exception exception)
+        {
+            ConcurrentJSStreamsResult = $"Failure: {exception.Message}";
+        }
+        finally
+        {
+            foreach (var stream in streams)
+            {
+                await stream.DisposeAsync();
+            }
+
+            foreach (var streamReference in streamReferences)
+            {
+                await streamReference.DisposeAsync();
+            }
+        }
+    }
 
     public async Task InvokeInteropAsync()
     {
