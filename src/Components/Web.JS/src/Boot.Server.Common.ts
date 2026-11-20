@@ -140,6 +140,14 @@ export async function startCircuit(): Promise<boolean> {
     return await circuitStarting;
   }
 
+  circuitStarting = startCircuitCore();
+  // Once we are done, we need to clear the circuitStartingPromise to ensure that if the circuit gets
+  // disposed later on, we are able to start a new one.
+  clearCircuitStarting(circuitStarting);
+  return circuitStarting;
+}
+
+async function startCircuitCore(): Promise<boolean> {
   await serverStartPromise;
 
   if (circuit && circuit.didRenderingFail()) {
@@ -149,6 +157,9 @@ export async function startCircuit(): Promise<boolean> {
   }
 
   if (circuit && circuit.isDisposedOrDisposing()) {
+    // The old connection's close callback detaches the shared Server renderer interop.
+    await circuit.dispose();
+
     // If the current circuit is no longer available, create a new one.
     appState = discoverServerPersistedState(document) || '';
     circuit = new CircuitManager(circuit.getRootComponentManager(), appState, options, logger, circuit.getEventRegistry());
@@ -156,11 +167,7 @@ export async function startCircuit(): Promise<boolean> {
 
   // Start the circuit. If the circuit has already started, this will return the existing
   // circuit start promise.
-  circuitStarting = circuit.start();
-  // Once we are done, we need to clear the circuitStartingPromise to ensure that if the circuit gets
-  // disposed later on, we are able to start a new one.
-  clearCircuitStarting(circuitStarting);
-  return circuitStarting;
+  return circuit.start();
 }
 
 async function clearCircuitStarting(circuitStartingPromise: Promise<boolean>) {

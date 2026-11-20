@@ -51,6 +51,7 @@ export interface IBlazor {
   formValidation?: ValidationService;
 
   _internal: {
+    circuitEvents?: EventTarget;
     navigationManager: typeof navigationManagerInternalFunctions | any;
     domWrapper: typeof domFunctions;
     Virtualize: typeof Virtualize;
@@ -111,6 +112,7 @@ export const Blazor: IBlazor = {
   runtime: {} as RuntimeAPI,
 
   _internal: {
+    circuitEvents: new EventTarget(),
     navigationManager: navigationManagerInternalFunctions,
     domWrapper: domFunctions,
     Virtualize,

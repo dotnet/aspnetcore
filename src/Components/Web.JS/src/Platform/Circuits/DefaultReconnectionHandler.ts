@@ -48,6 +48,14 @@ export class DefaultReconnectionHandler implements ReconnectionHandler {
   }
 
   onConnectionUp(): void {
+    this.clearReconnectionProcess();
+  }
+
+  onPausedCircuitDisposed(): void {
+    this.clearReconnectionProcess();
+  }
+
+  private clearReconnectionProcess(): void {
     if (this._currentReconnectionProcess) {
       this._currentReconnectionProcess.dispose();
       this._currentReconnectionProcess = null;
