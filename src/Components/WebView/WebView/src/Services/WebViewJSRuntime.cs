@@ -49,6 +49,11 @@ internal sealed class WebViewJSRuntime : JSRuntime
         _disconnected = true;
     }
 
+    internal void RejectInvocationDuringDisposal(string callId)
+    {
+        _ipcSender.EndInvokeDotNet(callId, success: false, "Cannot invoke .NET methods while the WebView is being disposed.");
+    }
+
     protected override void BeginInvokeJS(in JSInvocationInfo invocationInfo)
     {
         if (_disconnected)

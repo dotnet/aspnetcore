@@ -37,6 +37,12 @@ internal sealed class IpcReceiver
             // Pending interop can be awaited by disposal; accept its completion data without starting new work.
             if (isDisposing && messageType is not (IpcCommon.IncomingMessageType.EndInvokeJS or IpcCommon.IncomingMessageType.ReceiveByteArrayFromJS))
             {
+                if (messageType == IpcCommon.IncomingMessageType.BeginInvokeDotNet && args[0].GetString() is { } callId)
+                {
+                    // A pending JS invocation may depend on this callback's promise settling.
+                    pageContext.JSRuntime.RejectInvocationDuringDisposal(callId);
+                }
+
                 return;
             }
 
