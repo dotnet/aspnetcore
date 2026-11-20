@@ -3,7 +3,7 @@
 
 import { RenderBatch, ArrayBuilderSegment, RenderTreeEdit, RenderTreeFrame, EditType, FrameType, ArrayValues } from './RenderBatch/RenderBatch';
 import { EventDelegator } from './Events/EventDelegator';
-import { LogicalElement, PermutationListEntry, toLogicalElement, insertLogicalChild, removeLogicalChild, getLogicalParent, getLogicalChild, createAndInsertLogicalContainer, isSvgElement, isMathMLElement, permuteLogicalChildren, getClosestDomElement, emptyLogicalElement, getLogicalChildrenArray, depthFirstNodeTreeTraversal } from './LogicalElements';
+import { LogicalElement, PermutationListEntry, toLogicalElement, insertLogicalChild, removeLogicalChild, getLogicalParent, getLogicalChild, createAndInsertLogicalContainer, isSvgElement, isMathMLElement, permuteLogicalChildren, getClosestDomElement, emptyLogicalElement, getLogicalChildrenArray, depthFirstNodeTreeTraversal, removeOrphanedLogicalChildren } from './LogicalElements';
 import { applyCaptureIdToElement } from './ElementReferenceCapture';
 import { attachToEventDelegator as attachNavigationManagerToEventDelegator } from '../Services/NavigationManager';
 import { applyAnyDeferredValue, deferredValuePropname, tryApplySpecialProperty } from './DomSpecialPropertyUtil';
@@ -357,9 +357,13 @@ export class BrowserRenderer {
     const markupContent = batch.frameReader.markupContent(markupFrame);
     const parsedMarkup = parseMarkup(markupContent, isSvgElement(parent), isMathMLElement(parent));
     let logicalSiblingIndex = 0;
+    // The container is new, so each node is appended after the container's existing DOM content
+    // without consulting earlier siblings. Scripts and custom elements can detach earlier siblings
+    // synchronously; remove those once at the end instead of rescanning before every insertion.
     while (parsedMarkup.firstChild) {
-      insertLogicalChild(parsedMarkup.firstChild, markupContainer, logicalSiblingIndex++);
+      insertLogicalChild(parsedMarkup.firstChild, markupContainer, logicalSiblingIndex++, false);
     }
+    removeOrphanedLogicalChildren(markupContainer);
   }
 
   private applyAttribute(batch: RenderBatch, componentId: number, toDomElement: Element, attributeFrame: RenderTreeFrame) {

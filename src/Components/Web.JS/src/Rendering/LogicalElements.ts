@@ -153,7 +153,7 @@ export function insertLogicalChildBefore(child: Node, parent: LogicalElement, be
   insertLogicalChild(child, parent, childIndex);
 }
 
-export function insertLogicalChild(child: Node, parent: LogicalElement, childIndex: number): void {
+export function insertLogicalChild(child: Node, parent: LogicalElement, childIndex: number, checkForOrphans = true): void {
   const childAsLogicalElement = child as unknown as LogicalElement;
 
   // If the child is a component comment with logical children, its children
@@ -182,15 +182,17 @@ export function insertLogicalChild(child: Node, parent: LogicalElement, childInd
 
   const newSiblings = getLogicalChildrenArray(parent);
 
-  // Remove any orphaned nodes (disconnected from DOM) from the siblings array
-  // and adjust the insertion index accordingly. These can occur when metadata
-  // comments are stripped from the DOM but remain in the logical children array.
-  for (let i = newSiblings.length - 1; i >= 0; i--) {
-    const sibling = newSiblings[i] as any as Node;
-    if (!sibling.parentNode) {
-      newSiblings.splice(i, 1);
-      if (i < childIndex) {
-        childIndex--;
+  if (checkForOrphans) {
+    // Remove any orphaned nodes (disconnected from DOM) from the siblings array
+    // and adjust the insertion index accordingly. These can occur when metadata
+    // comments are stripped from the DOM but remain in the logical children array.
+    for (let i = newSiblings.length - 1; i >= 0; i--) {
+      const sibling = newSiblings[i] as any as Node;
+      if (!sibling.parentNode) {
+        newSiblings.splice(i, 1);
+        if (i < childIndex) {
+          childIndex--;
+        }
       }
     }
   }
@@ -210,6 +212,18 @@ export function insertLogicalChild(child: Node, parent: LogicalElement, childInd
   if (!(logicalChildrenPropname in childAsLogicalElement)) {
     childAsLogicalElement[logicalChildrenPropname] = [];
   }
+}
+
+export function removeOrphanedLogicalChildren(parent: LogicalElement): void {
+  const childrenArray = getLogicalChildrenArray(parent);
+  let connectedCount = 0;
+  for (let i = 0; i < childrenArray.length; i++) {
+    const child = childrenArray[i];
+    if ((child as any as Node).parentNode) {
+      childrenArray[connectedCount++] = child;
+    }
+  }
+  childrenArray.length = connectedCount;
 }
 
 export function removeLogicalChild(parent: LogicalElement, childIndex: number): void {
