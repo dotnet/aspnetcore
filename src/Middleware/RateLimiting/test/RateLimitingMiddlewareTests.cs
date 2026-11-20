@@ -1,10 +1,12 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Reflection;
 using System.Threading.RateLimiting;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.InternalTesting;
+using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Extensions.Logging.Testing;
@@ -54,6 +56,44 @@ public class RateLimitingMiddlewareTests
             options,
             Mock.Of<IServiceProvider>(),
             null));
+    }
+
+    [Fact]
+    public void EndpointLimiterIsDisposedWhenApplicationStops()
+    {
+        // Arrange
+        var lifetime = new TestHostApplicationLifetime();
+        var middleware = CreateTestRateLimitingMiddleware(CreateOptionsAccessor(),
+            serviceProvider: new TestServiceProvider(lifetime));
+        var endpointLimiter = (PartitionedRateLimiter<HttpContext>)typeof(RateLimitingMiddleware)
+            .GetField("_endpointLimiter", BindingFlags.NonPublic | BindingFlags.Instance)!
+            .GetValue(middleware)!;
+
+        // Sanity check: the limiter works before shutdown.
+        using (endpointLimiter.AttemptAcquire(new DefaultHttpContext())) { }
+
+        // Act
+        lifetime.StopApplication();
+
+        // Assert
+        Assert.Throws<ObjectDisposedException>(() => endpointLimiter.AttemptAcquire(new DefaultHttpContext()));
+    }
+
+    [Fact]
+    public void GlobalLimiterIsNotDisposedWhenApplicationStops()
+    {
+        // Arrange
+        var lifetime = new TestHostApplicationLifetime();
+        var globalLimiter = new TestPartitionedRateLimiter<HttpContext>(new TestRateLimiter(true));
+        var options = CreateOptionsAccessor();
+        options.Value.GlobalLimiter = globalLimiter;
+        CreateTestRateLimitingMiddleware(options, serviceProvider: new TestServiceProvider(lifetime));
+
+        // Act
+        lifetime.StopApplication();
+
+        // Assert: the user-provided global limiter is still usable, its lifetime is owned by the user.
+        using (globalLimiter.AttemptAcquire(new DefaultHttpContext())) { }
     }
 
     [Fact]
@@ -709,6 +749,33 @@ public class RateLimitingMiddlewareTests
             new RateLimitingMetrics(new TestMeterFactory()));
 
     private IOptions<RateLimiterOptions> CreateOptionsAccessor() => Options.Create(new RateLimiterOptions());
+
+    private sealed class TestHostApplicationLifetime : IHostApplicationLifetime
+    {
+        private readonly CancellationTokenSource _started = new();
+        private readonly CancellationTokenSource _stopping = new();
+        private readonly CancellationTokenSource _stopped = new();
+
+        public CancellationToken ApplicationStarted => _started.Token;
+        public CancellationToken ApplicationStopping => _stopping.Token;
+        public CancellationToken ApplicationStopped => _stopped.Token;
+
+        public void StopApplication()
+        {
+            _stopping.Cancel();
+            _stopped.Cancel();
+        }
+    }
+
+    private sealed class TestServiceProvider : IServiceProvider
+    {
+        private readonly IHostApplicationLifetime _lifetime;
+
+        public TestServiceProvider(IHostApplicationLifetime lifetime) => _lifetime = lifetime;
+
+        public object GetService(Type serviceType) =>
+            serviceType == typeof(IHostApplicationLifetime) ? _lifetime : null;
+    }
 
     // An inline policy backed by a stateful limiter that permits a fixed number of acquisitions and then
     // rejects. Used to observe whether two endpoints share or isolate their limiter buckets.
