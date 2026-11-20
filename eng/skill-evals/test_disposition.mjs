@@ -21,7 +21,7 @@ ${section === 'UNRESOLVED' ? 'C1 missing target-base contract.' : 'None.'}
 DISCARDED
 ${section === 'DISCARDED' ? 'C1 old and head match.' : 'None.'}`;
 
-test('ReviewDispositionAcceptsExpectedSections', () =>
+test('ReviewDispositionAcceptsExpectedSections', async context =>
 {
   for (const [name, section, confidence] of [
     ['case-01', 'DISCARDED', 'discarded'],
@@ -31,11 +31,18 @@ test('ReviewDispositionAcceptsExpectedSections', () =>
     ['case-06', 'UNRESOLVED', 'unresolved'],
   ])
   {
-    assert.equal(score(name, review(section, confidence)), 1, name);
+    await context.test(name, () =>
+    {
+      assert.equal(score(name, review(section, confidence, section !== 'DISCARDED')), 1);
+    });
   }
   for (const name of ['case-01', 'case-03', 'case-04'])
   {
-    assert.equal(score(name, review('DISCARDED', 'discarded', false)), 0, name);
+    assert.equal(score(name, review('DISCARDED', 'discarded')), 0, name);
+    assert.equal(score(name, review('DISCARDED', 'discarded', false)
+      .replace('STATUS: NO_FINDINGS', 'STATUS: FINDINGS')), 0, name);
+    assert.equal(score(name, review('DISCARDED', 'discarded', false)
+      .replace('C1 old and head match.', 'None.')), 0, name);
   }
 });
 
@@ -94,6 +101,150 @@ LIMITATIONS
 C1 has no runtime repro.`), 1);
 });
 
+test('ReviewDispositionRejectsIdentifierFreeInlineForDiscardedCases', async context =>
+{
+  for (const name of ['case-01', 'case-03', 'case-04'])
+  {
+    for (const [format, prefix] of [['plain', ''], ['heading', '### ']])
+    {
+      await context.test(`${name}-${format}`, () =>
+      {
+        const output = review('DISCARDED', 'discarded', false)
+          .replace('NEW_FINDINGS\nNone.', `NEW_FINDINGS\n${prefix}[DISCARDED] Old behavior.\nConfidence: discarded\nWhy discarded: old and head match.`);
+        assert.equal(score(name, output), 0);
+      });
+    }
+  }
+});
+
+test('ReviewDispositionAcceptsAbsenceOnlyInlineForDiscardedCases', async context =>
+{
+  for (const name of ['case-01', 'case-03', 'case-04'])
+  {
+    await context.test(name, () =>
+    {
+      for (const marker of ['', 'None', 'None.', '_None_', '- **None.**', 'C1 omitted.'])
+      {
+        const output = review('DISCARDED', 'discarded', false)
+          .replace('NEW_FINDINGS\nNone.', `NEW_FINDINGS\n${marker}`);
+        assert.equal(score(name, output), 1, marker);
+      }
+    });
+  }
+});
+
+test('ReviewDispositionRejectsInlineEntryAfterAbsenceMarker', async context =>
+{
+  for (const name of ['case-01', 'case-03', 'case-04'])
+  {
+    await context.test(name, () =>
+    {
+      const output = review('DISCARDED', 'discarded', false)
+        .replace('NEW_FINDINGS\nNone.', 'NEW_FINDINGS\nNone.\n[DISCARDED] Old behavior.');
+      assert.equal(score(name, output), 0);
+    });
+  }
+});
+
+const absencePhrases = ['No new findings', 'No unresolved candidates', 'No discarded candidates', 'No existing feedback'];
+
+test('ReviewDispositionAcceptsAnchoredAbsenceProse', async context =>
+{
+  for (const name of ['case-01', 'case-03', 'case-04'])
+  {
+    for (const phrase of absencePhrases)
+    {
+      await context.test(`${name}-${phrase}`, () =>
+      {
+        for (const marker of [phrase, `${phrase}.`, `**${phrase}.**`, `_${phrase}._`])
+        {
+          const output = review('DISCARDED', 'discarded', false)
+            .replace('NEW_FINDINGS\nNone.', `NEW_FINDINGS\n${marker}`);
+          assert.equal(score(name, output), 1, marker);
+        }
+      });
+    }
+    await context.test(`${name}-section-phrases`, () =>
+    {
+      const output = review('DISCARDED', 'discarded', false)
+        .replace('NEW_FINDINGS\nNone.', 'NEW_FINDINGS\nNo new findings.')
+        .replace('UNRESOLVED\nNone.', 'UNRESOLVED\nNo unresolved candidates.')
+        .replace('EXISTING_FEEDBACK_COVERAGE\nNone.', 'EXISTING_FEEDBACK_COVERAGE\nNo existing feedback.');
+      assert.equal(score(name, output), 1);
+    });
+  }
+  for (const [name, section, confidence] of [
+    ['case-02', 'NEW_FINDINGS', 'verified'],
+    ['case-06', 'UNRESOLVED', 'unresolved'],
+  ])
+  {
+    await context.test(`${name}-discarded-phrase`, () =>
+    {
+      const output = review(section, confidence)
+        .replace('DISCARDED\nNone.', 'DISCARDED\nNo discarded candidates.');
+      assert.equal(score(name, output), 1);
+    });
+  }
+});
+
+test('ReviewDispositionRejectsSubstantiveAbsenceProse', async context =>
+{
+  for (const name of ['case-01', 'case-03', 'case-04'])
+  {
+    for (const phrase of absencePhrases)
+    {
+      await context.test(`${name}-${phrase}`, () =>
+      {
+        for (const extra of [
+          ' [DISCARDED] Old behavior.',
+          '\n[DISCARDED] Old behavior.\nConfidence: discarded\nWhy discarded: old and head match.',
+          '\n### [DISCARDED] Old behavior.\nConfidence: discarded\nWhy discarded: old and head match.',
+          '\nThe candidate still changes behavior.',
+          ' because the old implementation behaves the same.',
+        ])
+        {
+          const output = review('DISCARDED', 'discarded', false)
+            .replace('NEW_FINDINGS\nNone.', `NEW_FINDINGS\n${phrase}.${extra}`);
+          assert.equal(score(name, output), 0, extra);
+        }
+      });
+    }
+  }
+});
+
+test('ReviewDispositionRejectsIdentifierFreeConflictingSections', async context =>
+{
+  for (const [name, section, confidence, conflicting] of [
+    ['case-02', 'NEW_FINDINGS', 'verified', 'UNRESOLVED'],
+    ['case-02', 'NEW_FINDINGS', 'verified', 'DISCARDED'],
+    ['case-06', 'UNRESOLVED', 'unresolved', 'DISCARDED'],
+    ['case-06', 'UNRESOLVED', 'unresolved', 'EXISTING_FEEDBACK_COVERAGE'],
+    ['case-01', 'DISCARDED', 'discarded', 'UNRESOLVED'],
+  ])
+  {
+    await context.test(`${name}-${conflicting}`, () =>
+    {
+      const output = review(section, confidence, section !== 'DISCARDED')
+        .replace(`${conflicting}\nNone.`, `${conflicting}\nThe candidate has a conflicting disposition.`);
+      assert.equal(score(name, output), 0);
+    });
+  }
+});
+
+test('ReviewDispositionRejectsIdentifierFreeExtraInlineConfidence', () =>
+{
+  for (const [name, section, confidence] of [
+    ['case-02', 'NEW_FINDINGS', 'verified'],
+    ['case-06', 'UNRESOLVED', 'unresolved'],
+  ])
+  {
+    const output = review(section, confidence)
+      .replace('EXISTING_FEEDBACK_COVERAGE',
+        '[DISCARDED] Old behavior.\nConfidence: discarded\nWhy discarded: old and head match.\nEXISTING_FEEDBACK_COVERAGE');
+    assert.equal(score(name, output), 0, name);
+  }
+});
+
 test('ReviewDispositionRejectsWrongStatusSectionConfidenceAndOmission', () =>
 {
   const good = review('UNRESOLVED', 'unresolved');
@@ -147,7 +298,6 @@ test('ReviewDispositionToleratesSingleUnderscoreEmphasis', async context =>
     ['confidence-label', 'case-02', 'NEW_FINDINGS', 'verified', 'confidence: verified', '_Confidence:_ verified'],
     ['confidence-value', 'case-02', 'NEW_FINDINGS', 'verified', 'confidence: verified', 'confidence: _verified_'],
     ['unresolved-reason', 'case-06', 'UNRESOLVED', 'unresolved', 'Why unresolved:', '_Why unresolved:_'],
-    ['discarded-reason', 'case-01', 'DISCARDED', 'discarded', 'Why discarded:', '_Why discarded:_'],
   ])
   {
     await context.test(name, () =>
@@ -164,7 +314,7 @@ test('ReviewDispositionDistinguishesNoProseFromSectionAbsence', async context =>
   for (const [name, caseName, output, expected] of [
     ['unresolved-policy', 'case-06', review('UNRESOLVED', 'unresolved')
       .replace('C1 missing target-base contract.', '- C1: No binding target-base contract specifies diagnostic sink failure propagation.'), 1],
-    ['discarded-behavior', 'case-01', review('DISCARDED', 'discarded')
+    ['discarded-behavior', 'case-01', review('DISCARDED', 'discarded', false)
       .replace('C1 old and head match.', '- C1: No behavior change on the pending request between mergeBase and head.'), 1],
     ['contradictory-unresolved', 'case-02', review('NEW_FINDINGS', 'verified')
       .replace('UNRESOLVED\nNone.', 'UNRESOLVED\n- C1: No binding target-base contract specifies diagnostic sink failure propagation.'), 0],
@@ -192,7 +342,7 @@ test('ReviewDispositionDistinguishesSubstantiveNoneFromAbsenceMarkers', async co
   for (const [name, caseName, output, expected] of [
     ['unresolved-none-of', 'case-06', review('UNRESOLVED', 'unresolved')
       .replace('C1 missing target-base contract.', 'C1: None of the frozen contracts establishes whether failures propagate.'), 1],
-    ['discarded-none-of', 'case-01', review('DISCARDED', 'discarded')
+    ['discarded-none-of', 'case-01', review('DISCARDED', 'discarded', false)
       .replace('C1 old and head match.', 'C1: None of the compared lines changes request behavior.'), 1],
     ['conflicting-none-of', 'case-02', review('NEW_FINDINGS', 'verified')
       .replace('UNRESOLVED\nNone.', 'UNRESOLVED\nC1: None of the frozen contracts establishes whether failures propagate.'), 0],
@@ -262,6 +412,9 @@ None.`;
   assert.equal(score('case-05', good), 1);
   assert.equal(score('case-05', good.replace('discussion_r4487936812', 'other-thread')), 0);
   assert.equal(score('case-05', good.replace('NEW_FINDINGS\nNone.', 'NEW_FINDINGS\nC1')), 0);
+  assert.equal(score('case-05', good.replace('NEW_FINDINGS\nNone.', 'NEW_FINDINGS\n[UNRESOLVED] Duplicate concern.')), 0);
+  assert.equal(score('case-05', good.replace('NEW_FINDINGS\nNone.', 'NEW_FINDINGS\n### [UNRESOLVED] Duplicate concern.')), 0);
+  assert.equal(score('case-05', good.replace('DISCARDED\nNone.', 'DISCARDED\nOld behavior.')), 0);
   assert.equal(score('case-05', good.replace('UNRESOLVED\nC1 discussion_r4487936812 browser mode remains unestablished.', 'UNRESOLVED\nNone.')), 0);
   assert.equal(score('case-05', good.replace('UNRESOLVED\nC1 discussion_r4487936812', 'UNRESOLVED\nC1')), 0);
 });
