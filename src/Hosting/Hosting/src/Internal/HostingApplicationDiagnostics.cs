@@ -122,7 +122,7 @@ internal sealed class HostingApplicationDiagnostics
 
         if (ActivityCreator.IsActivityCreated(_activitySource, loggingEnabled || diagnosticListenerActivityCreationEnabled))
         {
-            context.Activity = StartActivity(httpContext, loggingEnabled || diagnosticListenerActivityCreationEnabled, out var hasDiagnosticListener);
+            context.Activity = StartActivity(httpContext, context, loggingEnabled || diagnosticListenerActivityCreationEnabled, out var hasDiagnosticListener);
             context.HasDiagnosticListener = hasDiagnosticListener;
 
             if (context.Activity != null)
@@ -249,7 +249,7 @@ internal sealed class HostingApplicationDiagnostics
         // can capture the activity as a metric exemplar.
         if (activity is not null)
         {
-            StopActivity(httpContext, activity, exception, context.HasDiagnosticListener);
+            StopActivity(httpContext, activity, exception, context.HasDiagnosticListener, context.InitialActivityDisplayName);
         }
 
         if (context.EventLogEnabled)
@@ -446,7 +446,7 @@ internal sealed class HostingApplicationDiagnostics
     }
 
     [MethodImpl(MethodImplOptions.NoInlining)]
-    private Activity? StartActivity(HttpContext httpContext, bool diagnosticsOrLoggingEnabled, out bool hasDiagnosticListener)
+    private Activity? StartActivity(HttpContext httpContext, HostingApplication.Context context, bool diagnosticsOrLoggingEnabled, out bool hasDiagnosticListener)
     {
         // StartActivity is only called if an Activity is already verified to be created.
         Debug.Assert(ActivityCreator.IsActivityCreated(_activitySource, diagnosticsOrLoggingEnabled),
@@ -483,7 +483,11 @@ internal sealed class HostingApplicationDiagnostics
         {
             // Set the initial display name to just the HTTP method.
             // It will be updated to include the route if one is matched.
-            activity.DisplayName = HostingTelemetryHelpers.GetActivityDisplayName(httpContext.Request.Method);
+            var displayName = HostingTelemetryHelpers.GetActivityDisplayName(httpContext.Request.Method);
+            activity.DisplayName = displayName;
+
+            // Retained so request end can tell this name apart from one the app assigned during the request.
+            context.InitialActivityDisplayName = displayName;
         }
 
         _diagnosticListener.OnActivityImport(activity, httpContext);
@@ -563,11 +567,11 @@ internal sealed class HostingApplicationDiagnostics
     }
 
     [MethodImpl(MethodImplOptions.NoInlining)]
-    private void StopActivity(HttpContext httpContext, Activity activity, Exception? exception, bool hasDiagnosticListener)
+    private void StopActivity(HttpContext httpContext, Activity activity, Exception? exception, bool hasDiagnosticListener, string? initialDisplayName)
     {
         if (!SuppressActivityOpenTelemetryData && activity.IsAllDataRequested)
         {
-            SetActivityEndTags(httpContext, activity, exception);
+            SetActivityEndTags(httpContext, activity, exception, initialDisplayName);
         }
 
         if (hasDiagnosticListener)
@@ -580,7 +584,7 @@ internal sealed class HostingApplicationDiagnostics
         }
     }
 
-    private static void SetActivityEndTags(HttpContext httpContext, Activity activity, Exception? exception)
+    private static void SetActivityEndTags(HttpContext httpContext, Activity activity, Exception? exception, string? initialDisplayName)
     {
         var response = httpContext.Response;
 
@@ -597,7 +601,14 @@ internal sealed class HostingApplicationDiagnostics
         {
             var resolvedRoute = RouteDiagnosticsHelpers.ResolveHttpRoute(route);
             activity.SetTag(HostingTelemetryHelpers.AttributeHttpRoute, resolvedRoute);
-            activity.DisplayName = HostingTelemetryHelpers.GetActivityDisplayName(httpContext.Request.Method, resolvedRoute);
+            // The app may have set a more specific name during the request. Only
+            // replace the name when it still holds the name hosting set at start.
+            // Retained on the context because Request.Method can change mid-request.
+            var defaultDisplayName = HostingTelemetryHelpers.GetActivityDisplayName(httpContext.Request.Method);
+            if (activity.DisplayName == initialDisplayName)
+            {
+                activity.DisplayName = HostingTelemetryHelpers.GetRouteActivityDisplayName(defaultDisplayName, resolvedRoute);
+            }
         }
 
         if (exception != null)
