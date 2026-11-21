@@ -1513,7 +1513,7 @@ internal sealed partial class Http2Connection : IHttp2StreamLifetimeHandler, IHt
     {
         var maxStreams = MaxTrackedStreams;
         // If we're tracking too many streams, discard the oldest.
-        while (_streams.Count >= maxStreams && _completedStreams.TryDequeue(out var stream))
+        while (_streams.Count > maxStreams && _completedStreams.TryDequeue(out var stream))
         {
             if (stream.DrainExpirationTimestamp == default)
             {

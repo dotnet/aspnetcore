@@ -6067,6 +6067,83 @@ public class Http2ConnectionTests : Http2TestBase
         AssertConnectionNoError();
     }
 
+    [Theory]
+    [InlineData(20, -1)]
+    [InlineData(1, 0)]
+    [InlineData(20, 0)]
+    [InlineData(100, 0)]
+    [InlineData(20, 1)]
+    public async Task RefusedStream_Post_TrackedStreamLimit_DrainsInFlightData(int maxConcurrentStreams, int additionalStreams)
+    {
+        _serviceContext.ServerOptions.Limits.Http2.MaxStreamsPerConnection = maxConcurrentStreams;
+        var completedRequests = 0;
+
+        InitializeConnectionWithoutPreface(async context =>
+        {
+            await context.Request.Body.CopyToAsync(Stream.Null, context.RequestAborted);
+            Interlocked.Increment(ref completedRequests);
+        });
+
+        await SendPreambleAsync();
+        await SendSettingsAsync();
+
+        var maxTrackedStreams = (int)_connection.MaxTrackedStreams;
+        var streamCount = maxTrackedStreams + additionalStreams;
+        var firstRefusedStreamId = maxConcurrentStreams * 2 + 1;
+        var retainedRefusedStreamId = firstRefusedStreamId + Math.Max(additionalStreams, 0) * 2;
+        var lastStreamId = streamCount * 2 - 1;
+        var headers = new[]
+        {
+            new KeyValuePair<string, string>(InternalHeaderNames.Method, "POST"),
+            new KeyValuePair<string, string>(InternalHeaderNames.Path, "/"),
+            new KeyValuePair<string, string>(InternalHeaderNames.Scheme, "http"),
+        };
+
+        // Queue the burst and DATA before the client reads SETTINGS or RST_STREAM.
+        for (var streamId = 1; streamId <= lastStreamId; streamId += 2)
+        {
+            await StartStreamAsync(streamId, headers, endStream: false, flushFrame: false);
+        }
+
+        await SendDataAsync(retainedRefusedStreamId, new byte[] { 42 }, endStream: false, flushFrame: false);
+        await SendPingAsync(Http2PingFrameFlags.NONE);
+
+        await ExpectAsync(Http2FrameType.SETTINGS,
+            withLength: 4 * Http2FrameReader.SettingSize,
+            withFlags: 0,
+            withStreamId: 0);
+        await ExpectAsync(Http2FrameType.WINDOW_UPDATE,
+            withLength: 4,
+            withFlags: 0,
+            withStreamId: 0);
+        await ExpectAsync(Http2FrameType.SETTINGS,
+            withLength: 0,
+            withFlags: (byte)Http2SettingsFrameFlags.ACK,
+            withStreamId: 0);
+
+        for (var streamId = firstRefusedStreamId; streamId <= lastStreamId; streamId += 2)
+        {
+            await WaitForStreamErrorAsync(streamId, Http2ErrorCode.REFUSED_STREAM, CoreStrings.Http2ErrorMaxStreams);
+        }
+
+        await ExpectAsync(Http2FrameType.PING,
+            withLength: 8,
+            withFlags: (byte)Http2PingFrameFlags.ACK,
+            withStreamId: 0);
+
+        Assert.Equal(Math.Min(streamCount, maxTrackedStreams), _connection._streams.Count);
+        Assert.Equal(additionalStreams <= 0, _connection._streams.ContainsKey(firstRefusedStreamId));
+
+        for (var streamId = 1; streamId < firstRefusedStreamId; streamId += 2)
+        {
+            await SendDataAsync(streamId, Memory<byte>.Empty, endStream: true);
+        }
+
+        await StopConnectionAsync(expectedLastStreamId: lastStreamId, ignoreNonGoAwayFrames: true);
+        Assert.Equal(maxConcurrentStreams, completedRequests);
+        AssertConnectionNoError();
+    }
+
     [Fact]
     public async Task FramesInBatchAreStillProcessedAfterStreamError_WithoutHeartbeat()
     {
