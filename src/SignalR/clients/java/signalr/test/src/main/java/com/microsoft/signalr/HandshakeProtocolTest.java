@@ -36,4 +36,10 @@ class HandshakeProtocolTest {
         String handshakeResponseWithError = "{\"error\": \"Requested proto";
         Throwable exception = assertThrows(RuntimeException.class, ()-> HandshakeProtocol.parseHandshakeResponse(handshakeResponseWithError));
     }
+
+    @Test
+    public void VerifyProguardRulesExistInClasspath() {
+        assertNotNull(getClass().getResourceAsStream("/META-INF/proguard/signalr.pro"));
+        assertNotNull(getClass().getResourceAsStream("/META-INF/com.android.tools/r8/signalr.pro"));
+    }
 }
