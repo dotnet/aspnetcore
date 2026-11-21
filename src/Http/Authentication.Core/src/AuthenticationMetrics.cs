@@ -12,6 +12,9 @@ internal sealed class AuthenticationMetrics
 {
     public const string MeterName = "Microsoft.AspNetCore.Authentication";
 
+    // OpenTelemetry Semantic Conventions version that this meter conforms to.
+    private const string SchemaUrl = "https://opentelemetry.io/schemas/1.45.0";
+
     private readonly Meter _meter;
     private readonly Histogram<double> _authenticatedRequestDuration;
     private readonly Counter<long> _challengeCount;
@@ -21,7 +24,7 @@ internal sealed class AuthenticationMetrics
 
     public AuthenticationMetrics(IMeterFactory meterFactory)
     {
-        _meter = meterFactory.Create(MeterName);
+        _meter = meterFactory.Create(new MeterOptions(MeterName) { TelemetrySchemaUrl = SchemaUrl });
 
         _authenticatedRequestDuration = _meter.CreateHistogram<double>(
             "aspnetcore.authentication.authenticate.duration",

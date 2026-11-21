@@ -73,7 +73,7 @@ internal sealed class GenericWebHostBuilder : WebHostBuilderBase, ISupportsStart
             // We need to flow this differently
             services.TryAddSingleton(sp => new DiagnosticListener("Microsoft.AspNetCore"));
             services.TryAddSingleton<DiagnosticSource>(sp => sp.GetRequiredService<DiagnosticListener>());
-            services.TryAddSingleton(sp => new ActivitySource("Microsoft.AspNetCore"));
+            services.TryAddSingleton(sp => HostingTelemetryHelpers.CreateActivitySource());
             services.TryAddSingleton(DistributedContextPropagator.Current);
 
             services.TryAddSingleton<IHttpContextFactory, DefaultHttpContextFactory>();

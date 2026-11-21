@@ -235,6 +235,7 @@ public class PinnedBlockMemoryPoolTests : MemoryPoolTests
         using var currentMemoryMetric = new MetricCollector<long>(testMeterFactory, "Microsoft.AspNetCore.MemoryPool", MemoryPoolMetrics.PooledMemoryName);
 
         var pool = CreateMemoryPool(owner: "test", meterFactory: testMeterFactory);
+        Assert.Equal("https://opentelemetry.io/schemas/1.45.0", Assert.Single(testMeterFactory.Meters).TelemetrySchemaUrl);
 
         Assert.Empty(currentMemoryMetric.GetMeasurementSnapshot());
 
