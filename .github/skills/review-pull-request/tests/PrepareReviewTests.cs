@@ -1779,6 +1779,8 @@ public class PrepareReviewTests
     [Theory]
     [InlineData("complete")]
     [InlineData("exact")]
+    [InlineData("exact-hostile-config")]
+    [InlineData("exact-rename-multihunk")]
     [InlineData("exact-binary")]
     [InlineData("checksum")]
     [InlineData("feedback")]
@@ -1804,7 +1806,7 @@ public class PrepareReviewTests
             ["created_at"] = "2026-10-25T10:03:04Z",
             ["updated_at"] = "2026-10-25T10:03:04Z",
         });
-        if (evidence == "exact")
+        if (evidence is "exact" or "exact-hostile-config")
         {
             const string ChangedPath = "src/Value.cs";
             const string Prefix = "public class C\n{\n    public int Value()\n    {\n        // one\n        // two\n        // three\n        return ";
@@ -1827,6 +1829,35 @@ public class PrepareReviewTests
                 "--git-dir", fixture.Repository, "diff", "--abbrev=12", fixture.MergeBase, head));
             var hunk = Assert.Single(Utf8NoBom.GetString(fixture.Diff).Split('\n'), line => line.StartsWith("@@", StringComparison.Ordinal));
             Assert.EndsWith("public int Value()", hunk, StringComparison.Ordinal);
+        }
+        else if (evidence == "exact-rename-multihunk")
+        {
+            const string OldPath = "src/Old.cs";
+            const string NewPath = "src/New.cs";
+            var lines = Enumerable.Range(1, 20).Select(number => $"// line {number}").ToArray();
+            fixture.BaseTip = fixture.MergeBase = fixture.Commit(new Dictionary<string, object> { [OldPath] = string.Join('\n', lines) + "\n" });
+            lines[1] = "// changed 2";
+            lines[18] = "// changed 19";
+            var head = fixture.Commit(new Dictionary<string, object> { [NewPath] = string.Join('\n', lines) + "\n" }, fixture.MergeBase);
+            fixture.Pull["head"]!["sha"] = head;
+            fixture.Pull["changed_files"] = 1;
+            fixture.Files = new JsonArray(new JsonObject
+            {
+                ["filename"] = NewPath,
+                ["status"] = "renamed",
+                ["sha"] = Utf8NoBom.GetString(PrepareReviewProgram.Run("git", PrepareReviewProgram.GitArguments(
+                    "--git-dir", fixture.Repository, "rev-parse", $"{head}:{NewPath}"))).Trim(),
+                ["additions"] = 2,
+                ["deletions"] = 2,
+                ["changes"] = 4,
+                ["previous_filename"] = OldPath,
+            });
+            await File.WriteAllTextAsync(Path.Combine(fixture.Repository, "info", "attributes"), "*.cs diff=csharp\n", Utf8NoBom);
+            fixture.Diff = PrepareReviewProgram.Run("git", PrepareReviewProgram.GitArguments(
+                "--git-dir", fixture.Repository, "diff", "--find-renames=50%", "--abbrev=12", fixture.MergeBase, head));
+            var patch = Utf8NoBom.GetString(fixture.Diff);
+            Assert.Contains($"rename from {OldPath}", patch, StringComparison.Ordinal);
+            Assert.Equal(2, patch.Split('\n').Count(line => line.StartsWith("@@", StringComparison.Ordinal)));
         }
         else if (evidence == "exact-binary")
         {
@@ -1882,9 +1913,49 @@ public class PrepareReviewTests
         Assert.Equal(manifest["artifacts"]!["files.json"]!.GetValue<string>(), receipt["hashes"]!["files.json"]!.GetValue<string>());
         var rebuild = new PrepareReviewProgram.Options(null, null, Path.Combine(fixture.Root, "rebuilt"),
             RebuildFromReceipt: receiptPath, ObjectStore: fixture.Repository);
-        if (evidence is "complete" or "exact" or "exact-binary")
+        if (evidence is "complete" or "exact" or "exact-hostile-config" or "exact-rename-multihunk" or "exact-binary")
         {
-            var verdict = await PrepareReviewProgram.RebuildReceiptAsync(rebuild, ProducerSourcePath);
+            string[] hostileVariables = ["GIT_CONFIG_GLOBAL", "GIT_DIFF_OPTS", "GIT_EXTERNAL_DIFF"];
+            var originalVariables = hostileVariables.ToDictionary(name => name, Environment.GetEnvironmentVariable);
+            if (evidence == "exact-hostile-config")
+            {
+                var attributes = Path.Combine(fixture.Root, "hostile.gitattributes");
+                await File.WriteAllTextAsync(attributes, "*.cs -diff\n", Utf8NoBom);
+                var config = Path.Combine(fixture.Root, "hostile.gitconfig");
+                await File.WriteAllTextAsync(config, $"""
+                    [diff]
+                        context = 1
+                        interHunkContext = 10
+                        noprefix = true
+                        mnemonicPrefix = true
+                        algorithm = histogram
+                        indentHeuristic = false
+                        renames = false
+                        suppressBlankEmpty = true
+                    [diff "csharp"]
+                        xfuncname = "^(never)$"
+                    [core]
+                        quotePath = false
+                        attributesFile = {attributes.Replace('\\', '/')}
+                    [color]
+                        diff = always
+                    """, Utf8NoBom);
+                Environment.SetEnvironmentVariable("GIT_CONFIG_GLOBAL", config);
+                Environment.SetEnvironmentVariable("GIT_DIFF_OPTS", "--unified=1");
+                Environment.SetEnvironmentVariable("GIT_EXTERNAL_DIFF", "false");
+            }
+            JsonNode verdict;
+            try
+            {
+                verdict = await PrepareReviewProgram.RebuildReceiptAsync(rebuild, ProducerSourcePath);
+            }
+            finally
+            {
+                foreach (var (name, value) in originalVariables)
+                {
+                    Environment.SetEnvironmentVariable(name, value);
+                }
+            }
             var matches = verdict["matches"]!.AsArray().Select(node => node!.GetValue<string>()).ToArray();
             var mismatches = verdict["mismatches"]!.AsArray().Select(node => node!.GetValue<string>()).ToArray();
             Assert.Equal(evidence == "complete" ? "reconstructed" : "captured-exact", verdict["verdict"]!.GetValue<string>());

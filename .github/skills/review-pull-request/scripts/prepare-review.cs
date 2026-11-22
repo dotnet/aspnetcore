@@ -528,8 +528,8 @@ internal static partial class PrepareReviewProgram
 
     private static JsonArray ReceiptGitFiles(string store, string[] diffArguments)
     {
-        var raw = Utf8NoBom.GetString(Objects(store, [.. diffArguments, "--raw", "--no-abbrev", "-z"])).Split('\0');
-        var numstat = Utf8NoBom.GetString(Objects(store, [.. diffArguments, "--numstat", "-z"])).Split('\0');
+        var raw = Utf8NoBom.GetString(PatchObjects(store, [.. diffArguments, "--raw", "--no-abbrev", "-z"])).Split('\0');
+        var numstat = Utf8NoBom.GetString(PatchObjects(store, [.. diffArguments, "--numstat", "-z"])).Split('\0');
         var files = new JsonArray();
         var statIndex = 0;
         for (var index = 0; index < raw.Length - 1;)
@@ -595,8 +595,27 @@ internal static partial class PrepareReviewProgram
     private static byte[] Objects(string directory, params string[] args) =>
         Run("git", GitArguments(["--git-dir", directory, .. args]));
 
+    private static readonly string NullDevice = OperatingSystem.IsWindows() ? "NUL" : "/dev/null";
+
+    // Offline patch bytes must depend only on the frozen objects, not on the runner's Git configuration or environment.
+    private static readonly Dictionary<string, string?> PatchEnvironment = new()
+    {
+        ["GIT_CONFIG_NOSYSTEM"] = "1",
+        ["GIT_CONFIG_GLOBAL"] = NullDevice,
+        ["GIT_ATTR_NOSYSTEM"] = "1",
+        ["GIT_CONFIG_PARAMETERS"] = null,
+        ["GIT_CONFIG_COUNT"] = null,
+        ["GIT_DIFF_OPTS"] = null,
+        ["GIT_EXTERNAL_DIFF"] = null,
+    };
+
+    private static byte[] PatchObjects(string directory, params string[] args) =>
+        Run("git", GitArguments(["-c", $"core.attributesFile={NullDevice}", "-c", "core.quotePath=true", "-c", "diff.noprefix=false",
+            "-c", "diff.mnemonicPrefix=false", "-c", "diff.suppressBlankEmpty=false", "-c", "diff.renameLimit=1000",
+            "--git-dir", directory, .. args]), environment: PatchEnvironment);
+
     internal static byte[] Run(string command, IReadOnlyList<string> args, string? workingDirectory = null, byte[]? input = null,
-        int maximumProcessOutputBytes = MaximumProcessOutputBytes)
+        int maximumProcessOutputBytes = MaximumProcessOutputBytes, IReadOnlyDictionary<string, string?>? environment = null)
     {
         Require(maximumProcessOutputBytes > 0, "The maximum process output must be positive.");
         var start = new ProcessStartInfo(command)
@@ -609,6 +628,17 @@ internal static partial class PrepareReviewProgram
             CreateNoWindow = true,
         };
         start.Environment["GIT_TERMINAL_PROMPT"] = "0";
+        foreach (var (name, value) in environment ?? new Dictionary<string, string?>())
+        {
+            if (value is null)
+            {
+                start.Environment.Remove(name);
+            }
+            else
+            {
+                start.Environment[name] = value;
+            }
+        }
         foreach (var arg in args)
         {
             start.ArgumentList.Add(arg);
@@ -1933,6 +1963,7 @@ internal static partial class PrepareReviewProgram
 
         string[] diffArguments = receiptInputs is null ? [] : ["diff", "--no-ext-diff", "--no-textconv", "--no-color", "--no-relative",
             "--find-renames=50%", "--ignore-submodules=none", "--submodule=short", "--diff-algorithm=myers",
+            "--indent-heuristic",
             frozen.Identity["mergeBase"]!.GetValue<string>(), frozen.Identity["head"]!.GetValue<string>()];
         var files = await Timed("changedFiles", async () =>
         {
@@ -1983,7 +2014,7 @@ internal static partial class PrepareReviewProgram
             {
                 // Match the observed REST rendering: C# hunk labels, 12-digit index IDs, and binary summaries.
                 await WriteAsync(store, "info/attributes", "*.cs diff=csharp\n");
-                diff = Objects(store, [.. diffArguments, "--patch", "--abbrev=12", "--src-prefix=a/", "--dst-prefix=b/"]);
+                diff = PatchObjects(store, [.. diffArguments, "--patch", "--unified=3", "--inter-hunk-context=0", "--abbrev=12", "--src-prefix=a/", "--dst-prefix=b/"]);
             }
             else
             {
