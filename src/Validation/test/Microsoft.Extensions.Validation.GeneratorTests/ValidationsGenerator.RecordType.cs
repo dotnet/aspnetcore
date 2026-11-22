@@ -2,6 +2,9 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using Microsoft.AspNetCore.Http;
+using Microsoft.CodeAnalysis;
+using Microsoft.CodeAnalysis.CSharp;
+using Microsoft.Extensions.Validation;
 
 namespace Microsoft.Extensions.Validation.GeneratorTests;
 
@@ -383,6 +386,53 @@ public record ValidatableRecord(
             }
         });
 
+    }
+
+    [Fact]
+    public async Task CanValidateRecordUsingJsonConstructor()
+    {
+        var source = """
+using System.ComponentModel.DataAnnotations;
+using System.Text.Json.Serialization;
+using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Http;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Validation;
+
+var builder = WebApplication.CreateBuilder();
+builder.Services.AddValidation();
+var app = builder.Build();
+app.MapPost("/json-constructor-record", (RecordWithJsonConstructor record) => Results.Ok("Passed"));
+app.Run();
+
+[method: JsonConstructor]
+public record RecordWithJsonConstructor(
+    [property: Required]
+    [param: Display(Name = "JSON constructor value")]
+    string Value)
+{
+    public RecordWithJsonConstructor(int Value) : this(Value.ToString()) { }
+}
+""";
+
+        var parseOptions = new CSharpParseOptions(LanguageVersion.Preview)
+            .WithFeatures([new KeyValuePair<string, string>("InterceptorsNamespaces", "Microsoft.Extensions.Validation.Generated")]);
+        var inputCompilation = CSharpCompilation.Create(
+            "ValidationsGeneratorJsonConstructorSample",
+            [CSharpSyntaxTree.ParseText(source, options: parseOptions, path: "Program.cs")],
+            GetMetadataReferences(),
+            new CSharpCompilationOptions(OutputKind.ConsoleApplication));
+        var generator = new ValidationsGenerator();
+        var driver = CSharpGeneratorDriver.Create(generators: [generator.AsSourceGenerator()], parseOptions: parseOptions);
+
+        driver = driver.RunGeneratorsAndUpdateCompilation(inputCompilation, out var updatedCompilation, out var diagnostics);
+
+        Assert.DoesNotContain(diagnostics, diagnostic => diagnostic.Severity == DiagnosticSeverity.Error);
+        Assert.DoesNotContain(updatedCompilation.GetDiagnostics(), diagnostic => diagnostic.Severity == DiagnosticSeverity.Error);
+        var generatedSources = driver.GetRunResult().Results
+            .SelectMany(result => result.GeneratedSources)
+            .Select(result => result.SourceText.ToString());
+        Assert.Contains(generatedSources, generated => generated.Contains("JSON constructor value", StringComparison.Ordinal));
     }
 
     [Fact]

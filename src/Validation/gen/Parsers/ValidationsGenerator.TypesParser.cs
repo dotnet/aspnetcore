@@ -218,6 +218,8 @@ public sealed partial class ValidationsGenerator : IIncrementalGenerator
             WellKnownTypeData.WellKnownType.Microsoft_Extensions_DependencyInjection_FromKeyedServicesAttribute);
         var jsonIgnoreAttributeSymbol = wellKnownTypes.Get(
             WellKnownTypeData.WellKnownType.System_Text_Json_Serialization_JsonIgnoreAttribute);
+        var jsonConstructorAttributeSymbol = wellKnownTypes.Get(
+            WellKnownTypeData.WellKnownType.System_Text_Json_Serialization_JsonConstructorAttribute);
         var skipValidationAttributeSymbol = wellKnownTypes.Get(
             WellKnownTypeData.WellKnownType.Microsoft_Extensions_Validation_SkipValidationAttribute);
         var displayAttributeSymbol = wellKnownTypes.Get(
@@ -233,8 +235,10 @@ public sealed partial class ValidationsGenerator : IIncrementalGenerator
             // for members that are in base types to account for
             // record inheritance scenarios
             var primaryConstructor = namedType.Constructors
-                .FirstOrDefault(c => c.Parameters.Length > 0 && c.Parameters.All(p =>
-                    namedType.FindPropertyIncludingBaseTypes(p.Name) != null));
+                .Where(c => c.Parameters.Length > 0 && c.Parameters.All(p =>
+                    namedType.FindPropertyIncludingBaseTypes(p.Name) != null))
+                .OrderByDescending(c => c.HasAttribute(jsonConstructorAttributeSymbol))
+                .FirstOrDefault();
 
             if (primaryConstructor != null)
             {
