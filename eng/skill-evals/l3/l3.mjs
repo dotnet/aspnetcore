@@ -38,7 +38,12 @@ try
       if (!report.offlineRestoreVerified) process.exitCode = 1;
     }
     else
-      writeFileSync(values.output, `${JSON.stringify(outcomes(values), null, 2)}\n`);
+    {
+      const result = outcomes(values);
+      writeFileSync(values.output, `${JSON.stringify(result, null, 2)}\n`);
+      if (result.agentLog.status === 'fetch-failed')
+        console.error(`Warning: the agent job log could not be read (gh exit ${result.agentLog.ghExit}); log-derived commits are unknown.`);
+    }
   }
 }
 catch (error)

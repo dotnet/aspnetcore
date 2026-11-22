@@ -29,29 +29,32 @@ export function extractTranscript(text, file)
   let unparsedWorker = false;
   for (const { event, raw, line } of entries)
   {
-    const data = event?.data;
-    if (!data) continue;
-    if (event.type === 'tool.execution_start' &&
-        ['review-guide-worker', 'review-candidate-verifier'].includes(data.arguments?.agent_type))
+    const data = event?.data ?? {};
+    // Match the workflow validator: arguments or input, and top-level or data agent IDs and results.
+    const input = data.arguments ?? data.input;
+    const agentId = event?.agentId ?? data.agentId;
+    if (event?.type === 'tool.execution_start' &&
+        ['review-guide-worker', 'review-candidate-verifier'].includes(input?.agent_type))
     {
-      tasks.set(data.toolCallId, data.arguments);
-      if (data.arguments.agent_type === 'review-guide-worker') pendingWorkers.add(data.toolCallId);
+      tasks.set(data.toolCallId, input);
+      if (input.agent_type === 'review-guide-worker') pendingWorkers.add(data.toolCallId);
     }
-    if (event.type === 'subagent.started' && tasks.get(data.toolCallId)?.agent_type === data.agentName)
+    if (event?.type === 'subagent.started' && tasks.get(data.toolCallId)?.agent_type === data.agentName)
     {
       const { name } = tasks.get(data.toolCallId);
       const agent = { type: data.agentName, taskId: data.toolCallId };
       agents.set(name, agent);
-      if (typeof data.agentId === 'string') agents.set(data.agentId, agent);
+      if (typeof agentId === 'string') agents.set(agentId, agent);
     }
-    if (event.type === 'tool.execution_start' && typeof data.arguments?.agent_id === 'string' &&
-        Object.keys(data.arguments).every(key => ['agent_id', 'wait', 'timeout', 'since_turn'].includes(key)))
-      reads.set(data.toolCallId, agents.get(data.arguments?.agent_id));
+    if (event?.type === 'tool.execution_start' && typeof input?.agent_id === 'string' &&
+        Object.keys(input).every(key => ['agent_id', 'wait', 'timeout', 'since_turn'].includes(key)))
+      reads.set(data.toolCallId, agents.get(input.agent_id));
     const agent = reads.get(data.toolCallId);
-    if (event.type !== 'tool.execution_complete' || !data.success || !agent) continue;
+    if (event?.type !== 'tool.execution_complete' || !data.success || !agent) continue;
 
-    const content = data.result?.content;
-    const evidence = selector(file, raw, { line, jsonPointer: '/data/result/content' });
+    const nested = data.result?.content !== undefined;
+    const content = nested ? data.result.content : event.result?.content;
+    const evidence = selector(file, raw, { line, jsonPointer: nested ? '/data/result/content' : '/result/content' });
     const turns = typeof content === 'string' ? content.split(/^\[Turn \d+\][ \t]*\r?\n/gm).slice(1) : [];
     if (agent.type === 'review-guide-worker')
     {
@@ -136,12 +139,11 @@ function logValue(text, file, pattern, convert = value => value)
   return new Set(matches.map(match => match.value)).size === 1 ? matches[0] : undefined;
 }
 
-export function outcomes({ repo, run, attempt })
+export function outcomes({ repo, run, attempt }, request = (...args) => command('gh', ['api', ...args]))
 {
   if (!repoPattern.test(repo) || !numberPattern.test(run) || !numberPattern.test(attempt))
     throw new Error('Expected OWNER/REPO, run ID and attempt.');
   const api = `repos/${repo}/actions/runs/${run}`;
-  const request = (...args) => command('gh', ['api', ...args]);
   function get(path, paginate = false)
   {
     const result = request(path, ...(paginate ? ['--paginate', '--slurp'] : []));
@@ -156,6 +158,8 @@ export function outcomes({ repo, run, attempt })
   const agentJob = jobs.find(job => job.name === 'agent');
   const log = agentJob && request(`repos/${repo}/actions/jobs/${agentJob.id}/logs`, '--allow-escape-sequences');
   const logFile = `actions/jobs/${agentJob?.id}/logs`;
+  const agentLog = !agentJob ? { status: absent } : log.status === 0 ? { status: recorded } :
+    { status: 'fetch-failed', ghExit: log.status ?? null };
   const logField = (pattern, convert) => log?.status === 0 ? logValue(log.stdout, logFile, pattern, convert) : undefined;
   const repoLiteral = repo.replaceAll('.', '\\.');
   const evidence = {
@@ -249,12 +253,12 @@ export function outcomes({ repo, run, attempt })
       safe.some(entry => !entry.item) || !noop || inlineRequests.length ? unknown : absent;
     return {
       schemaVersion: 1, repo, runId: run, attempt: Number(attempt), headSha: evidence.head?.value ?? null,
-      prNumber, prEvidence,
+      prNumber, prEvidence, agentLog,
       sourceCommits: Object.fromEntries(Object.entries(evidence).map(([role, entry]) => [role, entry ?? null])),
       artifacts: bound ? artifacts : [], workerCandidateSections: transcript?.workerCandidates ?? [],
       inlineRequests, verifierDispositions: transcript?.verifierDispositions ?? [], noop, publishedReview, inlineComments,
       completeness: {
-        runId: recorded, attempt: recorded, headSha: evidence.head ? recorded : unknown, prNumber: prNumber ? recorded : unknown,
+        runId: recorded, attempt: recorded, agentLog: agentLog.status, headSha: evidence.head ? recorded : unknown, prNumber: prNumber ? recorded : unknown,
         sourceCommits: Object.fromEntries(Object.entries(evidence).map(([role, entry]) => [role, entry ? recorded : unknown])),
         artifacts: bound && artifacts.length ? recorded : unknown,
         workerCandidateSections: transcript?.workerStatus ?? missing('agent', transcriptText),

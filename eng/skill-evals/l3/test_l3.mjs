@@ -5,7 +5,7 @@ import assert from 'node:assert/strict';
 import { join } from 'node:path';
 import { test } from 'node:test';
 import { command, pin, scratch } from './pin.mjs';
-import { extractTranscript, reconcilePrompt } from './outcomes.mjs';
+import { extractTranscript, outcomes, reconcilePrompt } from './outcomes.mjs';
 
 test('PinPreservesExistingRefsAndReportsUnreachableCommits', () => scratch(dir =>
 {
@@ -76,6 +76,57 @@ test('WorkerEvidenceUsesRuntimeIdAndAnUncollectedWorkerIsUnknown', () =>
   events.push({ type: 'tool.execution_complete', data: { toolCallId: 'read1', success: true,
     result: { content: 'wrapper\n[Turn 0]\nPATH: per-guide-worker\nCANDIDATES\n- One candidate.' } } });
   assert.equal(extract().workerStatus, 'recorded');
+});
+
+for (const shape of ['input', 'topLevelAgentId', 'topLevelResult'])
+{
+  test(`TranscriptAcceptsValidatorShape_${shape}`, () =>
+  {
+    const args = (toolCallId, value) =>
+      ({ toolCallId, ...(shape === 'input' ? { input: value } : { arguments: value }) });
+    const started = { type: 'subagent.started', data: { toolCallId: 'task1', agentName: 'review-candidate-verifier' } };
+    if (shape === 'topLevelAgentId') started.agentId = 'agent-1';
+    else started.data.agentId = 'agent-1';
+    const content = 'wrapper\n[Turn 0]\n' + JSON.stringify({ candidateId: 'C1', decision: 'KEEP' });
+    const complete = shape === 'topLevelResult'
+      ? { type: 'tool.execution_complete', data: { toolCallId: 'read1', success: true }, result: { content } }
+      : { type: 'tool.execution_complete', data: { toolCallId: 'read1', success: true, result: { content } } };
+    const events = [
+      { type: 'tool.execution_start', data: args('task1', { agent_type: 'review-candidate-verifier', name: 'verifier' }) },
+      started,
+      { type: 'tool.execution_start', data: args('read1', { agent_id: 'agent-1', wait: true }) },
+      complete,
+    ];
+    const result = extractTranscript(events.map(event => JSON.stringify(event)).join('\n'), 'agent-session.jsonl');
+    assert.equal(result.verifierStatus, 'recorded');
+    assert.equal(result.verifierDispositions[0].disposition, 'kept');
+    assert.equal(result.verifierDispositions[0].evidence.jsonPointer,
+      shape === 'topLevelResult' ? '/result/content' : '/data/result/content');
+  });
+}
+
+test('FailedAgentLogFetchIsReportedAndLeavesLogCommitsUnknown', () =>
+{
+  const repo = 'dotnet/aspnetcore';
+  const api = `repos/${repo}/actions/runs/5`;
+  const calls = [];
+  const request = (path, ...args) =>
+  {
+    calls.push(path);
+    if (path === `${api}/attempts/2`)
+      return { status: 0, stdout: JSON.stringify({ id: 5, run_attempt: 2, status: 'completed', event: 'workflow_dispatch',
+        path: '.github/workflows/pull-request-review.lock.yml@refs/heads/main' }) };
+    if (path.startsWith(`${api}/attempts/2/jobs`))
+      return { status: 0, stdout: JSON.stringify([{ jobs: [{ name: 'agent', id: 7 }] }]) };
+    assert.equal(path, `repos/${repo}/actions/jobs/7/logs`);
+    assert.deepEqual(args, ['--allow-escape-sequences']);
+    return { status: 1, stdout: '', stderr: 'HTTP 410: Gone' };
+  };
+  const result = outcomes({ repo, run: '5', attempt: '2' }, request);
+  assert.equal(calls.length, 3);
+  assert.deepEqual(result.agentLog, { status: 'fetch-failed', ghExit: 1 });
+  assert.equal(result.completeness.agentLog, 'fetch-failed');
+  assert.equal(result.completeness.sourceCommits.head, 'unknown');
 });
 
 test('SingleLineFrozenPromptIdentityDisqualifiesAConflictingLogHead', () =>

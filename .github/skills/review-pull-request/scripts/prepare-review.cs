@@ -46,8 +46,6 @@ internal static partial class PrepareReviewProgram
         string? BaseTip = null,
         string? MergeBase = null,
         string? BaseRef = null,
-        bool CaptureReplay = false,
-        string? ReplayFrom = null,
         string? Receipt = null,
         string? RunId = null,
         string? RunAttempt = null,
@@ -99,9 +97,7 @@ internal static partial class PrepareReviewProgram
                 ? Path.Combine(Path.GetTempPath(), $"review-bundle-{Guid.NewGuid()}")
                 : parsed.Output;
             var options = parsed with { Repo = repo, Output = output };
-            var result = options.CaptureReplay || options.ReplayFrom is not null
-                ? await PrepareReplayAsync(options, dependencies?.Api, dependencies?.Fetch, dependencies?.ProducerSourcePath)
-                : await PrepareAsync(options, dependencies);
+            var result = await PrepareAsync(options, dependencies);
             var response = new JsonObject
             {
                 ["manifest"] = Path.Combine(Path.GetFullPath(output), "manifest.json"),
@@ -128,9 +124,7 @@ internal static partial class PrepareReviewProgram
         string? repo = null, pr = null, output = null, head = null, hostname = null, guidance = null, guidanceRoot = null;
         string? baseTip = null, mergeBase = null, baseRef = null;
         var check = false;
-        var captureReplay = false;
         var codeOnly = false;
-        string? replayFrom = null;
         string? receipt = null, runId = null, runAttempt = null, rebuildFromReceipt = null, objectStore = null, title = null;
         for (var index = 0; index < args.Length; index++)
         {
@@ -140,17 +134,12 @@ internal static partial class PrepareReviewProgram
                 check = true;
                 continue;
             }
-            if (name == "--capture-replay")
-            {
-                captureReplay = true;
-                continue;
-            }
             if (name == "--code-only")
             {
                 codeOnly = true;
                 continue;
             }
-            Require(name is "--repo" or "--pr" or "--output" or "--head" or "--hostname" or "--guidance" or "--guidance-root" or "--base-tip" or "--merge-base" or "--base-ref" or "--replay-from"
+            Require(name is "--repo" or "--pr" or "--output" or "--head" or "--hostname" or "--guidance" or "--guidance-root" or "--base-tip" or "--merge-base" or "--base-ref"
                 or "--receipt" or "--run-id" or "--run-attempt" or "--rebuild-from-receipt" or "--objects" or "--title"
                 && index + 1 < args.Length, $"Unknown or incomplete option: {name}");
             var value = args[++index];
@@ -166,7 +155,6 @@ internal static partial class PrepareReviewProgram
                 case "--base-tip": baseTip = value; break;
                 case "--merge-base": mergeBase = value; break;
                 case "--base-ref": baseRef = value; break;
-                case "--replay-from": replayFrom = value; break;
                 case "--receipt": receipt = value; break;
                 case "--run-id": runId = value; break;
                 case "--run-attempt": runAttempt = value; break;
@@ -175,11 +163,7 @@ internal static partial class PrepareReviewProgram
                 case "--title": title = value; break;
             }
         }
-        Require(!captureReplay || replayFrom is null, "Select either --capture-replay or --replay-from.");
-        Require(!(captureReplay || replayFrom is not null) ||
-            (!check && repo is not null && pr is not null && !string.IsNullOrEmpty(output) && head is not null && guidance is not null),
-            "Replay capture and reconstruction require --repo, --pr, --head, --guidance, and --output without --check.");
-        Require(receipt is null || (!check && !captureReplay && replayFrom is null && rebuildFromReceipt is null
+        Require(receipt is null || (!check && rebuildFromReceipt is null
             && guidance is not null && guidanceRoot is null && !string.IsNullOrEmpty(output)),
             "--receipt requires live preparation with --guidance and --output.");
         Require((runId is null && runAttempt is null) || (receipt is not null
@@ -190,14 +174,14 @@ internal static partial class PrepareReviewProgram
         Require(codeOnly
             ? !string.IsNullOrEmpty(objectStore) && !string.IsNullOrEmpty(output) && !string.IsNullOrEmpty(baseRef)
                 && head is not null && baseTip is not null && mergeBase is not null && guidance is not null
-                && !check && !captureReplay && replayFrom is null && receipt is null && rebuildFromReceipt is null && guidanceRoot is null
+                && !check && receipt is null && rebuildFromReceipt is null && guidanceRoot is null
             : rebuildFromReceipt is null ? objectStore is null : !string.IsNullOrEmpty(objectStore)
-            && !string.IsNullOrEmpty(output) && !check && !captureReplay && replayFrom is null && repo is null && pr is null
+            && !string.IsNullOrEmpty(output) && !check && repo is null && pr is null
             && head is null && hostname is null && guidance is null && guidanceRoot is null && baseTip is null && mergeBase is null && baseRef is null,
             codeOnly ? "--code-only requires --head, --base-tip, --merge-base, --base-ref, --guidance, --objects, and --output without another mode."
                 : "--rebuild-from-receipt requires only --objects and --output.");
         return new(repo, pr, output ?? string.Empty, head, hostname, guidance, guidanceRoot, check, baseTip, mergeBase, baseRef,
-            captureReplay, replayFrom, receipt, runId, runAttempt, rebuildFromReceipt, objectStore, codeOnly, title);
+            receipt, runId, runAttempt, rebuildFromReceipt, objectStore, codeOnly, title);
     }
 
     internal static string[] GitArguments(params string[] args) => ["-c", "core.longpaths=true", .. args];
@@ -212,100 +196,6 @@ internal static partial class PrepareReviewProgram
             return JsonValue.Create(Convert.ToBase64String(Run("gh", arguments)));
         }
         return JsonNode.Parse(Run("gh", arguments));
-    }
-
-    internal static async Task<JsonObject> PrepareReplayAsync(Options options,
-        Func<string, string?, Task<JsonNode?>>? captureApi = null,
-        Func<string, IReadOnlyList<string>, string, Task>? captureFetch = null,
-        string? producerSourcePath = null)
-    {
-        const string ReceiptName = "replay-capture.json";
-        const string ReceiptHashName = "replay-capture.sha256";
-        if (options.CaptureReplay)
-        {
-            var responses = new JsonArray();
-            var startedAt = DateTimeOffset.UtcNow;
-            async Task<JsonNode?> Capture(string endpoint, string? accept)
-            {
-                var response = captureApi is null
-                    ? ReadGitHub(options.Hostname ?? "github.com", endpoint, accept)
-                    : await captureApi(endpoint, accept);
-                responses.Add(new JsonObject
-                {
-                    ["endpoint"] = endpoint,
-                    ["accept"] = accept,
-                    ["response"] = response?.DeepClone(),
-                });
-                return response;
-            }
-
-            async Task Seal(string output, JsonObject manifest)
-            {
-                var receipt = new JsonObject
-                {
-                    ["version"] = 1,
-                    ["startedAt"] = startedAt.ToString("O", CultureInfo.InvariantCulture),
-                    ["completedAt"] = DateTimeOffset.UtcNow.ToString("O", CultureInfo.InvariantCulture),
-                    ["expectedManifest"] = ReplayManifest(manifest),
-                    ["responses"] = responses,
-                };
-                var bytes = Utf8NoBom.GetBytes(SerializeJson(receipt));
-                await WriteAsync(output, ReceiptName, bytes);
-                await WriteAsync(output, ReceiptHashName, Utf8NoBom.GetBytes(Hash(bytes) + "\n"));
-            }
-
-            return await PrepareOnceAsync(options, new(Capture, captureFetch, producerSourcePath, Seal));
-        }
-
-        var reference = Path.GetFullPath(options.ReplayFrom!);
-        var receiptBytes = await File.ReadAllBytesAsync(Path.Combine(reference, ReceiptName));
-        Require(Hash(receiptBytes) == (await File.ReadAllTextAsync(Path.Combine(reference, ReceiptHashName))).Trim(),
-            "The recorded replay receipt does not match its SHA-256.");
-        var recorded = JsonNode.Parse(receiptBytes)!.AsObject();
-        Require(recorded["version"]?.GetValue<int>() == 1, "Unsupported replay receipt version.");
-        var expected = recorded["expectedManifest"]!.AsObject();
-        Require(expected["producer"]?.GetValue<string>() == ProducerHash(producerSourcePath),
-            "Replay requires the exact producer revision recorded at capture.");
-        var calls = recorded["responses"]!.AsArray();
-        var next = 0;
-        Task<JsonNode?> Replay(string endpoint, string? accept)
-        {
-            Require(next < calls.Count, $"No captured response for {endpoint}.");
-            var call = calls[next++]!.AsObject();
-            Require(call["endpoint"]?.GetValue<string>() == endpoint && call["accept"]?.GetValue<string>() == accept,
-                $"Captured API request does not match {endpoint} at position {next}.");
-            return Task.FromResult(call["response"]?.DeepClone());
-        }
-
-        var objects = Path.Combine(reference, ".objects", "objects");
-        Require(Directory.Exists(objects), "The captured Git object store is missing.");
-        Require(objects.IndexOfAny(['\r', '\n']) < 0, "Invalid captured Git object store path.");
-        async Task UseCapturedObjects(string _, IReadOnlyList<string> commits, string store)
-        {
-            // Share immutable objects; replay has a separate index and writes only to its own store.
-            await File.WriteAllTextAsync(Path.Combine(store, "objects", "info", "alternates"),
-                objects.Replace('\\', '/') + "\n", Utf8NoBom);
-            foreach (var commit in commits)
-            {
-                Objects(store, "cat-file", "-e", $"{commit}^{{commit}}");
-            }
-        }
-
-        Task Verify(string _, JsonObject manifest)
-        {
-            Require(next == calls.Count, "Replay left captured API responses unused.");
-            Require(JsonEqual(ReplayManifest(manifest), expected), "Replay inputs differ from the captured manifest.");
-            return Task.CompletedTask;
-        }
-
-        return await PrepareOnceAsync(options, new(Replay, UseCapturedObjects, producerSourcePath, Verify));
-
-        static JsonObject ReplayManifest(JsonObject manifest)
-        {
-            var result = manifest.DeepClone().AsObject();
-            result.Remove("timingsMs");
-            return result;
-        }
     }
 
     // Receipt v1 hashes the producer's compact UTF-8 JSON (property order retained, no trailing LF).
@@ -1802,7 +1692,7 @@ internal static partial class PrepareReviewProgram
         var host = options.Hostname ?? "github.com";
         Require(HostnameRegex().IsMatch(host), "Invalid GitHub hostname.");
         Run("git", GitArguments("--version"));
-        if (options.ReplayFrom is null && receiptInputs is null)
+        if (receiptInputs is null)
         {
             Run("gh", ["--version"]);
         }

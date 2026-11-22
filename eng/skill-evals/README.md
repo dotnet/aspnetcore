@@ -186,39 +186,19 @@ The hosted workflow uses the runner's result-set checks and does not repeat them
 This model-free check uses the real review bundle producer. From the trusted
 repository root, activate the pinned SDK and choose an open PR, its full head
 SHA, and a trusted guidance commit. Use new output directories outside the
-repository. For example, in PowerShell:
+repository, and an existing directory outside the bundle for `$receipt`. For example,
+in PowerShell:
 
 ```powershell
 . .\activate.ps1
 $producer = '.github\skills\review-pull-request\scripts\prepare-review.cs'
 $target = @('--repo', 'dotnet/aspnetcore', '--pr', $pr, '--head', $head,
             '--guidance', "dotnet/aspnetcore@$guidanceCommit")
-dotnet run $producer -- @target --capture-replay --output $capture
-dotnet run $producer -- @target --replay-from $capture --output $replay
-```
-
-Only capture uses GitHub. Replay reads the recorded API responses in order and
-uses the captured bare Git objects, without contacting GitHub. It requires the
-same producer bytes and argument shape, checks the prepared inputs against the
-capture manifest (except timings), and writes a ready manifest only if they
-match. The capture records an observation window, not a transactional GitHub
-snapshot. A local match does not establish parity with a past hosted review.
-
-For replay, keep `replay-capture.json`, `replay-capture.sha256`, and the entire
-captured `.objects` store together. Keep the capture private: the receipt
-includes unprojected GitHub responses. The checksum detects accidental changes;
-it does not authenticate a receipt from an untrusted source. Treat the captured
-object store as immutable, and do not repack or garbage-collect it. Place the
-replay output outside the capture directory: its object store refers back to
-the capture. This check does not run the reviewer, PR code, or an evaluation suite.
-
-For a smaller alternative, use an existing directory outside the bundle for `$receipt`:
-
-```powershell
 dotnet run $producer -- @target --receipt $receipt --output $live
 dotnet run $producer -- --rebuild-from-receipt $receipt --objects $bareRepo --output $rebuilt
 ```
 
+Only the live run uses GitHub. This check does not run the reviewer, PR code, or an evaluation suite.
 The private receipt holds projected pull/feedback bytes and their bodies, not Git objects or the REST diff.
 Rebuild uses the same producer revision and local bare objects only; keep the object store available.
 Receipt v1 hashes compact UTF-8 producer JSON in emitted property order, without a trailing newline
