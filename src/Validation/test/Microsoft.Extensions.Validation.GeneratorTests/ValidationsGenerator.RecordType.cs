@@ -389,7 +389,7 @@ public record ValidatableRecord(
     }
 
     [Fact]
-    public async Task CanValidateRecordUsingJsonConstructor()
+    public void CanValidateRecordUsingJsonConstructor()
     {
         var source = """
 using System.ComponentModel.DataAnnotations;
@@ -405,14 +405,16 @@ var app = builder.Build();
 app.MapPost("/json-constructor-record", (RecordWithJsonConstructor record) => Results.Ok("Passed"));
 app.Run();
 
-[method: JsonConstructor]
-public record RecordWithJsonConstructor(
-    [property: Required]
-    [param: Display(Name = "JSON constructor value")]
-    string Value)
+public partial record RecordWithJsonConstructor
 {
     public RecordWithJsonConstructor(int Value) : this(Value.ToString()) { }
 }
+
+[method: JsonConstructor]
+public partial record RecordWithJsonConstructor(
+    [property: Required]
+    [param: Display(Name = "JSON constructor value")]
+    string Value);
 """;
 
         var parseOptions = new CSharpParseOptions(LanguageVersion.Preview)
@@ -423,7 +425,7 @@ public record RecordWithJsonConstructor(
             GetMetadataReferences(),
             new CSharpCompilationOptions(OutputKind.ConsoleApplication));
         var generator = new ValidationsGenerator();
-        var driver = CSharpGeneratorDriver.Create(generators: [generator.AsSourceGenerator()], parseOptions: parseOptions);
+        GeneratorDriver driver = CSharpGeneratorDriver.Create(generators: [generator.AsSourceGenerator()], parseOptions: parseOptions);
 
         driver = driver.RunGeneratorsAndUpdateCompilation(inputCompilation, out var updatedCompilation, out var diagnostics);
 
