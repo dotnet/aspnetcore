@@ -79,6 +79,7 @@ public class IdentityOptionsTest
             o.TwoFactorRememberMeCookie.Configure(a => a.Cookie.Name = "c");
             o.TwoFactorUserIdCookie.Configure(a => a.Cookie.Name = "d");
         });
+        services.Configure<CookieAuthenticationOptions>("Identity.Passkey", a => a.Cookie.Name = "e");
         var serviceProvider = services.BuildServiceProvider();
 
         var options = serviceProvider.GetRequiredService<IOptionsMonitor<CookieAuthenticationOptions>>();
@@ -88,5 +89,6 @@ public class IdentityOptionsTest
         Assert.Equal("b", options.Get(IdentityConstants.ExternalScheme).Cookie.Name);
         Assert.Equal("c", options.Get(IdentityConstants.TwoFactorRememberMeScheme).Cookie.Name);
         Assert.Equal("d", options.Get(IdentityConstants.TwoFactorUserIdScheme).Cookie.Name);
+        Assert.Equal("e", options.Get(IdentityConstants.PasskeyScheme).Cookie.Name);
     }
 }

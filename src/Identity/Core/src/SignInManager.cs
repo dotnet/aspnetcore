@@ -327,6 +327,10 @@ public class SignInManager<TUser> where TUser : class
             {
                 await Context.SignOutAsync(IdentityConstants.TwoFactorUserIdScheme);
             }
+            if (await _schemes.GetSchemeAsync(IdentityConstants.PasskeyScheme) is not null)
+            {
+                await Context.SignOutAsync(IdentityConstants.PasskeyScheme);
+            }
 
             _metrics?.SignOutUserPrincipal(typeof(TUser).FullName!, AuthenticationScheme);
         }
@@ -926,9 +930,9 @@ public class SignInManager<TUser> where TUser : class
         var props = new AuthenticationProperties();
         props.Items[PasskeyOperationKey] = operation;
         props.Items[PasskeyStateKey] = state;
-        var claimsIdentity = new ClaimsIdentity(IdentityConstants.TwoFactorUserIdScheme);
+        var claimsIdentity = new ClaimsIdentity(IdentityConstants.PasskeyScheme);
         var claimsPrincipal = new ClaimsPrincipal(claimsIdentity);
-        await Context.SignInAsync(IdentityConstants.TwoFactorUserIdScheme, claimsPrincipal, props);
+        await Context.SignInAsync(IdentityConstants.PasskeyScheme, claimsPrincipal, props);
     }
 
     private async Task<PasskeyAuthenticationInfo?> RetrievePasskeyAuthenticationInfoAsync()
@@ -937,8 +941,8 @@ public class SignInManager<TUser> where TUser : class
 
         async Task<PasskeyAuthenticationInfo?> RetrievePasskeyInfoCoreAsync()
         {
-            var result = await Context.AuthenticateAsync(IdentityConstants.TwoFactorUserIdScheme);
-            await Context.SignOutAsync(IdentityConstants.TwoFactorUserIdScheme);
+            var result = await Context.AuthenticateAsync(IdentityConstants.PasskeyScheme);
+            await Context.SignOutAsync(IdentityConstants.PasskeyScheme);
 
             if (result.Properties is not { } properties)
             {

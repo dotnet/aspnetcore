@@ -85,7 +85,8 @@ public static class IdentityServiceCollectionExtensions
                 OnRedirectToReturnUrl = _ => Task.CompletedTask
             };
             o.ExpireTimeSpan = TimeSpan.FromMinutes(5);
-        });
+        })
+        .AddPasskeyCookie();
 
         // Hosting doesn't add IHttpContextAccessor by default
         services.AddHttpContextAccessor();

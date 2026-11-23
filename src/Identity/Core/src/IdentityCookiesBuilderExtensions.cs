@@ -35,6 +35,7 @@ public static class IdentityCookieAuthenticationBuilderExtensions
         cookieBuilder.ExternalCookie = builder.AddExternalCookie();
         cookieBuilder.TwoFactorRememberMeCookie = builder.AddTwoFactorRememberMeCookie();
         cookieBuilder.TwoFactorUserIdCookie = builder.AddTwoFactorUserIdCookie();
+        builder.AddPasskeyCookie();
         configureCookies?.Invoke(cookieBuilder);
         return cookieBuilder;
     }
@@ -107,5 +108,25 @@ public static class IdentityCookieAuthenticationBuilderExtensions
             o.ExpireTimeSpan = TimeSpan.FromMinutes(5);
         });
         return new OptionsBuilder<CookieAuthenticationOptions>(builder.Services, IdentityConstants.TwoFactorUserIdScheme);
+    }
+
+    /// <summary>
+    /// Adds the identity cookie used to store passkey ceremony state.
+    /// </summary>
+    /// <param name="builder">The current <see cref="AuthenticationBuilder"/> instance.</param>
+    /// <returns>The <see cref="OptionsBuilder{TOptions}"/> which can be used to configure the cookie authentication.</returns>
+    internal static OptionsBuilder<CookieAuthenticationOptions> AddPasskeyCookie(this AuthenticationBuilder builder)
+    {
+        builder.AddCookie(IdentityConstants.PasskeyScheme, o =>
+        {
+            o.Cookie.Name = IdentityConstants.PasskeyScheme;
+            o.Events = new CookieAuthenticationEvents
+            {
+                OnRedirectToReturnUrl = _ => Task.CompletedTask
+            };
+            o.ExpireTimeSpan = TimeSpan.FromMinutes(5);
+        });
+
+        return new OptionsBuilder<CookieAuthenticationOptions>(builder.Services, IdentityConstants.PasskeyScheme);
     }
 }

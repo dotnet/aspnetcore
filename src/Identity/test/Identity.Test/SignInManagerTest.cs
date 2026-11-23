@@ -496,12 +496,12 @@ public class SignInManagerTest
         var manager = SetupUserManager(user, passkeyHandler: passkeyHandler.Object);
         var context = new DefaultHttpContext();
         var auth = MockAuth(context);
-        auth.Setup(a => a.AuthenticateAsync(context, IdentityConstants.TwoFactorUserIdScheme))
+        auth.Setup(a => a.AuthenticateAsync(context, IdentityConstants.PasskeyScheme))
             .ReturnsAsync(AuthenticateResult.Fail("Not currently signed in."))
             .Verifiable();
         auth.Setup(a => a.SignOutAsync(
                 context,
-                IdentityConstants.TwoFactorUserIdScheme,
+                IdentityConstants.PasskeyScheme,
                 It.IsAny<AuthenticationProperties>()))
             .Returns(Task.CompletedTask)
             .Verifiable();
@@ -742,7 +742,7 @@ public class SignInManagerTest
         Assert.Same(userEntity, receivedUserEntity);
         Assert.True(receivedIsConditionallyMediated);
         auth.Verify(
-            a => a.SignInAsync(context, IdentityConstants.TwoFactorUserIdScheme, It.IsAny<ClaimsPrincipal>(), It.IsAny<AuthenticationProperties>()),
+            a => a.SignInAsync(context, IdentityConstants.PasskeyScheme, It.IsAny<ClaimsPrincipal>(), It.IsAny<AuthenticationProperties>()),
             Times.Once());
     }
 
@@ -863,7 +863,7 @@ public class SignInManagerTest
                 It.IsAny<HttpContext>()),
             Times.Never());
         auth.Verify(
-            a => a.SignInAsync(context, IdentityConstants.TwoFactorUserIdScheme, It.IsAny<ClaimsPrincipal>(), It.IsAny<AuthenticationProperties>()),
+            a => a.SignInAsync(context, IdentityConstants.PasskeyScheme, It.IsAny<ClaimsPrincipal>(), It.IsAny<AuthenticationProperties>()),
             Times.Once());
     }
 
@@ -1039,10 +1039,10 @@ public class SignInManagerTest
         var auth = MockAuth(context);
 
         // Do NOT call SetupPasskeyAuth — simulates expired/missing session
-        auth.Setup(a => a.AuthenticateAsync(context, IdentityConstants.TwoFactorUserIdScheme))
+        auth.Setup(a => a.AuthenticateAsync(context, IdentityConstants.PasskeyScheme))
             .ReturnsAsync(AuthenticateResult.Fail("Session expired."))
             .Verifiable();
-        auth.Setup(a => a.SignOutAsync(context, IdentityConstants.TwoFactorUserIdScheme, It.IsAny<AuthenticationProperties>()))
+        auth.Setup(a => a.SignOutAsync(context, IdentityConstants.PasskeyScheme, It.IsAny<AuthenticationProperties>()))
             .Returns(Task.CompletedTask)
             .Verifiable();
 
@@ -1067,7 +1067,7 @@ public class SignInManagerTest
 
         auth.Setup(a => a.SignInAsync(
             context,
-            IdentityConstants.TwoFactorUserIdScheme,
+            IdentityConstants.PasskeyScheme,
             It.IsAny<ClaimsPrincipal>(),
             It.IsAny<AuthenticationProperties>()))
             .Callback((HttpContext context, string scheme, ClaimsPrincipal claimsPrincipal, AuthenticationProperties authenticationProperties) =>
@@ -1075,7 +1075,7 @@ public class SignInManagerTest
                 var authenticationTicket = new AuthenticationTicket(
                     claimsPrincipal,
                     authenticationProperties,
-                    IdentityConstants.TwoFactorUserIdScheme);
+                    IdentityConstants.PasskeyScheme);
                 authenticateResult = AuthenticateResult.Success(authenticationTicket);
             })
             .Returns(Task.CompletedTask)
@@ -1083,7 +1083,7 @@ public class SignInManagerTest
 
         auth.Setup(a => a.SignOutAsync(
             context,
-            IdentityConstants.TwoFactorUserIdScheme,
+            IdentityConstants.PasskeyScheme,
             It.IsAny<AuthenticationProperties>()))
             .Callback(() =>
             {
@@ -1092,7 +1092,7 @@ public class SignInManagerTest
             .Returns(Task.CompletedTask)
             .Verifiable();
 
-        auth.Setup(a => a.AuthenticateAsync(context, IdentityConstants.TwoFactorUserIdScheme))
+        auth.Setup(a => a.AuthenticateAsync(context, IdentityConstants.PasskeyScheme))
             .Returns(() => Task.FromResult(authenticateResult))
             .Verifiable();
     }
@@ -1766,6 +1766,7 @@ public class SignInManagerTest
         auth.Setup(a => a.SignOutAsync(context, IdentityConstants.TwoFactorUserIdScheme, It.IsAny<AuthenticationProperties>())).Returns(Task.FromResult(0)).Verifiable();
         auth.Setup(a => a.SignOutAsync(context, IdentityConstants.ExternalScheme, It.IsAny<AuthenticationProperties>())).Returns(Task.FromResult(0)).Verifiable();
         var helper = SetupSignInManager(manager, context, null, manager.Options);
+        auth.Setup(a => a.SignOutAsync(context, IdentityConstants.PasskeyScheme, It.IsAny<AuthenticationProperties>())).Returns(Task.CompletedTask).Verifiable();
 
         // Act
         await helper.SignOutAsync();
@@ -2347,6 +2348,7 @@ public class SignInManagerTest
             [IdentityConstants.ExternalScheme] = CreateCookieScheme(IdentityConstants.ExternalScheme),
             [IdentityConstants.TwoFactorRememberMeScheme] = CreateCookieScheme(IdentityConstants.TwoFactorRememberMeScheme),
             [IdentityConstants.TwoFactorUserIdScheme] = CreateCookieScheme(IdentityConstants.TwoFactorUserIdScheme),
+            [IdentityConstants.PasskeyScheme] = CreateCookieScheme(IdentityConstants.PasskeyScheme),
         };
 
         public Task<IEnumerable<AuthenticationScheme>> GetAllSchemesAsync() => Task.FromResult<IEnumerable<AuthenticationScheme>>(_defaultCookieSchemes.Values);
