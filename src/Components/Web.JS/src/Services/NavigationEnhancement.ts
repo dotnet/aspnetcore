@@ -251,6 +251,20 @@ export async function performEnhancedPageLoad(internalDestinationHref: string, i
         }
       }
 
+      if (changeUrl && (response.redirected || treatAsRedirectionFromMethod) && !isWithinBaseUriSpace(response.url) && !isGetRequest) {
+        abortSignal.throwIfAborted();
+        const previousLocation = location.href;
+
+        // The POST hasn't changed browser history, but renderers were notified of its action URL.
+        if (previousLocation !== internalDestinationHref) {
+          notifyEnhancedNavigationListeners(previousLocation, /* interceptedLink */ false);
+        }
+        abortSignal.throwIfAborted();
+        performingEnhancedPageLoad = false;
+        navigationEnhancementCallbacks.enhancedNavigationCompleted();
+        throw new Error('Enhanced navigation does not support non-GET requests that redirect outside the application base URI.');
+      }
+
       if (isSuccessResponse && response.headers.get('blazor-enhanced-nav') !== 'allow') {
         // This appears to be a non-Blazor-Endpoint success response. We don't want to use enhanced nav
         // because the content we receive is not designed to be patched into an existing frame,
@@ -275,19 +289,6 @@ export async function performEnhancedPageLoad(internalDestinationHref: string, i
         const treatAsGet = treatAsRedirectionFromMethod ? (treatAsRedirectionFromMethod === 'get') : isGetRequest;
         const previousLocation = location.href;
         if (!isWithinBaseUriSpace(response.url)) {
-          if (!isGetRequest) {
-            abortSignal.throwIfAborted();
-
-            // The POST hasn't changed browser history, but renderers were notified of its action URL.
-            if (previousLocation !== internalDestinationHref) {
-              notifyEnhancedNavigationListeners(previousLocation, /* interceptedLink */ false);
-            }
-            abortSignal.throwIfAborted();
-            performingEnhancedPageLoad = false;
-            navigationEnhancementCallbacks.enhancedNavigationCompleted();
-            throw new Error('Enhanced navigation does not support non-GET requests that redirect outside the application base URI.');
-          }
-
           if (treatAsGet) {
             location.replace(response.url);
           } else {

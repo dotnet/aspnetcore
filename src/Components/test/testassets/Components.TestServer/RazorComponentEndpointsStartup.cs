@@ -197,7 +197,6 @@ public class RazorComponentEndpointsStartup<TRootComponent>
 
         app.Map("/outside-base-post", app => app.Run(async context =>
         {
-            context.Response.Headers["blazor-enhanced-nav"] = "allow";
             context.Response.ContentType = "text/html";
             context.Response.StatusCode = context.Request.Method == HttpMethods.Post
                 ? StatusCodes.Status200OK
