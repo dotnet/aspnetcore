@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 import assert from 'node:assert/strict';
+import { createHash } from 'node:crypto';
 import { join } from 'node:path';
 import { test } from 'node:test';
 import { command, pin, scratch } from './pin.mjs';
@@ -104,6 +105,53 @@ for (const shape of ['input', 'topLevelAgentId', 'topLevelResult'])
       shape === 'topLevelResult' ? '/result/content' : '/data/result/content');
   });
 }
+
+for (const agentType of ['review-candidate-verifier', 'review-guide-worker'])
+{
+  test(`HeaderlessReadAgentResultIsOneTurn_${agentType}`, () =>
+  {
+    const content = agentType === 'review-guide-worker'
+      ? 'PATH: per-guide-worker\nCANDIDATES\n- One candidate.'
+      : JSON.stringify({ candidateId: 'C1', decision: 'KEEP' });
+    const events = [
+      { type: 'tool.execution_start', data: { toolCallId: 'task1', arguments: { agent_type: agentType, name: 'agent' } } },
+      { type: 'subagent.started', data: { toolCallId: 'task1', agentName: agentType } },
+      { type: 'tool.execution_start', data: { toolCallId: 'read1', arguments: { agent_id: 'agent' } } },
+      { type: 'tool.execution_complete', data: { toolCallId: 'read1', success: true, result: { content } } },
+    ];
+    const result = extractTranscript(events.map(event => JSON.stringify(event)).join('\n'), 'agent-session.jsonl');
+    if (agentType === 'review-guide-worker')
+    {
+      assert.equal(result.workerStatus, 'recorded');
+      assert.equal(result.workerCandidates[0].turn, null);
+    }
+    else
+    {
+      assert.equal(result.verifierStatus, 'recorded');
+      assert.equal(result.verifierDispositions[0].evidence.turn, null);
+    }
+  });
+}
+
+test('WorkflowHeadSelectorHashesTheSerializedJsonValue', () =>
+{
+  const repo = 'dotnet/aspnetcore';
+  const api = `repos/${repo}/actions/runs/5`;
+  const sha = 'c'.repeat(40);
+  const request = path =>
+  {
+    if (path === `${api}/attempts/2`)
+      return { status: 0, stdout: JSON.stringify({ id: 5, run_attempt: 2, status: 'completed', event: 'issue_comment', head_sha: sha,
+        path: '.github/workflows/pull-request-review.lock.yml@refs/heads/main' }) };
+    if (path.startsWith(`${api}/attempts/2/jobs`))
+      return { status: 0, stdout: JSON.stringify([{ jobs: [] }]) };
+    throw new Error(`Unexpected request: ${path}`);
+  };
+  const { workflow } = outcomes({ repo, run: '5', attempt: '2' }, request).sourceCommits;
+  assert.equal(workflow.value, sha);
+  assert.equal(workflow.evidence.jsonPointer, '/head_sha');
+  assert.equal(workflow.evidence.sha256Prefix, createHash('sha256').update(JSON.stringify(sha)).digest('hex').slice(0, 16));
+});
 
 test('FailedAgentLogFetchIsReportedAndLeavesLogCommitsUnknown', () =>
 {

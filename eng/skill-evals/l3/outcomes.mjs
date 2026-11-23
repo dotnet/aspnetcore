@@ -55,11 +55,13 @@ export function extractTranscript(text, file)
     const nested = data.result?.content !== undefined;
     const content = nested ? data.result.content : event.result?.content;
     const evidence = selector(file, raw, { line, jsonPointer: nested ? '/data/result/content' : '/result/content' });
-    const turns = typeof content === 'string' ? content.split(/^\[Turn \d+\][ \t]*\r?\n/gm).slice(1) : [];
+    // Like the workflow validator, accept results without [Turn n] headers as one unindexed turn.
+    const split = typeof content === 'string' ? content.split(/^\[Turn \d+\][ \t]*\r?\n/gm) : [];
+    const turns = split.length > 1 ? [...split.slice(1).entries()] : split.length ? [[null, content]] : [];
     if (agent.type === 'review-guide-worker')
     {
       let found = false;
-      for (const [turn, body] of turns.entries())
+      for (const [turn, body] of turns)
       {
         if (!/^PATH:\s*per-guide-worker\s*$/m.test(body)) continue;
         const rows = lines(body);
@@ -79,7 +81,7 @@ export function extractTranscript(text, file)
     }
 
     let found = false;
-    for (const [turn, body] of turns.entries())
+    for (const [turn, body] of turns)
     {
       const payload = json(body.trim().replace(/^```(?:json)?\r?\n|\r?\n```$/gi, ''));
       const rows = Array.isArray(payload) ? payload : Array.isArray(payload?.results) ? payload.results : [payload];
@@ -169,7 +171,7 @@ export function outcomes({ repo, run, attempt }, request = (...args) => command(
     guidance: logField(new RegExp(`^\\s*GUIDANCE_SOURCE: (?:immutable commit |${repoLiteral}@)([a-f0-9]{40})\\s*$`, 'i')),
     workflow: resolved.event === 'issue_comment' && shaPattern.test(resolved.head_sha) ? {
       value: resolved.head_sha,
-      evidence: selector(`actions/runs/${run}/attempts/${attempt}`, resolved.head_sha, { jsonPointer: '/head_sha' }),
+      evidence: selector(`actions/runs/${run}/attempts/${attempt}`, JSON.stringify(resolved.head_sha), { jsonPointer: '/head_sha' }),
     } : undefined,
   };
   const reportedPr = logField(new RegExp(`^\\s*PR: ${repoLiteral}#([1-9]\\d*)\\s*$`, 'i'), Number);

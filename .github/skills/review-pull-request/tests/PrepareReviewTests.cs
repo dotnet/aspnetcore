@@ -1827,6 +1827,12 @@ public class PrepareReviewTests
         {
             var attributes = Path.Combine(fixture.Root, "hostile.gitattributes");
             await File.WriteAllTextAsync(attributes, "*.cs -diff\n", Utf8NoBom);
+            var template = Path.Combine(fixture.Root, "hostile-template");
+            Directory.CreateDirectory(template);
+            await File.WriteAllTextAsync(Path.Combine(template, "config"), """
+                [diff "csharp"]
+                    xfuncname = "^(never)$"
+                """, Utf8NoBom);
             var config = Path.Combine(fixture.Root, "hostile.gitconfig");
             await File.WriteAllTextAsync(config, $"""
                 [diff]
@@ -1845,6 +1851,8 @@ public class PrepareReviewTests
                     attributesFile = {attributes.Replace('\\', '/')}
                 [color]
                     diff = always
+                [init]
+                    templateDir = {template.Replace('\\', '/')}
                 """, Utf8NoBom);
             Environment.SetEnvironmentVariable("GIT_CONFIG_GLOBAL", config);
             Environment.SetEnvironmentVariable("GIT_DIFF_OPTS", "--unified=1");

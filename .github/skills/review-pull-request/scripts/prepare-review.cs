@@ -1632,7 +1632,8 @@ internal static partial class PrepareReviewProgram
 
         CreateOutputDirectory(output);
         var store = Path.Combine(output, ".objects");
-        Run("git", GitArguments("init", "--bare", "--quiet", "--object-format=sha1", store));
+        // An empty template keeps inherited template config out of the store's local config.
+        Run("git", GitArguments("init", "--bare", "--quiet", "--template=", "--object-format=sha1", store));
         Objects(store, "config", "core.hooksPath", Path.Combine(store, "disabled-hooks"));
         async Task Fetch(string repo, IReadOnlyList<string> commits)
         {
