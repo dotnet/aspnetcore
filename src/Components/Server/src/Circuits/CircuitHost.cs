@@ -1012,8 +1012,8 @@ internal partial class CircuitHost : IAsyncDisposable
         RootComponentOperation[] operations,
         bool shouldWaitForQuiescence,
         Task postStateTask,
+        Action<Exception> onComponentInitializationFailed,
         TaskCompletionSource<bool> operationsApplied)
-        Action<Exception> onComponentInitializationFailed)
     {
         var webRootComponentManager = Renderer.GetOrCreateWebRootComponentManager();
         webRootComponentManager.SetCurrentUpdateTask(postStateTask);
@@ -1242,11 +1242,11 @@ internal partial class CircuitHost : IAsyncDisposable
         [LoggerMessage(116, LogLevel.Debug, "The root component operation of type 'Update' was invalid: {Message}", EventName = nameof(InvalidComponentTypeForUpdate))]
         public static partial void InvalidComponentTypeForUpdate(ILogger logger, string message);
 
-        [LoggerMessage(117, LogLevel.Error, "Circuit '{CircuitId}' exceeded the limit of {MaxPendingRootComponentUpdates} pending root component updates.", EventName = nameof(RootComponentUpdateQueueOverflow))]
-        public static partial void RootComponentUpdateQueueOverflow(ILogger logger, CircuitId circuitId, int maxPendingRootComponentUpdates, Exception exception);
-        
-        [LoggerMessage(118, LogLevel.Error, "Root component initialization failed.", EventName = nameof(RootComponentInitializationFailed))]
+        [LoggerMessage(117, LogLevel.Error, "Root component initialization failed.", EventName = nameof(RootComponentInitializationFailed))]
         public static partial void RootComponentInitializationFailed(ILogger logger, Exception exception);
+
+        [LoggerMessage(118, LogLevel.Error, "Circuit '{CircuitId}' exceeded the limit of {MaxPendingRootComponentUpdates} pending root component updates.", EventName = nameof(RootComponentUpdateQueueOverflow))]
+        public static partial void RootComponentUpdateQueueOverflow(ILogger logger, CircuitId circuitId, int maxPendingRootComponentUpdates, Exception exception);
 
         [LoggerMessage(200, LogLevel.Debug, "Failed to parse the event data when trying to dispatch an event.", EventName = "DispatchEventFailedToParseEventData")]
         public static partial void DispatchEventFailedToParseEventData(ILogger logger, Exception ex);
