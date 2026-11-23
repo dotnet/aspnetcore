@@ -1152,6 +1152,138 @@ public abstract class OutputCacheMiddlewareTests
     }
 
     [Fact]
+    public async Task CacheLookup_CancelledCreatorDoesNotAbortLiveWaiter()
+    {
+        var lookup = new TaskCompletionSource<byte[]>(TaskCreationOptions.RunContinuationsAsynchronously);
+        var cache = new Mock<IOutputCacheStore>();
+        cache.Setup(store => store.GetAsync(It.IsAny<string>(), It.IsAny<CancellationToken>()))
+            .Returns((string key, CancellationToken token) => new ValueTask<byte[]>(lookup.Task.WaitAsync(token)));
+        var options = new OutputCacheOptions();
+        options.AddBasePolicy(build => build.Cache());
+        var responseCounter = 0;
+        var middleware = TestUtils.CreateTestMiddleware(options: options, cache: cache.Object, next: async c =>
+        {
+            Interlocked.Increment(ref responseCounter);
+            await c.Response.WriteAsync("live waiter response");
+        });
+        using var cancellation = new CancellationTokenSource();
+        var creator = TestUtils.CreateTestContext().HttpContext;
+        creator.Request.Method = HttpMethods.Get;
+        creator.RequestAborted = cancellation.Token;
+        var survivor = TestUtils.CreateTestContext().HttpContext;
+        survivor.Request.Method = HttpMethods.Get;
+        using var body = new MemoryStream();
+        survivor.Response.Body = body;
+
+        var creatorTask = middleware.Invoke(creator);
+        var survivorTask = middleware.Invoke(survivor);
+
+        try
+        {
+            Assert.False(creatorTask.IsCompleted);
+            Assert.False(survivorTask.IsCompleted);
+            cache.Verify(store => store.GetAsync(It.IsAny<string>(), It.IsAny<CancellationToken>()), Times.Once);
+
+            cancellation.Cancel();
+            var exception = await Assert.ThrowsAnyAsync<OperationCanceledException>(
+                () => creatorTask.DefaultTimeout());
+            Assert.Equal(cancellation.Token, exception.CancellationToken);
+            await survivorTask.DefaultTimeout();
+
+            Assert.False(survivor.RequestAborted.IsCancellationRequested);
+            Assert.Equal(StatusCodes.Status200OK, survivor.Response.StatusCode);
+            Assert.Equal("live waiter response", Encoding.UTF8.GetString(body.ToArray()));
+            Assert.Equal(1, responseCounter);
+            Assert.Null(creator.Features.Get<IOutputCacheFeature>());
+            Assert.Null(survivor.Features.Get<IOutputCacheFeature>());
+        }
+        finally
+        {
+            lookup.TrySetResult(null);
+            await survivorTask.DefaultTimeout();
+        }
+    }
+
+    [Fact]
+    public async Task Locking_CreatorFailureAfterWaiterCancellationAllowsRetry()
+    {
+        var cache = GetStore();
+        var release = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+        var expected = new InvalidOperationException("Response creation failed.");
+        var responseCounter = 0;
+        var options = new OutputCacheOptions();
+        options.AddBasePolicy(build => build.Cache());
+        var middleware = TestUtils.CreateTestMiddleware(options: options, cache: cache, next: async c =>
+        {
+            if (Interlocked.Increment(ref responseCounter) == 1)
+            {
+                await release.Task;
+            }
+
+            await c.Response.WriteAsync("retry response");
+        });
+        var creator = TestUtils.CreateTestContext(cache: cache).HttpContext;
+        creator.Request.Method = HttpMethods.Get;
+        using var cancellation = new CancellationTokenSource();
+        var cancelled = TestUtils.CreateTestContext(cache: cache).HttpContext;
+        cancelled.Request.Method = HttpMethods.Get;
+        cancelled.RequestAborted = cancellation.Token;
+        var survivor = TestUtils.CreateTestContext(cache: cache).HttpContext;
+        survivor.Request.Method = HttpMethods.Get;
+
+        var creatorTask = middleware.Invoke(creator);
+        var cancelledTask = middleware.Invoke(cancelled);
+        var survivorTask = middleware.Invoke(survivor);
+
+        try
+        {
+            Assert.Equal(1, responseCounter);
+            cancellation.Cancel();
+            await Assert.ThrowsAnyAsync<OperationCanceledException>(() => cancelledTask.DefaultTimeout());
+            Assert.False(creatorTask.IsCompleted);
+            Assert.False(survivorTask.IsCompleted);
+
+            release.SetException(expected);
+            Assert.Same(expected, await Assert.ThrowsAsync<InvalidOperationException>(
+                () => creatorTask.DefaultTimeout()));
+            Assert.Same(expected, await Assert.ThrowsAsync<InvalidOperationException>(
+                () => survivorTask.DefaultTimeout()));
+            Assert.Null(cancelled.Features.Get<IOutputCacheFeature>());
+            Assert.Null(creator.Features.Get<IOutputCacheFeature>());
+            Assert.Null(survivor.Features.Get<IOutputCacheFeature>());
+            Assert.Equal(0, cache.SetCount);
+
+            var retry = TestUtils.CreateTestContext(cache: cache).HttpContext;
+            retry.Request.Method = HttpMethods.Get;
+            using var retryBody = new MemoryStream();
+            retry.Response.Body = retryBody;
+            await middleware.Invoke(retry).DefaultTimeout();
+            Assert.Equal("retry response", Encoding.UTF8.GetString(retryBody.ToArray()));
+            Assert.Equal(2, responseCounter);
+            Assert.Equal(1, cache.SetCount);
+
+            var warm = TestUtils.CreateTestContext(cache: cache).HttpContext;
+            warm.Request.Method = HttpMethods.Get;
+            using var warmBody = new MemoryStream();
+            warm.Response.Body = warmBody;
+            await middleware.Invoke(warm).DefaultTimeout();
+            Assert.Equal("retry response", Encoding.UTF8.GetString(warmBody.ToArray()));
+            Assert.Equal(2, responseCounter);
+        }
+        finally
+        {
+            release.TrySetResult();
+            try
+            {
+                await Task.WhenAll(creatorTask, survivorTask).DefaultTimeout();
+            }
+            catch (InvalidOperationException ex) when (ReferenceEquals(ex, expected))
+            {
+            }
+        }
+    }
+
+    [Fact]
     public async Task Locking_IgnoresNonCacheableResponses()
     {
         var responseCounter = 0;
