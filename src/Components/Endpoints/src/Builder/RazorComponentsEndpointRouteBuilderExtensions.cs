@@ -22,6 +22,10 @@ public static class RazorComponentsEndpointRouteBuilderExtensions
     /// </summary>
     /// <param name="endpoints">The <see cref="IEndpointRouteBuilder"/>.</param>
     /// <returns>An <see cref="RazorComponentsEndpointConventionBuilder"/> that can be used to further configure the API.</returns>
+    /// <remarks>
+    /// The opaque redirection and browser tools settings endpoints are mapped once per endpoint route builder
+    /// and use the conventions of the first mapped root component.
+    /// </remarks>
     public static RazorComponentsEndpointConventionBuilder MapRazorComponents<[DynamicallyAccessedMembers(Component)] TRootComponent>(this IEndpointRouteBuilder endpoints)
     {
         ArgumentNullException.ThrowIfNull(endpoints);
@@ -42,19 +46,12 @@ public static class RazorComponentsEndpointRouteBuilderExtensions
     private static RazorComponentEndpointDataSource<TRootComponent> GetOrCreateDataSource<[DynamicallyAccessedMembers(Component)] TRootComponent>(
         IEndpointRouteBuilder endpoints)
     {
-        var collection = endpoints.DataSources.OfType<RazorComponentEndpointDataSourceCollection>().FirstOrDefault();
-        if (collection is null)
-        {
-            collection = new RazorComponentEndpointDataSourceCollection();
-            endpoints.DataSources.Add(collection);
-        }
-
-        var dataSource = collection.DataSources.OfType<RazorComponentEndpointDataSource<TRootComponent>>().FirstOrDefault();
+        var dataSource = endpoints.DataSources.OfType<RazorComponentEndpointDataSource<TRootComponent>>().FirstOrDefault();
         if (dataSource == null)
         {
             var factory = endpoints.ServiceProvider.GetRequiredService<RazorComponentEndpointDataSourceFactory>();
             dataSource = factory.CreateDataSource<TRootComponent>(endpoints);
-            collection.Add(dataSource);
+            endpoints.DataSources.Add(dataSource);
         }
 
         return dataSource;

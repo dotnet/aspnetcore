@@ -2,7 +2,6 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Diagnostics.CodeAnalysis;
-using System.Linq;
 
 namespace Microsoft.AspNetCore.Components.Endpoints;
 
@@ -99,23 +98,6 @@ internal class ResourcePreloadCollection
 
     public bool TryGetAssets(string group, [MaybeNullWhen(false)] out List<PreloadAsset> assets)
         => _storage.TryGetValue(group, out assets);
-
-    internal bool HasSameAssets(ResourcePreloadCollection other)
-    {
-        return _storage.Count == other._storage.Count && _storage.All(group =>
-            other._storage.TryGetValue(group.Key, out var assets) &&
-            group.Value.Count == assets.Count &&
-            group.Value.Zip(assets).All(pair =>
-                pair.First.Url == pair.Second.Url &&
-                pair.First.Label == pair.Second.Label &&
-                pair.First.Integrity == pair.Second.Integrity &&
-                pair.First.PreloadGroup == pair.Second.PreloadGroup &&
-                pair.First.PreloadRel == pair.Second.PreloadRel &&
-                pair.First.PreloadAs == pair.Second.PreloadAs &&
-                pair.First.PreloadPriority == pair.Second.PreloadPriority &&
-                pair.First.PreloadCrossorigin == pair.Second.PreloadCrossorigin &&
-                pair.First.PreloadOrder == pair.Second.PreloadOrder));
-    }
 }
 
 internal sealed class PreloadAsset(string url)

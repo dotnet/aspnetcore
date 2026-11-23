@@ -38,8 +38,6 @@ internal partial class OpaqueRedirection
 
     private const string RedirectionDataProtectionProviderPurpose = "Microsoft.AspNetCore.Components.Endpoints.OpaqueRedirection,V1";
     private const string RedirectionEndpointBaseRelativeUrl = "_framework/opaque-redirect";
-    private static readonly BlazorWebEndpointMetadata _endpointMetadata = new(
-        RoutePatternFactory.Parse($"/{RedirectionEndpointBaseRelativeUrl}"));
 
     public static string CreateProtectedRedirectionUrl(HttpContext httpContext, string destinationUrl)
     {
@@ -54,14 +52,13 @@ internal partial class OpaqueRedirection
     {
         var routeEndpointBuidler = new RouteEndpointBuilder(
             OpaqueRedirect,
-            _endpointMetadata.RoutePattern,
+            RoutePatternFactory.Parse($"/{RedirectionEndpointBaseRelativeUrl}"),
             0)
         {
             DisplayName = "Blazor Opaque Redirection",
         };
 
         routeEndpointBuidler.Metadata.Add(new HttpMethodMetadata([HttpMethods.Get]));
-        routeEndpointBuidler.Metadata.Add(_endpointMetadata);
 
         return routeEndpointBuidler;
     }

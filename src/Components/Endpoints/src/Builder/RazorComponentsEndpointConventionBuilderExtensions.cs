@@ -30,7 +30,7 @@ public static class RazorComponentsEndpointConventionBuilderExtensions
 
         foreach (var assembly in assemblies)
         {
-            builder.AddComponentApplicationBuilderAction(b => b.AddAssembly(assembly));
+            builder.ComponentApplicationBuilderActions.Add(b => b.AddAssembly(assembly));
         }
         return builder;
     }
