@@ -186,6 +186,11 @@ internal class RazorComponentEndpointDataSource<[DynamicallyAccessedMembers(Comp
         List<EndpointBuilder> blazorWebEndpoints = [
             OpaqueRedirection.GetBlazorOpaqueRedirectionEndpoint()];
 
+        if (BrowserToolsHotReloadSettings.GetEndpoint(_endpointRouteBuilder.ServiceProvider) is { } browserToolsHotReloadSettings)
+        {
+            blazorWebEndpoints.Add(browserToolsHotReloadSettings);
+        }
+
         foreach (var endpoint in blazorWebEndpoints)
         {
             foreach (var convention in _conventions)

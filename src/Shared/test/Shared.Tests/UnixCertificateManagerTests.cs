@@ -215,5 +215,6 @@ public sealed class UnixCertificateManagerTests : IDisposable
         Assert.Equal("certutil", startInfo.FileName);
         Assert.Empty(startInfo.Arguments);
         Assert.Equal(expectedArguments, startInfo.ArgumentList);
+        Assert.Empty(startInfo.InheritedHandles);
     }
 }

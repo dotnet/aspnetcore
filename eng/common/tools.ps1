@@ -31,9 +31,9 @@
 # Set to true to reuse msbuild nodes. Recommended to not reuse on CI.
 [bool]$nodeReuse = if (Test-Path variable:nodeReuse) { $nodeReuse } else { !$ci }
 
-# Set to true to build with MSBuild's multi-threaded mode (-mt). Opt-in for now, so off unless it was
-# explicitly requested. It's intended to become the default for local builds once it has proven out.
-[bool]$msbuildMultiThreaded = if (Test-Path variable:msbuildMultiThreaded) { $msbuildMultiThreaded } else { $false }
+# Set to true to build with MSBuild's multi-threaded mode (-mt). Enabled by default for both local and CI builds.
+# Not applied when building with msbuild.exe (VS MSBuild).
+[bool]$msbuildMultiThreaded = if (Test-Path variable:msbuildMultiThreaded) { $msbuildMultiThreaded } else { $true }
 
 # Configures warning treatment in msbuild.
 [bool]$warnAsError = if (Test-Path variable:warnAsError) { $warnAsError } else { $true }
@@ -185,7 +185,7 @@ function InitializeDotNetCli([bool]$install, [bool]$createSdkLocationFile) {
     }
   }
 
-  $dotnetSdkVersion = $GlobalJson.tools.dotnet
+  $dotnetSdkVersion = GetDotNetSdkVersion
 
   # Use dotnet installation specified in DOTNET_INSTALL_DIR if it contains the required SDK version,
   # otherwise install the dotnet CLI and SDK to repo local .dotnet directory to avoid potential permission issues.
@@ -239,6 +239,24 @@ function InitializeDotNetCli([bool]$install, [bool]$createSdkLocationFile) {
   Write-PipelineSetVariable -Name 'DOTNET_NOLOGO' -Value '1'
 
   return $global:_DotNetInstallDir = $dotnetRoot
+}
+
+# Returns the .NET SDK version to install: 'tools.dotnet' if specified, otherwise 'sdk.version', otherwise $null.
+function GetDotNetSdkVersion() {
+  if ((Get-Member -InputObject $GlobalJson.tools -Name 'dotnet') -and $GlobalJson.tools.dotnet) {
+    return $GlobalJson.tools.dotnet
+  }
+
+  if ((Get-Member -InputObject $GlobalJson -Name 'sdk') -and (Get-Member -InputObject $GlobalJson.sdk -Name 'version') -and $GlobalJson.sdk.version) {
+    return $GlobalJson.sdk.version
+  }
+
+  return $null
+}
+
+# True if global.json specifies a .NET SDK version to install, either via 'tools.dotnet' or via 'sdk.version'.
+function GlobalJsonSpecifiesDotNetSdk() {
+  return [bool](GetDotNetSdkVersion)
 }
 
 function Retry($downloadBlock, $maxRetries = 5) {
@@ -588,15 +606,15 @@ function InitializeBuildTool() {
     $msbuildEngine = GetDefaultMSBuildEngine
   }
 
-  # Initialize dotnet cli if listed in 'tools'
+  # Initialize dotnet cli if global.json specifies a .NET SDK version ('tools.dotnet' or 'sdk.version')
   $dotnetRoot = $null
-  if (Get-Member -InputObject $GlobalJson.tools -Name 'dotnet') {
+  if (GlobalJsonSpecifiesDotNetSdk) {
     $dotnetRoot = InitializeDotNetCli -install:$restore
   }
 
   if ($msbuildEngine -eq 'dotnet') {
     if (!$dotnetRoot) {
-      Write-PipelineTelemetryError -Category 'InitializeToolset' -Message "/global.json must specify 'tools.dotnet'."
+      Write-PipelineTelemetryError -Category 'InitializeToolset' -Message "/global.json must specify 'tools.dotnet' or 'sdk.version'."
       ExitWithExitCode 1
     }
     $dotnetPath = Join-Path $dotnetRoot (GetExecutableFileName 'dotnet')
@@ -625,11 +643,11 @@ function GetDefaultMSBuildEngine() {
     return 'vs'
   }
 
-  if (Get-Member -InputObject $GlobalJson.tools -Name 'dotnet') {
+  if (GlobalJsonSpecifiesDotNetSdk) {
     return 'dotnet'
   }
 
-  Write-PipelineTelemetryError -Category 'InitializeToolset' -Message "-msbuildEngine must be specified, or /global.json must specify 'tools.dotnet' or 'tools.vs'."
+  Write-PipelineTelemetryError -Category 'InitializeToolset' -Message "-msbuildEngine must be specified, or /global.json must specify 'tools.dotnet', 'sdk.version' or 'tools.vs'."
   ExitWithExitCode 1
 }
 
@@ -811,10 +829,13 @@ function MSBuild() {
     }
   }
 
-  $cmdArgs = "$($buildTool.Command) /m /nologo /clp:Summary /v:$verbosity /nr:$nodeReuse /p:ContinuousIntegrationBuild=$ci"
+  $restoreSwitch = if ($restore) { ' /restore' } else { '' }
 
-  # Build with MSBuild's multi-threaded mode.
-  if ($msbuildMultiThreaded) {
+  $cmdArgs = "$($buildTool.Command)$restoreSwitch /m /nologo /clp:Summary /v:$verbosity /nr:$nodeReuse /p:ContinuousIntegrationBuild=$ci"
+
+  # Build with MSBuild's multi-threaded mode, but not with msbuild.exe (VS MSBuild) for now.
+  # TODO: Enable for VS MSBuild as well: https://github.com/dotnet/dotnet/issues/9989
+  if ($msbuildMultiThreaded -and [System.IO.Path]::GetFileName($buildTool.Path) -ne 'msbuild.exe') {
     $cmdArgs += ' -mt'
   }
 
@@ -935,8 +956,13 @@ $ToolsDir = Join-Path $RepoRoot '.tools'
 $LogDir = Join-Path (Join-Path $ArtifactsDir 'log') $configuration
 $TempDir = Join-Path (Join-Path $ArtifactsDir 'tmp') $configuration
 $GlobalJson = Get-Content -Raw -Path (Join-Path $RepoRoot 'global.json') | ConvertFrom-Json
+# The 'tools' section is optional (the SDK version can come from 'sdk.version'). Default it to an empty object
+# so that code inspecting it doesn't need to handle a missing section.
+if (-not (Get-Member -InputObject $GlobalJson -Name 'tools')) {
+  $GlobalJson | Add-Member -NotePropertyName 'tools' -NotePropertyValue ([pscustomobject]@{})
+}
 # true if global.json contains a "runtimes" section
-$globalJsonHasRuntimes = if ($GlobalJson.tools.PSObject.Properties.Name -Match 'runtimes') { $true } else { $false }
+$globalJsonHasRuntimes = [bool](Get-Member -InputObject $GlobalJson.tools -Name 'runtimes')
 
 Create-Directory $ToolsetDir
 Create-Directory $TempDir

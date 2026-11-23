@@ -463,17 +463,21 @@ class MsalAuthorizeService implements AuthorizeService {
 export class AuthenticationService {
 
     static _infrastructureKey = 'Microsoft.Authentication.WebAssembly.Msal';
-    static _initialized: boolean;
+    private static _initialization: Promise<void> | undefined;
     static instance: MsalAuthorizeService;
 
     public static async init(settings: AuthorizeServiceConfiguration, jsLoggingOptions: JavaScriptLoggingOptions) {
-        if (!AuthenticationService._initialized) {
-            AuthenticationService.instance = new MsalAuthorizeService(settings, new Logger(jsLoggingOptions));
-            await AuthenticationService.instance.initialize();
-            AuthenticationService.instance.initializeMsalHandler();
-            AuthenticationService._initialized = true;
+        if (!AuthenticationService._initialization) {
+            const instance = new MsalAuthorizeService(settings, new Logger(jsLoggingOptions));
+            AuthenticationService.instance = instance;
+            AuthenticationService._initialization = instance.initialize()
+                .then(() => instance.initializeMsalHandler())
+                .catch(error => {
+                    AuthenticationService._initialization = undefined;
+                    throw error;
+                });
         }
-        return Promise.resolve();
+        return AuthenticationService._initialization;
     }
 
     public static getUser() {

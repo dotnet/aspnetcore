@@ -28,14 +28,14 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Reference Include="Microsoft.AspNetCore.Components.Web" />
-    <Reference Include="Microsoft.Extensions.AI.Abstractions" />
+    <PackageReference Include="Microsoft.Extensions.AI.Abstractions" />
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\gen\Microsoft.AspNetCore.Components.AI.SourceGenerators.csproj"
+    <ProjectReference Include="$(RepoRoot)src\Components\AI\gen\Microsoft.AspNetCore.Components.AI.SourceGenerators.csproj"
                       OutputItemType="Analyzer"
                       ReferenceOutputAssembly="false" />
+    <ProjectReference Include="$(RepoRoot)src\Components\Web\src\Microsoft.AspNetCore.Components.Web.csproj" />
     <None Include="$(ArtifactsBinDir)\Microsoft.AspNetCore.Components.AI.SourceGenerators\$(Configuration)\netstandard2.0\Microsoft.AspNetCore.Components.AI.SourceGenerators.dll"
           Pack="true"
           PackagePath="analyzers/dotnet/cs"

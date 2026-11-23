@@ -667,7 +667,8 @@ internal sealed partial class UnixCertificateManager : CertificateManager
         var startInfo = new ProcessStartInfo(PowerShellCommand, $"-NoProfile -NonInteractive -EncodedCommand {encodedCommand}")
         {
             StandardOutputHandle = nullHandle,
-            StandardErrorHandle = nullHandle
+            StandardErrorHandle = nullHandle,
+            InheritedHandles = [],
         };
 
         return Process.Run(startInfo).ExitCode == 0;
@@ -793,7 +794,8 @@ internal sealed partial class UnixCertificateManager : CertificateManager
             var processInfo = new ProcessStartInfo(OpenSslCommand, $"version -d")
             {
                 RedirectStandardOutput = true,
-                RedirectStandardError = true
+                RedirectStandardError = true,
+                InheritedHandles = [],
             };
 
             var processOutput = Process.RunAndCaptureText(processInfo);
@@ -835,7 +837,8 @@ internal sealed partial class UnixCertificateManager : CertificateManager
             var processInfo = new ProcessStartInfo(OpenSslCommand, $"x509 -hash -noout -in {certificatePath}")
             {
                 RedirectStandardOutput = true,
-                RedirectStandardError = true
+                RedirectStandardError = true,
+                InheritedHandles = [],
             };
 
             var processOutput = Process.RunAndCaptureText(processInfo);
@@ -1010,7 +1013,10 @@ internal sealed partial class UnixCertificateManager : CertificateManager
 
         private ProcessStartInfo CreateProcessStartInfo(string nickname)
         {
-            var startInfo = new ProcessStartInfo(CertUtilCommand);
+            var startInfo = new ProcessStartInfo(CertUtilCommand)
+            {
+                InheritedHandles = [],
+            };
             startInfo.ArgumentList.Add("-d");
             startInfo.ArgumentList.Add($"sql:{Path}");
             startInfo.ArgumentList.Add("-n");

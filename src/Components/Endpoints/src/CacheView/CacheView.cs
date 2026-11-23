@@ -9,8 +9,11 @@ namespace Microsoft.AspNetCore.Components;
 
 /// <summary>
 /// A component that caches the rendered HTML of its child content during
-/// server-side rendering (SSR). On cache hit, child components are not
-/// instantiated or rendered.
+/// server-side rendering (SSR). On cache hit, cached child components are not
+/// instantiated or rendered. Components with <see cref="CacheBehavior.Rerender"/>
+/// (unless included in cached output by a matching <see cref="CacheConditionAttribute"/>),
+/// including interactive render-mode boundaries, render on every request using
+/// their cached parameter values.
 /// </summary>
 public sealed class CacheView : IComponent, IDisposable
 {
@@ -82,6 +85,13 @@ public sealed class CacheView : IComponent, IDisposable
     /// <summary>
     /// Gets or sets whether to vary the cache by the authenticated user identity.
     /// </summary>
+    /// <remarks>
+    /// When a nonempty name identifier is present, <see cref="VaryByUser"/> does not include
+    /// roles or permissions in the key. Include values that affect the output in
+    /// <see cref="VaryBy"/>, or keep authorization outside CacheView.
+    /// Include the tenant in <see cref="VaryBy"/> when the same user identifier
+    /// can produce different output for different tenants.
+    /// </remarks>
     [Parameter]
     public bool VaryByUser { get; set; }
 

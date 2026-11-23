@@ -153,7 +153,7 @@ public class VirtualizationRenderModesTest : ServerTestBase<BasicTestAppServerSi
     }
 
     [Fact]
-    public void EndAnchoredAppend_IssuesExactlyTwoProviderCalls_AdvancingToTail()
+    public void EndAnchoredAppend_ReusesPrefetchedTailWithOneProviderCall()
     {
         Navigate($"{ServerPathBase}/virtualize-append?comparer=true&delay=50");
         Browser.Exists(By.Id("interactive-ready"));
@@ -167,12 +167,12 @@ public class VirtualizationRenderModesTest : ServerTestBase<BasicTestAppServerSi
 
         ClickById("append-btn");
 
-        // Exactly two calls for the append — the fix relocates the tail fetch, it doesn't add one.
-        Browser.Equal(2, () => GetProviderCalls().Count(c => c.Total == initialCount + batch));
-        var appendCalls = GetProviderCalls().Where(c => c.Total == initialCount + batch).ToList();
+        // The append is included in the bounded tail look-ahead, so the original tail request
+        // contains enough rows to advance the window without a replacement provider call.
+        Browser.Equal(1, () => GetProviderCalls().Count(c => c.Total == initialCount + batch));
+        var appendCall = Assert.Single(GetProviderCalls().Where(c => c.Total == initialCount + batch));
 
-        Assert.Contains(appendCalls, c => c.Start == tailStart);
-        Assert.Contains(appendCalls, c => c.Start == tailStart + batch);
+        Assert.Equal(tailStart, appendCall.Start);
     }
 
     private static string[] GetRenderedItems(IWebElement container)

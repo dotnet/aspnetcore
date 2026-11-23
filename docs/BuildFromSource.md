@@ -118,6 +118,8 @@ The steps you follow next depend on your preferred development environment:
     . ./activate.ps1
     ```
 
+    If you tried to activate before restoring and the repository SDK was missing, run the platform's `restore` script from the repo root, wait for it to complete, and activate again.
+
 1. After you've activated the locally installed .NET, open the project you want to modify by running the `code` command in the project's directory. For example, if you want to modify the`src/Http` project:
 
     ```bash
@@ -188,6 +190,14 @@ See [BuildErrors](https://github.com/dotnet/aspnetcore/blob/main/docs/BuildError
 This ASP.NET Core repo contains a top-level build script located at `eng/build.cmd` and `eng/build.sh` and local build scripts within each directory. The scripts can be used to restore, build, and test the repo with support for a variety of flags. This section documents the common flags and some recommended invocation patterns.
 
 > :warning: We do _not_ recommend running the top-level build script for the repo. You'll rarely need to build the entire repo; building a sub-project is usually sufficient for your workflow.
+
+### Choosing a validation scope
+
+Check the build script in the area you changed (`build.cmd` on Windows, `build.sh` on Linux/macOS) and the area's `AGENTS.md` for prerequisites such as submodules, generated assets, or native tools. For a focused change, select a specific project using the repo-level script's `-projects` argument (see below), or use `dotnet build` or `dotnet test` with a project file after activation and any required generated files are in place. Use the area build when the change needs its broader integration coverage. If a broader build stops on an unrelated prerequisite before reaching your target, report both the prerequisite and what the focused build actually covered; don't treat the broader build as passing.
+
+For projects with multiple target frameworks, check the project file and build each target supported by your environment. Confirm that the intended tests actually ran and that required packages or other build outputs were produced; a zero exit code by itself does not establish this.
+
+Projects share the repository `artifacts` directory for build outputs. Avoid concurrent build/test invocations whose project graphs overlap in that directory; run them sequentially unless their outputs are isolated or the tests use an already-built graph. If `CS2012` or a file-in-use error occurs during overlapping builds, retry the affected command serially before treating it as a source failure.
 
 ### Common arguments
 

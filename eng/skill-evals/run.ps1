@@ -6,6 +6,8 @@ param(
 
     [string]$Eval,
 
+    [string]$Suite,
+
     [string]$Experiment,
 
     [string]$OutputDirectory,
@@ -17,7 +19,7 @@ param(
     [string[]]$VallyPrefix = @(
         '--yes',
         '--registry=https://packagefeedproxy.microsoft.io/npm/',
-        '@microsoft/vally-cli@0.14.0'
+        '@microsoft/vally-cli@0.19.0'
     ),
 
     [Parameter(ValueFromRemainingArguments = $true)]
@@ -54,6 +56,18 @@ $repoRoot = if ($Root) {
     (Resolve-Path (Join-Path $PSScriptRoot '../..')).Path
 }
 $evalRoot = Join-Path $repoRoot 'eng/skill-evals'
+if ($Suite) {
+    if ($Suite -notmatch '^[A-Za-z0-9][A-Za-z0-9._-]*$' -or $Suite.Contains('..')) {
+        throw "Invalid suite name '$Suite'."
+    }
+    if ($Eval) {
+        throw 'Specify either -Suite or -Eval, not both.'
+    }
+    $Eval = Join-Path $evalRoot "$Suite/eval.vally.yaml"
+    if (-not (Test-Path $Eval -PathType Leaf)) {
+        throw "Missing suite specification at '$Eval'."
+    }
+}
 $runtimeRoot = Join-Path $repoRoot '.github/skills'
 $standardExperiment = Join-Path $evalRoot 'skills-vs-baseline.experiment.yaml'
 $smokeExperiment = Join-Path $evalRoot 'skills-smoke.experiment.yaml'
@@ -69,6 +83,9 @@ $selectedExperiment = if ($hasExplicitExperiment) {
     $standardExperiment
 }
 $script:vallyInitialized = $false
+$reviewExperiment = Join-Path $evalRoot 'review-vs-baseline.experiment.yaml'
+$reviewSmokeExperiment = Join-Path $evalRoot 'review-smoke.experiment.yaml'
+$reviewEval = Join-Path $evalRoot 'review-pull-request/eval.vally.yaml'
 
 function Resolve-Eval {
     if (-not $Eval) {
@@ -94,8 +111,19 @@ function Get-EvalSpecs {
     )
 }
 
+if ($Eval -and -not $Suite) {
+    $resolvedSelection = Resolve-Eval
+    $relativeSelection = [IO.Path]::GetRelativePath($evalRoot, $resolvedSelection).Replace('\', '/')
+    if ($relativeSelection -match '^[^/]+/eval\.vally\.yaml$') {
+        $Suite = Split-Path (Split-Path $resolvedSelection -Parent) -Leaf
+    }
+}
+
 function Invoke-Vally {
-    param([string[]]$VallyArguments)
+    param(
+        [string[]]$VallyArguments,
+        [switch]$TolerateExitOne
+    )
 
     $command = Get-Command $Vally -ErrorAction SilentlyContinue
     if (-not $command) {
@@ -122,6 +150,10 @@ function Invoke-Vally {
     & $Vally @VallyPrefix @VallyArguments
     $invocationSucceeded = $?
     $invocationExitCode = $LASTEXITCODE
+    $script:vallyExitCode = $invocationExitCode
+    if ($TolerateExitOne -and $invocationExitCode -eq 1) {
+        return
+    }
     if (-not $invocationSucceeded -or $invocationExitCode -ne 0) {
         if ($invocationExitCode -eq 0) {
             $invocationExitCode = 1
@@ -144,7 +176,10 @@ function Invoke-VallyLint {
 }
 
 function Invoke-VallyIsolated {
-    param([string[]]$VallyArguments)
+    param(
+        [string[]]$VallyArguments,
+        [switch]$TolerateExitOne
+    )
 
     $workDirectory = Join-Path ([IO.Path]::GetTempPath()) (
         'aspnetcore-skill-evals-' + [guid]::NewGuid().ToString('N')
@@ -152,7 +187,7 @@ function Invoke-VallyIsolated {
     New-Item -ItemType Directory -Path $workDirectory | Out-Null
     try {
         Push-Location $workDirectory
-        Invoke-Vally $VallyArguments
+        Invoke-Vally $VallyArguments -TolerateExitOne:$TolerateExitOne
     } finally {
         Pop-Location
         Remove-Item -Recurse -Force $workDirectory
@@ -162,13 +197,17 @@ function Invoke-VallyIsolated {
 function Invoke-VallyExperimentDryRun {
     param([string]$ExperimentPath)
 
-    Invoke-VallyIsolated @(
+    $vallyArguments = @(
         'experiment',
         'run', $ExperimentPath,
         '--compare',
         '--dry-run',
         '--output-dir', 'plan-results'
     )
+    if ($Suite) {
+        $vallyArguments += @('--eval-filter', "$Suite/eval.vally.yaml")
+    }
+    Invoke-VallyIsolated $vallyArguments
 }
 
 function Get-TrackedFiles {
@@ -199,10 +238,15 @@ function Get-LayoutErrors {
         $errors.Add("Missing smoke experiment: $smokeExperiment")
     }
 
+    $layoutEvalRoot = if ($Suite) { Join-Path $evalRoot $Suite } else { $evalRoot }
     $standardSpecs = @(
-        Get-ChildItem $evalRoot -Directory -ErrorAction SilentlyContinue |
-            ForEach-Object { Join-Path $_.FullName 'eval.vally.yaml' } |
-            Where-Object { Test-Path $_ -PathType Leaf }
+        if ($Suite) {
+            $Eval
+        } else {
+            Get-ChildItem $evalRoot -Directory -ErrorAction SilentlyContinue |
+                ForEach-Object { Join-Path $_.FullName 'eval.vally.yaml' } |
+                Where-Object { Test-Path $_ -PathType Leaf }
+        }
     )
     if ($standardSpecs.Count -eq 0) {
         $errors.Add("No standard */eval.vally.yaml specs were found under '$evalRoot'.")
@@ -210,7 +254,8 @@ function Get-LayoutErrors {
     foreach ($spec in $standardSpecs) {
         $skillName = Split-Path (Split-Path $spec -Parent) -Leaf
         $skillFile = Join-Path $runtimeRoot "$skillName/SKILL.md"
-        if (-not (Test-Path $skillFile -PathType Leaf)) {
+        if ($skillName -ne 'review-candidate-verifier' -and
+            -not (Test-Path $skillFile -PathType Leaf)) {
             $errors.Add("$spec has no matching runtime skill at '$skillFile'.")
         }
     }
@@ -227,14 +272,14 @@ function Get-LayoutErrors {
     }
 
     $tracked = Get-TrackedFiles
-    foreach ($spec in Get-ChildItem $evalRoot -Recurse -File -Filter '*.vally.yaml') {
+    foreach ($spec in Get-ChildItem $layoutEvalRoot -Recurse -File -Filter '*.vally.yaml') {
         $relative = [IO.Path]::GetRelativePath($repoRoot, $spec.FullName).Replace('\', '/')
         if (-not $tracked.Contains($relative)) {
             $errors.Add("$relative is not tracked by git and will not exist in CI.")
         }
     }
 
-    foreach ($fixtures in Get-ChildItem $evalRoot -Recurse -Directory |
+    foreach ($fixtures in Get-ChildItem $layoutEvalRoot -Recurse -Directory |
         Where-Object Name -eq 'fixtures') {
         $items = @(Get-ChildItem $fixtures.FullName -Recurse -Force)
         $fixtureFiles = @($items | Where-Object { -not $_.PSIsContainer })
@@ -272,11 +317,20 @@ switch ($Action) {
     'Validate' {
         Invoke-LayoutValidation
         Invoke-VallyLint
-        if ($hasExplicitExperiment) {
+        if ($Suite -eq 'review-candidate-verifier') {
+            # Component specs have no skill treatment. Lint validates their schema.
+        } elseif ($hasExplicitExperiment) {
             Invoke-VallyExperimentDryRun $selectedExperiment
+        } elseif ($Suite -eq 'review-pull-request' -and (Test-Path $reviewEval)) {
+            Invoke-VallyExperimentDryRun $reviewExperiment
+            Invoke-VallyExperimentDryRun $reviewSmokeExperiment
         } else {
             Invoke-VallyExperimentDryRun $standardExperiment
             Invoke-VallyExperimentDryRun $smokeExperiment
+            if (-not $Suite -and (Test-Path $reviewEval)) {
+                Invoke-VallyExperimentDryRun $reviewExperiment
+                Invoke-VallyExperimentDryRun $reviewSmokeExperiment
+            }
         }
     }
     'Test' {
@@ -285,6 +339,21 @@ switch ($Action) {
         & (Join-Path $PSScriptRoot 'test_assert_results.ps1')
         & (Join-Path $PSScriptRoot 'test_stage_run.ps1')
         & (Join-Path $PSScriptRoot 'test_workflow.ps1')
+        if (-not $Suite -or $Suite -in @('review-pull-request', 'review-candidate-verifier')) {
+            & (Join-Path $PSScriptRoot 'test_review_fixtures.ps1')
+        }
+        if (Test-Path (Join-Path $PSScriptRoot 'test_disposition.mjs')) {
+            & node --test (Join-Path $PSScriptRoot 'test_disposition.mjs')
+            if ($LASTEXITCODE -ne 0) {
+                throw 'Disposition grader self-test failed.'
+            }
+        }
+        if (Test-Path (Join-Path $PSScriptRoot 'l3\test_l3.mjs')) {
+            & node --test (Join-Path $PSScriptRoot 'l3\test_l3.mjs')
+            if ($LASTEXITCODE -ne 0) {
+                throw 'L3 corpus tool self-test failed.'
+            }
+        }
     }
     'Lint' {
         Invoke-VallyLint
@@ -301,7 +370,122 @@ switch ($Action) {
             Join-Path $repoRoot 'artifacts/skill-evals'
         }
 
-        if (-not $resolvedEval -or (Split-Path $resolvedEval -Leaf) -eq 'eval.vally.yaml') {
+        if (-not $resolvedEval -and -not $hasExplicitExperiment) {
+            $experimentOnlyOptions = @(
+                $Arguments |
+                    Where-Object { $_ -match '^--(?:variant|eval-filter|shard|shard-strategy|compare|dry-run)(?:=|$)' } |
+                    ForEach-Object { ($_ -split '=', 2)[0] } |
+                    Select-Object -Unique
+            )
+            if ($experimentOnlyOptions.Count -gt 0) {
+                throw "Options $($experimentOnlyOptions -join ', ') require -Suite or -Experiment."
+            }
+            foreach ($directory in Get-ChildItem $evalRoot -Directory) {
+                if (Test-Path (Join-Path $directory.FullName 'eval.vally.yaml')) {
+                    $suiteOutput = Join-Path $output $directory.Name
+                    & $PSCommandPath Run -Root $repoRoot -Suite $directory.Name `
+                        -OutputDirectory $suiteOutput `
+                        -Vally $Vally -VallyPrefix $VallyPrefix @Arguments
+                    if (-not $? -or $LASTEXITCODE -ne 0) {
+                        throw "The '$($directory.Name)' suite run failed."
+                    }
+                }
+            }
+            break
+        }
+        $selectedSuite = if ($resolvedEval) {
+            Split-Path (Split-Path $resolvedEval -Parent) -Leaf
+        }
+        if ($resolvedEval -and (
+            $selectedSuite -eq 'review-candidate-verifier' -or
+            (Split-Path $resolvedEval -Leaf) -ne 'eval.vally.yaml'
+        ) -and ($Arguments -match '^--dry-run(?:=|$)')) {
+            throw '--dry-run is not supported by direct Vally eval runs. Use Validate to check the selected specification without running models.'
+        }
+        if ($selectedSuite -eq 'review-pull-request' -and (Test-Path $reviewExperiment)) {
+            $selectedExperiment = if ($selectedExperiment -eq $smokeExperiment) {
+                $reviewSmokeExperiment
+            } elseif (-not $hasExplicitExperiment) {
+                $reviewExperiment
+            } else {
+                $selectedExperiment
+            }
+        }
+        if ($selectedSuite -eq 'review-candidate-verifier') {
+            $componentJson = Get-Content $resolvedEval -Raw | & npx `
+                --yes --registry=https://packagefeedproxy.microsoft.io/npm/ `
+                yaml@2.9.1 --json --single --strict
+            if ($LASTEXITCODE -ne 0) {
+                throw "Could not parse '$resolvedEval' as a single, strict YAML document."
+            }
+            $componentSpec = $componentJson | ConvertFrom-Json -AsHashtable -Depth 100
+            $componentDefaults = $componentSpec['defaults']
+            $componentScoring = $componentSpec['scoring']
+            $runs = if ($selectedExperiment -in @($smokeExperiment, $reviewSmokeExperiment)) {
+                1
+            } elseif ($componentDefaults -is [Collections.IDictionary] -and $null -ne $componentDefaults['runs']) {
+                $specifiedRuns = $componentDefaults['runs']
+                if (($specifiedRuns -isnot [int] -and $specifiedRuns -isnot [long]) -or
+                    $specifiedRuns -lt 1 -or $specifiedRuns -gt [int]::MaxValue) {
+                    throw 'The component defaults.runs must be a positive integer.'
+                }
+                [int]$specifiedRuns
+            } else {
+                1
+            }
+            $threshold = if ($componentScoring -is [Collections.IDictionary] -and $componentScoring.Contains('threshold')) {
+                $specifiedThreshold = $componentScoring['threshold']
+                if (($specifiedThreshold -isnot [int] -and $specifiedThreshold -isnot [long] -and
+                    $specifiedThreshold -isnot [double] -and $specifiedThreshold -isnot [decimal]) -or
+                    -not [double]::IsFinite([double]$specifiedThreshold) -or
+                    $specifiedThreshold -lt 0 -or $specifiedThreshold -gt 1) {
+                    throw 'The component threshold must be between 0 and 1.'
+                }
+                [double]$specifiedThreshold
+            } else {
+                1
+            }
+            for ($index = 0; $Arguments -and $index -lt $Arguments.Count; $index++) {
+                if ($Arguments[$index] -match '^--(runs|threshold)(?:=(.*))?$') {
+                    $option = $Matches[1]
+                    $value = if ($Arguments[$index].Contains('=')) {
+                        $Matches[2]
+                    } else {
+                        if (++$index -ge $Arguments.Count) {
+                            throw "Missing value for --$option."
+                        }
+                        $Arguments[$index]
+                    }
+                    if ($option -eq 'runs') {
+                        $parsedRuns = 0
+                        if (-not [int]::TryParse($value, [ref]$parsedRuns) -or $parsedRuns -lt 1) {
+                            throw '--runs must be a positive integer.'
+                        }
+                        $runs = $parsedRuns
+                    } else {
+                        $parsedThreshold = 0.0
+                        if ([string]::IsNullOrWhiteSpace($value) -or
+                            -not [double]::TryParse(
+                                $value,
+                                [Globalization.NumberStyles]::Float,
+                                [Globalization.CultureInfo]::InvariantCulture,
+                                [ref]$parsedThreshold
+                            ) -or
+                            -not [double]::IsFinite($parsedThreshold) -or
+                            $parsedThreshold -lt 0 -or $parsedThreshold -gt 1) {
+                            throw '--threshold must be between 0 and 1.'
+                        }
+                        $threshold = $parsedThreshold
+                    }
+                }
+            }
+            $plannedStimulusNames = @($componentSpec['stimuli'] | ForEach-Object { $_['name'] })
+            $vallyArguments = @(
+                'eval', '--eval-spec', $resolvedEval,
+                '--runs', $runs.ToString(),
+                '--output-dir', $output
+            )
+        } elseif (-not $resolvedEval -or (Split-Path $resolvedEval -Leaf) -eq 'eval.vally.yaml') {
             $vallyArguments = @(
                 'experiment',
                 'run', $selectedExperiment,
@@ -324,6 +508,84 @@ switch ($Action) {
         }
 
         $vallyArguments += $Arguments
-        Invoke-VallyIsolated $vallyArguments
+        $assertOptions = @{}
+        if ($vallyArguments[0] -eq 'experiment') {
+            for ($index = 0; $Arguments -and $index -lt $Arguments.Count; $index++) {
+                if ($Arguments[$index] -match '^--variant(?:=(.*))?$') {
+                    $assertOptions.Variant = if ($Arguments[$index].Contains('=')) {
+                        $Matches[1]
+                    } else {
+                        if (++$index -ge $Arguments.Count) {
+                            throw 'Missing value for --variant.'
+                        }
+                        $Arguments[$index]
+                    }
+                }
+            }
+        }
+        $assertsResults = ($selectedSuite -eq 'review-candidate-verifier' -or
+            ($vallyArguments[0] -eq 'experiment' -and $resolvedEval -and
+                -not ($Arguments -match '^--(?:eval-filter|shard)(?:=|$)'))) -and
+            $Arguments -notcontains '--dry-run'
+        if ($vallyArguments[0] -eq 'experiment' -and -not $assertsResults -and $Arguments -notcontains '--dry-run') {
+            Write-Warning "Result-set checks were not applied; Vally's exit status is returned. Use -Suite to check one eval; if --compare reports conflicting judge models, add --judge-model."
+        }
+        $existingRunDirectoryNames = [Collections.Generic.HashSet[string]]::new([StringComparer]::Ordinal)
+        if ($assertsResults -and (Test-Path -LiteralPath $output -PathType Container)) {
+            foreach ($directory in Get-ChildItem -LiteralPath $output -Directory -ErrorAction SilentlyContinue) {
+                [void]$existingRunDirectoryNames.Add($directory.Name)
+            }
+        }
+        $invocationCompleted = $false
+        try {
+            Invoke-VallyIsolated $vallyArguments -TolerateExitOne:(
+                $assertsResults -and $Arguments -notcontains '--require-pass'
+            )
+            $invocationCompleted = $true
+        } finally {
+            if ($selectedSuite -eq 'review-candidate-verifier' -and $assertsResults) {
+                $runDirectories = @(
+                    Get-ChildItem -LiteralPath $output -Directory -ErrorAction SilentlyContinue |
+                        Where-Object { -not $existingRunDirectoryNames.Contains($_.Name) }
+                )
+                if ($runDirectories.Count -eq 1 -and
+                    (Test-Path -LiteralPath (Join-Path $runDirectories[0].FullName 'results.jsonl'))) {
+                    @{
+                        evals = @(@{
+                            variant = 'current'
+                            plannedStimulusNames = $plannedStimulusNames
+                            plannedStimulusCount = $plannedStimulusNames.Count
+                            runs = $runs
+                            threshold = $threshold
+                        })
+                    } | ConvertTo-Json -Depth 10 | Set-Content -LiteralPath (Join-Path $runDirectories[0].FullName 'plan-snapshot.json')
+                } elseif ($invocationCompleted) {
+                    if ($script:vallyExitCode -ne 0) {
+                        throw "Vally exited with code $script:vallyExitCode for '$selectedSuite' without producing component results.jsonl."
+                    }
+                    throw 'Expected one completed component output directory with results.jsonl.'
+                }
+            }
+        }
+        if ($assertsResults) {
+            $newRunDirectories = @(
+                Get-ChildItem -LiteralPath $output -Directory -ErrorAction SilentlyContinue |
+                    Where-Object { -not $existingRunDirectoryNames.Contains($_.Name) }
+            )
+            if ($script:vallyExitCode -ne 0 -and (
+                $newRunDirectories.Count -ne 1 -or
+                -not (Test-Path -LiteralPath (Join-Path $newRunDirectories[0].FullName 'plan-snapshot.json') -PathType Leaf)
+            )) {
+                throw "Vally exited with code $script:vallyExitCode for '$selectedSuite' without producing a completed experiment plan."
+            }
+            if ($newRunDirectories.Count -ne 1) {
+                throw "Expected one new Vally run directory under '$output'; found $($newRunDirectories.Count)."
+            }
+            & (Join-Path $PSScriptRoot 'assert_results.ps1') -RunDirectory $newRunDirectories[0].FullName @assertOptions
+            if ($script:vallyExitCode -eq 1) {
+                Write-Warning "Vally exited with code 1 for '$selectedSuite'. Complete primary trials passed the applicable result-set checks."
+            }
+            $global:LASTEXITCODE = 0
+        }
     }
 }

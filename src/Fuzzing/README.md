@@ -86,7 +86,7 @@ dotnet run -- MultipartReaderFuzzer C:\path\to\directory-with-crash-files\
 > [!TIP]
 > Since the project is self-contained, you can also run the exe directly without `dotnet run`:
 > ```cmd
-> artifacts\bin\AspNetCoreFuzzing\Debug\net11.0\win-x64\AspNetCoreFuzzing.exe MultipartReaderFuzzer crash-abc123
+> artifacts\bin\AspNetCoreFuzzing\Debug\net12.0\win-x64\AspNetCoreFuzzing.exe MultipartReaderFuzzer crash-abc123
 > ```
 
 To debug interactively, set a breakpoint in the relevant fuzzer's `FuzzTarget` method and launch with a debugger:

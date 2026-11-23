@@ -423,8 +423,10 @@ public class SignInManagerTest
         }
     }
 
-    [Fact]
-    public async Task CanPasskeySignIn()
+    [Theory]
+    [InlineData(true)]
+    [InlineData(false)]
+    public async Task CanPasskeySignIn(bool isPersistent)
     {
         // Setup
         var testMeterFactory = new TestMeterFactory();
@@ -453,13 +455,13 @@ public class SignInManagerTest
             .Verifiable();
         var context = new DefaultHttpContext();
         var auth = MockAuth(context);
-        SetupSignIn(context, auth, user.Id, isPersistent: false, loginProvider: null);
+        SetupSignIn(context, auth, user.Id, isPersistent, loginProvider: null);
         SetupPasskeyAuth(context, auth);
         var helper = SetupSignInManager(manager.Object, context);
 
         // Act
         var optionsJson = await helper.MakePasskeyRequestOptionsAsync(user);
-        var signInResult = await helper.PasskeySignInAsync(credentialJson: "<some-passkey>");
+        var signInResult = await helper.PasskeySignInAsync(credentialJson: "<some-passkey>", isPersistent);
 
         // Assert
         Assert.Equal(expectedOptionsJson, optionsJson);
@@ -474,7 +476,7 @@ public class SignInManagerTest
                 KeyValuePair.Create<string, object>("aspnetcore.identity.user_type", "Microsoft.AspNetCore.Identity.Test.PocoUser"),
                 KeyValuePair.Create<string, object>("aspnetcore.authentication.scheme", "Identity.Application"),
                 KeyValuePair.Create<string, object>("aspnetcore.identity.sign_in.type", "passkey"),
-                KeyValuePair.Create<string, object>("aspnetcore.authentication.is_persistent", false),
+                KeyValuePair.Create<string, object>("aspnetcore.authentication.is_persistent", isPersistent),
                 KeyValuePair.Create<string, object>("aspnetcore.identity.sign_in.result", "success"),
             ]));
         Assert.Collection(signInUserPrincipal.GetMeasurementSnapshot(),
@@ -482,8 +484,64 @@ public class SignInManagerTest
             [
                 KeyValuePair.Create<string, object>("aspnetcore.identity.user_type", "Microsoft.AspNetCore.Identity.Test.PocoUser"),
                 KeyValuePair.Create<string, object>("aspnetcore.authentication.scheme", "Identity.Application"),
-                KeyValuePair.Create<string, object>("aspnetcore.authentication.is_persistent", false),
+                KeyValuePair.Create<string, object>("aspnetcore.authentication.is_persistent", isPersistent),
             ]));
+    }
+
+    [Fact]
+    public async Task PasskeyAssertionThrowsForMissingState()
+    {
+        var user = new PocoUser { UserName = "Foo" };
+        var passkeyHandler = new Mock<IPasskeyHandler<PocoUser>>();
+        var manager = SetupUserManager(user, passkeyHandler: passkeyHandler.Object);
+        var context = new DefaultHttpContext();
+        var auth = MockAuth(context);
+        auth.Setup(a => a.AuthenticateAsync(context, IdentityConstants.TwoFactorUserIdScheme))
+            .ReturnsAsync(AuthenticateResult.Fail("Not currently signed in."))
+            .Verifiable();
+        auth.Setup(a => a.SignOutAsync(
+                context,
+                IdentityConstants.TwoFactorUserIdScheme,
+                It.IsAny<AuthenticationProperties>()))
+            .Returns(Task.CompletedTask)
+            .Verifiable();
+        var helper = SetupSignInManager(manager.Object, context);
+
+        await Assert.ThrowsAsync<PasskeyAuthenticationStateException>(
+            () => helper.PerformPasskeyAssertionAsync("<some-passkey>"));
+
+        auth.Verify();
+    }
+
+    [Fact]
+    public async Task PasskeyAssertionThrowsForMismatchedState()
+    {
+        var user = new PocoUser { UserName = "Foo" };
+        var passkeyHandler = new Mock<IPasskeyHandler<PocoUser>>();
+        passkeyHandler
+            .Setup(h => h.MakeCreationOptionsAsync(It.IsAny<PasskeyUserEntity>(), It.IsAny<HttpContext>()))
+            .ReturnsAsync(new PasskeyCreationOptionsResult
+            {
+                AttestationState = "<some-attestation-state>",
+                CreationOptionsJson = "<some-options-json>",
+            });
+        var manager = SetupUserManager(user, passkeyHandler: passkeyHandler.Object);
+        var context = new DefaultHttpContext();
+        var auth = MockAuth(context);
+        SetupPasskeyAuth(context, auth);
+        var helper = SetupSignInManager(manager.Object, context);
+
+        await helper.MakePasskeyCreationOptionsAsync(new()
+        {
+            Id = user.Id,
+            Name = user.UserName,
+            DisplayName = user.UserName,
+        });
+
+        await Assert.ThrowsAsync<PasskeyAuthenticationStateException>(
+            () => helper.PerformPasskeyAssertionAsync("<some-passkey>"));
+
+        auth.Verify();
     }
 
     [Theory]

@@ -47,6 +47,8 @@ internal sealed partial class HttpConnectionDispatcher
     private readonly HttpConnectionsMetrics _metrics;
     private readonly ILogger _logger;
     private const int _protocolVersion = 1;
+    private const string AuthenticationRefreshRequiredError = "authentication_refresh_required";
+    private const string ConnectionTokenHeaderName = "X-SignalR-Connection-Token";
 
     // This should be kept in sync with CookieAuthenticationHandler
     private const string HeaderValueNoCache = "no-cache";
@@ -69,11 +71,12 @@ internal sealed partial class HttpConnectionDispatcher
 
         HttpConnectionContext? connectionContext = null;
         var connectionToken = GetConnectionToken(context);
+        var endpoint = GetConnectionEndpoint(context);
 
         if (!StringValues.IsNullOrEmpty(connectionToken))
         {
             // Use ToString; IsNullOrEmpty doesn't tell the compiler anything about implicit conversion to string.
-            _manager.TryGetConnection(connectionToken.ToString(), out connectionContext);
+            _manager.TryGetConnection(connectionToken.ToString(), endpoint, out connectionContext);
         }
 
         var logScope = new ConnectionLogScope(connectionContext?.ConnectionId);
@@ -82,17 +85,17 @@ internal sealed partial class HttpConnectionDispatcher
             if (HttpMethods.IsPost(context.Request.Method))
             {
                 // POST /{path}
-                await ProcessSend(context);
+                await ProcessSend(context, endpoint);
             }
             else if (HttpMethods.IsGet(context.Request.Method) || HttpMethods.IsConnect(context.Request.Method))
             {
                 // GET /{path}
-                await ExecuteAsync(context, connectionDelegate, options, logScope);
+                await ExecuteAsync(context, connectionDelegate, options, logScope, endpoint);
             }
             else if (HttpMethods.IsDelete(context.Request.Method))
             {
                 // DELETE /{path}
-                await ProcessDeleteAsync(context);
+                await ProcessDeleteAsync(context, endpoint);
             }
             else
             {
@@ -104,6 +107,8 @@ internal sealed partial class HttpConnectionDispatcher
 
     public async Task ExecuteNegotiateAsync(HttpContext context, HttpConnectionDispatcherOptions options)
     {
+        var endpoint = GetConnectionEndpoint(context);
+
         // Create the log scope and the scope connectionId param will be set when the connection is created.
         var logScope = new ConnectionLogScope(connectionId: string.Empty);
         using (_logger.BeginScope(logScope))
@@ -111,7 +116,7 @@ internal sealed partial class HttpConnectionDispatcher
             if (HttpMethods.IsPost(context.Request.Method))
             {
                 // POST /{path}/negotiate
-                await ProcessNegotiate(context, options, logScope);
+                await ProcessNegotiate(context, options, logScope, endpoint);
             }
             else
             {
@@ -123,12 +128,14 @@ internal sealed partial class HttpConnectionDispatcher
 
     public async Task ExecuteRefreshAsync(HttpContext context, HttpConnectionDispatcherOptions options)
     {
+        var endpoint = GetConnectionEndpoint(context);
+
         var logScope = new ConnectionLogScope(connectionId: string.Empty);
         using (_logger.BeginScope(logScope))
         {
             if (HttpMethods.IsPost(context.Request.Method))
             {
-                await ProcessRefresh(context, options, logScope);
+                await ProcessRefresh(context, options, logScope, endpoint);
             }
             else
             {
@@ -138,7 +145,11 @@ internal sealed partial class HttpConnectionDispatcher
         }
     }
 
-    private async Task ProcessRefresh(HttpContext context, HttpConnectionDispatcherOptions options, ConnectionLogScope logScope)
+    private async Task ProcessRefresh(
+        HttpContext context,
+        HttpConnectionDispatcherOptions options,
+        ConnectionLogScope logScope,
+        HttpConnectionEndpointMetadata? endpointMetadata)
     {
         context.Response.ContentType = "application/json";
 
@@ -148,8 +159,9 @@ internal sealed partial class HttpConnectionDispatcher
             return;
         }
 
-        // Get connection token from query string (same pattern as send/poll/delete)
-        var connectionToken = GetConnectionToken(context);
+        // Unlike transport requests, /refresh requires the private connection token in a non-safelisted
+        // header so a cross-origin browser request must successfully complete a CORS preflight.
+        var connectionToken = context.Request.Headers[ConnectionTokenHeaderName];
         if (StringValues.IsNullOrEmpty(connectionToken))
         {
             await WriteRefreshErrorAsync(context, StatusCodes.Status400BadRequest, "missing_connection_token");
@@ -157,7 +169,7 @@ internal sealed partial class HttpConnectionDispatcher
         }
 
         // Look up the connection by connection token (private, not the public connectionId)
-        if (!_manager.TryGetConnection(connectionToken.ToString(), out var connection))
+        if (!_manager.TryGetConnection(connectionToken.ToString(), endpointMetadata, out var connection))
         {
             await WriteRefreshErrorAsync(context, StatusCodes.Status404NotFound, "connection_not_found");
             return;
@@ -181,9 +193,20 @@ internal sealed partial class HttpConnectionDispatcher
         // the transition is valid.
         var authResult = context.Features.Get<IAuthenticateResultFeature>()?.AuthenticateResult;
         var newPrincipal = authResult?.Principal ?? context.User;
-        if (HasWindowsIdentity(connection.User) || HasWindowsIdentity(newPrincipal))
+        if (connection.HasWindowsIdentityUser || HasWindowsIdentity(newPrincipal))
         {
             await WriteRefreshErrorAsync(context, StatusCodes.Status400BadRequest, "windows_identity_not_supported");
+            return;
+        }
+
+        // Before the first transport request establishes connection.User, the negotiate principal is the
+        // connection identity. Authentication refresh policies must not bypass that initial binding.
+        if (connection.User is null
+            && connection.HasNegotiatedUser
+            && !connection.IsUserAssociatedWithConnection(newPrincipal))
+        {
+            LogUserChanged(connection.User, newPrincipal);
+            await WriteRefreshErrorAsync(context, StatusCodes.Status403Forbidden, "user_changed");
             return;
         }
 
@@ -207,6 +230,18 @@ internal sealed partial class HttpConnectionDispatcher
         {
             Log.AuthenticationRefreshRejectedByCallback(_logger, connection.ConnectionId);
             await WriteRefreshErrorAsync(context, StatusCodes.Status403Forbidden, "permission_change_rejected");
+            return;
+        }
+
+        // A token that never replaced the connection's principal - because it was idempotent, stale, or
+        // superseded while the refresh policies were awaited - was never accepted by those policies, so it
+        // can't stand in for the connection's identity check. A same-user refresh still passes; only a
+        // caller who isn't the connection's user is rejected.
+        if (updateResult != HttpConnectionContext.UserUpdateResult.Updated
+            && !connection.IsUserAssociatedWithConnection(newPrincipal))
+        {
+            LogUserChanged(connection.User, newPrincipal);
+            await WriteRefreshErrorAsync(context, StatusCodes.Status403Forbidden, "user_changed");
             return;
         }
 
@@ -268,7 +303,12 @@ internal sealed partial class HttpConnectionDispatcher
         }
     }
 
-    private async Task ExecuteAsync(HttpContext context, ConnectionDelegate connectionDelegate, HttpConnectionDispatcherOptions options, ConnectionLogScope logScope)
+    private async Task ExecuteAsync(
+        HttpContext context,
+        ConnectionDelegate connectionDelegate,
+        HttpConnectionDispatcherOptions options,
+        ConnectionLogScope logScope,
+        HttpConnectionEndpointMetadata? endpointMetadata)
     {
         // set a tag to allow Application Performance Management tools to differentiate long running requests for reporting purposes
         context.Features.Get<IHttpActivityFeature>()?.Activity.AddTag("http.long_running", "true");
@@ -278,11 +318,10 @@ internal sealed partial class HttpConnectionDispatcher
         // Server sent events transport
         // GET /{path}
         // Accept: text/event-stream
-        var headers = context.Request.GetTypedHeaders();
-        if (headers.Accept?.Contains(new Net.Http.Headers.MediaTypeHeaderValue("text/event-stream")) == true)
+        if (IsServerSentEventsRequest(context.Request))
         {
             // Connection must already exist
-            var connection = await GetConnectionAsync(context);
+            var connection = await GetConnectionAsync(context, endpointMetadata);
             if (connection == null)
             {
                 // No such connection, GetConnection already set the response status code
@@ -317,7 +356,7 @@ internal sealed partial class HttpConnectionDispatcher
             if (context.WebSockets.IsWebSocketRequest)
             {
                 transport = HttpTransportType.WebSockets;
-                connection = await GetOrCreateConnectionAsync(context, options);
+                connection = await GetOrCreateConnectionAsync(context, options, endpointMetadata);
 
                 if (connection is not null)
                 {
@@ -331,7 +370,7 @@ internal sealed partial class HttpConnectionDispatcher
             {
                 AddNoCacheHeaders(context.Response);
                 // Connection must already exist
-                connection = await GetConnectionAsync(context);
+                connection = await GetConnectionAsync(context, endpointMetadata);
             }
 
             if (connection == null)
@@ -483,7 +522,11 @@ internal sealed partial class HttpConnectionDispatcher
         await _manager.DisposeAndRemoveAsync(connection, closeGracefully: true, HttpConnectionStopStatus.NormalClosure);
     }
 
-    private async Task ProcessNegotiate(HttpContext context, HttpConnectionDispatcherOptions options, ConnectionLogScope logScope)
+    private async Task ProcessNegotiate(
+        HttpContext context,
+        HttpConnectionDispatcherOptions options,
+        ConnectionLogScope logScope,
+        HttpConnectionEndpointMetadata? endpointMetadata)
     {
         context.Response.ContentType = "application/json";
         string? error = null;
@@ -525,7 +568,7 @@ internal sealed partial class HttpConnectionDispatcher
         HttpConnectionContext? connection = null;
         if (error == null)
         {
-            connection = CreateConnection(options, clientProtocolVersion, useStatefulReconnect);
+            connection = CreateConnection(options, clientProtocolVersion, useStatefulReconnect, endpointMetadata, context.User);
         }
 
         // Set the Connection ID on the logging scope so that logs from now on will have the
@@ -606,6 +649,23 @@ internal sealed partial class HttpConnectionDispatcher
         NegotiateProtocol.WriteResponse(response, writer);
     }
 
+    internal static bool IsServerSentEventsRequest(HttpRequest request)
+    {
+        // Every long polling and WebSocket GET comes through here, and parsing Accept allocates.
+        // A parsed "text/event-stream" media type can only exist if the raw header contains its "event-stream" subtype token,
+        // so only parse when that substring is present.
+        var accept = request.Headers.Accept;
+        for (var i = 0; i < accept.Count; i++)
+        {
+            if (accept[i]?.Contains("event-stream", StringComparison.OrdinalIgnoreCase) == true)
+            {
+                return request.GetTypedHeaders().Accept?.Contains(new Net.Http.Headers.MediaTypeHeaderValue("text/event-stream")) == true;
+            }
+        }
+
+        return false;
+    }
+
     private static bool ServerHasWebSockets(IFeatureCollection features)
     {
         return features.Get<IHttpWebSocketFeature>() != null;
@@ -613,12 +673,22 @@ internal sealed partial class HttpConnectionDispatcher
 
     private static StringValues GetConnectionToken(HttpContext context) => context.Request.Query["id"];
 
-    private async Task ProcessSend(HttpContext context)
+    private static HttpConnectionEndpointMetadata? GetConnectionEndpoint(HttpContext context) =>
+        context.GetEndpoint()?.Metadata.GetMetadata<HttpConnectionEndpointMetadata>();
+
+    private async Task ProcessSend(HttpContext context, HttpConnectionEndpointMetadata? endpointMetadata)
     {
-        var connection = await GetConnectionAsync(context);
+        var connection = await GetConnectionAsync(context, endpointMetadata);
         if (connection == null)
         {
             // No such connection, GetConnection already set the response status code
+            return;
+        }
+
+        // Client should send the Poll or EventSource before sending
+        if (connection.TransportType is HttpTransportType.None)
+        {
+            context.Response.StatusCode = StatusCodes.Status400BadRequest;
             return;
         }
 
@@ -711,9 +781,9 @@ internal sealed partial class HttpConnectionDispatcher
         }
     }
 
-    private async Task ProcessDeleteAsync(HttpContext context)
+    private async Task ProcessDeleteAsync(HttpContext context, HttpConnectionEndpointMetadata? endpointMetadata)
     {
-        var connection = await GetConnectionAsync(context);
+        var connection = await GetConnectionAsync(context, endpointMetadata);
         if (connection == null)
         {
             // No such connection, GetConnection already set the response status code
@@ -752,6 +822,13 @@ internal sealed partial class HttpConnectionDispatcher
             context.Response.StatusCode = StatusCodes.Status404NotFound;
             Log.TransportNotSupported(_logger, transportType);
             await context.Response.WriteAsync($"{transportType} transport not supported by this end point type");
+            return false;
+        }
+
+        if (connection.HasNegotiatedUser
+            && (connection.User is null || connection.TransportType is HttpTransportType.None)
+            && await RejectIfConnectionUserChangedAsync(connection, context))
+        {
             return false;
         }
 
@@ -810,8 +887,17 @@ internal sealed partial class HttpConnectionDispatcher
                 // Only a genuinely changed, non-stale token runs the policies; an idempotent or stale token
                 // keeps the connection's current principal and expiration.
                 userRefreshHandled = true;
+                var userRefreshApplied = false;
                 if (principalChanged && !stale)
                 {
+                    if (transportType == HttpTransportType.LongPolling
+                        && !options.UseLegacyLongPollingAuthenticationRefresh
+                        && !connection.IsUserAssociatedWithConnection(newPrincipal))
+                    {
+                        await WriteRefreshErrorAsync(context, StatusCodes.Status409Conflict, AuthenticationRefreshRequiredError);
+                        return false;
+                    }
+
                     var updateResult = await connection.UpdateUserAsync(
                         newPrincipal,
                         newExpiration,
@@ -830,6 +916,20 @@ internal sealed partial class HttpConnectionDispatcher
                         connection.DisposeAndRemoveTask = _manager.DisposeAndRemoveAsync(connection, closeGracefully: false, HttpConnectionStopStatus.NormalClosure);
                         return false;
                     }
+
+                    userRefreshApplied = updateResult == HttpConnectionContext.UserUpdateResult.Updated;
+                }
+
+                // A token that never replaced the connection's principal - because it was idempotent, stale,
+                // or superseded while the refresh policies were awaited - was never accepted by those
+                // policies, so it can't stand in for the connection's identity check. Without this, any
+                // authenticated caller holding the connection token could attach to another user's
+                // connection just by presenting a shorter-lived credential, and could even activate a
+                // different endpoint's application while the real owner's first request is still awaiting
+                // its refresh policy.
+                if (!userRefreshApplied && await RejectIfConnectionUserChangedAsync(connection, context))
+                {
+                    return false;
                 }
             }
         }
@@ -886,7 +986,7 @@ internal sealed partial class HttpConnectionDispatcher
             }
 
             // Setup the connection state from the http context
-            connection.User = connection.HttpContext?.User;
+            connection.SetUserAndReleaseNegotiatedUser(connection.HttpContext?.User);
 
             if (transportType == HttpTransportType.LongPolling && connection.User?.Identity is WindowsIdentity)
             {
@@ -966,38 +1066,7 @@ internal sealed partial class HttpConnectionDispatcher
 
     private static void CloneUser(HttpContext newContext, HttpContext oldContext)
     {
-        // If the identity is a WindowsIdentity we need to clone the User.
-        // This is because the WindowsIdentity uses SafeHandle's which are disposed at the end of the request
-        // and accessing the identity can happen outside of the request scope.
-        if (oldContext.User.Identity is WindowsIdentity windowsIdentity)
-        {
-            var skipFirstIdentity = false;
-            if (OperatingSystem.IsWindows() && oldContext.User is WindowsPrincipal)
-            {
-                // We want to explicitly create a WindowsPrincipal instead of a ClaimsPrincipal
-                // so methods that WindowsPrincipal overrides like 'IsInRole', work as expected.
-                newContext.User = new WindowsPrincipal((WindowsIdentity)(windowsIdentity.Clone()));
-                skipFirstIdentity = true;
-            }
-            else
-            {
-                newContext.User = new ClaimsPrincipal();
-            }
-
-            foreach (var identity in oldContext.User.Identities)
-            {
-                if (skipFirstIdentity)
-                {
-                    skipFirstIdentity = false;
-                    continue;
-                }
-                newContext.User.AddIdentity(identity.Clone());
-            }
-        }
-        else
-        {
-            newContext.User = oldContext.User;
-        }
+        newContext.User = HttpConnectionContext.CloneUserIfNeeded(oldContext.User, out _);
     }
 
     private static void CloneHttpContext(HttpContext context, HttpConnectionContext connection)
@@ -1087,12 +1156,12 @@ internal sealed partial class HttpConnectionDispatcher
 
     private void LogUserChanged(ClaimsPrincipal? originalUser, ClaimsPrincipal newUser)
     {
-        var originalIdentity = originalUser is null ? null : HttpConnectionContext.GetUserIdentityKey(originalUser);
-        var newIdentity = HttpConnectionContext.GetUserIdentityKey(newUser);
+        var originalIdentity = originalUser is null ? null : UserIdentitySnapshot.GetUserIdentityKey(originalUser);
+        var newIdentity = UserIdentitySnapshot.GetUserIdentityKey(newUser);
         Log.UserNameChangedRejected(_logger, originalIdentity?.Value, newIdentity?.Value);
     }
 
-    private async Task<HttpConnectionContext?> GetConnectionAsync(HttpContext context)
+    private async Task<HttpConnectionContext?> GetConnectionAsync(HttpContext context, HttpConnectionEndpointMetadata? endpointMetadata)
     {
         var connectionToken = GetConnectionToken(context);
 
@@ -1106,7 +1175,7 @@ internal sealed partial class HttpConnectionDispatcher
         }
 
         // Use ToString; IsNullOrEmpty doesn't tell the compiler anything about implicit conversion to string.
-        if (!_manager.TryGetConnection(connectionToken.ToString(), out var connection))
+        if (!_manager.TryGetConnection(connectionToken.ToString(), endpointMetadata, out var connection))
         {
             // No connection with that ID: Not Found
             context.Response.StatusCode = StatusCodes.Status404NotFound;
@@ -1119,7 +1188,10 @@ internal sealed partial class HttpConnectionDispatcher
     }
 
     // This is only used for WebSockets connections, which can connect directly without negotiating
-    private async Task<HttpConnectionContext?> GetOrCreateConnectionAsync(HttpContext context, HttpConnectionDispatcherOptions options)
+    private async Task<HttpConnectionContext?> GetOrCreateConnectionAsync(
+        HttpContext context,
+        HttpConnectionDispatcherOptions options,
+        HttpConnectionEndpointMetadata? endpointMetadata)
     {
         var connectionToken = GetConnectionToken(context);
         HttpConnectionContext? connection;
@@ -1127,10 +1199,10 @@ internal sealed partial class HttpConnectionDispatcher
         // There's no connection id so this is a brand new connection
         if (StringValues.IsNullOrEmpty(connectionToken))
         {
-            connection = CreateConnection(options);
+            connection = CreateConnection(options, endpointMetadata: endpointMetadata);
         }
         // Use ToString; IsNullOrEmpty doesn't tell the compiler anything about implicit conversion to string.
-        else if (!_manager.TryGetConnection(connectionToken.ToString(), out connection))
+        else if (!_manager.TryGetConnection(connectionToken.ToString(), endpointMetadata, out connection))
         {
             // No connection with that ID: Not Found
             context.Response.StatusCode = StatusCodes.Status404NotFound;
@@ -1141,9 +1213,23 @@ internal sealed partial class HttpConnectionDispatcher
         return connection;
     }
 
-    private HttpConnectionContext CreateConnection(HttpConnectionDispatcherOptions options, int clientProtocolVersion = 0, bool useStatefulReconnect = false)
+    private HttpConnectionContext CreateConnection(
+        HttpConnectionDispatcherOptions options,
+        int clientProtocolVersion = 0,
+        bool useStatefulReconnect = false,
+        HttpConnectionEndpointMetadata? endpointMetadata = null)
     {
-        return _manager.CreateConnection(options, clientProtocolVersion, useStatefulReconnect);
+        return _manager.CreateConnection(options, clientProtocolVersion, useStatefulReconnect, endpointMetadata);
+    }
+
+    private HttpConnectionContext CreateConnection(
+        HttpConnectionDispatcherOptions options,
+        int clientProtocolVersion,
+        bool useStatefulReconnect,
+        HttpConnectionEndpointMetadata? endpointMetadata,
+        ClaimsPrincipal? negotiatedUser)
+    {
+        return _manager.CreateConnection(options, clientProtocolVersion, useStatefulReconnect, endpointMetadata, negotiatedUser);
     }
 
     private static void AddNoCacheHeaders(HttpResponse response)

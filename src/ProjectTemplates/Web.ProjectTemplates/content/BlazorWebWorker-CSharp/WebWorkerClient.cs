@@ -22,7 +22,7 @@ public sealed class WebWorkerClient(IJSObjectReference worker) : IAsyncDisposabl
         }
         catch (JSException ex)
         {
-            throw new InvalidOperationException("Unable to create the web worker JavaScript object.", ex);
+            throw new InvalidOperationException($"Unable to create the web worker JavaScript object: {ex.Message}", ex);
         }
     }
 
@@ -37,7 +37,7 @@ public sealed class WebWorkerClient(IJSObjectReference worker) : IAsyncDisposabl
         }
         catch (JSException ex)
         {
-            throw new InvalidOperationException("Unable to invoke the web worker JavaScript function.", ex);
+            throw new InvalidOperationException($"Unable to invoke the web worker JavaScript function: {ex.Message}", ex);
         }
     }
 
@@ -49,7 +49,7 @@ public sealed class WebWorkerClient(IJSObjectReference worker) : IAsyncDisposabl
         }
         catch (JSException ex)
         {
-            throw new InvalidOperationException("Unable to invoke the web worker JavaScript function.", ex);
+            throw new InvalidOperationException($"Unable to invoke the web worker JavaScript function: {ex.Message}", ex);
         }
     }
 

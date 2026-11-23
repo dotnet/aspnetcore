@@ -105,10 +105,12 @@ public class IISMiddleware
     {
         if (!string.Equals(_pairingToken, httpContext.Request.Headers[MSAspNetCoreToken], StringComparison.Ordinal))
         {
-            _logger.LogError($"'{MSAspNetCoreToken}' does not match the expected pairing token '{_pairingToken}', request rejected.");
+            _logger.LogError("'MS-ASPNETCORE-TOKEN' does not match the expected pairing token, request rejected.");
             httpContext.Response.StatusCode = StatusCodes.Status400BadRequest;
             return Task.CompletedTask;
         }
+
+        httpContext.Request.Headers.Remove(MSAspNetCoreToken);
 
         // Handle shutdown from ANCM
         if (HttpMethods.IsPost(httpContext.Request.Method) &&

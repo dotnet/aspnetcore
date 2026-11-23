@@ -1,13 +1,12 @@
 # Mints a short-lived GitHub App installation access token by signing a JWT
-# with a private key stored in Azure Key Vault (RSA, RS256). The JWT is
-# exchanged with the GitHub API for a token scoped to a single installation.
+# via Azure Key Vault's RSA signing operation (RS256), without reading the
+# private key. The JWT is exchanged for a single installation's token.
 #
 # Requirements (per GitHub App you want to authenticate as):
-#   - A GitHub App with its private key uploaded into Key Vault as an RSA key
-#     (PEM converted to a key, NOT stored as a secret).
-#   - The Azure service connection passed via `azureSubscription` must be
-#     granted the `Key Vault Crypto User` role (or at minimum `Sign` action)
-#     on that key.
+#   - The GitHub App's private key imported as a Key Vault RSA key.
+#   - Read access to the configured App-ID secret projection.
+#   - The Azure service connection passed via `azureSubscription` must have
+#     the `Sign` action on that key.
 #   - The App must be installed on the target organization/account
 #     (`installationOwner`) with the permissions/repositories you need.
 #
@@ -17,23 +16,18 @@
 # enterprise classic-PAT lifetime policy.
 
 parameters:
-# Azure DevOps service connection (federated) that can call
-# `az keyvault key sign` on the App's signing key.
+# Federated service connection authorized to sign with the App's RSA key.
 - name: azureSubscription
   type: string
 
-# Name of the Key Vault that holds the GitHub App's RSA signing key.
+# Name of the Key Vault holding the App's RSA key.
 - name: keyVaultName
   type: string
 
-# Name of the RSA key inside the Key Vault (the App's private key).
 - name: keyName
   type: string
 
-# The GitHub App's Client ID (the value to put in the `iss` JWT claim).
-# Prefer this over the numeric App ID; GitHub accepts either, but Client ID
-# is the documented form going forward.
-- name: appClientId
+- name: appIdSecretName
   type: string
 
 # Login of the organization or user account whose installation we should
@@ -74,6 +68,6 @@ steps:
       & "$(System.DefaultWorkingDirectory)/eng/common/Get-GitHubAppToken.ps1" `
           -KeyVaultName '${{ parameters.keyVaultName }}' `
           -KeyName '${{ parameters.keyName }}' `
-          -AppClientId '${{ parameters.appClientId }}' `
+          -AppIdSecretName '${{ parameters.appIdSecretName }}' `
           -InstallationOwner '${{ parameters.installationOwner }}' `
           -OutputVariableName '${{ parameters.outputVariableName }}'

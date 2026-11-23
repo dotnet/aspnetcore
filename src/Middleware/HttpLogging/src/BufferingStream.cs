@@ -208,6 +208,7 @@ internal abstract class BufferingStream : Stream, IBufferWriter<byte>
         }
 
         _head = _tail = null;
+        _tailMemory = default;
 
         _bytesBuffered = 0;
         _tailBytesBuffered = 0;

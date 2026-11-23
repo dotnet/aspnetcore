@@ -150,6 +150,41 @@ public class OutputCachePolicyProviderTests
     }
 
     [Fact]
+    public async Task IsResponseCacheable_AuthenticatedOnRequest_AllowedByLaterPolicy()
+    {
+        var sink = new TestSink();
+        var context = TestUtils.CreateTestContext(testSink: sink);
+        context.HttpContext.Request.Method = HttpMethods.Get;
+        context.HttpContext.User = new ClaimsPrincipal(new ClaimsIdentity(authenticationType: "custom"));
+
+        var policy = new OutputCachePolicyBuilder().AddPolicy(new AllowTestPolicy()).Build();
+
+        await policy.CacheRequestAsync(context, default);
+        Assert.True(context.AllowCacheStorage);
+
+        await policy.ServeResponseAsync(context, default);
+        Assert.True(context.AllowCacheStorage);
+    }
+
+    [Fact]
+    public async Task IsResponseCacheable_AuthenticatedAfterRequest_NotAllowedByLaterPolicy()
+    {
+        var sink = new TestSink();
+        var context = TestUtils.CreateTestContext(testSink: sink);
+        context.HttpContext.Request.Method = HttpMethods.Get;
+
+        var policy = new OutputCachePolicyBuilder().AddPolicy(new AllowTestPolicy()).Build();
+
+        await policy.CacheRequestAsync(context, default);
+        Assert.True(context.AllowCacheStorage);
+
+        context.HttpContext.User = new ClaimsPrincipal(new ClaimsIdentity(authenticationType: "custom"));
+
+        await policy.ServeResponseAsync(context, default);
+        Assert.False(context.AllowCacheStorage);
+    }
+
+    [Fact]
     public async Task AllowCacheStorage_NoStore_IsAllowed()
     {
         var sink = new TestSink();

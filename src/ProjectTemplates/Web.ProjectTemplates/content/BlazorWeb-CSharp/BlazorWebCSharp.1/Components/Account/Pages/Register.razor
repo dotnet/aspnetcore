@@ -22,7 +22,7 @@
 <div class="row">
     <div class="col-lg-6">
         <StatusMessage Message="@Message" />
-        <EditForm Model="Input" method="post" OnValidSubmit="RegisterUser" FormName="register">
+        <EditForm EditContext="editContext" method="post" OnSubmit="RegisterUser" FormName="register">
             <DataAnnotationsValidator />
             <h2>Create a new account.</h2>
             <hr />
@@ -51,6 +51,11 @@
                 <ValidationMessage For="() => Input.ConfirmPassword" class="text-danger" />
             </div>
             <button type="submit" class="w-100 btn btn-lg btn-primary">Register</button>
+            <hr />
+            <div class="d-flex flex-column">
+                <span class="text-secondary mx-auto mt-2">OR</span>
+                <PasskeySubmit Operation="PasskeyOperation.Register" Name="Input.Passkey" EmailName="Input.Email" class="btn btn-link mx-auto">Sign up with a passkey</PasskeySubmit>
+            </div>
         </EditForm>
     </div>
     <div class="col-lg-4 col-lg-offset-2">
@@ -64,6 +69,8 @@
 
 @code {
     private IEnumerable<IdentityError>? identityErrors;
+    private string? errorMessage;
+    private EditContext editContext = default!;
 
     [SupplyParameterFromForm]
     private InputModel Input { get; set; } = default!;
@@ -71,15 +78,30 @@
     [SupplyParameterFromQuery]
     private string? ReturnUrl { get; set; }
 
-    private string? Message => identityErrors is null ? null : $"Error: {string.Join(", ", identityErrors.Select(error => error.Description))}";
+    private string? Message => errorMessage ?? (identityErrors is null ? null : $"Error: {string.Join(", ", identityErrors.Select(error => error.Description))}");
 
     protected override void OnInitialized()
     {
         Input ??= new();
+
+        editContext = new EditContext(Input);
     }
 
-    public async Task RegisterUser(EditContext editContext)
+    public async Task RegisterUser()
     {
+        if (Input.Passkey is not null)
+        {
+            // When registering with a passkey, don't perform form validation. The password boxes
+            // are left empty, and the email was already validated when the ceremony was started.
+            await RegisterUserWithPasskey();
+            return;
+        }
+
+        if (!await editContext.ValidateAsync())
+        {
+            return;
+        }
+
         var user = CreateUser();
 
         await UserStore.SetUserNameAsync(user, Input.Email, CancellationToken.None);
@@ -95,6 +117,90 @@
 
         Logger.LogInformation("User created a new account with password.");
 
+        await ConfirmAccountAsync(user);
+    }
+
+    // The passkey is created before the account exists, so the ID it was bound to comes back from
+    // attestation and the account is created around it.
+    private async Task RegisterUserWithPasskey()
+    {
+        var passkeyInput = Input.Passkey!;
+
+        if (!string.IsNullOrEmpty(passkeyInput.Error))
+        {
+            errorMessage = $"Error: {passkeyInput.Error}";
+            return;
+        }
+
+        if (string.IsNullOrEmpty(passkeyInput.CredentialJson))
+        {
+            errorMessage = "Error: The browser did not provide a passkey.";
+            return;
+        }
+
+        PasskeyAttestationResult attestationResult;
+        try
+        {
+            attestationResult = await SignInManager.PerformPasskeyAttestationAsync(passkeyInput.CredentialJson);
+        }
+        catch (InvalidOperationException)
+        {
+            // The ceremony state lives in a single cookie, so another tab can replace it before
+            // this form is posted.
+            errorMessage = "Error: Your passkey session expired. Please try again.";
+            return;
+        }
+
+        if (!attestationResult.Succeeded)
+        {
+            errorMessage = $"Error: {attestationResult.Failure.Message}";
+            return;
+        }
+
+        // The passkey must have been created for the address that is about to be registered.
+        if (!string.Equals(attestationResult.UserEntity.Name, Input.Email, StringComparison.Ordinal))
+        {
+            errorMessage = "Error: That passkey was created for a different email address.";
+            return;
+        }
+
+        var user = CreateUser();
+        user.Id = attestationResult.UserEntity.Id;
+
+        await UserStore.SetUserNameAsync(user, Input.Email, CancellationToken.None);
+        var emailStore = GetEmailStore();
+        await emailStore.SetEmailAsync(user, Input.Email, CancellationToken.None);
+        var result = await UserManager.CreateAsync(user);
+
+        if (!result.Succeeded)
+        {
+            identityErrors = result.Errors;
+            return;
+        }
+
+        // If the authenticator is known, assign the inferred name
+        if (PasskeyAuthenticators.TryGetDefaultDisplayName(attestationResult.Passkey, out var defaultName))
+        {
+            attestationResult.Passkey.Name = defaultName;
+        }
+
+        var addPasskeyResult = await UserManager.AddOrUpdatePasskeyAsync(user, attestationResult.Passkey);
+        if (!addPasskeyResult.Succeeded)
+        {
+            // The account has no password either, so leaving it behind would claim the address for
+            // something nobody can sign in to.
+            await UserManager.DeleteAsync(user);
+            errorMessage = "Error: The passkey could not be added to your account.";
+            return;
+        }
+
+        Logger.LogInformation("User created a new account with a passkey.");
+
+        await ConfirmAccountAsync(user);
+    }
+
+    private async Task ConfirmAccountAsync(ApplicationUser user)
+    {
         var userId = await UserManager.GetUserIdAsync(user);
         var code = await UserManager.GenerateEmailConfirmationTokenAsync(user);
         code = WebEncoders.Base64UrlEncode(Encoding.UTF8.GetBytes(code));
@@ -156,5 +262,7 @@
         [Display(Name = "Confirm password")]
         [Compare("Password", ErrorMessage = "The password and confirmation password do not match.")]
         public string ConfirmPassword { get; set; } = "";
+
+        public PasskeyInputModel? Passkey { get; set; }
     }
 }

@@ -30,6 +30,13 @@ internal partial class RemoteRenderer : WebRenderer
     private long _nextRenderId = 1;
     private bool _disposing;
 
+    // Reused for every batch of this renderer. Batches are serialized one at a time on the renderer's
+    // dispatcher, and the writer resets its string table after each batch, so between batches it holds
+    // no strings or pooled buffers. Each batch still gets its own output buffer, because that buffer is
+    // kept until the client acknowledges the batch.
+    private ArrayBuilderMemoryStream? _renderBatchStream;
+    private RenderBatchWriter? _renderBatchWriter;
+
     /// <summary>
     /// Notifies when a rendering exception occurred.
     /// </summary>
@@ -156,14 +163,20 @@ internal partial class RemoteRenderer : WebRenderer
         // The RenderBatch buffer will get reused by subsequent renders, so we need to
         // snapshot its contents now.
         var arrayBuilder = new ArrayBuilder<byte>(2048);
-        using var memoryStream = new ArrayBuilderMemoryStream(arrayBuilder);
         UnacknowledgedRenderBatch pendingRender;
         try
         {
-            using (var renderBatchWriter = new RenderBatchWriter(memoryStream, false))
+            if (_renderBatchWriter is null)
             {
-                renderBatchWriter.Write(in batch);
+                _renderBatchStream = new ArrayBuilderMemoryStream(arrayBuilder);
+                _renderBatchWriter = new RenderBatchWriter(_renderBatchStream, leaveOpen: true);
             }
+            else
+            {
+                _renderBatchStream!.ArrayBuilder = arrayBuilder;
+            }
+
+            _renderBatchWriter.Write(in batch);
 
             var renderId = Interlocked.Increment(ref _nextRenderId);
 

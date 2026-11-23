@@ -188,31 +188,36 @@ Application state is browser-owned for the lifetime of the running application. 
 
 ### Interactive Auto
 
-Interactive Auto allows a Blazor Web App to choose between Interactive Server and Interactive WebAssembly when activating a component root. The server can provide immediate interactivity while WebAssembly resources are not yet available locally. After those resources have been downloaded, a later activation can select WebAssembly.
+Interactive Auto allows a Blazor Web App to choose between Interactive Server and Interactive WebAssembly when activating a component root. In the current implementation, [`WebRootComponentManager`](Web.JS/src/Services/WebRootComponentManager.ts) considers these conditions in order:
+
+1. If WebAssembly components exist or are pending, select WebAssembly.
+2. Otherwise, if Server components exist or are pending, select Server.
+3. Otherwise, if the WebAssembly platform has loaded, select WebAssembly.
+4. Otherwise, if WebAssembly has been judged unable to load quickly, select Server.
+5. Otherwise, defer activation and reconsider when loading or component state changes.
+
+Existing or pending components include roots already in a renderer, roots assigned to that renderer (including Auto roots), and unassigned roots with that explicit render mode. An unassigned Auto root alone does not establish a preference for either renderer.
+
+WebAssembly loading begins when a WebAssembly or Auto root is discovered. Cache availability informs whether Auto falls back to Server without waiting for loading to complete. Downloaded resources alone do not mean that the WebAssembly platform has loaded, and a later activation can still select Server when Server components exist or are pending.
 
 The selection is made for an activation, not as a live migration. A component root activated on the server remains server-owned for that instance's lifetime, even if WebAssembly resources become available afterward.
 
 ```mermaid
-sequenceDiagram
-    participant Browser
-    participant WebJS as Web.JS
-    participant Endpoints
-    participant Server as Server circuit
-    participant WebAssembly as WebAssembly runtime
-
-    Browser->>Endpoints: Request page
-    Endpoints-->>Browser: Prerendered HTML and Auto activation information
-    Browser->>WebJS: Activate component root
-
-    alt WebAssembly resources are available
-        WebJS->>WebAssembly: Start or use browser runtime
-        WebAssembly-->>WebJS: WebAssembly render batches
-    else WebAssembly resources are not yet available
-        WebJS->>Server: Establish circuit
-        Server-->>WebJS: Server render batches
-    end
-
-    WebJS-->>Browser: Apply DOM changes
+flowchart TD
+    Auto["Choose renderer for an unassigned Auto root"] --> ExistingWasm{"Existing or pending<br/>WebAssembly components?"}
+    ExistingWasm -->|Yes| Wasm["Select WebAssembly"]
+    ExistingWasm -->|No| ExistingServer{"Existing or pending<br/>Server components?"}
+    ExistingServer -->|Yes| Server["Select Server"]
+    ExistingServer -->|No| Loaded{"WebAssembly platform loaded?"}
+    Loaded -->|Yes| Wasm
+    Loaded -->|No| Slow{"WebAssembly judged unable<br/>to load quickly?"}
+    Slow -->|Yes| Server
+    Slow -->|No| Wait["Defer activation"]
+    Wait -->|Loading or component state changes| Auto
+    Wasm --> StartWasm["Start or use WebAssembly runtime"]
+    Server --> StartServer["Start or use Server circuit"]
+    StartWasm --> Activate["Activate root when its renderer is attached"]
+    StartServer --> Activate
 ```
 
 Because either interactive runtime can own the component, services and application logic used by an Auto component must be valid in both environments unless the component is deliberately constrained to one of them.
@@ -295,7 +300,7 @@ Behavior associated with a DOM element must follow the lifetime of that element.
 
 The .NET and JavaScript parts of Blazor communicate through internal contracts for bootstrapping, root-component activation, render batches, browser events, navigation, streaming updates, and interop. These contracts cross language and, for Interactive Server and WebView, process boundaries.
 
-The framework's .NET and JavaScript assets ship and evolve together. Their internal protocol is not a compatibility boundary between different major framework versions, so coordinated changes should update both sides rather than add version negotiation or compatibility shims.
+The framework's .NET and JavaScript assets ship and evolve together. Their internal protocol is not a compatibility boundary between different major framework versions, so coordinated changes should update both sides rather than add version negotiation or compatibility shims. Within a servicing branch for a released major version, keep the internal boundary compatible unless the change is explicitly approved.
 
 This does not apply to public contracts used by applications. Public .NET APIs, documented JavaScript entry points such as `Blazor.start`, and the documented JavaScript interop APIs retain their normal compatibility requirements.
 
@@ -305,6 +310,7 @@ This does not apply to public contracts used by applications. Public .NET APIs, 
 - **Choose capabilities or identity according to the decision being made.** Base shared behavior on the capability or render-mode abstraction it requires rather than enumerating known hosts. Use renderer or host identity only when that identity is itself meaningful to the behavior or must be surfaced to the application. Do not use identity as a substitute for a capability, because new renderers may provide the same behavior without matching an existing name.
 - **Design for mixed-runtime composition.** Evaluate features when Server and WebAssembly roots coexist and when Auto can select either runtime, not only within each host independently. Define which runtime owns each component root and which subsystem arbitrates shared browser resources. Account for prerendering, delayed startup, enhanced navigation, streaming rendering, and circuit replacement when they affect the feature.
 - **Gate transitions on explicit completion conditions.** When SSR, navigation, activation, or reconnection phases operate on the same document or component roots, do not let the next phase take ownership until the preceding phase reaches a defined barrier. Use conditions such as rendering quiescence, document completion, renderer attachment, or acknowledgment rather than inferring completion from the temporary absence of work. Reevaluate the relevant state after asynchronous waits because ownership or pending work may have changed.
+- **Maximize forward progress while asynchronous work is pending.** Concurrency means continuing independent work while an asynchronous operation is incomplete, not running component work on multiple threads. Schedule all available synchronous work before awaiting, and introduce an asynchronous barrier only when the next operation depends on its result or ordering.
 - **Match automatically when identity is sufficiently discriminating and ambiguity is safe.** Framework automation can use stable, deliberately scoped identity without requiring global uniqueness. Combine the contextual signals available to the framework, and provide an explicit mechanism for applications to disambiguate valid cases the framework cannot distinguish. Automatic matching is appropriate when an incorrect correlation has a safe fallback; operations with riskier consequences should require explicit application intent or establish a new instance instead.
 - **Design asynchronous operations for cancellation and supersession.** Define when ongoing work becomes irrelevant because its owner was disposed, its environment disconnected, or a newer operation replaced it. Propagate cancellation when the work can stop, and verify ownership again before committing results when it cannot. Cancellation and supersession must produce an explicit outcome rather than allowing stale work to update current state or fail later through an unrelated timeout.
 - **Build browser enhancements on native web semantics.** Navigation, forms, history, URLs, and document loading should retain their browser-defined behavior when framework enhancement is unavailable or declines to handle an operation. Assign one framework mechanism as the authority for each interaction, preserve the element and submitter semantics that determine the native result, and fall back only when doing so does not repeat an unsafe operation.

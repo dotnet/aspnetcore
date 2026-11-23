@@ -32,17 +32,18 @@ public class BlazorWebJsInitializersTest : ServerTestBase<BasicTestAppServerSite
     [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/68856")]
     public void InitializersRunsModernCallbacksByDefaultWhenPresent(bool streaming, bool webassembly, bool server, string[] expectedInvokedCallbacks)
     {
-        var url = $"{ServerPathBase}/initializers?streaming={streaming}&wasm={webassembly}&server={server}";
+        var url = $"{ServerPathBase}/initializers?streaming={streaming}&wasm={webassembly}&server={server}&block-webassembly-settings={webassembly.ToString().ToLowerInvariant()}";
         Navigate(url);
-
-        if (webassembly)
-        {
-            ((IJavaScriptExecutor)Browser).ExecuteScript("sessionStorage.setItem('block-webassembly-settings', 'true')");
-        }
 
         foreach (var callback in expectedInvokedCallbacks)
         {
             Browser.Exists(By.Id(callback));
+        }
+
+        if (webassembly)
+        {
+            Browser.True(() => (bool)((IJavaScriptExecutor)Browser).ExecuteScript(
+                "return performance.getEntriesByType('resource').some(entry => entry.name.endsWith('/WasmMinimal/_framework/dotnet.js'))"));
         }
 
         Browser.Equal(expectedInvokedCallbacks.Length, () => Browser.FindElements(By.CssSelector("#initializers-content > p")).Count);
@@ -56,17 +57,12 @@ public class BlazorWebJsInitializersTest : ServerTestBase<BasicTestAppServerSite
 
     [Theory]
     [MemberData(nameof(InitializerTestData))]
+    [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/69449")]
     public void InitializersRunsClassicInitializersWhenEnabled(bool streaming, bool webassembly, bool server, string[] expectedInvokedCallbacks)
     {
-        EnableClassicInitializers(Browser);
         List<string> expectedCallbacks = ["classic-before-start", "classic-after-started", ..expectedInvokedCallbacks];
-        var url = $"{ServerPathBase}/initializers?streaming={streaming}&wasm={webassembly}&server={server}";
+        var url = $"{ServerPathBase}/initializers?streaming={streaming}&wasm={webassembly}&server={server}&enable-classic-initializers=true&block-webassembly-settings={webassembly.ToString().ToLowerInvariant()}";
         Navigate(url);
-
-        if (webassembly)
-        {
-            ((IJavaScriptExecutor)Browser).ExecuteScript("sessionStorage.setItem('block-webassembly-settings', 'true')");
-        }
 
         foreach (var callback in expectedCallbacks)
         {
@@ -112,12 +108,6 @@ public class BlazorWebJsInitializersTest : ServerTestBase<BasicTestAppServerSite
 
         Browser.Equal(1L, () => (long)((IJavaScriptExecutor)Browser).ExecuteScript(
             "return window.autoPauseCallCount"));
-    }
-
-    private void EnableClassicInitializers(IWebDriver browser)
-    {
-        browser.Navigate().GoToUrl($"{new Uri(_serverFixture.RootUri, ServerPathBase)}/");
-        ((IJavaScriptExecutor)browser).ExecuteScript("sessionStorage.setItem('enable-classic-initializers', 'true')");
     }
 
     public static TheoryData<bool, bool, bool, string[]> InitializerTestData()

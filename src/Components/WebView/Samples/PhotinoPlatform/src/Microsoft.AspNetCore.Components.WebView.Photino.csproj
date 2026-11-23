@@ -9,8 +9,9 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <Reference Include="Microsoft.AspNetCore.Components.WebView" />
-    <Reference Include="Photino.NET" />
+    <PackageReference Include="Photino.NET" />
+
+    <ProjectReference Include="$(RepoRoot)src\Components\WebView\WebView\src\Microsoft.AspNetCore.Components.WebView.csproj" />
   </ItemGroup>
 
 </Project>

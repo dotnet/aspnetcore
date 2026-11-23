@@ -33,9 +33,32 @@ internal sealed class ConsumerBuild : IDisposable
         Directory.CreateDirectory(_root);
         _packagesFolder = Path.Combine(_root, ".nuget-packages");
 
-        // Isolate the build from the repo and from any other test run.
-        File.WriteAllText(Path.Combine(_root, "Directory.Build.props"), "<Project />");
-        File.WriteAllText(Path.Combine(_root, "Directory.Build.targets"), "<Project />");
+        // Isolate the build from the repo and from any other test run while carrying the minimum
+        // bootstrap SDK workarounds needed to build the repo's future target framework.
+        File.WriteAllText(Path.Combine(_root, "Directory.Build.props"), """
+            <Project>
+              <PropertyGroup>
+                <NETCoreAppMaximumVersion>99.9</NETCoreAppMaximumVersion>
+                <LoadPrunePackageDataFromNearestFramework>true</LoadPrunePackageDataFromNearestFramework>
+                <AllowMissingPrunePackageData>true</AllowMissingPrunePackageData>
+              </PropertyGroup>
+            </Project>
+            """);
+        File.WriteAllText(Path.Combine(_root, "Directory.Build.targets"), """
+            <Project>
+              <ItemGroup>
+                <KnownAppHostPack Include="@(KnownAppHostPack->WithMetadataValue('TargetFramework', 'net11.0'))"
+                                  TargetFramework="$(TargetFramework)"
+                                  Condition="!(@(KnownAppHostPack->AnyHaveMetadataValue('TargetFramework', '$(TargetFramework)')))" />
+                <KnownRuntimePack Include="@(KnownRuntimePack->WithMetadataValue('TargetFramework', 'net11.0'))"
+                                  TargetFramework="$(TargetFramework)"
+                                  Condition="!(@(KnownRuntimePack->AnyHaveMetadataValue('TargetFramework', '$(TargetFramework)')))" />
+                <KnownFrameworkReference Include="@(KnownFrameworkReference->WithMetadataValue('TargetFramework', 'net11.0'))"
+                                         TargetFramework="$(TargetFramework)"
+                                         Condition="!(@(KnownFrameworkReference->AnyHaveMetadataValue('TargetFramework', '$(TargetFramework)')))" />
+              </ItemGroup>
+            </Project>
+            """);
 
         if (!isolateNuGetFeeds)
         {
@@ -92,7 +115,7 @@ internal sealed class ConsumerBuild : IDisposable
     /// <param name="projectRelativePath">Project to build, relative to the working folder.</param>
     public ProcessResult Run(string verb, string projectRelativePath)
     {
-        // The package version under test is constant (e.g. 11.0.0-dev). Make sure a previously
+        // The package version under test is constant (e.g. 12.0.0-dev). Make sure a previously
         // extracted copy in the shared repo cache (used as a fallback folder) can't shadow the
         // freshly built package; restore will then pull it from the local feed.
         EvictFromFallbackCache("Microsoft.AspNetCore.Components.WebView");
@@ -109,7 +132,7 @@ internal sealed class ConsumerBuild : IDisposable
             WorkingDirectory = _root,
             RedirectStandardOutput = true,
             RedirectStandardError = true,
-            UseShellExecute = false,
+            InheritedHandles = [],
         };
 
         // Keep the build hermetic: pin the repo runtime and stop the SDK from reaching outside the
@@ -124,22 +147,34 @@ internal sealed class ConsumerBuild : IDisposable
 
         var output = new StringBuilder();
         using var process = new Process { StartInfo = psi };
-        process.OutputDataReceived += (_, e) => { if (e.Data is not null) { lock (output) { output.AppendLine(e.Data); } } };
-        process.ErrorDataReceived += (_, e) => { if (e.Data is not null) { lock (output) { output.AppendLine(e.Data); } } };
-
         process.Start();
-        process.BeginOutputReadLine();
-        process.BeginErrorReadLine();
 
-        if (!process.WaitForExit(milliseconds: 5 * 60 * 1000))
+        TimeSpan timeout = TimeSpan.FromMinutes(5);
+        long startTimestamp = Stopwatch.GetTimestamp();
+        ProcessExitStatus status;
+        try
+        {
+            foreach (ProcessOutputLine line in process.ReadAllLines(timeout))
+            {
+                output.AppendLine(line.Content);
+            }
+
+            TimeSpan remaining = timeout - Stopwatch.GetElapsedTime(startTimestamp);
+            if (remaining <= TimeSpan.Zero || !process.TryWaitForExitStatus(remaining, out ProcessExitStatus? exitStatus))
+            {
+                throw new TimeoutException();
+            }
+
+            status = exitStatus!;
+        }
+        catch (TimeoutException)
         {
             try { process.Kill(entireProcessTree: true); } catch { }
             _preserve = true;
             throw new TimeoutException($"'dotnet {verb}' timed out. Binlog: {binlogPath}\n{output}");
         }
 
-        process.WaitForExit();
-        var result = new ProcessResult(process.ExitCode, output.ToString(), binlogPath);
+        var result = new ProcessResult(status.ExitCode, output.ToString(), binlogPath);
 
         _output.WriteLine(result.Output);
         _output.WriteLine($"Exit code: {result.ExitCode}. Binlog: {binlogPath}");

@@ -10,26 +10,65 @@ namespace Microsoft.AspNetCore.OpenApi.Build.Tests;
 public class GenerateAdditionalXmlFilesForOpenApiTests
 {
     private static readonly TimeSpan _defaultProcessTimeout = TimeSpan.FromMinutes(2);
+    private const string FutureTfmWorkarounds = """
+  <ItemGroup>
+    <KnownAppHostPack Include="@(KnownAppHostPack->WithMetadataValue('TargetFramework', 'net11.0'))"
+                      TargetFramework="$(TargetFramework)"
+                      Condition="!(@(KnownAppHostPack->AnyHaveMetadataValue('TargetFramework', '$(TargetFramework)')))" />
+    <KnownRuntimePack Include="@(KnownRuntimePack->WithMetadataValue('TargetFramework', 'net11.0'))"
+                      TargetFramework="$(TargetFramework)"
+                      Condition="!(@(KnownRuntimePack->AnyHaveMetadataValue('TargetFramework', '$(TargetFramework)')))" />
+    <KnownFrameworkReference Include="@(KnownFrameworkReference->WithMetadataValue('TargetFramework', 'net11.0'))"
+                             TargetFramework="$(TargetFramework)"
+                             Condition="!(@(KnownFrameworkReference->AnyHaveMetadataValue('TargetFramework', '$(TargetFramework)')))" />
+  </ItemGroup>
+""";
 
     [Fact]
-    public void VerifiesTargetGeneratesXmlFiles()
+    public async Task VerifiesTargetGeneratesXmlFiles()
     {
         var projectFile = CreateTestProject();
         var startInfo = new ProcessStartInfo
         {
             FileName = DotNetMuxer.MuxerPathOrDefault(),
-            Arguments = $"build -t:Build -getItem:AdditionalFiles",
+            Arguments = "build -t:Build -getItem:AdditionalFiles -p:NETCoreAppMaximumVersion=99.9 -p:LoadPrunePackageDataFromNearestFramework=true -p:AllowMissingPrunePackageData=true",
             WorkingDirectory = Path.GetDirectoryName(projectFile),
             RedirectStandardOutput = true,
             RedirectStandardError = true,
-            UseShellExecute = false
+            InheritedHandles = [],
         };
 
-        using var process = Process.Start(startInfo);
-        process.WaitForExit(_defaultProcessTimeout);
-        Assert.Equal(0, process.ExitCode);
+        // TODO: Use Process.RunAndCaptureTextAsync once https://github.com/dotnet/runtime/issues/136466 implements process-tree cleanup on cancellation.
+        using var process = Process.Start(startInfo)!;
+        Task<(string StandardOutput, string StandardError)> outputTask = process.ReadAllTextAsync();
+        using var timeoutTokenSource = new CancellationTokenSource(_defaultProcessTimeout);
+        ProcessExitStatus status;
+        try
+        {
+            status = await process.WaitForExitStatusAsync(timeoutTokenSource.Token);
+        }
+        catch (OperationCanceledException) when (timeoutTokenSource.IsCancellationRequested)
+        {
+            if (!process.HasExited)
+            {
+                try
+                {
+                    process.Kill(entireProcessTree: true);
+                }
+                catch (InvalidOperationException) when (process.HasExited)
+                {
+                }
 
-        var output = process.StandardOutput.ReadToEnd();
+                await process.WaitForExitStatusAsync();
+            }
+
+            (string timeoutOutput, string timeoutError) = await outputTask;
+            throw new TimeoutException(
+                $"Generated OpenAPI project build timed out after {_defaultProcessTimeout}.{Environment.NewLine}{timeoutOutput}{Environment.NewLine}{timeoutError}");
+        }
+
+        (string output, string error) = await outputTask;
+        Assert.True(status.ExitCode == 0, $"Generated OpenAPI project build failed with exit code {status.ExitCode}.{Environment.NewLine}{output}{Environment.NewLine}{error}");
         var result = JsonSerializer.Deserialize<ItemsResult>(output);
         var additionalFiles = result.Items.AdditionalFiles;
         Assert.NotEmpty(additionalFiles);
@@ -48,12 +87,14 @@ public class GenerateAdditionalXmlFilesForOpenApiTests
 
         // Create a class library project
         var classLibProjectPath = Path.Combine(classLibTempPath, "ClassLibrary.csproj");
-        var classLibProjectContent = """
+        var classLibProjectContent = $$"""
 <Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
-    <TargetFramework>net11.0</TargetFramework>
+    <TargetFramework>net12.0</TargetFramework>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
   </PropertyGroup>
+
+{{FutureTfmWorkarounds}}
 
 </Project>
 """;
@@ -85,9 +126,11 @@ public class Class1
     <Import Project="{{targetTargetsPath}}" />
 
   <PropertyGroup>
-    <TargetFramework>net11.0</TargetFramework>
+    <TargetFramework>net12.0</TargetFramework>
     <OutputType>Exe</OutputType>
   </PropertyGroup>
+
+{{FutureTfmWorkarounds}}
 
   <ItemGroup>
     <PackageReference Include="Microsoft.AspNetCore.OpenApi" Version="10.0.0" />

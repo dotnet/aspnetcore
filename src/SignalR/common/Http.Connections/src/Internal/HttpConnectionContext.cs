@@ -5,6 +5,7 @@ using System.Collections.Concurrent;
 using System.Diagnostics;
 using System.IO.Pipelines;
 using System.Security.Claims;
+using System.Security.Principal;
 using Microsoft.AspNetCore.Connections;
 using Microsoft.AspNetCore.Connections.Abstractions;
 using Microsoft.AspNetCore.Connections.Features;
@@ -36,10 +37,6 @@ internal sealed partial class HttpConnectionContext : ConnectionContext,
                                      IStatefulReconnectFeature
 #pragma warning restore CA2252 // This API requires opting into preview features
 {
-    // Prefer the standard identity-claim precedence used by DefaultClaimUidExtractor before
-    // falling back to exact principal content.
-    private static readonly string[] _userIdentityClaimTypes = ["sub", ClaimTypes.NameIdentifier, ClaimTypes.Upn];
-
     private readonly HttpConnectionDispatcherOptions _options;
 
     private readonly object _stateLock = new object();
@@ -57,6 +54,16 @@ internal sealed partial class HttpConnectionContext : ConnectionContext,
     private bool _activeSend;
     private TimeSpan _startedSendTime;
     private bool _useStatefulReconnect;
+    // Snapshot of the negotiate principal's identity, captured while that principal is still intact so that
+    // identity types deciding IsAuthenticated for themselves are evaluated with their own behavior.
+    private UserIdentitySnapshot? _negotiatedUserIdentity;
+    // The negotiate principal itself, surfaced as AuthenticationRefreshContext.PreviousUser until the first
+    // transport request establishes User.
+    private ClaimsPrincipal? _negotiatedUser;
+    // Tracks whether this connection was negotiated independently of whether that negotiate principal was null.
+    private bool _hasNegotiatedUser;
+    // True only when _negotiatedUser is a clone this connection must dispose.
+    private bool _ownsNegotiatedUserIdentities;
     // Guards User swaps in UpdateUserAsync so concurrent /refresh requests (or long-polling polls racing
     // explicit /refresh requests) can't roll the connection back to an older identity.
     private readonly object _userLock = new object();
@@ -79,11 +86,15 @@ internal sealed partial class HttpConnectionContext : ConnectionContext,
     /// The caller is expected to set the <see cref="Transport"/> and <see cref="Application"/> pipes manually.
     /// </summary>
     public HttpConnectionContext(string connectionId, string connectionToken, ILogger logger, MetricsContext metricsContext,
-        IDuplexPipe transport, IDuplexPipe application, HttpConnectionDispatcherOptions options, bool useStatefulReconnect)
+        IDuplexPipe transport, IDuplexPipe application, HttpConnectionDispatcherOptions options, bool useStatefulReconnect,
+        ClaimsPrincipal? negotiatedUser = null, bool hasNegotiatedUser = false)
     {
         Transport = transport;
         _applicationStream = new PipeWriterStream(application.Output);
         _application = application;
+        _hasNegotiatedUser = hasNegotiatedUser || negotiatedUser is not null;
+        _negotiatedUser = negotiatedUser is null ? null : CloneUserIfNeeded(negotiatedUser, out _ownsNegotiatedUserIdentities);
+        _negotiatedUserIdentity = UserIdentitySnapshot.Capture(negotiatedUser);
 
         ConnectionId = connectionId;
         ConnectionToken = connectionToken;
@@ -143,6 +154,8 @@ internal sealed partial class HttpConnectionContext : ConnectionContext,
 
     // Used for LongPolling because we need to create a scope that spans the lifetime of multiple requests on the cloned HttpContext
     internal AsyncServiceScope? ServiceScope { get; set; }
+
+    internal HttpConnectionEndpointMetadata? EndpointMetadata { get; init; }
 
     internal DateTimeOffset AuthenticationExpiration { get; set; }
 
@@ -339,7 +352,7 @@ internal sealed partial class HttpConnectionContext : ConnectionContext,
             }
 
             previousUserReference = User;
-            previousUserSnapshot = previousUserReference ?? new ClaimsPrincipal(new ClaimsIdentity());
+            previousUserSnapshot = previousUserReference ?? _negotiatedUser ?? new ClaimsPrincipal(new ClaimsIdentity());
             callback = _onAuthenticationRefresh;
         }
 
@@ -484,8 +497,123 @@ internal sealed partial class HttpConnectionContext : ConnectionContext,
     {
         lock (_userLock)
         {
-            return IsUserRefreshAcceptedByDefault(User, user);
+            if (User is not null)
+            {
+                return IsUserRefreshAcceptedByDefault(User, user);
+            }
+
+            if (!_hasNegotiatedUser)
+            {
+                // No identity has been associated with this connection yet.
+                return true;
+            }
+
+            return UserIdentitySnapshot.Matches(_negotiatedUserIdentity, UserIdentitySnapshot.Capture(user));
         }
+    }
+
+    internal bool HasNegotiatedUser => _hasNegotiatedUser;
+
+    // Before the first transport request, the negotiate principal is the connection identity. /refresh refuses
+    // Windows identities, and this keeps that refusal from being bypassed pre-transport - which also means a
+    // refresh callback can never hold the negotiate clone while a transport request disposes it.
+    internal bool HasWindowsIdentityUser
+    {
+        get
+        {
+            lock (_userLock)
+            {
+                return HasWindowsIdentity(User) || HasWindowsIdentity(_negotiatedUser);
+            }
+        }
+    }
+
+    private static bool HasWindowsIdentity(ClaimsPrincipal? user)
+    {
+        if (user is null)
+        {
+            return false;
+        }
+
+        foreach (var identity in user.Identities)
+        {
+            if (identity is WindowsIdentity)
+            {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    internal void SetUserAndReleaseNegotiatedUser(ClaimsPrincipal? user)
+    {
+        ClaimsPrincipal? ownedNegotiatedUser;
+        lock (_userLock)
+        {
+            User = user;
+            ownedNegotiatedUser = ReleaseNegotiatedUser();
+        }
+
+        if (ownedNegotiatedUser is not null)
+        {
+            DisposeOwnedIdentities(ownedNegotiatedUser);
+        }
+    }
+
+    // Must be called while holding _userLock. Returns the negotiate principal only when this connection owns
+    // its identities and is therefore responsible for disposing them.
+    private ClaimsPrincipal? ReleaseNegotiatedUser()
+    {
+        var owned = _ownsNegotiatedUserIdentities ? _negotiatedUser : null;
+        _ownsNegotiatedUserIdentities = false;
+        _hasNegotiatedUser = false;
+        _negotiatedUser = null;
+        _negotiatedUserIdentity = null;
+
+        return owned;
+    }
+
+    /// <summary>
+    /// Retains <paramref name="user"/> for longer than the request that produced it. Ordinary principals are
+    /// returned as-is; only <see cref="WindowsIdentity"/> instances are cloned, because their SafeHandles are
+    /// disposed when the request ends. <paramref name="ownsIdentities"/> is <see langword="true"/> when the
+    /// caller is responsible for disposing the returned principal's identities.
+    /// </summary>
+    internal static ClaimsPrincipal CloneUserIfNeeded(ClaimsPrincipal user, out bool ownsIdentities)
+    {
+        if (user.Identity is not WindowsIdentity windowsIdentity)
+        {
+            ownsIdentities = false;
+            return user;
+        }
+
+        ClaimsPrincipal clone;
+        var skipFirstIdentity = false;
+        if (OperatingSystem.IsWindows() && user is WindowsPrincipal)
+        {
+            // We want to explicitly create a WindowsPrincipal instead of a ClaimsPrincipal
+            // so methods that WindowsPrincipal overrides like 'IsInRole', work as expected.
+            clone = new WindowsPrincipal((WindowsIdentity)windowsIdentity.Clone());
+            skipFirstIdentity = true;
+        }
+        else
+        {
+            clone = new ClaimsPrincipal();
+        }
+
+        foreach (var identity in user.Identities)
+        {
+            if (skipFirstIdentity)
+            {
+                skipFirstIdentity = false;
+                continue;
+            }
+            clone.AddIdentity(identity.Clone());
+        }
+
+        ownsIdentities = true;
+        return clone;
     }
 
     private static Task<bool> DefaultOnAuthenticationRefreshAsync(AuthenticationRefreshContext context)
@@ -498,34 +626,9 @@ internal sealed partial class HttpConnectionContext : ConnectionContext,
             return true;
         }
 
-        var currentIdentityKey = GetUserIdentityKey(currentUser);
-        var newIdentityKey = GetUserIdentityKey(user);
-        if (currentIdentityKey is not null || newIdentityKey is not null)
-        {
-            return currentIdentityKey == newIdentityKey;
-        }
-
-        if (!HasAuthenticatedIdentity(currentUser) && !HasAuthenticatedIdentity(user))
-        {
-            return true;
-        }
-
-        // Without a stable identity key, require the authenticated principal content to remain unchanged.
-        return ClaimsPrincipalContentEquals(currentUser, user);
-    }
-
-    internal static (string Type, string Value, string Issuer)? GetUserIdentityKey(ClaimsPrincipal user)
-    {
-        foreach (var claimType in _userIdentityClaimTypes)
-        {
-            var claim = user.FindFirst(claimType);
-            if (claim is not null && !string.IsNullOrEmpty(claim.Value))
-            {
-                return (claim.Type, claim.Value, claim.Issuer);
-            }
-        }
-
-        return null;
+        return UserIdentitySnapshot.Matches(
+            UserIdentitySnapshot.Capture(currentUser),
+            UserIdentitySnapshot.Capture(user));
     }
 
     internal static bool ClaimsPrincipalContentEquals(ClaimsPrincipal current, ClaimsPrincipal incoming)
@@ -580,19 +683,6 @@ internal sealed partial class HttpConnectionContext : ConnectionContext,
         }
     }
 
-    private static bool HasAuthenticatedIdentity(ClaimsPrincipal user)
-    {
-        foreach (var identity in user.Identities)
-        {
-            if (identity.IsAuthenticated)
-            {
-                return true;
-            }
-        }
-
-        return false;
-    }
-
     internal void MarkUserOwned()
     {
         lock (_userLock)
@@ -629,6 +719,7 @@ internal sealed partial class HttpConnectionContext : ConnectionContext,
         finally
         {
             ClaimsPrincipal? ownedUser = null;
+            ClaimsPrincipal? ownedNegotiatedUser;
             lock (_userLock)
             {
                 if (_ownsUserIdentities)
@@ -636,11 +727,20 @@ internal sealed partial class HttpConnectionContext : ConnectionContext,
                     ownedUser = User;
                     _ownsUserIdentities = false;
                 }
+
+                // Covers a connection that negotiated but never established a transport, so
+                // SetUserAndReleaseNegotiatedUser never ran.
+                ownedNegotiatedUser = ReleaseNegotiatedUser();
             }
 
             if (ownedUser is not null)
             {
                 DisposeOwnedIdentities(ownedUser);
+            }
+
+            if (ownedNegotiatedUser is not null)
+            {
+                DisposeOwnedIdentities(ownedNegotiatedUser);
             }
 
             Cancellation?.Dispose();

@@ -124,4 +124,14 @@ public class FocusOnNavigateTest : ServerTestBase<BasicTestAppServerSiteFixture<
         Browser.Equal("Complete", () => Browser.FindElement(By.Id("streaming-status")).Text);
         Browser.True(() => Browser.SwitchTo().ActiveElement().GetDomAttribute("id") == "focusable-input");
     }
+
+    [Fact]
+    public void FocusIsRestored_WhenInteractiveRenderReplacesFocusedPrerenderedElement()
+    {
+        Navigate($"{ServerPathBase}/focus-on-navigate");
+        Browser.Click(By.LinkText("Interactive prerender"));
+
+        Browser.Equal("Server", () => Browser.FindElement(By.Id("focus-prerender-renderer")).Text);
+        AssertFocusPreserved("focus-prerender-target");
+    }
 }
