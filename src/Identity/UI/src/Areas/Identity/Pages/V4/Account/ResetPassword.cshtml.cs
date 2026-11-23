@@ -95,10 +95,18 @@ internal sealed class ResetPasswordModel<TUser> : ResetPasswordModel where TUser
         }
         else
         {
-            Input = new InputModel
+            try
             {
-                Code = Encoding.UTF8.GetString(WebEncoders.Base64UrlDecode(code))
-            };
+                Input = new InputModel
+                {
+                    Code = Encoding.UTF8.GetString(WebEncoders.Base64UrlDecode(code))
+                };
+            }
+            catch (FormatException)
+            {
+                return BadRequest("A code must be supplied for password reset.");
+            }
+
             return Page();
         }
     }
