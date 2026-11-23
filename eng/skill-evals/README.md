@@ -198,7 +198,8 @@ dotnet run $producer -- --code-only --head $head --base-tip $baseTip --merge-bas
 
 This step does not use GitHub, run the reviewer, run PR code, or run an evaluation suite.
 It reports `reconstructed` without claiming hosted parity, or `unavailable` when Git objects
-are missing. The offline diff pins Git's patch settings and uses the observed REST conventions
+are missing. Offline mode rejects paths that are not valid UTF-8 with an error.
+The offline diff pins Git's patch settings and uses the observed REST conventions
 (C# hunk labels, 12-digit index abbreviations, and binary summaries); these are not a GitHub
 guarantee. `pull.json` has no body and only synthetic metadata (optionally label it with
 `--repo`, `--pr`, and `--title`); `feedback.json` contains empty comment, review, and inline
