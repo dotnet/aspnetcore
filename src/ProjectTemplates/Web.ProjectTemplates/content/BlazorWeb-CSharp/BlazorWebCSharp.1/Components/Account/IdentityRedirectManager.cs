@@ -12,9 +12,10 @@ internal sealed class IdentityRedirectManager(NavigationManager navigationManage
 
         // Prevent open redirects.
         // Resolve the URI the same way NavigationManager does and only allow destinations within the app's base URI.
+        // The base URI always ends with "/", so appending "/" also allows the app root without it (for example "/app?x=1").
         var baseUri = new Uri(navigationManager.BaseUri);
         if (!Uri.TryCreate(baseUri, uri, out var absoluteUri)
-            || !absoluteUri.AbsoluteUri.StartsWith(baseUri.AbsoluteUri, StringComparison.OrdinalIgnoreCase))
+            || !(absoluteUri.GetLeftPart(UriPartial.Path) + "/").StartsWith(baseUri.AbsoluteUri, StringComparison.OrdinalIgnoreCase))
         {
             absoluteUri = baseUri;
         }
