@@ -1237,7 +1237,7 @@ public class PrepareReviewTests
         Assert.Contains(
             "Workers are source-only and must not receive coordinator-only inputs.",
             workflow, StringComparison.Ordinal);
-        Assert.Contains("Use `gpt-5.6-sol` as the explicit hosted worker model, with no Anthropic model or automatic substitution.", workflow, StringComparison.Ordinal);
+        Assert.Contains("Use `gpt-6.2-sol` as the explicit hosted worker model, with no Anthropic model or automatic substitution.", workflow, StringComparison.Ordinal);
         Assert.Contains(
             "After launching workers, stay in your turn and collect each worker's report with `read_agent` using `wait: true` rather than ending your response to wait for a notification.",
             workflow, StringComparison.Ordinal);
