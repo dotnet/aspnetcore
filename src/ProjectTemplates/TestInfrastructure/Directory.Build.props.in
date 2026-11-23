@@ -12,7 +12,7 @@
     <SharedFrameworkLayoutRoot>${SharedFrameworkLayoutRoot}</SharedFrameworkLayoutRoot>
 
     <!--
-      Because some template projects require Microsoft.NETCore.App.Runtime.Mono.browser-wasm, we need to allow
+      Because some template projects require Microsoft.NETCore.App.Runtime.browser-wasm, we need to allow
       the download of additional targeting and runtime packs.
     -->
     <TestRequiresTargetingPackDownload>true</TestRequiresTargetingPackDownload>

@@ -48,3 +48,16 @@
         </NotAuthorized>
     </AuthorizeView>
 </div>
+
+<button id="auth-interactivity" @onclick="IncrementInteractionCount">
+    Interactions: @interactionCount
+</button>
+
+@code {
+    private int interactionCount;
+
+    private void IncrementInteractionCount()
+    {
+        interactionCount++;
+    }
+}

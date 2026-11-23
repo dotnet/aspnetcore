@@ -188,6 +188,7 @@ Microsoft.AspNetCore.Http.Features.ITlsConnectionFeature
 Microsoft.AspNetCore.Http.Features.ITlsConnectionFeature.ClientCertificate.get -> System.Security.Cryptography.X509Certificates.X509Certificate2?
 Microsoft.AspNetCore.Http.Features.ITlsConnectionFeature.ClientCertificate.set -> void
 Microsoft.AspNetCore.Http.Features.ITlsConnectionFeature.GetClientCertificateAsync(System.Threading.CancellationToken cancellationToken) -> System.Threading.Tasks.Task<System.Security.Cryptography.X509Certificates.X509Certificate2?>!
+Microsoft.AspNetCore.Http.Features.ITlsConnectionFeature.TryGetChannelBindingBytes(System.Security.Authentication.ExtendedProtection.ChannelBindingKind kind, out System.ReadOnlyMemory<byte> channelBindingToken) -> bool
 Microsoft.AspNetCore.Http.Features.ITlsTokenBindingFeature
 Microsoft.AspNetCore.Http.Features.ITlsTokenBindingFeature.GetProvidedTokenBindingId() -> byte[]!
 Microsoft.AspNetCore.Http.Features.ITlsTokenBindingFeature.GetReferredTokenBindingId() -> byte[]!

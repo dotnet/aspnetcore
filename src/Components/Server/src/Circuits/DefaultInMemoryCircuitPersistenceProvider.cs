@@ -84,6 +84,7 @@ internal sealed partial class DefaultInMemoryCircuitPersistenceProvider : ICircu
             case EvictionReason.Capacity:
             // Happens when the cache is full
                 var persistedCircuitEntry = (PersistedCircuitEntry)value;
+                DisposeTokenSource(persistedCircuitEntry);
                 Log.CircuitStateEvicted(_logger, persistedCircuitEntry.CircuitId, reason);
                 break;
 

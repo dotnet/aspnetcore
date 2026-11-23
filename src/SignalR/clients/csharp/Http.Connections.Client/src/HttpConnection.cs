@@ -165,7 +165,13 @@ public partial class HttpConnection : ConnectionContext, IConnectionInherentKeep
             throw new ArgumentException("ServerSentEvents can not be the only transport specified when running in the browser.", nameof(httpConnectionOptions));
         }
 
-        _transportFactory = new DefaultTransportFactory(httpConnectionOptions.Transports, _loggerFactory, _httpClient, httpConnectionOptions, GetAccessTokenAsync);
+        _transportFactory = new DefaultTransportFactory(
+            httpConnectionOptions.Transports,
+            _loggerFactory,
+            _httpClient,
+            httpConnectionOptions,
+            GetAccessTokenAsync,
+            RefreshAuthenticationForTransportAsync);
         _logScope = new ConnectionLogScope();
 
         Features.Set<IConnectionInherentKeepAliveFeature>(this);
@@ -523,7 +529,7 @@ public partial class HttpConnection : ConnectionContext, IConnectionInherentKeep
         return Utils.AppendQueryString(url, $"id={connectionId}");
     }
 
-    private static Uri CreateRefreshUrl(Uri url, string connectionToken)
+    private static Uri CreateRefreshUrl(Uri url)
     {
         var urlBuilder = new UriBuilder(url);
         if (!urlBuilder.Path.EndsWith("/", StringComparison.Ordinal))
@@ -532,7 +538,7 @@ public partial class HttpConnection : ConnectionContext, IConnectionInherentKeep
         }
 
         urlBuilder.Path += "refresh";
-        return Utils.AppendQueryString(urlBuilder.Uri, $"id={connectionToken}");
+        return urlBuilder.Uri;
     }
 
     private async Task StartTransport(Uri connectUrl, HttpTransportType transportType, TransferFormat transferFormat,
@@ -765,6 +771,9 @@ public partial class HttpConnection : ConnectionContext, IConnectionInherentKeep
         return negotiationResponse;
     }
 
+    private Task RefreshAuthenticationForTransportAsync(CancellationToken cancellationToken)
+        => ((IAuthenticationRefreshFeature)this).RefreshAuthenticationAsync(cancellationToken);
+
     /// <inheritdoc />
     async Task<TimeSpan?> IAuthenticationRefreshFeature.RefreshAuthenticationAsync(CancellationToken cancellationToken)
     {
@@ -773,9 +782,10 @@ public partial class HttpConnection : ConnectionContext, IConnectionInherentKeep
             throw new InvalidOperationException("Cannot refresh authentication before the connection is started.");
         }
 
-        var refreshUri = CreateRefreshUrl(_url, _connectionToken);
+        var refreshUri = CreateRefreshUrl(_url);
 
         using var request = new HttpRequestMessage(HttpMethod.Post, refreshUri);
+        request.Headers.Add(Constants.ConnectionTokenHeaderName, _connectionToken);
 
         // Mark this as a refresh request so the AccessTokenHttpMessageHandler fetches a fresh access token
         // (and updates its cache) rather than reusing the token captured when the connection started. Setting
