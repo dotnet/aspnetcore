@@ -20,7 +20,9 @@ internal static class StaticRouteHandlerModelEmitter
         if (delegateType.CanBeReferencedByName &&
             delegateType is not { Name: "Func" or "Action", ContainingNamespace: { Name: "System", ContainingNamespace.IsGlobalNamespace: true } })
         {
-            return $"({delegateType.ToDisplayString(EmitterConstants.DisplayFormat)}){handler}";
+            var displayFormat = EmitterConstants.DisplayFormat.WithMiscellaneousOptions(
+                EmitterConstants.DisplayFormat.MiscellaneousOptions | SymbolDisplayMiscellaneousOptions.EscapeKeywordIdentifiers);
+            return $"({delegateType.ToDisplayString(displayFormat)}){handler}";
         }
 
         return $"Cast({handler}, {endpoint.EmitHandlerDelegateType()} => throw null!)";

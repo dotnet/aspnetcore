@@ -34,7 +34,7 @@ internal class Endpoint
 
         HandlerDelegateType = operation.GetRouteHandlerDelegateType(semanticModel);
         if (HandlerDelegateType is not { DelegateInvokeMethod: { } invokeMethod } ||
-            (HandlerDelegateType.CanBeReferencedByName && !semanticModel.Compilation.IsSymbolAccessibleWithin(HandlerDelegateType.OriginalDefinition, semanticModel.Compilation.Assembly)) ||
+            (HandlerDelegateType.CanBeReferencedByName && !semanticModel.Compilation.IsSymbolAccessibleWithin(HandlerDelegateType, semanticModel.Compilation.Assembly)) ||
             !SymbolEqualityComparer.Default.Equals(invokeMethod.ReturnType, method.ReturnType) ||
             invokeMethod.Parameters.Length != method.Parameters.Length ||
             method.Parameters.Where((parameter, index) =>
