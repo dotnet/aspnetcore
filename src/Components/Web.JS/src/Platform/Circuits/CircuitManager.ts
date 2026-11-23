@@ -38,13 +38,13 @@ export class CircuitManager implements DotNet.DotNetCallDispatcher {
 
   private _connection?: HubConnection;
 
+  private _failedCircuitInvocationConnections?: WeakSet<HubConnection>;
+
   private _interopMethodsForReconnection?: DotNet.DotNetObject;
 
   private _circuitId?: string;
 
   private _startPromise?: Promise<boolean>;
-
-  private _reconnectPromise?: Promise<boolean>;
 
   private _renderingFailed = false;
 
@@ -209,6 +209,11 @@ export class CircuitManager implements DotNet.DotNetCallDispatcher {
     });
     connection.on('JS.EndLocationChanging', Blazor._internal.navigationManager.endLocationChanging);
     connection.onclose(error => {
+      // Failed invocations on superseded connections must not tear down the active circuit.
+      if (this._failedCircuitInvocationConnections?.has(connection) && this._connection !== connection) {
+        return;
+      }
+
       if (isRendererAttached(WebRendererId.Server)) {
         this._interopMethodsForReconnection = detachWebRendererInterop(WebRendererId.Server);
       }
@@ -238,8 +243,8 @@ export class CircuitManager implements DotNet.DotNetCallDispatcher {
     } catch (ex: any) {
       this.unhandledError(ex as Error);
 
-      if (ex.errorType === 'FailedToNegotiateWithServerError') {
-        // Connection with the server has been interrupted, and we're in the process of reconnecting.
+      if (this._circuitId || ex.errorType === 'FailedToNegotiateWithServerError') {
+        // An existing circuit can retry any connection-start failure, including when negotiation is skipped.
         // Throw this exception so it can be handled at the reconnection layer, and don't show the
         // error notification.
         throw ex;
@@ -299,24 +304,10 @@ export class CircuitManager implements DotNet.DotNetCallDispatcher {
       throw new Error('Circuit host not initialized.');
     }
 
-    if (this._reconnectPromise) {
-      return this._reconnectPromise;
-    }
-
     if (this._connection!.state === HubConnectionState.Connected) {
       return true;
     }
 
-    const reconnectPromise = this.reconnectCore();
-    this._reconnectPromise = reconnectPromise;
-    try {
-      return await reconnectPromise;
-    } finally {
-      this._reconnectPromise = undefined;
-    }
-  }
-
-  private async reconnectCore(): Promise<boolean> {
     const connection = await this.startConnection();
     this._connection = connection;
 
@@ -346,6 +337,7 @@ export class CircuitManager implements DotNet.DotNetCallDispatcher {
   }
 
   private async stopConnectionAfterFailedCircuitInvocation(connection: HubConnection): Promise<void> {
+    (this._failedCircuitInvocationConnections ??= new WeakSet()).add(connection);
     try {
       await connection.stop();
     } catch (error) {
@@ -523,6 +515,7 @@ export class CircuitManager implements DotNet.DotNetCallDispatcher {
       }
 
       this._pausingState.transitionTo(false);
+      this._resumingState.complete(true);
 
       this._circuitId = newCircuitId;
       this._renderQueue = new RenderQueue(this._logger);
@@ -531,8 +524,6 @@ export class CircuitManager implements DotNet.DotNetCallDispatcher {
           handler.onCircuitOpened();
         }
       }
-
-      this._resumingState.complete(true);
 
       this._options.reconnectionHandler!.onConnectionUp();
       this._componentManager.onComponentReload?.(WebRendererId.Server);

@@ -2,16 +2,44 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 import { afterEach, beforeEach, describe, expect, jest, test } from '@jest/globals';
-import { HubConnection, HubConnectionBuilder } from '@microsoft/signalr';
+import { HubConnection, HubConnectionBuilder, HubConnectionState, JsonHubProtocol, NullLogger } from '@microsoft/signalr';
+import { TestConnection } from '../../../../../SignalR/clients/ts/signalr/tests/TestConnection';
 import { CircuitManager } from '../../../src/Platform/Circuits/CircuitManager';
 import { resolveOptions } from '../../../src/Platform/Circuits/CircuitStartOptions';
 import { JSEventRegistry } from '../../../src/Services/JSEventRegistry';
-import { isRendererAttached } from '../../../src/Rendering/WebRendererInteropMethods';
+import { attachWebRendererInterop, detachWebRendererInterop, isRendererAttached } from '../../../src/Rendering/WebRendererInteropMethods';
 import { WebRendererId } from '../../../src/Rendering/WebRendererId';
 
-describe('CircuitManager reconnect', () => {
+interface InternalCircuitManager {
+  _circuitId: string;
+  _connection: HubConnection;
+  _pausingState: { transitionTo(value: boolean): void };
+  _activePauseDeferral?: AbortController;
+}
+
+describe('CircuitManager failed circuit invocations', () => {
   let options: ReturnType<typeof resolveOptions>;
   let manager: CircuitManager;
+  let internal: InternalCircuitManager;
+  const connections: HubConnection[] = [];
+
+  function createConnection() {
+    const transport = new TestConnection();
+    const connection = (HubConnection as unknown as {
+      create(transport: TestConnection, logger: typeof NullLogger.instance, protocol: JsonHubProtocol): HubConnection;
+    }).create(transport, NullLogger.instance, new JsonHubProtocol());
+    connections.push(connection);
+    const invocationSent = Promise.withResolvers<void>();
+    const send = transport.send.bind(transport);
+    jest.spyOn(transport, 'send').mockImplementation(async data => {
+      await send(data);
+      if (transport.lastInvocationId !== null) {
+        invocationSent.resolve();
+      }
+    });
+    jest.spyOn(HubConnectionBuilder.prototype, 'build').mockReturnValue(connection);
+    return { connection, transport, invocationSent: invocationSent.promise };
+  }
 
   beforeEach(() => {
     options = resolveOptions({
@@ -25,132 +53,99 @@ describe('CircuitManager reconnect', () => {
       { log: () => { /* no-op */ } } as never,
       new JSEventRegistry(),
     );
+    internal = manager as unknown as InternalCircuitManager;
+    internal._circuitId = 'test-circuit-id';
+    internal._connection = { state: HubConnectionState.Disconnected } as HubConnection;
+    internal._pausingState.transitionTo(true);
   });
 
-  afterEach(() => {
+  afterEach(async () => {
+    for (const connection of connections) {
+      await connection.stop();
+    }
+    connections.length = 0;
+    if (isRendererAttached(WebRendererId.Server)) {
+      detachWebRendererInterop(WebRendererId.Server);
+    }
     jest.restoreAllMocks();
   });
 
-  test('coalesces overlapping reconnect attempts and allows subsequent attempts', async () => {
-    const connection = {
-      state: 'Connected',
-      invoke: jest.fn(() => Promise.resolve(true)),
-    };
-    let completeStartConnection: ((value: typeof connection) => void) | undefined;
-    const startConnection = jest.fn(() => new Promise<typeof connection>(resolve => completeStartConnection = resolve));
-    const onConnectionUp = options.reconnectionHandler!.onConnectionUp;
-    const internal = manager as unknown as {
-      _circuitId: string;
-      _connection: { state: string };
-      startConnection: typeof startConnection;
-    };
-    internal._circuitId = 'test-circuit-id';
-    internal._connection = { state: 'Disconnected' };
-    internal.startConnection = startConnection;
+  test.each(['reconnect', 'resume'] as const)('stops the connection and permits retry when %s invocation fails', async operation => {
+    const { connection, transport, invocationSent } = createConnection();
+    const stop = jest.spyOn(connection, 'stop');
+    const deferral = new AbortController();
+    internal._activePauseDeferral = deferral;
+    const result = manager[operation]();
+    const rejected = expect(result).rejects.toThrow('Intentional hub failure');
+    await invocationSent;
 
-    const firstReconnect = manager.reconnect();
-    const secondReconnect = manager.reconnect();
+    expect(transport.parsedSentData.find(message => message.invocationId)?.target)
+      .toBe(operation === 'reconnect' ? 'ConnectCircuit' : 'ResumeCircuit');
+    transport.receive({ type: 3, invocationId: transport.lastInvocationId, error: 'Intentional hub failure' });
+    await rejected;
 
-    expect(startConnection).toHaveBeenCalledTimes(1);
+    expect(stop).toHaveBeenCalledTimes(1);
+    expect(connection.state).toBe(HubConnectionState.Disconnected);
+    expect(deferral.signal.aborted).toBe(true);
+    expect(options.reconnectionHandler!.onConnectionDown).toHaveBeenCalledTimes(1);
+    expect(options.reconnectionHandler!.onConnectionUp).not.toHaveBeenCalled();
 
-    expect(completeStartConnection).toBeDefined();
-    completeStartConnection?.(connection);
-
-    await expect(Promise.all([firstReconnect, secondReconnect])).resolves.toEqual([true, true]);
-    expect(connection.invoke).toHaveBeenCalledTimes(1);
-    expect(onConnectionUp).toHaveBeenCalledTimes(1);
-
-    internal._connection = { state: 'Disconnected' };
-    const subsequentReconnect = manager.reconnect();
-
-    expect(startConnection).toHaveBeenCalledTimes(2);
-
-    expect(completeStartConnection).toBeDefined();
-    completeStartConnection?.(connection);
-
-    await expect(subsequentReconnect).resolves.toBe(true);
-    expect(connection.invoke).toHaveBeenCalledTimes(2);
-    expect(onConnectionUp).toHaveBeenCalledTimes(2);
+    const retry = createConnection();
+    const retried = manager[operation]();
+    await retry.invocationSent;
+    retry.transport.receive({ type: 3, invocationId: retry.transport.lastInvocationId, result: operation === 'reconnect' ? true : 'new-circuit-id' });
+    await expect(retried).resolves.toBe(true);
+    expect(retry.connection.state).toBe(HubConnectionState.Connected);
+    expect(options.reconnectionHandler!.onConnectionUp).toHaveBeenCalledTimes(1);
   });
 
-  test.each(['reconnect', 'resume'] as const)('stops the connection when %s invocation throws', async (operation) => {
-    const hubMethodName = operation === 'reconnect' ? 'ConnectCircuit' : 'ResumeCircuit';
-    const error = new Error(`${hubMethodName} failed`);
-    const connection = {
-      state: 'Connected',
-      invoke: jest.fn<(methodName: string, ...args: unknown[]) => Promise<never>>(() => Promise.reject(error)),
-      stop: jest.fn(async () => {
-        connection.state = 'Disconnected';
-      }),
-    };
-    const internal = manager as unknown as {
-      _circuitId: string;
-      _connection: { state: string };
-      _pausingState: { transitionTo(value: boolean): void };
-      startConnection: () => Promise<typeof connection>;
-    };
-    internal._circuitId = 'test-circuit-id';
-    internal._connection = operation === 'reconnect' ? { state: 'Disconnected' } : connection;
-    internal._pausingState.transitionTo(true);
-    internal.startConnection = () => Promise.resolve(connection);
+  test('a late failed invocation stops its connection without tearing down a newer successful reconnect', async () => {
+    const first = createConnection();
+    const firstResult = manager.reconnect();
+    const rejected = expect(firstResult).rejects.toThrow('Late hub failure');
+    const second = createConnection();
+    const secondResult = manager.reconnect();
+    await Promise.all([first.invocationSent, second.invocationSent]);
+    second.transport.receive({ type: 3, invocationId: second.transport.lastInvocationId, result: true });
+    await expect(secondResult).resolves.toBe(true);
 
-    await expect(manager[operation]()).rejects.toBe(error);
+    const interop = {} as Parameters<typeof attachWebRendererInterop>[1];
+    attachWebRendererInterop(WebRendererId.Server, interop);
+    const deferral = new AbortController();
+    internal._activePauseDeferral = deferral;
+    first.transport.receive({ type: 3, invocationId: first.transport.lastInvocationId, error: 'Late hub failure' });
+    await rejected;
 
-    expect(connection.invoke.mock.calls[0][0]).toBe(hubMethodName);
-    expect(connection.stop).toHaveBeenCalledTimes(1);
-    expect(connection.state).toBe('Disconnected');
+    expect(first.connection.state).toBe(HubConnectionState.Disconnected);
+    expect(second.connection.state).toBe(HubConnectionState.Connected);
+    expect(internal._connection).toBe(second.connection);
+    expect(isRendererAttached(WebRendererId.Server)).toBe(true);
+    expect(deferral.signal.aborted).toBe(false);
+    expect(options.reconnectionHandler!.onConnectionDown).not.toHaveBeenCalled();
+    expect(options.reconnectionHandler!.onConnectionUp).toHaveBeenCalledTimes(1);
   });
 
-  test.each(['onCircuitClosed', 'onCircuitOpened'] as const)(
-    'does not stop the connection when %s throws',
-    async (callback) => {
-      const callbackError = new Error(`${callback} failed`);
-      const connection = {
-        state: 'Connected',
-        invoke: jest.fn(async () => 'new-circuit-id'),
-        stop: jest.fn(async () => { }),
-      };
-      options.circuitHandlers.push({
-        [callback]: () => { throw callbackError; },
-      });
-      const internal = manager as unknown as {
-        _circuitId: string;
-        _connection: typeof connection;
-        _pausingState: { transitionTo(value: boolean): void };
-      };
-      internal._circuitId = 'test-circuit-id';
-      internal._connection = connection;
-      internal._pausingState.transitionTo(true);
+  test.each(['reconnect', 'resume'] as const)('does not stop the connection when %s is rejected without an exception', async operation => {
+    const { connection, transport, invocationSent } = createConnection();
+    const stop = jest.spyOn(connection, 'stop');
+    const result = manager[operation]();
+    await invocationSent;
+    transport.receive({ type: 3, invocationId: transport.lastInvocationId, result: operation === 'reconnect' ? false : '' });
 
-      await expect(manager.resume()).rejects.toBe(callbackError);
+    await expect(result).resolves.toBe(false);
+    expect(stop).not.toHaveBeenCalled();
+    expect(connection.state).toBe(HubConnectionState.Connected);
+    expect(options.reconnectionHandler!.onConnectionUp).not.toHaveBeenCalled();
+  });
 
-      expect(connection.invoke).toHaveBeenCalledTimes(
-        callback === 'onCircuitOpened' ? 1 : 0,
-      );
-      expect(connection.stop).not.toHaveBeenCalled();
-      expect(connection.state).toBe('Connected');
-    },
-  );
-
-  test('onclose does not throw when renderer interop is already detached', async () => {
-    let closeHandler: ((error?: Error) => void) | undefined;
-    const connection = {
-      on: jest.fn(),
-      onclose: jest.fn((handler: (error?: Error) => void) => { closeHandler = handler; }),
-      start: () => Promise.resolve(),
-    } as unknown as HubConnection;
-    jest.spyOn(HubConnectionBuilder.prototype, 'build').mockReturnValue(connection);
-
-    const onConnectionDown = options.reconnectionHandler!.onConnectionDown;
-
-    await (manager as unknown as { startConnection(): Promise<HubConnection> }).startConnection();
-
-    // Simulate the renderer interop already being detached (e.g. after ConnectCircuit returned false).
-    expect(isRendererAttached(WebRendererId.Server)).toBe(false);
-
-    // The onclose handler must not throw even though the renderer interop is no longer registered,
-    // so connection-down bookkeeping still runs.
-    expect(() => closeHandler!(new Error('connection closed'))).not.toThrow();
-    expect(onConnectionDown).toHaveBeenCalledTimes(1);
+  test.each(['reconnect', 'resume'] as const)('preserves the %s invocation error if cleanup fails', async operation => {
+    const { connection, transport, invocationSent } = createConnection();
+    const stop = jest.spyOn(connection, 'stop').mockRejectedValueOnce(new Error('Cleanup failed'));
+    const result = manager[operation]();
+    const rejected = expect(result).rejects.toThrow('Original hub failure');
+    await invocationSent;
+    transport.receive({ type: 3, invocationId: transport.lastInvocationId, error: 'Original hub failure' });
+    await rejected;
+    expect(stop).toHaveBeenCalledTimes(1);
   });
 });
