@@ -1,0 +1,49 @@
+<button id="pause-hover-loads" @onclick="PauseLoads">Pause loads</button>
+<button id="release-hover-loads" @onclick="ReleaseLoads">Release loads</button>
+<button id="remove-hover-list" @onclick="() => showList = false">Remove list</button>
+<span id="hover-load-status">@(pendingLoads is null ? "Running" : "Paused")</span>
+
+<style>
+    #hover-container .hover-row { height: 38px; box-sizing: border-box; display: flex; align-items: center; }
+    #hover-container .hover-row button { display: none; margin-left: auto; }
+    #hover-container .hover-row:hover button { display: inline-block; }
+</style>
+
+<div id="hover-container" style="height: 630px; overflow-y: auto;">
+    @if (showList)
+    {
+        <Virtualize ItemsProvider="LoadAsync" Context="item" OverscanCount="6">
+            <ItemContent>
+                <div class="hover-row"><span>Row @item</span><button>More</button></div>
+            </ItemContent>
+            <Placeholder>
+                <div class="hover-row hover-placeholder">Loading</div>
+            </Placeholder>
+        </Virtualize>
+    }
+</div>
+
+@code {
+    private bool showList = true;
+    private TaskCompletionSource pendingLoads;
+
+    private void PauseLoads() => pendingLoads = new(TaskCreationOptions.RunContinuationsAsynchronously);
+
+    private void ReleaseLoads()
+    {
+        var loads = pendingLoads;
+        pendingLoads = null;
+        loads?.TrySetResult();
+    }
+
+    private async ValueTask<ItemsProviderResult<int>> LoadAsync(ItemsProviderRequest request)
+    {
+        if (pendingLoads is not null)
+        {
+            await pendingLoads.Task.WaitAsync(request.CancellationToken);
+        }
+
+        return new ItemsProviderResult<int>(
+            Enumerable.Range(request.StartIndex, Math.Min(request.Count, 1000 - request.StartIndex)), 1000);
+    }
+}
