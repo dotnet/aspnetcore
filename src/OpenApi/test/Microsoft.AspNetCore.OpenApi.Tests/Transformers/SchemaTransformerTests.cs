@@ -104,6 +104,57 @@ public class SchemaTransformerTests : OpenApiDocumentServiceTestBase
     }
 
     [Fact]
+    public async Task SchemaTransformer_RunsForMembersOfNullableStruct()
+    {
+        var builder = CreateBuilder();
+
+        builder.MapGet("/fee", () => new FeeHolder(new Fee(1, [2], new FeeDetail("detail"))));
+
+        var visited = new List<string>();
+        var options = new OpenApiOptions();
+        options.AddSchemaTransformer((schema, context, cancellationToken) =>
+        {
+            if (context.JsonPropertyInfo is { } property)
+            {
+                visited.Add($"{property.DeclaringType.Name}.{property.Name}");
+            }
+            else if (context.JsonTypeInfo.Type == typeof(int))
+            {
+                // The items of Fee.amounts
+                visited.Add("int");
+            }
+
+            if (context.JsonTypeInfo.Type == typeof(int))
+            {
+                schema.Description = "An integer";
+            }
+            return Task.CompletedTask;
+        });
+
+        await VerifyOpenApiDocument(builder, options, document =>
+        {
+            Assert.Contains("FeeHolder.fee", visited);
+
+            // The members of the nullable struct: its properties, its array items, and the properties of a class within it
+            Assert.Contains("Fee.count", visited);
+            Assert.Contains("Fee.amounts", visited);
+            Assert.Contains("int", visited);
+            Assert.Contains("FeeDetail.name", visited);
+
+            // The transformations are in the document
+            var fee = document.Components.Schemas["Fee"];
+            Assert.Equal("An integer", fee.Properties["count"].Description);
+            Assert.Equal("An integer", fee.Properties["amounts"].Items.Description);
+        });
+    }
+
+    private record FeeHolder(Fee? Fee);
+
+    private readonly record struct Fee(int Count, int[] Amounts, FeeDetail Detail);
+
+    private record FeeDetail(string Name);
+
+    [Fact]
     public async Task SchemaTransformer_CanAccessApplicationServicesAndDocumentName()
     {
         var builder = CreateBuilder();
