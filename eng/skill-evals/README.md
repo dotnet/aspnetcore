@@ -205,6 +205,18 @@ guarantee. `pull.json` has no body and only synthetic metadata (optionally label
 lists. The producer runs its bundle validation before writing the ready manifest. Standalone
 `--check` is a live GitHub freshness check, not an offline validator.
 
+The producer trusts `--head`, `--merge-base`, and `--base-tip` as given and does
+not check how they relate. A wrong merge base still produces a ready bundle with
+a wrong diff: a later unrelated commit gives a huge diff, a head equal to the
+merge base gives an empty diff, and a swapped head and merge base give a
+reversed diff. Callers must verify the pins from an independent source, such as
+`git merge-base --all <head> <base-tip>` on a full-history clone or the commits
+GitHub recorded for the review, and must not re-derive them from the pins
+themselves. Take `--base-tip` from the recorded review or GitHub, not from
+current `main`, because it selects the base-side source tree. Use a
+`--guidance` commit that is not newer than the PR; newer guidance can contain
+lessons learned from that same PR, which matters for held-out cases.
+
 ## Hosted entry point
 
 `.github/workflows/skill-evals.yml` runs `Validate` automatically when pull
