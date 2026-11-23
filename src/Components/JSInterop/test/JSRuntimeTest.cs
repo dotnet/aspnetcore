@@ -37,7 +37,7 @@ public class JSRuntimeTest
     }
 
     [Fact]
-    public async Task InvokeAsync_CancelsAsyncTask_AfterDefaultTimeout()
+    public async Task InvokeAsync_ThrowsDescriptiveException_AfterDefaultTimeout()
     {
         // Arrange
         var runtime = new TestJSRuntime();
@@ -47,7 +47,65 @@ public class JSRuntimeTest
         var task = runtime.InvokeAsync<object>("test identifier 1", "arg1", 123, true);
 
         // Assert
-        await Assert.ThrowsAsync<TaskCanceledException>(async () => await task);
+        var exception = await Assert.ThrowsAsync<JSException>(async () => await task);
+        Assert.False(task.IsCanceled);
+        Assert.Equal("The JS interop call 'test identifier 1' timed out after 1000ms. The timeout is controlled by DefaultAsyncTimeout.", exception.Message);
+        Assert.IsType<TaskCanceledException>(exception.InnerException);
+    }
+
+    [Fact]
+    public async Task InvokeAsync_ReportsOriginalDefaultTimeout_WhenChangedDuringCall()
+    {
+        var runtime = new TestJSRuntime();
+        runtime.DefaultTimeout = TimeSpan.FromMilliseconds(100);
+
+        var task = runtime.InvokeAsync<object>("test identifier", Array.Empty<object>());
+        runtime.DefaultTimeout = null;
+
+        var exception = await Assert.ThrowsAsync<JSException>(async () => await task);
+        Assert.Equal("The JS interop call 'test identifier' timed out after 100ms. The timeout is controlled by DefaultAsyncTimeout.", exception.Message);
+        Assert.IsType<TaskCanceledException>(exception.InnerException);
+    }
+
+    [Theory]
+    [InlineData("RuntimeInvoke")]
+    [InlineData("RuntimeInvokeVoid")]
+    [InlineData("RuntimeConstructor")]
+    [InlineData("RuntimeGet")]
+    [InlineData("RuntimeSet")]
+    [InlineData("ObjectInvoke")]
+    [InlineData("ObjectInvokeVoid")]
+    [InlineData("ObjectConstructor")]
+    [InlineData("ObjectGet")]
+    [InlineData("ObjectSet")]
+    public async Task ExplicitTimeout_ThrowsDescriptiveException(string operation)
+    {
+        var runtime = new TestJSRuntime();
+        IJSRuntime jsRuntime = runtime;
+        IJSObjectReference jsObject = new JSObjectReference(runtime, 42);
+        var timeout = TimeSpan.FromMilliseconds(100);
+        const string identifier = "test identifier";
+
+        var task = operation switch
+        {
+            "RuntimeInvoke" => jsRuntime.InvokeAsync<object>(identifier, timeout, Array.Empty<object>()).AsTask(),
+            "RuntimeInvokeVoid" => jsRuntime.InvokeVoidAsync(identifier, timeout).AsTask(),
+            "RuntimeConstructor" => jsRuntime.InvokeConstructorAsync(identifier, timeout, Array.Empty<object>()).AsTask(),
+            "RuntimeGet" => jsRuntime.GetValueAsync<object>(identifier, timeout).AsTask(),
+            "RuntimeSet" => jsRuntime.SetValueAsync(identifier, "value", timeout).AsTask(),
+            "ObjectInvoke" => jsObject.InvokeAsync<object>(identifier, timeout, Array.Empty<object>()).AsTask(),
+            "ObjectInvokeVoid" => jsObject.InvokeVoidAsync(identifier, timeout).AsTask(),
+            "ObjectConstructor" => jsObject.InvokeConstructorAsync(identifier, timeout, Array.Empty<object>()).AsTask(),
+            "ObjectGet" => jsObject.GetValueAsync<object>(identifier, timeout).AsTask(),
+            "ObjectSet" => jsObject.SetValueAsync(identifier, "value", timeout).AsTask(),
+            _ => throw new ArgumentOutOfRangeException(nameof(operation)),
+        };
+
+        var exception = await Assert.ThrowsAsync<JSException>(() => task.WaitAsync(TimeSpan.FromSeconds(3)));
+        Assert.False(task.IsCanceled);
+        Assert.Equal("The JS interop call 'test identifier' timed out after 100ms.", exception.Message);
+        Assert.IsType<TaskCanceledException>(exception.InnerException);
+        Assert.Single(runtime.BeginInvokeCalls);
     }
 
     [Fact]
@@ -72,6 +130,7 @@ public class JSRuntimeTest
         // Arrange
         using var cts = new CancellationTokenSource();
         var runtime = new TestJSRuntime();
+        runtime.DefaultTimeout = TimeSpan.FromSeconds(10);
 
         // Act
         var task = runtime.InvokeAsync<object>("test identifier 1", cts.Token, new object[] { "arg1", 123, true });

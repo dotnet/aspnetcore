@@ -90,14 +90,12 @@ public static class JSObjectReferenceExtensions
     /// <param name="timeout">The duration after which to cancel the async operation. Overrides default timeouts (<see cref="JSRuntime.DefaultAsyncTimeout"/>).</param>
     /// <param name="args">JSON-serializable arguments.</param>
     /// <returns>A <see cref="ValueTask"/> that represents the asynchronous invocation operation.</returns>
+    /// <exception cref="JSException">The operation is canceled by the specified timeout.</exception>
     public static async ValueTask<TValue> InvokeAsync<[DynamicallyAccessedMembers(JsonSerialized)] TValue>(this IJSObjectReference jsObjectReference, string identifier, TimeSpan timeout, params object?[]? args)
     {
         ArgumentNullException.ThrowIfNull(jsObjectReference);
 
-        using var cancellationTokenSource = timeout == Timeout.InfiniteTimeSpan ? null : new CancellationTokenSource(timeout);
-        var cancellationToken = cancellationTokenSource?.Token ?? CancellationToken.None;
-
-        return await jsObjectReference.InvokeAsync<TValue>(identifier, cancellationToken, args);
+        return await JSInteropTimeout.InvokeAsync(identifier, timeout, cancellationToken => jsObjectReference.InvokeAsync<TValue>(identifier, cancellationToken, args));
     }
 
     /// <summary>
@@ -108,14 +106,12 @@ public static class JSObjectReferenceExtensions
     /// <param name="timeout">The duration after which to cancel the async operation. Overrides default timeouts (<see cref="JSRuntime.DefaultAsyncTimeout"/>).</param>
     /// <param name="args">JSON-serializable arguments.</param>
     /// <returns>A <see cref="ValueTask"/> that represents the asynchronous invocation operation.</returns>
+    /// <exception cref="JSException">The operation is canceled by the specified timeout.</exception>
     public static async ValueTask InvokeVoidAsync(this IJSObjectReference jsObjectReference, string identifier, TimeSpan timeout, params object?[]? args)
     {
         ArgumentNullException.ThrowIfNull(jsObjectReference);
 
-        using var cancellationTokenSource = timeout == Timeout.InfiniteTimeSpan ? null : new CancellationTokenSource(timeout);
-        var cancellationToken = cancellationTokenSource?.Token ?? CancellationToken.None;
-
-        await jsObjectReference.InvokeAsync<IJSVoidResult>(identifier, cancellationToken, args);
+        await JSInteropTimeout.InvokeAsync(identifier, timeout, cancellationToken => jsObjectReference.InvokeAsync<IJSVoidResult>(identifier, cancellationToken, args));
     }
 
     /// <summary>
@@ -158,14 +154,12 @@ public static class JSObjectReferenceExtensions
     /// <param name="timeout">The duration after which to cancel the async operation. Overrides default timeouts (<see cref="JSRuntime.DefaultAsyncTimeout"/>).</param>
     /// <param name="args">JSON-serializable arguments.</param>
     /// <returns>An <see cref="IJSObjectReference"/> instance that represents the created JS object.</returns>
+    /// <exception cref="JSException">The operation is canceled by the specified timeout.</exception>
     public static ValueTask<IJSObjectReference> InvokeConstructorAsync(this IJSObjectReference jsObjectReference, string identifier, TimeSpan timeout, object?[]? args)
     {
         ArgumentNullException.ThrowIfNull(jsObjectReference);
 
-        using var cancellationTokenSource = timeout == Timeout.InfiniteTimeSpan ? null : new CancellationTokenSource(timeout);
-        var cancellationToken = cancellationTokenSource?.Token ?? CancellationToken.None;
-
-        return jsObjectReference.InvokeConstructorAsync(identifier, cancellationToken, args);
+        return JSInteropTimeout.InvokeAsync(identifier, timeout, cancellationToken => jsObjectReference.InvokeConstructorAsync(identifier, cancellationToken, args));
     }
 
     /// <summary>
@@ -176,14 +170,12 @@ public static class JSObjectReferenceExtensions
     /// <param name="identifier">An identifier for the property to read. For example, the value <c>"someScope.someProp"</c> will read the value of the property <c>someScope.someProp</c>.</param>
     /// <param name="timeout">The duration after which to cancel the async operation. Overrides default timeouts (<see cref="JSRuntime.DefaultAsyncTimeout"/>).</param>
     /// <returns>An instance of <typeparamref name="TValue"/> obtained by JSON-deserializing the return value.</returns>
+    /// <exception cref="JSException">The operation is canceled by the specified timeout.</exception>
     public static ValueTask<TValue> GetValueAsync<[DynamicallyAccessedMembers(JsonSerialized)] TValue>(this IJSObjectReference jsObjectReference, string identifier, TimeSpan timeout)
     {
         ArgumentNullException.ThrowIfNull(jsObjectReference);
 
-        using var cancellationTokenSource = timeout == Timeout.InfiniteTimeSpan ? null : new CancellationTokenSource(timeout);
-        var cancellationToken = cancellationTokenSource?.Token ?? CancellationToken.None;
-
-        return jsObjectReference.GetValueAsync<TValue>(identifier, cancellationToken);
+        return JSInteropTimeout.InvokeAsync(identifier, timeout, cancellationToken => jsObjectReference.GetValueAsync<TValue>(identifier, cancellationToken));
     }
 
     /// <summary>
@@ -195,13 +187,11 @@ public static class JSObjectReferenceExtensions
     /// <param name="value">JSON-serializable value.</param>
     /// <param name="timeout">The duration after which to cancel the async operation. Overrides default timeouts (<see cref="JSRuntime.DefaultAsyncTimeout"/>).</param>
     /// <returns>A <see cref="ValueTask"/> that represents the asynchronous invocation operation.</returns>
+    /// <exception cref="JSException">The operation is canceled by the specified timeout.</exception>
     public static ValueTask SetValueAsync<[DynamicallyAccessedMembers(JsonSerialized)] TValue>(this IJSObjectReference jsObjectReference, string identifier, TValue value, TimeSpan timeout)
     {
         ArgumentNullException.ThrowIfNull(jsObjectReference);
 
-        using var cancellationTokenSource = timeout == Timeout.InfiniteTimeSpan ? null : new CancellationTokenSource(timeout);
-        var cancellationToken = cancellationTokenSource?.Token ?? CancellationToken.None;
-
-        return jsObjectReference.SetValueAsync<TValue>(identifier, value, cancellationToken);
+        return JSInteropTimeout.InvokeAsync(identifier, timeout, cancellationToken => jsObjectReference.SetValueAsync<TValue>(identifier, value, cancellationToken));
     }
 }
