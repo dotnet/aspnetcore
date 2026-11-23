@@ -12,10 +12,6 @@ internal static class BrowserNavigationManagerInterop
 
     public const string GetLocationHref = Prefix + "getLocationHref";
 
-    public const string GetHistoryEntryState = Prefix + "getHistoryEntryState";
-
-    public const string GetLastNavigationWasIntercepted = Prefix + "getLastNavigationWasIntercepted";
-
     public const string GetBaseUri = Prefix + "getBaseURI";
 
     public const string NavigateTo = Prefix + "navigateTo";

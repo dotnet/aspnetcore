@@ -43,11 +43,6 @@ internal sealed partial class WebAssemblyNavigationManager : NavigationManager
         NotifyLocationChanged(isInterceptedLink);
     }
 
-    internal void SetHistoryEntryState(string? state)
-    {
-        HistoryEntryState = state;
-    }
-
     public async ValueTask<bool> HandleLocationChangingAsync(string uri, string? state, bool intercepted)
     {
         return await NotifyLocationChangingAsync(uri, state, intercepted);

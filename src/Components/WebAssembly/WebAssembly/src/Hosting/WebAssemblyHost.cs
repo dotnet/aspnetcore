@@ -189,15 +189,10 @@ public sealed class WebAssemblyHost : IAsyncDisposable
             // Reconcile after the initial update wait so in-flight redirects have settled.
             var jsMethods = Services.GetRequiredService<IInternalJSImportMethods>();
             var uri = jsMethods.NavigationManager_GetLocationHref();
-            var state = jsMethods.NavigationManager_GetHistoryEntryState();
             var navigationManager = WebAssemblyNavigationManager.Instance;
             if (navigationManager.Uri != uri)
             {
-                navigationManager.SetLocation(uri, state, isInterceptedLink: jsMethods.NavigationManager_GetLastNavigationWasIntercepted());
-            }
-            else
-            {
-                navigationManager.SetHistoryEntryState(state);
+                navigationManager.SetLocation(uri, state: null, isInterceptedLink: false);
             }
 
             var initializationTcs = new TaskCompletionSource();

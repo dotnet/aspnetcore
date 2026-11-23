@@ -11,7 +11,6 @@
     <script>
         window.webAssemblyStartup = {
             waiting: false,
-            enhancedLoads: 0,
             wait: () => new Promise(resolve => {
                 window.webAssemblyStartup.release = resolve;
                 window.webAssemblyStartup.waiting = true;
