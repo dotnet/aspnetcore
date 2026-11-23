@@ -12,9 +12,9 @@ export const numberPattern = /^[1-9]\d*$/;
 export const repoPattern = /^[\w.-]+\/[\w.-]+$/;
 export const roles = ['head', 'baseTip', 'mergeBase', 'workflow', 'guidance'];
 
-export function command(exe, args, input)
+export function command(exe, args, input, env)
 {
-  const result = spawnSync(exe, args, { encoding: 'utf8', input, maxBuffer: 64 * 1024 * 1024, windowsHide: true });
+  const result = spawnSync(exe, args, { encoding: 'utf8', input, env, maxBuffer: 64 * 1024 * 1024, windowsHide: true });
   if (result.error) throw result.error;
   return result;
 }
@@ -98,11 +98,16 @@ export function pin({ repo, mirror, run, pr, commits })
     scratch(dir =>
     {
       const restore = join(dir, 'restore.git');
+      const env = Object.fromEntries(Object.entries(process.env)
+        .filter(([name]) => !/^GIT_/i.test(name) || /^GIT_TERMINAL_PROMPT$/i.test(name)));
+      env.GIT_CONFIG_NOSYSTEM = '1';
+      env.GIT_CONFIG_GLOBAL = process.platform === 'win32' ? 'NUL' : '/dev/null';
+      env.GIT_ATTR_NOSYSTEM = '1';
       check(command('git', ['--no-pager', '-c', 'protocol.allow=never', '-c', 'protocol.file.allow=always',
-        'clone', '--local', '--mirror', '--template=', '--', mirror, restore]), 'Local restore clone');
+        'clone', '--local', '--mirror', '--template=', '--', mirror, restore], undefined, env), 'Local restore clone');
       const offline = (...args) => command('git', ['--no-pager', '--no-replace-objects',
-        '-c', 'protocol.allow=never', `--git-dir=${restore}`, ...args]);
-      check(offline('config', '--remove-section', 'remote.origin'), 'Remove restore remote');
+        '-c', 'protocol.allow=never', `--git-dir=${restore}`, ...args], undefined, env);
+      check(offline('config', '--file', join(restore, 'config'), '--remove-section', 'remote.origin'), 'Remove restore remote');
       const shas = [...new Set(reachable.map(entry => entry.sha))];
       check(offline('fsck', '--connectivity-only', '--no-dangling', ...shas), 'Offline object closure');
       for (const sha of shas)

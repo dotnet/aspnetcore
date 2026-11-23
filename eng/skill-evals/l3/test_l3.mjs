@@ -39,6 +39,42 @@ test('PinPreservesExistingRefsAndReportsUnreachableCommits', () => scratch(dir =
   assert.equal(retry.offlineRestoreVerified, true);
 }));
 
+test('PinPreservesForeignGitConfig', () => scratch(dir =>
+{
+  const repo = join(dir, 'source');
+  const mirror = join(dir, 'mirror.git');
+  const foreign = join(dir, 'foreign.git');
+  const config = join(foreign, 'config');
+  const git = (...args) =>
+  {
+    const result = command('git', ['--no-pager', ...args]);
+    assert.equal(result.status, 0, result.stderr);
+    return result.stdout.trim();
+  };
+  git('init', '--object-format=sha1', repo);
+  git('-C', repo, '-c', 'user.name=L3', '-c', 'user.email=l3@example.invalid', '-c', 'commit.gpgsign=false',
+    'commit', '--allow-empty', '-m', 'first');
+  const head = git('-C', repo, 'rev-parse', 'HEAD');
+  git('init', '--bare', foreign);
+  git('config', '--file', config, 'remote.origin.url', repo);
+
+  const previous = process.env.GIT_CONFIG;
+  try
+  {
+    process.env.GIT_CONFIG = config;
+    const result = pin({ repo, mirror, run: '1-1', commits: { head } });
+    assert.equal(result.offlineRestoreVerified, true);
+    assert.equal(result.entries[0].status, 'pinned');
+    const remote = command('git', ['--no-pager', 'config', '--file', config, '--get', 'remote.origin.url']);
+    assert.equal(remote.stdout.trim(), repo, 'Pin must preserve the foreign remote.origin URL.');
+  }
+  finally
+  {
+    if (previous === undefined) delete process.env.GIT_CONFIG;
+    else process.env.GIT_CONFIG = previous;
+  }
+}));
+
 test('VerifierDiscardsRequireAttributableStructuredEvidenceAndDoNotStoreText', () =>
 {
   const start = (toolCallId, args) =>
