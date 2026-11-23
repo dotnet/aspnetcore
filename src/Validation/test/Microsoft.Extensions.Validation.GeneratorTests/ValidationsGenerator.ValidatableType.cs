@@ -80,6 +80,7 @@ public class SubTypeWithInheritance : SubType
 }
 """;
         await Verify(source, out var compilation);
+        await VerifyGeneratedInfoTypesHaveGeneratedCode(compilation);
         await VerifyValidatableType(compilation, "ComplexType", async (validationOptions, type) =>
         {
             Assert.True(validationOptions.TryGetValidatableTypeInfo(type, out var validatableTypeInfo));

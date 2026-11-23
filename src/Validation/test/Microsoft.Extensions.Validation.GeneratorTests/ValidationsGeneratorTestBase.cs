@@ -18,6 +18,7 @@ using Microsoft.AspNetCore.InternalTesting;
 using Microsoft.AspNetCore.Routing;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
+using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.CodeAnalysis.Diagnostics;
 using Microsoft.CodeAnalysis.Emit;
 using Microsoft.CodeAnalysis.Text;
@@ -36,6 +37,30 @@ public partial class ValidationsGeneratorTestBase : LoggedTestBase
 
     private static readonly CSharpParseOptions ParseOptions = new CSharpParseOptions(LanguageVersion.Preview)
         .WithFeatures([new KeyValuePair<string, string>("InterceptorsNamespaces", "Microsoft.Extensions.Validation.Generated")]);
+
+
+    internal static async Task VerifyGeneratedInfoTypesHaveGeneratedCode(Compilation compilation)
+    {
+        var generatedTrees = compilation.SyntaxTrees
+            .Where(tree => tree.FilePath.Contains("ValidatableInfoResolver", StringComparison.Ordinal))
+            .ToArray();
+        Assert.NotEmpty(generatedTrees);
+
+        foreach (var tree in generatedTrees)
+        {
+            var root = await tree.GetRootAsync();
+            var topLevelTypes = root.DescendantNodes()
+                .OfType<TypeDeclarationSyntax>()
+                .Where(type => type.Parent is BaseNamespaceDeclarationSyntax or CompilationUnitSyntax);
+
+            foreach (var type in topLevelTypes)
+            {
+                Assert.Contains(
+                    type.AttributeLists.SelectMany(list => list.Attributes),
+                    attribute => attribute.ToString().Contains("GeneratedCode", StringComparison.Ordinal));
+            }
+        }
+    }
 
     internal static Task Verify(string source, out Compilation compilation)
     {
