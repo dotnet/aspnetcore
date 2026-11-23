@@ -6,6 +6,7 @@ import { createHash } from 'node:crypto';
 import { writeFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { test } from 'node:test';
+import { pathToFileURL } from 'node:url';
 import { git as runGit, pin, scratch } from './pin.mjs';
 import { extractTranscript, outcomes, reconcilePrompt } from './outcomes.mjs';
 
@@ -142,6 +143,56 @@ test('PinFromLocalSourceIgnoresInvalidGlobalConfig', () => scratch(dir =>
   {
     if (previous === undefined) delete process.env.GIT_CONFIG_GLOBAL;
     else process.env.GIT_CONFIG_GLOBAL = previous;
+  }
+}));
+
+test('PinFetchDoesNotRewriteAnEarlierRunRef', () => scratch(dir =>
+{
+  const source = join(dir, 'source');
+  const mirror = join(dir, 'mirror.git');
+  const config = join(dir, 'fetch-config');
+  const repo = 'example/replay';
+  const url = `https://github.com/${repo}.git`;
+  const git = (...args) =>
+  {
+    const result = runGit(args);
+    assert.equal(result.status, 0, result.stderr);
+    return result.stdout.trim();
+  };
+  git('init', '--object-format=sha1', source);
+  const commit = message =>
+  {
+    git('-C', source, '-c', 'user.name=L3', '-c', 'user.email=l3@example.invalid', '-c', 'commit.gpgsign=false',
+      'commit', '--allow-empty', '-m', message);
+    return git('-C', source, 'rev-parse', 'HEAD');
+  };
+  const first = commit('first');
+  assert.equal(pin({ repo: source, mirror, run: '1-1', commits: { head: first } }).offlineRestoreVerified, true);
+  const second = commit('second');
+
+  // Exercise the configured fetch path while permitting only local file transport.
+  git('config', '--file', config, 'protocol.allow', 'never');
+  git('config', '--file', config, 'protocol.file.allow', 'always');
+  git('config', '--file', config, `url.${pathToFileURL(source).href}.insteadOf`, url);
+  git('config', '--file', config, `remote.${url}.fetch`, `+${second}:refs/l3/1-1/head`);
+  const env = { GIT_CONFIG_GLOBAL: config, GIT_CONFIG_NOSYSTEM: '1' };
+  const previous = Object.keys(env).map(name => [name, process.env[name]]);
+  try
+  {
+    Object.assign(process.env, env);
+    const result = pin({ repo, mirror, run: '2-1', commits: { head: second } });
+    assert.equal(result.offlineRestoreVerified, true);
+    assert.equal(git(`--git-dir=${mirror}`, 'rev-parse', 'refs/l3/2-1/head'), second);
+    assert.equal(git(`--git-dir=${mirror}`, 'rev-parse', 'refs/l3/1-1/head'), first,
+      'A fetch must not update a pin from an earlier run.');
+  }
+  finally
+  {
+    for (const [name, value] of previous)
+    {
+      if (value === undefined) delete process.env[name];
+      else process.env[name] = value;
+    }
   }
 }));
 

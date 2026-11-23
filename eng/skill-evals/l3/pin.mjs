@@ -93,7 +93,7 @@ export function pin({ repo, mirror, run, pr, commits })
     {
       // Include objects fetched earlier in this run, even though its pins are not yet visible.
       const tips = [...new Set(entries.map(entry => entry.sha))].filter(isCommit);
-      attempts.set(ref, git([...storeArgs, 'fetch', '--no-tags', '--no-write-fetch-head', '--no-auto-maintenance',
+      attempts.set(ref, git([...storeArgs, 'fetch', '--refmap=', '--no-tags', '--no-write-fetch-head', '--no-auto-maintenance',
         ...tips.map(tip => `--negotiation-tip=${tip}`), '--', source, ref], { offline: localSource }));
     }
     return attempts.get(ref);
