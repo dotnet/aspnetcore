@@ -855,6 +855,11 @@ internal sealed class OpenApiDocumentService(
                             ApplyDescriptionToSchema(propSchema, parameterDescription);
                         }
 
+                        if (description.IsRequired || description.ModelMetadata.ValidatorMetadata.OfType<RequiredAttribute>().Any())
+                        {
+                            propertySchema.Required ??= new HashSet<string>();
+                            propertySchema.Required.Add(description.Name);
+                        }
                         propertySchema.Properties[description.Name] = propSchema;
                     }
                     schema.AllOf ??= [];
@@ -873,6 +878,11 @@ internal sealed class OpenApiDocumentService(
                         }
 
                         schema.Properties ??= new Dictionary<string, IOpenApiSchema>();
+                        if (description.IsRequired || description.ModelMetadata.ValidatorMetadata.OfType<RequiredAttribute>().Any())
+                        {
+                            schema.Required ??= new HashSet<string>();
+                            schema.Required.Add(description.Name);
+                        }
                         schema.Properties[description.Name] = propSchema;
                     }
                 }

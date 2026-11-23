@@ -1,6 +1,7 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.ComponentModel.DataAnnotations;
 using System.IO.Pipelines;
 using System.Net.Http;
 using System.Text.Json.Serialization;
@@ -9,6 +10,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.InternalTesting;
 using Microsoft.AspNetCore.JsonPatch.SystemTextJson;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.ModelBinding;
 
 public partial class OpenApiDocumentServiceTests : OpenApiDocumentServiceTestBase
 {
@@ -727,6 +729,74 @@ public partial class OpenApiDocumentServiceTests : OpenApiDocumentServiceTestBas
 
     [Route("/form-model-single-prop")]
     private void ActionWithFormModelSingleProp([FromForm] ModelWithSingleProperty model) { }
+
+    [Theory]
+    [InlineData(false, nameof(FormModelWithRequiredProperties.BindingRequired))]
+    [InlineData(false, nameof(FormModelWithRequiredProperties.ValidationRequired))]
+    [InlineData(true, nameof(FormModelWithRequiredProperties.BindingRequired))]
+    [InlineData(true, nameof(FormModelWithRequiredProperties.ValidationRequired))]
+    [InlineData(false, "upload")]
+    [InlineData(true, "upload")]
+    public async Task GetOpenApiRequestBody_HandlesFromFormWithRequiredProperties_MvcAction(bool withAdditionalParameter, string requiredProperty)
+    {
+        var action = CreateActionDescriptor(withAdditionalParameter
+            ? nameof(ActionWithRequiredFormModelAndAdditionalParameter)
+            : nameof(ActionWithRequiredFormModel));
+
+        await VerifyOpenApiDocument(action, document =>
+        {
+            var operation = Assert.Single(document.Paths.Values).Operations[HttpMethod.Post];
+            Assert.NotNull(operation.RequestBody);
+            Assert.True(operation.RequestBody.Required);
+            var schema = operation.RequestBody.Content["application/x-www-form-urlencoded"].Schema;
+            Assert.NotNull(schema);
+            var modelSchema = withAdditionalParameter
+                ? Assert.Single(schema.AllOf, item => item.Properties.ContainsKey(nameof(FormModelWithRequiredProperties.BindingRequired)))
+                : schema;
+
+            Assert.Equal(JsonSchemaType.Object, modelSchema.Type);
+            Assert.Equal(7, modelSchema.Properties.Count);
+            Assert.Contains("upload", modelSchema.Properties.Keys);
+            Assert.DoesNotContain(nameof(FormModelWithRequiredProperties.File), modelSchema.Properties.Keys);
+            Assert.Contains(nameof(FormModelWithRequiredProperties.BindingRequired), modelSchema.Properties.Keys);
+            Assert.Contains(nameof(FormModelWithRequiredProperties.ValidationRequired), modelSchema.Properties.Keys);
+            Assert.Contains(nameof(FormModelWithRequiredProperties.OptionalText), modelSchema.Properties.Keys);
+            Assert.Contains(nameof(FormModelWithRequiredProperties.OptionalNumber), modelSchema.Properties.Keys);
+            Assert.DoesNotContain(nameof(FormModelWithRequiredProperties.OptionalText), modelSchema.Required ?? new HashSet<string>());
+            Assert.DoesNotContain(nameof(FormModelWithRequiredProperties.OptionalNumber), modelSchema.Required ?? new HashSet<string>());
+            Assert.DoesNotContain(nameof(FormModelWithRequiredProperties.OptionalCount), modelSchema.Required ?? new HashSet<string>());
+            Assert.DoesNotContain(nameof(FormModelWithRequiredProperties.OptionalFlag), modelSchema.Required ?? new HashSet<string>());
+            Assert.Contains(requiredProperty, modelSchema.Required ?? new HashSet<string>());
+        });
+    }
+
+    [HttpPost("/required-form-model")]
+    private void ActionWithRequiredFormModel([FromForm, Required] FormModelWithRequiredProperties model) { }
+
+    [HttpPost("/required-form-model-additional")]
+    private void ActionWithRequiredFormModelAndAdditionalParameter([FromForm, Required] FormModelWithRequiredProperties model, [FromForm] string additional) { }
+
+#nullable enable
+    private class FormModelWithRequiredProperties
+    {
+        [BindRequired]
+        public string? BindingRequired { get; set; }
+
+        [Required]
+        public string? ValidationRequired { get; set; }
+
+        [FromForm(Name = "upload"), Required]
+        public IFormFile? File { get; set; }
+
+        public string? OptionalText { get; set; }
+
+        public int? OptionalNumber { get; set; }
+
+        public int OptionalCount { get; set; }
+
+        public bool OptionalFlag { get; set; }
+    }
+#nullable restore
 
     private class ModelWithSingleProperty
     {
