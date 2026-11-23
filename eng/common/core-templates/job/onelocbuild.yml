@@ -12,7 +12,7 @@ parameters:
   GitHubAppServiceConnection: 'dnceng-oneloc-githubapp'
   GitHubAppKeyVaultName: 'EngKeyVault'
   GitHubAppIdSecretName: 'oneloc-localization-app-app-id'
-  GitHubAppPrivateKeySecretName: 'oneloc-localization-app-app-private-key'
+  GitHubAppKeyName: 'oneloc-localization-app-key'
 
   SourcesDirectory: $(System.DefaultWorkingDirectory)
   CreatePr: true
@@ -103,7 +103,7 @@ jobs:
             azureSubscription: ${{ parameters.GitHubAppServiceConnection }}
           keyVaultName: ${{ parameters.GitHubAppKeyVaultName }}
           appIdSecretName: ${{ parameters.GitHubAppIdSecretName }}
-          appPrivateKeySecretName: ${{ parameters.GitHubAppPrivateKeySecretName }}
+          keyName: ${{ parameters.GitHubAppKeyName }}
           installationOwner: ${{ parameters.GitHubOrg }}
           outputVariableName: 'GitHubAppInstallationToken'
           condition: ${{ parameters.condition }}
