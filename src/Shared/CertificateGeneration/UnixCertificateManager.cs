@@ -678,9 +678,6 @@ internal sealed partial class UnixCertificateManager : CertificateManager
     /// </remarks>
     private static bool IsCertificateInNssDb(string nickname, NssDb nssDb)
     {
-        // -V will validate that a cert can be used for a given purpose, in this case, server verification.
-        // There is no corresponding -V check for the "Trusted CA" status required by Firefox, so we just check for existence.
-        // (The docs suggest that "-V -u A" should do this, but it seems to accept all certs.)
         using SafeFileHandle nullHandle = File.OpenNullHandle();
         var startInfo = nssDb.CreateCheckProcessStartInfo(nickname);
         startInfo.StandardOutputHandle = nullHandle;
@@ -1114,7 +1111,8 @@ internal sealed partial class UnixCertificateManager : CertificateManager
     private sealed class FirefoxNssDb(string path) : NssDb(path)
     {
         private const string OverridePrefixValue = "firefox=";
-        private static readonly IReadOnlyList<string> CheckArgumentValues = ["-L"];
+        // L validates the certificate as an SSL CA, including the "C" trust required by Firefox.
+        private static readonly IReadOnlyList<string> CheckArgumentValues = ["-V", "-u", "L"];
 
         public override string BrowserFamily => "Firefox";
 

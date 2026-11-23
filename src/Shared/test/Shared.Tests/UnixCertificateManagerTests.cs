@@ -153,7 +153,7 @@ public sealed class UnixCertificateManagerTests : IDisposable
 
         AssertProcessStartInfo(
             nssDb.CreateCheckProcessStartInfo(nickname),
-            "-d", $"sql:{profileDirectory}", "-n", nickname, "-L");
+            "-d", $"sql:{profileDirectory}", "-n", nickname, "-V", "-u", "L");
         AssertProcessStartInfo(
             nssDb.CreateAddProcessStartInfo(certificatePath, nickname),
             "-d", $"sql:{profileDirectory}", "-n", nickname, "-A", "-i", certificatePath, "-t", "C,,");
@@ -199,7 +199,7 @@ public sealed class UnixCertificateManagerTests : IDisposable
     private static void AssertFirefoxNssDb(UnixCertificateManager.NssDb nssDb)
     {
         Assert.Equal("Firefox", nssDb.BrowserFamily);
-        Assert.Equal(["-L"], nssDb.CheckArguments);
+        Assert.Equal(["-V", "-u", "L"], nssDb.CheckArguments);
         Assert.Equal("C", nssDb.TrustUsage);
     }
 
