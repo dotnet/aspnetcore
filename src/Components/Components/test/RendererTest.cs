@@ -4367,6 +4367,136 @@ public class RendererTest
     }
 
     [Theory]
+    [InlineData(false, false)]
+    [InlineData(false, true)]
+    [InlineData(true, false)]
+    [InlineData(true, true)]
+    public async Task DisposingRenderer_ReportsMixedFailuresAfterAsyncCleanup(bool handleExceptions, bool asyncCleanupThrows)
+    {
+        using var renderer = new TestRenderer { ShouldHandleExceptions = handleExceptions };
+        var synchronousException = new InvalidOperationException("Synchronous disposal failed.");
+        var asynchronousException = new InvalidOperationException("Asynchronous disposal failed.");
+        var releaseCleanup = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+        var cleanupCompleted = false;
+        var cleanupCompletedWhenReported = false;
+        renderer.OnExceptionHandled = () => cleanupCompletedWhenReported = cleanupCompleted;
+        Task cleanup = Task.CompletedTask;
+        var synchronousComponent = new DisposableComponent { DisposeAction = () => throw synchronousException };
+        var asynchronousComponent = new AsyncDisposableComponent
+        {
+            AsyncDisposeAction = () => new ValueTask(cleanup = CleanupAsync()),
+        };
+        renderer.AssignRootComponentId(synchronousComponent);
+        renderer.AssignRootComponentId(asynchronousComponent);
+        var disposal = renderer.DisposeAsync().AsTask();
+
+        try
+        {
+            Assert.True(synchronousComponent.Disposed);
+            Assert.True(asynchronousComponent.Disposed);
+            Assert.False(cleanup.IsCompleted);
+            var disposalCompletedBeforeCleanup = disposal.IsCompleted;
+            var errorsReportedBeforeCleanup = renderer.HandledExceptions.Count;
+            releaseCleanup.TrySetResult();
+            var disposalException = await Record.ExceptionAsync(() => disposal.WaitAsync(TimeSpan.FromSeconds(30)));
+
+            Assert.False(disposalCompletedBeforeCleanup);
+            Assert.Equal(0, errorsReportedBeforeCleanup);
+            Assert.True(cleanupCompleted);
+            if (handleExceptions)
+            {
+                Assert.Null(disposalException);
+                Assert.True(cleanupCompletedWhenReported);
+            }
+            else
+            {
+                Assert.NotNull(disposalException);
+            }
+
+            var reportedException = handleExceptions ? Assert.Single(renderer.HandledExceptions) : disposalException;
+            if (asyncCleanupThrows)
+            {
+                var aggregate = Assert.IsType<AggregateException>(reportedException);
+                Assert.Collection(aggregate.InnerExceptions,
+                    exception => Assert.Same(synchronousException, exception),
+                    exception => Assert.Same(asynchronousException, exception));
+            }
+            else
+            {
+                Assert.Same(synchronousException, reportedException);
+            }
+        }
+        finally
+        {
+            releaseCleanup.TrySetResult();
+            _ = await Record.ExceptionAsync(() => cleanup.WaitAsync(TimeSpan.FromSeconds(30)));
+            _ = await Record.ExceptionAsync(() => disposal.WaitAsync(TimeSpan.FromSeconds(30)));
+        }
+
+        async Task CleanupAsync()
+        {
+            await releaseCleanup.Task;
+            cleanupCompleted = true;
+            if (asyncCleanupThrows)
+            {
+                throw asynchronousException;
+            }
+        }
+    }
+
+    [Fact]
+    public async Task DisposingRenderer_PreservesExceptionHandlerFailureAfterAsyncCleanup()
+    {
+        using var renderer = new TestRenderer { ShouldHandleExceptions = true };
+        var componentException = new InvalidOperationException("Component disposal failed.");
+        var handlerException = new InvalidOperationException("Exception handler failed.");
+        var releaseCleanup = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+        var cleanupCompleted = false;
+        var cleanupCompletedWhenReported = false;
+        Task cleanup = Task.CompletedTask;
+        renderer.OnExceptionHandled = () =>
+        {
+            cleanupCompletedWhenReported = cleanupCompleted;
+            throw handlerException;
+        };
+        renderer.AssignRootComponentId(new DisposableComponent { DisposeAction = () => throw componentException });
+        var asynchronousComponent = new AsyncDisposableComponent
+        {
+            AsyncDisposeAction = () => new ValueTask(cleanup = CleanupAsync()),
+        };
+        renderer.AssignRootComponentId(asynchronousComponent);
+        var disposal = renderer.DisposeAsync().AsTask();
+
+        try
+        {
+            Assert.True(asynchronousComponent.Disposed);
+            Assert.False(cleanup.IsCompleted);
+            var disposalCompletedBeforeCleanup = disposal.IsCompleted;
+            releaseCleanup.TrySetResult();
+            var exception = await Assert.ThrowsAsync<InvalidOperationException>(
+                () => disposal.WaitAsync(TimeSpan.FromSeconds(30)));
+
+            Assert.False(disposalCompletedBeforeCleanup);
+            Assert.True(cleanupCompleted);
+            Assert.True(cleanupCompletedWhenReported);
+            Assert.Same(handlerException, exception);
+            Assert.Same(componentException, Assert.Single(renderer.HandledExceptions));
+        }
+        finally
+        {
+            releaseCleanup.TrySetResult();
+            _ = await Record.ExceptionAsync(() => cleanup.WaitAsync(TimeSpan.FromSeconds(30)));
+            _ = await Record.ExceptionAsync(() => disposal.WaitAsync(TimeSpan.FromSeconds(30)));
+        }
+
+        async Task CleanupAsync()
+        {
+            await releaseCleanup.Task;
+            cleanupCompleted = true;
+        }
+    }
+
+    [Theory]
     [InlineData(null)] // No existing attribute to update
     [InlineData("old property value")] // Has existing attribute to update
     public void EventFieldInfoCanPatchTreeSoDiffDoesNotUpdateAttribute(string oldValue)

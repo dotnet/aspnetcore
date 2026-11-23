@@ -333,6 +333,89 @@ public class WebViewManagerTests
     }
 
     [Theory]
+    [InlineData(false, false)]
+    [InlineData(false, true)]
+    [InlineData(true, false)]
+    [InlineData(true, true)]
+    public async Task DisposingWebViewManager_WaitsForAsyncCleanupWhenSynchronousComponentDisposalThrows(
+        bool throwingComponentFirst, bool scopeDisposalThrows)
+    {
+        var expectedException = new InvalidOperationException("Synchronous component disposal failed.");
+        var scopeException = scopeDisposalThrows ? new InvalidOperationException("Scope disposal failed.") : null;
+        await using var services = RegisterTestServices()
+            .AddTestBlazorWebView()
+            .AddScoped(_ => new ScopedServiceUsedDuringCleanup(scopeException))
+            .BuildServiceProvider();
+        await using var webViewManager = new TestWebViewManager(services, new TestFileProvider());
+        var componentCaptured = new TaskCompletionSource<ComponentUsingScopedServiceDuringAsyncCleanup>();
+        var throwingParameters = ParameterView.FromDictionary(new Dictionary<string, object>
+        {
+            [nameof(ComponentWithSynchronousThrowingDisposal.DisposalException)] = expectedException,
+        });
+        var cleanupParameters = ParameterView.FromDictionary(new Dictionary<string, object>
+        {
+            [nameof(ComponentUsingScopedServiceDuringAsyncCleanup.Capture)] =
+                (Action<ComponentUsingScopedServiceDuringAsyncCleanup>)componentCaptured.SetResult,
+        });
+
+        if (throwingComponentFirst)
+        {
+            await webViewManager.AddRootComponentAsync(typeof(ComponentWithSynchronousThrowingDisposal), "#sync", throwingParameters);
+            await webViewManager.AddRootComponentAsync(typeof(ComponentUsingScopedServiceDuringAsyncCleanup), "#async", cleanupParameters);
+        }
+        else
+        {
+            await webViewManager.AddRootComponentAsync(typeof(ComponentUsingScopedServiceDuringAsyncCleanup), "#async", cleanupParameters);
+            await webViewManager.AddRootComponentAsync(typeof(ComponentWithSynchronousThrowingDisposal), "#sync", throwingParameters);
+        }
+
+        webViewManager.ReceiveAttachPageMessage();
+        var component = await componentCaptured.Task.WaitAsync(TimeSpan.FromSeconds(30));
+        var scopedService = component.Service;
+        Assert.NotNull(webViewManager.CurrentPageContext);
+        Assert.False(scopedService.Disposed);
+        var disposal = webViewManager.DisposeAsync().AsTask();
+
+        try
+        {
+            await component.CleanupStarted.Task.WaitAsync(TimeSpan.FromSeconds(30));
+            var managerCompletedBeforeGate = disposal.IsCompleted;
+            var scopeDisposedBeforeGate = scopedService.Disposed;
+            component.ReleaseCleanup.TrySetResult();
+            await component.CleanupFinished.Task.WaitAsync(TimeSpan.FromSeconds(30));
+            if (scopeDisposalThrows)
+            {
+                var exception = await Assert.ThrowsAsync<AggregateException>(
+                    () => disposal.WaitAsync(TimeSpan.FromSeconds(30)));
+                Assert.Collection(exception.InnerExceptions,
+                    error => Assert.Same(expectedException, error),
+                    error => Assert.Same(scopeException, error));
+            }
+            else
+            {
+                var exception = await Assert.ThrowsAsync<InvalidOperationException>(
+                    () => disposal.WaitAsync(TimeSpan.FromSeconds(30)));
+                Assert.Same(expectedException, exception);
+            }
+
+            Assert.False(scopeDisposedBeforeGate);
+            Assert.False(managerCompletedBeforeGate);
+            Assert.Null(component.ServiceUseException);
+            Assert.True(scopedService.Used);
+            Assert.True(scopedService.CleanupCompletedBeforeDisposal);
+            Assert.True(scopedService.Disposed);
+            Assert.Null(webViewManager.CurrentPageContext);
+        }
+        finally
+        {
+            component.ReleaseCleanup.TrySetResult();
+            // Observe cleanup and the faulted disposal task without replacing the primary assertion failure.
+            _ = await Record.ExceptionAsync(() => component.CleanupFinished.Task.WaitAsync(TimeSpan.FromSeconds(30)));
+            _ = await Record.ExceptionAsync(() => disposal.WaitAsync(TimeSpan.FromSeconds(30)));
+        }
+    }
+
+    [Theory]
     [InlineData(false)]
     [InlineData(true)]
     public async Task DisposingWebViewManager_IgnoresLateRenderAcknowledgement(bool queuedBeforeDisposal)
@@ -819,6 +902,73 @@ public class WebViewManagerTests
             disposalEntered.TrySetResult();
             await releaseDisposal;
             Disposed = true;
+        }
+    }
+
+    private sealed class ComponentWithSynchronousThrowingDisposal : ComponentBase, IDisposable
+    {
+        [Parameter]
+        public Exception DisposalException { get; set; }
+
+        public void Dispose() => throw DisposalException;
+    }
+
+    private sealed class ScopedServiceUsedDuringCleanup(Exception disposalException) : IDisposable
+    {
+        public bool Disposed { get; private set; }
+        public bool Used { get; private set; }
+        public bool CleanupCompleted { get; set; }
+        public bool CleanupCompletedBeforeDisposal { get; private set; }
+
+        public void Use()
+        {
+            ObjectDisposedException.ThrowIf(Disposed, this);
+            Used = true;
+        }
+
+        public void Dispose()
+        {
+            CleanupCompletedBeforeDisposal = CleanupCompleted;
+            Disposed = true;
+            if (disposalException is not null)
+            {
+                throw disposalException;
+            }
+        }
+    }
+
+    private sealed class ComponentUsingScopedServiceDuringAsyncCleanup : ComponentBase, IAsyncDisposable
+    {
+        [Inject]
+        public ScopedServiceUsedDuringCleanup Service { get; set; }
+
+        [Parameter]
+        public Action<ComponentUsingScopedServiceDuringAsyncCleanup> Capture { get; set; }
+
+        public TaskCompletionSource CleanupStarted { get; } = new(TaskCreationOptions.RunContinuationsAsynchronously);
+        public TaskCompletionSource ReleaseCleanup { get; } = new(TaskCreationOptions.RunContinuationsAsynchronously);
+        public TaskCompletionSource CleanupFinished { get; } = new(TaskCreationOptions.RunContinuationsAsynchronously);
+        public ObjectDisposedException ServiceUseException { get; private set; }
+
+        protected override void OnInitialized() => Capture(this);
+
+        public async ValueTask DisposeAsync()
+        {
+            CleanupStarted.TrySetResult();
+            await ReleaseCleanup.Task;
+            try
+            {
+                Service.Use();
+            }
+            catch (ObjectDisposedException exception)
+            {
+                ServiceUseException = exception;
+            }
+            finally
+            {
+                Service.CleanupCompleted = true;
+                CleanupFinished.TrySetResult();
+            }
         }
     }
 

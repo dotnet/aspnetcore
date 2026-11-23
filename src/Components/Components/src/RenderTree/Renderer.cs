@@ -1321,16 +1321,18 @@ public abstract partial class Renderer : IDisposable, IAsyncDisposable
         _eventHandlerIdReplacements.Clear();
         _batchBuilder.Dispose();
 
-        NotifyExceptions(exceptions);
-
         if (asyncDisposables?.Count >= 1)
         {
-            _disposeTask = HandleAsyncExceptions(asyncDisposables);
+            _disposeTask = HandleAsyncExceptions(asyncDisposables, exceptions);
+        }
+        else
+        {
+            NotifyExceptions(exceptions);
         }
 
-        async Task HandleAsyncExceptions(List<Task> tasks)
+        async Task HandleAsyncExceptions(List<Task> tasks, List<Exception> exceptions)
         {
-            List<Exception> asyncExceptions = null;
+            List<Exception> asyncExceptions = exceptions;
             foreach (var task in tasks)
             {
                 try
