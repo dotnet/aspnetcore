@@ -2206,7 +2206,6 @@ public class CircuitHostTest
             }
         }
     }
-
     private sealed class MissingServiceInjectedComponent : ComponentBase
     {
         [Inject]
