@@ -12,6 +12,7 @@ using Microsoft.Extensions.Logging.Testing;
 using Microsoft.Extensions.Primitives;
 using Microsoft.Extensions.Time.Testing;
 using Microsoft.Net.Http.Headers;
+using Moq;
 
 namespace Microsoft.AspNetCore.OutputCaching.Tests;
 
@@ -971,6 +972,183 @@ public abstract class OutputCacheMiddlewareTests
         await Task.WhenAll(task1, task2);
 
         Assert.Equal(1, responseCounter);
+    }
+
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task Locking_CancelledWaiterExitsBeforeCreatorCompletes(bool refresh)
+    {
+        var cache = GetStore();
+        var release = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+        var responseCounter = 0;
+        var options = new OutputCacheOptions();
+        options.AddBasePolicy(build => build.Cache().AddPolicy(new RefreshableCachePolicy()));
+        var middleware = TestUtils.CreateTestMiddleware(options: options, cache: cache, next: async c =>
+        {
+            responseCounter++;
+            await release.Task;
+            await c.Response.WriteAsync("cached response");
+        });
+        var creator = TestUtils.CreateTestContext(cache: cache).HttpContext;
+        creator.Request.Method = HttpMethods.Get;
+        using var cancellation = new CancellationTokenSource();
+        var cancelled = TestUtils.CreateTestContext(cache: cache).HttpContext;
+        cancelled.Request.Method = HttpMethods.Get;
+        cancelled.RequestAborted = cancellation.Token;
+        if (refresh)
+        {
+            cancelled.Request.Headers["X-Refresh"] = "true";
+        }
+
+        var survivor = TestUtils.CreateTestContext(cache: cache).HttpContext;
+        survivor.Request.Method = HttpMethods.Get;
+        using var survivorBody = new MemoryStream();
+        survivor.Response.Body = survivorBody;
+
+        var creatorTask = middleware.Invoke(creator);
+        var cancelledTask = middleware.Invoke(cancelled);
+        var survivorTask = middleware.Invoke(survivor);
+        var laterTask = Task.CompletedTask;
+
+        try
+        {
+            Assert.Equal(1, responseCounter);
+            Assert.False(cancelledTask.IsCompleted);
+            cancellation.Cancel();
+            var exception = await Assert.ThrowsAnyAsync<OperationCanceledException>(
+                () => cancelledTask.DefaultTimeout());
+            Assert.Equal(cancellation.Token, exception.CancellationToken);
+            Assert.Null(cancelled.Features.Get<IOutputCacheFeature>());
+            Assert.False(creatorTask.IsCompleted);
+            Assert.False(survivorTask.IsCompleted);
+
+            // A cancelled waiter must not remove the creator's shared worker.
+            var later = TestUtils.CreateTestContext(cache: cache).HttpContext;
+            later.Request.Method = HttpMethods.Get;
+            using var laterBody = new MemoryStream();
+            later.Response.Body = laterBody;
+            laterTask = middleware.Invoke(later);
+            Assert.False(laterTask.IsCompleted);
+            Assert.Equal(1, responseCounter);
+
+            release.SetResult();
+            await Task.WhenAll(creatorTask, survivorTask, laterTask).DefaultTimeout();
+            Assert.Equal("cached response", Encoding.UTF8.GetString(survivorBody.ToArray()));
+            Assert.Equal("cached response", Encoding.UTF8.GetString(laterBody.ToArray()));
+            Assert.Equal(1, responseCounter);
+            Assert.Equal(1, cache.SetCount);
+
+            var warm = TestUtils.CreateTestContext(cache: cache).HttpContext;
+            warm.Request.Method = HttpMethods.Get;
+            using var warmBody = new MemoryStream();
+            warm.Response.Body = warmBody;
+            await middleware.Invoke(warm).DefaultTimeout();
+            Assert.Equal("cached response", Encoding.UTF8.GetString(warmBody.ToArray()));
+            Assert.Equal(1, responseCounter);
+        }
+        finally
+        {
+            release.TrySetResult();
+            await Task.WhenAll(creatorTask, survivorTask, laterTask).DefaultTimeout();
+        }
+    }
+
+    [Fact]
+    public async Task CacheLookup_CancelledWaiterExitsWithoutExecutingEndpoint()
+    {
+        var lookup = new TaskCompletionSource<byte[]>(TaskCreationOptions.RunContinuationsAsynchronously);
+        var cache = new Mock<IOutputCacheStore>();
+        cache.Setup(store => store.GetAsync(It.IsAny<string>(), It.IsAny<CancellationToken>()))
+            .Returns(() => new ValueTask<byte[]>(lookup.Task));
+        var responseCounter = 0;
+        var options = new OutputCacheOptions();
+        options.AddBasePolicy(build => build.Cache());
+        var middleware = TestUtils.CreateTestMiddleware(options: options, cache: cache.Object, next: c =>
+        {
+            responseCounter++;
+            return Task.CompletedTask;
+        });
+        var creator = TestUtils.CreateTestContext().HttpContext;
+        creator.Request.Method = HttpMethods.Get;
+        using var cancellation = new CancellationTokenSource();
+        var cancelled = TestUtils.CreateTestContext().HttpContext;
+        cancelled.Request.Method = HttpMethods.Get;
+        cancelled.RequestAborted = cancellation.Token;
+        var survivor = TestUtils.CreateTestContext().HttpContext;
+        survivor.Request.Method = HttpMethods.Get;
+        var creatorTask = middleware.Invoke(creator);
+        var cancelledTask = middleware.Invoke(cancelled);
+        var survivorTask = middleware.Invoke(survivor);
+
+        try
+        {
+            Assert.False(cancelledTask.IsCompleted);
+            cancellation.Cancel();
+            var exception = await Assert.ThrowsAnyAsync<OperationCanceledException>(
+                () => cancelledTask.DefaultTimeout());
+            Assert.Equal(cancellation.Token, exception.CancellationToken);
+            Assert.Null(cancelled.Features.Get<IOutputCacheFeature>());
+            Assert.Equal(0, responseCounter);
+            Assert.False(creatorTask.IsCompleted);
+            Assert.False(survivorTask.IsCompleted);
+            cache.Verify(store => store.GetAsync(It.IsAny<string>(), It.IsAny<CancellationToken>()), Times.Once);
+        }
+        finally
+        {
+            lookup.TrySetResult(null);
+            await Task.WhenAll(creatorTask, survivorTask).DefaultTimeout();
+        }
+
+        Assert.Null(creator.Features.Get<IOutputCacheFeature>());
+        Assert.Null(survivor.Features.Get<IOutputCacheFeature>());
+    }
+
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task AlreadyAbortedRequest_DoesNotAccessStoreOrExecuteEndpoint(bool refresh)
+    {
+        var cache = new Mock<IOutputCacheStore>();
+        var options = new OutputCacheOptions();
+        options.AddBasePolicy(build => build.Cache().AddPolicy(new RefreshableCachePolicy()));
+        var middleware = TestUtils.CreateTestMiddleware(options: options, cache: cache.Object, next: _ =>
+            throw new InvalidOperationException("An aborted request must not execute the endpoint."));
+        var context = TestUtils.CreateTestContext().HttpContext;
+        context.Request.Method = HttpMethods.Get;
+        context.RequestAborted = new CancellationToken(canceled: true);
+        if (refresh)
+        {
+            context.Request.Headers["X-Refresh"] = "true";
+        }
+
+        await Assert.ThrowsAnyAsync<OperationCanceledException>(() => middleware.Invoke(context).DefaultTimeout());
+
+        cache.Verify(store => store.GetAsync(It.IsAny<string>(), It.IsAny<CancellationToken>()), Times.Never);
+        Assert.Null(context.Features.Get<IOutputCacheFeature>());
+    }
+
+    [Fact]
+    public async Task CacheLookup_CancelledStoreOperationDoesNotAbortLiveRequest()
+    {
+        var cache = new Mock<IOutputCacheStore>();
+        cache.Setup(store => store.GetAsync(It.IsAny<string>(), It.IsAny<CancellationToken>()))
+            .Returns(() => new ValueTask<byte[]>(Task.FromCanceled<byte[]>(new CancellationToken(canceled: true))));
+        var options = new OutputCacheOptions();
+        options.AddBasePolicy(build => build.Cache());
+        var middleware = TestUtils.CreateTestMiddleware(options: options, cache: cache.Object,
+            next: c => c.Response.WriteAsync("uncancelled response"));
+        var context = TestUtils.CreateTestContext().HttpContext;
+        context.Request.Method = HttpMethods.Get;
+        using var body = new MemoryStream();
+        context.Response.Body = body;
+
+        await middleware.Invoke(context).DefaultTimeout();
+
+        Assert.False(context.RequestAborted.IsCancellationRequested);
+        Assert.Equal("uncancelled response", Encoding.UTF8.GetString(body.ToArray()));
+        Assert.Null(context.Features.Get<IOutputCacheFeature>());
+        cache.Verify(store => store.GetAsync(It.IsAny<string>(), It.IsAny<CancellationToken>()), Times.Once);
     }
 
     [Fact]

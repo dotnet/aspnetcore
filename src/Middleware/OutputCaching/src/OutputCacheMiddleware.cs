@@ -142,7 +142,7 @@ internal sealed class OutputCacheMiddleware
 
                     if (context.AllowLocking && !string.IsNullOrEmpty(context.CacheKey))
                     {
-                        var cacheEntry = await _requestDispatcher.ScheduleAsync(context.CacheKey, key => ExecuteResponseAsync());
+                        var cacheEntry = await _requestDispatcher.ScheduleAsync(context.CacheKey, key => ExecuteResponseAsync(), httpContext.RequestAborted);
 
                         // The current request was processed, nothing more to do
                         if (executed)
@@ -345,10 +345,12 @@ internal sealed class OutputCacheMiddleware
         OutputCacheEntry? cacheEntry;
         try
         {
-            cacheEntry = await _outputCacheEntryDispatcher.ScheduleAsync(cacheContext.CacheKey, (Store: _store, CacheContext: cacheContext), static async (key, state) => await OutputCacheEntryFormatter.GetAsync(key, state.Store, state.CacheContext.HttpContext.RequestAborted));
+            cacheEntry = await _outputCacheEntryDispatcher.ScheduleAsync(cacheContext.CacheKey, (Store: _store, CacheContext: cacheContext), static async (key, state) => await OutputCacheEntryFormatter.GetAsync(key, state.Store, state.CacheContext.HttpContext.RequestAborted), cacheContext.HttpContext.RequestAborted);
         }
         catch (OperationCanceledException)
         {
+            cacheContext.HttpContext.RequestAborted.ThrowIfCancellationRequested();
+
             // don't report as failure
             cacheEntry = null;
         }
