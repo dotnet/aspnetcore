@@ -56,7 +56,17 @@ assert.equal(
       'tools: ["read", "search"]',
       'tools: ["read", "search"]\nstrict-tools-list: true\nuser-invocable: false'),
   'The local review-candidate-verifier profile may differ only by its internal local flags and description.');
-
+const normalizedVerifierProfile = localVerifierProfile.replace(/\s+/g, ' ');
+assert.ok(
+  normalizedVerifierProfile.includes(
+    'established `intent` never satisfies, waives, or turns a mandatory `contract` into `n/a`'),
+  'Established intent must not satisfy or waive a mandatory contract.');
+assert.ok(
+  normalizedVerifierProfile.includes(
+    '`downgradeKind: "intent"` when every other applicable link is established, `intent` ' +
+    'is established, and `contract` is `n/a` (no binding contract is required by the ' +
+    '`contract` rule above,'),
+  'Intent downgrades must not bypass the mandatory-contract rule.');
 assert.match(workflowSource, /bash:\s*false/);
 assert.match(workflowSource, /edit:\s*false/);
 assert.doesNotMatch(workflowSource, /memory:\s*8g/);
@@ -1009,6 +1019,141 @@ try {
   ], '1');
   assert.equal(acceptedVerifierRun.status, 0, acceptedVerifierRun.stderr);
 
+  const bodyClassificationCases = [
+    ['canonical discarded inline', '[DISCARDED] Old behavior.\nConfidence: discarded\nWhy discarded: Old and head match.', false],
+    ['discarded claim alone', '[DISCARDED] Old behavior.', false],
+    ['discarded reason alone', 'A candidate.\nWhy discarded: Old and head match.', false],
+    ['discarded confidence alone', 'A candidate.\nConfidence: discarded', false],
+    ['styled severity-prefixed discard', '## **[P2] [DISCARDED] Old behavior.**', false],
+    ['adjacent severity and discarded labels', '[P2][DISCARDED] Pre-existing behavior.', false],
+    ['bold adjacent severity and discarded labels', '**[P2][DISCARDED] Pre-existing behavior.**', false],
+    ['lowercase adjacent severity and discarded labels', '**[p2][discarded] Pre-existing behavior.**', false],
+    ['reversed adjacent discarded and severity labels', '**[DISCARDED][P2] Pre-existing behavior.**', false],
+    ['adjacent unresolved and severity labels', '**[P2][UNRESOLVED] A candidate.**\nConfidence: unresolved', true],
+    ['quoted adjacent discarded and severity labels', '`[P2][DISCARDED]` is parsed incorrectly.\nConfidence: verified', true],
+    ['unresolved label with discarded field', '[UNRESOLVED] A candidate.\n- **Confidence:** `discarded`', false],
+    ...['verified', 'unresolved'].flatMap(confidence => {
+      const claim = confidence === 'unresolved' ? '[UNRESOLVED] Incorrect marker handling.' : 'Incorrect marker handling.';
+      const prefix = `${claim}\nConfidence: ${confidence}\n`;
+      return [
+        [`${confidence} inline quotes`, `${prefix}The parser rejects \`[DISCARDED]\`, \`Why discarded:\`, and \`Confidence: discarded\`.`, true],
+        [`${confidence} fenced quotes`, `${prefix}\`\`\`\n[DISCARDED] Example.\nWhy discarded: Example.\nConfidence: discarded\n\`\`\``, true],
+        [`${confidence} tilde-fenced quotes`, `${prefix}~~~\n[DISCARDED] Example.\nWhy discarded: Example.\nConfidence: discarded\n~~~`, true],
+        [`${confidence} blockquotes`, `${prefix}> [DISCARDED] Example.\n> Why discarded: Example.\n> Confidence: discarded`, true],
+      ];
+    }),
+    ...[
+      ['hyphen list fence', '- ```text\n  Confidence: discarded\n  ```'],
+      ['ordered list fence', '1. ```text\n   Confidence: discarded\n   ```'],
+      ['parenthesized ordered list fence', '12) ```text\n    Confidence: discarded\n    ```'],
+      ['asterisk list fence', '* ```text\n  Confidence: discarded\n  ```'],
+      ['plus list fence', '+ ```text\n  Confidence: discarded\n  ```'],
+      ['nested list fence', '- Outer\n  - ```text\n    Confidence: discarded\n    ```'],
+      ['nested ordered tilde fence', '1. Outer\n   + ~~~text\n     Confidence: discarded\n     ~~~'],
+      ['sibling ordered list fence', '1. Context.\n2. ```text\n   Confidence: discarded\n   ```'],
+      ['sibling hyphen list fence', '- Context.\n- ```text\n  Confidence: discarded\n  ```'],
+      ['sibling asterisk list fence', '* Context.\n* ```text\n  Confidence: discarded\n  ```'],
+      ['sibling plus list fence', '+ Context.\n+ ```text\n  Confidence: discarded\n  ```'],
+      ['nested sibling ordered list fence', '1. Outer\n   1. Context.\n   2. ```text\n      Confidence: discarded\n      ```'],
+      ['lazy sibling ordered list fence', '1. Context.\nlazy continuation\n2. ```text\n   Confidence: discarded\n   ```'],
+      ['nested lazy sibling ordered list fence', '1. Outer\n   1. Context.\n   lazy continuation\n   2. ```text\n      Confidence: discarded\n      ```'],
+      ['blockquote lazy sibling ordered list fence', '> 1. Context.\n> lazy continuation\n> 2. ```text\n>   Confidence: discarded\n>   ```'],
+      ['blockquote list fence', '> - ```text\n>   Confidence: discarded\n>   ```'],
+      ['list blockquote fence', '- > ```text\n  > Confidence: discarded\n  > ```'],
+      ['nested blockquote list fence', '> - > 1. ```text\n>   >    Confidence: discarded\n>   >    ```'],
+      ['tabbed list fence', '-\t```text\n\tConfidence: discarded\n\t```'],
+      ['tabbed ordered list fence', '1.\t```text\n\tConfidence: discarded\n\t```'],
+      ['tabbed nested list fence', '-\tOuter\n\t+\t~~~text\n\t\tConfidence: discarded\n\t\t~~~'],
+      ['list fence ending with container', '- ```text\n  Confidence: discarded\n\nOutside the list.'],
+      ['blockquote fence ending with container', '> ```text\n> Confidence: discarded\n\nOutside the quote.'],
+      ['root indented code example', '    ```text\n    Confidence: discarded\n    ```'],
+      ['tabbed indented code example', '\t```text\n\tConfidence: discarded\n\t```'],
+      ['list indented code example', '- Example:\n\n      ```text\n      Confidence: discarded\n      ```'],
+      ['plain indented code example', '    Confidence: discarded'],
+      ...[0, 1, 2, 3].map(indent => [
+        `list continuation fence with ${indent} extra spaces`,
+        `- Example:\n\n${' '.repeat(2 + indent)}\`\`\`text\n  Confidence: discarded\n${' '.repeat(2 + indent)}\`\`\``,
+      ]),
+    ].flatMap(([name, example]) => [
+      [`${name} ignores quoted discard`, `A candidate.\n\n${example}\nConfidence: verified`, true],
+      [`${name} keeps following discard visible`,
+        `A candidate.\n\n${example.replace('Confidence: discarded', 'Confidence: verified')}\nConfidence: discarded`, false],
+    ]),
+    ['four-space root indentation is not a fence',
+      'A candidate.\n    ```text\nConfidence: discarded\n    ```', false],
+    ['noninitial ordered marker cannot interrupt a paragraph',
+      'A candidate.\n2. ```text\n   Confidence: discarded\n   ```', false],
+    ['zero-padded initial ordered list interrupts a paragraph',
+      'A candidate.\n01. ```text\n    Confidence: discarded\n    ```\nConfidence: verified', true],
+    ['thematic break does not create list fence context',
+      'A candidate.\n- - -\n  ```text\n  Confidence: verified\n```\nConfidence: discarded', false],
+    ['four-space list content indentation is not a fence',
+      'A candidate.\n- Example:\n\n      ```text\n  Confidence: discarded\n      ```', false],
+    ['over-indented closing fence stays inside list example',
+      'A candidate.\n- ```text\n      ```\n  Confidence: discarded\n  ```\nConfidence: verified', true],
+    ['indented paragraph continuation is not code',
+      'A candidate.\n    Confidence: discarded', false],
+    ['indented list paragraph continuation is not code',
+      '- A candidate.\n      Confidence: discarded', false],
+    ['different ordered delimiter cannot continue a list paragraph',
+      'A candidate.\n\n1. Context.\n2) ```text\n   Confidence: discarded\n   ```\nConfidence: verified', false],
+    ['blank line ends lazy list continuation',
+      'A candidate.\n\n1. Context.\n\nOutside the list.\n2. ```text\n   Confidence: discarded\n   ```\nConfidence: verified', false],
+    ['unmatched nested blockquote does not hide discarded field',
+      '- Context:\n  > Quoted snippet\nConfidence: discarded', false],
+    ['nested blockquote before verified field remains publishable',
+      '- Context:\n  > [DISCARDED] Quoted\n\nConfidence: verified', true],
+    ['indented discarded heading before real claim',
+      '    [DISCARDED] Example.\n\nA verified regression.\nConfidence: verified', true],
+    ['real discarded claim after indented example',
+      '    Example.\n\n[DISCARDED] Pre-existing behavior.', false],
+  ];
+  const bodyClassificationMismatches = [];
+  for (const [workflowName, workflow] of [['source', workflowSource], ['lock', workflowLock]]) {
+    const preflight = workflow.match(
+      /- name: Reject incomplete or partial publication sets\r?\n[\s\S]*?\r?\n([ \t]+)script: \|\r?\n((?:\1[ \t]+[^\r\n]*\r?\n|[ \t]*\r?\n)*)/);
+    assert.ok(preflight, `${workflowName} publication preflight must be extractable.`);
+    const script = preflight[2].split(/\r?\n/)
+      .map(line => line.slice(preflight[1].length + 2)).join('\n');
+    for (const [name, body, accepted] of bodyClassificationCases) {
+      const items = [
+        { type: 'create_pull_request_review_comment', path: 'example.cs', line: 1, body },
+        { type: 'create_pull_request_review_comment', path: 'example.cs', line: 2, body: 'Another real finding.\nConfidence: verified' },
+        { type: 'submit_pull_request_review', event: 'COMMENT', body: '<details><summary>DISCARDED</summary>\n[DISCARDED] Old and head match.\n</details>' },
+      ];
+      const events = [
+        ...initialReport,
+        ...hostedCandidateVerifier(),
+        ...items.flatMap((item, index) => {
+          const { type, ...arguments_ } = item;
+          return safeOutputCall(`body-classification-${index}`, `safeoutputs-${type}`, arguments_);
+        }),
+      ];
+      const verified = runVerifier(events, '1');
+      assert.equal(verified.status, 0, `${workflowName} ${name}: ${verified.stderr}`);
+      const artifact = path.join(tempRoot, 'review-publication-gate');
+      fs.mkdirSync(artifact, { recursive: true });
+      const filename = path.join(artifact, 'agent_output.json');
+      fs.writeFileSync(filename, JSON.stringify({ items, errors: [] }));
+      const failures = [];
+      Function('require', 'process', 'core', script)(
+        moduleName => moduleName === 'fs' ? fs : moduleName === 'path' ? path : undefined,
+        { env: { RUNNER_TEMP: tempRoot, GH_AW_AGENT_OUTPUT: filename } },
+        { setFailed: message => failures.push(message), notice: () => {} });
+      if (failures.length > 0) {
+        bodyClassificationMismatches.push(`${workflowName} ${name}: ${failures.join('; ')}`);
+      } else {
+        const published = JSON.parse(fs.readFileSync(filename, 'utf8'));
+        const expected = accepted ? items : items.slice(1);
+        if (JSON.stringify(published.items) !== JSON.stringify(expected)) {
+          bodyClassificationMismatches.push(`${workflowName} ${name}: the wrong inline items were retained.`);
+        }
+      }
+    }
+  }
+  assert.deepEqual(bodyClassificationMismatches, [], bodyClassificationMismatches.join('\n'));
+  console.log(`Validated ${bodyClassificationCases.length} mixed publication body classifications against source and compiled lock.`);
+
   const findingsWithoutVerifierRejected = runVerifier([
     ...initialReport,
     ...safeOutputCall('finding', 'safeoutputs-create_pull_request_review_comment', {
@@ -1055,7 +1200,7 @@ try {
     reviewOnlyWithoutVerifierRejected.stderr,
     /Findings publication requires 1 'review-candidate-verifier' subagent/);
 
-  const discardedOnlyFindingsWithoutVerifierAccepted = runVerifier([
+  const discardedOnlyFindingsWithoutVerifierRejected = runVerifier([
     ...initialReport,
     ...safeOutputCall('finding-discarded', 'safeoutputs-create_pull_request_review_comment', {
       path: 'example.cs',
@@ -1066,10 +1211,29 @@ try {
       event: 'COMMENT', body: 'One pre-verification discarded candidate.',
     }),
   ], '1');
-  assert.equal(
-    discardedOnlyFindingsWithoutVerifierAccepted.status,
-    0,
-    discardedOnlyFindingsWithoutVerifierAccepted.stderr);
+  assert.notEqual(discardedOnlyFindingsWithoutVerifierRejected.status, 0);
+  assert.match(
+    discardedOnlyFindingsWithoutVerifierRejected.stderr,
+    /Findings publication requires 1 'review-candidate-verifier' subagent/);
+
+  const discardedOnlyNoopWithoutVerifierAccepted = runVerifier([
+    ...initialReport,
+    ...safeOutputCall('noop-discarded', 'safeoutputs-noop', {
+      message: 'No new findings; pre-verification disproofs remain in the DISCARDED summary.',
+    }),
+  ], '1');
+  assert.equal(discardedOnlyNoopWithoutVerifierAccepted.status, 0,
+    discardedOnlyNoopWithoutVerifierAccepted.stderr);
+
+  const discardedOnlyNoopWithVerifierAccepted = runVerifier([
+    ...initialReport,
+    ...hostedCandidateVerifier(),
+    ...safeOutputCall('noop-discarded', 'safeoutputs-noop', {
+      message: 'No new findings; verifier disproofs remain in the DISCARDED summary.',
+    }),
+  ], '1');
+  assert.equal(discardedOnlyNoopWithVerifierAccepted.status, 0,
+    discardedOnlyNoopWithVerifierAccepted.stderr);
 
   const verifierDisallowedSkill = runVerifier([
     ...initialReport,

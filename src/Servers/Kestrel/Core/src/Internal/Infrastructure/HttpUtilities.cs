@@ -274,7 +274,7 @@ internal static partial class HttpUtilities
             return HttpMethod.None;
         }
 
-        if ((uint)(value.Length - MinWordLength) <= (MaxWordLength - MinWordLength))
+        if ((uint)(value.Length - MinWordLength) <= (MaxWordLength - MinWordLength) && char.IsAscii(value[0]))
         {
             var methodsLookup = Methods();
 

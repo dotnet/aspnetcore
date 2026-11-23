@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.IO;
+using System.Reflection;
 using System.Xml;
 using Microsoft.Web.XmlTransform;
 using Xunit;
@@ -10,6 +11,15 @@ namespace Microsoft.Web.Xdt.Extensions;
 
 public class InsertOrAppendAttributeTests
 {
+    [Fact]
+    public void TransformAssembly_CanLoadInEitherProcessArchitecture()
+    {
+        typeof(InsertOrAppendAttribute).Module.GetPEKind(out var peKind, out var machine);
+
+        Assert.Equal(ImageFileMachine.I386, machine);
+        Assert.Equal(PortableExecutableKinds.ILOnly, peKind);
+    }
+
     [Fact]
     public void InsertOrAppend_NoExesitingLine_InsertsLine()
     {

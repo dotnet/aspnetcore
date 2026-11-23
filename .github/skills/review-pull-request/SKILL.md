@@ -1,11 +1,26 @@
 ---
 name: review-pull-request
 description: >-
-  Review an identified ASP.NET Core pull request against a complete, frozen, trusted
-  source-and-guidance bundle. Return source-supported findings without publishing.
+  Review an identified ASP.NET Core pull request only through an explicit entry point:
+  a coordinator supplied a version-2 manifest.json bundle (/review hosted workflow or campaign runner);
+  a native local coordinator was explicitly asked to use this repository's PR review skill
+  (including review-pull-request or /review-pull-request) to bootstrap with prepare-review.cs;
+  an assigned review-guide-worker received its
+  bundle root and guides[].assignment; or a caller explicitly requested an offline
+  source-review adjudication using staged criteria and named evidence. Review frozen source and guidance; return
+  source-supported findings without publishing. DO NOT USE FOR automated GitHub Copilot Code Review
+  (copilot-pull-request-reviewer) or general PR diff review outside those explicit entry points.
 ---
 
 # Source-only pull request review
+
+For automated GitHub Copilot Code Review (`copilot-pull-request-reviewer`), stop using this skill and continue under the reviewer's normal instructions. Do not bootstrap or report a missing frozen bundle, `manifest.json`, or `feedback.json` as a PR defect or review blocker.
+
+For an explicitly requested offline source-review adjudication using staged criteria and named evidence without a supplied bundle, apply only the requested review criteria in one context; do not require a bundle, bootstrap, or spawn agents (an offline one-pass comparison with a supplied bundle still follows the bundle path below).
+
+For other explicit entry points (a supplied version-2 `manifest.json` bundle, an explicit request to run this repository's PR review skill locally, or an assigned `review-guide-worker` with its bundle root and `guides[].assignment`), follow the coordinator or `PATH: per-guide-worker` procedures below. Workers do not receive `manifest.json` directly.
+
+For any unsolicited or general PR diff review outside those entry points, stop using this skill and continue under the reviewer's normal instructions without applying this skill's bundle requirements.
 
 You are the reviewer, not an implementer. The trusted caller supplies a ready version-2
 `manifest.json` bundle. A native local invocation without a supplied bundle has exactly
@@ -282,8 +297,8 @@ coordinator-owned post-gate verifier, not a routed guide worker; it does not cha
 one-worker-per-guide count or any per-guide worker invariant. Use the same explicitly
 selected model and reasoning effort as the guide workers. Give it the trusted bundle
 root; the role-to-root mapping for the frozen `source/<sha>` roots; the exact diff and
-changed-file references; every provisional finding (identifying any incomplete-fix or
-new-feature omission claim); the exact assigned issue, API, base-tip, or
+changed-file references; every provisional finding (identifying any incomplete-fix,
+new-feature omission, or policy-only secondary-failure suppression claim); the exact assigned issue, API, base-tip, or
 primary-repository contract paths; and, when validation was used, the immutable
 source-bound validation artifacts and their paths, not an assertion that tests passed.
 It may read and search only those assigned frozen inputs, must verify only the supplied
@@ -304,24 +319,23 @@ RIGHT-side changed `file:line`, keeps it inline in `NEW_FINDINGS` with
 `confidence: unresolved`, its claim prefixed with `[UNRESOLVED] `, and `Why unresolved:`
 stating the exact `missingEvidence` and verifier rationale; `DROP` because frozen
 source contradicts a required link records it in `DISCARDED` with the exact source
-reason and, when anchored to a RIGHT-side changed `file:line`, keeps it inline in
-`NEW_FINDINGS` with `confidence: discarded`, its claim prefixed with `[DISCARDED] `,
-and `Why discarded:` stating the refuting `file:line` and verifier rationale. Proven
+reason, refuting `file:line`, and verifier rationale, never in `NEW_FINDINGS`. Proven
 pre-existing same behavior on the candidate's exact input sequence is recorded in
-`DISCARDED` with the compared old/new source reason and surfaced inline with
-`confidence: discarded` (`[DISCARDED] ` plus `Why discarded:`). Any concrete candidate
+`DISCARDED` with the compared old/new source reason, never inline. Any concrete candidate
 that a worker proposed in `CANDIDATES` or `UNRESOLVED` and that the coordinator directly
-disproves before verification is likewise recorded in `DISCARDED` and, when anchored to a
-RIGHT-side changed `file:line`, kept inline in `NEW_FINDINGS` with `confidence: discarded`
-(`[DISCARDED] ` plus the coordinator's `Why discarded:` reason). The same inline rule applies
-to every candidate evaluated by `review-candidate-verifier`. A routine negative topic
+disproves before verification is likewise recorded only in `DISCARDED` with the
+coordinator's source reason. The same summary-only rule applies to every discarded
+candidate evaluated by `review-candidate-verifier`. A routine negative topic
 check recorded only in a worker's own `DISCARDED` section, without being proposed in
 `CANDIDATES` or `UNRESOLVED` or evaluated by the verifier, remains in the summary
 `DISCARDED` section and must not be promoted into `NEW_FINDINGS`. As a deterministic safety net,
 when a contradicted `DROP` names `contradictedLink: contract` but its cited contract is
 head-side, keep the candidate in `NEW_FINDINGS` as an intent question with `confidence:
 question` instead of discarding it. This is an intentional adaptation of the verifier
-contract for skill output. External behavior that remains unestablished is
+contract for skill output. When `DOWNGRADE(intent)` reports `contract: "n/a"` for a
+contract-dependent candidate, record it in `UNRESOLVED` with the missing binding contract,
+not as an intent question. Apply the same unresolved inline rule above. Intent cannot
+supply or waive a mandatory contract. External behavior that remains unestablished is
 `UNRESOLVED`.
 
 For a `KEEP` or an intent question, accept a verifier-corrected changed-line anchor or
@@ -342,23 +356,23 @@ The first line is always `STATUS: FINDINGS`, `STATUS: NO_FINDINGS`,
 `GUIDES` (each routed guide and its status, completed in-scope checks, exclusions,
 and unresolved candidates), `UNCOVERED`, `PATH` (`per-guide` or `single-reviewer`),
 `NEW_FINDINGS` (zero to five, ordered by confidence (`verified`, `question`,
-`unresolved`, `discarded`) and then severity (`P1`, `P2`, `P3`) so unresolved or
-discarded items never displace verified findings or questions),
+`unresolved`) and then severity (`P1`, `P2`, `P3`) so unresolved
+items never displace verified findings or questions),
 `EXISTING_FEEDBACK_COVERAGE` (deduplicated true positives with the existing comment or
 review reference), `UNRESOLVED` (every unresolved candidate and exact missing evidence,
 including any surfaced inline), `DISCARDED`
 (every discarded candidate or worker-discarded routine negative topic check and its
-precise source reason, identifying any candidate surfaced inline), `TEST_BOUNDARY`, and `LIMITATIONS`. Each
+precise source reason; summary only, never inline), `TEST_BOUNDARY`, and `LIMITATIONS`. Each
 `NEW_FINDINGS` entry contains a one-line claim (prefixed with `[UNRESOLVED] ` when
-`confidence` is `unresolved` or `[DISCARDED] ` when `confidence` is `discarded`); `file:line`; severity (`P1` for
+`confidence` is `unresolved`); `file:line`; severity (`P1` for
 broken/incorrect common usage or data loss, `P2` for incorrect behavior in a realistic
 narrower scenario, or `P3` for minor/edge or test/doc-only impact); confidence
-(`verified`, `question`, `unresolved`, or `discarded`); when `confidence` is `unresolved` or
-`discarded`, a one-line `Why unresolved:` or `Why discarded:` summary citing the exact
-missing evidence or refuting `file:line` and old/new comparison; a minimal repro using app/user code, CLI commands, or
+(`verified`, `question`, or `unresolved`); when `confidence` is `unresolved`,
+a one-line `Why unresolved:` summary citing the exact
+missing evidence; a minimal repro using app/user code, CLI commands, or
 workflow inputs that reaches the affected behavior; what goes wrong in at most two
-lines; and a fix snippet when possible (or `none` when `discarded`). An unresolved or
-discarded `NEW_FINDINGS` entry must come from a candidate proposed in a worker's
+lines; and a fix snippet when possible. An unresolved
+`NEW_FINDINGS` entry must come from a candidate proposed in a worker's
 `CANDIDATES` or `UNRESOLVED`, or evaluated by `review-candidate-verifier`; never create
 one solely from a routine check listed only in a worker's `DISCARDED`.
 
@@ -369,8 +383,8 @@ worker-configuration mismatch. External-contract and non-code metadata gaps stay
 `UNRESOLVED`; they do not cause either status.
 `NO_FINDINGS` is allowed only after every routed guide completes and `NEW_FINDINGS` is
 empty, but it must still disclose deduplicated true positives
-and all unresolved or discarded summary entries. Summary-only routine negative checks
-in `DISCARDED` do not require `FINDINGS`. Use `FINDINGS` when at least one `NEW_FINDINGS` entry is present.
+and all unresolved or discarded summary entries. All-discarded candidates require
+`NO_FINDINGS`, not `FINDINGS`. Use `FINDINGS` when at least one `NEW_FINDINGS` entry is present.
 An excluded scope must remain visible, never be reported as completed. Neither
 `INCOMPLETE` nor `BLOCKED` licenses partial publication; source-only confidence is not
 runtime proof.

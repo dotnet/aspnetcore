@@ -15,16 +15,21 @@ overloads, and an enum.
 ## Value types
 
 - Map `DOMString` and `USVString` to `string`, and their nullable forms to `string?`.
-- Map `long` to `int`, `unsigned long` to `uint`, and `long long` to `long`. Add `?` for a nullable type.
+- Map `long` to `int`, `unsigned long` to `uint`, `long long` to `long`, and `unsigned long long` to
+  `ulong`. Add `?` for a nullable type.
 - Resolve a typedef to the type behind it, and do not create a .NET type for the typedef itself.
   When it is a number, use that number type, even if the name suggests a time or a size. For
   example, `DOMHighResTimeStamp` is a `double`, so map `DOMHighResTimeStamp?` to `double?`.
   `CookieList` is `sequence<CookieListItem>`, so a returned `CookieList` becomes
-  `IReadOnlyList<CookieListItem>`.
-- Map a returned `sequence<T>` to `IReadOnlyList<T>`, and a `sequence<T>` parameter to
-  `IEnumerable<T>`. Do not use arrays or `List<T>`. This follows the API conventions, and newer
-  Blazor APIs such as `InputFileChangeEventArgs.GetMultipleFiles()` also return
-  `IReadOnlyList<T>`.
+  `ImmutableArray<CookieListItem>`.
+- Map a returned `sequence<T>` or `FrozenArray<T>` to `ImmutableArray<T>`, and a `sequence<T>`
+  parameter to `IEnumerable<T>`. Do not use arrays, `List<T>`, or `IReadOnlyList<T>`. Review chose
+  `ImmutableArray<T>` because its type says that nobody changes the list, as a JavaScript
+  `FrozenArray` does, although most of the repository returns `IReadOnlyList<T>`. Deserialize the
+  value as `T[]` and wrap it with `ImmutableCollectionsMarshal.AsImmutableArray(array)`, which does
+  not copy it. Initialize an `ImmutableArray<T>` property to `[]`, because enumerating
+  `default(ImmutableArray<T>)` throws. Some merged members, such as `CookieStore.GetAllAsync()`,
+  still return `IReadOnlyList<T>` until a later change. Do not copy them.
 - Do not wrap values in value objects or .NET types such as `DateTimeOffset` or `TimeSpan`.
 - JavaScript numbers lose precision above 2^53, so a `long` value can come back changed. Accept
   this, and do not add checks or workarounds for it.
@@ -101,37 +106,93 @@ public sealed class CookieInit
 - For `T? x = null`, the specification treats `null` and a missing member the same. Leave the
   member out anyway. Chromium crashes the page on `cookieStore.set({ maxAge: null })`, and only an
   E2E test in a real browser shows such a bug. A member that is never sent cannot hit it.
-- Initialize an enum member explicitly, as `SameSite` does above. Do not rely on the first enum
-  member being the default value.
+- Initialize an enum member explicitly, as `SameSite` does above, even when `default(T)` gives the
+  same value.
 
 ## Enums
 
-Map a Web IDL enum to a .NET `enum`. Attach the generic `JsonStringEnumConverter<T>` to the type,
-as `Microsoft.AspNetCore.Components.WebAssembly.Authentication.InteractionType` does. The generic
-converter is safe for trimming. Give every member `[JsonStringEnumMemberName]` with the exact Web
-IDL string.
+Map every Web IDL enum to a hand-written `readonly struct` that wraps the string, whether the
+application passes it or the browser returns it. A C# `enum` cannot hold a value that a newer
+browser adds, so deserializing such a value would fail. With the struct, an unknown value from the
+browser reaches the application, and an application can send a value before the package defines
+it. Do not use a `record struct`. The API conventions forbid it, because its compiler-generated
+members would join the public API without being listed.
 
-```csharp
-[JsonConverter(typeof(JsonStringEnumConverter<CookieSameSite>))]
-public enum CookieSameSite
-{
-    [JsonStringEnumMemberName("strict")]
-    Strict,
+Copy `CookieSameSite.cs`. Every enum has the same parts.
 
-    [JsonStringEnumMemberName("lax")]
-    Lax,
+- `[JsonConverter(typeof(WebIdlEnumJsonConverter<T>))]`, `IEquatable<T>`, and the internal
+  `IWebIdlEnum<T>`, whose explicit `Create(string)` the converter calls.
+- A public constructor that takes the string and throws `ArgumentNullException` for `null`.
+- One static get-only property per value, named in PascalCase, such as `NoCors` for `"no-cors"`, in
+  the order of the Web IDL. When a value has no natural .NET name, such as `""`, raise it as an
+  open question.
+- A `Value` property with the string, `ToString()` that returns it, and five one-line equality
+  members, `Equals(T)`, `Equals(object?)`, `GetHashCode()`, `==`, and `!=`, all on the private
+  field. List all of them in `PublicAPI.Unshipped.txt`, with XML docs worded as in
+  `CookieSameSite`.
 
-    [JsonStringEnumMemberName("none")]
-    None,
-}
-```
+`default(T)` skips every constructor, so the field is `null` in it. Handle it in one of two ways.
 
-- Do not rely on a naming policy. The camelCase policy of `JSRuntime` applies to property names
-  only, not to enum values. A policy cannot produce values such as `"no-cors"` or `""` either.
-- Keep the member order of the Web IDL, and name each member in PascalCase, such as `NoCors` for
-  `"no-cors"`. When a value has no natural .NET name, such as `""`, raise it as an open question.
-- An enum that the browser returns breaks when a browser adds a new value, because the unknown
-  string fails to deserialize. When a family returns an enum, raise this as an open question.
+- **(a) The Web IDL gives the value a default.** For example, `CookieInit` has
+  `CookieSameSite sameSite = "strict"`. Store the default as `null`, so that `default(T)` and the
+  default property are equal without a special case, as `CookieSameSite` does.
+
+  ```csharp
+  private const string DefaultValue = "strict";
+
+  // The default value is stored as null so that default(CookieSameSite) has the same field as Strict.
+  private readonly string? _value;
+
+  public CookieSameSite(string value)
+  {
+      ArgumentNullException.ThrowIfNull(value);
+      _value = value == DefaultValue ? null : value;
+  }
+
+  public static CookieSameSite Strict { get; } = new(DefaultValue);
+
+  public string Value => _value ?? DefaultValue;
+
+  public override string ToString() => Value;
+  ```
+
+- **(b) The Web IDL gives no default**, for example an enum that the browser only returns. The
+  constructor stores the string as it is, so the field is `null` only in `default(T)`. `Value`
+  throws for it, but `ToString()` must not, because the debugger, logging, and string
+  interpolation call it.
+
+  ```csharp
+  // Null only in default(OrientationType); the constructor never stores null.
+  private readonly string? _value;
+
+  public string Value => _value ?? throw new InvalidOperationException("The value is uninitialized.");
+
+  public override string ToString() => _value ?? string.Empty;
+  ```
+
+- When dictionary members use the same enum with different defaults, or only some of them have a
+  default, use (b). For example, `ScrollIntoViewOptions` has `block = "start"` and
+  `inline = "nearest"` of one enum. Each dictionary member still initializes its own default in C#.
+
+Test each enum with the serializing test runtime that "Verify" in `SKILL.md` describes.
+
+- Each value sends and reads its exact string, and an unknown string round-trips in both
+  directions.
+- For (a), `default(T)` equals the default property, and sending it sends the default string, as
+  the `CookieSameSite` tests in `CookieStoreTest` do.
+- For (b), `default(T).Value` throws `InvalidOperationException`, `default(T).ToString()` returns
+  `""`, `default(T)` equals itself and no defined value, and sending it throws
+  `InvalidOperationException` before anything reaches the browser.
+
+## Iterables
+
+- Map `iterable<T>` and `iterable<K, V>` to methods that return `IAsyncEnumerable<T>`, named after
+  the JavaScript methods, such as `EntriesAsync()`, `KeysAsync()`, and `ValuesAsync()` on
+  `UrlSearchParams`. An application then writes `await foreach`. This is a type mapping of the
+  iteration protocol, not a .NET substitution.
+- Do not port `forEach`. `await ForEachAsync(...)` would return before the callbacks finish, and an
+  exception from a callback would never reach the caller. `await foreach` over `EntriesAsync()`
+  does the same job without these problems.
 
 ## Operation overloads
 
@@ -139,9 +200,9 @@ Web IDL overloads become .NET overloads. Cookie Store has `getAll(USVString name
 `getAll(optional CookieStoreGetOptions options = {})`.
 
 ```csharp
-public ValueTask<IReadOnlyList<CookieListItem>> GetAllAsync();
-public ValueTask<IReadOnlyList<CookieListItem>> GetAllAsync(string name);
-public ValueTask<IReadOnlyList<CookieListItem>> GetAllAsync(CookieStoreGetOptions options);
+public ValueTask<ImmutableArray<CookieListItem>> GetAllAsync();
+public ValueTask<ImmutableArray<CookieListItem>> GetAllAsync(string name);
+public ValueTask<ImmutableArray<CookieListItem>> GetAllAsync(CookieStoreGetOptions options);
 ```
 
 - Map an optional dictionary parameter whose default is `{}` to an overload without that
@@ -171,7 +232,7 @@ without any warning.
 - Only the `TValue` of `InvokeAsync` and `GetValueAsync` itself is safe. It carries
   `[DynamicallyAccessedMembers(JsonSerialized)]`, so the trimmer keeps its constructors and
   properties. The annotation does not reach the element type of a collection or the type of a
-  property. So when `getAll()` returns `IReadOnlyList<CookieListItem>`, the trimmer can remove
+  property. So when `getAll()` reads a `CookieListItem[]`, the trimmer can remove
   the constructor or the properties of `CookieListItem`, and deserialization breaks.
 - An argument is not safe at all. Arguments travel as `object?[]`, which has no annotation. The
   trimmer cannot see that the serializer reads the property getters of `CookieInit`, so it can
@@ -185,7 +246,7 @@ without any warning.
   `ResourceAsset[]`. Take `JsonSerialized` from the shared `LinkerFlags.cs`, which projects include
   with `<Compile Include="$(SharedSourceRoot)LinkerFlags.cs" LinkBase="Shared" />`. The dependency
   lives only while the method lives, so it does not keep unused members of the family.
-- The enum attributes above are also read by reflection.
+- The `[JsonConverter]` attribute of an enum struct is also read by reflection.
 - Still prove every dictionary member in a trimmed WebAssembly app, not only in unit tests. Send
   each member of a dictionary the application passes, and read each member of a returned one,
   through the E2E tests on the published app.
