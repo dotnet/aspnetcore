@@ -32,6 +32,19 @@ internal class Endpoint
             return;
         }
 
+        HandlerDelegateType = operation.GetRouteHandlerDelegateType(semanticModel);
+        if (HandlerDelegateType is not { DelegateInvokeMethod: { } invokeMethod } ||
+            (HandlerDelegateType.CanBeReferencedByName && !semanticModel.Compilation.IsSymbolAccessibleWithin(HandlerDelegateType.OriginalDefinition, semanticModel.Compilation.Assembly)) ||
+            !SymbolEqualityComparer.Default.Equals(invokeMethod.ReturnType, method.ReturnType) ||
+            invokeMethod.Parameters.Length != method.Parameters.Length ||
+            method.Parameters.Where((parameter, index) =>
+                parameter.RefKind != invokeMethod.Parameters[index].RefKind ||
+                !SymbolEqualityComparer.Default.Equals(parameter.Type, invokeMethod.Parameters[index].Type)).Any())
+        {
+            Diagnostics.Add(Diagnostic.Create(DiagnosticDescriptors.UnableToResolveMethod, Operation.Syntax.GetLocation()));
+            return;
+        }
+
         Response = new EndpointResponse(method, wellKnownTypes);
         Response.EmitRequiredDiagnostics(Diagnostics, Operation.Syntax.GetLocation());
         IsAwaitable = Response?.IsAwaitable == true;
@@ -98,6 +111,7 @@ internal class Endpoint
     public string? RoutePattern { get; }
     public EmitterContext EmitterContext { get; }
     public EndpointResponse? Response { get; }
+    public INamedTypeSymbol? HandlerDelegateType { get; }
     public EndpointParameter[] Parameters { get; } = Array.Empty<EndpointParameter>();
     public List<Diagnostic> Diagnostics { get; } = new List<Diagnostic>();
 
@@ -115,7 +129,8 @@ internal class Endpoint
 
     public static bool SignatureEquals(Endpoint a, Endpoint b)
     {
-        if (!string.Equals(a.Response?.WrappedResponseTypeDisplayName, b.Response?.WrappedResponseTypeDisplayName, StringComparison.Ordinal) ||
+        if (!SymbolEqualityComparer.Default.Equals(a.HandlerDelegateType, b.HandlerDelegateType) ||
+            !string.Equals(a.Response?.WrappedResponseTypeDisplayName, b.Response?.WrappedResponseTypeDisplayName, StringComparison.Ordinal) ||
             !a.HttpMethod.Equals(b.HttpMethod, StringComparison.Ordinal) ||
             a.Parameters.Length != b.Parameters.Length)
         {
@@ -136,6 +151,7 @@ internal class Endpoint
     public static int GetSignatureHashCode(Endpoint endpoint)
     {
         var hashCode = new HashCode();
+        hashCode.Add(endpoint.HandlerDelegateType, SymbolEqualityComparer.Default);
         hashCode.Add(endpoint.Response?.WrappedResponseTypeDisplayName);
         hashCode.Add(endpoint.HttpMethod);
 

@@ -14,10 +14,22 @@ namespace Microsoft.AspNetCore.Http.RequestDelegateGenerator.StaticRouteHandlerM
 
 internal static class StaticRouteHandlerModelEmitter
 {
+    public static string EmitHandlerDelegateCast(this Endpoint endpoint, string handler)
+    {
+        var delegateType = endpoint.HandlerDelegateType!;
+        if (delegateType.CanBeReferencedByName &&
+            delegateType is not { Name: "Func" or "Action", ContainingNamespace: { Name: "System", ContainingNamespace.IsGlobalNamespace: true } })
+        {
+            return $"({delegateType.ToDisplayString(EmitterConstants.DisplayFormat)}){handler}";
+        }
+
+        return $"Cast({handler}, {endpoint.EmitHandlerDelegateType()} => throw null!)";
+    }
+
     public static string EmitHandlerDelegateType(this Endpoint endpoint)
     {
         // Emits a delegate type to use when casting the input that captures
-        // default parameter values.
+        // default parameter values and params from the delegate, not the target method.
         //
         // void (int arg0, Todo arg1) => throw null!
         // IResult (int arg0, Todo arg1) => throw null!
@@ -25,7 +37,8 @@ internal static class StaticRouteHandlerModelEmitter
         {
             return endpoint.Response == null || (endpoint.Response.HasNoResponse && !endpoint.Response.IsAwaitable) ? "void ()" : $"{endpoint.Response.WrappedResponseTypeDisplayName} ()";
         }
-        var parameterTypeList = string.Join(", ", endpoint.Parameters.Select((p, i) => $"{EmitUnwrappedParameterType(p)} arg{i}{(p.HasDefaultValue ? $"= {p.DefaultValue}" : string.Empty)}"));
+        var invokeParameters = endpoint.HandlerDelegateType!.DelegateInvokeMethod!.Parameters;
+        var parameterTypeList = string.Join(", ", endpoint.Parameters.Select((p, i) => $"{(invokeParameters[i].IsParams ? "params " : string.Empty)}{EmitUnwrappedParameterType(p)} arg{i}{(invokeParameters[i].HasExplicitDefaultValue ? $"= {invokeParameters[i].GetDefaultValueString()}" : string.Empty)}"));
 
         if (endpoint.Response == null || (endpoint.Response.HasNoResponse && !endpoint.Response.IsAwaitable))
         {

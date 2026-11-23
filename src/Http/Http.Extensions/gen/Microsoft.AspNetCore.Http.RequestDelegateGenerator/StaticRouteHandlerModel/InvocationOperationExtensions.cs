@@ -50,6 +50,9 @@ internal static class InvocationOperationExtensions
         return false;
     }
 
+    public static INamedTypeSymbol? GetRouteHandlerDelegateType(this IInvocationOperation invocation, SemanticModel semanticModel) =>
+        invocation.TryGetRouteHandlerArgument(out var argument) ? ResolveDelegateTypeFromOperation(argument, semanticModel) : null;
+
     public static bool TryGetRouteHandlerArgument(this IInvocationOperation invocation, [NotNullWhen(true)] out IArgumentOperation? argumentOperation)
     {
         argumentOperation = null;
@@ -99,6 +102,18 @@ internal static class InvocationOperationExtensions
         IMethodReferenceOperation method => method.Method,
         IParenthesizedOperation parenthesized => ResolveMethodFromOperation(parenthesized.Operand, semanticModel, needsAccurateSignature),
         _ => ResolveMethodFromType(operation.Type, needsAccurateSignature),
+    };
+
+    private static INamedTypeSymbol? ResolveDelegateTypeFromOperation(IOperation operation, SemanticModel semanticModel) => operation switch
+    {
+        IArgumentOperation argument => ResolveDelegateTypeFromOperation(argument.Value, semanticModel),
+        IConversionOperation conversion => ResolveDelegateTypeFromOperation(conversion.Operand, semanticModel),
+        IDelegateCreationOperation { Type: INamedTypeSymbol delegateType } => delegateType,
+        IFieldReferenceOperation { Field.IsReadOnly: true } field when ResolveDeclarationOperation(field.Field, semanticModel) is IOperation initializer =>
+            ResolveDelegateTypeFromOperation(initializer, semanticModel),
+        IParenthesizedOperation parenthesized => ResolveDelegateTypeFromOperation(parenthesized.Operand, semanticModel),
+        { Parent: IDelegateCreationOperation { Type: INamedTypeSymbol delegateType } } => delegateType,
+        _ => operation.Type is INamedTypeSymbol { TypeKind: TypeKind.Delegate } type ? type : null,
     };
 
     private static IMethodSymbol? ResolveMethodFromType(ITypeSymbol? type, bool needsAccurateSignature)
