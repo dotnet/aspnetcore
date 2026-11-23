@@ -136,6 +136,7 @@ public sealed class WebAssemblyHostBuilder
     }
 
     [UnconditionalSuppressMessage("Trimming", "IL2072", Justification = "Root components are expected to be defined in assemblies that do not get trimmed.")]
+    [UnconditionalSuppressMessage("Trimming", "IL2026", Justification = "Lazy-loaded assemblies are not expected to be trimmed.")]
     private void InitializeRegisteredRootComponents()
     {
         var componentsCount = _jsMethods.RegisteredComponents_GetRegisteredComponentsCount();
@@ -166,10 +167,29 @@ public sealed class WebAssemblyHostBuilder
 
         foreach (var registeredComponent in registeredComponents)
         {
-            var componentType = _rootComponentCache.GetRootType(registeredComponent.Assembly!, registeredComponent.TypeName!);
+            var requiredAssembliesAvailable = LazyAssemblyLoader.GetRequiredAssemblyNames(registeredComponent).All(assemblyName =>
+            {
+                if (OperatingSystem.IsBrowser() && LazyAssemblyLoader.IsLazyAssembly(assemblyName))
+                {
+                    return AppDomain.CurrentDomain.GetAssemblies().Any(assembly => assembly.GetName().Name == assemblyName);
+                }
+
+                try
+                {
+                    Assembly.Load(assemblyName);
+                    return true;
+                }
+                catch (FileNotFoundException)
+                {
+                    return false;
+                }
+            });
+            var componentType = requiredAssembliesAvailable
+                ? _rootComponentCache.GetRootType(registeredComponent.Assembly!, registeredComponent.TypeName!)
+                : null;
             if (componentType is null)
             {
-                // The assembly may be a lazy-loaded assembly that has not been downloaded yet.
+                // A required assembly may be a lazy-loaded assembly that has not been downloaded yet.
                 // Defer resolution to ResolveDeferredRootComponentsAsync, which runs before rendering.
                 deferredComponents ??= [];
                 deferredComponents.Add(registeredComponent);
@@ -202,7 +222,7 @@ public sealed class WebAssemblyHostBuilder
         _deferredRegisteredComponents = null;
 
         var lazyAssemblyLoader = services.GetRequiredService<LazyAssemblyLoader>();
-        await lazyAssemblyLoader.LoadMissingAssembliesAsync(deferredComponents.Select(c => c.Assembly!));
+        await lazyAssemblyLoader.LoadMissingAssembliesAsync(deferredComponents.SelectMany(LazyAssemblyLoader.GetRequiredAssemblyNames));
 
         // The cache stores null for assemblies that weren't loaded at startup; clear it so
         // GetRootType re-resolves against the newly loaded assemblies.

@@ -13,6 +13,41 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Hosting;
 public class LazyLoadingRegistrationTest
 {
     [Fact]
+    public async Task ResolveDeferredRootComponentsAsync_MissingParameterAssembly_DefersUntilStartup()
+    {
+        var methods = new Mock<IInternalJSImportMethods>();
+        methods.Setup(m => m.NavigationManager_GetBaseUri()).Returns("https://example.com/");
+        methods.Setup(m => m.NavigationManager_GetLocationHref()).Returns("https://example.com/");
+        methods.Setup(m => m.GetApplicationEnvironment()).Returns("Production");
+        methods.Setup(m => m.GetAppSettingsFiles()).Returns([]);
+        methods.Setup(m => m.RegisteredComponents_GetRegisteredComponentsCount()).Returns(1);
+        methods.Setup(m => m.RegisteredComponents_GetAssembly(0)).Returns(typeof(ParameterComponent).Assembly.GetName().Name!);
+        methods.Setup(m => m.RegisteredComponents_GetTypeName(0)).Returns(typeof(ParameterComponent).FullName!);
+        methods.Setup(m => m.RegisteredComponents_GetParameterDefinitions(0)).Returns(JsonSerializer.Serialize(
+            new ComponentParameter[]
+            {
+                new() { Name = nameof(ParameterComponent.Value), Assembly = "NonExistent.ParameterAssembly", TypeName = "Payload" },
+            }, WebAssemblyJsonSerializerContext.Default.ComponentParameterArray));
+        methods.Setup(m => m.RegisteredComponents_GetParameterValues(0)).Returns("[{}]");
+
+        var builder = new WebAssemblyHostBuilder(methods.Object);
+        Assert.Empty(builder.RootComponents);
+        builder.Services.AddSingleton(Mock.Of<IJSRuntime>());
+        await using var host = builder.Build();
+
+        var exception = await Assert.ThrowsAsync<InvalidOperationException>(() => builder.ResolveDeferredRootComponentsAsync(host.Services));
+
+        Assert.Contains("NonExistent.ParameterAssembly", exception.Message);
+        Assert.Empty(builder.RootComponents);
+    }
+
+    private sealed class ParameterComponent : ComponentBase
+    {
+        [Parameter]
+        public object Value { get; set; }
+    }
+
+    [Fact]
     public async Task ResolveDeferredRootComponentsAsync_WhenNothingDeferred_ReturnsImmediately()
     {
         // zero registered components means nothing is ever deferred.

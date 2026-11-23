@@ -1,0 +1,26 @@
+@page "/lazy-webassembly-components"
+@using Microsoft.AspNetCore.Components.Web
+
+<h1>Lazy WebAssembly components</h1>
+<p id="lazy-scenario">@Scenario</p>
+<a id="lazy-parameter" href="@($"lazy-webassembly-components?scenario=parameter&prerender={Prerender}")">Lazy parameter</a>
+
+@if (Scenario == "root")
+{
+    <LazyTestContentPackage.LazyCounter @rendermode="@(new InteractiveWebAssemblyRenderMode(Prerender))" />
+}
+else if (Scenario == "parameter")
+{
+    <Components.WasmMinimal.ObjectParameterCounter Value="@(new LazyTestContentPackage.LazyCounter.Payload { Text = "hello" })" @rendermode="@(new InteractiveWebAssemblyRenderMode(Prerender))" />
+}
+
+<a id="remove-lazy" href="@($"lazy-webassembly-components?prerender={Prerender}")">Remove</a>
+<a id="eager-control" href="@($"interactive-callsite?wasm=4&prerender={Prerender}")">Eager counter</a>
+
+@code {
+    [SupplyParameterFromQuery]
+    public string? Scenario { get; set; }
+
+    [SupplyParameterFromQuery]
+    public bool Prerender { get; set; }
+}

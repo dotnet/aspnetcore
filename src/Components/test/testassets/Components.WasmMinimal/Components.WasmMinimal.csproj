@@ -16,6 +16,8 @@
   </ItemGroup>
 
   <ItemGroup>
+    <BlazorWebAssemblyLazyLoad Include="LazyTestContentPackage.wasm" />
+    <ProjectReference Include="$(RepoRoot)src\Components\test\testassets\LazyTestContentPackage\LazyTestContentPackage.csproj" />
     <ProjectReference Include="$(RepoRoot)src\Components\test\testassets\NotReferencedInWasmCodePackage\NotReferencedInWasmCodePackage.csproj" />
     <ProjectReference Include="$(RepoRoot)src\Components\test\testassets\TestContentPackage\TestContentPackage.csproj" />
   </ItemGroup>

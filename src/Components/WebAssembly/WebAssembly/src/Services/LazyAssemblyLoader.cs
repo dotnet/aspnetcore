@@ -45,9 +45,24 @@ public sealed partial class LazyAssemblyLoader
         return LoadAssembliesInServerAsync(assembliesToLoad);
     }
 
+    internal static IEnumerable<string> GetRequiredAssemblyNames(ComponentMarker marker)
+    {
+        yield return marker.Assembly!;
+
+        var definitions = WebAssemblyComponentParameterDeserializer.GetParameterDefinitions(marker.ParameterDefinitions!);
+        foreach (var definition in definitions)
+        {
+            if (definition.Assembly is not null
+                && !(definition.TypeName == typeof(SerializedRenderFragment).FullName
+                    && definition.Assembly == "Microsoft.AspNetCore.Components.Endpoints"))
+            {
+                yield return definition.Assembly;
+            }
+        }
+    }
+
     /// <summary>
-    /// Internal helper that loads assemblies by simple name, filtering already-loaded ones
-    /// and appending the .dll extension. Encapsulates WASM-specific implementation details.
+    /// Loads assemblies that are not already loaded.
     /// </summary>
     /// <param name="assemblyNames">The simple names of the assemblies to load (without .dll extension)</param>
     [RequiresUnreferencedCode("Types and members the loaded assemblies depend on might be removed")]
@@ -60,6 +75,8 @@ public sealed partial class LazyAssemblyLoader
         var toLoad = assemblyNames
             .Distinct(StringComparer.OrdinalIgnoreCase)
             .Where(a => !loadedNames.Contains(a))
+            // Binding before a lazy assembly is downloaded can cache a failed bind on CoreCLR.
+            .Where(a => !OperatingSystem.IsBrowser() || IsLazyAssembly(a))
             .Select(a => a + ".dll")
             .ToList();
 
@@ -126,8 +143,14 @@ public sealed partial class LazyAssemblyLoader
         return loadedAssemblies;
     }
 
+    [SupportedOSPlatform("browser")]
+    internal static bool IsLazyAssembly(string assemblyName) => LazyAssemblyLoaderInterop.IsLazyAssembly(assemblyName);
+
     private partial class LazyAssemblyLoaderInterop
     {
+        [JSImport("Blazor._internal.isLazyAssembly", "blazor-internal")]
+        public static partial bool IsLazyAssembly(string assemblyName);
+
         [JSImport("INTERNAL.loadLazyAssembly")]
         public static partial Task<bool> LoadLazyAssembly(string assemblyToLoad);
     }

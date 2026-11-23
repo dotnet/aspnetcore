@@ -1,0 +1,13 @@
+@using Microsoft.AspNetCore.Components.Web
+
+<p id="lazy-render-mode">@(OperatingSystem.IsBrowser() ? "WebAssembly" : "SSR")</p>
+<p id="lazy-payload">@Value.ToString()</p>
+<p id="lazy-count">@count</p>
+<button id="lazy-increment" @onclick="() => count++">Increment</button>
+
+@code {
+    private int count;
+
+    [Parameter, EditorRequired]
+    public object Value { get; set; } = default!;
+}

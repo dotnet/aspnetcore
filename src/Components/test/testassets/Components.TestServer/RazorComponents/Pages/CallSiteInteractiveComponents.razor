@@ -3,6 +3,9 @@
 
 <h1>Call-site interactive components</h1>
 
+<a id="lazy-root" href="@($"lazy-webassembly-components?scenario=root&prerender={Prerender}")">Lazy root</a>
+<a id="lazy-parameter" href="@($"lazy-webassembly-components?scenario=parameter&prerender={Prerender}")">Lazy parameter</a>
+
 @if (ServerIncrementAmount.HasValue)
 {
     <TestContentPackage.Counter @rendermode="@(new InteractiveServerRenderMode(Prerender))" IncrementAmount="@ServerIncrementAmount.Value" IdSuffix="server" />

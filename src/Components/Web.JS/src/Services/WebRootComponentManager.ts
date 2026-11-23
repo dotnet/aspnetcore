@@ -45,6 +45,7 @@ export type RootComponentInfo = {
   assignedRendererId?: WebRendererId;
   uniqueIdAtLastUpdate?: number;
   hasPendingRemoveOperation?: boolean;
+  activationFailed?: boolean;
 };
 
 export class WebRootComponentManager implements DescriptorHandler, RootComponentManager</* InitialComponentsDescriptorType */ never> {
@@ -398,6 +399,12 @@ export class WebRootComponentManager implements DescriptorHandler, RootComponent
 
   private determinePendingOperation(component: RootComponentInfo): RootComponentOperation | null {
     if (isDescriptorInDocument(component.descriptor)) {
+      // Do not automatically retry a failed activation on every document refresh.
+      // A new descriptor on a subsequent visit can activate independently.
+      if (component.activationFailed) {
+        return null;
+      }
+
       if (component.assignedRendererId === undefined) {
         // We haven't added this component for interactivity yet.
         if (isPageLoading()) {
@@ -484,6 +491,21 @@ export class WebRootComponentManager implements DescriptorHandler, RootComponent
     }
 
     return component.descriptor;
+  }
+
+  public onUpdateRootComponentsFailed(batchId: number): void {
+    const batch = this._pendingOperationBatches[batchId];
+    for (const operation of batch.operations) {
+      if (operation.type === 'add') {
+        const component = this._rootComponentsBySsrComponentId.get(operation.ssrComponentId);
+        if (component) {
+          component.activationFailed = true;
+        }
+      }
+    }
+
+    // The renderer will acknowledge the removal-only remainder, not the failed work.
+    batch.operations = batch.operations.filter(operation => operation.type === 'remove');
   }
 
   public onAfterUpdateRootComponents(batchId: number): void {
