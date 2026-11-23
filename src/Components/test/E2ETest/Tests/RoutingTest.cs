@@ -53,6 +53,7 @@ public class RoutingTest : ServerTestBase<ToggleExecutionModeServerFixture<Progr
 
         var app = Browser.MountTestComponent<RouteViewLayoutTransitionApp>();
         Browser.Equal(nameof(DefaultLayoutPage), () => app.FindElement(By.Id("page-name")).Text);
+        Browser.Equal("first", () => app.FindElement(By.Id("page-value")).Text);
 
         app.FindElement(By.Id("navigate-alternate-layout")).Click();
         Browser.Equal(nameof(AlternateLayoutPage), () => app.FindElement(By.Id("page-name")).Text);
