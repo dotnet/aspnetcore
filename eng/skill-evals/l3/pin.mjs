@@ -19,6 +19,24 @@ export function command(exe, args, input, env)
   return result;
 }
 
+// Keep only fetch authentication, transport and tracing variables; repository routing
+// (GIT_DIR, GIT_COMMON_DIR, GIT_CONFIG*, GIT_OBJECT_DIRECTORY, ...) must not redirect a call.
+const transport = /^GIT_(TERMINAL_PROMPT|ASKPASS|SSH|SSH_COMMAND|SSH_VARIANT|SSL_\w+|HTTP_\w+|PROXY_\w+|CURL_\w+|CONFIG_GLOBAL|CONFIG_SYSTEM|CONFIG_NOSYSTEM|TRACE\w*)$/i;
+
+// Runs git with repository-routing variables removed. Offline calls also ignore user and system config.
+export function git(args, { input, offline = false } = {})
+{
+  const env = Object.fromEntries(Object.entries(process.env)
+    .filter(([name]) => !/^GIT_/i.test(name) || (offline ? /^GIT_TERMINAL_PROMPT$/i : transport).test(name)));
+  if (offline)
+  {
+    env.GIT_CONFIG_NOSYSTEM = '1';
+    env.GIT_CONFIG_GLOBAL = process.platform === 'win32' ? 'NUL' : '/dev/null';
+    env.GIT_ATTR_NOSYSTEM = '1';
+  }
+  return command('git', ['--no-pager', ...args], input, env);
+}
+
 export function scratch(action)
 {
   const dir = join(dirname(fileURLToPath(import.meta.url)), `.l3-${randomUUID()}`);
@@ -38,7 +56,7 @@ export function pin({ repo, mirror, run, pr, commits })
     throw new Error('Supply at least one role with a full lowercase commit SHA.');
 
   mirror = resolve(mirror);
-  const git = (...args) => command('git', ['--no-pager', '--no-replace-objects', `--git-dir=${mirror}`, ...args]);
+  const store = (...args) => git(['--no-replace-objects', `--git-dir=${mirror}`, ...args]);
   function check(result, operation)
   {
     if (result.status !== 0) throw new Error(`${operation} failed: ${result.stderr.trim()}`);
@@ -47,25 +65,25 @@ export function pin({ repo, mirror, run, pr, commits })
   if (!existsSync(mirror))
   {
     mkdirSync(dirname(mirror), { recursive: true });
-    check(command('git', ['--no-pager', 'init', '--bare', '--template=', '--object-format=sha1', '--', mirror]), 'Bare mirror init');
+    check(git(['init', '--bare', '--template=', '--object-format=sha1', '--', mirror]), 'Bare mirror init');
   }
-  if (check(git('rev-parse', '--is-bare-repository'), 'Bare mirror check') !== 'true' ||
-      check(git('rev-parse', '--is-shallow-repository'), 'Shallow check') !== 'false' ||
-      existsSync(join(mirror, 'objects', 'info', 'alternates')) || process.env.GIT_ALTERNATE_OBJECT_DIRECTORIES)
+  if (check(store('rev-parse', '--is-bare-repository'), 'Bare mirror check') !== 'true' ||
+      check(store('rev-parse', '--is-shallow-repository'), 'Shallow check') !== 'false' ||
+      existsSync(join(mirror, 'objects', 'info', 'alternates')))
     throw new Error('The mirror must be bare, non-shallow, and have no object alternates.');
 
   const entries = Object.entries(commits).map(([role, sha]) => ({ role, sha, ref: `refs/l3/${run}/${role}` }));
   for (const entry of entries)
   {
-    if (git('symbolic-ref', '-q', entry.ref).status === 0)
+    if (store('symbolic-ref', '-q', entry.ref).status === 0)
       throw new Error(`Refusing symbolic pin ${entry.ref}.`);
-    const old = git('rev-parse', '--verify', '--quiet', entry.ref);
+    const old = store('rev-parse', '--verify', '--quiet', entry.ref);
     if (old.status === 0 && old.stdout.trim() !== entry.sha)
       throw new Error(`Refusing to overwrite ${entry.ref}: ${old.stdout.trim()} != ${entry.sha}.`);
     entry.status = old.status === 0 ? 'already-pinned' : 'pinned';
   }
 
-  const isCommit = sha => git('-c', 'protocol.allow=never', 'cat-file', '-t', sha).stdout.trim() === 'commit';
+  const isCommit = sha => store('-c', 'protocol.allow=never', 'cat-file', '-t', sha).stdout.trim() === 'commit';
   const attempts = new Map();
   const fetch = ref =>
   {
@@ -73,7 +91,7 @@ export function pin({ repo, mirror, run, pr, commits })
     {
       // Include objects fetched earlier in this run, even though its pins are not yet visible.
       const tips = [...new Set(entries.map(entry => entry.sha))].filter(isCommit);
-      attempts.set(ref, git('fetch', '--no-tags', '--no-write-fetch-head', '--no-auto-maintenance',
+      attempts.set(ref, store('fetch', '--no-tags', '--no-write-fetch-head', '--no-auto-maintenance',
         ...tips.map(tip => `--negotiation-tip=${tip}`), '--', source, ref));
     }
     return attempts.get(ref);
@@ -98,15 +116,10 @@ export function pin({ repo, mirror, run, pr, commits })
     scratch(dir =>
     {
       const restore = join(dir, 'restore.git');
-      const env = Object.fromEntries(Object.entries(process.env)
-        .filter(([name]) => !/^GIT_/i.test(name) || /^GIT_TERMINAL_PROMPT$/i.test(name)));
-      env.GIT_CONFIG_NOSYSTEM = '1';
-      env.GIT_CONFIG_GLOBAL = process.platform === 'win32' ? 'NUL' : '/dev/null';
-      env.GIT_ATTR_NOSYSTEM = '1';
-      check(command('git', ['--no-pager', '-c', 'protocol.allow=never', '-c', 'protocol.file.allow=always',
-        'clone', '--local', '--mirror', '--template=', '--', mirror, restore], undefined, env), 'Local restore clone');
-      const offline = (...args) => command('git', ['--no-pager', '--no-replace-objects',
-        '-c', 'protocol.allow=never', `--git-dir=${restore}`, ...args], undefined, env);
+      check(git(['-c', 'protocol.allow=never', '-c', 'protocol.file.allow=always',
+        'clone', '--local', '--mirror', '--template=', '--', mirror, restore], { offline: true }), 'Local restore clone');
+      const offline = (...args) => git(['--no-replace-objects',
+        '-c', 'protocol.allow=never', `--git-dir=${restore}`, ...args], { offline: true });
       check(offline('config', '--file', join(restore, 'config'), '--remove-section', 'remote.origin'), 'Remove restore remote');
       const shas = [...new Set(reachable.map(entry => entry.sha))];
       check(offline('fsck', '--connectivity-only', '--no-dangling', ...shas), 'Offline object closure');
@@ -117,7 +130,7 @@ export function pin({ repo, mirror, run, pr, commits })
     // A concurrent writer cannot replace an existing pin or bypass the preflight check.
     const updates = reachable.map(({ status, ref, sha }) =>
       `${status === 'pinned' ? 'create' : 'verify'} ${ref} ${sha}\n`).join('');
-    check(command('git', ['--no-pager', `--git-dir=${mirror}`, 'update-ref', '--no-deref', '--stdin'], updates), 'Pin refs transaction');
+    check(git(['--no-replace-objects', `--git-dir=${mirror}`, 'update-ref', '--no-deref', '--stdin'], { input: updates }), 'Pin refs transaction');
   }
   return { run, mirror, offlineRestoreVerified: reachable.length === entries.length, entries };
 }

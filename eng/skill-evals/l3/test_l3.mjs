@@ -5,7 +5,7 @@ import assert from 'node:assert/strict';
 import { createHash } from 'node:crypto';
 import { join } from 'node:path';
 import { test } from 'node:test';
-import { command, pin, scratch } from './pin.mjs';
+import { git as runGit, pin, scratch } from './pin.mjs';
 import { extractTranscript, outcomes, reconcilePrompt } from './outcomes.mjs';
 
 test('PinPreservesExistingRefsAndReportsUnreachableCommits', () => scratch(dir =>
@@ -14,7 +14,7 @@ test('PinPreservesExistingRefsAndReportsUnreachableCommits', () => scratch(dir =
   const mirror = join(dir, 'mirror.git');
   const git = (...args) =>
   {
-    const result = command('git', ['--no-pager', ...args]);
+    const result = runGit([...args]);
     assert.equal(result.status, 0, result.stderr);
     return result.stdout.trim();
   };
@@ -47,7 +47,7 @@ test('PinPreservesForeignGitConfig', () => scratch(dir =>
   const config = join(foreign, 'config');
   const git = (...args) =>
   {
-    const result = command('git', ['--no-pager', ...args]);
+    const result = runGit([...args]);
     assert.equal(result.status, 0, result.stderr);
     return result.stdout.trim();
   };
@@ -65,7 +65,7 @@ test('PinPreservesForeignGitConfig', () => scratch(dir =>
     const result = pin({ repo, mirror, run: '1-1', commits: { head } });
     assert.equal(result.offlineRestoreVerified, true);
     assert.equal(result.entries[0].status, 'pinned');
-    const remote = command('git', ['--no-pager', 'config', '--file', config, '--get', 'remote.origin.url']);
+    const remote = runGit(['config', '--file', config, '--get', 'remote.origin.url']);
     assert.equal(remote.stdout.trim(), repo, 'Pin must preserve the foreign remote.origin URL.');
   }
   finally
@@ -73,6 +73,42 @@ test('PinPreservesForeignGitConfig', () => scratch(dir =>
     if (previous === undefined) delete process.env.GIT_CONFIG;
     else process.env.GIT_CONFIG = previous;
   }
+}));
+
+test('PinIgnoresInheritedRepositoryRouting', () => scratch(dir =>
+{
+  const repo = join(dir, 'source');
+  const mirror = join(dir, 'mirror.git');
+  const other = join(dir, 'other.git');
+  const git = (...args) =>
+  {
+    const result = runGit([...args]);
+    assert.equal(result.status, 0, result.stderr);
+    return result.stdout.trim();
+  };
+  git('init', '--object-format=sha1', repo);
+  git('-C', repo, '-c', 'user.name=L3', '-c', 'user.email=l3@example.invalid', '-c', 'commit.gpgsign=false',
+    'commit', '--allow-empty', '-m', 'first');
+  const head = git('-C', repo, 'rev-parse', 'HEAD');
+  git('clone', '--bare', '--', repo, other);
+  git('clone', '--bare', '--', repo, mirror);
+
+  const previous = process.env.GIT_COMMON_DIR;
+  let result;
+  try
+  {
+    process.env.GIT_COMMON_DIR = other;
+    result = pin({ repo, mirror, run: '1-1', commits: { head } });
+  }
+  finally
+  {
+    if (previous === undefined) delete process.env.GIT_COMMON_DIR;
+    else process.env.GIT_COMMON_DIR = previous;
+  }
+  assert.equal(result.offlineRestoreVerified, true);
+  assert.equal(git(`--git-dir=${mirror}`, 'rev-parse', 'refs/l3/1-1/head'), head);
+  const stray = runGit([`--git-dir=${other}`, 'rev-parse', '--verify', '--quiet', 'refs/l3/1-1/head']);
+  assert.notEqual(stray.status, 0, 'Pin must not write refs into the repository named by GIT_COMMON_DIR.');
 }));
 
 test('VerifierDiscardsRequireAttributableStructuredEvidenceAndDoNotStoreText', () =>
