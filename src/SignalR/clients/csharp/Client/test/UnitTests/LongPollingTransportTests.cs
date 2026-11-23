@@ -223,6 +223,185 @@ public class LongPollingTransportTests : VerifiableLoggedTest
     }
 
     [Fact]
+    public async Task LongPollingTransportRefreshesAuthenticationOncePerChallengedPoll()
+    {
+        var requestCount = 0;
+        var refreshCount = 0;
+        var mockHttpHandler = new Mock<HttpMessageHandler>();
+        mockHttpHandler.Protected()
+            .Setup<Task<HttpResponseMessage>>("SendAsync", ItExpr.IsAny<HttpRequestMessage>(), ItExpr.IsAny<CancellationToken>())
+            .Returns<HttpRequestMessage, CancellationToken>((request, cancellationToken) =>
+            {
+                requestCount++;
+                return Task.FromResult(requestCount switch
+                {
+                    1 or 3 => ResponseUtils.CreateResponse(HttpStatusCode.OK),
+                    2 or 4 => ResponseUtils.CreateResponse(
+                        HttpStatusCode.Conflict,
+                        """{"error":"authentication_refresh_required"}"""),
+                    _ => ResponseUtils.CreateResponse(HttpStatusCode.NoContent),
+                });
+            });
+
+        using (var httpClient = new HttpClient(mockHttpHandler.Object))
+        {
+            var longPollingTransport = new LongPollingTransport(
+                httpClient,
+                authenticationRefresh: cancellationToken =>
+                {
+                    refreshCount++;
+                    return Task.CompletedTask;
+                });
+            try
+            {
+                await longPollingTransport.StartAsync(TestUri, TransferFormat.Binary);
+                await longPollingTransport.Running.DefaultTimeout();
+
+                Assert.Equal(2, refreshCount);
+                Assert.Equal(5, requestCount);
+            }
+            finally
+            {
+                await longPollingTransport.StopAsync();
+            }
+        }
+    }
+
+    [Fact]
+    public async Task LongPollingTransportStopsAfterRepeatedAuthenticationRefreshChallenge()
+    {
+        var requestCount = 0;
+        var refreshCount = 0;
+        var mockHttpHandler = new Mock<HttpMessageHandler>();
+        mockHttpHandler.Protected()
+            .Setup<Task<HttpResponseMessage>>("SendAsync", ItExpr.IsAny<HttpRequestMessage>(), ItExpr.IsAny<CancellationToken>())
+            .Returns<HttpRequestMessage, CancellationToken>((request, cancellationToken) =>
+            {
+                requestCount++;
+                return Task.FromResult(requestCount == 1
+                    ? ResponseUtils.CreateResponse(HttpStatusCode.OK)
+                    : ResponseUtils.CreateResponse(
+                        HttpStatusCode.Conflict,
+                        """{"error":"authentication_refresh_required"}"""));
+            });
+
+        using (var httpClient = new HttpClient(mockHttpHandler.Object))
+        {
+            var longPollingTransport = new LongPollingTransport(
+                httpClient,
+                authenticationRefresh: cancellationToken =>
+                {
+                    refreshCount++;
+                    return Task.CompletedTask;
+                });
+            try
+            {
+                await longPollingTransport.StartAsync(TestUri, TransferFormat.Binary);
+
+                var exception = await Assert.ThrowsAsync<HttpRequestException>(
+                    async () => await longPollingTransport.Input.ReadAsync().AsTask().DefaultTimeout());
+
+                Assert.Contains(" 409 ", exception.Message);
+                Assert.Equal(1, refreshCount);
+                Assert.Equal(3, requestCount);
+            }
+            finally
+            {
+                await longPollingTransport.StopAsync();
+            }
+        }
+    }
+
+    [Theory]
+    [InlineData(HttpStatusCode.Conflict, """{"error":"connection_already_active"}""")]
+    [InlineData(HttpStatusCode.BadRequest, """{"error":"authentication_refresh_required"}""")]
+    [InlineData(HttpStatusCode.Conflict, "not-json")]
+    public async Task LongPollingTransportDoesNotRefreshAuthenticationForNonChallengeResponse(
+        HttpStatusCode statusCode,
+        string content)
+    {
+        var requestCount = 0;
+        var refreshCount = 0;
+        var mockHttpHandler = new Mock<HttpMessageHandler>();
+        mockHttpHandler.Protected()
+            .Setup<Task<HttpResponseMessage>>("SendAsync", ItExpr.IsAny<HttpRequestMessage>(), ItExpr.IsAny<CancellationToken>())
+            .Returns<HttpRequestMessage, CancellationToken>((request, cancellationToken) =>
+            {
+                requestCount++;
+                return Task.FromResult(requestCount == 1
+                    ? ResponseUtils.CreateResponse(HttpStatusCode.OK)
+                    : ResponseUtils.CreateResponse(
+                        statusCode,
+                        content));
+            });
+
+        using (var httpClient = new HttpClient(mockHttpHandler.Object))
+        {
+            var longPollingTransport = new LongPollingTransport(
+                httpClient,
+                authenticationRefresh: cancellationToken =>
+                {
+                    refreshCount++;
+                    return Task.CompletedTask;
+                });
+            try
+            {
+                await longPollingTransport.StartAsync(TestUri, TransferFormat.Binary);
+
+                var exception = await Assert.ThrowsAsync<HttpRequestException>(
+                    async () => await longPollingTransport.Input.ReadAsync().AsTask().DefaultTimeout());
+
+                Assert.Contains($" {(int)statusCode} ", exception.Message);
+                Assert.Equal(0, refreshCount);
+                Assert.Equal(2, requestCount);
+            }
+            finally
+            {
+                await longPollingTransport.StopAsync();
+            }
+        }
+    }
+
+    [Fact]
+    public async Task LongPollingTransportStopsWhenAuthenticationRefreshFails()
+    {
+        var requestCount = 0;
+        var mockHttpHandler = new Mock<HttpMessageHandler>();
+        mockHttpHandler.Protected()
+            .Setup<Task<HttpResponseMessage>>("SendAsync", ItExpr.IsAny<HttpRequestMessage>(), ItExpr.IsAny<CancellationToken>())
+            .Returns<HttpRequestMessage, CancellationToken>((request, cancellationToken) =>
+            {
+                requestCount++;
+                return Task.FromResult(requestCount == 1
+                    ? ResponseUtils.CreateResponse(HttpStatusCode.OK)
+                    : ResponseUtils.CreateResponse(
+                        HttpStatusCode.Conflict,
+                        """{"error":"authentication_refresh_required"}"""));
+            });
+
+        using (var httpClient = new HttpClient(mockHttpHandler.Object))
+        {
+            var longPollingTransport = new LongPollingTransport(
+                httpClient,
+                authenticationRefresh: cancellationToken => Task.FromException(new InvalidOperationException("refresh failed")));
+            try
+            {
+                await longPollingTransport.StartAsync(TestUri, TransferFormat.Binary);
+
+                var exception = await Assert.ThrowsAsync<InvalidOperationException>(
+                    async () => await longPollingTransport.Input.ReadAsync().AsTask().DefaultTimeout());
+
+                Assert.Equal("refresh failed", exception.Message);
+                Assert.Equal(2, requestCount);
+            }
+            finally
+            {
+                await longPollingTransport.StopAsync();
+            }
+        }
+    }
+
+    [Fact]
     public async Task StopTransportWhenConnectionAlreadyStoppedOnServer()
     {
         var pollRequestTcs = new TaskCompletionSource();
