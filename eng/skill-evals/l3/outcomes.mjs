@@ -96,7 +96,7 @@ export function extractTranscript(text, file)
           disposition: { KEEP: 'kept', DROP: 'discarded', DOWNGRADE: 'downgraded' }[row.decision],
           evidence: { ...evidence, turn, payloadJsonPointer: jsonPointer },
           reason: typeof row.reason === 'string' && row.reason.trim()
-            ? { completeness: recorded, payloadJsonPointer: `${jsonPointer}/reason`, sha256Prefix: hash(row.reason) }
+            ? { completeness: recorded, payloadJsonPointer: `${jsonPointer}/reason`, sha256Prefix: hash(JSON.stringify(row.reason)) }
             : { completeness: absent },
         });
       }

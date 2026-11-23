@@ -219,13 +219,13 @@ internal static partial class PrepareReviewProgram
             {
                 throw new MissingReplayObjectsException();
             }
-            Objects(store, "config", "protocol.allow", "never");
+            PatchObjects(store, "config", "protocol.allow", "never");
             await File.WriteAllTextAsync(Path.Combine(store, "objects", "info", "alternates"), objects.Replace('\\', '/') + "\n", Utf8NoBom);
             // Only the frozen trees are needed, even when the donor is shallow.
             await File.WriteAllLinesAsync(Path.Combine(store, "shallow"), commits, Utf8NoBom);
             try
             {
-                var ids = Utf8NoBom.GetString(Objects(store, ["rev-list", "--objects", "--no-object-names", "--missing=print", .. commits]));
+                var ids = Utf8NoBom.GetString(PatchObjects(store, ["rev-list", "--objects", "--no-object-names", "--missing=print", .. commits]));
                 if (ids.Split('\n').Any(id => id.StartsWith('?')))
                 {
                     throw new MissingReplayObjectsException();
@@ -319,22 +319,24 @@ internal static partial class PrepareReviewProgram
 
     private static readonly string NullDevice = OperatingSystem.IsWindows() ? "NUL" : "/dev/null";
 
-    // Offline patch bytes must depend only on the frozen objects, not on the runner's Git configuration or environment.
-    private static readonly Dictionary<string, string?> PatchEnvironment = new()
+    // Offline replay must depend only on the frozen objects, not on the runner's Git configuration or environment.
+    // Every inherited GIT_* variable is dropped (for example GIT_ATTR_SOURCE, GIT_INDEX_FILE, GIT_ALTERNATE_OBJECT_DIRECTORIES).
+    private static Dictionary<string, string?> IsolatedEnvironment()
     {
-        ["GIT_CONFIG_NOSYSTEM"] = "1",
-        ["GIT_CONFIG_GLOBAL"] = NullDevice,
-        ["GIT_ATTR_NOSYSTEM"] = "1",
-        ["GIT_CONFIG_PARAMETERS"] = null,
-        ["GIT_CONFIG_COUNT"] = null,
-        ["GIT_DIFF_OPTS"] = null,
-        ["GIT_EXTERNAL_DIFF"] = null,
-    };
+        var environment = Environment.GetEnvironmentVariables().Keys.Cast<string>()
+            .Where(name => name.StartsWith("GIT_", StringComparison.OrdinalIgnoreCase)
+                && !name.Equals("GIT_TERMINAL_PROMPT", StringComparison.OrdinalIgnoreCase))
+            .ToDictionary(name => name, string? (_) => null, StringComparer.OrdinalIgnoreCase);
+        environment["GIT_CONFIG_NOSYSTEM"] = "1";
+        environment["GIT_CONFIG_GLOBAL"] = NullDevice;
+        environment["GIT_ATTR_NOSYSTEM"] = "1";
+        return environment;
+    }
 
     private static byte[] PatchObjects(string directory, params string[] args) =>
         Run("git", GitArguments(["-c", $"core.attributesFile={NullDevice}", "-c", "core.quotePath=true", "-c", "diff.noprefix=false",
             "-c", "diff.mnemonicPrefix=false", "-c", "diff.suppressBlankEmpty=false", "-c", "diff.renameLimit=1000",
-            "--git-dir", directory, .. args]), environment: PatchEnvironment);
+            "--git-dir", directory, .. args]), environment: IsolatedEnvironment());
 
     internal static byte[] Run(string command, IReadOnlyList<string> args, string? workingDirectory = null, byte[]? input = null,
         int maximumProcessOutputBytes = MaximumProcessOutputBytes, IReadOnlyDictionary<string, string?>? environment = null)
@@ -961,10 +963,24 @@ internal static partial class PrepareReviewProgram
         }
     }
 
-    private static List<TreeEntry> TreeEntries(string store, string commit)
+    private static readonly UTF8Encoding StrictUtf8 = new(encoderShouldEmitUTF8Identifier: false, throwOnInvalidBytes: true);
+
+    private static List<TreeEntry> TreeEntries(string store, string commit, bool isolated = false)
     {
         var result = new List<TreeEntry>();
-        foreach (var line in Utf8NoBom.GetString(Objects(store, "ls-tree", "-r", "-z", "--full-tree", commit)).Split('\0',
+        string listing;
+        try
+        {
+            // Offline replay rejects non-UTF-8 paths instead of exporting them under a replacement-character name.
+            listing = (isolated ? StrictUtf8 : Utf8NoBom).GetString(isolated
+                ? PatchObjects(store, "ls-tree", "-r", "-z", "--full-tree", commit)
+                : Objects(store, "ls-tree", "-r", "-z", "--full-tree", commit));
+        }
+        catch (DecoderFallbackException)
+        {
+            throw new InvalidOperationException("The frozen tree contains a path that is not valid UTF-8.");
+        }
+        foreach (var line in listing.Split('\0',
             StringSplitOptions.RemoveEmptyEntries))
         {
             var tab = line.IndexOf('\t');
@@ -1220,10 +1236,10 @@ internal static partial class PrepareReviewProgram
     }
 
     internal static async Task<JsonObject> ExportTreeAsync(
-        string store, string commit, string destination, Func<string, bool>? selection = null)
+        string store, string commit, string destination, Func<string, bool>? selection = null, bool isolated = false)
     {
         selection ??= static _ => true;
-        var entries = TreeEntries(store, commit).Where(entry => selection(entry.Name)).ToList();
+        var entries = TreeEntries(store, commit, isolated).Where(entry => selection(entry.Name)).ToList();
         CheckPaths(entries.Select(entry => entry.Name));
         CreateNewDirectory(destination);
         var blobs = entries.Where(entry => entry.Type == "blob").ToList();
@@ -1238,6 +1254,17 @@ internal static partial class PrepareReviewProgram
         foreach (var arg in GitArguments("--git-dir", store, "cat-file", "--batch"))
         {
             start.ArgumentList.Add(arg);
+        }
+        foreach (var (name, value) in isolated ? IsolatedEnvironment() : new Dictionary<string, string?>())
+        {
+            if (value is null)
+            {
+                start.Environment.Remove(name);
+            }
+            else
+            {
+                start.Environment[name] = value;
+            }
         }
         using var child = Process.Start(start) ?? throw new InvalidOperationException("Cannot start git.");
         var inputTask = WriteBlobRequestsAsync(child, blobs);
@@ -1632,9 +1659,12 @@ internal static partial class PrepareReviewProgram
 
         CreateOutputDirectory(output);
         var store = Path.Combine(output, ".objects");
+        var isolated = replayInputs is not null;
+        byte[] Store(params string[] args) => isolated ? PatchObjects(store, args) : Objects(store, args);
         // An empty template keeps inherited template config out of the store's local config.
-        Run("git", GitArguments("init", "--bare", "--quiet", "--template=", "--object-format=sha1", store));
-        Objects(store, "config", "core.hooksPath", Path.Combine(store, "disabled-hooks"));
+        Run("git", GitArguments("init", "--bare", "--quiet", "--template=", "--object-format=sha1", store),
+            environment: isolated ? IsolatedEnvironment() : null);
+        Store("config", "core.hooksPath", Path.Combine(store, "disabled-hooks"));
         async Task Fetch(string repo, IReadOnlyList<string> commits)
         {
             if (dependencies.Fetch is not null)
@@ -1706,8 +1736,8 @@ internal static partial class PrepareReviewProgram
         Require((replayInputs is not null || files.Count == frozen.Pull["changed_files"]!.GetValue<int>())
             && files.Select(file => file!["filename"]!.GetValue<string>()).Distinct(StringComparer.Ordinal).Count() == files.Count,
             "GitHub returned an incomplete or duplicate changed-file list.");
-        var changedPaths = Utf8NoBom.GetString(Objects(store, "diff", "--no-ext-diff", "--no-textconv", "--no-renames",
-            "--name-only", "-z", frozen.Identity["mergeBase"]!.GetValue<string>(), frozen.Identity["head"]!.GetValue<string>()))
+        var changedPaths = Utf8NoBom.GetString(Store("diff", "--no-ext-diff", "--no-textconv", "--no-renames",
+            "--ignore-submodules=none", "--name-only", "-z", frozen.Identity["mergeBase"]!.GetValue<string>(), frozen.Identity["head"]!.GetValue<string>()))
             .Split('\0', StringSplitOptions.RemoveEmptyEntries).Order(StringComparer.Ordinal).ToArray();
         var listedPaths = files.SelectMany(file => new[]
             {
@@ -1720,7 +1750,7 @@ internal static partial class PrepareReviewProgram
             var name = file!["filename"]!.GetValue<string>();
             var side = file["status"]!.GetValue<string>() == "removed"
                 ? frozen.Identity["mergeBase"]!.GetValue<string>() : frozen.Identity["head"]!.GetValue<string>();
-            Require(Utf8NoBom.GetString(Objects(store, "rev-parse", $"{side}:{name}")).Trim() == file["sha"]!.GetValue<string>(),
+            Require(Utf8NoBom.GetString(Store("rev-parse", $"{side}:{name}")).Trim() == file["sha"]!.GetValue<string>(),
                 $"GitHub file identity does not match the frozen tree: {name}");
         }
 
@@ -1740,19 +1770,19 @@ internal static partial class PrepareReviewProgram
                 diff = Convert.FromBase64String(node!.GetValue<string>());
             }
             await WriteAsync(output, "diff.patch", diff);
-            Objects(store, "read-tree", frozen.Identity["mergeBase"]!.GetValue<string>());
+            Store("read-tree", frozen.Identity["mergeBase"]!.GetValue<string>());
             if (diff.Length > 0)
             {
                 // REST omits binary payloads; resolve its prefixes against the frozen changed objects, not supplied bytes.
-                var knownIds = Utf8NoBom.GetString(Objects(store, "diff", "--raw", "--no-abbrev", "-z", "--no-renames",
+                var knownIds = Utf8NoBom.GetString(Store("diff", "--raw", "--no-abbrev", "-z", "--no-renames", "--ignore-submodules=none",
                     "--no-ext-diff", "--no-textconv", frozen.Identity["mergeBase"]!.GetValue<string>(), frozen.Identity["head"]!.GetValue<string>()))
                     .Split('\0').Where((_, index) => index % 2 == 0)
                     .SelectMany(entry => entry.Split(' ').Skip(2).Take(2)).ToHashSet(StringComparer.Ordinal);
                 Run("git", GitArguments(["--git-dir", store, "apply", "--cached", "--binary", "--whitespace=nowarn", "-"]),
-                    input: ExpandBinaryIndexLines(diff, knownIds));
+                    input: ExpandBinaryIndexLines(diff, knownIds), environment: isolated ? IsolatedEnvironment() : null);
             }
-            Require(Utf8NoBom.GetString(Objects(store, "write-tree")).Trim()
-                == Utf8NoBom.GetString(Objects(store, "rev-parse", $"{frozen.Identity["head"]!.GetValue<string>()}^{{tree}}")).Trim(),
+            Require(Utf8NoBom.GetString(Store("write-tree")).Trim()
+                == Utf8NoBom.GetString(Store("rev-parse", $"{frozen.Identity["head"]!.GetValue<string>()}^{{tree}}")).Trim(),
                 "The authoritative diff does not reconstruct the frozen head; incomplete or unsupported diff.");
             return true;
         });
@@ -1803,12 +1833,12 @@ internal static partial class PrepareReviewProgram
             {
                 var root = $"source/{commit}";
                 var treeExport = await Timed($"exportTree:{commit}",
-                    () => ExportTreeAsync(store, commit, Path.Combine(output, root.Replace('/', Path.DirectorySeparatorChar))));
+                    () => ExportTreeAsync(store, commit, Path.Combine(output, root.Replace('/', Path.DirectorySeparatorChar)), isolated: isolated));
                 source = new JsonObject
                 {
                     ["root"] = root,
                     ["commit"] = commit,
-                    ["tree"] = Utf8NoBom.GetString(Objects(store, "rev-parse", $"{commit}^{{tree}}")).Trim(),
+                    ["tree"] = Utf8NoBom.GetString(Store("rev-parse", $"{commit}^{{tree}}")).Trim(),
                 };
                 foreach (var pair in treeExport) source[pair.Key] = pair.Value?.DeepClone();
                 exported[commit] = source;
@@ -1818,7 +1848,8 @@ internal static partial class PrepareReviewProgram
         if (guidance["mode"]!.GetValue<string>() == "remote")
         {
             var exportedGuidance = await Timed("exportGuidance", () => ExportTreeAsync(store,
-                guidance["commit"]!.GetValue<string>(), Path.Combine(output, "guidance"), name => name.EndsWith(".md", StringComparison.Ordinal)));
+                guidance["commit"]!.GetValue<string>(), Path.Combine(output, "guidance"), name => name.EndsWith(".md", StringComparison.Ordinal),
+                isolated: isolated));
             guidance["root"] = "guidance";
             foreach (var pair in exportedGuidance) guidance[pair.Key] = pair.Value?.DeepClone();
         }

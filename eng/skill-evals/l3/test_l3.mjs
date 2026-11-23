@@ -62,6 +62,8 @@ test('VerifierDiscardsRequireAttributableStructuredEvidenceAndDoNotStoreText', (
   assert.equal(result.verifierStatus, 'recorded');
   assert.equal(result.verifierDispositions[0].disposition, 'discarded');
   assert.equal(result.verifierDispositions[0].reason.payloadJsonPointer, '/reason');
+  assert.equal(result.verifierDispositions[0].reason.sha256Prefix,
+    createHash('sha256').update(JSON.stringify('Reason text must not be copied.')).digest('hex').slice(0, 16));
   assert.doesNotMatch(JSON.stringify(result), /Reason text|Worker-only discard/);
 });
 

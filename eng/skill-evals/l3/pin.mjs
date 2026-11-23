@@ -47,7 +47,7 @@ export function pin({ repo, mirror, run, pr, commits })
   if (!existsSync(mirror))
   {
     mkdirSync(dirname(mirror), { recursive: true });
-    check(command('git', ['--no-pager', 'init', '--bare', '--object-format=sha1', '--', mirror]), 'Bare mirror init');
+    check(command('git', ['--no-pager', 'init', '--bare', '--template=', '--object-format=sha1', '--', mirror]), 'Bare mirror init');
   }
   if (check(git('rev-parse', '--is-bare-repository'), 'Bare mirror check') !== 'true' ||
       check(git('rev-parse', '--is-shallow-repository'), 'Shallow check') !== 'false' ||
@@ -99,7 +99,7 @@ export function pin({ repo, mirror, run, pr, commits })
     {
       const restore = join(dir, 'restore.git');
       check(command('git', ['--no-pager', '-c', 'protocol.allow=never', '-c', 'protocol.file.allow=always',
-        'clone', '--local', '--mirror', '--', mirror, restore]), 'Local restore clone');
+        'clone', '--local', '--mirror', '--template=', '--', mirror, restore]), 'Local restore clone');
       const offline = (...args) => command('git', ['--no-pager', '--no-replace-objects',
         '-c', 'protocol.allow=never', `--git-dir=${restore}`, ...args]);
       check(offline('config', '--remove-section', 'remote.origin'), 'Remove restore remote');
