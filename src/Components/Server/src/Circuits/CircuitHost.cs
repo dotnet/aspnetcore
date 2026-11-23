@@ -146,16 +146,24 @@ internal partial class CircuitHost : IAsyncDisposable
 
                 // Here, we add each root component but don't await the returned tasks so that the
                 // components can be processed in parallel.
-                var count = Descriptors.Count;
-                var pendingRenders = new Task[count];
-                for (var i = 0; i < count; i++)
+                try
                 {
-                    var (componentType, parameters, sequence) = Descriptors[i];
-                    pendingRenders[i] = Renderer.AddComponentAsync(componentType, parameters, sequence.ToString(CultureInfo.InvariantCulture));
-                }
+                    var count = Descriptors.Count;
+                    var pendingRenders = new Task[count];
+                    for (var i = 0; i < count; i++)
+                    {
+                        var (componentType, parameters, sequence) = Descriptors[i];
+                        pendingRenders[i] = Renderer.AddComponentAsync(componentType, parameters, sequence.ToString(CultureInfo.InvariantCulture));
+                    }
 
-                // Now we wait for all components to finish rendering.
-                await Task.WhenAll(pendingRenders);
+                    // Now we wait for all components to finish rendering.
+                    await Task.WhenAll(pendingRenders);
+                }
+                catch (Exception ex)
+                {
+                    Log.RootComponentInitializationFailed(_logger, ex);
+                    throw;
+                }
 
                 // At this point all components have successfully produced an initial render and we can clear the contents of the component
                 // application state store. This ensures the memory that was not used during the initial render of these components gets
@@ -840,7 +848,11 @@ internal partial class CircuitHost : IAsyncDisposable
                     }
                 }
 
-                var operationsTask = PerformRootComponentOperations(operations, shouldWaitForQuiescence, postRemovalTask);
+                var operationsTask = PerformRootComponentOperations(
+                    operations,
+                    shouldWaitForQuiescence,
+                    postRemovalTask,
+                    shouldWaitForQuiescence ? LogRootComponentInitializationFailure : null);
                 taskCompletionSource?.SetResult();
 
                 await operationsTask;
@@ -882,7 +894,8 @@ internal partial class CircuitHost : IAsyncDisposable
     private async ValueTask PerformRootComponentOperations(
         RootComponentOperation[] operations,
         bool shouldWaitForQuiescence,
-        Task postStateTask)
+        Task postStateTask,
+        Action<Exception> onComponentInitializationFailed)
     {
         var webRootComponentManager = Renderer.GetOrCreateWebRootComponentManager();
         webRootComponentManager.SetCurrentUpdateTask(postStateTask);
@@ -905,7 +918,8 @@ internal partial class CircuitHost : IAsyncDisposable
                             operation.SsrComponentId,
                             operation.Descriptor.ComponentType,
                             operation.Marker.Value.Key,
-                            operation.Descriptor.Parameters);
+                            operation.Descriptor.Parameters,
+                            onComponentInitializationFailed);
 
                         pendingTasks?[i] = task;
                         break;
@@ -931,6 +945,9 @@ internal partial class CircuitHost : IAsyncDisposable
             await Task.WhenAll(pendingTasks);
         }
     }
+
+    private void LogRootComponentInitializationFailure(Exception exception)
+        => Log.RootComponentInitializationFailed(_logger, exception);
 
     internal void AttachPersistedState(ResumedPersistedCircuitState persistedCircuitState)
     {
@@ -1104,6 +1121,9 @@ internal partial class CircuitHost : IAsyncDisposable
 
         [LoggerMessage(116, LogLevel.Debug, "The root component operation of type 'Update' was invalid: {Message}", EventName = nameof(InvalidComponentTypeForUpdate))]
         public static partial void InvalidComponentTypeForUpdate(ILogger logger, string message);
+
+        [LoggerMessage(117, LogLevel.Error, "Root component initialization failed.", EventName = nameof(RootComponentInitializationFailed))]
+        public static partial void RootComponentInitializationFailed(ILogger logger, Exception exception);
 
         [LoggerMessage(200, LogLevel.Debug, "Failed to parse the event data when trying to dispatch an event.", EventName = "DispatchEventFailedToParseEventData")]
         public static partial void DispatchEventFailedToParseEventData(ILogger logger, Exception ex);
