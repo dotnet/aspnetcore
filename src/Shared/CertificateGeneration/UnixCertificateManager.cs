@@ -5,6 +5,7 @@
 
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
+using System.Globalization;
 using System.Linq;
 using System.Security.Cryptography.X509Certificates;
 using System.Text.RegularExpressions;
@@ -1117,6 +1118,7 @@ internal sealed partial class UnixCertificateManager : CertificateManager
     private sealed class FirefoxNssDb(string path) : NssDb(path)
     {
         private const string OverridePrefixValue = "firefox=";
+        private const string ProfilesIniFileName = "profiles.ini";
         // L validates the certificate as an SSL CA, including the "C" trust required by Firefox.
         private static readonly IReadOnlyList<string> CheckArgumentValues = ["-V", "-u", "L"];
 
@@ -1187,11 +1189,30 @@ internal sealed partial class UnixCertificateManager : CertificateManager
 
         private static IEnumerable<string> GetProfiles(string firefoxDirectory)
         {
+            var profilesIniPath = System.IO.Path.Combine(firefoxDirectory, ProfilesIniFileName);
+            if (File.Exists(profilesIniPath))
+            {
+                try
+                {
+                    var profiles = GetProfilesFromRegistry(firefoxDirectory, profilesIniPath);
+                    if (profiles.Count == 0)
+                    {
+                        Log.UnixNoFirefoxProfilesFound(firefoxDirectory);
+                    }
+
+                    return profiles;
+                }
+                catch (Exception ex)
+                {
+                    Log.UnixFirefoxProfileEnumerationException(firefoxDirectory, ex.Message);
+                }
+            }
+
             try
             {
                 var profiles = Directory.GetDirectories(firefoxDirectory, "*.default", SearchOption.TopDirectoryOnly).Concat(
-                    Directory.GetDirectories(firefoxDirectory, "*.default-*", SearchOption.TopDirectoryOnly));
-                if (!profiles.Any())
+                    Directory.GetDirectories(firefoxDirectory, "*.default-*", SearchOption.TopDirectoryOnly)).ToArray();
+                if (profiles.Length == 0)
                 {
                     Log.UnixNoFirefoxProfilesFound(firefoxDirectory);
                 }
@@ -1205,11 +1226,171 @@ internal sealed partial class UnixCertificateManager : CertificateManager
             }
         }
 
+        private static List<string> GetProfilesFromRegistry(string firefoxDirectory, string profilesIniPath)
+        {
+            var sections = new Dictionary<int, FirefoxProfileSection>();
+            FirefoxProfileSection? currentSection = null;
+
+            foreach (var rawLine in File.ReadLines(profilesIniPath))
+            {
+                var line = rawLine.Trim();
+                if (line.Length == 0 || line[0] is ';' or '#')
+                {
+                    continue;
+                }
+
+                if (line[0] == '[')
+                {
+                    currentSection = null;
+                    if (TryGetProfileIndex(line, out var profileIndex))
+                    {
+                        if (sections.TryGetValue(profileIndex, out var duplicateSection))
+                        {
+                            duplicateSection.Invalidate();
+                        }
+                        else
+                        {
+                            currentSection = new FirefoxProfileSection();
+                            sections.Add(profileIndex, currentSection);
+                        }
+                    }
+
+                    continue;
+                }
+
+                if (currentSection is null)
+                {
+                    continue;
+                }
+
+                var separatorIndex = line.IndexOf('=');
+                if (separatorIndex <= 0)
+                {
+                    currentSection.Invalidate();
+                    continue;
+                }
+
+                var key = line[..separatorIndex].Trim();
+                var value = line[(separatorIndex + 1)..].Trim();
+                currentSection.Add(key, value);
+            }
+
+            var profiles = new List<string>();
+            var pathComparer = OperatingSystem.IsWindows() ? StringComparer.OrdinalIgnoreCase : StringComparer.Ordinal;
+            var seenPaths = new HashSet<string>(pathComparer);
+            for (var profileIndex = 0; sections.TryGetValue(profileIndex, out var section); profileIndex++)
+            {
+                // Firefox stops loading profiles at the first section without IsRelative.
+                if (section.IsRelative is null)
+                {
+                    break;
+                }
+
+                if (!section.IsValid || !section.HasName || string.IsNullOrEmpty(section.Path))
+                {
+                    continue;
+                }
+
+                if (!TryResolveProfilePath(firefoxDirectory, section.Path, section.IsRelative.Value, out var profilePath))
+                {
+                    continue;
+                }
+
+                if (Directory.Exists(profilePath) && seenPaths.Add(profilePath))
+                {
+                    profiles.Add(profilePath);
+                }
+            }
+
+            return profiles;
+        }
+
+        private static bool TryGetProfileIndex(string line, out int profileIndex)
+        {
+            profileIndex = 0;
+            const string profilePrefix = "[Profile";
+            return line.StartsWith(profilePrefix, StringComparison.Ordinal) &&
+                line.EndsWith(']') &&
+                int.TryParse(
+                    line.AsSpan(profilePrefix.Length, line.Length - profilePrefix.Length - 1),
+                    NumberStyles.None,
+                    CultureInfo.InvariantCulture,
+                    out profileIndex);
+        }
+
+        private static bool TryResolveProfilePath(
+            string firefoxDirectory,
+            string path,
+            bool isRelative,
+            [NotNullWhen(true)] out string? profilePath)
+        {
+            try
+            {
+                if (isRelative)
+                {
+                    if (System.IO.Path.IsPathFullyQualified(path))
+                    {
+                        profilePath = null;
+                        return false;
+                    }
+
+                    profilePath = System.IO.Path.GetFullPath(path, firefoxDirectory);
+                    return true;
+                }
+
+                if (!System.IO.Path.IsPathFullyQualified(path))
+                {
+                    profilePath = null;
+                    return false;
+                }
+
+                profilePath = System.IO.Path.GetFullPath(path);
+                return true;
+            }
+            catch (Exception ex) when (ex is ArgumentException or NotSupportedException or PathTooLongException)
+            {
+                profilePath = null;
+                return false;
+            }
+        }
+
         private static bool IsPathInDirectory(string path, string directory)
         {
             var directoryPrefix = System.IO.Path.TrimEndingDirectorySeparator(System.IO.Path.GetFullPath(directory)) + System.IO.Path.DirectorySeparatorChar;
             var comparison = OperatingSystem.IsWindows() ? StringComparison.OrdinalIgnoreCase : StringComparison.Ordinal;
             return path.StartsWith(directoryPrefix, comparison);
+        }
+
+        private sealed class FirefoxProfileSection
+        {
+            public bool IsValid { get; private set; } = true;
+
+            public string? Path { get; private set; }
+
+            public bool? IsRelative { get; private set; }
+
+            public bool HasName { get; private set; }
+
+            public void Add(string key, string value)
+            {
+                switch (key)
+                {
+                    case "Path" when Path is null:
+                        Path = value;
+                        break;
+                    case "IsRelative" when IsRelative is null:
+                        IsRelative = value.Equals("1", StringComparison.Ordinal);
+                        break;
+                    case "Name" when !HasName:
+                        HasName = true;
+                        break;
+                    case "Path" or "IsRelative" or "Name":
+                        IsValid = false;
+                        break;
+                }
+            }
+
+            public void Invalidate() => IsValid = false;
         }
     }
 }
