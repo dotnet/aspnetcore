@@ -2,7 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 import { EventFieldInfo } from './EventFieldInfo';
-import { eventNameAliasRegisteredCallbacks, getBrowserEventName, getEventNameAliases, getEventTypeOptions } from './EventTypes';
+import { eventNameAliasRegisteredCallbacks, getBrowserEventName, getEventNameAliases, getEventArgs } from './EventTypes';
 import { isRendererAttached, dispatchEvent } from '../WebRendererInteropMethods';
 
 const nonBubblingEvents = toLookup([
@@ -197,6 +197,7 @@ export class EventDelegator {
     // Scan up the element hierarchy, looking for any matching registered event handlers
     let candidateEventTarget = path.shift();
     let eventArgs: unknown = null; // Populate lazily
+    let fieldTrackingValue: string | boolean | undefined;
     let eventArgsIsPopulated = false;
     const eventIsNonBubbling = Object.prototype.hasOwnProperty.call(nonBubblingEvents, eventName);
     let stopPropagationWasRequested = false;
@@ -208,12 +209,7 @@ export class EventDelegator {
         if (handlerInfo && !eventIsDisabledOnElement(candidateElement, browserEvent.type)) {
           // We are going to raise an event for this element, so prepare info needed by the .NET code
           if (!eventArgsIsPopulated) {
-            const eventOptionsIfRegistered = getEventTypeOptions(eventName);
-            // For back-compat, if there's no registered createEventArgs, we supply empty event args (not null).
-            // But if there is a registered createEventArgs, it can supply anything (including null).
-            eventArgs = eventOptionsIfRegistered?.createEventArgs
-              ? eventOptionsIfRegistered.createEventArgs(browserEvent)
-              : {};
+            ({ eventArgs, fieldTrackingValue } = getEventArgs(eventName, browserEvent));
             eventArgsIsPopulated = true;
           }
 
@@ -227,7 +223,7 @@ export class EventDelegator {
           dispatchEvent(this.browserRendererId, {
             eventHandlerId: handlerInfo.eventHandlerId,
             eventName: eventName,
-            eventFieldInfo: EventFieldInfo.fromEvent(handlerInfo.renderingComponentId, browserEvent, eventArgs),
+            eventFieldInfo: EventFieldInfo.fromEvent(handlerInfo.renderingComponentId, browserEvent, fieldTrackingValue),
           }, eventArgs);
         }
 

@@ -5,7 +5,7 @@ export class EventFieldInfo {
   constructor(public componentId: number, public fieldValue: string | boolean) {
   }
 
-  public static fromEvent(componentId: number, event: Event, eventArgs: unknown): EventFieldInfo | null {
+  public static fromEvent(componentId: number, event: Event, fieldTrackingValue: string | boolean | undefined): EventFieldInfo | null {
     const elem = event.composedPath()[0] ?? event.target;
     if (elem instanceof Element) {
       const fieldData = getFormFieldData(elem);
@@ -13,7 +13,7 @@ export class EventFieldInfo {
         if (elem !== event.target) {
           // The renderer updates the host's bound attribute, so compare with its parsed event value
           // rather than reading the host again or tracking a different display value.
-          if (!eventArgs || typeof eventArgs !== 'object' || !('value' in eventArgs) || eventArgs.value !== fieldData.value) {
+          if (fieldTrackingValue !== fieldData.value) {
             return null;
           }
         }
