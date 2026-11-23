@@ -68,6 +68,14 @@ if ($env:SKILL_EVAL_FAKE_FAILURE) {
 } |
     ConvertTo-Json -Compress |
     Add-Content $env:SKILL_EVAL_RUNNER_RECORD
+if ($env:SKILL_EVAL_FAKE_EXIT_MODE -eq 'before-output') {
+    [Console]::Error.WriteLine('Vally could not start the requested run.')
+    exit 1
+}
+if ($args[0] -eq 'eval' -and $args -contains '--dry-run') {
+    [Console]::Error.WriteLine("error: unknown option '--dry-run'")
+    exit 1
+}
 if ($args[0] -eq 'experiment' -and $args -notcontains '--dry-run') {
     $output = $args[([array]::IndexOf($args, '--output-dir') + 1)]
     $run = Join-Path $output ('experiment-' + [guid]::NewGuid().ToString('N'))
@@ -82,12 +90,12 @@ if ($args[0] -eq 'experiment' -and $args -notcontains '--dry-run') {
     }
     @{
         evals = @($variants | ForEach-Object {
-            @{ variant = $_; plannedStimulusNames = @('s'); plannedStimulusCount = 1; runs = 1; threshold = $(if ($env:SKILL_EVAL_FAKE_EXPERIMENT_INVALID) { 'invalid' } else { 0 }) }
+            @{ variant = $_; plannedStimulusNames = @('s'); plannedStimulusCount = 1; runs = 1; threshold = $(if ($env:SKILL_EVAL_FAKE_EXPERIMENT_INVALID) { 'invalid' } else { 0.6 }) }
         })
     } | ConvertTo-Json -Depth 10 | Set-Content (Join-Path $run 'plan-snapshot.json')
     foreach ($variant in $variants) {
         New-Item -ItemType Directory -Path (Join-Path $run $variant) | Out-Null
-        @{ type = 'trial-result'; variant = $variant; stimulus = 's'; status = 'success'; gradeResult = @{ score = 1 } } |
+        @{ type = 'trial-result'; variant = $variant; stimulus = 's'; status = 'success'; gradeResult = @{ score = $(if ($variant -eq 'baseline') { 0.1 } else { 1 }) } } |
             ConvertTo-Json -Depth 10 -Compress |
             Set-Content (Join-Path $run "$variant/results.jsonl")
     }
@@ -236,6 +244,43 @@ stimuli:
         }
         Write-Host "SelectedVariant${syntax}Syntax passed."
     }
+
+    $failureDiagnostics = [Collections.Generic.List[string]]::new()
+    foreach ($suite in @('review-public-api', 'review-candidate-verifier')) {
+        $env:SKILL_EVAL_FAKE_EXIT_MODE = 'before-output'
+        $message = ''
+        try {
+            & $runner Run -Suite $suite -Vally $fakeVally -VallyPrefix @() `
+                -OutputDirectory (Join-Path $testRoot "before-output-$suite")
+        } catch {
+            $message = $_.Exception.Message
+        } finally {
+            Remove-Item Env:SKILL_EVAL_FAKE_EXIT_MODE
+        }
+        $caseName = "PreExecutionFailure-$suite"
+        $passed = $message -like '*Vally exited with code 1*' -and
+            $message -like "*$suite*" -and $message -notlike '*found 0*'
+        if (-not $passed) {
+            $failureDiagnostics.Add("$caseName failed: $message")
+        }
+        Write-Host "$caseName $(if ($passed) { 'passed' } else { 'failed' })."
+    }
+    $env:SKILL_EVAL_FAKE_EXIT_CODE = '1'
+    try {
+        $command = "& '$runner' Run -Suite review-public-api -Vally '$fakeVally' -VallyPrefix @() " +
+            "-OutputDirectory '$(Join-Path $testRoot 'baseline-require-pass')' " +
+            "-Arguments @('--variant', 'baseline', '--require-pass'); exit `$LASTEXITCODE"
+        $messages = (& pwsh -NoProfile -Command $command 2>&1 | Out-String)
+        if ($LASTEXITCODE -ne 1 -or $messages -like '*Configured score thresholds passed*') {
+            $failureDiagnostics.Add("BaselineRequirePass failed: $messages")
+            Write-Host 'BaselineRequirePass failed.'
+        } else {
+            Write-Host 'BaselineRequirePass passed.'
+        }
+    } finally {
+        Remove-Item Env:SKILL_EVAL_FAKE_EXIT_CODE
+    }
+    Assert-True ($failureDiagnostics.Count -eq 0) ($failureDiagnostics -join "`n")
 
     $allOptionsRoot = Join-Path $testRoot 'all-options-root'
     $allOptionsEvalRoot = Join-Path $allOptionsRoot 'eng/skill-evals'
@@ -433,12 +478,20 @@ stimuli:
     $previousPlanPath = Join-Path $previousComponentRun 'plan-snapshot.json'
     Set-Content $previousPlanPath 'previous plan'
     $previousPlan = Get-Content $previousPlanPath -Raw
-    & $runner Run -Suite review-candidate-verifier -Vally $fakeVally -VallyPrefix @() `
-        -OutputDirectory $componentDryRunOutput -Arguments @('--dry-run')
+    Remove-Item $record
+    $message = ''
+    try {
+        & $runner Run -Suite review-candidate-verifier -Vally $fakeVally -VallyPrefix @() `
+            -OutputDirectory $componentDryRunOutput -Arguments @('--dry-run')
+    } catch {
+        $message = $_.Exception.Message
+    }
+    Assert-True ($message -like '*--dry-run*' -and $message -like '*Validate*' -and
+        -not (Test-Path $record)) 'Component dry-run was not rejected before invoking Vally.'
     Assert-True ((Get-Content $previousPlanPath -Raw) -eq $previousPlan) (
         'Component dry-run overwrote an existing plan snapshot.'
     )
-    Write-Host 'ComponentDryRunPreservesExistingPlan passed.'
+    Write-Host 'ComponentDryRunRejectedPreservesExistingPlan passed.'
 
     function Assert-CustomComponentPlan {
         param(
