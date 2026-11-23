@@ -100,97 +100,10 @@ public sealed class UnixCertificateManagerTests : IDisposable
     }
 
     [Fact]
-    public void Resolve_SkipsRegisteredFirefoxProfilesWithDuplicatePathOrIsRelative()
-    {
-        var firefoxDirectory = CreateDirectory(".config", "mozilla", "firefox");
-        var profileDirectory = CreateDirectory(".config", "mozilla", "firefox", "Profiles", "test.work");
-        CreateDirectory(".config", "mozilla", "firefox", "Profiles", "duplicate-path-a");
-        CreateDirectory(".config", "mozilla", "firefox", "Profiles", "duplicate-path-b");
-        CreateDirectory(".config", "mozilla", "firefox", "Profiles", "duplicate-is-relative");
-        CreateDirectory(".config", "mozilla", "firefox", "stale.default-release");
-        File.WriteAllText(Path.Combine(firefoxDirectory, "profiles.ini"), """
-            [Profile0]
-            Name=work
-            IsRelative=1
-            Path=Profiles/test.work
-
-            [Profile1]
-            Name=duplicate-path
-            IsRelative=1
-            Path=Profiles/duplicate-path-a
-            Path=Profiles/duplicate-path-b
-
-            [Profile2]
-            Name=duplicate-is-relative
-            IsRelative=1
-            IsRelative=0
-            Path=Profiles/duplicate-is-relative
-            """);
-
-        var nssDb = Assert.Single(UnixCertificateManager.NssDb.Resolve(_homeDirectory, xdgConfigHome: null, nssDbOverride: null));
-
-        Assert.Equal(profileDirectory, nssDb.Path);
-        AssertFirefoxNssDb(nssDb);
-    }
-
-    [Fact]
-    public void Resolve_StopsAtFirstRegisteredFirefoxProfileWithoutIsRelative()
-    {
-        var firefoxDirectory = CreateDirectory(".config", "mozilla", "firefox");
-        var firstProfileDirectory = CreateDirectory(".config", "mozilla", "firefox", "Profiles", "first.work");
-        CreateDirectory(".config", "mozilla", "firefox", "Profiles", "missing-is-relative");
-        CreateDirectory(".config", "mozilla", "firefox", "Profiles", "ignored.work");
-        File.WriteAllText(Path.Combine(firefoxDirectory, "profiles.ini"), """
-            [Profile0]
-            Name=first
-            IsRelative=1
-            Path=Profiles/first.work
-
-            [Profile1]
-            Name=missing-is-relative
-            Path=Profiles/missing-is-relative
-
-            [Profile2]
-            Name=ignored
-            IsRelative=1
-            Path=Profiles/ignored.work
-            """);
-
-        var nssDb = Assert.Single(UnixCertificateManager.NssDb.Resolve(_homeDirectory, xdgConfigHome: null, nssDbOverride: null));
-
-        Assert.Equal(firstProfileDirectory, nssDb.Path);
-        AssertFirefoxNssDb(nssDb);
-    }
-
-    [Fact]
-    public void Resolve_SkipsRegisteredFirefoxProfileWithoutName()
-    {
-        var firefoxDirectory = CreateDirectory(".config", "mozilla", "firefox");
-        CreateDirectory(".config", "mozilla", "firefox", "Profiles", "missing-name");
-        var namedProfileDirectory = CreateDirectory(".config", "mozilla", "firefox", "Profiles", "named.work");
-        File.WriteAllText(Path.Combine(firefoxDirectory, "profiles.ini"), """
-            [Profile0]
-            IsRelative=1
-            Path=Profiles/missing-name
-
-            [Profile1]
-            Name=named
-            IsRelative=1
-            Path=Profiles/named.work
-            """);
-
-        var nssDb = Assert.Single(UnixCertificateManager.NssDb.Resolve(_homeDirectory, xdgConfigHome: null, nssDbOverride: null));
-
-        Assert.Equal(namedProfileDirectory, nssDb.Path);
-        AssertFirefoxNssDb(nssDb);
-    }
-
-    [Fact]
-    public void Resolve_SkipsMalformedRegisteredFirefoxPathWithoutFallingBack()
+    public void Resolve_SkipsMalformedRegisteredFirefoxPath()
     {
         var firefoxDirectory = CreateDirectory(".config", "mozilla", "firefox");
         var validProfileDirectory = CreateDirectory(".config", "mozilla", "firefox", "Profiles", "valid.work");
-        CreateDirectory(".config", "mozilla", "firefox", "stale.default-release");
         File.WriteAllText(
             Path.Combine(firefoxDirectory, "profiles.ini"),
             """
@@ -209,6 +122,33 @@ public sealed class UnixCertificateManagerTests : IDisposable
 
         Assert.Equal(validProfileDirectory, nssDb.Path);
         AssertFirefoxNssDb(nssDb);
+    }
+
+    [Fact]
+    public void Resolve_CombinesDefaultAndRegisteredFirefoxProfiles()
+    {
+        var firefoxDirectory = CreateDirectory(".config", "mozilla", "firefox");
+        var registeredDefaultProfileDirectory = CreateDirectory(".config", "mozilla", "firefox", "registered.default-release");
+        var unregisteredDefaultProfileDirectory = CreateDirectory(".config", "mozilla", "firefox", "unregistered.default");
+        var registeredProfileDirectory = CreateDirectory(".config", "mozilla", "firefox", "Profiles", "test.work");
+        File.WriteAllText(Path.Combine(firefoxDirectory, "profiles.ini"), """
+            [Profile0]
+            Name=work
+            IsRelative=1
+            Path=Profiles/test.work
+
+            [Profile1]
+            Name=default-release
+            IsRelative=1
+            Path=registered.default-release
+            """);
+
+        var nssDbs = UnixCertificateManager.NssDb.Resolve(_homeDirectory, xdgConfigHome: null, nssDbOverride: null);
+
+        Assert.Equal(
+            [registeredProfileDirectory, registeredDefaultProfileDirectory, unregisteredDefaultProfileDirectory],
+            nssDbs.Select(nssDb => nssDb.Path).Order(StringComparer.Ordinal));
+        Assert.All(nssDbs, AssertFirefoxNssDb);
     }
 
     [Fact]
