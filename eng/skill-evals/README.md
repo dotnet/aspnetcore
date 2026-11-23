@@ -181,45 +181,29 @@ not apply score thresholds. An explicit `--require-pass` preserves Vally's
 nonzero verdict even when the repository checker would not apply a threshold.
 The hosted workflow uses the runner's result-set checks and does not repeat them.
 
-### L3: Local PR input round-trip
+### L3: Code-only PR input replay
 
-This model-free check uses the real review bundle producer. From the trusted
-repository root, activate the pinned SDK and choose an open PR, its full head
-SHA, and a trusted guidance commit. Use new output directories outside the
-repository, and an existing directory outside the bundle for `$receipt`. For example,
-in PowerShell:
+This model-free step uses the real review bundle producer to rebuild a review
+bundle offline from frozen commits. From the trusted repository root, activate
+the pinned SDK, fetch the PR head, base tip, merge base, and a trusted guidance
+commit into a local bare repository, and use a new output directory outside the
+repository. For example, in PowerShell:
 
 ```powershell
 . .\activate.ps1
 $producer = '.github\skills\review-pull-request\scripts\prepare-review.cs'
-$target = @('--repo', 'dotnet/aspnetcore', '--pr', $pr, '--head', $head,
-            '--guidance', "dotnet/aspnetcore@$guidanceCommit")
-dotnet run $producer -- @target --receipt $receipt --output $live
-dotnet run $producer -- --rebuild-from-receipt $receipt --objects $bareRepo --output $rebuilt
-```
-
-Only the live run uses GitHub. This check does not run the reviewer, PR code, or an evaluation suite.
-The private receipt holds projected pull/feedback bytes and their bodies, not Git objects or the REST diff.
-Rebuild uses the same producer revision and local bare objects only; keep the object store available.
-Receipt v1 hashes compact UTF-8 producer JSON in emitted property order, without a trailing newline
-and with only `timingsMs` removed from the manifest. The receipt checksum is not authentication.
-The offline diff uses the observed REST conventions (C# hunk labels, 12-digit index abbreviations,
-and binary summaries). These are not a GitHub guarantee: `captured-exact` requires a matching
-canonical manifest; `reconstructed` reports differing hashes; `unavailable` means missing Git objects.
-
-For code-only evaluation, skip the receipt and use the same offline rebuild:
-
-```powershell
 dotnet run $producer -- --code-only --head $head --base-tip $baseTip --merge-base $mergeBase `
     --base-ref $baseRef --guidance "dotnet/aspnetcore@$guidanceCommit" --objects $bareRepo --output $rebuilt
 ```
 
-This reports `reconstructed` without claiming hosted parity. `pull.json` has no body
-and only synthetic metadata (optionally label it with `--repo`, `--pr`, and `--title`);
-`feedback.json` contains empty comment, review, and inline lists.
-Both offline modes run the producer's bundle validation before writing the ready
-manifest. Standalone `--check` is a live GitHub freshness check, not an offline
-validator.
+This step does not use GitHub, run the reviewer, run PR code, or run an evaluation suite.
+It reports `reconstructed` without claiming hosted parity, or `unavailable` when Git objects
+are missing. The offline diff pins Git's patch settings and uses the observed REST conventions
+(C# hunk labels, 12-digit index abbreviations, and binary summaries); these are not a GitHub
+guarantee. `pull.json` has no body and only synthetic metadata (optionally label it with
+`--repo`, `--pr`, and `--title`); `feedback.json` contains empty comment, review, and inline
+lists. The producer runs its bundle validation before writing the ready manifest. Standalone
+`--check` is a live GitHub freshness check, not an offline validator.
 
 ## Hosted entry point
 

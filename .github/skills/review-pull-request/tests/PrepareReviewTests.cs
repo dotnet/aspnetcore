@@ -1700,19 +1700,14 @@ public class PrepareReviewTests
     }
 
     [Theory]
-    [InlineData("complete")]
     [InlineData("exact")]
     [InlineData("exact-hostile-config")]
     [InlineData("exact-rename-multihunk")]
     [InlineData("exact-binary")]
-    [InlineData("checksum")]
-    [InlineData("feedback")]
-    [InlineData("body")]
     [InlineData("missing-commit")]
     [InlineData("missing-blob")]
     [InlineData("code-only")]
-    [InlineData("receipt-write-fails")]
-    public async Task RebuildsMinimalReceiptOrRejectsChangedOrMissingEvidence(string evidence)
+    public async Task RebuildsCodeOnlyBundleOrReportsMissingObjects(string evidence)
     {
         await using var fixture = await Fixture.CreateAsync();
         var guidance = fixture.Commit(new Dictionary<string, object>
@@ -1787,21 +1782,7 @@ public class PrepareReviewTests
             fixture.ConfigureBinaryChange("modified", "rest");
             Assert.Contains("Binary files ", Utf8NoBom.GetString(fixture.Diff), StringComparison.Ordinal);
         }
-        var receiptPath = Path.Combine(fixture.Root, "receipt.json");
-        var capture = fixture.Options with
-        {
-            GuidanceRoot = null,
-            Guidance = $"reviewer/guidance@{guidance}",
-            Receipt = receiptPath,
-        };
-        if (evidence == "receipt-write-fails")
-        {
-            await using var existing = new FileStream(receiptPath, FileMode.CreateNew, FileAccess.ReadWrite, FileShare.None);
-            await Assert.ThrowsAsync<IOException>(() => fixture.PrepareAsync(capture));
-            Assert.False(File.Exists(Path.Combine(fixture.Output, "manifest.json")));
-            return;
-        }
-        var manifest = await fixture.PrepareAsync(capture);
+        var manifest = await fixture.PrepareAsync(fixture.Options with { GuidanceRoot = null, Guidance = $"reviewer/guidance@{guidance}" });
         if (evidence == "code-only")
         {
             var output = Path.Combine(fixture.Root, "code-only");
@@ -1826,115 +1807,67 @@ public class PrepareReviewTests
             Assert.False(Directory.Exists(Path.Combine(output, "required", "feedback")));
             return;
         }
-        Assert.True(File.Exists(Path.Combine(fixture.Output, "manifest.json")));
-        var receipt = JsonNode.Parse(await File.ReadAllBytesAsync(receiptPath))!.AsObject();
-        var stored = receipt["files"]!.AsObject();
-        const string CommentBody = "required/feedback/comments/101.source";
-        Assert.Equal(new[] { "feedback.json", "pull.json", CommentBody, "required/pull/body.source" },
-            stored.Select(pair => pair.Key).Order(StringComparer.Ordinal));
-        Assert.Equal(manifest["artifacts"]!["diff.patch"]!.GetValue<string>(), receipt["hashes"]!["diff.patch"]!.GetValue<string>());
-        Assert.Equal(manifest["artifacts"]!["files.json"]!.GetValue<string>(), receipt["hashes"]!["files.json"]!.GetValue<string>());
         var rebuild = new PrepareReviewProgram.Options(null, null, Path.Combine(fixture.Root, "rebuilt"),
-            RebuildFromReceipt: receiptPath, ObjectStore: fixture.Repository);
-        if (evidence is "complete" or "exact" or "exact-hostile-config" or "exact-rename-multihunk" or "exact-binary")
-        {
-            string[] hostileVariables = ["GIT_CONFIG_GLOBAL", "GIT_DIFF_OPTS", "GIT_EXTERNAL_DIFF"];
-            var originalVariables = hostileVariables.ToDictionary(name => name, Environment.GetEnvironmentVariable);
-            if (evidence == "exact-hostile-config")
-            {
-                var attributes = Path.Combine(fixture.Root, "hostile.gitattributes");
-                await File.WriteAllTextAsync(attributes, "*.cs -diff\n", Utf8NoBom);
-                var config = Path.Combine(fixture.Root, "hostile.gitconfig");
-                await File.WriteAllTextAsync(config, $"""
-                    [diff]
-                        context = 1
-                        interHunkContext = 10
-                        noprefix = true
-                        mnemonicPrefix = true
-                        algorithm = histogram
-                        indentHeuristic = false
-                        renames = false
-                        suppressBlankEmpty = true
-                    [diff "csharp"]
-                        xfuncname = "^(never)$"
-                    [core]
-                        quotePath = false
-                        attributesFile = {attributes.Replace('\\', '/')}
-                    [color]
-                        diff = always
-                    """, Utf8NoBom);
-                Environment.SetEnvironmentVariable("GIT_CONFIG_GLOBAL", config);
-                Environment.SetEnvironmentVariable("GIT_DIFF_OPTS", "--unified=1");
-                Environment.SetEnvironmentVariable("GIT_EXTERNAL_DIFF", "false");
-            }
-            JsonNode verdict;
-            try
-            {
-                verdict = await PrepareReviewProgram.RebuildReceiptAsync(rebuild, ProducerSourcePath);
-            }
-            finally
-            {
-                foreach (var (name, value) in originalVariables)
-                {
-                    Environment.SetEnvironmentVariable(name, value);
-                }
-            }
-            var matches = verdict["matches"]!.AsArray().Select(node => node!.GetValue<string>()).ToArray();
-            var mismatches = verdict["mismatches"]!.AsArray().Select(node => node!.GetValue<string>()).ToArray();
-            Assert.Equal(evidence == "complete" ? "reconstructed" : "captured-exact", verdict["verdict"]!.GetValue<string>());
-            if (evidence != "complete")
-            {
-                Assert.Empty(mismatches);
-                Assert.Equal(receipt["hashes"]!.AsObject().Select(pair => pair.Key), matches);
-            }
-            else
-            {
-                Assert.Contains("manifest", mismatches);
-                Assert.Contains("files.json", mismatches);
-                Assert.Equal(new[] { "pull.json", "feedback.json", "sources.head", "sources.mergeBase", "sources.baseTip", "guidance", "requiredText" },
-                    matches.Where(name => name != "diff.patch"));
-            }
-            Assert.True(File.Exists(Path.Combine(rebuild.Output, "manifest.json")));
-            var rebuilt = JsonNode.Parse(await File.ReadAllBytesAsync(Path.Combine(rebuild.Output, "manifest.json")))!;
-            foreach (var (name, value) in stored)
-            {
-                Assert.Equal(Convert.FromBase64String(value!.GetValue<string>()),
-                    await File.ReadAllBytesAsync(Path.Combine(rebuild.Output, name)));
-            }
-            Assert.Equal(manifest["artifacts"]!["diff.patch"]!.GetValue<string>() != rebuilt["artifacts"]!["diff.patch"]!.GetValue<string>(),
-                mismatches.Contains("diff.patch", StringComparer.Ordinal));
-            return;
-        }
-
+            Head: fixture.Pull["head"]!["sha"]!.GetValue<string>(), Guidance: $"reviewer/guidance@{guidance}",
+            BaseTip: fixture.BaseTip, MergeBase: fixture.MergeBase, BaseRef: "main", ObjectStore: fixture.Repository, CodeOnly: true);
         if (evidence is "missing-commit" or "missing-blob")
         {
             var id = evidence == "missing-commit" ? fixture.Head : fixture.Files[0]!["sha"]!.GetValue<string>();
             var objectPath = Path.Combine(fixture.Repository, "objects", id[..2], id[2..]);
             File.SetAttributes(objectPath, FileAttributes.Normal);
             File.Delete(objectPath);
-            var verdict = await PrepareReviewProgram.RebuildReceiptAsync(rebuild, ProducerSourcePath);
-            Assert.Equal("unavailable", verdict["verdict"]!.GetValue<string>());
+            var missing = await PrepareReviewProgram.RebuildCodeOnlyAsync(rebuild, ProducerSourcePath);
+            Assert.Equal("unavailable", missing["verdict"]!.GetValue<string>());
+            Assert.False(File.Exists(Path.Combine(rebuild.Output, "manifest.json")));
+            return;
         }
-        else
+        string[] hostileVariables = ["GIT_CONFIG_GLOBAL", "GIT_DIFF_OPTS", "GIT_EXTERNAL_DIFF"];
+        var originalVariables = hostileVariables.ToDictionary(name => name, Environment.GetEnvironmentVariable);
+        if (evidence == "exact-hostile-config")
         {
-            stored[evidence == "body" ? CommentBody : "feedback.json"] = Convert.ToBase64String("Changed feedback"u8);
-            if (evidence != "checksum")
-            {
-                receipt.Remove("checksum");
-                var compact = string.Concat(PrepareReviewProgram.SerializeJson(receipt).Split('\n')
-                    .Select(line => line.Trim().Replace("\": ", "\":", StringComparison.Ordinal)));
-                receipt["checksum"] = Convert.ToHexStringLower(SHA256.HashData(Utf8NoBom.GetBytes(compact)));
-            }
-            await File.WriteAllTextAsync(receiptPath, PrepareReviewProgram.SerializeJson(receipt), Utf8NoBom);
-            var error = await Assert.ThrowsAsync<InvalidOperationException>(() => PrepareReviewProgram.RebuildReceiptAsync(rebuild, ProducerSourcePath));
-            Assert.Contains(evidence switch
-            {
-                "checksum" => "SHA-256 checksum",
-                "feedback" => "feedback.json does not match",
-                _ => "body does not match",
-            }, error.Message);
+            var attributes = Path.Combine(fixture.Root, "hostile.gitattributes");
+            await File.WriteAllTextAsync(attributes, "*.cs -diff\n", Utf8NoBom);
+            var config = Path.Combine(fixture.Root, "hostile.gitconfig");
+            await File.WriteAllTextAsync(config, $"""
+                [diff]
+                    context = 1
+                    interHunkContext = 10
+                    noprefix = true
+                    mnemonicPrefix = true
+                    algorithm = histogram
+                    indentHeuristic = false
+                    renames = false
+                    suppressBlankEmpty = true
+                [diff "csharp"]
+                    xfuncname = "^(never)$"
+                [core]
+                    quotePath = false
+                    attributesFile = {attributes.Replace('\\', '/')}
+                [color]
+                    diff = always
+                """, Utf8NoBom);
+            Environment.SetEnvironmentVariable("GIT_CONFIG_GLOBAL", config);
+            Environment.SetEnvironmentVariable("GIT_DIFF_OPTS", "--unified=1");
+            Environment.SetEnvironmentVariable("GIT_EXTERNAL_DIFF", "false");
         }
-        Assert.False(File.Exists(Path.Combine(rebuild.Output, "manifest.json")));
+        JsonNode verdict;
+        try
+        {
+            verdict = await PrepareReviewProgram.RebuildCodeOnlyAsync(rebuild, ProducerSourcePath);
+        }
+        finally
+        {
+            foreach (var (name, value) in originalVariables)
+            {
+                Environment.SetEnvironmentVariable(name, value);
+            }
+        }
+        Assert.Equal("reconstructed", verdict["verdict"]!.GetValue<string>());
+        var replayed = JsonNode.Parse(await File.ReadAllBytesAsync(Path.Combine(rebuild.Output, "manifest.json")))!;
+        Assert.Equal(manifest["artifacts"]!["diff.patch"]!.GetValue<string>(), replayed["artifacts"]!["diff.patch"]!.GetValue<string>());
+        Assert.Equal(manifest["artifacts"]!["files.json"]!.GetValue<string>(), replayed["artifacts"]!["files.json"]!.GetValue<string>());
+        Assert.True(JsonNode.DeepEquals(manifest["sources"], replayed["sources"]));
+        Assert.True(JsonNode.DeepEquals(manifest["guidance"], replayed["guidance"]));
     }
 
     [Theory]
