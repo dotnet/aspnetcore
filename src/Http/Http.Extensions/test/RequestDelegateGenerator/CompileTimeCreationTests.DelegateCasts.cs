@@ -77,6 +77,7 @@ app.MapGet("/", {{handler}});
     [InlineData("constructor")]
     [InlineData("readonlyField")]
     [InlineData("generic")]
+    [InlineData("nestedGeneric")]
     [InlineData("keyword")]
     public async Task MapGet_DelegateCast_NamedHandler(string handlerKind)
     {
@@ -85,6 +86,7 @@ app.MapGet("/", {{handler}});
             "cast" => "(SizeHandler)DelegateCastHandlers.Size",
             "constructor" => "new SizeHandler(DelegateCastHandlers.Size)",
             "generic" => "(GenericHandler<string>)DelegateCastHandlers.Size",
+            "nestedGeneric" => "(NestedDelegateCastHandlers<string>.SizeHandler)DelegateCastHandlers.Size",
             "keyword" => "(@class)DelegateCastHandlers.Size",
             _ => "DelegateCastHandlers.SizeField",
         };
@@ -110,6 +112,82 @@ internal static class GenericDelegateCastHandlers
     {
         app.MapGet("/", (GenericHandler<PrivateType>)DelegateCastHandlers.Size);
     }
+}
+""");
+        var diagnostic = Assert.Single(result.Diagnostics);
+        Assert.Equal(DiagnosticDescriptors.UnableToResolveMethod.Id, diagnostic.Id);
+        var endpoint = GetEndpointFromCompilation(compilation, expectGeneratedCodeOverride: false);
+
+        var httpContext = CreateHttpContext();
+        httpContext.Request.QueryString = new QueryString("?size=5");
+        await endpoint.RequestDelegate(httpContext);
+        await VerifyResponseBodyAsync(httpContext, "size 5");
+    }
+
+    [Theory]
+    [InlineData("typeArgument")]
+    [InlineData("arrayTypeArgument")]
+    [InlineData("containingType")]
+    public async Task MapGet_DelegateCast_OpenGenericTypeFallsBack(string handlerKind)
+    {
+        var handler = handlerKind switch
+        {
+            "typeArgument" => "GenericHandler<T>",
+            "arrayTypeArgument" => "GenericHandler<T[]>",
+            _ => "GenericDelegateCastHandlers<T>.NestedHandler",
+        };
+        var (result, compilation) = await RunDelegateCastGeneratorAsync("GenericDelegateCastHandlers.Map<string>(app);", additionalSource: $$"""
+internal static class GenericDelegateCastHandlers
+{
+    internal static void Map<T>(IEndpointRouteBuilder app)
+    {
+        app.MapGet("/", ({{handler}})DelegateCastHandlers.Size);
+    }
+}
+
+internal static class GenericDelegateCastHandlers<T>
+{
+    internal delegate string NestedHandler(int size);
+}
+""");
+        var diagnostic = Assert.Single(result.Diagnostics);
+        Assert.Equal(DiagnosticDescriptors.UnableToResolveMethod.Id, diagnostic.Id);
+        var endpoint = GetEndpointFromCompilation(compilation, expectGeneratedCodeOverride: false);
+
+        var httpContext = CreateHttpContext();
+        httpContext.Request.QueryString = new QueryString("?size=5");
+        await endpoint.RequestDelegate(httpContext);
+        await VerifyResponseBodyAsync(httpContext, "size 5");
+    }
+
+    [Theory]
+    [InlineData("delegate")]
+    [InlineData("containingType")]
+    [InlineData("typeArgument")]
+    [InlineData("arrayTypeArgument")]
+    public async Task MapGet_DelegateCast_FileLocalTypeFallsBack(string handlerKind)
+    {
+        var handler = handlerKind switch
+        {
+            "delegate" => "FileLocalHandler",
+            "containingType" => "FileLocalType.NestedHandler",
+            "typeArgument" => "GenericHandler<FileLocalType>",
+            _ => "GenericHandler<FileLocalType[]>",
+        };
+        var (result, compilation) = await RunDelegateCastGeneratorAsync("FileLocalDelegateCastHandlers.Map(app);", additionalSource: $$"""
+internal static class FileLocalDelegateCastHandlers
+{
+    internal static void Map(IEndpointRouteBuilder app)
+    {
+        app.MapGet("/", ({{handler}})DelegateCastHandlers.Size);
+    }
+}
+
+file delegate string FileLocalHandler(int size);
+
+file class FileLocalType
+{
+    internal delegate string NestedHandler(int size);
 }
 """);
         var diagnostic = Assert.Single(result.Diagnostics);
@@ -205,6 +283,11 @@ internal delegate string SizeHandler(int size);
 internal delegate string PageHandler(int page = 1);
 internal delegate string GenericHandler<T>(int size);
 internal delegate string @class(int size);
+
+internal static class NestedDelegateCastHandlers<T>
+{
+    internal delegate string SizeHandler(int size);
+}
 
 internal static class DelegateCastHandlers
 {

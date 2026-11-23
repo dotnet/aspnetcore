@@ -34,6 +34,7 @@ internal class Endpoint
 
         HandlerDelegateType = operation.GetRouteHandlerDelegateType(semanticModel);
         if (HandlerDelegateType is not { DelegateInvokeMethod: { } invokeMethod } ||
+            !IsTypeAvailableInGeneratedCode(HandlerDelegateType) ||
             (HandlerDelegateType.CanBeReferencedByName && !semanticModel.Compilation.IsSymbolAccessibleWithin(HandlerDelegateType, semanticModel.Compilation.Assembly)) ||
             !SymbolEqualityComparer.Default.Equals(invokeMethod.ReturnType, method.ReturnType) ||
             invokeMethod.Parameters.Length != method.Parameters.Length ||
@@ -162,6 +163,16 @@ internal class Endpoint
 
         return hashCode.ToHashCode();
     }
+
+    private static bool IsTypeAvailableInGeneratedCode(ITypeSymbol type) => type switch
+    {
+        ITypeParameterSymbol => false,
+        IArrayTypeSymbol array => IsTypeAvailableInGeneratedCode(array.ElementType),
+        INamedTypeSymbol named => !named.IsFileLocal &&
+            (named.ContainingType is null || IsTypeAvailableInGeneratedCode(named.ContainingType)) &&
+            named.TypeArguments.All(IsTypeAvailableInGeneratedCode),
+        _ => true,
+    };
 
     private static (string, int, int) GetLocation(IInvocationOperation operation)
     {
