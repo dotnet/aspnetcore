@@ -155,7 +155,7 @@ or other agent. Its native profile must expose only `read`, `search`, and `skill
 only batch those allowed tools and grant no shell, edit, network, or delegation
 capability do not count as additional tools); a missing profile or any additional
 worker capability tool makes that guide `incomplete`. Select the
-caller-supplied worker model, or `gpt-5.6-sol` when the caller omitted it; pass that model
+caller-supplied worker model, or `gpt-6.2-sol` when the caller omitted it; pass that model
 explicitly and independently to every worker, never inheriting the coordinator or
 session model. Pass the caller-supplied reasoning effort explicitly and independently
 to every worker; when omitted, omit the effort setting and record
@@ -171,9 +171,9 @@ same-worker clarification, collect its completed follow-up the same way before s
 requested agent type, model, and effort plus any runtime-reported values; record missing
 runtime telemetry as `unknown`, which alone does not make a guide incomplete. A confirmed
 mismatch, runtime rejection, or inability to apply an explicitly requested setting makes
-that guide `incomplete`. Mark a worker-model run other than `gpt-5.6-sol` as
-`UNEVALUATED`; effort alone does not change the evaluation label. Give each worker the
-trusted absolute bundle root (the
+that guide `incomplete`. Mark a run using a non-default worker model as `UNEVALUATED`;
+the absence of this label does not mean the default was evaluated. Effort alone does
+not change the label. Give each worker the trusted absolute bundle root (the
 directory containing `manifest.json`), its routed guide's verbatim
 `guides[].assignment` object, the frozen `target` identities, and a role-to-root mapping
 containing only `sources[role].root` for the roles named by
