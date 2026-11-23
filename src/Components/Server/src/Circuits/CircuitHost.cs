@@ -973,12 +973,7 @@ internal partial class CircuitHost : IAsyncDisposable
                 }
             }
 
-            var operationsTask = PerformRootComponentOperations(
-                operations,
-                shouldWaitForQuiescence,
-                postRemovalTask,
-                shouldWaitForQuiescence ? LogRootComponentInitializationFailure : null,
-                operationsApplied);
+            var operationsTask = PerformRootComponentOperations(operations, shouldWaitForQuiescence, postRemovalTask, operationsApplied);
             taskCompletionSource?.SetResult();
 
             await operationsTask;
@@ -1018,7 +1013,8 @@ internal partial class CircuitHost : IAsyncDisposable
         RootComponentOperation[] operations,
         bool shouldWaitForQuiescence,
         Task postStateTask,
-        Action<Exception> onComponentInitializationFailed,
+        Action<Exception> onComponentInitializationFailed)
+        Task postStateTask,
         TaskCompletionSource<bool> operationsApplied)
     {
         var webRootComponentManager = Renderer.GetOrCreateWebRootComponentManager();
@@ -1251,7 +1247,7 @@ internal partial class CircuitHost : IAsyncDisposable
         [LoggerMessage(117, LogLevel.Error, "Root component initialization failed.", EventName = nameof(RootComponentInitializationFailed))]
         public static partial void RootComponentInitializationFailed(ILogger logger, Exception exception);
 
-        [LoggerMessage(118, LogLevel.Error, "Circuit '{CircuitId}' exceeded the limit of {MaxPendingRootComponentUpdates} pending root component updates.", EventName = nameof(RootComponentUpdateQueueOverflow))]
+        [LoggerMessage(117, LogLevel.Error, "Circuit '{CircuitId}' exceeded the limit of {MaxPendingRootComponentUpdates} pending root component updates.", EventName = nameof(RootComponentUpdateQueueOverflow))]
         public static partial void RootComponentUpdateQueueOverflow(ILogger logger, CircuitId circuitId, int maxPendingRootComponentUpdates, Exception exception);
 
         [LoggerMessage(200, LogLevel.Debug, "Failed to parse the event data when trying to dispatch an event.", EventName = "DispatchEventFailedToParseEventData")]

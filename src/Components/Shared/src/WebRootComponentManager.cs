@@ -69,10 +69,10 @@ internal partial class WebAssemblyRenderer
             }
 
             _webRootComponents.Add(ssrComponentId, component);
-            return RenderRootComponentAsync(component, onComponentInitializationFailed);
+            return RenderRootComponentAsync(component);
         }
 
-        private async Task RenderRootComponentAsync(WebRootComponent component, Action<Exception>? onComponentInitializationFailed)
+        private async Task RenderRootComponentAsync(WebRootComponent component)
         {
             await _currentUpdateTask;
 
