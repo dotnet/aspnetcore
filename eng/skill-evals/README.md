@@ -32,15 +32,16 @@ binary judging checks the reasoning separately. These checks do not prove every
 line was read or replace the semantic judge. Five trials per stimulus must all pass.
 Platform-required native skill acquisition is allowed, but does not replace reading
 the staged guidance or authorize coordinator execution.
-The executor and judge models are both pinned to the reviewer skill's supported
-`gpt-5.6-sol`. Because they share a model identity, the judge is not independent-
-model corroboration. Overrides are separate model-compatibility results, not
-evidence that the default reviewer improved.
+The executor and judge models are both pinned to `gpt-5.6-sol`, the previous
+reviewer default, not the current hosted model. The same-model judge does not
+provide independent corroboration. Overrides are separate model-compatibility
+results, not evidence that the default reviewer improved.
 This does not invoke live PR review or measure baseline-versus-skilled improvement.
 Run it explicitly with
 `./eng/skill-evals/run.ps1 Run -Eval eng/skill-evals/review-pull-request/catch-policy.vally.yaml --require-pass`.
 
-The `review-candidate-verifier` component suite checks normalized `decision` and
+The `review-candidate-verifier` component suite also uses `gpt-5.6-sol` as its
+executor and grades responses without a model judge. It checks normalized `decision` and
 applicable `downgradeKind`, `dropBasis`, and `contradictedLink` fields. It tolerates
 irrelevant JSON and citation-format differences. Every case must pass at least
 four of five trials independently. Read receipts remain a separate integrity
