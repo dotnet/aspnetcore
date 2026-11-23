@@ -3,6 +3,7 @@
 
 import assert from 'node:assert/strict';
 import { createHash } from 'node:crypto';
+import { writeFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { test } from 'node:test';
 import { git as runGit, pin, scratch } from './pin.mjs';
@@ -109,6 +110,39 @@ test('PinIgnoresInheritedRepositoryRouting', () => scratch(dir =>
   assert.equal(git(`--git-dir=${mirror}`, 'rev-parse', 'refs/l3/1-1/head'), head);
   const stray = runGit([`--git-dir=${other}`, 'rev-parse', '--verify', '--quiet', 'refs/l3/1-1/head']);
   assert.notEqual(stray.status, 0, 'Pin must not write refs into the repository named by GIT_COMMON_DIR.');
+}));
+
+test('PinFromLocalSourceIgnoresInvalidGlobalConfig', () => scratch(dir =>
+{
+  const repo = join(dir, 'source');
+  const mirror = join(dir, 'mirror.git');
+  const config = join(dir, 'invalid-config');
+  const git = (...args) =>
+  {
+    const result = runGit(args, { offline: true });
+    assert.equal(result.status, 0, result.stderr);
+    return result.stdout.trim();
+  };
+  git('init', '--object-format=sha1', repo);
+  git('-C', repo, '-c', 'user.name=L3', '-c', 'user.email=l3@example.invalid', '-c', 'commit.gpgsign=false',
+    'commit', '--allow-empty', '-m', 'first');
+  const head = git('-C', repo, 'rev-parse', 'HEAD');
+  writeFileSync(config, '[unterminated\n');
+
+  const previous = process.env.GIT_CONFIG_GLOBAL;
+  try
+  {
+    process.env.GIT_CONFIG_GLOBAL = config;
+    const result = pin({ repo, mirror, run: '1-1', commits: { head } });
+    assert.equal(result.offlineRestoreVerified, true);
+    assert.equal(result.entries[0].status, 'pinned');
+    assert.equal(git(`--git-dir=${mirror}`, 'rev-parse', 'refs/l3/1-1/head'), head);
+  }
+  finally
+  {
+    if (previous === undefined) delete process.env.GIT_CONFIG_GLOBAL;
+    else process.env.GIT_CONFIG_GLOBAL = previous;
+  }
 }));
 
 test('VerifierDiscardsRequireAttributableStructuredEvidenceAndDoNotStoreText', () =>

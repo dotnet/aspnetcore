@@ -23,8 +23,8 @@ export function command(exe, args, input, env)
 // (GIT_DIR, GIT_COMMON_DIR, GIT_CONFIG*, GIT_OBJECT_DIRECTORY, ...) must not redirect a call.
 const transport = /^GIT_(TERMINAL_PROMPT|ASKPASS|SSH|SSH_COMMAND|SSH_VARIANT|SSL_\w+|HTTP_\w+|PROXY_\w+|CURL_\w+|CONFIG_GLOBAL|CONFIG_SYSTEM|CONFIG_NOSYSTEM|TRACE\w*)$/i;
 
-// Runs git with repository-routing variables removed. Offline calls also ignore user and system config.
-export function git(args, { input, offline = false } = {})
+// Runs git with repository-routing variables removed. Only network fetches opt into user and system config.
+export function git(args, { input, offline = true } = {})
 {
   const env = Object.fromEntries(Object.entries(process.env)
     .filter(([name]) => !/^GIT_/i.test(name) || (offline ? /^GIT_TERMINAL_PROMPT$/i : transport).test(name)));
@@ -49,14 +49,16 @@ export function pin({ repo, mirror, run, pr, commits })
 {
   if (!/^[1-9]\d*-[1-9]\d*$/.test(run)) throw new Error('Expected --run RUN_ID-ATTEMPT.');
   if (pr !== undefined && !numberPattern.test(pr)) throw new Error('Expected a positive --pr number.');
-  const source = isAbsolute(repo) && existsSync(repo) ? repo :
+  const localSource = isAbsolute(repo) && existsSync(repo);
+  const source = localSource ? repo :
     repoPattern.test(repo) ? `https://github.com/${repo}.git` : undefined;
   if (!source) throw new Error('Expected --repo OWNER/REPO or an absolute local Git repository path.');
   if (!Object.keys(commits).length || Object.entries(commits).some(([role, sha]) => !roles.includes(role) || !shaPattern.test(sha)))
     throw new Error('Supply at least one role with a full lowercase commit SHA.');
 
   mirror = resolve(mirror);
-  const store = (...args) => git(['--no-replace-objects', `--git-dir=${mirror}`, ...args]);
+  const storeArgs = ['--no-replace-objects', `--git-dir=${mirror}`];
+  const store = (...args) => git([...storeArgs, ...args]);
   function check(result, operation)
   {
     if (result.status !== 0) throw new Error(`${operation} failed: ${result.stderr.trim()}`);
@@ -91,8 +93,8 @@ export function pin({ repo, mirror, run, pr, commits })
     {
       // Include objects fetched earlier in this run, even though its pins are not yet visible.
       const tips = [...new Set(entries.map(entry => entry.sha))].filter(isCommit);
-      attempts.set(ref, store('fetch', '--no-tags', '--no-write-fetch-head', '--no-auto-maintenance',
-        ...tips.map(tip => `--negotiation-tip=${tip}`), '--', source, ref));
+      attempts.set(ref, git([...storeArgs, 'fetch', '--no-tags', '--no-write-fetch-head', '--no-auto-maintenance',
+        ...tips.map(tip => `--negotiation-tip=${tip}`), '--', source, ref], { offline: localSource }));
     }
     return attempts.get(ref);
   };
@@ -130,7 +132,7 @@ export function pin({ repo, mirror, run, pr, commits })
     // A concurrent writer cannot replace an existing pin or bypass the preflight check.
     const updates = reachable.map(({ status, ref, sha }) =>
       `${status === 'pinned' ? 'create' : 'verify'} ${ref} ${sha}\n`).join('');
-    check(git(['--no-replace-objects', `--git-dir=${mirror}`, 'update-ref', '--no-deref', '--stdin'], { input: updates }), 'Pin refs transaction');
+    check(git([...storeArgs, 'update-ref', '--no-deref', '--stdin'], { input: updates }), 'Pin refs transaction');
   }
   return { run, mirror, offlineRestoreVerified: reachable.length === entries.length, entries };
 }
