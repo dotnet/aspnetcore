@@ -487,6 +487,11 @@ public abstract partial class Renderer : IDisposable, IAsyncDisposable
     {
         Dispatcher.AssertAccess();
 
+        if (_rendererIsDisposed)
+        {
+            return Task.CompletedTask;
+        }
+
         if (waitForQuiescence)
         {
             _pendingTasks ??= new();

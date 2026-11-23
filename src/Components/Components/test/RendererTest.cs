@@ -2671,6 +2671,51 @@ public class RendererTest
         Assert.Equal(1, eventCount);
     }
 
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task DoesNotDispatchQueuedEventsAfterRendererIsDisposed(bool waitForQuiescence)
+    {
+        using var renderer = new TestRenderer();
+        var eventCount = 0;
+        var component = new EventComponent { OnTest = _ => eventCount++ };
+        renderer.AssignRootComponentId(component);
+        component.TriggerRender();
+        var eventHandlerId = renderer.Batches.Single().ReferenceFrames
+            .Single(frame => frame.FrameType == RenderTreeFrameType.Attribute && frame.AttributeEventHandlerId != 0)
+            .AttributeEventHandlerId;
+        await renderer.DispatchEventAsync(eventHandlerId, EventArgs.Empty);
+        Assert.Equal(1, eventCount);
+        Task dispatch = Task.CompletedTask;
+
+        await renderer.Dispatcher.InvokeAsync(() =>
+        {
+            var eventQueued = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+            ThreadPool.QueueUserWorkItem(_ =>
+            {
+                try
+                {
+                    Assert.False(renderer.Dispatcher.CheckAccess());
+                    dispatch = renderer.Dispatcher.InvokeAsync(() =>
+                        renderer.DispatchEventAsync(eventHandlerId, fieldInfo: null, EventArgs.Empty, waitForQuiescence));
+                    eventQueued.SetResult();
+                }
+                catch (Exception exception)
+                {
+                    eventQueued.SetException(exception);
+                }
+            });
+            eventQueued.Task.GetAwaiter().GetResult();
+            Assert.False(dispatch.IsCompleted);
+            renderer.Dispose();
+        });
+
+        await dispatch;
+
+        Assert.True(dispatch.IsCompletedSuccessfully);
+        Assert.Equal(1, eventCount);
+    }
+
     [Fact]
     public async Task DisposesEventHandlersWhenAttributeValueChanged()
     {

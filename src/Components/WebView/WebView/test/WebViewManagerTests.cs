@@ -288,6 +288,50 @@ public class WebViewManagerTests
         Assert.Null(webViewManager.CurrentPageContext);
     }
 
+    [Fact]
+    public async Task DisposingWebViewManager_AggregatesRendererAndScopeDisposalExceptions()
+    {
+        var rendererException = new InvalidOperationException("Component disposal failed.");
+        var scopeException = new InvalidOperationException("Scope disposal failed.");
+        var scopedService = new ThrowingAsyncDisposableService(scopeException);
+        await using var services = RegisterTestServices()
+            .AddTestBlazorWebView()
+            .AddScoped(_ => scopedService)
+            .BuildServiceProvider();
+        await using var webViewManager = new TestWebViewManager(services, new TestFileProvider());
+        await webViewManager.AddRootComponentAsync(
+            typeof(ComponentWithThrowingDisposal),
+            "#app",
+            ParameterView.FromDictionary(new Dictionary<string, object>
+            {
+                [nameof(ComponentWithThrowingDisposal.DisposalException)] = rendererException,
+            }));
+        webViewManager.ReceiveAttachPageMessage();
+        var context = webViewManager.CurrentPageContext;
+        Assert.NotNull(context);
+        Assert.False(scopedService.Disposed);
+
+        try
+        {
+            var exception = await Assert.ThrowsAsync<AggregateException>(
+                () => webViewManager.DisposeAsync().AsTask());
+
+            Assert.True(scopedService.Disposed);
+            Assert.Collection(exception.InnerExceptions,
+                error => Assert.Same(rendererException, error),
+                error => Assert.Same(scopeException, error));
+            Assert.Null(webViewManager.CurrentPageContext);
+        }
+        finally
+        {
+            if (!scopedService.Disposed)
+            {
+                // Release the scope when running against the unfixed implementation.
+                await Assert.ThrowsAsync<InvalidOperationException>(() => context.DisposeAsync().AsTask());
+            }
+        }
+    }
+
     [Theory]
     [InlineData(false)]
     [InlineData(true)]
@@ -572,6 +616,7 @@ public class WebViewManagerTests
                 var invocationException = await Assert.ThrowsAsync<JSException>(() => invocation);
                 Assert.Same(invocationException, exception);
                 Assert.Equal(errorMessage, exception.Message);
+                Assert.True(scopedService.Disposed);
                 Assert.True(IpcCommon.TryDeserializeOutgoing(webViewManager.SentIpcMessages.Last(), out messageType, out args));
                 Assert.Equal(IpcCommon.OutgoingMessageType.NotifyUnhandledException, messageType);
                 Assert.Equal(errorMessage, args[0].GetString());
@@ -596,8 +641,11 @@ public class WebViewManagerTests
             {
             }
 
-            // Renderer disposal failures skip scope disposal; release the test's scope explicitly.
-            await context.DisposeAsync();
+            if (!scopedService.Disposed)
+            {
+                // Release the scope when running against the unfixed implementation.
+                await context.DisposeAsync();
+            }
         }
     }
 
@@ -772,6 +820,17 @@ public class WebViewManagerTests
             await releaseDisposal;
             Disposed = true;
         }
+    }
+
+    private sealed class ComponentWithThrowingDisposal : ComponentBase, IAsyncDisposable
+    {
+        [Inject]
+        public ThrowingAsyncDisposableService Service { get; set; }
+
+        [Parameter]
+        public Exception DisposalException { get; set; }
+
+        public ValueTask DisposeAsync() => ValueTask.FromException(DisposalException);
     }
 
     private sealed class ComponentWithThrowingAsyncDisposableService : ComponentBase
