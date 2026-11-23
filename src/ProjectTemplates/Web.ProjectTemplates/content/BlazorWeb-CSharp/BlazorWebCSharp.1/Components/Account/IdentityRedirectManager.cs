@@ -11,13 +11,15 @@ internal sealed class IdentityRedirectManager(NavigationManager navigationManage
         uri ??= "";
 
         // Prevent open redirects.
-        if (!Uri.IsWellFormedUriString(uri, UriKind.Relative)
-            || uri.StartsWith("//", StringComparison.Ordinal))
+        // Resolve the URI the same way NavigationManager does and only allow destinations within the app's base URI.
+        var baseUri = new Uri(navigationManager.BaseUri);
+        if (!Uri.TryCreate(baseUri, uri, out var absoluteUri)
+            || !absoluteUri.AbsoluteUri.StartsWith(baseUri.AbsoluteUri, StringComparison.OrdinalIgnoreCase))
         {
-            uri = navigationManager.ToBaseRelativePath(uri);
+            absoluteUri = baseUri;
         }
 
-        navigationManager.NavigateTo(uri);
+        navigationManager.NavigateTo(absoluteUri.AbsoluteUri);
     }
 
     public void RedirectTo(string uri, Dictionary<string, object?> queryParameters)
