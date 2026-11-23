@@ -57,9 +57,7 @@ public class RoutingTest : ServerTestBase<ToggleExecutionModeServerFixture<Progr
         app.FindElement(By.Id("navigate-alternate-layout")).Click();
         Browser.Equal(nameof(AlternateLayoutPage), () => app.FindElement(By.Id("page-name")).Text);
         Browser.Equal("second", () => app.FindElement(By.Id("page-value")).Text);
-        var trace = app.FindElement(By.Id("instantiation-log")).Text;
-
-        Assert.Equal(1, trace.Split('\n').Count(line => line.Contains($"{nameof(AlternateLayoutPage)}[") && line.Contains("constructor")));
+        Browser.Equal("1", () => app.FindElement(By.Id("alternate-layout-page-count")).Text);
     }
 
     [Fact]

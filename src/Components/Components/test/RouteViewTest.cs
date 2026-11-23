@@ -169,17 +169,19 @@ public class RouteViewTest
         var recorder = new PageInstanceRecorder();
         using var services = new ServiceCollection().AddSingleton(recorder).BuildServiceProvider();
         using var renderer = new TestRenderer(services);
-        var host = new CascadingRouteViewHost(recorder, isFixed: false);
+        var host = new CascadingRouteViewHost(recorder);
         var hostId = renderer.AssignRootComponentId(host);
+        var firstModel = new object();
+        var secondModel = new object();
 
-        await renderer.RenderRootComponentAsync(hostId, RouteParameters(typeof(PageWithNestedLayout), "first"));
+        await renderer.RenderRootComponentAsync(hostId, RouteParameters(typeof(PageWithNestedLayout), firstModel));
         var outgoingPage = Assert.Single(recorder.Pages);
 
-        await renderer.RenderRootComponentAsync(hostId, RouteParameters(typeof(PageWithOuterLayout), "second"));
+        await renderer.RenderRootComponentAsync(hostId, RouteParameters(typeof(PageWithOuterLayout), secondModel));
 
         Assert.Equal(2, recorder.Pages.Count);
         Assert.IsType<PageWithOuterLayout>(recorder.Pages[1]);
-        Assert.Equal("second", recorder.Pages[1].Message);
+        Assert.Same(secondModel, recorder.Pages[1].Model);
         Assert.Same(outgoingPage, Assert.Single(recorder.DisposedPages));
     }
 
@@ -189,18 +191,18 @@ public class RouteViewTest
         var recorder = new PageInstanceRecorder();
         using var services = new ServiceCollection().AddSingleton(recorder).BuildServiceProvider();
         using var renderer = new TestRenderer(services);
-        var host = new CascadingRouteViewHost(recorder, isFixed: false);
+        var host = new CascadingRouteViewHost(recorder);
         var hostId = renderer.AssignRootComponentId(host);
         var firstModel = new object();
 
-        await renderer.RenderRootComponentAsync(hostId, ReferenceRouteParameters(typeof(PageWithNestedLayout), firstModel));
+        await renderer.RenderRootComponentAsync(hostId, RouteParameters(typeof(PageWithNestedLayout), firstModel));
         var page = Assert.Single(recorder.Pages);
         Assert.Same(firstModel, Assert.Single(page.ReceivedModels));
 
         foreach (var nextModel in new[] { new object(), new object() })
         {
             page.ReceivedModels.Clear();
-            await renderer.RenderRootComponentAsync(hostId, ReferenceRouteParameters(typeof(PageWithNestedLayout), nextModel));
+            await renderer.RenderRootComponentAsync(hostId, RouteParameters(typeof(PageWithNestedLayout), nextModel));
 
             Assert.Same(page, Assert.Single(recorder.Pages));
             Assert.Empty(recorder.DisposedPages);
@@ -210,21 +212,12 @@ public class RouteViewTest
         }
     }
 
-    private static ParameterView ReferenceRouteParameters(Type pageType, object model)
+    private static ParameterView RouteParameters(Type pageType, object model)
         => ParameterView.FromDictionary(new Dictionary<string, object>
         {
             [nameof(RouteView.RouteData)] = new RouteData(pageType, new Dictionary<string, object>
             {
                 [nameof(TrackedPage.Model)] = model,
-            })
-        });
-
-    private static ParameterView RouteParameters(Type pageType, string message)
-        => ParameterView.FromDictionary(new Dictionary<string, object>
-        {
-            [nameof(RouteView.RouteData)] = new RouteData(pageType, new Dictionary<string, object>
-            {
-                [nameof(TrackedPage.Message)] = message,
             })
         });
 
@@ -234,7 +227,7 @@ public class RouteViewTest
         public List<TrackedPage> DisposedPages { get; } = [];
     }
 
-    private sealed class CascadingRouteViewHost(PageInstanceRecorder recorder, bool isFixed) : ComponentBase
+    private sealed class CascadingRouteViewHost(PageInstanceRecorder recorder) : ComponentBase
     {
         [Parameter]
         public RouteData RouteData { get; set; }
@@ -243,7 +236,6 @@ public class RouteViewTest
         {
             builder.OpenComponent<CascadingValue<PageInstanceRecorder>>(0);
             builder.AddComponentParameter(1, nameof(CascadingValue<PageInstanceRecorder>.Value), recorder);
-            builder.AddComponentParameter(2, nameof(CascadingValue<PageInstanceRecorder>.IsFixed), isFixed);
             builder.AddComponentParameter(3, nameof(CascadingValue<PageInstanceRecorder>.ChildContent), (RenderFragment)(contentBuilder =>
             {
                 contentBuilder.OpenComponent<RouteView>(0);
@@ -282,23 +274,14 @@ public class RouteViewTest
         }
 
         [Parameter]
-        public string Message { get; set; }
-
-        [Parameter]
         public object Model { get; set; }
 
         public List<object> ReceivedModels { get; } = [];
 
         protected override void OnParametersSet()
         {
-            if (Model is not null)
-            {
-                ReceivedModels.Add(Model);
-            }
+            ReceivedModels.Add(Model);
         }
-
-        protected override void BuildRenderTree(RenderTreeBuilder builder)
-            => builder.AddContent(0, Message);
 
         public void Dispose()
         {

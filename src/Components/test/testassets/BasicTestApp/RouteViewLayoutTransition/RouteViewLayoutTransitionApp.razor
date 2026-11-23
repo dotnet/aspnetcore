@@ -2,9 +2,9 @@
 
 <Router AppAssembly="@typeof(BasicTestApp.Program).Assembly">
     <Found Context="routeData">
-        <CascadingStateProvider>
+        <CascadingValue Value="this">
             <RouteView RouteData="@PrepareRouteData(routeData)" DefaultLayout="@typeof(NestedLayout)" />
-        </CascadingStateProvider>
+        </CascadingValue>
     </Found>
     <NotFound>
         <p>Layout instantiation route not found.</p>
@@ -15,10 +15,7 @@
     private RouteData _referenceRoute;
     private RouteData _referenceRouteSource;
 
-    protected override void OnInitialized()
-    {
-        InstantiationTrace.Clear();
-    }
+    public List<AlternateLayoutPage> AlternateLayoutPages { get; } = [];
 
     private RouteData PrepareRouteData(RouteData routeData)
     {
