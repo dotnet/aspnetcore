@@ -10,7 +10,7 @@ parameters:
 
   # GitHub App authentication for the OneLoc check-in PR.
   GitHubAppServiceConnection: 'dnceng-oneloc-githubapp'
-  GitHubAppClientId: 'Iv23lijBU8x3gc9lDOc9'
+  GitHubAppIdSecretName: 'oneloc-localization-app-app-id'
   GitHubAppKeyVaultName: 'EngKeyVault'
   GitHubAppKeyName: 'oneloc-localization-app-key'
 
@@ -101,12 +101,12 @@ jobs:
             azureSubscription: ${{ parameters.GitHubAppServiceConnection }}
           keyVaultName: ${{ parameters.GitHubAppKeyVaultName }}
           keyName: ${{ parameters.GitHubAppKeyName }}
-          appClientId: ${{ parameters.GitHubAppClientId }}
+          appIdSecretName: ${{ parameters.GitHubAppIdSecretName }}
           installationOwner: ${{ parameters.GitHubOrg }}
           outputVariableName: 'GitHubAppInstallationToken'
           condition: ${{ parameters.condition }}
 
-    - task: OneLocBuild@2
+    - task: OneLocBuild@3
       displayName: OneLocBuild
       env:
         SYSTEM_ACCESSTOKEN: $(System.AccessToken)
