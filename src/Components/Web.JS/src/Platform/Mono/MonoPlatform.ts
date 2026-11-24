@@ -146,7 +146,6 @@ async function importDotnetJs(startOptions: Partial<WebAssemblyStartOptions>): P
 function prepareRuntimeConfig(options: Partial<WebAssemblyStartOptions>, onConfigLoadedCallback?: (loadedConfig: MonoConfig) => void): DotnetModuleConfig {
   const config: MonoConfig = {
     maxParallelDownloads: 1000000, // disable throttling parallel downloads
-    enableDownloadRetry: false, // disable retry downloads
   };
 
   if (options.environment) {
