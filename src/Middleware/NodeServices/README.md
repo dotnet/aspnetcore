@@ -1,5 +1,7 @@
 # Microsoft.AspNetCore.NodeServices
 
+**Microsoft.AspNetCore.NodeServices is not recommended for production use.**
+
 This NuGet package provides a fast and robust way to invoke Node.js code from a .NET application (typically ASP.NET Core web apps). You can use this whenever you want to use Node/NPM-supplied functionality at runtime in ASP.NET. For example,
 
  * Executing arbitrary JavaScript
