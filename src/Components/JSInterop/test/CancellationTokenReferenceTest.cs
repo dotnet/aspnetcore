@@ -310,6 +310,26 @@ public class CancellationTokenReferenceTest
         AssertSent(runtime, "receive", "receive", Canceled(id));
     }
 
+    // TryReset removes the registrations made before it, so only calls made after it are aborted, as in .NET.
+    [Fact]
+    public async Task ResetSourceGivesItsTokenANewIdAndCancelsOnlyLaterCalls()
+    {
+        using var runtime = new ReferenceRuntime();
+        using var source = new CancellationTokenSource();
+        await runtime.InvokeVoidAsync("receive", CancellationToken.None, source.Token);
+        var before = TokenId(runtime.Sent[0]);
+
+        Assert.True(source.TryReset());
+        await runtime.InvokeVoidAsync("receive", CancellationToken.None, source.Token);
+        await runtime.InvokeVoidAsync("receive", CancellationToken.None, source.Token);
+        var after = TokenId(runtime.Sent[1]);
+        Assert.NotEqual(before, after);
+        Assert.Equal(after, TokenId(runtime.Sent[2]));
+
+        source.Cancel();
+        AssertSent(runtime, "receive", "receive", "receive", Canceled(after));
+    }
+
     [Fact]
     public async Task CanceledTokenIsWrittenWithoutIdEvenAfterItHadOne()
     {
