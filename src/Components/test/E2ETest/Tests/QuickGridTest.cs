@@ -118,7 +118,7 @@ public class QuickGridTest : ServerTestBase<ToggleExecutionModeServerFixture<Pro
         firstNameColumnOptionsButton.Click();
 
         // Click outside the column options to close
-        grid.Click();
+        Browser.FindElement(By.Id("non-js-root-parameter")).Click();
 
         var firstNameSearchSelector = "#grid > table > thead > tr > th:nth-child(2) input[type=search]";
         Browser.DoesNotExist(By.CssSelector(firstNameSearchSelector));

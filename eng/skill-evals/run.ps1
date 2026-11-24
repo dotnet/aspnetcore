@@ -348,6 +348,12 @@ switch ($Action) {
                 throw 'Disposition grader self-test failed.'
             }
         }
+        if (Test-Path (Join-Path $PSScriptRoot 'l3\test_l3.mjs')) {
+            & node --test (Join-Path $PSScriptRoot 'l3\test_l3.mjs')
+            if ($LASTEXITCODE -ne 0) {
+                throw 'L3 corpus tool self-test failed.'
+            }
+        }
     }
     'Lint' {
         Invoke-VallyLint
