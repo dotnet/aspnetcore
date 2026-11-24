@@ -1941,6 +1941,19 @@ public class RenderTreeDiffBuilderTest : IDisposable
     }
 
     [Fact]
+    public void PreservesInvalidCastExceptionFromComponentReferenceCaptureForCompatibleInstance()
+    {
+        var expectedException = new InvalidCastException("Exception from the reference capture callback.");
+        newTree.OpenComponent<FakeComponent>(0);
+        newTree.AddComponentReferenceCapture(1, _ => throw expectedException);
+        newTree.CloseComponent();
+
+        var exception = Assert.Throws<InvalidCastException>(() => GetSingleUpdatedComponent());
+
+        Assert.Same(expectedException, exception);
+    }
+
+    [Fact]
     public void DoesNotInvokeAssignerAgainForRetainedComponents()
     {
         // Arrange

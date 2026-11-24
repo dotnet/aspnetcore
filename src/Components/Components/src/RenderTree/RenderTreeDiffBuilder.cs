@@ -1045,7 +1045,16 @@ internal static class RenderTreeDiffBuilder
             throw new InvalidOperationException($"Trying to initialize {nameof(RenderTreeFrameType.ComponentReferenceCapture)} frame before parent component was assigned.");
         }
 
-        newFrame.ComponentReferenceCaptureActionField(componentInstance);
+        try
+        {
+            newFrame.ComponentReferenceCaptureActionField(componentInstance);
+        }
+        catch (InvalidCastException ex) when (!parentFrame.ComponentTypeField.IsInstanceOfType(componentInstance))
+        {
+            throw new InvalidOperationException($"Cannot capture a reference to component '{parentFrame.ComponentTypeField}' because the renderer supplied an instance of type '{componentInstance.GetType()}', which is not assignable to the component type. " +
+                "This can occur when attempting to capture a component reference across an interactive render mode boundary. " +
+                "If so, place the parent and child components in the same interactive subtree.", ex);
+        }
     }
 
     private static void InitializeNewNamedEvent(ref DiffContext diffContext, int newTreeFrameIndex)
