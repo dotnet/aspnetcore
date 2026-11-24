@@ -69,6 +69,25 @@ public partial class ValidationsGeneratorTestBase : LoggedTestBase
             .DisableRequireUniquePrefix();
     }
 
+    // Runs the generator without snapshot verification, for behavioral tests whose generated code differs between test cases.
+    internal static Compilation RunGenerator(string source, IEnumerable<MetadataReference> additionalReferences = null)
+    {
+        var references = GetMetadataReferences();
+        if (additionalReferences is not null)
+        {
+            references = references.Concat(additionalReferences);
+        }
+
+        var inputCompilation = CSharpCompilation.Create("ValidationsGeneratorSample",
+            [CSharpSyntaxTree.ParseText(source, options: ParseOptions, path: "Program.cs")],
+            references,
+            new CSharpCompilationOptions(OutputKind.ConsoleApplication));
+
+        CSharpGeneratorDriver.Create(generators: [new ValidationsGenerator().AsSourceGenerator()], parseOptions: ParseOptions)
+            .RunGeneratorsAndUpdateCompilation(inputCompilation, out var compilation, out _);
+        return compilation;
+    }
+
     private static IEnumerable<MetadataReference> GetMetadataReferences()
         => AppDomain.CurrentDomain.GetAssemblies()
             .Where(assembly => !assembly.IsDynamic && !string.IsNullOrWhiteSpace(assembly.Location))

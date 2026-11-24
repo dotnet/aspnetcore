@@ -750,6 +750,11 @@ namespace Microsoft.Extensions.Validation.Generated
 
         private static readonly object _throwawayObjectInstance = new();
 
+        // Validation metadata for base types is taken from the resolver generated together with this type rather than from ValidationOptions.
+        // The generator emits metadata for every base type that has validation rules, including base types declared in other assemblies.
+        // This keeps inherited members validated regardless of which other resolvers are registered and in what order.
+        private static readonly global::Microsoft.Extensions.Validation.Generated.GeneratedValidatableInfoResolver s_generatedResolver = new();
+
         protected ValidatableTypeInfo(
             [global::System.Diagnostics.CodeAnalysis.DynamicallyAccessedMembersAttribute(global::System.Diagnostics.CodeAnalysis.DynamicallyAccessedMemberTypes.Interfaces)] global::System.Type type,
             global::System.Collections.Generic.IReadOnlyList<global::Microsoft.Extensions.Validation.Generated.ValidatablePropertyInfo> members,
@@ -791,7 +796,7 @@ namespace Microsoft.Extensions.Validation.Generated
             var baseType = Type.BaseType;
             while (baseType is not null)
             {
-                if (validationOptions.TryGetValidatableTypeInfo(baseType, out var baseTypeTypeInfo))
+                if (s_generatedResolver.TryGetValidatableTypeInfo(baseType, out var baseTypeTypeInfo) && baseTypeTypeInfo is not null)
                 {
                     return baseTypeTypeInfo.TryFindProperty(propertyName, validationOptions, out validatablePropertyInfo);
                 }
@@ -855,7 +860,7 @@ namespace Microsoft.Extensions.Validation.Generated
             var actualType = value.GetType();
 
             // Then validate inherited members
-            foreach (var superTypeInfo in GetSuperTypeInfos(actualType, context.ValidationOptions))
+            foreach (var superTypeInfo in GetSuperTypeInfos(actualType))
             {
                 tracker = superTypeInfo.ValidateMembers(value, tracker, cancellationToken);
             }
@@ -914,7 +919,7 @@ namespace Microsoft.Extensions.Validation.Generated
             var actualType = value.GetType();
 
             // Then validate inherited members
-            foreach (var superTypeInfo in GetSuperTypeInfos(actualType, context.ValidationOptions))
+            foreach (var superTypeInfo in GetSuperTypeInfos(actualType))
             {
                 superTypeInfo.ValidateMembersSynchronously(value, context);
             }
@@ -1044,11 +1049,11 @@ namespace Microsoft.Extensions.Validation.Generated
             }
         }
 
-        private global::System.Collections.Generic.IEnumerable<global::Microsoft.Extensions.Validation.Generated.ValidatableTypeInfo> GetSuperTypeInfos(global::System.Type actualType, global::Microsoft.Extensions.Validation.ValidationOptions options)
+        private global::System.Collections.Generic.IEnumerable<global::Microsoft.Extensions.Validation.Generated.ValidatableTypeInfo> GetSuperTypeInfos(global::System.Type actualType)
         {
             foreach (var @interface in _implementedInterfaces)
             {
-                if (TryGetValidatableTypeInfo(@interface, actualType, options) is { } superTypeInfo)
+                if (TryGetValidatableTypeInfo(@interface, actualType) is { } superTypeInfo)
                 {
                     yield return superTypeInfo;
                 }
@@ -1057,7 +1062,7 @@ namespace Microsoft.Extensions.Validation.Generated
             var baseType = Type.BaseType;
             while (baseType is not null)
             {
-                if (TryGetValidatableTypeInfo(baseType, actualType, options) is { } superTypeInfo)
+                if (TryGetValidatableTypeInfo(baseType, actualType) is { } superTypeInfo)
                 {
                     yield return superTypeInfo;
                 }
@@ -1065,20 +1070,17 @@ namespace Microsoft.Extensions.Validation.Generated
                 baseType = baseType.BaseType;
             }
 
-            static ValidatableTypeInfo? TryGetValidatableTypeInfo(global::System.Type superType, global::System.Type actualType, global::Microsoft.Extensions.Validation.ValidationOptions options)
+            static ValidatableTypeInfo? TryGetValidatableTypeInfo(global::System.Type superType, global::System.Type actualType)
             {
                 if (!superType.IsAssignableFrom(actualType))
                 {
                     return null;
                 }
 
-                foreach (var resolver in options.Resolvers)
+                if (s_generatedResolver.TryGetValidatableTypeInfo(superType, out var validatableTypeInfo) &&
+                    validatableTypeInfo is ValidatableTypeInfo concrete)
                 {
-                    if (resolver.TryGetValidatableTypeInfo(superType, out var validatableTypeInfo) &&
-                        validatableTypeInfo is ValidatableTypeInfo concrete)
-                    {
-                        return concrete;
-                    }
+                    return concrete;
                 }
 
                 return null;

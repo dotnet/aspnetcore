@@ -19,6 +19,12 @@ public class ValidationOptions
     /// <remarks>
     /// Source-generated resolvers are typically inserted at the beginning of this list
     /// to ensure they are checked before any runtime-based resolvers.
+    /// <para>
+    /// Resolvers are queried for the type being validated.
+    /// When the validation information for a type is source-generated, members inherited from its base classes are validated
+    /// using the information generated together with that type, including for base classes declared in other assemblies.
+    /// Validation information that a resolver provides only for a base class is not used when validating derived types.
+    /// </para>
     /// </remarks>
     public IList<IValidatableInfoResolver> Resolvers { get; } = [];
 
