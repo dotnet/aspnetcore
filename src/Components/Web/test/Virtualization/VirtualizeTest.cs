@@ -155,6 +155,179 @@ public class VirtualizeTest
         Assert.Equal(0, virtualize._itemsBefore);
     }
 
+    [Theory]
+    [InlineData(VirtualizeAnchorMode.Start, true, 25f, 215, 50)]
+    [InlineData(VirtualizeAnchorMode.Start, true, 100f, 42, 35)]
+    [InlineData(VirtualizeAnchorMode.None, true, 25f, 215, 50)]
+    [InlineData(VirtualizeAnchorMode.None, true, 100f, 42, 35)]
+    [InlineData(VirtualizeAnchorMode.Start, false, 25f, 365, 50)]
+    [InlineData(VirtualizeAnchorMode.Start, false, 100f, 830, 35)]
+    [InlineData(VirtualizeAnchorMode.None, false, 25f, 365, 50)]
+    [InlineData(VirtualizeAnchorMode.None, false, 100f, 830, 35)]
+    public async Task Virtualize_Recalibration_WithoutEndAnchor_UsesCurrentEstimate(
+        VirtualizeAnchorMode anchorMode, bool beforeSpacer, float measuredItemSize, int expectedItemsBefore, int expectedCapacity)
+    {
+        Virtualize<int> virtualize = null;
+        var rootComponent = new VirtualizeTestHostcomponent
+        {
+            InnerContent = BuildVirtualizeWithContent(50f, Enumerable.Range(0, 1000).ToList(),
+                v => virtualize = v, anchorMode: anchorMode)
+        };
+        var services = new ServiceCollection().AddSingleton(Mock.Of<IJSRuntime>()).BuildServiceProvider();
+        await using var renderer = new TestRenderer(services);
+        var componentId = renderer.AssignRootComponentId(rootComponent);
+        await renderer.RenderRootComponentAsync(componentId);
+        var callbacks = (IVirtualizeJsCallbacks)virtualize;
+
+        await renderer.Dispatcher.InvokeAsync(() =>
+            callbacks.OnBeforeSpacerVisible(5750f, 0f, 500f, SpacerVisibilityReason.UserScroll));
+        Assert.Equal(100, virtualize._itemsBefore);
+        Assert.Equal(40, virtualize._lastRenderedItemCount);
+
+        await renderer.Dispatcher.InvokeAsync(() =>
+        {
+            if (beforeSpacer)
+            {
+                callbacks.OnBeforeSpacerVisible(5750f, 40 * measuredItemSize, 500f, SpacerVisibilityReason.UserScroll);
+            }
+            else
+            {
+                callbacks.OnAfterSpacerVisible(15000f, 40 * measuredItemSize, 500f, SpacerVisibilityReason.UserScroll);
+            }
+        });
+
+        Assert.Equal(expectedItemsBefore, virtualize._itemsBefore);
+        Assert.Equal(expectedCapacity, virtualize._lastRenderedItemCount);
+        Assert.Equal(0, virtualize._lastRenderedPlaceholderCount);
+        var virtualizeId = renderer.Batches.SelectMany(batch => batch.ReferenceFrames)
+            .Single(frame => frame.FrameType == RenderTreeFrameType.Component && ReferenceEquals(frame.Component, virtualize)).ComponentId;
+        var attributes = renderer.GetCurrentRenderTreeFrames(virtualizeId).AsEnumerable()
+            .Where(frame => frame.FrameType == RenderTreeFrameType.Attribute).ToArray();
+        Assert.DoesNotContain(attributes, frame => frame.AttributeName == "data-blazor-virtualize-scroll-recalibration");
+        Assert.Equal((expectedItemsBefore * measuredItemSize).ToString(CultureInfo.InvariantCulture),
+            attributes.First(frame => frame.AttributeName == "data-blazor-virtualize-reserved-height").AttributeValue);
+    }
+
+    [Theory]
+    [InlineData(true, 25f, 99, 50)]
+    [InlineData(true, 100f, 99, 35)]
+    [InlineData(false, 25f, 665, 50)]
+    [InlineData(false, 100f, 680, 35)]
+    public async Task Virtualize_Recalibration_EndAnchor_PreservesRenderedEstimateAndCorrection(
+        bool beforeSpacer, float measuredItemSize, int expectedItemsBefore, int expectedCapacity)
+    {
+        Virtualize<int> virtualize = null;
+        var rootComponent = new VirtualizeTestHostcomponent
+        {
+            InnerContent = BuildVirtualizeWithContent(50f, Enumerable.Range(0, 1000).ToList(),
+                v => virtualize = v, anchorMode: VirtualizeAnchorMode.End)
+        };
+        var services = new ServiceCollection().AddSingleton(Mock.Of<IJSRuntime>()).BuildServiceProvider();
+        await using var renderer = new TestRenderer(services);
+        var componentId = renderer.AssignRootComponentId(rootComponent);
+        await renderer.RenderRootComponentAsync(componentId);
+        var callbacks = (IVirtualizeJsCallbacks)virtualize;
+
+        await renderer.Dispatcher.InvokeAsync(() =>
+            callbacks.OnBeforeSpacerVisible(5750f, 0f, 500f, SpacerVisibilityReason.UserScroll));
+        Assert.Equal(100, virtualize._itemsBefore);
+        Assert.Equal(40, virtualize._lastRenderedItemCount);
+        await renderer.Dispatcher.InvokeAsync(() =>
+        {
+            if (beforeSpacer)
+            {
+                callbacks.OnBeforeSpacerVisible(5750f, 40 * measuredItemSize, 500f, SpacerVisibilityReason.UserScroll);
+            }
+            else
+            {
+                callbacks.OnAfterSpacerVisible(15000f, 40 * measuredItemSize, 500f, SpacerVisibilityReason.UserScroll);
+            }
+        });
+
+        Assert.Equal(expectedItemsBefore, virtualize._itemsBefore);
+        Assert.Equal(expectedCapacity, virtualize._lastRenderedItemCount);
+        var virtualizeId = renderer.Batches.SelectMany(batch => batch.ReferenceFrames)
+            .Single(frame => frame.FrameType == RenderTreeFrameType.Component && ReferenceEquals(frame.Component, virtualize)).ComponentId;
+        var recalibrations = renderer.GetCurrentRenderTreeFrames(virtualizeId).AsEnumerable()
+            .Where(frame => frame.FrameType == RenderTreeFrameType.Attribute
+                && frame.AttributeName == "data-blazor-virtualize-scroll-recalibration").ToArray();
+        if (beforeSpacer)
+        {
+            Assert.Equal($"50:{measuredItemSize.ToString(CultureInfo.InvariantCulture)}", Assert.Single(recalibrations).AttributeValue);
+        }
+        else
+        {
+            Assert.Empty(recalibrations);
+        }
+
+        await renderer.RenderRootComponentAsync(componentId);
+        Assert.DoesNotContain(renderer.GetCurrentRenderTreeFrames(virtualizeId).AsEnumerable(),
+            frame => frame.FrameType == RenderTreeFrameType.Attribute
+                && frame.AttributeName == "data-blazor-virtualize-scroll-recalibration");
+    }
+
+    [Fact]
+    public async Task Virtualize_Recalibration_AsyncProvider_PreservesLoadingAndCancellation()
+    {
+        var requests = new List<ItemsProviderRequest>();
+        var pending = new List<TaskCompletionSource<ItemsProviderResult<int>>>();
+        var delay = false;
+        ValueTask<ItemsProviderResult<int>> Provider(ItemsProviderRequest request)
+        {
+            requests.Add(request);
+            if (delay)
+            {
+                var completion = new TaskCompletionSource<ItemsProviderResult<int>>();
+                pending.Add(completion);
+                return new(completion.Task);
+            }
+
+            return ValueTask.FromResult(new ItemsProviderResult<int>(Enumerable.Range(request.StartIndex, request.Count), 1000));
+        }
+
+        var (virtualize, renderer) = await CreateRenderedVirtualize(50f, 1000, Provider, SimpleItemTemplate);
+        var callbacks = (IVirtualizeJsCallbacks)virtualize;
+        await renderer.Dispatcher.InvokeAsync(() =>
+            callbacks.OnAfterSpacerVisible(0f, 0f, 500f, SpacerVisibilityReason.ViewportFill));
+        await renderer.Dispatcher.InvokeAsync(() =>
+            callbacks.OnBeforeSpacerVisible(5750f, 0f, 500f, SpacerVisibilityReason.UserScroll));
+        Assert.Equal(100, virtualize._itemsBefore);
+        Assert.Equal(40, virtualize._lastRenderedItemCount);
+
+        delay = true;
+        await renderer.Dispatcher.InvokeAsync(() =>
+            callbacks.OnBeforeSpacerVisible(5750f, 4000f, 500f, SpacerVisibilityReason.UserScroll));
+        Assert.Equal(42, requests[^1].StartIndex);
+        Assert.Equal(35, requests[^1].Count);
+        Assert.Equal(0, virtualize._lastRenderedItemCount);
+        Assert.Equal(35, virtualize._lastRenderedPlaceholderCount);
+        var virtualizeId = renderer.Batches.SelectMany(batch => batch.ReferenceFrames)
+            .Single(frame => frame.FrameType == RenderTreeFrameType.Component && ReferenceEquals(frame.Component, virtualize)).ComponentId;
+        Assert.Contains(renderer.GetCurrentRenderTreeFrames(virtualizeId).AsEnumerable(),
+            frame => frame.FrameType == RenderTreeFrameType.Attribute && frame.AttributeName == "data-blazor-virtualize-loading");
+        var canceledRequest = requests[^1];
+        await renderer.Dispatcher.InvokeAsync(() =>
+            callbacks.OnBeforeSpacerVisible(5250f, 0f, 500f, SpacerVisibilityReason.UserScroll));
+        Assert.True(canceledRequest.CancellationToken.IsCancellationRequested);
+        Assert.Equal(37, requests[^1].StartIndex);
+        Assert.Equal(35, requests[^1].Count);
+        Assert.False(requests[^1].CancellationToken.IsCancellationRequested);
+        Assert.Equal(4, requests.Count);
+
+        await renderer.Dispatcher.InvokeAsync(() => pending[0].SetResult(new(Enumerable.Range(42, 35), 1000)));
+        Assert.Equal(0, virtualize._lastRenderedItemCount);
+        await renderer.Dispatcher.InvokeAsync(() => pending[1].SetResult(new(Enumerable.Range(37, 35), 1000)));
+        Assert.Equal(37, virtualize._itemsBefore);
+        Assert.Equal(35, virtualize._lastRenderedItemCount);
+        Assert.Equal(0, virtualize._lastRenderedPlaceholderCount);
+        Assert.Equal(4, requests.Count);
+        var frames = renderer.GetCurrentRenderTreeFrames(virtualizeId).AsEnumerable().ToArray();
+        Assert.DoesNotContain(frames,
+            frame => frame.FrameType == RenderTreeFrameType.Attribute && frame.AttributeName == "data-blazor-virtualize-loading");
+        Assert.Equal(Enumerable.Range(37, 35).Select(item => item.ToString(CultureInfo.InvariantCulture)),
+            frames.Where(frame => frame.FrameType == RenderTreeFrameType.Text).Select(frame => frame.TextContent));
+    }
+
     [Fact]
     public async Task InitialIndex_MeasurementDoesNotChangeSpacerUntilPositioningCompletes()
     {

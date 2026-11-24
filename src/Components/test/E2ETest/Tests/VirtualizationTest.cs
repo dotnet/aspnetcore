@@ -6634,36 +6634,60 @@ public class VirtualizationTest : ServerTestBase<ToggleExecutionModeServerFixtur
 
     [Fact]
     public virtual void ScrollToItem_EndAnchor_AfterAppendingVariableHeightItems_CanScrollUp()
+        => AssertCanScrollUpAfterAppendingVariableHeightItems("2", useProvider: false, appendInSingleBatch: false);
+
+    protected void AssertCanScrollUpAfterAppendingVariableHeightItems(string anchorMode, bool useProvider, bool appendInSingleBatch)
     {
+        Browser.SetWindowSize(1200, 900);
         Browser.MountTestComponent<VirtualizationAppendAndScroll>();
         var container = Browser.Exists(By.Id("scroll-container"));
         var js = (IJavaScriptExecutor)Browser;
 
         WaitForRenderToSettle(container, js);
-        new SelectElement(Browser.Exists(By.Id("anchor-mode-select"))).SelectByValue("2");
-        Browser.Equal("2", () => container.GetDomAttribute("data-anchor-mode"));
-        Browser.True(() => GetTopRenderedIndex(js) > 9990);
+        if (useProvider)
+        {
+            Browser.Exists(By.Id("use-provider")).Click();
+            Browser.Equal("async", () => container.GetDomAttribute("data-provider"));
+            WaitForRenderToSettle(container, js);
+        }
+        new SelectElement(Browser.Exists(By.Id("anchor-mode-select"))).SelectByValue(anchorMode);
+        Browser.Equal(anchorMode, () => container.GetDomAttribute("data-anchor-mode"));
+        if (anchorMode == "2")
+        {
+            Browser.True(() => GetTopRenderedIndex(js) > 9990);
+        }
         WaitForRenderToSettle(container, js);
 
         ScrollContainerWithWheelTo(js, container, (int)(GetMaximumScrollTop(js, container) / 2));
         Browser.True(() => GetTopRenderedIndex(js) is > 4000 and < 6000);
         WaitForRenderToSettle(container, js);
 
-        for (var i = 1; i <= 9; i++)
+        var expectedItemCount = appendInSingleBatch ? 10_010 : 10_009;
+        if (appendInSingleBatch)
         {
-            Browser.Exists(By.Id("append-one-item")).Click();
-            Browser.Equal((10_000 + i).ToString(CultureInfo.InvariantCulture),
+            Browser.Exists(By.Id("append-ten-items")).Click();
+            Browser.Equal(expectedItemCount.ToString(CultureInfo.InvariantCulture),
                 () => Browser.Exists(By.Id("total-item-count")).Text);
             WaitForRenderToSettle(container, js);
+        }
+        else
+        {
+            for (var i = 1; i <= 9; i++)
+            {
+                Browser.Exists(By.Id("append-one-item")).Click();
+                Browser.Equal((10_000 + i).ToString(CultureInfo.InvariantCulture),
+                    () => Browser.Exists(By.Id("total-item-count")).Text);
+                WaitForRenderToSettle(container, js);
+            }
         }
 
         Browser.True(() => GetTopRenderedIndex(js) is > 4000 and < 6000,
             "Appending while away from the end must leave the viewport in the middle before jumping.");
 
         Browser.Exists(By.Id("scroll-to-end")).Click();
-        WaitForScrollStatus("Completed: 10009");
+        WaitForScrollStatus($"Completed: {expectedItemCount}");
         Browser.True(() => GetTopRenderedIndex(js) > 9990);
-        Browser.Equal(10009L, () => GetBottomRenderedIndex(js));
+        Browser.Equal((long)expectedItemCount, () => GetBottomRenderedIndex(js));
         Browser.True(() => ViewportEdgeCoveredByRealItem(js, "bottom"));
         WaitForRenderToSettle(container, js, trackScrollHeight: true);
 
@@ -6678,12 +6702,13 @@ public class VirtualizationTest : ServerTestBase<ToggleExecutionModeServerFixtur
         Browser.True(() =>
         {
             var firstVisibleIndex = GetTopRenderedIndex(js);
-            // At least 120px per row: a 6000px wheel must not jump far beyond the tail.
-            return firstVisibleIndex >= firstTailIndex - 60
+            // Only End mode compensates for recalibration to preserve the estimated item position.
+            return firstVisibleIndex >= 0
                 && firstVisibleIndex < firstTailIndex
+                && (anchorMode != "2" || firstVisibleIndex >= firstTailIndex - 60)
                 && ViewportEdgeCoveredByRealItem(js, "top")
                 && ViewportEdgeCoveredByRealItem(js, "bottom");
-        }, "Wheeling above the rendered tail must show nearby earlier items and cover the viewport instead of exposing the leading spacer.");
+        }, "Wheeling above the rendered tail must show earlier items and cover the viewport instead of exposing the leading spacer.");
     }
 
     [Theory]
