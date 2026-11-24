@@ -377,10 +377,10 @@ public class CancellationTokenReferenceTest
     }
 
     [Fact]
-    public void CallWithoutReplyDoesNotKeepItsSourceReachable()
+    public async Task CallWithoutReplyDoesNotKeepItsSourceReachableOnceDotNetStopsWaiting()
     {
         using var runtime = new ReferenceRuntime { HoldReplies = true };
-        var source = SendTokenOfUnreachableSourceWithoutReply(runtime);
+        var source = await SendTokenOfUnreachableSourceThenStopWaitingAsync(runtime);
 
         CollectGarbage();
         Assert.False(source.IsAlive);
@@ -730,12 +730,18 @@ public class CancellationTokenReferenceTest
         return new WeakReference(source);
     }
 
+    // The wait ends as after DefaultAsyncTimeout; until then the caller's own pending call keeps its arguments.
     [MethodImpl(MethodImplOptions.NoInlining)]
-    private static WeakReference SendTokenOfUnreachableSourceWithoutReply(ReferenceRuntime runtime)
+    private static async Task<WeakReference> SendTokenOfUnreachableSourceThenStopWaitingAsync(ReferenceRuntime runtime)
     {
+        using var control = new CancellationTokenSource();
         var source = new CancellationTokenSource();
-        _ = runtime.InvokeVoidAsync("receive", CancellationToken.None, source.Token);
-        return new WeakReference(source);
+        var call = runtime.InvokeVoidAsync("receive", control.Token, source.Token);
+        var weak = new WeakReference(source);
+        source = null;
+        control.Cancel();
+        await Assert.ThrowsAnyAsync<OperationCanceledException>(async () => await call);
+        return weak;
     }
 
     [MethodImpl(MethodImplOptions.NoInlining)]
