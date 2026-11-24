@@ -736,7 +736,11 @@ internal sealed partial class UnixCertificateManager : CertificateManager
             }
 
             // Maybe it wasn't in there because the overrides have change or trust only partially succeeded.
-            return !IsCertificateInNssDb(nickname, nssDb);
+            // Check presence rather than trust so an untrusted entry that failed to delete isn't reported as removed.
+            var presenceStartInfo = nssDb.CreatePresenceCheckProcessStartInfo(nickname);
+            presenceStartInfo.StandardOutputHandle = nullHandle;
+            presenceStartInfo.StandardErrorHandle = nullHandle;
+            return Process.Run(presenceStartInfo).ExitCode != 0;
         }
         catch (Exception ex)
         {
@@ -975,6 +979,14 @@ internal sealed partial class UnixCertificateManager : CertificateManager
             {
                 startInfo.ArgumentList.Add(argument);
             }
+
+            return startInfo;
+        }
+
+        internal ProcessStartInfo CreatePresenceCheckProcessStartInfo(string nickname)
+        {
+            var startInfo = CreateProcessStartInfo(nickname);
+            startInfo.ArgumentList.Add("-L");
 
             return startInfo;
         }

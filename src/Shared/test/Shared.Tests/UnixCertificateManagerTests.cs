@@ -243,6 +243,9 @@ public sealed class UnixCertificateManagerTests : IDisposable
             nssDb.CreateCheckProcessStartInfo(nickname),
             "-d", $"sql:{profileDirectory}", "-n", nickname, "-V", "-u", "L");
         AssertProcessStartInfo(
+            nssDb.CreatePresenceCheckProcessStartInfo(nickname),
+            "-d", $"sql:{profileDirectory}", "-n", nickname, "-L");
+        AssertProcessStartInfo(
             nssDb.CreateAddProcessStartInfo(certificatePath, nickname),
             "-d", $"sql:{profileDirectory}", "-n", nickname, "-A", "-i", certificatePath, "-t", "C,,");
         AssertProcessStartInfo(
@@ -264,6 +267,9 @@ public sealed class UnixCertificateManagerTests : IDisposable
         AssertProcessStartInfo(
             nssDb.CreateCheckProcessStartInfo(nickname),
             "-d", $"sql:{profileDirectory}", "-n", nickname, "-V", "-u", "V");
+        AssertProcessStartInfo(
+            nssDb.CreatePresenceCheckProcessStartInfo(nickname),
+            "-d", $"sql:{profileDirectory}", "-n", nickname, "-L");
         AssertProcessStartInfo(
             nssDb.CreateAddProcessStartInfo(certificatePath, nickname),
             "-d", $"sql:{profileDirectory}", "-n", nickname, "-A", "-i", certificatePath, "-t", "P,,");
