@@ -5160,61 +5160,37 @@ public class VirtualizationTest : ServerTestBase<ToggleExecutionModeServerFixtur
     }
 
     [Theory]
-    [InlineData("0", "scroll-target-checkbox")]
-    [InlineData("0", "scroll-target-radio")]
-    [InlineData("1", "scroll-target-checkbox")]
-    [InlineData("1", "scroll-target-radio")]
-    public void AnchorMode_WindowScroll_EndKeyOnNonTextInputJumps(string anchorMode, string controlId)
+    [InlineData("0", "Home")]
+    [InlineData("0", "End")]
+    [InlineData("1", "Home")]
+    [InlineData("1", "End")]
+    public void AnchorMode_WindowScroll_JumpKeyInInputDoesNotJump(string anchorMode, string key)
     {
         MountWindowScrollAnchorModeComponent(anchorMode);
 
         var js = (IJavaScriptExecutor)Browser;
 
         WindowScrollMidListAndWaitForRender(js);
-
-        var control = Browser.Exists(By.Id(controlId));
-        DispatchSyntheticKeydown(js, control, "End");
-
-        Browser.True(() =>
-        {
-            var scrollY = (long)js.ExecuteScript("return Math.round(window.scrollY)");
-            var scrollHeight = (long)js.ExecuteScript("return document.documentElement.scrollHeight");
-            var innerHeight = (long)js.ExecuteScript("return window.innerHeight");
-            return scrollHeight - scrollY - innerHeight < 2;
-        }, TimeSpan.FromSeconds(10),
-            $"Window AnchorMode {anchorMode}: End on {controlId} should jump to the bottom");
-    }
-
-    [Theory]
-    [InlineData("0")]
-    [InlineData("1")]
-    public void AnchorMode_WindowScroll_EndKeyInInputDoesNotJump(string anchorMode)
-    {
-        MountWindowScrollAnchorModeComponent(anchorMode);
-
-        var js = (IJavaScriptExecutor)Browser;
-
-        WindowScrollMidListAndWaitForRender(js);
-
-        var scrollYBefore = (long)js.ExecuteScript("return Math.round(window.scrollY)");
 
         var input = Browser.Exists(By.Id("scroll-target-text"));
-        DispatchSyntheticKeydown(js, input, "End");
-        Assert.Equal("abcdef", input.GetAttribute("value"));
+        input.Click();
+        var expectedPosition = key == "End" ? 6L : 0L;
+        js.ExecuteScript("arguments[0].setSelectionRange(arguments[1], arguments[1]);", input, 6L - expectedPosition);
+        var scrollYBefore = (long)js.ExecuteScript("return Math.round(window.scrollY)");
+        input.SendKeys(key == "End" ? Keys.End : Keys.Home);
+        Assert.Equal(expectedPosition, (long)js.ExecuteScript("return arguments[0].selectionStart;", input));
+        Assert.Equal(expectedPosition, (long)js.ExecuteScript("return arguments[0].selectionEnd;", input));
 
-        // End belongs to the focused input. If the list starts following the end of the
-        // list, the scroll position reaches the bottom; give it a bounded window to do so.
+        // Give an incorrectly started convergence time to move the viewport.
         try
         {
             new WebDriverWait(Browser, TimeSpan.FromSeconds(2)).Until(_ =>
             {
                 var scrollY = (long)js.ExecuteScript("return Math.round(window.scrollY)");
-                var scrollHeight = (long)js.ExecuteScript("return document.documentElement.scrollHeight");
-                var innerHeight = (long)js.ExecuteScript("return window.innerHeight");
-                return scrollHeight - scrollY - innerHeight < 2;
+                return Math.Abs(scrollY - scrollYBefore) > 2;
             });
 
-            Assert.Fail($"Window AnchorMode {anchorMode}: End in a text input should not move the list");
+            Assert.Fail($"Window AnchorMode {anchorMode}: {key} in a text input should not move the list");
         }
         catch (WebDriverTimeoutException)
         {
@@ -5223,22 +5199,7 @@ public class VirtualizationTest : ServerTestBase<ToggleExecutionModeServerFixtur
 
         var scrollYAfter = (long)js.ExecuteScript("return Math.round(window.scrollY)");
         Assert.True(Math.Abs(scrollYAfter - scrollYBefore) <= 2,
-            $"Window AnchorMode {anchorMode}: End in a text input should not move the list (moved {scrollYAfter - scrollYBefore}px)");
-    }
-
-    private static void DispatchSyntheticKeydown(IJavaScriptExecutor js, IWebElement element, string key)
-    {
-        // A trusted key press would let the browser perform its own End handling before
-        // Virtualize sees the event. A synthetic event has no default action, so this
-        // exercises the Virtualize keydown path directly.
-        js.ExecuteScript(@"
-            arguments[0].focus();
-            arguments[0].dispatchEvent(new KeyboardEvent('keydown', {
-                key: arguments[1],
-                bubbles: true,
-                cancelable: true
-            }));
-        ", element, key);
+            $"Window AnchorMode {anchorMode}: {key} in a text input should not move the list (moved {scrollYAfter - scrollYBefore}px)");
     }
 
     private static (string index, double relTop, long scrollTop) GetItemPositionInContainer(

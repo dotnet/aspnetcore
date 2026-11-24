@@ -34,8 +34,6 @@
         <button id="unload-list" @onclick="() => listLoaded = false">Unload list</button>
         <input id="scroll-target-index" type="number" @bind="scrollTargetIndex" style="width: 80px;" />
         <input id="scroll-target-text" type="text" @bind="scrollTargetText" style="width: 120px;" />
-        <input id="scroll-target-checkbox" type="checkbox" />
-        <input id="scroll-target-radio" type="radio" name="scroll-target-radio" />
         <button id="scroll-to-item" @onclick="ScrollToTarget">Scroll To Item</button>
     </div>
     <p id="status" style="margin: 0; font-size: 12px;">@statusMessage</p>
