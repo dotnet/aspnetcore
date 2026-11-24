@@ -31,11 +31,12 @@ public partial class HttpConnectionDispatcherTests
     // "earlier" case is the one that skips the refresh policies entirely; the others are covered here so
     // the rejection can't quietly regress to depending on expiration ordering.
     [Theory]
-    [InlineData("earlier")]
-    [InlineData("equal")]
-    [InlineData("later")]
-    [InlineData("none")]
-    public async Task LongPollingPollFromDifferentUserIsRejectedForAnyTokenExpiration(string competingExpiration)
+    [InlineData("earlier", HttpStatusCode.Forbidden)]
+    [InlineData("equal", HttpStatusCode.Conflict)]
+    [InlineData("later", HttpStatusCode.Conflict)]
+    [InlineData("none", HttpStatusCode.Conflict)]
+    public async Task LongPollingPollFromDifferentUserIsRejectedForAnyTokenExpiration(
+    string competingExpiration, HttpStatusCode expectedStatusCode)
     {
         using var host = CreateConnectionBindingHost(out var tracker, out var tokens);
         host.Start();
@@ -67,7 +68,13 @@ public partial class HttpConnectionDispatcherTests
         var malloryToken = tokens.Create("mallory", isPrivileged: false, malloryExpiration);
         var malloryResponse = await PollAsync(client, url, "/lowpriv", connectionToken, malloryToken);
 
-        Assert.Equal(HttpStatusCode.Forbidden, malloryResponse.StatusCode);
+        Assert.Equal(expectedStatusCode, malloryResponse.StatusCode);
+        if (expectedStatusCode == HttpStatusCode.Conflict)
+        {
+            AssertRefreshError(
+                JObject.Parse(await malloryResponse.Content.ReadAsStringAsync()),
+                "authentication_refresh_required");
+        }
 
         // The connection is left intact for its real owner.
         var manager = host.Services.GetRequiredService<HttpConnectionManager>();
@@ -159,8 +166,9 @@ public partial class HttpConnectionDispatcherTests
 
     private static async Task<HttpResponseMessage> RefreshAsync(HttpClient client, string url, string path, string connectionToken, string token)
     {
-        using var request = new HttpRequestMessage(HttpMethod.Post, $"{url}{path}/refresh?id={connectionToken}");
+        using var request = new HttpRequestMessage(HttpMethod.Post, $"{url}{path}/refresh");
         request.Headers.Add("Authorization", $"Bearer {token}");
+        request.Headers.Add(ConnectionTokenHeaderName, connectionToken);
         return await client.SendAsync(request).DefaultTimeout();
     }
 

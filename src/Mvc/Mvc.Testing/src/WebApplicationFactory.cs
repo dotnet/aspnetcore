@@ -2,11 +2,11 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Linq;
-using System.Net;
 using System.Net.Http;
 using System.Reflection;
 using System.Text.Json;
 using System.Text.Json.Serialization;
+using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Hosting.Server;
 using Microsoft.AspNetCore.Hosting.Server.Features;
@@ -217,10 +217,26 @@ public partial class WebApplicationFactory<TEntryPoint> : IDisposable, IAsyncDis
 
         var host = builder.Build();
 
+        if (_kestrelPort is int port)
+        {
+            // Captured startup service errors bypass startup filters on the legacy host.
+            TryConfigureServerPort(GetServerAddressFeature(host), port);
+        }
+
         host.Start();
         return host;
     }
 #pragma warning restore ASPDEPR008 // IWebHost is obsolete
+
+    private static void TryConfigureServerPort(IServerAddressesFeature? serverAddressFeature, int port)
+    {
+        if (serverAddressFeature is not null)
+        {
+            serverAddressFeature.Addresses.Clear();
+            serverAddressFeature.Addresses.Add($"http://127.0.0.1:{port}");
+            serverAddressFeature.PreferHostingUrls = true;
+        }
+    }
 
     private void ConfigureBuilderToUseKestrel(IWebHostBuilder builder)
     {
@@ -228,18 +244,29 @@ public partial class WebApplicationFactory<TEntryPoint> : IDisposable, IAsyncDis
         {
             builder.UseKestrel(_configureKestrelOptions);
         }
-        else if (_kestrelPort is int port)
-        {
-            // Configure the endpoint here (during the app's own startup) instead of mutating
-            // IServerAddressesFeature after the host is built. Apps that start themselves
-            // (e.g. minimal apps run via DeferredHostBuilder) bind Kestrel on their own thread
-            // and can make the addresses collection read-only before the factory could update it,
-            // causing an intermittent InvalidOperationException.
-            builder.UseKestrel(options => options.Listen(IPAddress.Loopback, port));
-        }
         else
         {
             builder.UseKestrel();
+        }
+
+        if (_kestrelPort is int port)
+        {
+            builder.ConfigureServices(services =>
+            {
+                services.AddSingleton<IStartupFilter>(serviceProvider => new ServerPortStartupFilter(serviceProvider.GetRequiredService<IServer>(), port));
+            });
+        }
+    }
+
+    private sealed class ServerPortStartupFilter(IServer server, int port) : IStartupFilter
+    {
+        public Action<IApplicationBuilder> Configure(Action<IApplicationBuilder> next)
+        {
+            // Configure addresses during the app's startup, before Kestrel binds, including
+            // when a minimal app starts on its own thread.
+            TryConfigureServerPort(server.Features.Get<IServerAddressesFeature>(), port);
+
+            return next;
         }
     }
 

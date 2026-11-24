@@ -40,7 +40,8 @@ internal partial class WebAssemblyRenderer
             int ssrComponentId,
             [DynamicallyAccessedMembers(Component)] Type componentType,
             ComponentMarkerKey? key,
-            WebRootComponentParameters parameters)
+            WebRootComponentParameters parameters,
+            Action<Exception>? onComponentInitializationFailed = null)
         {
 #if COMPONENTS_SERVER
             if (_webRootComponents.Count + 1 > renderer._options.RootComponents.MaxJSRootComponents)
@@ -54,9 +55,33 @@ internal partial class WebAssemblyRenderer
                 throw new InvalidOperationException($"A root component with SSR component ID {ssrComponentId} already exists.");
             }
 
-            var component = WebRootComponent.Create(renderer, componentType, ssrComponentId, key, parameters, _pendingRootComponentInitializations);
+            if (!key.HasValue)
+            {
+                throw new InvalidOperationException("An invalid component marker key was provided.");
+            }
+
+            WebRootComponent component;
+            try
+            {
+                component = WebRootComponent.Create(renderer, componentType, ssrComponentId, key.Value, parameters, _pendingRootComponentInitializations);
+            }
+            catch (Exception ex)
+            {
+                onComponentInitializationFailed?.Invoke(ex);
+                throw;
+            }
+
             _webRootComponents.Add(ssrComponentId, component);
-            await component.RenderAsync(renderer, _currentUpdateTask);
+            var updateTask = _currentUpdateTask;
+            try
+            {
+                await component.RenderAsync(renderer, updateTask);
+            }
+            catch (Exception ex) when (!updateTask.IsFaulted && !updateTask.IsCanceled)
+            {
+                onComponentInitializationFailed?.Invoke(ex);
+                throw;
+            }
         }
 
         public Task UpdateRootComponentAsync(
@@ -143,17 +168,12 @@ internal partial class WebAssemblyRenderer
                 WebRootComponentParameters initialParameters,
                 List<Action>? pendingRootComponentInitializations)
             {
-                if (!key.HasValue)
-                {
-                    throw new InvalidOperationException("An invalid component marker key was provided.");
-                }
-
                 var ssrComponentIdString = ssrComponentId.ToString(CultureInfo.InvariantCulture);
                 var interactiveComponentId = pendingRootComponentInitializations is null
                     ? renderer.AddRootComponent(componentType, ssrComponentIdString)
                     : -1;
 
-                var component = new WebRootComponent(componentType, ssrComponentIdString, key.Value, interactiveComponentId, initialParameters);
+                var component = new WebRootComponent(componentType, ssrComponentIdString, key, interactiveComponentId, initialParameters);
                 if (pendingRootComponentInitializations is not null)
                 {
                     component.EnqueueInitialization(renderer, pendingRootComponentInitializations);

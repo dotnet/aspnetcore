@@ -373,6 +373,7 @@ public class StatePersistenceTest : ServerTestBase<BasicTestAppServerSiteFixture
         Browser.Equal("Current count: 1", () => Browser.Exists(By.CssSelector("p[role='status']")).Text);
     }
 
+    // Regression coverage for issue 70390: initial circuit startup overlaps enhanced navigation.
     [Theory]
     [InlineData(false)]
     [InlineData(true)]
