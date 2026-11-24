@@ -40,8 +40,16 @@ public static class IdentityApiEndpointRouteBuilderExtensions
     /// Call <see cref="EndpointRouteBuilderExtensions.MapGroup(IEndpointRouteBuilder, string)"/> to add a prefix to all the endpoints.
     /// </param>
     /// <remarks>
-    /// The passkey endpoints use the <see cref="IdentityConstants.TwoFactorUserIdScheme"/> cookie to store state between
-    /// the options and completion requests. This scheme is registered by <c>AddIdentityApiEndpoints</c>.
+     /// The passkey endpoints use a separate <c>Identity.Passkey</c> cookie to store state between
+     /// the options and completion requests. This scheme is registered by <c>AddIdentityApiEndpoints</c>.
+    /// Its lifetime and cookie attributes inherit the two-factor user ID cookie configuration at options creation time,
+    /// but its name, events, and ticket format are independent. A customized two-factor cookie name receives a
+    /// <c>.Passkey</c> suffix for the passkey cookie. Custom cookie-builder behavior and subsequent reloads of only
+    /// the two-factor options are not inherited; configure the <c>Identity.Passkey</c> named cookie options directly
+    /// when these are required.
+    /// In-flight ceremonies using the older shared two-factor cookie cannot continue across this change.
+    /// During a rolling deployment, drain older instances or keep each ceremony on the version that started it;
+    /// otherwise clients must restart the ceremony.
     /// </remarks>
     /// <returns>An <see cref="IEndpointConventionBuilder"/> to further customize the added endpoints.</returns>
     public static IEndpointConventionBuilder MapIdentityApi<TUser>(this IEndpointRouteBuilder endpoints)

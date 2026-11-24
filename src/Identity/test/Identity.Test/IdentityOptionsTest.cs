@@ -68,6 +68,51 @@ public class IdentityOptionsTest
         Assert.True(myOptions.User.RequireUniqueEmail);
     }
 
+    [Theory]
+    [InlineData(0)]
+    [InlineData(1)]
+    [InlineData(2)]
+    public async Task PasskeyCookieInheritsTwoFactorConfiguration(int registration)
+    {
+        var services = new ServiceCollection();
+        services.AddLogging();
+        if (registration is 0)
+        {
+            services.AddAuthentication().AddTwoFactorUserIdCookie();
+        }
+        else if (registration is 1)
+        {
+            services.AddAuthentication().AddIdentityCookies();
+        }
+        else
+        {
+            services.AddIdentity<PocoUser, PocoRole>();
+        }
+        services.PostConfigure<CookieAuthenticationOptions>(IdentityConstants.TwoFactorUserIdScheme, options =>
+        {
+            options.Cookie.Name = "custom-two-factor";
+            options.Cookie.Path = "/identity";
+            options.Cookie.Domain = "example.com";
+            options.Cookie.Extensions.Add("custom=value");
+            options.ExpireTimeSpan = TimeSpan.FromMinutes(30);
+            options.SlidingExpiration = false;
+        });
+        using var provider = services.BuildServiceProvider();
+        var schemes = provider.GetRequiredService<Microsoft.AspNetCore.Authentication.IAuthenticationSchemeProvider>();
+        Assert.NotNull(await schemes.GetSchemeAsync(IdentityConstants.PasskeyScheme));
+        var monitor = provider.GetRequiredService<IOptionsMonitor<CookieAuthenticationOptions>>();
+        var twoFactor = monitor.Get(IdentityConstants.TwoFactorUserIdScheme);
+        var passkey = monitor.Get(IdentityConstants.PasskeyScheme);
+        Assert.Equal("custom-two-factor.Passkey", passkey.Cookie.Name);
+        Assert.Equal("/identity", passkey.Cookie.Path);
+        Assert.Equal("example.com", passkey.Cookie.Domain);
+        Assert.Equal(twoFactor.Cookie.Extensions, passkey.Cookie.Extensions);
+        Assert.NotSame(twoFactor.Cookie, passkey.Cookie);
+        Assert.Equal(TimeSpan.FromMinutes(30), passkey.ExpireTimeSpan);
+        Assert.False(passkey.SlidingExpiration);
+        Assert.NotSame(twoFactor.Events, passkey.Events);
+        Assert.NotSame(twoFactor.TicketDataFormat, passkey.TicketDataFormat);
+    }
     [Fact]
     public void CanConfigureCookieOptions()
     {

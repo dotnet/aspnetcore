@@ -35,7 +35,6 @@ public static class IdentityCookieAuthenticationBuilderExtensions
         cookieBuilder.ExternalCookie = builder.AddExternalCookie();
         cookieBuilder.TwoFactorRememberMeCookie = builder.AddTwoFactorRememberMeCookie();
         cookieBuilder.TwoFactorUserIdCookie = builder.AddTwoFactorUserIdCookie();
-        builder.AddPasskeyCookie();
         configureCookies?.Invoke(cookieBuilder);
         return cookieBuilder;
     }
@@ -107,6 +106,7 @@ public static class IdentityCookieAuthenticationBuilderExtensions
             };
             o.ExpireTimeSpan = TimeSpan.FromMinutes(5);
         });
+        builder.AddPasskeyCookie();
         return new OptionsBuilder<CookieAuthenticationOptions>(builder.Services, IdentityConstants.TwoFactorUserIdScheme);
     }
 
@@ -127,6 +127,33 @@ public static class IdentityCookieAuthenticationBuilderExtensions
             o.ExpireTimeSpan = TimeSpan.FromMinutes(5);
         });
 
-        return new OptionsBuilder<CookieAuthenticationOptions>(builder.Services, IdentityConstants.PasskeyScheme);
+        return builder.Services.AddOptions<CookieAuthenticationOptions>(IdentityConstants.PasskeyScheme)
+                .Configure<IServiceProvider>((options, services) =>
+                {
+                    // Resolve lazily to avoid a dependency cycle through the options factory.
+                    var twoFactor = services.GetRequiredService<IOptionsMonitor<CookieAuthenticationOptions>>()
+                        .Get(IdentityConstants.TwoFactorUserIdScheme);
+                    options.ExpireTimeSpan = twoFactor.ExpireTimeSpan;
+                    options.SlidingExpiration = twoFactor.SlidingExpiration;
+                    options.TimeProvider = twoFactor.TimeProvider;
+                    options.Cookie = new CookieBuilder
+                    {
+                        Name = twoFactor.Cookie.Name == IdentityConstants.TwoFactorUserIdScheme
+                            ? IdentityConstants.PasskeyScheme
+                            : twoFactor.Cookie.Name + ".Passkey",
+                        Path = twoFactor.Cookie.Path,
+                        Domain = twoFactor.Cookie.Domain,
+                        HttpOnly = twoFactor.Cookie.HttpOnly,
+                        SameSite = twoFactor.Cookie.SameSite,
+                        SecurePolicy = twoFactor.Cookie.SecurePolicy,
+                        IsEssential = twoFactor.Cookie.IsEssential,
+                        MaxAge = twoFactor.Cookie.MaxAge,
+                        Expiration = twoFactor.Cookie.Expiration,
+                    };
+                    foreach (var extension in twoFactor.Cookie.Extensions)
+                    {
+                        options.Cookie.Extensions.Add(extension);
+                    }
+                });
     }
 }
