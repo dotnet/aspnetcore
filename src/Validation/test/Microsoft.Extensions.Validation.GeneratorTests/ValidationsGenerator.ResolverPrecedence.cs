@@ -17,19 +17,6 @@ namespace SharedModels
         [Required]
         public string? Name { get; set; }
     }
-
-    public interface IContract
-    {
-        [Required]
-        string? Title { get; set; }
-    }
-
-    // Makes the declaring assembly's generator emit metadata for IContract.
-    [ValidatableType]
-    public class ContractHolder
-    {
-        public IContract? Contract { get; set; }
-    }
 }
 """;
 
@@ -197,84 +184,6 @@ app.Run();
             Assert.NotNull(context.ValidationErrors);
             Assert.Equal("Quantity", Assert.Single(context.ValidationErrors).Key);
             Assert.False(typeInfo.TryFindProperty("Name", validationOptions, out _));
-        });
-    }
-
-    [Theory]
-    [InlineData(true, true)]
-    [InlineData(true, false)]
-    [InlineData(false, true)]
-    [InlineData(false, false)]
-    public async Task CanValidateInheritedPropertyFromInterfaceInReferencedAssembly(bool useAsync, bool registerLibraryValidationFirst)
-    {
-        var libraryReference = CompileAndLoadReferencedAssembly(SharedModelsLibrarySource);
-        var registrations = registerLibraryValidationFirst
-            ? "builder.Services.AddValidationForSharedModels();\nbuilder.Services.AddValidation();"
-            : "builder.Services.AddValidation();\nbuilder.Services.AddValidationForSharedModels();";
-        var compilation = RunGenerator(CreateSharedModelsApp(registrations, """
-[ValidatableType]
-public class AppModel : IContract
-{
-    public string? Title { get; set; }
-
-    [Range(1, 10)]
-    public int Quantity { get; set; }
-}
-""", declareSharedModelTypes: false), [libraryReference]);
-
-        await VerifyValidatableType(compilation, "AppModel", async (validationOptions, type) =>
-        {
-            var (_, _, context) = await ValidateNewInstanceAsync(validationOptions, type, useAsync);
-
-            Assert.NotNull(context.ValidationErrors);
-            Assert.Equal(new[] { "Quantity", "Title" }, context.ValidationErrors.Keys.Order().ToArray());
-            Assert.Equal("The Title field is required.", Assert.Single(context.ValidationErrors["Title"]).ErrorMessage);
-        });
-    }
-
-    [Theory]
-    [InlineData(true)]
-    [InlineData(false)]
-    public async Task DoesNotValidateMembersOfUnreferencedInterfaceInSameAssembly(bool useAsync)
-    {
-        var compilation = RunGenerator("""
-#nullable enable
-
-using System.ComponentModel.DataAnnotations;
-using Microsoft.AspNetCore.Builder;
-using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Validation;
-
-var builder = WebApplication.CreateBuilder();
-
-builder.Services.AddValidation();
-
-var app = builder.Build();
-
-app.Run();
-
-public interface ILocalContract
-{
-    [Required]
-    string? Title { get; set; }
-}
-
-[ValidatableType]
-public class AppModel : ILocalContract
-{
-    public string? Title { get; set; }
-
-    [Range(1, 10)]
-    public int Quantity { get; set; }
-}
-""");
-
-        await VerifyValidatableType(compilation, "AppModel", async (validationOptions, type) =>
-        {
-            var (_, _, context) = await ValidateNewInstanceAsync(validationOptions, type, useAsync);
-
-            Assert.NotNull(context.ValidationErrors);
-            Assert.Equal("Quantity", Assert.Single(context.ValidationErrors).Key);
         });
     }
 
