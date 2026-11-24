@@ -294,17 +294,31 @@ public class CancellationTokenReferenceTest
     }
 
     [Fact]
-    public async Task RepeatedOccurrencesGetIndependentIds()
+    public async Task RepeatedOccurrencesOfOneTokenShareOneId()
     {
         using var runtime = new ReferenceRuntime();
         using var source = new CancellationTokenSource();
-        await runtime.InvokeVoidAsync("receive", CancellationToken.None, [source.Token, source.Token]);
+        using var other = new CancellationTokenSource();
+        await runtime.InvokeVoidAsync("receive", CancellationToken.None, [source.Token, source.Token, other.Token]);
         await runtime.InvokeVoidAsync("receive", CancellationToken.None, source.Token);
-        long[] ids = [TokenId(runtime.Sent[0], 0), TokenId(runtime.Sent[0], 1), TokenId(runtime.Sent[1])];
-        Assert.Equal(3, ids.Distinct().Count());
+        var id = TokenId(runtime.Sent[0], 0);
+        Assert.Equal(id, TokenId(runtime.Sent[0], 1));
+        Assert.Equal(id, TokenId(runtime.Sent[1]));
+        Assert.NotEqual(id, TokenId(runtime.Sent[0], 2));
 
         source.Cancel();
-        Assert.Equal(ids.Select(Canceled).Order(), runtime.Sent.Skip(2).Select(Describe).Order());
+        AssertSent(runtime, "receive", "receive", Canceled(id));
+    }
+
+    [Fact]
+    public async Task CanceledTokenIsWrittenWithoutIdEvenAfterItHadOne()
+    {
+        using var runtime = new ReferenceRuntime();
+        using var source = new CancellationTokenSource();
+        await runtime.InvokeVoidAsync("receive", CancellationToken.None, source.Token);
+        source.Cancel();
+        await runtime.InvokeVoidAsync("receive", CancellationToken.None, source.Token);
+        Assert.Equal("""[{"__dotNetCancellationToken":null,"isCancellationRequested":true}]""", runtime.Sent[2].ArgsJson);
     }
 
     [Fact]

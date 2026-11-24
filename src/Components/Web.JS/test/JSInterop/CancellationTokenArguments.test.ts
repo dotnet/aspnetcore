@@ -68,12 +68,24 @@ describe("CancellationToken arguments", () => {
         expect(runtime.sentToDotNet).toEqual([]);
     });
 
-    test("One message aborts every id it carries, and repeated ids give separate signals", async () => {
+    test("One message aborts every id it carries", async () => {
         const runtime = createRuntime();
         await call(runtime, token(6), token(7), token(8));
 
         await cancel(runtime, 6, 8);
         expect(received.map(signal => signal.aborted)).toEqual([true, false, true]);
+    });
+
+    test("Repeated ids give the same signal", async () => {
+        const runtime = createRuntime();
+        await call(runtime, token(14), token(14));
+        await call(runtime, token(14));
+
+        // Compared as booleans: printing a failed match of two jsdom signals crashes jest.
+        expect(received[1] === received[0]).toBe(true);
+        expect(received[2] === received[0]).toBe(true);
+        await cancel(runtime, 14);
+        expect(received[0].aborted).toBe(true);
     });
 
     test("Release forgets the id without aborting, so a later cancel message does nothing", async () => {
