@@ -8,7 +8,7 @@ internal sealed class IdentityRedirectManager(NavigationManager navigationManage
 
     public void RedirectTo(string? uri)
     {
-        // The URI often comes from a "returnUrl" query string parameter, which anyone can set in a link to the app.
+        // The URI can come from a "returnUrl" query string parameter, which anyone can set in a link to the app.
         // To prevent open redirects, resolve it to an absolute URI and only use it if it's within the app.
         // Appending "/" to the path also accepts the app's root URI without a trailing slash, such as "/app?page=2".
         var baseUri = new Uri(navigationManager.BaseUri);
