@@ -663,18 +663,25 @@ public abstract partial class JSRuntime : IJSRuntime, IDisposable
     {
         // Unregistered, so that a long-lived CancellationTokenSource does not keep this runtime reachable.
         Interlocked.Exchange(ref _cancellationTokensDisposed, 1);
+        List<CancellationTokenLink> links = [];
         lock (_outgoingCancellationTokens)
         {
             foreach (var entry in _outgoingCancellationTokens.Values)
             {
                 if (entry.Link.TryGetTarget(out var link))
                 {
-                    link.Stop();
+                    links.Add(link);
                 }
             }
 
             _outgoingCancellationTokens.Clear();
             _outgoingCancellationTokensByHashCode.Clear();
+        }
+
+        // Outside the table lock: a link's lock may be held by a registration that sends a cancel.
+        foreach (var link in links)
+        {
+            link.Stop();
         }
 
         _cancellationTokenCalls.Clear();
@@ -715,24 +722,21 @@ public abstract partial class JSRuntime : IJSRuntime, IDisposable
             }
         }
 
-        // Called before a message reuses the id. TryReset() unregisters everything, which Unregister() reports as false,
-        // since the source never reuses a registration id; a false for a canceled token only means the callback ran.
+        // Called before a message reuses the id. Unregister() is false once TryReset() removed the registration, since the
+        // source never reuses a registration id, or once the callback ran. Either way the token needs a new id: a canceled
+        // token cannot tell the two apart, and the new link sends its own cancel when registered.
         public bool TryReuse()
         {
             lock (_lock)
             {
-                if (!_started || _registration.Unregister())
+                if (!_started)
                 {
-                    if (_started)
-                    {
-                        Register();
-                    }
-
                     return true;
                 }
 
-                if (Token.IsCancellationRequested)
+                if (_registration.Unregister())
                 {
+                    Register();
                     return true;
                 }
 
