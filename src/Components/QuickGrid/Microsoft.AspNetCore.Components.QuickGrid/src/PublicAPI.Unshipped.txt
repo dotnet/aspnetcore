@@ -5,3 +5,5 @@ Microsoft.AspNetCore.Components.QuickGrid.ColumnBase<TGridItem>.ColumnOptionsAct
 Microsoft.AspNetCore.Components.QuickGrid.ColumnBase<TGridItem>.ColumnOptionsActive.set -> void
 Microsoft.AspNetCore.Components.QuickGrid.ColumnBase<TGridItem>.ColumnOptionsButtonClass.get -> string?
 Microsoft.AspNetCore.Components.QuickGrid.ColumnBase<TGridItem>.ColumnOptionsButtonClass.set -> void
+Microsoft.AspNetCore.Components.QuickGrid.ColumnBase<TGridItem>.ColumnOptionsButtonAttributes.get -> System.Collections.Generic.IReadOnlyDictionary<string!, object!>?
+Microsoft.AspNetCore.Components.QuickGrid.ColumnBase<TGridItem>.ColumnOptionsButtonAttributes.set -> void

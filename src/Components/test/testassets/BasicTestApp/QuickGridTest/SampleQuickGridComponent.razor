@@ -11,12 +11,21 @@
         }
     </select>
 </label>
+<label>
+    <input id="customize-options-button" type="checkbox" @bind="customizeOptionsButton" />
+    Customize column options button
+</label>
+<label>
+    <input id="hide-options-indicator" type="checkbox" @bind="hideOptionsIndicator" />
+    Hide active options indicator
+</label>
 
 <div id="grid">
     <QuickGrid @ref="@quickGridRef" Items="@FilteredPeople" Pagination="@pagination" RowClass="HighlightJulie" OnRowClick="@((Person p) => HandleRowClick(p))" custom-attrib="somevalue" class="custom-class-attrib">
         <PropertyColumn Property="@(p => p.PersonId)" Sortable="true" />
         <PropertyColumn Property="@(p => p.FirstName)" Sortable="true" Align="@firstNameAlignment"
-                        ColumnOptionsActive="@(!string.IsNullOrEmpty(firstNameFilter))" ColumnOptionsButtonClass="custom-filter-button">
+                        ColumnOptionsActive="@(!string.IsNullOrEmpty(firstNameFilter))" ColumnOptionsButtonClass="custom-filter-button"
+                        ColumnOptionsButtonAttributes="@(hideOptionsIndicator ? _hiddenIndicatorAttributes : !customizeOptionsButton ? null : string.IsNullOrEmpty(firstNameFilter) ? _inactiveOptionsButtonAttributes : _activeOptionsButtonAttributes)">
             <ColumnOptions>
                 <div class="search-box">
                     <input type="search" autofocus @bind="firstNameFilter" @bind:event="oninput" placeholder="First name..." />
@@ -44,11 +53,45 @@
     }
 </div>
 
+<style>
+    #grid .custom-filter-button {
+        position: relative;
+    }
+
+    #grid .name-filter-active::after {
+        content: "";
+        position: absolute;
+        top: 0.05rem;
+        right: 0.05rem;
+        width: 0.4rem;
+        height: 0.4rem;
+        border-radius: 50%;
+        background-color: #0d6efd;
+    }
+</style>
+
 @code {
+    private static readonly IReadOnlyDictionary<string, object> _inactiveOptionsButtonAttributes = new Dictionary<string, object>
+    {
+        ["aria-label"] = "First name options"
+    };
+    private static readonly IReadOnlyDictionary<string, object> _activeOptionsButtonAttributes = new Dictionary<string, object>
+    {
+        ["class"] = "name-filter-active",
+        ["aria-label"] = "First name options (filter active)"
+    };
+    private static readonly IReadOnlyDictionary<string, object> _hiddenIndicatorAttributes = new Dictionary<string, object>
+    {
+        ["class"] = string.Empty,
+        ["aria-label"] = "First name options (filter active)"
+    };
+
     record Person(int PersonId, string FirstName, string LastName, DateOnly BirthDate);
     PaginationState pagination = new PaginationState { ItemsPerPage = 10 };
     string firstNameFilter;
     Align firstNameAlignment;
+    bool customizeOptionsButton;
+    bool hideOptionsIndicator;
     QuickGrid<Person> quickGridRef;
     Person clickedPerson;
     int clickCount;

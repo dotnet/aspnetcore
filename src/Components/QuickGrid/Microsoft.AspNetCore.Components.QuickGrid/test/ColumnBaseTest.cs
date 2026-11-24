@@ -1,129 +1,41 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using Microsoft.AspNetCore.Components.Rendering;
+#nullable enable annotations
 
 namespace Microsoft.AspNetCore.Components.QuickGrid.Tests;
 
 public class ColumnBaseTest
 {
-    // Test model classes
-    private class TestEntity
+    [Theory]
+    [InlineData(null, false, null, "col-options-button")]
+    [InlineData("  custom-class  ", false, null, "col-options-button custom-class")]
+    [InlineData(null, true, null, "col-options-button col-options-active")]
+    [InlineData("custom-class", true, "attribute-class", "attribute-class col-options-button custom-class")]
+    [InlineData("custom-class", true, "", "col-options-button custom-class")]
+    public void ColumnOptionsButtonCssClass_PreservesExistingClasses(string? customClass, bool active, string? attributeClass, string expectedClass)
     {
-        public string Name { get; set; } = string.Empty;
-        public int Age { get; set; }
-    }
-
-    private class TestColumn : ColumnBase<TestEntity>
-    {
-        public TestColumn()
+        var column = new TemplateColumn<object>
         {
-        }
-
-        protected internal override void CellContent(RenderTreeBuilder builder, TestEntity item)
-        {
-            throw new NotImplementedException();
-        }
-        public override GridSort<TestEntity> SortBy { get; set; }
-    }
-
-    [Fact]
-    public void ColumnOptionsButtonCssClass_DefaultValues_ReturnsBaseClassOnly()
-    {
-        var column = new TestColumn();
-        var cssClass = column.ColumnOptionsButtonCssClass;
-
-        Assert.Equal("col-options-button", cssClass);
-    }
-
-    [Fact]
-    public void ColumnOptionsButtonCssClass_WithColumnOptionsButtonClass_ReturnsCombinedClasses()
-    {
-        var column = new TestColumn { ColumnOptionsButtonClass = "custom-class" };
-        var cssClass = column.ColumnOptionsButtonCssClass;
-
-        Assert.Contains("col-options-button", cssClass);
-        Assert.Contains("custom-class", cssClass);
-    }
-
-    [Fact]
-    public void ColumnOptionsButtonCssClass_WithColumnOptionsActive_ReturnsActiveClass()
-    {
-        var column = new TestColumn { ColumnOptionsActive = true };
-        var cssClass = column.ColumnOptionsButtonCssClass;
-
-        Assert.Contains("col-options-button", cssClass);
-        Assert.Contains("col-options-active", cssClass);
-    }
-
-    [Fact]
-    public void ColumnOptionsButtonCssClass_WithAllProperties_ReturnsAllClasses()
-    {
-        var column = new TestColumn
-        {
-            ColumnOptionsButtonClass = "custom-class",
-            ColumnOptionsActive = true
-        };
-        var cssClass = column.ColumnOptionsButtonCssClass;
-
-        Assert.Contains("col-options-button", cssClass);
-        Assert.Contains("custom-class", cssClass);
-        Assert.Contains("col-options-active", cssClass);
-    }
-
-    [Fact]
-    public void ColumnOptionsButtonCssClass_WithEmptyColumnOptionsButtonClass_ReturnsBaseAndActiveOnly()
-    {
-        var column = new TestColumn
-        {
-            ColumnOptionsButtonClass = string.Empty,
-            ColumnOptionsActive = true
-        };
-        var cssClass = column.ColumnOptionsButtonCssClass;
-
-        Assert.Contains("col-options-button", cssClass);
-        Assert.Contains("col-options-active", cssClass);
-        Assert.DoesNotContain("  ", cssClass);
-    }
-
-    [Fact]
-    public void ColumnOptionsButtonCssClass_WithNullColumnOptionsButtonClass_ReturnsBaseAndActiveOnly()
-    {
-        var column = new TestColumn
-        {
-            ColumnOptionsButtonClass = null,
-            ColumnOptionsActive = true
-        };
-        var cssClass = column.ColumnOptionsButtonCssClass;
-
-        Assert.Contains("col-options-button", cssClass);
-        Assert.Contains("col-options-active", cssClass);
-    }
-
-    [Fact]
-    public void ColumnOptionsButtonCssClass_ActiveFalse_DoesNotIncludeActiveClass()
-    {
-        var column = new TestColumn
-        {
-            ColumnOptionsButtonClass = "custom-class",
-            ColumnOptionsActive = false
+            ColumnOptionsButtonClass = customClass,
+            ColumnOptionsActive = active,
+            ColumnOptionsButtonAttributes = attributeClass is null
+                ? null
+                : new Dictionary<string, object> { ["class"] = attributeClass }
         };
 
-        var cssClass = column.ColumnOptionsButtonCssClass;
-        Assert.Contains("col-options-button", cssClass);
-        Assert.Contains("custom-class", cssClass);
-        Assert.DoesNotContain("col-options-active", cssClass);
+        Assert.Equal(expectedClass, column.ColumnOptionsButtonCssClass);
     }
 
     [Fact]
-    public void ColumnOptionsButtonCssClass_WithWhitespaceInCustomClass_TrimsProperly()
+    public void ColumnOptionsButtonCssClass_LabelOnlyAttributesPreserveActiveIndicator()
     {
-        var column = new TestColumn
+        var column = new TemplateColumn<object>
         {
-            ColumnOptionsButtonClass = "  custom-class  "
+            ColumnOptionsActive = true,
+            ColumnOptionsButtonAttributes = new Dictionary<string, object> { ["aria-label"] = "Custom options" }
         };
-        var cssClass = column.ColumnOptionsButtonCssClass;
-        Assert.DoesNotContain("   ", cssClass);
-    }
 
+        Assert.Equal("col-options-button col-options-active", column.ColumnOptionsButtonCssClass);
+    }
 }

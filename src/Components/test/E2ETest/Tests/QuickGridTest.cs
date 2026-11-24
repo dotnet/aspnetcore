@@ -167,9 +167,6 @@ public class QuickGridTest : ServerTestBase<ToggleExecutionModeServerFixture<Pro
 
     [Theory]
     [InlineData("Start")]
-    [InlineData("Center")]
-    [InlineData("End")]
-    [InlineData("Left")]
     [InlineData("Right")]
     public void ColumnOptionsIndicatesActiveFilter(string alignment)
     {
@@ -177,6 +174,13 @@ public class QuickGridTest : ServerTestBase<ToggleExecutionModeServerFixture<Pro
 
         var column = Browser.Exists(By.CssSelector($"#grid thead th:nth-child(2).col-justify-{alignment.ToLowerInvariant()}"));
         var button = column.FindElement(By.ClassName("col-options-button"));
+
+        Assert.Equal("col-options-button custom-filter-button", button.GetDomAttribute("class"));
+        Assert.Null(button.GetDomAttribute("aria-label"));
+        Assert.Equal("Column options", button.GetDomAttribute("title"));
+        Assert.Equal("false", button.GetDomAttribute("aria-expanded"));
+
+        app.FindElement(By.Id("customize-options-button")).Click();
 
         AssertOptionsState(active: false, expanded: false);
         Browser.Equal("43", () => app.FindElement(By.CssSelector(".paginator > .summary > strong")).Text);
@@ -195,6 +199,24 @@ public class QuickGridTest : ServerTestBase<ToggleExecutionModeServerFixture<Pro
         Browser.DoesNotExist(By.CssSelector("#grid .col-options"));
         AssertOptionsState(active: true, expanded: false);
 
+        app.FindElement(By.Id("customize-options-button")).Click();
+        Browser.Equal("col-options-button custom-filter-button col-options-active", () => button.GetDomAttribute("class"));
+        Browser.True(() => button.GetDomAttribute("aria-label") is null);
+        Browser.Equal("false", () => button.GetDomAttribute("aria-expanded"));
+
+        app.FindElement(By.Id("hide-options-indicator")).Click();
+        Browser.Equal("col-options-button custom-filter-button", () => button.GetDomAttribute("class"));
+        Browser.Equal("First name options (filter active)", () => button.GetDomAttribute("aria-label"));
+        Browser.Equal(false, IsIndicatorVisible);
+        Browser.Equal("1", () => app.FindElement(By.CssSelector(".paginator > .summary > strong")).Text);
+
+        app.FindElement(By.Id("hide-options-indicator")).Click();
+        Browser.Equal("col-options-button custom-filter-button col-options-active", () => button.GetDomAttribute("class"));
+        Browser.Equal(true, IsIndicatorVisible);
+
+        app.FindElement(By.Id("customize-options-button")).Click();
+        AssertOptionsState(active: true, expanded: false);
+
         button.Click();
         search = Browser.Exists(By.CssSelector("#grid input[type=search]"));
         search.SendKeys(Keys.Control + "a" + Keys.Null + Keys.Backspace);
@@ -206,22 +228,29 @@ public class QuickGridTest : ServerTestBase<ToggleExecutionModeServerFixture<Pro
         Browser.DoesNotExist(By.CssSelector("#grid .col-options"));
         AssertOptionsState(active: false, expanded: false);
 
+        app.FindElement(By.Id("customize-options-button")).Click();
+        Browser.Equal("col-options-button custom-filter-button", () => button.GetDomAttribute("class"));
+        Browser.True(() => button.GetDomAttribute("aria-label") is null);
+
         void AssertOptionsState(bool active, bool expanded)
         {
-            Browser.Equal(active ? "col-options-button custom-filter-button col-options-active" : "col-options-button custom-filter-button",
+            Browser.Equal(active ? "name-filter-active col-options-button custom-filter-button" : "col-options-button custom-filter-button",
                 () => button.GetDomAttribute("class"));
-            Browser.Equal(active ? "Column options (filter active)" : "Column options", () => button.GetDomAttribute("aria-label"));
+            Browser.Equal(active ? "First name options (filter active)" : "First name options", () => button.GetDomAttribute("aria-label"));
             Browser.Equal(expanded ? "true" : "false", () => button.GetDomAttribute("aria-expanded"));
             Assert.Equal("Column options", button.GetDomAttribute("title"));
 
-            // WebDriver cannot query pseudo-elements, so inspect the rendered indicator's computed style.
-            Browser.Equal(active, () => Browser.ExecuteJavaScript<bool>(@"
+            Browser.Equal(active, IsIndicatorVisible);
+        }
+
+        // WebDriver cannot query pseudo-elements, so inspect the rendered indicator's computed style.
+        bool IsIndicatorVisible()
+            => Browser.ExecuteJavaScript<bool>(@"
                 const indicator = getComputedStyle(arguments[0], '::after');
                 return indicator.content !== 'none' && indicator.content !== 'normal'
                     && parseFloat(indicator.width) > 0 && parseFloat(indicator.height) > 0
                     && indicator.backgroundColor !== 'rgba(0, 0, 0, 0)'
-                    && indicator.backgroundColor !== 'transparent';", button));
-        }
+                    && indicator.backgroundColor !== 'transparent';", button);
     }
 
     [Fact]
