@@ -153,6 +153,7 @@ public class HttpParsingData
                     "GET / \r\n",
                     "GET/HTTP/1.1\r\n",
                     "GET /HTTP/1.1\r\n",
+                    "GET /aHTTP/1.1\r\n",
                     " \r\n",
                     "  \r\n",
                     "/ HTTP/1.1\r\n",
@@ -195,6 +196,7 @@ public class HttpParsingData
                     "CUSTOM /\r\n",
                     "CUSTOM / \r\n",
                     "CUSTOM /HTTP/1.1\r\n",
+                    "CUSTOM /aHTTP/1.1\r\n",
                     "CUSTOM  \r\n",
                     "CUSTOM  HTTP/1.0\r\n",
                     "CUSTOM  HTTP/1.1\r\n",
@@ -551,4 +553,9 @@ public class HttpParsingData
             return data;
         }
     }
+
+    public static IEnumerable<object[]> FragmentRequestTargetData =>
+        from target in new[] { "/#", "/a#b?q=v", "/a?q=v#", "/%61#b", "/%61?q=v#" }
+        from version in new[] { "HTTP/1.0", "HTTP/1.1" }
+        select new object[] { target, version };
 }
