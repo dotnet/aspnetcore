@@ -23,6 +23,7 @@
       $(HelixQueueFedora);
       Ubuntu.2204.Amd64.Open;
     </SkipHelixQueues>
+    <SkipHelixQueues Condition="'$(_UseHelixOpenQueues)' != 'true'">$(SkipHelixQueues.Replace('.Open', '').Replace('.open', ''))</SkipHelixQueues>
     <SkipHelixArm>true</SkipHelixArm>
   </PropertyGroup>
 
