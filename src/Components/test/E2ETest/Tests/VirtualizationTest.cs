@@ -6926,6 +6926,18 @@ public class VirtualizationTest : ServerTestBase<ToggleExecutionModeServerFixtur
         Browser.True(() => GetTopRenderedIndex(js) == initialIndex);
 
         var container = Browser.Exists(By.Id("scroll-container"));
+        WaitForRenderToSettle(container, js, trackScrollHeight: true);
+        Browser.True(
+            () => (string)js.ExecuteScript("return getComputedStyle(arguments[0]).overflowAnchor", container) != "none",
+            TimeSpan.FromSeconds(5),
+            "overflow-anchor was not restored before expansion");
+        Assert.Equal(initialIndex, GetTopRenderedIndex(js));
+
+        Browser.True(() => (bool)js.ExecuteScript($@"
+            var item = document.querySelector('#scroll-container .item[data-index=""{previousIndex}""]');
+            return !!item && item.getBoundingClientRect().bottom <= document.getElementById('scroll-container').getBoundingClientRect().top + 1;
+        "));
+
         var targetOffset = Convert.ToDouble(js.ExecuteScript($@"
             var target = document.querySelector('#scroll-container .item[data-index=""{initialIndex}""]');
             return target.getBoundingClientRect().top - document.getElementById('scroll-container').getBoundingClientRect().top;
@@ -6936,20 +6948,35 @@ public class VirtualizationTest : ServerTestBase<ToggleExecutionModeServerFixtur
             item.style.minHeight = (item.getBoundingClientRect().height + 200) + 'px';
         ");
 
-        Browser.True(() => Math.Abs(Convert.ToDouble(js.ExecuteScript($@"
-            var target = document.querySelector('#scroll-container .item[data-index=""{initialIndex}""]');
-            return target.getBoundingClientRect().top - document.getElementById('scroll-container').getBoundingClientRect().top;
-        "), CultureInfo.InvariantCulture) - targetOffset) <= 2,
+        var lastOffset = double.NaN;
+        var stableReads = 0;
+        var settledOffset = double.NaN;
+        Browser.True(() =>
+        {
+            var offset = Convert.ToDouble(js.ExecuteScript($@"
+                var target = document.querySelector('#scroll-container .item[data-index=""{initialIndex}""]');
+                return target.getBoundingClientRect().top - document.getElementById('scroll-container').getBoundingClientRect().top;
+            "), CultureInfo.InvariantCulture);
+            stableReads = Math.Abs(offset - lastOffset) < 0.5 ? stableReads + 1 : 0;
+            lastOffset = offset;
+            settledOffset = offset;
+            return stableReads >= 3;
+        }, TimeSpan.FromSeconds(10), "Target offset did not settle after expansion");
+        Assert.True(Math.Abs(settledOffset - targetOffset) <= 2,
             $"Item {initialIndex} should remain pinned when item {previousIndex} expands.");
 
         container.SendKeys(Keys.End);
-        Browser.True(() => container.FindElements(By.CssSelector(".item[data-index='999']")).Count > 0,
+        Browser.True(() => (bool)js.ExecuteScript(@"
+            var container = document.getElementById('scroll-container');
+            return container.scrollTop + container.clientHeight >= container.scrollHeight - 2
+                && !!container.querySelector('.item[data-index=""999""]');
+        "),
             TimeSpan.FromSeconds(10),
-            $"After End from InitialItemIndex={initialIndex} (useProvider={useProvider}), the last item (999) should be rendered.");
-        WaitForRenderToSettle(container, js);
+            $"After End from InitialItemIndex={initialIndex} (useProvider={useProvider}), the viewport should reach the last item.");
+        WaitForRenderToSettle(container, js, trackScrollHeight: true);
 
         container.SendKeys(Keys.Home);
-        WaitForRenderToSettle(container, js);
+        WaitForRenderToSettle(container, js, trackScrollHeight: true);
         Browser.True(() => GetTopRenderedIndex(js) == 0,
             TimeSpan.FromSeconds(10),
             $"After Home from InitialItemIndex={initialIndex} (useProvider={useProvider}), item 0 should be rendered.");
