@@ -574,6 +574,7 @@ public sealed class Virtualize<TItem> : ComponentBase, IVirtualizeJsCallbacks, I
         builder.OpenElement(0, SpacerElement);
         builder.AddAttribute(1, "data-blazor-virtualize-reserved-height", GetSpacerHeightPx(_itemsBefore));
         builder.AddAttribute(2, "aria-hidden", "true");
+        builder.AddAttribute(3, "data-blazor-virtualize-loading", _loading);
         if (scrollRecalibration is { } recalibration
             && recalibration.ItemsBefore == _itemsBefore
             && recalibration.ItemSize == itemSize
@@ -583,10 +584,10 @@ public sealed class Virtualize<TItem> : ComponentBase, IVirtualizeJsCallbacks, I
             && !_pendingAnchorRestore && !_pendingScrollToBottom && _currentScrollCts is null)
         {
             // Carry both estimates in the render that changes them, not in an after-render interop call.
-            builder.AddAttribute(3, "data-blazor-virtualize-scroll-recalibration", string.Create(CultureInfo.InvariantCulture, $"{_lastRenderedItemSize}:{itemSize}"));
+            builder.AddAttribute(4, "data-blazor-virtualize-scroll-recalibration", string.Create(CultureInfo.InvariantCulture, $"{_lastRenderedItemSize}:{itemSize}"));
         }
         _lastRenderedItemSize = itemSize;
-        builder.AddElementReferenceCapture(4, elementReference => _spacerBefore = elementReference);
+        builder.AddElementReferenceCapture(5, elementReference => _spacerBefore = elementReference);
         builder.CloseElement();
 
         var lastItemIndex = Math.Min(_itemsBefore + _visibleItemCapacity, _itemCount);
@@ -928,7 +929,7 @@ public sealed class Virtualize<TItem> : ComponentBase, IVirtualizeJsCallbacks, I
     {
         var hadNewMeasurements = AccumulateMeasurement(spacerSeparation);
         RecalibrateItemSize(spacerSeparation);
-        var spacerItemSize = GetEffectiveItemSize(_lastRenderedItemSize);
+        var spacerItemSize = GetEffectiveItemSize((AnchorMode & VirtualizeAnchorMode.End) != 0 ? _lastRenderedItemSize : GetItemHeight());
         var effectiveItemSize = GetEffectiveItemSize(GetItemHeight());
 
         // This AppContext data was added as a stopgap for .NET 8 and earlier, since it was added in a patch

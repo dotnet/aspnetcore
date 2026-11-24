@@ -189,7 +189,8 @@ internal sealed class TimeoutControl : ITimeoutControl, IConnectionTimeoutFeatur
 
         // Add Heartbeat.Interval since this can be called right before the next heartbeat.
         var timeoutTicks = timeout.ToTicks(_timeProvider);
-        Interlocked.Exchange(ref _timeoutTimestamp, Interlocked.Read(ref _lastTimestamp) + timeoutTicks + _heartbeatIntervalTicks);
+        var expiration = Interlocked.Read(ref _lastTimestamp) + timeoutTicks + _heartbeatIntervalTicks;
+        Interlocked.Exchange(ref _timeoutTimestamp, expiration >= 0 ? expiration : long.MaxValue);
     }
 
     public void InitializeHttp2(InputFlowControl connectionInputFlowControl)

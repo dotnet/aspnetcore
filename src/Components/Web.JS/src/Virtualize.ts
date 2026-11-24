@@ -17,6 +17,7 @@ export const Virtualize = {
 };
 
 const dispatcherObserversByDotNetIdPropname = Symbol();
+const nativeAnchoringByScrollElement = new WeakMap<HTMLElement, { count: number; value: string; priority: string }>();
 const THROTTLE_MS = 50;
 const SpacerVisibilityReason = {
   UserScroll: 0,
@@ -169,6 +170,7 @@ function init(dotNetHelper: DotNet.DotNetObject, spacerBefore: HTMLElement, spac
   // Observe only the two spacers we already hold references to. Placeholders are siblings between them,
   // so on each spacer mutation we walk the sibling chain to reapply styles.
   const mutationObserver = new MutationObserver(records => {
+    suppressAnchoringForScrollRender();
     applyLayoutAttrsBetweenSpacers(records);
     if (restoreAnchorOnMutation) {
       restoreAnchorOnMutation = false;
@@ -179,16 +181,17 @@ function init(dotNetHelper: DotNet.DotNetObject, spacerBefore: HTMLElement, spac
   function flushPendingStyleMutations(): void {
     const records = mutationObserver.takeRecords();
     if (records.length > 0) {
+      suppressAnchoringForScrollRender();
       applyLayoutAttrsBetweenSpacers(records);
     }
   }
   const spacerObserverOptions: MutationObserverInit = {
     attributes: true,
-    attributeFilter: layoutAttrNames,
+    attributeFilter: [...layoutAttrNames, 'data-blazor-virtualize-loading'],
   };
   mutationObserver.observe(spacerBefore, {
     ...spacerObserverOptions,
-    attributeFilter: [...layoutAttrNames, scrollRecalibrationAttr],
+    attributeFilter: [...spacerObserverOptions.attributeFilter!, scrollRecalibrationAttr],
   });
   mutationObserver.observe(spacerAfter, spacerObserverOptions);
 
@@ -210,11 +213,23 @@ function init(dotNetHelper: DotNet.DotNetObject, spacerBefore: HTMLElement, spac
     },
   };
 
+  let savedOverflowAnchor: { count: number; value: string; priority: string } | undefined;
   const nativeAnchoring = {
     suspendedFor: new Set<'convergence' | 'slide'>(),
+    resumeFrame: 0,
     suspend(reason: 'convergence' | 'slide'): void {
       this.suspendedFor.add(reason);
       if (useNativeAnchoring) {
+        cancelAnimationFrame(this.resumeFrame);
+        if (!savedOverflowAnchor) {
+          savedOverflowAnchor = nativeAnchoringByScrollElement.get(scrollElement) ?? {
+            count: 0,
+            value: scrollElement.style.overflowAnchor,
+            priority: scrollElement.style.getPropertyPriority('overflow-anchor'),
+          };
+          savedOverflowAnchor.count++;
+          nativeAnchoringByScrollElement.set(scrollElement, savedOverflowAnchor);
+        }
         scrollElement.style.overflowAnchor = 'none';
       }
     },
@@ -223,13 +238,40 @@ function init(dotNetHelper: DotNet.DotNetObject, spacerBefore: HTMLElement, spac
         return;
       }
       if (useNativeAnchoring && this.suspendedFor.size === 0) {
-        scrollElement.style.overflowAnchor = '';
+        // Keep suppression through the frame that lays out the redistributed rows.
+        this.resumeFrame = requestAnimationFrame(() => {
+          this.resumeFrame = requestAnimationFrame(() => {
+            this.resumeFrame = 0;
+            this.restore();
+          });
+        });
+      }
+    },
+    restore(): void {
+      if (savedOverflowAnchor) {
+        if (--savedOverflowAnchor.count === 0) {
+          if (scrollElement.style.overflowAnchor === 'none') {
+            scrollElement.style.setProperty('overflow-anchor', savedOverflowAnchor.value, savedOverflowAnchor.priority);
+          }
+          nativeAnchoringByScrollElement.delete(scrollElement);
+        }
+        savedOverflowAnchor = undefined;
       }
     },
   };
 
   const anchoredItems: Map<Element, number> = new Map();
   let scrollTriggeredRender = false;
+  let scrollTriggeredLoading = false;
+
+  function suppressAnchoringForScrollRender(): void {
+    if (useNativeAnchoring && (scrollTriggeredRender || scrollTriggeredLoading)) {
+      // Loading rows can arrive before OnAfterRender's interop call on Server.
+      nativeAnchoring.suspend('slide');
+      nativeAnchoring.resume('slide');
+      scrollTriggeredLoading = spacerBefore.hasAttribute('data-blazor-virtualize-loading');
+    }
+  }
 
   const scrollActivity = {
     source: ScrollSource.None as ScrollSource,
@@ -409,6 +451,7 @@ function init(dotNetHelper: DotNet.DotNetObject, spacerBefore: HTMLElement, spac
   resizeObserver.observe(spacerAfter);
 
   function refreshObservedElements(isLoading: boolean, refreshViewport: boolean): void {
+    suppressAnchoringForScrollRender();
     if (refreshViewport) {
       pendingCallbacks.clear();
       reobserveSpacers();
@@ -848,6 +891,8 @@ function init(dotNetHelper: DotNet.DotNetObject, spacerBefore: HTMLElement, spac
       cancelPendingUserScrollObservation();
       mutationObserver.disconnect();
       stopConvergenceObserving();
+      cancelAnimationFrame(nativeAnchoring.resumeFrame);
+      nativeAnchoring.restore();
       anchoredItems.clear();
       resizeObserver.disconnect();
       unsubscribeFromUserScroll();
