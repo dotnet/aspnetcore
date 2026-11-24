@@ -164,7 +164,7 @@ internal partial class WebAssemblyRenderer
                 Renderer renderer,
                 [DynamicallyAccessedMembers(Component)] Type componentType,
                 int ssrComponentId,
-                ComponentMarkerKey? key,
+                ComponentMarkerKey key,
                 WebRootComponentParameters initialParameters,
                 List<Action>? pendingRootComponentInitializations)
             {
@@ -275,6 +275,7 @@ internal partial class WebAssemblyRenderer
             public async Task RenderAsync(Renderer renderer, Task updateTask)
             {
                 var version = _version;
+                var parameters = _latestParameters.Parameters;
                 var renderStarted = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
                 RenderStarted = renderStarted.Task;
                 var renderTask = Task.CompletedTask;
@@ -283,7 +284,7 @@ internal partial class WebAssemblyRenderer
                     await updateTask;
                     if (!_removed && version == _version && IsInitialized)
                     {
-                        renderTask = renderer.RenderRootComponentAsync(_interactiveComponentId, _latestParameters.Parameters);
+                        renderTask = renderer.RenderRootComponentAsync(_interactiveComponentId, parameters);
                     }
                 }
                 finally

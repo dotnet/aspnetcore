@@ -374,10 +374,15 @@ public class StatePersistenceTest : ServerTestBase<BasicTestAppServerSiteFixture
     }
 
     // Regression coverage for issue 70390: initial circuit startup overlaps enhanced navigation.
-    [Theory]
-    [InlineData(false)]
-    [InlineData(true)]
-    public async Task StateIsRestoredWhenNavigatingBackDuringInitialInteractiveRender(bool interactiveBeforeNavigation)
+    [Fact]
+    public Task StateIsRestoredWhenNavigatingBackDuringInitialInteractiveRender()
+        => StateIsRestoredWhenNavigatingBack(interactiveBeforeNavigation: false);
+
+    [Fact]
+    public Task StateIsRestoredWhenNavigatingBackAfterInitialInteractiveRender()
+        => StateIsRestoredWhenNavigatingBack(interactiveBeforeNavigation: true);
+
+    private async Task StateIsRestoredWhenNavigatingBack(bool interactiveBeforeNavigation)
     {
         var testId = Guid.NewGuid();
         Navigate($"subdir/persistent-state/startup-navigation?test-id={testId}&gate-startup-negotiate=true&suppress-autostart");

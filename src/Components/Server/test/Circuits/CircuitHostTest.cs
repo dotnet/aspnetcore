@@ -1482,9 +1482,10 @@ public class CircuitHostTest
     }
 
     [Theory]
-    [InlineData(false)]
-    [InlineData(true)]
-    public async Task UpdateRootComponents_KeyedParametersCancelInitialWork(bool hasInitialState)
+    [InlineData(false, false)]
+    [InlineData(true, false)]
+    [InlineData(true, true)]
+    public async Task UpdateRootComponents_KeyedParametersCancelInitialWork(bool hasInitialState, bool hasUpdateState)
     {
         var state = new ParameterCancellationState();
         await using var services = new ServiceCollection()
@@ -1518,6 +1519,11 @@ public class CircuitHostTest
                 () => restoredIds.Add(((ParameterCancellationComponent)component).Id),
                 new RestoreOptions { AllowUpdates = true });
             var parameters = new Dictionary<string, object> { [nameof(ParameterCancellationComponent.Id)] = 2 };
+            var updateStore = CreateStore();
+            if (hasUpdateState)
+            {
+                updateStore.ExistingState.Add("initial", JsonSerializer.SerializeToUtf8Bytes("next"));
+            }
             update = host.UpdateRootComponents(new()
             {
                 Operations =
@@ -1530,7 +1536,7 @@ public class CircuitHostTest
                         Descriptor = new(typeof(ParameterCancellationComponent), CreateWebRootComponentParameters(parameters)),
                     },
                 ],
-            }, CreateStore(), false, CancellationToken.None);
+            }, updateStore, false, CancellationToken.None);
 
             await state.Cancelled.Task.WaitAsync(TimeSpan.FromSeconds(10));
             await state.UpdatedRender.Task.WaitAsync(TimeSpan.FromSeconds(10));
@@ -1539,6 +1545,8 @@ public class CircuitHostTest
             {
                 Assert.Same(component, renderer.GetTestComponentState(0).Component);
                 Assert.Equal(2, state.RenderedId);
+                Assert.Null(state.ValueDuringParameterUpdate);
+                Assert.Empty(updateStore.ExistingState);
                 Assert.Contains(2, restoredIds);
                 Assert.Empty(errors);
             });
@@ -1547,6 +1555,81 @@ public class CircuitHostTest
         {
             await host.DisposeAsync();
             await Task.WhenAll(initial, update).WaitAsync(TimeSpan.FromSeconds(10));
+        }
+    }
+
+    [Fact]
+    public async Task UpdateRootComponents_DeferredKeyedRendersKeepTheirBatchParameters()
+    {
+        await using var services = new ServiceCollection()
+            .AddLogging()
+            .AddSingleton<IJSRuntime>(Mock.Of<IJSRuntime>())
+            .AddSingleton<ComponentStatePersistenceManager>()
+            .AddSingleton(sp => sp.GetRequiredService<ComponentStatePersistenceManager>().State)
+            .BuildServiceProvider();
+        var renderer = new TestRemoteRenderer(services, Mock.Of<ISingleClientProxy>());
+        var host = TestCircuitHost.Create(remoteRenderer: renderer, serviceScope: services.CreateAsyncScope());
+        var errors = new List<object>();
+        host.UnhandledException += (_, args) => errors.Add(args.ExceptionObject);
+        var release = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+        var entered = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+        var initial = host.UpdateRootComponents(new()
+        {
+            Operations = [CreateGatedAddOperation(0, release.Task, entered, new())],
+        }, CreateStore(), false, CancellationToken.None);
+        Task added = Task.CompletedTask;
+        Task updated = Task.CompletedTask;
+        var addStore = CreateStore();
+        addStore.ExistingState.Add("token", JsonSerializer.SerializeToUtf8Bytes("B token"));
+        var updateStore = CreateStore();
+        updateStore.ExistingState.Add("token", JsonSerializer.SerializeToUtf8Bytes("C token"));
+        try
+        {
+            await entered.Task.WaitAsync(TimeSpan.FromSeconds(10));
+            await renderer.Dispatcher.InvokeAsync(() =>
+            {
+                added = host.UpdateRootComponents(new()
+                {
+                    Operations = [CreateAddOperation<BatchParameterComponent>(1,
+                        new() { [nameof(BatchParameterComponent.Message)] = "B" }, "retained")],
+                }, addStore, false, CancellationToken.None);
+                var parameters = new Dictionary<string, object> { [nameof(BatchParameterComponent.Message)] = "C" };
+                updated = host.UpdateRootComponents(new()
+                {
+                    Operations =
+                    [
+                        new()
+                        {
+                            Type = RootComponentOperationType.Update,
+                            SsrComponentId = 1,
+                            Marker = CreateMarker(typeof(BatchParameterComponent), "1", parameters, "retained"),
+                            Descriptor = new(typeof(BatchParameterComponent), CreateWebRootComponentParameters(parameters)),
+                        },
+                    ],
+                }, updateStore, false, CancellationToken.None);
+                Assert.Equal(2, renderer.GetOrCreateWebRootComponentManager().GetRootComponents().Count());
+                Assert.Throws<ArgumentException>(() => renderer.GetTestComponentState(1));
+                Assert.False(initial.IsCompleted);
+                Assert.False(added.IsCompleted);
+                Assert.False(updated.IsCompleted);
+            });
+            release.SetResult();
+            await Task.WhenAll(initial, added, updated).WaitAsync(TimeSpan.FromSeconds(10));
+            await renderer.Dispatcher.InvokeAsync(() =>
+            {
+                var component = Assert.IsType<BatchParameterComponent>(renderer.GetTestComponentState(1).Component);
+                Assert.Equal(new[] { ("B", "B token"), ("C", "C token") }, component.Observations);
+                Assert.Equal("C", component.Message);
+                Assert.Empty(addStore.ExistingState);
+                Assert.Empty(updateStore.ExistingState);
+                Assert.Empty(errors);
+            });
+        }
+        finally
+        {
+            release.TrySetResult();
+            await Task.WhenAll(initial, added, updated).WaitAsync(TimeSpan.FromSeconds(10));
+            await host.DisposeAsync();
         }
     }
 
@@ -2029,7 +2112,7 @@ public class CircuitHostTest
         var circuitHost = TestCircuitHost.Create(
             remoteRenderer: renderer,
             clientProxy: new CircuitClientProxy(proxy.Object, "connection"),
-            logger: new TestLogger(nameof(CircuitHost), sink, enabled: true));
+            logger: new TestLoggerFactory(sink, enabled: true).CreateLogger<CircuitHost>());
         var initialStore = new TestComponentApplicationStore(new());
         initialStore.Continue();
         await AddComponentAsync<DynamicallyAddedComponent>(circuitHost, 0, store: initialStore);
@@ -2094,7 +2177,7 @@ public class CircuitHostTest
         var sink = new TestSink();
         var circuitHost = TestCircuitHost.Create(
             remoteRenderer: GetRemoteRenderer(),
-            logger: new TestLogger(nameof(CircuitHost), sink, enabled: true));
+            logger: new TestLoggerFactory(sink, enabled: true).CreateLogger<CircuitHost>());
         await AddComponentAsync<DynamicallyAddedComponent>(circuitHost, 1);
         var error = new TaskCompletionSource<object>(TaskCreationOptions.RunContinuationsAsynchronously);
         circuitHost.UnhandledException += (_, args) => error.TrySetResult(args.ExceptionObject);
@@ -2742,6 +2825,7 @@ public class CircuitHostTest
         public TaskCompletionSource UpdatedRender { get; } = new(TaskCreationOptions.RunContinuationsAsynchronously);
         public int RenderedId { get; set; }
         public string InitialValue { get; set; }
+        public string ValueDuringParameterUpdate { get; set; }
     }
 
     private sealed class ParameterCancellationComponent(ParameterCancellationState state, PersistentComponentState persistentState) : ComponentBase, IDisposable
@@ -2753,6 +2837,11 @@ public class CircuitHostTest
 
         protected override async Task OnParametersSetAsync()
         {
+            if (Id == 2)
+            {
+                persistentState.TryTakeFromJson<string>("initial", out var value);
+                state.ValueDuringParameterUpdate = value;
+            }
             _request?.Cancel();
             _request?.Dispose();
             _request = new CancellationTokenSource();
@@ -2789,6 +2878,26 @@ public class CircuitHostTest
         {
             _request?.Cancel();
             _request?.Dispose();
+        }
+    }
+
+    private sealed class BatchParameterComponent(PersistentComponentState state) : IComponent
+    {
+        [Parameter]
+        public string Message { get; set; }
+
+        public List<(string Message, string Token)> Observations { get; } = [];
+
+        public void Attach(RenderHandle renderHandle)
+        {
+        }
+
+        public Task SetParametersAsync(ParameterView parameters)
+        {
+            parameters.SetParameterProperties(this);
+            state.TryTakeFromJson<string>("token", out var token);
+            Observations.Add((Message, token));
+            return Task.CompletedTask;
         }
     }
 

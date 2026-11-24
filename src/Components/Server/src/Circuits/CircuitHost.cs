@@ -876,12 +876,20 @@ internal partial class CircuitHost : IAsyncDisposable
                         }
                     }
 
-                    // Retained roots may need new parameters to cancel the work holding initial quiescence.
-                    var parameterUpdateTask = store is null || store.IsEmpty
+                    // Retained roots may need new parameters to end the previous state lifetime, but must
+                    // still wait for earlier parameter updates and restores before observing this batch.
+                    var parameterUpdateTask = store is null || store.IsEmpty || !previousStateTask.IsCompleted
                         ? WaitForRootComponentParametersAsync(_rootComponentParameterTask)
                         : postRemovalTask;
-                    _rootComponentParameterTask = parameterUpdateTask;
-                    var operationsTask = PerformRootComponentOperations(operations, shouldWaitForQuiescence, postRemovalTask, parameterUpdateTask, operationsCompletionSource, pendingRootComponentInitializations);
+                    _rootComponentParameterTask = store is null || store.IsEmpty ? parameterUpdateTask : postRemovalTask;
+                    var operationsTask = PerformRootComponentOperations(
+                        operations,
+                        shouldWaitForQuiescence,
+                        postRemovalTask,
+                        parameterUpdateTask,
+                        operationsCompletionSource,
+                        shouldWaitForQuiescence ? LogRootComponentInitializationFailure : null,
+                        pendingRootComponentInitializations);
 
                     await operationsTask;
                     await postRemovalTask;
@@ -911,15 +919,6 @@ internal partial class CircuitHost : IAsyncDisposable
                         _ = CompleteRootComponentStateAsync(previousStateTask, stateCompletionSource);
                     }
                 }
-
-                var operationsTask = PerformRootComponentOperations(
-                    operations,
-                    shouldWaitForQuiescence,
-                    postRemovalTask,
-                    shouldWaitForQuiescence ? LogRootComponentInitializationFailure : null);
-                taskCompletionSource?.SetResult();
-
-                await operationsTask;
 
                 await Client.SendAsync("JS.EndUpdateRootComponents", batchId);
 
