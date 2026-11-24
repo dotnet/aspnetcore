@@ -31,7 +31,6 @@ public sealed class RenderTreeBuilder : IDisposable
     private RenderTreeFrameType? _lastNonAttributeFrameType;
     private bool _hasSeenAddMultipleAttributes;
     private Dictionary<string, int>? _seenAttributeNames;
-    private Stack<InputAttributeState>? _inputAttributeStates;
 
     /// <summary>
     /// The reserved parameter name used for supplying child content.
@@ -180,7 +179,6 @@ public sealed class RenderTreeBuilder : IDisposable
             throw new InvalidOperationException($"Valueless attributes may only be added immediately after frames of type {RenderTreeFrameType.Element}");
         }
 
-        TrackInputAttribute(name, isBooleanValue: false, isOmitted: false);
         _entries.AppendAttribute(sequence, name, ElementBoolTrueValue);
     }
 
@@ -202,7 +200,6 @@ public sealed class RenderTreeBuilder : IDisposable
     public void AddAttribute(int sequence, string name, bool value)
     {
         AssertCanAddAttribute();
-        TrackInputAttribute(name, isBooleanValue: true, isOmitted: !value);
         if (_lastNonAttributeFrameType == RenderTreeFrameType.Component)
         {
             _entries.AppendAttribute(sequence, name, value ? BoxedTrue : BoxedFalse);
@@ -212,10 +209,11 @@ public sealed class RenderTreeBuilder : IDisposable
             // Don't add 'false' attributes for elements. We want booleans to map to the presence
             // or absence of an attribute, and false => "False" which isn't falsy in js.
             _entries.AppendAttribute(sequence, name, ElementBoolTrueValue);
+            MarkBooleanValueAttribute();
         }
         else
         {
-            TrackAttributeName(name);
+            TrackAttributeName(name, isBooleanValue: true);
         }
     }
 
@@ -234,7 +232,6 @@ public sealed class RenderTreeBuilder : IDisposable
     public void AddAttribute(int sequence, string name, string? value)
     {
         AssertCanAddAttribute();
-        TrackInputAttribute(name, isBooleanValue: false, isOmitted: value is null);
         if (value != null || _lastNonAttributeFrameType == RenderTreeFrameType.Component)
         {
             _entries.AppendAttribute(sequence, name, value);
@@ -260,7 +257,6 @@ public sealed class RenderTreeBuilder : IDisposable
     public void AddAttribute(int sequence, string name, MulticastDelegate? value)
     {
         AssertCanAddAttribute();
-        TrackInputAttribute(name, isBooleanValue: false, isOmitted: value is null);
         if (value != null || _lastNonAttributeFrameType == RenderTreeFrameType.Component)
         {
             _entries.AppendAttribute(sequence, name, value);
@@ -290,7 +286,6 @@ public sealed class RenderTreeBuilder : IDisposable
     public void AddAttribute(int sequence, string name, EventCallback value)
     {
         AssertCanAddAttribute();
-        TrackInputAttribute(name, isBooleanValue: false, isOmitted: !value.RequiresExplicitReceiver && !value.HasDelegate);
         if (_lastNonAttributeFrameType == RenderTreeFrameType.Component)
         {
             // Since this is a component, we need to preserve the type of the EventCallback, so we have
@@ -335,7 +330,6 @@ public sealed class RenderTreeBuilder : IDisposable
     public void AddAttribute<TArgument>(int sequence, string name, EventCallback<TArgument> value)
     {
         AssertCanAddAttribute();
-        TrackInputAttribute(name, isBooleanValue: false, isOmitted: !value.RequiresExplicitReceiver && !value.HasDelegate);
         if (_lastNonAttributeFrameType == RenderTreeFrameType.Component)
         {
             // Since this is a component, we need to preserve the type of the EventCallback, so we have
@@ -376,8 +370,6 @@ public sealed class RenderTreeBuilder : IDisposable
         // types that AddAttribute special cases.
         if (_lastNonAttributeFrameType == RenderTreeFrameType.Element)
         {
-            TrackInputAttribute(name, isBooleanValue: value is bool,
-                isOmitted: value is null or false || value is IEventCallback { HasDelegate: false });
             if (value == null)
             {
                 // Treat 'null' attribute values for elements as a conditional attribute.
@@ -388,11 +380,12 @@ public sealed class RenderTreeBuilder : IDisposable
                 if (boolValue)
                 {
                     _entries.AppendAttribute(sequence, name, ElementBoolTrueValue);
+                    MarkBooleanValueAttribute();
                 }
                 else
                 {
                     // Don't add anything for false bool value.
-                    TrackAttributeName(name);
+                    TrackAttributeName(name, isBooleanValue: true);
                 }
             }
             else if (value is IEventCallback callbackValue)
@@ -446,9 +439,13 @@ public sealed class RenderTreeBuilder : IDisposable
         }
 
         AssertCanAddAttribute();
-        TrackInputAttribute(frame.AttributeNameField, isBooleanValue: frame.AttributeValueField is bool, isOmitted: false);
+        frame.AttributeValueIsBooleanField = false;
         frame.SequenceField = sequence;
         _entries.Append(frame);
+        if (frame.AttributeValueField is bool)
+        {
+            MarkBooleanValueAttribute();
+        }
     }
 
     /// <summary>
@@ -502,6 +499,14 @@ public sealed class RenderTreeBuilder : IDisposable
         }
 
         prevFrame.AttributeEventUpdatesAttributeNameField = updatesAttributeName;
+        if (updatesAttributeName == "value"
+            && _lastNonAttributeFrameType == RenderTreeFrameType.Element
+            && _openElementIndices.TryPeek(out var elementIndex)
+            && _entries.Buffer[elementIndex].FrameTypeField == RenderTreeFrameType.Element
+            && IsNullableBooleanBinding(prevFrame.AttributeValueField))
+        {
+            _entries.Buffer[elementIndex].ElementInputAttributeFlagsField |= InputAttributeFlags.NullableBooleanBinding;
+        }
     }
 
     /// <summary>
@@ -772,7 +777,6 @@ public sealed class RenderTreeBuilder : IDisposable
         _lastNonAttributeFrameType = null;
         _hasSeenAddMultipleAttributes = false;
         _seenAttributeNames?.Clear();
-        _inputAttributeStates?.Clear();
     }
 
     // internal because this should only be used during the post-event tree patching logic
@@ -837,69 +841,49 @@ public sealed class RenderTreeBuilder : IDisposable
         }
     }
 
-    private void TrackInputAttribute(string name, bool isBooleanValue, bool isOmitted)
+    private void MarkBooleanValueAttribute()
     {
-        var isValue = name == "value";
-        if ((!isValue && (!isOmitted || !string.Equals(name, "checked", StringComparison.OrdinalIgnoreCase)))
-            || _lastNonAttributeFrameType != RenderTreeFrameType.Element)
+        ref var attribute = ref _entries.Buffer[_entries.Count - 1];
+        if (attribute.AttributeNameField != "value" || _lastNonAttributeFrameType != RenderTreeFrameType.Element)
         {
             return;
         }
 
-        var elementIndex = _openElementIndices.Peek();
-        if (!string.Equals(_entries.Buffer[elementIndex].ElementNameField, "input", StringComparison.OrdinalIgnoreCase))
+        ref var element = ref _entries.Buffer[_openElementIndices.Peek()];
+        if (string.Equals(element.ElementNameField, "input", StringComparison.OrdinalIgnoreCase))
         {
-            return;
+            attribute.AttributeValueIsBooleanField = true;
+            element.ElementInputAttributeFlagsField |= InputAttributeFlags.BooleanValue;
         }
-
-        var hasState = _inputAttributeStates is { Count: > 0 } && _inputAttributeStates.Peek().ElementIndex == elementIndex;
-        if (!hasState && isValue && !isBooleanValue)
-        {
-            return;
-        }
-
-        var states = _inputAttributeStates ??= new Stack<InputAttributeState>();
-        var state = hasState ? states.Pop() : new InputAttributeState { ElementIndex = elementIndex };
-        if (isValue)
-        {
-            // Omitted values only replace earlier frames when duplicate-attribute processing runs.
-            if (!isOmitted)
-            {
-                state.ValueIsBoolean = isBooleanValue;
-            }
-
-            state.OmittedValueIsBoolean = isOmitted && isBooleanValue;
-        }
-        else
-        {
-            state.HasExplicitCheckedAttribute = true;
-        }
-
-        states.Push(state);
     }
 
-    private struct InputAttributeState
+    private static bool IsNullableBooleanBinding(object? value)
     {
-        public int ElementIndex;
-        public bool ValueIsBoolean;
-        public bool OmittedValueIsBoolean;
-        public bool HasExplicitCheckedAttribute;
+        var callback = value switch
+        {
+            MulticastDelegate handler => handler,
+            EventCallback eventCallback => eventCallback.Delegate,
+            _ => null,
+        };
+
+        return callback?.Target is EventCallbackFactoryBinderExtensions.INullableBooleanBinder;
     }
 
     private void ProcessInputValueAttribute(int elementIndex)
     {
-        if (_inputAttributeStates is not { Count: > 0 } states || states.Peek().ElementIndex != elementIndex)
+        var buffer = _entries.Buffer;
+        var flags = buffer[elementIndex].ElementInputAttributeFlagsField;
+        var hasNullableBooleanBindingCandidate = (flags & InputAttributeFlags.NullableBooleanBinding) != 0;
+        if ((flags & InputAttributeFlags.BooleanValue) == 0 && !hasNullableBooleanBindingCandidate)
         {
             return;
         }
-
-        var state = states.Pop();
-        var buffer = _entries.Buffer;
         var valueIndex = -1;
         var attributesEnd = elementIndex + 1;
         var isCheckbox = false;
         var hasValueBinding = false;
-        var hasCheckedAttribute = state.HasExplicitCheckedAttribute;
+        var hasNullableBooleanBinding = false;
+        var hasCheckedAttribute = (flags & InputAttributeFlags.OmittedChecked) != 0;
 
         for (; attributesEnd < _entries.Count && buffer[attributesEnd].FrameTypeField == RenderTreeFrameType.Attribute; attributesEnd++)
         {
@@ -918,10 +902,16 @@ public sealed class RenderTreeBuilder : IDisposable
                     break;
             }
 
-            hasValueBinding |= attribute.AttributeEventUpdatesAttributeNameField == "value";
+            if (attribute.AttributeEventUpdatesAttributeNameField == "value")
+            {
+                hasValueBinding = true;
+                hasNullableBooleanBinding |= hasNullableBooleanBindingCandidate && IsNullableBooleanBinding(attribute.AttributeValueField);
+            }
         }
 
-        var isBooleanValue = valueIndex >= 0 ? state.ValueIsBoolean : state.OmittedValueIsBoolean;
+        var isBooleanValue = valueIndex >= 0
+            ? buffer[valueIndex].AttributeValueIsBooleanField
+            : (flags & InputAttributeFlags.OmittedBooleanValue) != 0 || hasNullableBooleanBinding;
         if (!isBooleanValue)
         {
             return;
@@ -954,6 +944,11 @@ public sealed class RenderTreeBuilder : IDisposable
         // will contain nested content.
         var buffer = _entries.Buffer;
         var last = _entries.Count - 1;
+        ref var parent = ref buffer[first - 1];
+        var omittedBooleanValueIndex = parent.FrameTypeField == RenderTreeFrameType.Element
+            && (parent.ElementInputAttributeFlagsField & InputAttributeFlags.OmittedBooleanValue) != 0
+            ? parent.ElementLastOmittedBooleanValueIndexField
+            : int.MaxValue;
 
         for (var i = first; i <= last; i++)
         {
@@ -961,6 +956,13 @@ public sealed class RenderTreeBuilder : IDisposable
             {
                 last = i - 1;
                 break;
+            }
+
+            if (i >= omittedBooleanValueIndex && buffer[i].AttributeNameField == "value")
+            {
+                // An emitted value supersedes an earlier omission even if duplicate cleanup removes it.
+                parent.ElementInputAttributeFlagsField &= ~InputAttributeFlags.OmittedBooleanValue;
+                omittedBooleanValueIndex = int.MaxValue;
             }
         }
 
@@ -1030,8 +1032,30 @@ public sealed class RenderTreeBuilder : IDisposable
     }
 
     // Internal for testing
-    internal void TrackAttributeName(string name)
+    internal void TrackAttributeName(string name, bool isBooleanValue = false)
     {
+        if (_lastNonAttributeFrameType == RenderTreeFrameType.Element
+            && (name == "value" || string.Equals(name, "checked", StringComparison.OrdinalIgnoreCase)))
+        {
+            ref var element = ref _entries.Buffer[_openElementIndices.Peek()];
+            if (string.Equals(element.ElementNameField, "input", StringComparison.OrdinalIgnoreCase))
+            {
+                if (name == "value")
+                {
+                    element.ElementInputAttributeFlagsField &= ~InputAttributeFlags.OmittedBooleanValue;
+                    if (isBooleanValue)
+                    {
+                        element.ElementInputAttributeFlagsField |= InputAttributeFlags.BooleanValue | InputAttributeFlags.OmittedBooleanValue;
+                        element.ElementLastOmittedBooleanValueIndexField = _entries.Count;
+                    }
+                }
+                else
+                {
+                    element.ElementInputAttributeFlagsField |= InputAttributeFlags.OmittedChecked;
+                }
+            }
+        }
+
         if (!_hasSeenAddMultipleAttributes)
         {
             return;

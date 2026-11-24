@@ -130,7 +130,8 @@ public static class EventCallbackFactoryBinderExtensions
         bool? existingValue,
         CultureInfo? culture = null)
     {
-        return CreateBinderCore<bool?>(factory, receiver, setter, culture, ConvertToNullableBool);
+        return factory.Create<ChangeEventArgs>(receiver,
+            new NullableBooleanBinder<bool?>(setter, culture, ConvertToNullableBool, EmptyStringHandling.SetDefault).Invoke);
     }
 
     /// <summary>
@@ -150,7 +151,8 @@ public static class EventCallbackFactoryBinderExtensions
         bool? existingValue,
         CultureInfo? culture = null)
     {
-        return CreateBinderCoreAsync<bool?>(factory, receiver, setter, culture, ConvertToNullableBool);
+        return factory.Create<ChangeEventArgs>(receiver,
+            new AsyncNullableBooleanBinder<bool?>(setter, culture, ConvertToNullableBool, EmptyStringHandling.SetDefault).InvokeAsync);
     }
 
     /// <summary>
@@ -1323,6 +1325,12 @@ public static class EventCallbackFactoryBinderExtensions
         T existingValue,
         CultureInfo? culture = null)
     {
+        if (typeof(T) == typeof(bool?))
+        {
+            return factory.Create<ChangeEventArgs>(receiver,
+                new NullableBooleanBinder<T>(setter, culture, ParserDelegateCache.Get<T>(), EmptyStringHandling.SetDefault).Invoke);
+        }
+
         return CreateBinderCore<T>(factory, receiver, setter, culture, ParserDelegateCache.Get<T>());
     }
 
@@ -1344,6 +1352,12 @@ public static class EventCallbackFactoryBinderExtensions
         T existingValue,
         CultureInfo? culture = null)
     {
+        if (typeof(T) == typeof(bool?))
+        {
+            return factory.Create<ChangeEventArgs>(receiver,
+                new AsyncNullableBooleanBinder<T>(setter, culture, ParserDelegateCache.Get<T>(), EmptyStringHandling.SetDefault).InvokeAsync);
+        }
+
         return CreateBinderCoreAsync<T>(factory, receiver, setter, culture, ParserDelegateCache.Get<T>());
     }
 
@@ -1433,6 +1447,68 @@ public static class EventCallbackFactoryBinderExtensions
             }
         };
         return factory.Create<ChangeEventArgs>(receiver, callback);
+    }
+
+    internal interface INullableBooleanBinder
+    {
+    }
+
+    private sealed class NullableBooleanBinder<T>(
+        Action<T> setter,
+        CultureInfo? culture,
+        BindConverter.BindParser<T> converter,
+        EmptyStringHandling emptyStringHandling) : INullableBooleanBinder
+    {
+        public void Invoke(ChangeEventArgs e)
+        {
+            T? value = default;
+            var converted = false;
+            try
+            {
+                converted = converter(e.Value, culture, out value);
+            }
+            catch
+            {
+            }
+
+            if (converted)
+            {
+                setter(value!);
+            }
+            else if (string.Empty.Equals(e.Value) && emptyStringHandling == EmptyStringHandling.SetDefault)
+            {
+                setter(default!);
+            }
+        }
+    }
+
+    private sealed class AsyncNullableBooleanBinder<T>(
+        Func<T, Task> setter,
+        CultureInfo? culture,
+        BindConverter.BindParser<T> converter,
+        EmptyStringHandling emptyStringHandling) : INullableBooleanBinder
+    {
+        public async Task InvokeAsync(ChangeEventArgs e)
+        {
+            T? value = default;
+            var converted = false;
+            try
+            {
+                converted = converter(e.Value, culture, out value);
+            }
+            catch
+            {
+            }
+
+            if (converted)
+            {
+                await setter(value!);
+            }
+            else if (string.Empty.Equals(e.Value) && emptyStringHandling == EmptyStringHandling.SetDefault)
+            {
+                await setter(default!);
+            }
+        }
     }
 
     private static EventCallback<ChangeEventArgs> CreateBinderCore<T>(

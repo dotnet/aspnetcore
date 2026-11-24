@@ -284,6 +284,17 @@
 
 <h2>Checkbox</h2>
 <p>
+    Dynamic type:
+    <select id="checkbox-dynamic-type-select" @bind="checkboxDynamicType">
+        <option value="checkbox">checkbox</option>
+        <option value="CHECKBOX">CHECKBOX</option>
+    </select>
+    <input id="checkbox-dynamic-type" type="@checkboxDynamicType" @bind:get="checkboxDynamicTypeValue" @bind:set="RejectDynamicCheckboxEdit" />
+    <span id="checkbox-dynamic-type-value">@checkboxDynamicTypeValue</span>
+    <span id="checkbox-dynamic-type-setter-count">@checkboxDynamicTypeSetterCount</span>
+    <button id="checkbox-dynamic-type-setnull" @onclick="() => checkboxDynamicTypeValue = null">Set null</button>
+</p>
+<p>
     Initially null:
     <input id="checkbox-initially-null" @bind="checkboxInitiallyNullValue" type="checkbox" />
     <span id="checkbox-initially-null-value">@checkboxInitiallyNullValue</span>
@@ -482,6 +493,9 @@
     bool? checkboxInitiallyNullValue = null;
     bool checkboxInitiallyUncheckedValue = false;
     bool checkboxInitiallyCheckedValue = true;
+    string checkboxDynamicType = "checkbox";
+    bool? checkboxDynamicTypeValue = true;
+    int checkboxDynamicTypeSetterCount;
 
     int textboxIntValue = -42;
     int? textboxNullableIntValue = null;
@@ -563,6 +577,11 @@
     SelectableValue? selectMarkupValue = SelectableValue.Second;
 
     SelectableValue variableValue = SelectableValue.Fifth;
+
+    void RejectDynamicCheckboxEdit(bool? value)
+    {
+        checkboxDynamicTypeSetterCount++;
+    }
 
     void AddAndSelectNewSelectOption()
     {

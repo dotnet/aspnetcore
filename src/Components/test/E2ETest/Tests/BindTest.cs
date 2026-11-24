@@ -154,6 +154,28 @@ public class BindTest : ServerTestBase<ToggleExecutionModeServerFixture<Program>
         Browser.Equal("False", () => boundValue.Text);
     }
 
+    [Theory]
+    [InlineData("checkbox")]
+    [InlineData("CHECKBOX")]
+    public void CanBindCheckbox_WithDynamicTypeAndNullValue_RevertsRejectedEdit(string type)
+    {
+        var target = Browser.Exists(By.Id("checkbox-dynamic-type"));
+        var boundValue = Browser.Exists(By.Id("checkbox-dynamic-type-value"));
+        var setterCount = Browser.Exists(By.Id("checkbox-dynamic-type-setter-count"));
+        new SelectElement(Browser.Exists(By.Id("checkbox-dynamic-type-select"))).SelectByValue(type);
+        Browser.Equal(type, () => target.GetDomAttribute("type"));
+        Assert.True(target.Selected);
+
+        Browser.Exists(By.Id("checkbox-dynamic-type-setnull")).Click();
+        Browser.Equal(string.Empty, () => boundValue.Text);
+        Browser.False(() => target.Selected);
+
+        target.Click();
+        Browser.Equal("1", () => setterCount.Text);
+        Browser.False(() => target.Selected);
+        Assert.Equal(string.Empty, boundValue.Text);
+    }
+
     [Fact]
     public void CanBindCheckbox_InitiallyUnchecked()
     {

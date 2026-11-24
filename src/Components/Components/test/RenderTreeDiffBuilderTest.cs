@@ -1818,6 +1818,47 @@ public class RenderTreeDiffBuilderTest : IDisposable
         }
     }
 
+    [Theory]
+    [InlineData("checkbox", false)]
+    [InlineData("CHECKBOX", false)]
+    [InlineData("checkbox", true)]
+    [InlineData("CHECKBOX", true)]
+    public async Task NullableBooleanBinding_RevertsRejectedEditWhenNull(string type, bool useAsyncBinder)
+    {
+        bool? value = null;
+        var setterCalled = false;
+        var retainedHandler = useAsyncBinder
+            ? EventCallback.Factory.CreateBinder<bool?>(this, _ => { setterCalled = true; return Task.CompletedTask; }, value)
+            : EventCallback.Factory.CreateBinder<bool?>(this, _ => { setterCalled = true; }, value);
+        BuildInput(oldTree);
+        BuildInput(newTree);
+        GetSingleUpdatedComponentWithBatch(initializeFromFrames: true);
+
+        var eventFrame = Assert.Single(newTree.GetFrames().AsEnumerable(),
+            frame => frame.FrameType == RenderTreeFrameType.Attribute && frame.AttributeName == "onchange");
+        RenderTreeUpdater.UpdateToMatchClientState(newTree, eventFrame.AttributeEventHandlerId, true);
+        await retainedHandler.InvokeAsync(new ChangeEventArgs { Value = true });
+        Assert.True(setterCalled);
+
+        using var correctedTree = new RenderTreeBuilder();
+        BuildInput(correctedTree);
+        var correctedBatch = GetRenderedBatch(newTree, correctedTree, initializeFromFrames: false);
+        var correctedDiff = Assert.Single(correctedBatch.UpdatedComponents.AsEnumerable());
+        var edit = Assert.Single(correctedDiff.Edits);
+        AssertEdit(edit, RenderTreeEditType.RemoveAttribute, 0);
+        Assert.Equal("checked", edit.RemovedAttributeName);
+
+        void BuildInput(RenderTreeBuilder builder)
+        {
+            builder.OpenElement(0, "input");
+            builder.AddAttribute(1, "type", type);
+            builder.AddAttribute(2, "value", BindConverter.FormatValue(value));
+            builder.AddAttribute(3, "onchange", retainedHandler);
+            builder.SetUpdatesAttributeName("value");
+            builder.CloseElement();
+        }
+    }
+
     [Fact]
     public void SetsUpdatedParametersOnChildComponents()
     {
