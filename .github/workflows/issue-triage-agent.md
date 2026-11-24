@@ -1,6 +1,5 @@
 ---
 runs-on: ubuntu-26.04
-runs-on-slim: ubuntu-26.04
 if: ${{ github.event_name == 'workflow_dispatch' || !github.event.repository.fork }}
 
 on:
