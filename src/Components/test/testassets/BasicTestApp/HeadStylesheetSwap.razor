@@ -3,7 +3,7 @@
 }
 else if (replacement)
 {
-    <HeadContent><link id="swap-stylesheet" rel="stylesheet" href="head-swap-replacement.css" /></HeadContent>
+    <HeadContent><link id="swap-stylesheet" rel="stylesheet" href="head-swap-replacement/@(requestId).css" /></HeadContent>
 }
 else
 {
@@ -15,6 +15,7 @@ else
 <div id="swap-target" style="background-color: red">Stylesheet target</div>
 
 @code {
+    private readonly string requestId = Guid.NewGuid().ToString("N");
     private bool replacement;
     private bool removed;
 }

@@ -1,7 +1,7 @@
 @if (replacement)
 {
     <HeadContent>
-        <link rel="stylesheet" href="head-swap-idless-replacement.css" />
+        <link rel="stylesheet" href="head-swap-idless-replacement/@(requestId).css" />
     </HeadContent>
 }
 else
@@ -15,5 +15,6 @@ else
 <div id="swap-target" style="background-color: red">Stylesheet target</div>
 
 @code {
+    private readonly string requestId = Guid.NewGuid().ToString("N");
     private bool replacement;
 }

@@ -1,6 +1,7 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Collections.Concurrent;
 using BasicTestApp;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Components.E2ETest.Infrastructure;
@@ -28,29 +29,46 @@ public class HeadModificationTest : ServerTestBase<HeadModificationTest.HeadModi
 
     public class HeadModificationFixture : ToggleExecutionModeServerFixture<Program>
     {
-        internal TaskCompletionSource Requested { get; } = new(TaskCreationOptions.RunContinuationsAsynchronously);
-        internal TaskCompletionSource Release { get; } = new(TaskCreationOptions.RunContinuationsAsynchronously);
-        internal TaskCompletionSource IdlessRequested { get; } = new(TaskCreationOptions.RunContinuationsAsynchronously);
-        internal TaskCompletionSource IdlessRelease { get; } = new(TaskCreationOptions.RunContinuationsAsynchronously);
+        private readonly ConcurrentDictionary<string, StylesheetRequestGate> _requests = new();
 
         public HeadModificationFixture()
         {
             ConfigureEndpoints = endpoints =>
             {
-                endpoints.MapGet("/head-swap-replacement.css", async (CancellationToken cancellationToken) =>
+                endpoints.MapGet("/head-swap-replacement/{requestId}.css", async (string requestId, CancellationToken cancellationToken) =>
                 {
-                    Requested.TrySetResult();
-                    await Release.Task.WaitAsync(cancellationToken);
-                    return Microsoft.AspNetCore.Http.Results.Text("#swap-target { background-color: green !important; }", "text/css");
+                    return await WaitForRelease(requestId, cancellationToken);
                 });
-                endpoints.MapGet("/head-swap-idless-replacement.css", async (CancellationToken cancellationToken) =>
+                endpoints.MapGet("/head-swap-idless-replacement/{requestId}.css", async (string requestId, CancellationToken cancellationToken) =>
                 {
-                    IdlessRequested.TrySetResult();
-                    await IdlessRelease.Task.WaitAsync(cancellationToken);
-                    return Microsoft.AspNetCore.Http.Results.Text("#swap-target { background-color: green !important; }", "text/css");
+                    return await WaitForRelease(requestId, cancellationToken);
                 });
             };
         }
+
+        internal StylesheetRequestGate GetRequest(string requestId)
+            => _requests.GetOrAdd(requestId, static _ => new StylesheetRequestGate());
+
+        private async Task<Microsoft.AspNetCore.Http.IResult> WaitForRelease(string requestId, CancellationToken cancellationToken)
+        {
+            var request = GetRequest(requestId);
+            request.Requested.TrySetResult();
+            try
+            {
+                await request.Release.Task.WaitAsync(cancellationToken);
+                return Microsoft.AspNetCore.Http.Results.Text("#swap-target { background-color: green !important; }", "text/css");
+            }
+            finally
+            {
+                _requests.TryRemove(requestId, out _);
+            }
+        }
+    }
+
+    internal class StylesheetRequestGate
+    {
+        internal TaskCompletionSource Requested { get; } = new(TaskCreationOptions.RunContinuationsAsynchronously);
+        internal TaskCompletionSource Release { get; } = new(TaskCreationOptions.RunContinuationsAsynchronously);
     }
 
     [Fact]
@@ -60,15 +78,18 @@ public class HeadModificationTest : ServerTestBase<HeadModificationTest.HeadModi
         var target = Browser.Exists(By.Id("swap-target"));
         Browser.Equal("rgba(0, 0, 255, 1)", () => target.GetCssValue("background-color"));
 
+        StylesheetRequestGate request = null;
         try
         {
             Browser.FindElement(By.Id("swap-head")).Click();
-            await _serverFixture.Requested.Task.WaitAsync(TimeSpan.FromSeconds(15));
+            var requestId = GetRequestId(Browser.FindElement(By.CssSelector("link#swap-stylesheet[href*='head-swap-replacement/']")));
+            request = _serverFixture.GetRequest(requestId);
+            await request.Requested.Task.WaitAsync(TimeSpan.FromSeconds(15));
             Assert.Equal("rgba(0, 0, 255, 1)", target.GetCssValue("background-color"));
         }
         finally
         {
-            _serverFixture.Release.TrySetResult();
+            request?.Release.TrySetResult();
         }
 
         Browser.Equal("rgba(0, 128, 0, 1)", () => target.GetCssValue("background-color"));
@@ -94,18 +115,40 @@ public class HeadModificationTest : ServerTestBase<HeadModificationTest.HeadModi
         var target = Browser.Exists(By.Id("swap-target"));
         Browser.Equal("rgba(0, 0, 255, 1)", () => target.GetCssValue("background-color"));
 
+        StylesheetRequestGate request = null;
         try
         {
             Browser.FindElement(By.Id("swap-head-without-ids")).Click();
-            await _serverFixture.IdlessRequested.Task.WaitAsync(TimeSpan.FromSeconds(15));
+            var requestId = GetRequestId(Browser.FindElement(By.CssSelector("link[rel='stylesheet'][href*='head-swap-idless-replacement/']")));
+            request = _serverFixture.GetRequest(requestId);
+            await request.Requested.Task.WaitAsync(TimeSpan.FromSeconds(15));
             Assert.Equal("rgba(255, 0, 0, 1)", target.GetCssValue("background-color"));
         }
         finally
         {
-            _serverFixture.IdlessRelease.TrySetResult();
+            request?.Release.TrySetResult();
         }
 
         Browser.Equal("rgba(0, 128, 0, 1)", () => target.GetCssValue("background-color"));
+    }
+
+    [Fact]
+    public void ReplacingHeadContentWithDisabledStylesheetRemovesPreviousStylesheet()
+    {
+        Browser.MountTestComponent<HeadStylesheetSwapDisabledReplacement>();
+        var target = Browser.Exists(By.Id("swap-target"));
+        Browser.Equal("rgba(0, 0, 255, 1)", () => target.GetCssValue("background-color"));
+
+        Browser.FindElement(By.Id("swap-head-disabled")).Click();
+
+        Browser.Equal("rgba(255, 0, 0, 1)", () => target.GetCssValue("background-color"));
+        Browser.Equal(1, () => Browser.FindElements(By.Id("disabled-swap-stylesheet")).Count);
+    }
+
+    private static string GetRequestId(IWebElement link)
+    {
+        var href = link.GetDomAttribute("href")!;
+        return href[(href.LastIndexOf('/') + 1)..^4];
     }
 
     [Fact]
