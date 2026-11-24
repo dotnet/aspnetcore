@@ -6908,6 +6908,7 @@ public class VirtualizationTest : ServerTestBase<ToggleExecutionModeServerFixtur
     [Theory]
     [InlineData(false)]
     [InlineData(true)]
+    [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/68772")]
     public void InitialIndex_RetainsTargetWhenPreviousItemExpandsThenHomeEndTakeOver(bool useProvider)
     {
         const int initialIndex = 500;
