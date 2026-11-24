@@ -1456,6 +1456,72 @@ public abstract class OutputCacheMiddlewareTests
     }
 
     [Fact]
+    public async Task Locking_CancelledRequestExecutesEndpointWhenDisabled()
+    {
+        var creatorEntered = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+        var cancelledRequestEntered = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+        var releaseCreator = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+        var responseCounter = 0;
+        var options = new OutputCacheOptions();
+        options.AddBasePolicy(build => build.Cache().SetLocking(false));
+
+        var middleware = TestUtils.CreateTestMiddleware(options: options, next: async context =>
+        {
+            if (Interlocked.Increment(ref responseCounter) == 1)
+            {
+                creatorEntered.SetResult();
+                await releaseCreator.Task;
+                await context.Response.WriteAsync("creator response");
+            }
+            else
+            {
+                cancelledRequestEntered.SetResult();
+                await Task.Delay(Timeout.InfiniteTimeSpan, context.RequestAborted);
+            }
+        });
+
+        var creator = TestUtils.CreateTestContext().HttpContext;
+        creator.Request.Method = HttpMethods.Get;
+        var creatorTask = middleware.Invoke(creator);
+        using var cancellation = new CancellationTokenSource();
+        var cancelledRequestTask = Task.CompletedTask;
+        var cancelledRequestStarted = false;
+
+        try
+        {
+            await creatorEntered.Task.DefaultTimeout();
+
+            var cancelledRequest = TestUtils.CreateTestContext().HttpContext;
+            cancelledRequest.Request.Method = HttpMethods.Get;
+            cancelledRequest.RequestAborted = cancellation.Token;
+            cancelledRequestTask = middleware.Invoke(cancelledRequest);
+            cancelledRequestStarted = true;
+
+            await cancelledRequestEntered.Task.DefaultTimeout();
+            Assert.Equal(2, responseCounter);
+            Assert.False(creatorTask.IsCompleted);
+
+            cancellation.Cancel();
+            var exception = await Assert.ThrowsAnyAsync<OperationCanceledException>(
+                () => cancelledRequestTask.DefaultTimeout());
+            Assert.Equal(cancellation.Token, exception.CancellationToken);
+            Assert.False(creatorTask.IsCompleted);
+            Assert.Null(cancelledRequest.Features.Get<IOutputCacheFeature>());
+        }
+        finally
+        {
+            cancellation.Cancel();
+            releaseCreator.TrySetResult();
+            await creatorTask.DefaultTimeout();
+            if (cancelledRequestStarted && !cancelledRequestTask.IsCompleted)
+            {
+                await Assert.ThrowsAnyAsync<OperationCanceledException>(
+                    () => cancelledRequestTask.DefaultTimeout());
+            }
+        }
+    }
+
+    [Fact]
     public async Task Locking_InvalidCacheKey_DoesNotCoalesceRequests()
     {
         var responseCounter = 0;
