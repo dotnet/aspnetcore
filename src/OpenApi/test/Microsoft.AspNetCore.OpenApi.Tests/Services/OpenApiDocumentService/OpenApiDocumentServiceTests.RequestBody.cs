@@ -767,12 +767,16 @@ public partial class OpenApiDocumentServiceTests : OpenApiDocumentServiceTestBas
             Assert.DoesNotContain(nameof(FormModelWithRequiredProperties.OptionalCount), modelSchema.Required ?? new HashSet<string>());
             Assert.DoesNotContain(nameof(FormModelWithRequiredProperties.OptionalFlag), modelSchema.Required ?? new HashSet<string>());
             Assert.Contains(requiredProperty, modelSchema.Required ?? new HashSet<string>());
+            Assert.Equal(new[] { "BindingRequired", "ValidationRequired", "upload" }, modelSchema.Required.Order(StringComparer.Ordinal));
+            Assert.Same(schema, operation.RequestBody.Content["multipart/form-data"].Schema);
         });
     }
 
+    [Consumes("application/x-www-form-urlencoded", "multipart/form-data")]
     [HttpPost("/required-form-model")]
     private void ActionWithRequiredFormModel([FromForm, Required] FormModelWithRequiredProperties model) { }
 
+    [Consumes("application/x-www-form-urlencoded", "multipart/form-data")]
     [HttpPost("/required-form-model-additional")]
     private void ActionWithRequiredFormModelAndAdditionalParameter([FromForm, Required] FormModelWithRequiredProperties model, [FromForm] string additional) { }
 
@@ -795,6 +799,123 @@ public partial class OpenApiDocumentServiceTests : OpenApiDocumentServiceTestBas
         public int OptionalCount { get; set; }
 
         public bool OptionalFlag { get; set; }
+    }
+#nullable restore
+
+    [Theory]
+    [InlineData(nameof(ActionWithConditionalFormModel), "Count", "application/x-www-form-urlencoded")]
+    [InlineData(nameof(ActionWithConditionalFormModel), "Count", "multipart/form-data")]
+    [InlineData(nameof(ActionWithConditionalFormModel), "Child.Name", "application/x-www-form-urlencoded")]
+    [InlineData(nameof(ActionWithConditionalFormModel), "Child.Name", "multipart/form-data")]
+    [InlineData(nameof(ActionWithConditionalFormModel), "Child.Bound", "application/x-www-form-urlencoded")]
+    [InlineData(nameof(ActionWithConditionalFormModel), "Child.Bound", "multipart/form-data")]
+    [InlineData(nameof(ActionWithConditionalFormModelAndAdditionalParameter), "Count", "application/x-www-form-urlencoded")]
+    [InlineData(nameof(ActionWithConditionalFormModelAndAdditionalParameter), "Count", "multipart/form-data")]
+    [InlineData(nameof(ActionWithConditionalFormModelAndAdditionalParameter), "Child.Name", "application/x-www-form-urlencoded")]
+    [InlineData(nameof(ActionWithConditionalFormModelAndAdditionalParameter), "Child.Name", "multipart/form-data")]
+    [InlineData(nameof(ActionWithConditionalFormModelAndAdditionalParameter), "Child.Bound", "application/x-www-form-urlencoded")]
+    [InlineData(nameof(ActionWithConditionalFormModelAndAdditionalParameter), "Child.Bound", "multipart/form-data")]
+    [InlineData(nameof(ActionWithPrefixedConditionalFormModel), "input.Count", "application/x-www-form-urlencoded")]
+    [InlineData(nameof(ActionWithPrefixedConditionalFormModel), "input.Count", "multipart/form-data")]
+    [InlineData(nameof(ActionWithPrefixedConditionalFormModel), "input.Child.Name", "application/x-www-form-urlencoded")]
+    [InlineData(nameof(ActionWithPrefixedConditionalFormModel), "input.Child.Name", "multipart/form-data")]
+    [InlineData(nameof(ActionWithPrefixedConditionalFormModel), "input.Child.Bound", "application/x-www-form-urlencoded")]
+    [InlineData(nameof(ActionWithPrefixedConditionalFormModel), "input.Child.Bound", "multipart/form-data")]
+    [InlineData(nameof(ActionWithRecursiveFormModel), "Child.Name", "application/x-www-form-urlencoded")]
+    [InlineData(nameof(ActionWithRecursiveFormModel), "Child.Name", "multipart/form-data")]
+    [InlineData(nameof(ActionWithRequiredParentFormModel), "Child.Name", "application/x-www-form-urlencoded")]
+    [InlineData(nameof(ActionWithRequiredParentFormModel), "Child.Name", "multipart/form-data")]
+    [InlineData(nameof(ActionWithRequiredParentFormModel), "Child.Bound", "application/x-www-form-urlencoded")]
+    [InlineData(nameof(ActionWithRequiredParentFormModel), "Child.Bound", "multipart/form-data")]
+    public async Task GetOpenApiRequestBody_DoesNotRequireConditionalFormProperties_MvcAction(string actionName, string optionalProperty, string contentType)
+    {
+        var action = CreateActionDescriptor(actionName);
+        await VerifyOpenApiDocument(action, document =>
+        {
+            var operation = Assert.Single(document.Paths.Values).Operations[HttpMethod.Post];
+            var prefix = actionName == nameof(ActionWithPrefixedConditionalFormModel) ? "input." : "";
+            var schema = operation.RequestBody.Content[contentType].Schema;
+            var modelSchema = actionName == nameof(ActionWithConditionalFormModelAndAdditionalParameter)
+                ? Assert.Single(schema.AllOf, item => item.Properties.ContainsKey("Count"))
+                : schema;
+            Assert.Contains(optionalProperty, modelSchema.Properties.Keys);
+            Assert.DoesNotContain(optionalProperty, modelSchema.Required ?? new HashSet<string>());
+            var expected = actionName == nameof(ActionWithRequiredParentFormModel)
+                ? Array.Empty<string>()
+                : actionName == nameof(ActionWithRecursiveFormModel)
+                    ? new[] { "Name" }
+                    : new[] { prefix + "BoundCount", prefix + "NullableCount", prefix + "direct.name" };
+            Assert.Equal(expected, (modelSchema.Required ?? new HashSet<string>()).Order(StringComparer.Ordinal));
+        });
+    }
+
+    [Consumes("application/x-www-form-urlencoded", "multipart/form-data")]
+    [HttpPost("/conditional-form")]
+    private void ActionWithConditionalFormModel([FromForm] ConditionalFormModel model) { }
+
+    [Consumes("application/x-www-form-urlencoded", "multipart/form-data")]
+    [HttpPost("/conditional-form-additional")]
+    private void ActionWithConditionalFormModelAndAdditionalParameter([FromForm] ConditionalFormModel model, [FromForm] string additional) { }
+
+    [Consumes("application/x-www-form-urlencoded", "multipart/form-data")]
+    [HttpPost("/conditional-form-prefixed")]
+    private void ActionWithPrefixedConditionalFormModel([FromForm(Name = "input")] ConditionalFormModel model) { }
+
+    [Consumes("application/x-www-form-urlencoded", "multipart/form-data")]
+    [HttpPost("/conditional-form-parent")]
+    private void ActionWithRequiredParentFormModel([FromForm] RequiredParentFormModel model) { }
+
+    [Consumes("application/x-www-form-urlencoded", "multipart/form-data")]
+    [HttpPost("/conditional-form-recursive")]
+    private void ActionWithRecursiveFormModel([FromForm] RecursiveFormModel model) { }
+
+#nullable enable
+    private class RecursiveFormModel
+    {
+        public IFormFile? File { get; set; }
+
+        [Required]
+        public string? Name { get; set; }
+
+        public RecursiveFormModel? Child { get; set; }
+    }
+
+    private class ConditionalFormModel
+    {
+        public IFormFile? File { get; set; }
+
+        [Required]
+        public int Count { get; set; }
+
+        [Required]
+        public int? NullableCount { get; set; }
+
+        [BindRequired]
+        public int BoundCount { get; set; }
+
+        [FromForm(Name = "direct.name"), Required]
+        public string? Name { get; set; }
+
+        public ConditionalFormChild? Child { get; set; }
+    }
+
+    private class ConditionalFormChild
+    {
+        [Required]
+        public string? Name { get; set; }
+
+        [BindRequired]
+        public string? Bound { get; set; }
+
+        public string? Note { get; set; }
+    }
+
+    private class RequiredParentFormModel
+    {
+        public IFormFile? File { get; set; }
+
+        [Required]
+        public ConditionalFormChild? Child { get; set; }
     }
 #nullable restore
 

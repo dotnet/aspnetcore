@@ -650,6 +650,26 @@ internal sealed class OpenApiDocumentService(
         return parameter.Source == BindingSource.Path || parameter.IsRequired || hasRequiredAttribute;
     }
 
+    private static bool IsRequiredFormProperty(ApiParameterDescription description)
+    {
+        var metadata = description.ModelMetadata;
+        var parameter = description.ParameterDescriptor;
+        // ApiExplorer flattens nested properties, but their binding and validation requirements
+        // can depend on whether the containing model is created. Only promote direct properties.
+        // Compare binding names as well as types to handle recursive models and explicit prefixes.
+        var propertyName = ModelNames.CreatePropertyModelName(parameter.BindingInfo?.BinderModelName,
+            string.IsNullOrEmpty(metadata.BinderModelName) ? metadata.PropertyName : metadata.BinderModelName);
+        if (metadata.ContainerType != parameter.ParameterType || description.Name != propertyName)
+        {
+            return false;
+        }
+
+        // [Required] validates the resulting value, not whether it was supplied. A non-nullable
+        // value type already has a valid default; [BindRequired] still requires binding it.
+        return description.IsRequired || (metadata.IsReferenceOrNullableType &&
+            metadata.ValidatorMetadata.OfType<RequiredAttribute>().Any());
+    }
+
     // Apply [Description] attributes on the parameter to the top-level OpenApiParameter object and not the schema.
     private static string? GetParameterDescriptionFromAttribute(ApiParameterDescription parameter)
     {
@@ -855,7 +875,7 @@ internal sealed class OpenApiDocumentService(
                             ApplyDescriptionToSchema(propSchema, parameterDescription);
                         }
 
-                        if (description.IsRequired || description.ModelMetadata.ValidatorMetadata.OfType<RequiredAttribute>().Any())
+                        if (IsRequiredFormProperty(description))
                         {
                             propertySchema.Required ??= new HashSet<string>();
                             propertySchema.Required.Add(description.Name);
@@ -878,7 +898,7 @@ internal sealed class OpenApiDocumentService(
                         }
 
                         schema.Properties ??= new Dictionary<string, IOpenApiSchema>();
-                        if (description.IsRequired || description.ModelMetadata.ValidatorMetadata.OfType<RequiredAttribute>().Any())
+                        if (IsRequiredFormProperty(description))
                         {
                             schema.Required ??= new HashSet<string>();
                             schema.Required.Add(description.Name);
