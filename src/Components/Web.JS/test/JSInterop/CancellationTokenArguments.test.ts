@@ -88,6 +88,27 @@ describe("CancellationToken arguments", () => {
         expect(received[0].aborted).toBe(true);
     });
 
+    test("A cancel that arrives before its id aborts the signal that the id later gives", async () => {
+        const runtime = createRuntime();
+        await cancel(runtime, 21);
+        await call(runtime, token(21));
+
+        expect(received[0].aborted).toBe(true);
+    });
+
+    test("After a cancel, the id keeps giving the aborted signal until it is released", async () => {
+        const runtime = createRuntime();
+        await call(runtime, token(22));
+        await cancel(runtime, 22);
+        await call(runtime, token(22));
+
+        expect(received[1] === received[0]).toBe(true);
+        expect(received[1].aborted).toBe(true);
+        await release(runtime, 22);
+        await call(runtime, token(22));
+        expect(received[2] === received[0]).toBe(false);
+    });
+
     test("Release forgets the id without aborting, so a later cancel message does nothing", async () => {
         const runtime = createRuntime();
         await call(runtime, token(9), token(10));

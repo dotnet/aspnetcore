@@ -113,6 +113,11 @@ export function initialize(target) {
             const preAborted = target.invokeMethod("Inspect", aborted.signal);
             document.getElementById("sync-js").textContent = `${live}:${preAborted}`;
         },
+        async syncReturned() {
+            const result = target.invokeMethod("GetCancelingResult");
+            await nextTask();
+            document.getElementById("sync-returned-js").textContent = `${result.value}:${result.token.aborted}`;
+        },
         async overtaken() {
             if (!await target.invokeMethodAsync("HoldNextInboundActivity")) {
                 document.getElementById("overtaken-js").textContent = "no inbound gate";

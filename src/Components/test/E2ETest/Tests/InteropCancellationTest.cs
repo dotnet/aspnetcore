@@ -126,6 +126,8 @@ public class InteropCancellationTest(
         CollectGarbage();
         Click("cancel-outgoing");
         Equal("outgoing-js", "aborted in JS");
+        // The id stays after the cancel until .NET collects the link and its next call to JS releases it.
+        Click("collect-dotnet");
         Browser.Equal(0, ProjectionCount);
     }
 
@@ -215,6 +217,19 @@ public class InteropCancellationTest(
         Click("drop-sync");
         CollectGarbage();
         Browser.Equal(0, ProjectionCount);
+    }
+
+    [Fact]
+    public void TokenCanceledWhileItsSynchronousResultIsSerializedGivesAbortedSignal()
+    {
+        // Interactive Server does not support synchronous calls from JS to .NET.
+        if (_serverFixture.ExecutionMode != ExecutionMode.Client)
+        {
+            return;
+        }
+
+        Click("start-sync-returned");
+        Equal("sync-returned-js", "canceled:true");
     }
 
     [Fact]

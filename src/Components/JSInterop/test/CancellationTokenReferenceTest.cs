@@ -322,6 +322,92 @@ public class CancellationTokenReferenceTest
     }
 
     [Fact]
+    public async Task CanceledTokenKeepsItsIdUntilTheLinkIsCollected()
+    {
+        using var runtime = new ReferenceRuntime();
+        using var source = new CancellationTokenSource();
+        await runtime.InvokeVoidAsync("receive", CancellationToken.None, source.Token);
+        var id = TokenId(runtime.Sent[0]);
+
+        source.Cancel();
+        Assert.Equal(1, OutgoingTokenCount(runtime));
+
+        // The source drops its registrations when canceled, so the link is collected while the source lives on.
+        CollectGarbage();
+        await runtime.InvokeVoidAsync("other");
+        AssertSent(runtime, "receive", Canceled(id), "other", Released(id));
+        Assert.Equal(0, OutgoingTokenCount(runtime));
+    }
+
+    [Fact]
+    public void ReleaseWaitsForTheRepliesOfCallsCarryingTheId()
+    {
+        using var runtime = new ReferenceRuntime { HoldReplies = true };
+        using var source = new CancellationTokenSource();
+        _ = runtime.InvokeVoidAsync("receive", CancellationToken.None, source.Token);
+        var id = TokenId(runtime.Sent[0]);
+
+        source.Dispose();
+        CollectGarbage();
+        _ = runtime.InvokeVoidAsync("other");
+        AssertSent(runtime, "receive", "other");
+
+        runtime.Reply(0);
+        AssertSent(runtime, "receive", "other", Released(id));
+    }
+
+    [Fact]
+    public async Task ReplyToACallThatStoppedWaitingStillCountsDown()
+    {
+        using var runtime = new ReferenceRuntime { HoldReplies = true };
+        using var control = new CancellationTokenSource();
+        using var source = new CancellationTokenSource();
+        var call = runtime.InvokeVoidAsync("receive", control.Token, source.Token);
+        var id = TokenId(runtime.Sent[0]);
+        control.Cancel();
+        await Assert.ThrowsAnyAsync<OperationCanceledException>(async () => await call);
+
+        source.Dispose();
+        CollectGarbage();
+        _ = runtime.InvokeVoidAsync("other");
+        AssertSent(runtime, "receive", "other");
+
+        runtime.Reply(0);
+        AssertSent(runtime, "receive", "other", Released(id));
+    }
+
+    [Fact]
+    public async Task FailedDispatchDoesNotHoldTheId()
+    {
+        using var runtime = new ReferenceRuntime();
+        using var source = new CancellationTokenSource();
+        await runtime.InvokeVoidAsync("receive", CancellationToken.None, source.Token);
+        var id = TokenId(runtime.Sent[0]);
+        runtime.ThrowOnDispatch = true;
+        Assert.Throws<InvalidOperationException>(() => runtime.InvokeAsync<string>("receive", CancellationToken.None, [source.Token]));
+        runtime.ThrowOnDispatch = false;
+
+        source.Dispose();
+        CollectGarbage();
+        await runtime.InvokeVoidAsync("other");
+        AssertSent(runtime, "receive", "receive", "other", Released(id));
+    }
+
+    [Fact]
+    public async Task SynchronousCallDoesNotHoldTheIdAfterItReturns()
+    {
+        using var runtime = new ReferenceRuntime();
+        using var source = new CancellationTokenSource();
+        runtime.InvokeVoid("receiveSync", source.Token);
+        var id = TokenId(runtime.Sent[0]);
+
+        source.Dispose();
+        CollectGarbage();
+        await runtime.InvokeVoidAsync("other");
+        AssertSent(runtime, "receiveSync", "other", Released(id));
+    }
+
+    [Fact]
     public async Task LiveSourceIsNotReleasedByCollectionAndStillCancels()
     {
         using var runtime = new ReferenceRuntime();
@@ -530,6 +616,13 @@ public class CancellationTokenReferenceTest
         return ((System.Collections.ICollection)field.GetValue(runtime)!).Count;
     }
 
+    private static int OutgoingTokenCount(JSRuntime runtime)
+    {
+        var field = typeof(JSRuntime).GetField("_outgoingCancellationTokens",
+            System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.NonPublic)!;
+        return ((System.Collections.ICollection)field.GetValue(runtime)!).Count;
+    }
+
     private static void AssertSent(ReferenceRuntime runtime, params string[] expected)
         => Assert.Equal(expected, runtime.Sent.Select(Describe));
 
@@ -667,7 +760,13 @@ public class CancellationTokenReferenceTest
     private sealed class ReferenceRuntime : JSInProcessRuntime
     {
         public List<SentMessage> Sent { get; } = [];
-        public bool ThrowOnDispatch { get; init; }
+        public bool ThrowOnDispatch { get; set; }
+        // When set, JS replies to calls only through Reply, in the order of the held calls.
+        public bool HoldReplies { get; init; }
+        private readonly List<long> _heldReplies = [];
+
+        public void Reply(int heldIndex)
+            => DotNetDispatcher.EndInvokeJS(this, $"[{_heldReplies[heldIndex]},true,null]");
         private readonly System.Collections.Concurrent.ConcurrentDictionary<string, TaskCompletionSource<DotNetInvocationResult>> _results = new();
 
         public Task<DotNetInvocationResult> GetResult(string callId) => GetResultSource(callId).Task;
@@ -697,7 +796,14 @@ public class CancellationTokenReferenceTest
 
             if (invocationInfo.AsyncHandle != 0)
             {
-                DotNetDispatcher.EndInvokeJS(this, $"[{invocationInfo.AsyncHandle},true,null]");
+                if (HoldReplies)
+                {
+                    _heldReplies.Add(invocationInfo.AsyncHandle);
+                }
+                else
+                {
+                    DotNetDispatcher.EndInvokeJS(this, $"[{invocationInfo.AsyncHandle},true,null]");
+                }
             }
         }
 

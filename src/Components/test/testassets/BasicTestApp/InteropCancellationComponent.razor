@@ -32,6 +32,7 @@
 <button id="start-sync" onclick="cancellationTests.sync()">Synchronous calls</button>
 <button id="abort-sync" onclick="cancellationTests.abort('sync')">Abort synchronous signal</button>
 <button id="drop-sync" onclick="cancellationTests.drop('sync')">Drop synchronous signal</button>
+<button id="start-sync-returned" onclick="cancellationTests.syncReturned()">Return a token canceled during serialization</button>
 <button id="start-overtaken" onclick="cancellationTests.overtaken()">Abort before the delayed call arrives</button>
 <button id="start-collected" onclick="cancellationTests.collectedDuringCall(true)">Abort and drop during the delayed call</button>
 <button id="start-dropped" onclick="cancellationTests.collectedDuringCall(false)">Drop during the delayed call</button>
@@ -42,6 +43,7 @@
 <p id="collected-gc"></p>
 <p id="dropped-gc"></p>
 <p id="disposable-gc"></p>
+<p id="sync-returned-js"></p>
 <button id="start-control" @onclick="StartControlCall">Use invocation control token</button>
 <button id="cancel-control" @onclick="() => controlSource.Cancel()">Cancel managed wait</button>
 <button id="release-control" onclick="cancellationTests.releaseControl()">Complete JS function</button>
@@ -221,6 +223,24 @@
 
     [JSInvokable]
     public CancellationToken GetReturnedToken() => returnedSource.Token;
+
+    // In a synchronous call, returning is the send, so a cancel during serialization reaches JS before the token's id.
+    [JSInvokable]
+    public CancelingResult GetCancelingResult() => new(new CancellationTokenSource());
+
+    public sealed class CancelingResult(CancellationTokenSource source)
+    {
+        public CancellationToken Token => source.Token;
+
+        public string Value
+        {
+            get
+            {
+                source.Cancel();
+                return "canceled";
+            }
+        }
+    }
 
     private async Task StartControlCall()
     {
