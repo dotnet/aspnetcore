@@ -352,10 +352,38 @@ public class CancellationTokenReferenceTest
         _ = runtime.InvokeVoidAsync("other");
         AssertSent(runtime, "receive", "other");
 
+        // The link is already collected, so the last reply releases the id at once.
+        runtime.Reply(0);
+        AssertSent(runtime, "receive", "other", Released(id));
+    }
+
+    [Fact]
+    public void ReleaseWaitsForEveryCallCarryingTheId()
+    {
+        using var runtime = new ReferenceRuntime { HoldReplies = true };
+        using var source = new CancellationTokenSource();
+        _ = runtime.InvokeVoidAsync("receive", CancellationToken.None, source.Token);
+        _ = runtime.InvokeVoidAsync("receive", CancellationToken.None, source.Token);
+        var id = TokenId(runtime.Sent[0]);
+
+        source.Dispose();
         runtime.Reply(0);
         CollectGarbage();
         _ = runtime.InvokeVoidAsync("other");
-        AssertSent(runtime, "receive", "other", "other", Released(id));
+        AssertSent(runtime, "receive", "receive", "other");
+
+        runtime.Reply(1);
+        AssertSent(runtime, "receive", "receive", "other", Released(id));
+    }
+
+    [Fact]
+    public void CallWithoutReplyDoesNotKeepItsSourceReachable()
+    {
+        using var runtime = new ReferenceRuntime { HoldReplies = true };
+        var source = SendTokenOfUnreachableSourceWithoutReply(runtime);
+
+        CollectGarbage();
+        Assert.False(source.IsAlive);
     }
 
     [Fact]
@@ -374,10 +402,9 @@ public class CancellationTokenReferenceTest
         _ = runtime.InvokeVoidAsync("other");
         AssertSent(runtime, "receive", "other");
 
+        // The link is already collected, so the last reply releases the id at once.
         runtime.Reply(0);
-        CollectGarbage();
-        _ = runtime.InvokeVoidAsync("other");
-        AssertSent(runtime, "receive", "other", "other", Released(id));
+        AssertSent(runtime, "receive", "other", Released(id));
     }
 
     [Fact]
@@ -700,6 +727,14 @@ public class CancellationTokenReferenceTest
     {
         var source = new CancellationTokenSource();
         Assert.True(runtime.InvokeVoidAsync("receive", CancellationToken.None, source.Token).IsCompletedSuccessfully);
+        return new WeakReference(source);
+    }
+
+    [MethodImpl(MethodImplOptions.NoInlining)]
+    private static WeakReference SendTokenOfUnreachableSourceWithoutReply(ReferenceRuntime runtime)
+    {
+        var source = new CancellationTokenSource();
+        _ = runtime.InvokeVoidAsync("receive", CancellationToken.None, source.Token);
         return new WeakReference(source);
     }
 
