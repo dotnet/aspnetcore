@@ -437,13 +437,17 @@ class CallDispatcher implements ICallDispatcher {
   }
 
   reviveCancellationToken(id: number | null, isCancellationRequested: boolean): AbortSignal {
-    const controller = new AbortController();
-    if (isCancellationRequested) {
-      controller.abort();
-    }
+    // .NET gives one id per token, so every occurrence of a token gets the same signal.
+    let controller = id === null ? undefined : this._cancellationTokenControllers.get(id);
+    if (!controller) {
+      controller = new AbortController();
+      if (isCancellationRequested) {
+        controller.abort();
+      }
 
-    if (id !== null) {
-      this._cancellationTokenControllers.set(id, controller);
+      if (id !== null) {
+        this._cancellationTokenControllers.set(id, controller);
+      }
     }
 
     return controller.signal;

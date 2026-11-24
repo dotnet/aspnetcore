@@ -44,7 +44,7 @@ public abstract class JSInProcessRuntime : JSRuntime, IJSInProcessRuntime
     [RequiresUnreferencedCode("JSON serialization and deserialization might require types that cannot be statically analyzed.")]
     internal TValue Invoke<[DynamicallyAccessedMembers(JsonSerialized)] TValue>(string identifier, long targetInstanceId, JSCallType callType, params object?[]? args)
     {
-        List<(long Id, CancellationToken Token)>? argumentTokens = null;
+        List<CancellationTokenLink>? argumentTokens = null;
         var argsJson = args is not null && args.Length != 0 ? SerializeForJS(args, out argumentTokens) : "[]";
         var resultType = JSCallResultTypeHelper.FromGeneric<TValue>();
         var invocationInfo = new JSInvocationInfo

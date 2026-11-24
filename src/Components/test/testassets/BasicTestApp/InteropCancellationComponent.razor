@@ -172,7 +172,7 @@
     {
         var flags = System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.NonPublic;
         int Count(string name) => (typeof(JSRuntime).GetField(name, flags)?.GetValue(JS) as System.Collections.ICollection)?.Count ?? 0;
-        return Count("_cancellationTokenLinks") + Count("_abortSignalSources");
+        return Count("_outgoingCancellationTokens") + Count("_abortSignalSources");
     }
 
     [JSInvokable]

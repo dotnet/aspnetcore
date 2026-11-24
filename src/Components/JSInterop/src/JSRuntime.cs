@@ -26,13 +26,14 @@ public abstract partial class JSRuntime : IJSRuntime, IDisposable
     private readonly ConcurrentDictionary<long, IPendingAsyncCall> _pendingTasks = new();
     private readonly ConcurrentDictionary<long, IDotNetObjectReference> _trackedRefsById = new();
     private readonly ConcurrentDictionary<long, CancellationTokenRegistration> _cancellationRegistrations = new();
-    // The tokens written by the serialization running on this thread. They are linked only after the message
+    // The tokens written by the serialization running on this thread. They are started only after the message
     // carrying their ids is sent, so that an abort can never reach JS before its id.
     [ThreadStatic] private static JSRuntime? t_serializingRuntime;
-    [ThreadStatic] private static List<(long Id, CancellationToken Token)>? t_serializingTokens;
+    [ThreadStatic] private static List<CancellationTokenLink>? t_serializingTokens;
     private long _nextCancellationTokenId;
-    // Weak, because only the token's registration may keep a link alive: a disposed or collected source releases its id.
-    private readonly ConcurrentDictionary<long, WeakReference<CancellationTokenLink>> _cancellationTokenLinks = new();
+    // One entry per token sent to JS, keyed by id; also the lock for the index by hash code.
+    private readonly Dictionary<long, OutgoingCancellationToken> _outgoingCancellationTokens = new();
+    private readonly Dictionary<int, List<OutgoingCancellationToken>> _outgoingCancellationTokensByHashCode = new();
     private int _cancellationTokenSweepGCCount;
     private int _cancellationTokensDisposed;
     // Keyed by the id the JS side gave the AbortSignal. JS sends "released" only after every call carrying the id
@@ -167,7 +168,7 @@ public abstract partial class JSRuntime : IJSRuntime, IDisposable
         }
         _pendingTasks[taskId] = pendingCall;
 
-        List<(long Id, CancellationToken Token)>? argumentTokens = null;
+        List<CancellationTokenLink>? argumentTokens = null;
         try
         {
             if (cancellationToken.IsCancellationRequested)
@@ -213,7 +214,7 @@ public abstract partial class JSRuntime : IJSRuntime, IDisposable
 
     // Serializes a call or a result for JS. Pass the tokens to LinkCancellationTokens once the message is sent.
     [UnconditionalSuppressMessage("Trimming", "IL2026", Justification = "Interop arguments are required to be linker friendly.")]
-    internal string SerializeForJS<T>(T value, out List<(long Id, CancellationToken Token)>? cancellationTokens)
+    internal string SerializeForJS<T>(T value, out List<CancellationTokenLink>? cancellationTokens)
     {
         var previousRuntime = t_serializingRuntime;
         var previousTokens = t_serializingTokens;
@@ -241,18 +242,70 @@ public abstract partial class JSRuntime : IJSRuntime, IDisposable
 
         ObjectDisposedException.ThrowIf(Volatile.Read(ref _cancellationTokensDisposed) != 0, this);
 
-        var id = Interlocked.Increment(ref _nextCancellationTokenId);
-        (t_serializingTokens ??= []).Add((id, token));
-        return id;
+        var serializingTokens = t_serializingTokens ??= [];
+        foreach (var serializing in serializingTokens)
+        {
+            if (serializing.Token.Equals(token))
+            {
+                return serializing.Id;
+            }
+        }
+
+        // The list holds the link strongly until the message is sent, so a sweep cannot release a reused id meanwhile.
+        var link = GetOrAddOutgoingCancellationToken(token);
+        serializingTokens.Add(link);
+        return link.Id;
     }
 
-    internal void LinkCancellationTokens(List<(long Id, CancellationToken Token)>? cancellationTokens)
+    private CancellationTokenLink GetOrAddOutgoingCancellationToken(CancellationToken token)
+    {
+        var hashCode = token.GetHashCode();
+        lock (_outgoingCancellationTokens)
+        {
+            if (_outgoingCancellationTokensByHashCode.TryGetValue(hashCode, out var candidates))
+            {
+                foreach (var candidate in candidates)
+                {
+                    if (candidate.Link.TryGetTarget(out var existing) && existing.Token.Equals(token))
+                    {
+                        return existing;
+                    }
+                }
+            }
+            else
+            {
+                candidates = [];
+                _outgoingCancellationTokensByHashCode.Add(hashCode, candidates);
+            }
+
+            var link = new CancellationTokenLink(this, ++_nextCancellationTokenId, token);
+            var entry = new OutgoingCancellationToken(link, hashCode);
+            candidates.Add(entry);
+            _outgoingCancellationTokens.Add(link.Id, entry);
+            return link;
+        }
+    }
+
+    // Must be called with the lock held.
+    private void RemoveOutgoingCancellationToken(OutgoingCancellationToken entry)
+    {
+        _outgoingCancellationTokens.Remove(entry.Id);
+        var candidates = _outgoingCancellationTokensByHashCode[entry.HashCode];
+        candidates.Remove(entry);
+        if (candidates.Count == 0)
+        {
+            _outgoingCancellationTokensByHashCode.Remove(entry.HashCode);
+        }
+    }
+
+    // Every message that carried an id starts its link, so a reused id is linked even if its first message failed.
+    internal void LinkCancellationTokens(List<CancellationTokenLink>? cancellationTokens)
     {
         if (cancellationTokens is not null)
         {
-            foreach (var (id, token) in cancellationTokens)
+            foreach (var link in cancellationTokens)
             {
-                CancellationTokenLink.Start(this, id, token);
+                link.Start();
             }
         }
 
@@ -263,21 +316,40 @@ public abstract partial class JSRuntime : IJSRuntime, IDisposable
     private void ReleaseCollectedCancellationTokens()
     {
         var gcCount = GC.CollectionCount(0);
-        if (Interlocked.Exchange(ref _cancellationTokenSweepGCCount, gcCount) == gcCount || _cancellationTokenLinks.IsEmpty)
+        if (Interlocked.Exchange(ref _cancellationTokenSweepGCCount, gcCount) == gcCount)
         {
             return;
         }
 
-        List<long>? released = null;
-        foreach (var entry in _cancellationTokenLinks)
+        List<OutgoingCancellationToken>? collected = null;
+        lock (_outgoingCancellationTokens)
         {
-            if (!entry.Value.TryGetTarget(out _) && _cancellationTokenLinks.TryRemove(entry))
+            foreach (var entry in _outgoingCancellationTokens.Values)
             {
-                (released ??= []).Add(entry.Key);
+                if (!entry.Link.TryGetTarget(out _))
+                {
+                    (collected ??= []).Add(entry);
+                }
+            }
+
+            if (collected is null)
+            {
+                return;
+            }
+
+            foreach (var entry in collected)
+            {
+                RemoveOutgoingCancellationToken(entry);
             }
         }
 
-        if (released is not null)
+        var released = new List<long>(collected.Count);
+        foreach (var entry in collected)
+        {
+            released.Add(entry.Id);
+        }
+
+        if (released.Count != 0)
         {
             SendCancellationTokenMessage(CancellationTokenReleasedIdentifier, released);
         }
@@ -526,52 +598,76 @@ public abstract partial class JSRuntime : IJSRuntime, IDisposable
     {
         // Unregistered, so that a long-lived CancellationTokenSource does not keep this runtime reachable.
         Interlocked.Exchange(ref _cancellationTokensDisposed, 1);
-        foreach (var link in _cancellationTokenLinks.Values)
+        lock (_outgoingCancellationTokens)
         {
-            if (link.TryGetTarget(out var target))
+            foreach (var entry in _outgoingCancellationTokens.Values)
             {
-                target.Stop();
+                if (entry.Link.TryGetTarget(out var link))
+                {
+                    link.Stop();
+                }
             }
+
+            _outgoingCancellationTokens.Clear();
+            _outgoingCancellationTokensByHashCode.Clear();
         }
 
-        _cancellationTokenLinks.Clear();
         _abortSignalSources.Clear();
         ByteArraysToBeRevived.Dispose();
     }
 
-    // Referenced strongly only by the token's registration, so it lives exactly as long as the token can be canceled.
-    private sealed class CancellationTokenLink
+    private void OnCancellationTokenCanceled(long id)
     {
-        private readonly JSRuntime _runtime;
-        private readonly long _id;
-        private CancellationTokenRegistration _registration;
-
-        private CancellationTokenLink(JSRuntime runtime, long id)
+        lock (_outgoingCancellationTokens)
         {
-            _runtime = runtime;
-            _id = id;
+            if (!_outgoingCancellationTokens.TryGetValue(id, out var entry))
+            {
+                return;
+            }
+
+            RemoveOutgoingCancellationToken(entry);
         }
 
-        public static void Start(JSRuntime runtime, long id, CancellationToken token)
+        SendCancellationTokenMessage(CancellationTokenCanceledIdentifier, [id]);
+    }
+
+    // Once started, referenced strongly only by the token's registration, so it lives as long as the token can be canceled.
+    internal sealed class CancellationTokenLink(JSRuntime runtime, long id, CancellationToken token)
+    {
+        private CancellationTokenRegistration _registration;
+        private int _started;
+
+        public long Id { get; } = id;
+
+        public CancellationToken Token { get; } = token;
+
+        public void Start()
         {
-            var link = new CancellationTokenLink(runtime, id);
-            runtime._cancellationTokenLinks[id] = new(link);
-            link._registration = token.UnsafeRegister(static state => ((CancellationTokenLink)state!).OnCanceled(), link);
+            if (Interlocked.Exchange(ref _started, 1) != 0)
+            {
+                return;
+            }
+
+            _registration = Token.UnsafeRegister(static state => ((CancellationTokenLink)state!).OnCanceled(), this);
             if (Volatile.Read(ref runtime._cancellationTokensDisposed) != 0)
             {
-                link.Stop();
+                Stop();
             }
         }
 
         public void Stop() => _registration.Unregister();
 
-        private void OnCanceled()
-        {
-            if (_runtime._cancellationTokenLinks.TryRemove(_id, out _))
-            {
-                _runtime.SendCancellationTokenMessage(CancellationTokenCanceledIdentifier, [_id]);
-            }
-        }
+        private void OnCanceled() => runtime.OnCancellationTokenCanceled(Id);
+    }
+
+    private sealed class OutgoingCancellationToken(CancellationTokenLink link, int hashCode)
+    {
+        public long Id { get; } = link.Id;
+
+        public int HashCode { get; } = hashCode;
+
+        // Weak, because only the token's registration may keep a link alive: a disposed or collected source releases its id.
+        public WeakReference<CancellationTokenLink> Link { get; } = new(link);
     }
 
     private sealed class AbortSignalSource
