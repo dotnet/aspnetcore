@@ -260,7 +260,13 @@ public abstract partial class JSRuntime : IJSRuntime, IDisposable
         }
 
         // The list holds the link strongly until the message is sent, so a sweep cannot release a reused id meanwhile.
-        var link = GetOrAddOutgoingCancellationToken(token);
+        CancellationTokenLink link;
+        do
+        {
+            link = GetOrAddOutgoingCancellationToken(token);
+        }
+        while (!link.TryReuse());
+
         serializingTokens.Add(link);
         return link.Id;
     }
@@ -274,7 +280,7 @@ public abstract partial class JSRuntime : IJSRuntime, IDisposable
             {
                 foreach (var candidate in candidates)
                 {
-                    if (candidate.Link.TryGetTarget(out var existing) && existing.Token.Equals(token))
+                    if (candidate.Link.TryGetTarget(out var existing) && !existing.IsStale && existing.Token.Equals(token))
                     {
                         return existing;
                     }
@@ -685,28 +691,73 @@ public abstract partial class JSRuntime : IJSRuntime, IDisposable
     // Once started, referenced strongly only by the token's registration, so it lives as long as the token can be canceled.
     internal sealed class CancellationTokenLink(JSRuntime runtime, long id, CancellationToken token)
     {
+        private readonly Lock _lock = new();
         private CancellationTokenRegistration _registration;
-        private int _started;
+        private bool _started;
+        private volatile bool _isStale;
 
         public long Id { get; } = id;
 
         public CancellationToken Token { get; } = token;
 
+        // Set when the source was reset, so the token needs a new id.
+        public bool IsStale => _isStale;
+
         public void Start()
         {
-            if (Interlocked.Exchange(ref _started, 1) != 0)
+            lock (_lock)
             {
-                return;
-            }
-
-            _registration = Token.UnsafeRegister(static state => ((CancellationTokenLink)state!).OnCanceled(), this);
-            if (Volatile.Read(ref runtime._cancellationTokensDisposed) != 0)
-            {
-                Stop();
+                if (!_started)
+                {
+                    _started = true;
+                    Register();
+                }
             }
         }
 
-        public void Stop() => _registration.Unregister();
+        // Called before a message reuses the id. TryReset() unregisters everything, which Unregister() reports as false,
+        // since the source never reuses a registration id; a false for a canceled token only means the callback ran.
+        public bool TryReuse()
+        {
+            lock (_lock)
+            {
+                if (!_started || _registration.Unregister())
+                {
+                    if (_started)
+                    {
+                        Register();
+                    }
+
+                    return true;
+                }
+
+                if (Token.IsCancellationRequested)
+                {
+                    return true;
+                }
+
+                _isStale = true;
+                return false;
+            }
+        }
+
+        public void Stop()
+        {
+            lock (_lock)
+            {
+                _registration.Unregister();
+            }
+        }
+
+        // Must be called with the lock held.
+        private void Register()
+        {
+            _registration = Token.UnsafeRegister(static state => ((CancellationTokenLink)state!).OnCanceled(), this);
+            if (Volatile.Read(ref runtime._cancellationTokensDisposed) != 0)
+            {
+                _registration.Unregister();
+            }
+        }
 
         private void OnCanceled() => runtime.OnCancellationTokenCanceled(Id);
     }
