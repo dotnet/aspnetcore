@@ -37,6 +37,8 @@ public abstract partial class JSRuntime : IJSRuntime, IDisposable
     // The entries each call raised the count of, until JS replies, so "released" reaches JS after every call carrying the id.
     private readonly ConcurrentDictionary<long, List<OutgoingCancellationToken>> _cancellationTokenCalls = new();
     private int _cancellationTokenSweepGCCount;
+    // "released" messages queued but not sent yet; tests wait for zero.
+    private int _queuedReleasedMessages;
     private int _cancellationTokensDisposed;
     // Keyed by the id the JS side gave the AbortSignal. JS sends "released" only after every call carrying the id
     // has completed and its abort was acknowledged, so an entry may be removed only then.
@@ -358,7 +360,7 @@ public abstract partial class JSRuntime : IJSRuntime, IDisposable
 
         if (released is not null)
         {
-            SendCancellationTokenMessage(CancellationTokenReleasedIdentifier, released);
+            QueueReleasedMessage(released);
         }
     }
 
@@ -414,7 +416,25 @@ public abstract partial class JSRuntime : IJSRuntime, IDisposable
             released.Add(entry.Id);
         }
 
-        SendCancellationTokenMessage(CancellationTokenReleasedIdentifier, released);
+        QueueReleasedMessage(released);
+    }
+
+    // Never inline: WPF and WinForms WebView hosts send at once on the UI thread but queue sends from other threads,
+    // so an inline "released" could overtake a queued result or cancel carrying the id. A late "released" is harmless.
+    private void QueueReleasedMessage(List<long> ids)
+    {
+        Interlocked.Increment(ref _queuedReleasedMessages);
+        ThreadPool.UnsafeQueueUserWorkItem(static state =>
+        {
+            try
+            {
+                state.Runtime.SendCancellationTokenMessage(CancellationTokenReleasedIdentifier, state.Ids);
+            }
+            finally
+            {
+                Interlocked.Decrement(ref state.Runtime._queuedReleasedMessages);
+            }
+        }, (Runtime: this, Ids: ids), preferLocal: false);
     }
 
     // Swallows failures: they would otherwise surface from the caller's Cancel() or from an unrelated call.

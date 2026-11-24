@@ -524,9 +524,15 @@ public class CancellationTokenReferenceTest
         source.Dispose();
         CollectGarbage();
         await runtime.InvokeVoidAsync("other");
+        AssertSent(runtime, "receive", "other", Released(id));
+        Assert.Equal(0, runtime.Sent[2].AsyncHandle);
+
+        // Never on the sending thread: a WebView sends at once on its UI thread and would let it overtake queued messages.
+        Assert.NotEqual(runtime.Sent[1].ThreadId, runtime.Sent[2].ThreadId);
+
+        // Released once only.
         await runtime.InvokeVoidAsync("other");
         AssertSent(runtime, "receive", "other", Released(id), "other");
-        Assert.Equal(0, runtime.Sent[2].AsyncHandle);
     }
 
     [Fact]
@@ -717,7 +723,18 @@ public class CancellationTokenReferenceTest
     }
 
     private static void AssertSent(ReferenceRuntime runtime, params string[] expected)
-        => Assert.Equal(expected, runtime.Sent.Select(Describe));
+    {
+        WaitForQueuedReleasedMessages(runtime);
+        Assert.Equal(expected, runtime.Sent.Select(Describe));
+    }
+
+    // "released" is sent from the thread pool, so wait until every queued one is sent before comparing.
+    private static void WaitForQueuedReleasedMessages(JSRuntime runtime)
+    {
+        var field = typeof(JSRuntime).GetField("_queuedReleasedMessages",
+            System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.NonPublic)!;
+        Assert.True(SpinWait.SpinUntil(() => (int)field.GetValue(runtime)! == 0, TimeSpan.FromSeconds(10)));
+    }
 
     private static async Task AssertSentEventuallyAsync(ReferenceRuntime runtime, params string[] expected)
     {
@@ -897,7 +914,10 @@ public class CancellationTokenReferenceTest
         public CancelingValue Value { get; } = new(source);
     }
 
-    private sealed record SentMessage(long AsyncHandle, string Identifier, string? ArgsJson);
+    private sealed record SentMessage(long AsyncHandle, string Identifier, string? ArgsJson)
+    {
+        public int ThreadId { get; } = Environment.CurrentManagedThreadId;
+    }
 
     private sealed class ReferenceRuntime : JSInProcessRuntime
     {
