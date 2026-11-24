@@ -228,7 +228,7 @@ While it's typically better to use the project-specific build scripts, the repo-
 
 ### Native tool ABI test
 
-The Linux x64 package-build jobs run an ABI canary after the build completes.
+The Linux x64 package-build jobs run an ABI canary after the build completes for pull request builds only.
 An `afterBuild` step targeting the agent host launches a separate runtime-only
 container; Docker is not run inside the build container.
 The test mounts the `aspnetcoretools` native publish output read-only and runs
