@@ -150,9 +150,36 @@ public sealed partial class ValidationsGenerator : IIncrementalGenerator
             TypeFQN: typeSymbol.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat),
             Members: members,
             DisplayName: typeLiteralDisplayName,
-            HasResourceDisplayAttribute: typeHasResourceDisplay));
+            HasResourceDisplayAttribute: typeHasResourceDisplay,
+            InterfaceMemberNames: ExtractInterfaceMemberNames(typeSymbol, wellKnownTypes)));
 
         return true;
+    }
+
+    // Records which validatable members each implemented interface declares, without registering the interfaces as validatable types.
+    // The names are used only to query interface metadata that another resolver provides, for example one generated in another assembly.
+    private static ImmutableArray<(string, ImmutableArray<string>)> ExtractInterfaceMemberNames(ITypeSymbol typeSymbol, WellKnownTypes wellKnownTypes)
+    {
+        var builder = ImmutableArray.CreateBuilder<(string, ImmutableArray<string>)>();
+        foreach (var @interface in typeSymbol.AllInterfaces)
+        {
+            if (@interface.IsExemptType(wellKnownTypes) ||
+                @interface.IsInaccessibleFromGeneratedCode() ||
+                @interface.TypeArguments.Any(t => t is ITypeParameterSymbol))
+            {
+                continue;
+            }
+
+            var names = ExtractValidatableMembers(@interface, wellKnownTypes, new HashSet<ValidatableType>(ValidatableTypeComparer.Instance), [], hasValidatableUnionCases: false, skippedUnionCaseTypes: [])
+                .Select(m => m.Name)
+                .ToImmutableArray();
+            if (!names.IsEmpty)
+            {
+                builder.Add((@interface.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat), names));
+            }
+        }
+
+        return builder.ToImmutable();
     }
 
     internal static bool ShouldSkipProperty(

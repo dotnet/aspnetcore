@@ -1,7 +1,10 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System;
+using System.Collections.Generic;
 using System.Collections.Immutable;
+using System.Linq;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.Text;
 using System.Text;
@@ -106,6 +109,16 @@ namespace Microsoft.Extensions.Validation.Generated
         {
             validatableParameterInfo = null;
             return false;
+        }
+    }
+
+    {{GeneratedCodeAttribute}}
+    file static class GeneratedInterfaceMemberNames
+    {
+        public static string[]? Get(global::System.Type type)
+        {
+{{EmitInterfaceMemberNames(validatableTypes)}}
+            return null;
         }
     }
 
@@ -347,6 +360,29 @@ namespace Microsoft.Extensions.Validation.Generated
         }
 
         return sb.ToString();
+    }
+
+    private static string EmitInterfaceMemberNames(ImmutableArray<ValidatableType> validatableTypes)
+    {
+        var sw = new StringWriter();
+        var cw = new CodeWriter(sw, baseIndent: 3);
+        var emitted = new HashSet<string>(StringComparer.Ordinal);
+        foreach (var validatableType in validatableTypes)
+        {
+            foreach (var (interfaceFQN, memberNames) in validatableType.InterfaceMemberNames.IsDefault ? [] : validatableType.InterfaceMemberNames)
+            {
+                if (!emitted.Add(interfaceFQN))
+                {
+                    continue;
+                }
+
+                cw.WriteLine($"if (type == typeof({interfaceFQN}))");
+                cw.StartBlock();
+                cw.WriteLine($"return [{string.Join(", ", memberNames.Select(n => $"\"{n}\""))}];");
+                cw.EndBlock();
+            }
+        }
+        return sw.ToString();
     }
 
     private static string EmitTypeChecks(ImmutableArray<ValidatableType> validatableTypes)

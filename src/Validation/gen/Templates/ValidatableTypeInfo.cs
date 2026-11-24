@@ -110,9 +110,18 @@ file abstract class ValidatableTypeInfo : ValidatableInfo, global::Microsoft.Ext
         var actualType = value.GetType();
 
         // Then validate inherited members
-        foreach (var superTypeInfo in GetSuperTypeInfos(actualType, context.ValidationOptions))
+        foreach (var inheritedMember in GetInheritedMembers(actualType, context.ValidationOptions))
         {
-            tracker = superTypeInfo.ValidateMembers(value, tracker, cancellationToken);
+            var memberContext = tracker.NextContext();
+
+            try
+            {
+                tracker.Track(inheritedMember.ValidateAsync(value, memberContext, cancellationToken));
+            }
+            catch (global::System.Exception ex)
+            {
+                tracker.Track(global::System.Threading.Tasks.Task.FromException(ex));
+            }
         }
 
         var clonedContextsHasErrors = await tracker.CompleteAsync();
@@ -169,9 +178,9 @@ file abstract class ValidatableTypeInfo : ValidatableInfo, global::Microsoft.Ext
         var actualType = value.GetType();
 
         // Then validate inherited members
-        foreach (var superTypeInfo in GetSuperTypeInfos(actualType, context.ValidationOptions))
+        foreach (var inheritedMember in GetInheritedMembers(actualType, context.ValidationOptions))
         {
-            superTypeInfo.ValidateMembersSynchronously(value, context);
+            inheritedMember.Validate(value, context);
         }
 
         var currentCount = context.ValidationErrors?.Count ?? 0;
@@ -299,44 +308,73 @@ file abstract class ValidatableTypeInfo : ValidatableInfo, global::Microsoft.Ext
         }
     }
 
-    private global::System.Collections.Generic.IEnumerable<global::Microsoft.Extensions.Validation.Generated.ValidatableTypeInfo> GetSuperTypeInfos(global::System.Type actualType, global::Microsoft.Extensions.Validation.ValidationOptions options)
+    private static readonly global::Microsoft.Extensions.Validation.Generated.GeneratedValidatableInfoResolver s_localResolver = new();
+
+    private global::System.Collections.Generic.IEnumerable<global::Microsoft.Extensions.Validation.IValidatablePropertyInfo> GetInheritedMembers(global::System.Type actualType, global::Microsoft.Extensions.Validation.ValidationOptions options)
     {
         foreach (var @interface in _implementedInterfaces)
         {
-            if (TryGetValidatableTypeInfo(@interface, actualType, options) is { } superTypeInfo)
+            foreach (var member in GetDeclaredMembers(@interface, actualType, options))
             {
-                yield return superTypeInfo;
+                yield return member;
             }
         }
 
         var baseType = Type.BaseType;
         while (baseType is not null)
         {
-            if (TryGetValidatableTypeInfo(baseType, actualType, options) is { } superTypeInfo)
+            foreach (var member in GetDeclaredMembers(baseType, actualType, options))
             {
-                yield return superTypeInfo;
+                yield return member;
             }
 
             baseType = baseType.BaseType;
         }
 
-        static ValidatableTypeInfo? TryGetValidatableTypeInfo(global::System.Type superType, global::System.Type actualType, global::Microsoft.Extensions.Validation.ValidationOptions options)
+        static global::System.Collections.Generic.IEnumerable<global::Microsoft.Extensions.Validation.IValidatablePropertyInfo> GetDeclaredMembers(global::System.Type superType, global::System.Type actualType, global::Microsoft.Extensions.Validation.ValidationOptions options)
         {
-            if (!superType.IsAssignableFrom(actualType))
+            // The first resolver that provides metadata for the super type wins.
+            if (!superType.IsAssignableFrom(actualType) ||
+                !options.TryGetValidatableTypeInfo(superType, out var resolved))
             {
-                return null;
+                yield break;
             }
 
-            foreach (var resolver in options.Resolvers)
+            // The metadata was generated in this assembly, so its members can be used directly.
+            if (resolved is ValidatableTypeInfo generatedHere)
             {
-                if (resolver.TryGetValidatableTypeInfo(superType, out var validatableTypeInfo) &&
-                    validatableTypeInfo is ValidatableTypeInfo concrete)
+                for (var i = 0; i < generatedHere._membersCount; i++)
                 {
-                    return concrete;
+                    yield return generatedHere.Members[i];
+                }
+
+                yield break;
+            }
+
+            // The metadata was generated in another assembly or comes from a custom resolver.
+            // Its members are only reachable through the public contract, so look up each member
+            // that this assembly's generator knows the super type declares.
+            if (s_localResolver.TryGetValidatableTypeInfo(superType, out var localCopy) &&
+                localCopy is ValidatableTypeInfo localTypeInfo)
+            {
+                for (var i = 0; i < localTypeInfo._membersCount; i++)
+                {
+                    if (resolved.TryFindProperty(localTypeInfo.Members[i].Name, options, out var member))
+                    {
+                        yield return member;
+                    }
                 }
             }
-
-            return null;
+            else if (global::Microsoft.Extensions.Validation.Generated.GeneratedInterfaceMemberNames.Get(superType) is { } interfaceMemberNames)
+            {
+                foreach (var name in interfaceMemberNames)
+                {
+                    if (resolved.TryFindProperty(name, options, out var member))
+                    {
+                        yield return member;
+                    }
+                }
+            }
         }
     }
 
