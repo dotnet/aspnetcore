@@ -7,6 +7,7 @@ using System.Diagnostics;
 using System.Globalization;
 using System.IO;
 using System.Runtime.InteropServices;
+using System.Threading;
 using System.Threading.Tasks;
 using System.Xml;
 using Microsoft.Extensions.Logging;
@@ -70,6 +71,7 @@ public static partial class H2SpecCommands
         {
             FileName = toolLocation,
             RedirectStandardOutput = true,
+            InheritedHandles = [],
             Arguments = "--strict --dryrun",
             WindowStyle = ProcessWindowStyle.Hidden,
             CreateNoWindow = true,
@@ -205,6 +207,7 @@ public static partial class H2SpecCommands
             process.StartInfo.FileName = GetToolLocation();
             process.StartInfo.RedirectStandardOutput = true;
             process.StartInfo.RedirectStandardError = true;
+            process.StartInfo.InheritedHandles = [];
             process.StartInfo.Arguments = $"{testId} -p {port.ToString(CultureInfo.InvariantCulture)} --strict -v -j {tempFile} --timeout {TimeoutSeconds}"
                 + (https ? " --tls --insecure" : "");
             process.StartInfo.WindowStyle = ProcessWindowStyle.Hidden;
@@ -224,30 +227,18 @@ public static partial class H2SpecCommands
                     logger.LogError(args.Data);
                 }
             };
-            var exitedTcs = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
-            process.EnableRaisingEvents = true; // Enables Exited
-            process.Exited += (_, args) =>
-            {
-                logger.LogDebug("H2spec has exited.");
-                exitedTcs.TrySetResult();
-            };
-
             Assert.True(process.Start());
             process.BeginOutputReadLine(); // Starts OutputDataReceived
             process.BeginErrorReadLine(); // Starts ErrorDataReceived
 
-            if (await Task.WhenAny(exitedTcs.Task, Task.Delay(TimeSpan.FromSeconds(TimeoutSeconds * 2))) != exitedTcs.Task)
+            using CancellationTokenSource timeoutCts = new(TimeSpan.FromSeconds(TimeoutSeconds * 2));
+            ProcessExitStatus status = await process.SafeHandle.WaitForExitOrKillOnCancellationAsync(timeoutCts.Token);
+            if (status.Canceled)
             {
-                try
-                {
-                    process.Kill();
-                }
-                catch (Exception ex)
-                {
-                    throw new TimeoutException($"h2spec didn't exit within {TimeoutSeconds * 2} seconds.", ex);
-                }
                 throw new TimeoutException($"h2spec didn't exit within {TimeoutSeconds * 2} seconds.");
             }
+
+            logger.LogDebug("H2spec has exited.");
 
             var results = File.ReadAllText(tempFile);
             File.Delete(tempFile);
