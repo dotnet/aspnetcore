@@ -122,7 +122,7 @@ post-steps:
         if (stoppedOutputStarts.length !== 2) {
           return false;
         }
-        const safeOutputCallIds = safeOutputStarts.map(event => event.data?.toolCallId);
+        const safeOutputCallIds = stoppedOutputStarts.map(event => event.data?.toolCallId);
         if (safeOutputCallIds.some(toolCallId =>
             typeof toolCallId !== 'string' || toolCallId.length === 0) ||
             new Set(safeOutputCallIds).size !== safeOutputCallIds.length) {

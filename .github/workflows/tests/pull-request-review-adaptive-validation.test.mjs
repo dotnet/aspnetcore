@@ -359,9 +359,9 @@ try {
     console.log(`Validated ${cliName}.`);
   }
 
-  const missingTool = safeOutputCall('diagnostic', 'safeoutputs-missing_tool', {
-    reason: 'A separate tool is unavailable.',
-  });
+  const missingToolArguments = { reason: 'A separate tool is unavailable.' };
+  const missingTool = safeOutputCall('diagnostic', 'safeoutputs-missing_tool', missingToolArguments);
+  const failedMissingTool = safeOutputCall('diagnostic', 'safeoutputs-missing_tool', missingToolArguments, false);
   const workerEvents = hostedWorker();
   const workerBeforeReadCompletes = workerEvents.slice(0, -1);
   const readCompletion = workerEvents.at(-1);
@@ -377,13 +377,20 @@ try {
       /read_agent.*did not complete before publication/],
     ['missing tool without publication', [...workerEvents, ...missingTool],
       /No native safe-output publication call was recorded/],
-    ...['report_incomplete', 'missing_data'].map(type => [
-      `stopped with separate diagnostic and ${type}`,
-      [...missingTool, ...stoppedComment, ...safeOutputCall('signal', `safeoutputs-${type}`, { reason: stopReason })],
-      null,
-    ]),
+    ...['report_incomplete', 'missing_data'].flatMap(type => {
+      const signal = safeOutputCall('signal', `safeoutputs-${type}`, { reason: stopReason });
+      return [
+        [`stopped with separate diagnostic and ${type}`, [...missingTool, ...stoppedComment, ...signal], null],
+        [`stopped with failed diagnostic and ${type}`,
+          [...failedMissingTool, ...stoppedComment, ...signal], null],
+        [`stopped with uncompleted diagnostic and ${type}`, [missingTool[0], ...stoppedComment, ...signal], null],
+      ];
+    }),
     ['stopped with matching missing tool as the only signal',
       [...stoppedComment, ...safeOutputCall('signal', 'safeoutputs-missing_tool', { reason: stopReason })], null],
+    ['stopped with failed matching missing tool as the only signal',
+      [...stoppedComment, ...safeOutputCall('signal', 'safeoutputs-missing_tool', { reason: stopReason }, false)],
+      /Expected 1 per-guide review worker\(s\), but recorded 0/],
     ['stopped with mismatched missing tool as the only signal', [...stoppedComment, ...missingTool],
       /Expected 1 per-guide review worker\(s\), but recorded 0/],
     ['stopped with duplicate explicit signals',
