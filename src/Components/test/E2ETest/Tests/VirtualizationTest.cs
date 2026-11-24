@@ -446,7 +446,7 @@ public class VirtualizationTest : ServerTestBase<ToggleExecutionModeServerFixtur
         input.SendKeys("fizz");
         Browser.Contains("334 rows", () => Browser.Exists(By.Id("visible-count")).Text);
 
-        js.ExecuteScript("document.getElementById('filter-list').scrollTop = 3000;");
+        ScrollContainerWithWheelTo(js, Browser.Exists(By.Id("filter-list")), 3000);
         Browser.True(
             () => (long)js.ExecuteScript("return Math.round(document.getElementById('filter-list').scrollTop)") >= 2900,
             TimeSpan.FromSeconds(10));
@@ -467,7 +467,7 @@ public class VirtualizationTest : ServerTestBase<ToggleExecutionModeServerFixtur
         Browser.Exists(By.Id("back-to-top")).Click();
 
         Browser.True(
-            () => Browser.Exists(By.Id("filter-row-0")).Displayed,
+            () => Browser.FindElements(By.Id("filter-row-0")).Any(element => element.Displayed),
             TimeSpan.FromSeconds(10),
             "Back to top should render the first rows instead of leaving the viewport blank");
     }
@@ -3599,6 +3599,12 @@ public class VirtualizationTest : ServerTestBase<ToggleExecutionModeServerFixtur
             relTopBefore,
             "None mode at bottom: same item should stay at same position after small append",
             driftTolerance: 2);
+
+        js.ExecuteScript("arguments[0].scrollTop = 0;", container);
+        Browser.True(
+            () => container.FindElements(By.CssSelector(".item[data-index='0']")).Any(item => item.Displayed),
+            TimeSpan.FromSeconds(10),
+            "Scripted scroll after append should render the first item");
     }
 
     private void ScrollNearTopAndWaitForRender(IWebElement container, IJavaScriptExecutor js)
