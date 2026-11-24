@@ -115,7 +115,11 @@ post-steps:
           !event.data?.parentToolCallId &&
           typeof event.data?.toolName === 'string' &&
           event.data.toolName.startsWith('safeoutputs-'));
-        if (safeOutputStarts.length !== 2) {
+        const stoppedOutputStarts = safeOutputStarts.some(event =>
+          ['safeoutputs-report_incomplete', 'safeoutputs-missing_data'].includes(event.data.toolName))
+          ? safeOutputStarts.filter(event => event.data.toolName !== 'safeoutputs-missing_tool')
+          : safeOutputStarts;
+        if (stoppedOutputStarts.length !== 2) {
           return false;
         }
         const safeOutputCallIds = safeOutputStarts.map(event => event.data?.toolCallId);
@@ -134,9 +138,9 @@ post-steps:
             matchingCompletions.some(event => event.data?.success !== true)) {
           return false;
         }
-        const statusComments = safeOutputStarts.filter(event =>
+        const statusComments = stoppedOutputStarts.filter(event =>
           event.data.toolName === 'safeoutputs-add_comment');
-        const incompleteCalls = safeOutputStarts.filter(event =>
+        const incompleteCalls = stoppedOutputStarts.filter(event =>
           [
             'safeoutputs-report_incomplete',
             'safeoutputs-missing_data',
@@ -351,7 +355,8 @@ post-steps:
         const firstPublicationIndex = events.findIndex(event =>
           isTopLevelToolStart(event) &&
           typeof event.data?.toolName === 'string' &&
-          event.data.toolName.startsWith('safeoutputs-'));
+          event.data.toolName.startsWith('safeoutputs-') &&
+          event.data.toolName !== 'safeoutputs-missing_tool');
         if (expectedWorkerCount === 0) {
           violations.push(
             'A review with no expected workers must publish a valid status-only stopped result.');
@@ -753,7 +758,12 @@ safe-outputs:
             const reviews = count('submit_pull_request_review');
             const noop = count('noop');
             const statusComments = output.items.filter(item => item.type === 'add_comment');
-            const incompleteItems = output.items.filter(item =>
+            const publicationItems = output.items.filter(item => item.type !== 'missing_tool');
+            const stoppedItems = publicationItems.some(item =>
+              ['report_incomplete', 'missing_data'].includes(item.type))
+              ? publicationItems
+              : output.items;
+            const incompleteItems = stoppedItems.filter(item =>
               ['report_incomplete', 'missing_data', 'missing_tool'].includes(item.type));
             const incompleteReason = incompleteItems.length === 1 &&
               typeof incompleteItems[0].reason === 'string'
@@ -766,10 +776,10 @@ safe-outputs:
                   `Review not published (${status}): ${incompleteReason}\n\nNo partial findings were published.`)
               : [];
             const findings = comments >= 1 && comments <= 5 && reviews === 1 &&
-              output.items.length === comments + 1;
-            const clean = noop === 1 && output.items.length === 1;
+              publicationItems.length === comments + 1;
+            const clean = noop === 1 && publicationItems.length === 1;
             const stopped = incompleteItems.length === 1 && statusComments.length === 1 &&
-              output.items.length === 2 && typeof statusComments[0].body === 'string' &&
+              stoppedItems.length === 2 && typeof statusComments[0].body === 'string' &&
               expectedStatusBodies.includes(statusComments[0].body);
             if (!findings && !clean && !stopped) {
               core.setFailed('Incomplete or partial review output cannot be published.');
@@ -1027,6 +1037,7 @@ so the transcript verifier can attribute each required follow-up collection.
 
 No live GitHub tool is available to the agent;
 the trusted safe-output dependency checks the live head after agent completion. Do not execute target code.
+The `bash`, `shell`, and `powershell` tools are intentionally disabled for the coordinator too, so do not probe them (including for bundle SHA checks) or invoke `missing_tool` for them.
 
 Determine the skill's structured result before selecting the safe output below. Your final
 assistant message must contain the complete structured result required by the skill, starting
