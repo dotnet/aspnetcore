@@ -653,6 +653,22 @@ describe('DomSync', () => {
     expect(newDialog).toBe(oldDialog);
     expect(newDialog.textContent).toBe('client content');
   });
+
+  test('should not match a dynamically permanent reconnect dialog with a different id', () => {
+    const destination = makeExistingContent(`<dialog id="components-reconnect-modal"><span>client content</span></dialog>`);
+    const newContent = makeNewContent(`<dialog id="other-dialog">server content</dialog><dialog id="components-reconnect-modal">new reconnect content</dialog>`);
+    const oldDialog = toNodeArray(destination)[0] as HTMLDialogElement;
+    new UserSpecifiedDisplay(oldDialog, document);
+
+    synchronizeDomContent(destination, newContent);
+
+    const dialogs = toNodeArray(destination).filter(node => node instanceof HTMLDialogElement) as HTMLDialogElement[];
+    expect(dialogs).toHaveLength(2);
+    expect(dialogs[0].id).toBe('other-dialog');
+    expect(dialogs[0].textContent).toBe('server content');
+    expect(dialogs[1]).toBe(oldDialog);
+    expect(dialogs[1].textContent).toBe('client content');
+  });
 });
 
 test('should remove value if neither source nor destination has one', () => {
