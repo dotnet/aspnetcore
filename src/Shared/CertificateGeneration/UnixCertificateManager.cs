@@ -679,14 +679,14 @@ internal sealed partial class UnixCertificateManager : CertificateManager
     /// </remarks>
     private static bool IsCertificateInNssDb(string nickname, NssDb nssDb)
     {
-        using SafeFileHandle nullHandle = File.OpenNullHandle();
         var startInfo = nssDb.CreateCheckProcessStartInfo(nickname);
-        startInfo.StandardOutputHandle = nullHandle;
-        startInfo.StandardErrorHandle = nullHandle;
+        startInfo.RedirectStandardOutput = true;
+        startInfo.RedirectStandardError = true;
 
         try
         {
-            return Process.Run(startInfo).ExitCode == 0;
+            var processOutput = Process.RunAndCaptureText(startInfo);
+            return nssDb.IsTrusted(nickname, processOutput.ExitStatus.ExitCode, processOutput.StandardOutput);
         }
         catch (Exception ex)
         {
@@ -968,20 +968,11 @@ internal sealed partial class UnixCertificateManager : CertificateManager
 
         public abstract string BrowserFamily { get; }
 
-        public abstract IReadOnlyList<string> CheckArguments { get; }
-
         public abstract string TrustUsage { get; }
 
-        internal ProcessStartInfo CreateCheckProcessStartInfo(string nickname)
-        {
-            var startInfo = CreateProcessStartInfo(nickname);
-            foreach (var argument in CheckArguments)
-            {
-                startInfo.ArgumentList.Add(argument);
-            }
+        internal abstract ProcessStartInfo CreateCheckProcessStartInfo(string nickname);
 
-            return startInfo;
-        }
+        internal abstract bool IsTrusted(string nickname, int exitCode, string standardOutput);
 
         internal ProcessStartInfo CreatePresenceCheckProcessStartInfo(string nickname)
         {
@@ -1023,7 +1014,16 @@ internal sealed partial class UnixCertificateManager : CertificateManager
             return false;
         }
 
-        private ProcessStartInfo CreateProcessStartInfo(string nickname)
+        protected ProcessStartInfo CreateProcessStartInfo(string nickname)
+        {
+            var startInfo = CreateProcessStartInfo();
+            startInfo.ArgumentList.Add("-n");
+            startInfo.ArgumentList.Add(nickname);
+
+            return startInfo;
+        }
+
+        protected ProcessStartInfo CreateProcessStartInfo()
         {
             var startInfo = new ProcessStartInfo(CertUtilCommand)
             {
@@ -1031,8 +1031,6 @@ internal sealed partial class UnixCertificateManager : CertificateManager
             };
             startInfo.ArgumentList.Add("-d");
             startInfo.ArgumentList.Add($"sql:{Path}");
-            startInfo.ArgumentList.Add("-n");
-            startInfo.ArgumentList.Add(nickname);
 
             return startInfo;
         }
@@ -1097,13 +1095,23 @@ internal sealed partial class UnixCertificateManager : CertificateManager
     private sealed class ChromiumNssDb(string path) : NssDb(path)
     {
         private const string OverridePrefixValue = "chromium=";
-        private static readonly IReadOnlyList<string> CheckArgumentValues = ["-V", "-u", "V"];
 
         public override string BrowserFamily => "Chromium";
 
-        public override IReadOnlyList<string> CheckArguments => CheckArgumentValues;
-
         public override string TrustUsage => "P";
+
+        internal override ProcessStartInfo CreateCheckProcessStartInfo(string nickname)
+        {
+            // -V will validate that a cert can be used for a given purpose, in this case, server verification.
+            var startInfo = CreateProcessStartInfo(nickname);
+            startInfo.ArgumentList.Add("-V");
+            startInfo.ArgumentList.Add("-u");
+            startInfo.ArgumentList.Add("V");
+
+            return startInfo;
+        }
+
+        internal override bool IsTrusted(string nickname, int exitCode, string standardOutput) => exitCode == 0;
 
         public static bool TryRemoveOverridePrefix(string path, out string unprefixedPath)
             => TryRemovePrefix(path, OverridePrefixValue, out unprefixedPath);
@@ -1130,15 +1138,46 @@ internal sealed partial class UnixCertificateManager : CertificateManager
     {
         private const string OverridePrefixValue = "firefox=";
         private const string ProfilesIniFileName = "profiles.ini";
-        // L validates the certificate as an SSL CA, including the "C" trust required by Firefox.
-        private static readonly IReadOnlyList<string> CheckArgumentValues = ["-V", "-u", "L"];
 
         public override string BrowserFamily => "Firefox";
 
-        public override IReadOnlyList<string> CheckArguments => CheckArgumentValues;
-
         // Firefox doesn't seem to respect the more correct "trusted peer" (P) usage.
         public override string TrustUsage => "C";
+
+        // certutil -V can't confirm the "C" trust Firefox requires because the development certificate isn't a CA,
+        // so list the database and read the certificate's SSL trust flags instead.
+        internal override ProcessStartInfo CreateCheckProcessStartInfo(string nickname)
+        {
+            var startInfo = CreateProcessStartInfo();
+            startInfo.ArgumentList.Add("-L");
+
+            return startInfo;
+        }
+
+        internal override bool IsTrusted(string nickname, int exitCode, string standardOutput)
+        {
+            if (exitCode != 0)
+            {
+                return false;
+            }
+
+            // Each certificate is listed as "<nickname> <ssl>,<email>,<object signing>".
+            foreach (var line in standardOutput.AsSpan().EnumerateLines())
+            {
+                var entry = line.TrimEnd();
+                var separatorIndex = entry.LastIndexOf(' ');
+                if (separatorIndex < 0 || !entry[..separatorIndex].TrimEnd().SequenceEqual(nickname))
+                {
+                    continue;
+                }
+
+                var trustAttributes = entry[(separatorIndex + 1)..];
+                var sslFlagsLength = trustAttributes.IndexOf(',');
+                return sslFlagsLength >= 0 && trustAttributes[..sslFlagsLength].Contains('C');
+            }
+
+            return false;
+        }
 
         public static bool TryRemoveOverridePrefix(string path, out string unprefixedPath)
             => TryRemovePrefix(path, OverridePrefixValue, out unprefixedPath);

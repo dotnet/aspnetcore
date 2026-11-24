@@ -2,6 +2,8 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Diagnostics;
+using System.Globalization;
+using System.Text;
 
 using Microsoft.AspNetCore.Certificates.Generation;
 
@@ -9,6 +11,9 @@ namespace Microsoft.AspNetCore.Internal.Tests;
 
 public sealed class UnixCertificateManagerTests : IDisposable
 {
+    // Real development certificate nicknames are 61 characters, overflowing certutil's 60-column nickname field.
+    private const string Nickname = "aspnetcore-localhost-E2BCB3BEB2E06D5F077CA93701892553609702B9";
+
     private readonly string _homeDirectory;
 
     public UnixCertificateManagerTests()
@@ -241,7 +246,7 @@ public sealed class UnixCertificateManagerTests : IDisposable
 
         AssertProcessStartInfo(
             nssDb.CreateCheckProcessStartInfo(nickname),
-            "-d", $"sql:{profileDirectory}", "-n", nickname, "-V", "-u", "L");
+            "-d", $"sql:{profileDirectory}", "-L");
         AssertProcessStartInfo(
             nssDb.CreatePresenceCheckProcessStartInfo(nickname),
             "-d", $"sql:{profileDirectory}", "-n", nickname, "-L");
@@ -278,6 +283,60 @@ public sealed class UnixCertificateManagerTests : IDisposable
             "-d", $"sql:{profileDirectory}", "-n", nickname, "-D");
     }
 
+    [Theory]
+    [InlineData("C,,", true)]
+    [InlineData("CTu,u,u", true)]
+    [InlineData("P,,", false)]
+    [InlineData(",,", false)]
+    [InlineData(",C,C", false)]
+    public void FirefoxIsTrusted_RequiresTrustedCaSslFlag(string trustAttributes, bool expected)
+    {
+        var nssDb = CreateFirefoxNssDb();
+        var output = FormatCertUtilList(("Other CA", "C,,"), (Nickname, trustAttributes));
+
+        Assert.Equal(expected, nssDb.IsTrusted(Nickname, exitCode: 0, output));
+    }
+
+    [Fact]
+    public void FirefoxIsTrusted_ReturnsFalseWhenNicknameIsNotListed()
+    {
+        var nssDb = CreateFirefoxNssDb();
+        var output = FormatCertUtilList(($"{Nickname}0", "C,,"), (Nickname[..^1], "C,,"));
+
+        Assert.False(nssDb.IsTrusted(Nickname, exitCode: 0, output));
+    }
+
+    [Fact]
+    public void FirefoxIsTrusted_MatchesNicknameContainingSpaces()
+    {
+        var nssDb = CreateFirefoxNssDb();
+        var output = FormatCertUtilList(("nickname with spaces", "C,,"));
+
+        Assert.True(nssDb.IsTrusted("nickname with spaces", exitCode: 0, output));
+    }
+
+    [Fact]
+    public void FirefoxIsTrusted_ReturnsFalseWhenCertUtilFails()
+    {
+        var nssDb = CreateFirefoxNssDb();
+        var output = FormatCertUtilList((Nickname, "C,,"));
+
+        Assert.False(nssDb.IsTrusted(Nickname, exitCode: 255, output));
+    }
+
+    [Theory]
+    [InlineData(0, true)]
+    [InlineData(255, false)]
+    public void ChromiumIsTrusted_UsesValidationExitCode(int exitCode, bool expected)
+    {
+        var nssDb = Assert.Single(UnixCertificateManager.NssDb.Resolve(
+            _homeDirectory,
+            xdgConfigHome: null,
+            nssDbOverride: $"chromium={CreateDirectory("chromium")}"));
+
+        Assert.Equal(expected, nssDb.IsTrusted(Nickname, exitCode, standardOutput: string.Empty));
+    }
+
     public void Dispose()
     {
         Directory.Delete(_homeDirectory, recursive: true);
@@ -290,17 +349,37 @@ public sealed class UnixCertificateManagerTests : IDisposable
         return path;
     }
 
+    private UnixCertificateManager.NssDb CreateFirefoxNssDb()
+        => Assert.Single(UnixCertificateManager.NssDb.Resolve(
+            _homeDirectory,
+            xdgConfigHome: null,
+            nssDbOverride: $"firefox={CreateDirectory("firefox")}"));
+
+    // Mirrors the "%-60s %-5s" layout certutil uses when listing an NSS database.
+    private static string FormatCertUtilList(params (string Nickname, string TrustAttributes)[] entries)
+    {
+        var builder = new StringBuilder();
+        builder.AppendLine();
+        builder.AppendLine(CultureInfo.InvariantCulture, $"{"Certificate Nickname",-60} {"Trust Attributes",-5}");
+        builder.AppendLine(CultureInfo.InvariantCulture, $"{"",-60} {"SSL,S/MIME,JAR/XPI",-5}");
+        builder.AppendLine();
+        foreach (var (nickname, trustAttributes) in entries)
+        {
+            builder.AppendLine(CultureInfo.InvariantCulture, $"{nickname,-60} {trustAttributes,-5}");
+        }
+
+        return builder.ToString();
+    }
+
     private static void AssertFirefoxNssDb(UnixCertificateManager.NssDb nssDb)
     {
         Assert.Equal("Firefox", nssDb.BrowserFamily);
-        Assert.Equal(["-V", "-u", "L"], nssDb.CheckArguments);
         Assert.Equal("C", nssDb.TrustUsage);
     }
 
     private static void AssertChromiumNssDb(UnixCertificateManager.NssDb nssDb)
     {
         Assert.Equal("Chromium", nssDb.BrowserFamily);
-        Assert.Equal(["-V", "-u", "V"], nssDb.CheckArguments);
         Assert.Equal("P", nssDb.TrustUsage);
     }
 
