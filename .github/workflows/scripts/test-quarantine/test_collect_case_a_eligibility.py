@@ -3031,6 +3031,78 @@ def test_partial_other_method_unquarantine_does_not_make_test_case_b(module=None
         assert result["eligible_failure_builds"] == [101, 102], result
 
 
+def test_method_issue_retargets_remain_available_for_case_b_reuse(module=None):
+    module = module or MODULE
+    with tempfile.TemporaryDirectory() as directory:
+        root = pathlib.Path(directory)
+        initialize_git_repository(root)
+        create_project(root, "Sample.Tests", {"SampleTests.cs": source()})
+        commit(root, "Add test", "2026-08-01T00:00:00Z")
+
+        file_path = root / TEST_PATH
+        file_path.write_text(source(QUARANTINE_ATTRIBUTE), encoding="utf-8")
+        commit(root, "Quarantine under issue 1", "2026-08-02T00:00:00Z")
+        for issue, day in ((2, "03"), (3, "04")):
+            file_path.write_text(
+                source(QUARANTINE_ATTRIBUTE.replace("/issues/1", f"/issues/{issue}")),
+                encoding="utf-8",
+            )
+            commit(root, f"Retarget quarantine to issue {issue}", f"2026-08-{day}T00:00:00Z")
+        file_path.write_text(source(), encoding="utf-8")
+        commit(root, "Unquarantine", "2026-08-05T00:00:00Z")
+        removal_commit = run_output(root, "git", "rev-parse", "HEAD")
+
+        result = collect_result(root, evidence(), module=module)
+        assert result["status"] == "ineligible", result
+        assert result["originating_case"] == "case-b", result
+        assert result["cutoff"]["commit"] == removal_commit, result
+        assert result["case_b_issue"] == 3, result
+        assert result["case_b_verified_issues"] == [1, 2, 3], result
+
+
+def test_data_issue_retargets_remain_available_for_case_b_reuse(module=None):
+    module = module or MODULE
+    with tempfile.TemporaryDirectory() as directory:
+        root = pathlib.Path(directory)
+        initialize_git_repository(root)
+        create_project(
+            root,
+            "Sample.Tests",
+            {"SampleTests.cs": theory_source("[InlineData(HttpProtocols.Http3)]")},
+        )
+        commit(root, "Add theory row", "2026-08-01T00:00:00Z")
+
+        file_path = root / TEST_PATH
+        for issue, day in ((1, "02"), (2, "03"), (3, "04")):
+            file_path.write_text(
+                theory_source(
+                    '[QuarantinedTestData('
+                    f'"https://github.com/dotnet/aspnetcore/issues/{issue}", '
+                    "OperatingSystems.Linux, HttpProtocols.Http3)]",
+                ),
+                encoding="utf-8",
+            )
+            commit(root, f"Quarantine row under issue {issue}", f"2026-08-{day}T00:00:00Z")
+        file_path.write_text(
+            theory_source("[InlineData(HttpProtocols.Http3)]"),
+            encoding="utf-8",
+        )
+        commit(root, "Unquarantine theory row", "2026-08-05T00:00:00Z")
+        removal_commit = run_output(root, "git", "rev-parse", "HEAD")
+
+        result = collect_result(
+            root,
+            evidence(test_name=THEORY_TEST_NAME),
+            test_name=THEORY_TEST_NAME,
+            module=module,
+        )
+        assert result["status"] == "ineligible", result
+        assert result["originating_case"] == "case-b", result
+        assert result["cutoff"]["commit"] == removal_commit, result
+        assert result["case_b_issue"] == 3, result
+        assert result["case_b_verified_issues"] == [1, 2, 3], result
+
+
 def test_partial_inherited_runner_sibling_type_removal_is_case_b(module=None):
     module = module or MODULE
     with tempfile.TemporaryDirectory() as directory:
@@ -4839,6 +4911,8 @@ def main():
     test_method_introduced_after_namespace_change()
     test_conditional_server_runner_is_case_b()
     test_unrelated_file_edit_does_not_reset_cutoff()
+    test_method_issue_retargets_remain_available_for_case_b_reuse()
+    test_data_issue_retargets_remain_available_for_case_b_reuse()
     for case in ("remove-include", "include-remove", "uncertain-include", "uncertain-remove-include"):
         test_compile_membership_order(case)
     for case in ("wildcard", "block", "prefix", "assembly", "excluded", "excluded-namespace", "unknown"):
