@@ -106,6 +106,13 @@ internal sealed partial class CacheViewService : IDisposable
                     $"Set a unique {nameof(CacheView.CacheKey)} on each CacheView so every CacheView on the page has a distinct cache key.");
             }
 
+            if (cacheView.RenderState is { CaptureCompletion: not null } pendingCapture && pendingCapture.Key == key)
+            {
+                // The creator's capture must survive re-renders until HTML is emitted.
+                pendingCapture.Content = cacheView.ChildContent;
+                return pendingCapture;
+            }
+
             await ApplyDuplicateResolutionAsync(state, key, existing.Task);
             return state;
         }

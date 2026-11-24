@@ -53,6 +53,85 @@ public class EndpointHtmlRendererTest
     }
 
     [Fact]
+    public async Task CacheView_AsyncParentRerendersBeforeHtmlEmission_PersistsCapturedContent()
+    {
+        var services = CreateDefaultServiceCollection();
+        services.AddLogging();
+        services.AddSingleton<ICacheViewStore, MemoryCacheViewStore>();
+        services.AddScoped<CacheViewService>();
+        services.AddScoped<EndpointHtmlRenderer>(sp => GetEndpointHtmlRenderer(sp));
+        services.AddCascadingValue(sp => sp.GetRequiredService<EndpointHtmlRenderer>().HttpContext);
+        services.AddScoped<NavigationManager, HttpNavigationManager>();
+        services.AddScoped<ComponentStatePersistenceManager>();
+        services.AddScoped(sp => sp.GetRequiredService<ComponentStatePersistenceManager>().State);
+        await using var provider = services.BuildServiceProvider();
+
+        async Task<string> RenderRequestAsync(string marker)
+        {
+            await using var scope = provider.CreateAsyncScope();
+            var requestRenderer = scope.ServiceProvider.GetRequiredService<EndpointHtmlRenderer>();
+            var context = GetHttpContext(new DefaultHttpContext { RequestServices = scope.ServiceProvider });
+            context.Request.Method = HttpMethods.Get;
+            var firstRender = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+            var finishInitialization = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+            var parameters = ParameterView.FromDictionary(new Dictionary<string, object>
+            {
+                [nameof(AsyncCacheViewParent.Marker)] = marker,
+                [nameof(AsyncCacheViewParent.FirstRender)] = firstRender,
+                [nameof(AsyncCacheViewParent.FinishInitialization)] = finishInitialization.Task,
+            });
+
+            var rendering = requestRenderer.Dispatcher.InvokeAsync(async () => await requestRenderer.PrerenderComponentAsync(
+                context, typeof(AsyncCacheViewParent), null, parameters));
+            var started = await Task.WhenAny(firstRender.Task, rendering).WaitAsync(TimeSpan.FromSeconds(10));
+            if (started == rendering)
+            {
+                await rendering;
+            }
+            await firstRender.Task.WaitAsync(TimeSpan.FromSeconds(10));
+            await requestRenderer.Dispatcher.InvokeAsync(() => finishInitialization.SetResult());
+            var result = await rendering.WaitAsync(TimeSpan.FromSeconds(10));
+            var writer = new StringWriter();
+            await requestRenderer.Dispatcher.InvokeAsync(() => result.WriteTo(writer, HtmlEncoder.Default));
+            return writer.ToString();
+        }
+
+        var firstHtml = await RenderRequestAsync("first-request-marker");
+        Assert.Equal("<p>first-request-marker</p>", firstHtml);
+
+        var secondHtml = await RenderRequestAsync("second-request-marker");
+        Assert.Equal(firstHtml, secondHtml);
+    }
+
+    private sealed class AsyncCacheViewParent : ComponentBase
+    {
+        private bool _initialized;
+
+        [Parameter] public string Marker { get; set; }
+        [Parameter] public TaskCompletionSource FirstRender { get; set; }
+        [Parameter] public Task FinishInitialization { get; set; }
+
+        protected override async Task OnInitializedAsync()
+        {
+            await FinishInitialization;
+            _initialized = true;
+        }
+
+        protected override void BuildRenderTree(RenderTreeBuilder builder)
+        {
+            builder.OpenComponent<CacheView>(0);
+            builder.AddComponentParameter(1, nameof(CacheView.ChildContent), (RenderFragment)(content =>
+            {
+                content.OpenElement(0, "p");
+                content.AddContent(1, _initialized ? Marker : "initializing");
+                content.CloseElement();
+            }));
+            builder.CloseComponent();
+            FirstRender.TrySetResult();
+        }
+    }
+
+    [Fact]
     public async Task DoesNotRenderAfterRendererStopped()
     {
         var httpContext = GetHttpContext();
