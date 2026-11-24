@@ -72,7 +72,7 @@ export class WebRootComponentManager implements DescriptorHandler, RootComponent
   // by WebRootComponentManager are added and removed dynamically.
   public readonly initialComponents: never[] = [];
 
-  public constructor(private readonly _ssrOptions: SsrStartOptions, private readonly _jsEventRegistry: JSEventRegistry) {
+  public constructor(private readonly _getSsrOptions: () => SsrStartOptions | undefined, private readonly _jsEventRegistry: JSEventRegistry) {
     // After a renderer attaches, we need to activate any components that were
     // previously skipped for interactivity.
     registerRendererAttachedListener(() => {
@@ -234,7 +234,7 @@ export class WebRootComponentManager implements DescriptorHandler, RootComponent
         disposeCircuit();
         this._circuitInactivityTimeoutId = undefined;
       }
-    }, this._ssrOptions.circuitInactivityTimeoutMs ?? 2000) as unknown as number;
+    }, this._getSsrOptions()?.circuitInactivityTimeoutMs ?? 2000) as unknown as number;
   }
 
   private rendererHasComponents(rendererId: WebRendererId): boolean {

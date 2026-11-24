@@ -29,6 +29,7 @@ import { resolveOptions, CircuitStartOptions, ReconnectionOptions } from './Plat
 import { JSInitializer } from './JSInitializers/JSInitializers';
 import { enableFocusOnNavigate } from './Rendering/FocusOnNavigate';
 import { WebAssemblyStartOptions } from './Platform/WebAssemblyStartOptions';
+import { SsrStartOptions } from './Platform/SsrStartOptions';
 import { createBlazorValidation, ensureNovalidateOnForms } from './Validation';
 
 let started = false;
@@ -69,7 +70,7 @@ function boot(options?: Partial<WebStartOptions>) : Promise<void> {
   };
 
   const jsEventRegistry = JSEventRegistry.create(Blazor);
-  rootComponentManager = new WebRootComponentManager(options.ssr, jsEventRegistry);
+  rootComponentManager = new WebRootComponentManager(() => options.ssr, jsEventRegistry);
 
   const navigationEnhancementCallbacks: NavigationEnhancementCallbacks = {
     enhancedNavigationStarted: () => {
@@ -93,7 +94,7 @@ function boot(options?: Partial<WebStartOptions>) : Promise<void> {
   attachComponentDescriptorHandler(rootComponentManager);
   // Attach navigation first, since defining the streaming element can synchronously process buffered batches.
   attachProgressivelyEnhancedNavigationListener(navigationEnhancementCallbacks);
-  attachStreamingRenderingListener(options?.ssr, navigationEnhancementCallbacks);
+  attachStreamingRenderingListener(() => options.ssr, navigationEnhancementCallbacks);
 
   enableFocusOnNavigate(jsEventRegistry);
 
@@ -128,7 +129,9 @@ function onInitialDomContentLoaded(options: Partial<WebStartOptions>) {
   const logger = new ConsoleLogger(initialCircuitOptions.logLevel);
   const initialSsrOptions = options.ssr || {};
   options.ssr = initialSsrOptions;
-  const initializerSsrOptions = new Proxy(initialSsrOptions, {
+  const initializerSsrProxies = new WeakMap<SsrStartOptions, SsrStartOptions>();
+  const initializerSsrTargets = new WeakMap<SsrStartOptions, SsrStartOptions>();
+  const initializerSsrHandler: ProxyHandler<SsrStartOptions> = {
     set(target, property, value) {
       if (property === 'disableDomPreservation') {
         initialOptions.disableDomPreservation = value;
@@ -141,7 +144,16 @@ function onInitialDomContentLoaded(options: Partial<WebStartOptions>) {
       }
       return result;
     },
-  });
+  };
+  function getInitializerSsrOptions(ssrOptions: SsrStartOptions): SsrStartOptions {
+    let proxy = initializerSsrProxies.get(ssrOptions);
+    if (!proxy) {
+      proxy = new Proxy(ssrOptions, initializerSsrHandler);
+      initializerSsrProxies.set(ssrOptions, proxy);
+      initializerSsrTargets.set(proxy, ssrOptions);
+    }
+    return proxy;
+  }
   const initializerCircuitOptions = new Proxy(initialCircuitOptions, {
     get(target, property, receiver) {
       const value = Reflect.get(target, property, receiver);
@@ -167,12 +179,23 @@ function onInitialDomContentLoaded(options: Partial<WebStartOptions>) {
   });
   const initializerOptions = new Proxy(options, {
     get(target, property, receiver) {
-      if (property === 'ssr' && target.ssr === initialSsrOptions) {
-        return initializerSsrOptions;
+      if (property === 'ssr' && target.ssr) {
+        return getInitializerSsrOptions(target.ssr);
       }
       return property === 'circuit' && target.circuit === initialCircuitOptions
         ? initializerCircuitOptions
         : Reflect.get(target, property, receiver);
+    },
+    set(target, property, value, receiver) {
+      if (property === 'ssr') {
+        value = initializerSsrTargets.get(value) ?? value;
+        initialOptions.disableDomPreservation = value?.disableDomPreservation;
+        initialOptions.circuitInactivityTimeoutMs = value?.circuitInactivityTimeoutMs;
+        const result = Reflect.set(target, property, value, receiver);
+        updateProgrammaticEnhancedNavigationHandler();
+        return result;
+      }
+      return Reflect.set(target, property, value, receiver);
     },
   });
   const initializersPromise = fetchAndInvokeInitializers(initializerOptions, logger);

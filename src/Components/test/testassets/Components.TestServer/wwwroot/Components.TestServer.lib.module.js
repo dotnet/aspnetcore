@@ -12,6 +12,18 @@ export function beforeWebStart(options) {
         options.ssr.circuitInactivityTimeoutMs = 500;
         window.inactivityTimeoutInitializerRan = true;
     }
+    if (new URLSearchParams(location.search).has('initializer-replace-ssr')) {
+        options.ssr = { ...options.ssr, disableDomPreservation: false, circuitInactivityTimeoutMs: 500 };
+        window.preserveDomInitializerRan = true;
+        window.inactivityTimeoutInitializerRan = true;
+    }
+    if (new URLSearchParams(location.search).has('initializer-replace-and-update-ssr')) {
+        options.ssr = { ...options.ssr, disableDomPreservation: true, circuitInactivityTimeoutMs: 5000 };
+        options.ssr.disableDomPreservation = false;
+        options.ssr.circuitInactivityTimeoutMs = 500;
+        window.preserveDomInitializerRan = true;
+        window.inactivityTimeoutInitializerRan = true;
+    }
     if (new URLSearchParams(location.search).has('initializer-retry-interval')) {
         options.circuit.reconnectionOptions.retryIntervalMilliseconds = () => {
             window.retryIntervalInitializerRan = true;

@@ -57,11 +57,14 @@ public class ServerBrowserConfigurationTest(
         Assert.InRange(elapsed, serverTimeout - 500, serverTimeout + 1500);
     }
 
-    [Fact]
-    public void InitializerOptionsAreNotOverwrittenByNavigation()
+    [Theory]
+    [InlineData("initializer-inactivity-timeout&initializer-preserve-dom")]
+    [InlineData("initializer-replace-ssr")]
+    [InlineData("initializer-replace-and-update-ssr")]
+    public void InitializerOptionsAreNotOverwrittenByNavigation(string initializerOptions)
     {
         const int initializerTimeout = 500;
-        NavigateToStartPage(domPreservationFixture, "&initializer-inactivity-timeout&initializer-circuit-log-trace&initializer-preserve-dom");
+        NavigateToStartPage(domPreservationFixture, $"&{initializerOptions}&initializer-circuit-log-trace");
 
         var initialDocument = Browser.FindElement(By.TagName("html"));
         var javascript = (IJavaScriptExecutor)Browser;
@@ -267,6 +270,29 @@ public class ServerBrowserConfigurationTest(
         Browser.Equal("1", () => Browser.Exists(By.Id("count-0")).Text);
         var entries = Browser.Manage().Logs.GetLog(LogType.Browser);
         Assert.Contains(entries, entry => entry.Message.Contains("Dispatching event with handler id", StringComparison.Ordinal));
+    }
+
+    [Theory]
+    [InlineData("initializer-inactivity-timeout&initializer-preserve-dom")]
+    [InlineData("initializer-replace-ssr")]
+    [InlineData("initializer-replace-and-update-ssr")]
+    public void InitializerSsrOptionsPreserveStreamingContent(string initializerOptions)
+    {
+        NavigateToStartPage(domPreservationFixture, $"&{initializerOptions}");
+        var javascript = (IJavaScriptExecutor)Browser;
+        javascript.ExecuteScript("Blazor.start({})");
+        Browser.True(() => (bool)javascript.ExecuteScript("return window.preserveDomInitializerRan === true"));
+
+        Browser.Click(By.Id("start-streaming-link"));
+        Browser.Equal("Streaming", () => Browser.Exists(By.Id("status")).Text);
+        var status = Browser.FindElement(By.Id("status"));
+        Browser.Click(By.Id("add-server-counter-prerendered-link"));
+        Browser.Equal("False", () => Browser.Exists(By.Id("is-interactive-0")).Text);
+        Assert.False(status.IsStale());
+        Browser.Click(By.Id("stop-streaming-link"));
+        Browser.Equal("True", () => Browser.Exists(By.Id("is-interactive-0")).Text);
+        Browser.Click(By.Id("increment-0"));
+        Browser.Equal("1", () => Browser.Exists(By.Id("count-0")).Text);
     }
 
     [Theory]
