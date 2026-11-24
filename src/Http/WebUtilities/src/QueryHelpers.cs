@@ -4,7 +4,6 @@
 using System.Buffers;
 using System.Diagnostics;
 using System.Linq;
-using System.Text;
 using System.Text.Encodings.Web;
 using Microsoft.AspNetCore.Internal;
 using Microsoft.Extensions.Primitives;
@@ -16,8 +15,6 @@ namespace Microsoft.AspNetCore.WebUtilities;
 /// </summary>
 public static class QueryHelpers
 {
-    private const int StackallocCharThreshold = 256;
-
     /// <summary>
     /// Append the given query key and value to the URI.
     /// </summary>
@@ -38,21 +35,24 @@ public static class QueryHelpers
         var baseLength = anchorIndex < 0 ? uri.Length : anchorIndex;
         var separator = uri.AsSpan(0, baseLength).Contains('?') ? "&" : "?";
 
-        var builder = new ValueStringBuilder(stackalloc char[StackallocCharThreshold]);
-        char[]? rentedBuffer = null;
+        Span<char> initialBuffer = stackalloc char[256];
+        var writer = new RefPooledArrayBufferWriter<char>(initialBuffer);
         try
         {
-            Append(ref builder, ref rentedBuffer, uri.AsSpan(0, baseLength));
-            Append(ref builder, ref rentedBuffer, separator);
-            AppendUrlEncoded(ref builder, ref rentedBuffer, name);
-            Append(ref builder, ref rentedBuffer, "=");
-            AppendUrlEncoded(ref builder, ref rentedBuffer, value);
-            Append(ref builder, ref rentedBuffer, uri.AsSpan(baseLength));
-            return builder.AsSpan().ToString();
+            Append(ref writer, uri.AsSpan(0, baseLength));
+            Append(ref writer, separator);
+            AppendUrlEncoded(ref writer, name);
+            Append(ref writer, "=");
+            AppendUrlEncoded(ref writer, value);
+            Append(ref writer, uri.AsSpan(baseLength));
+            return writer.WrittenSpan.ToString();
         }
         finally
         {
-            ReturnRentedBuffer(builder.Length, rentedBuffer);
+            // Query values may contain sensitive data. Dispose clears any rented buffer, and only the start of the
+            // stack buffer can have been written to.
+            initialBuffer.Slice(0, Math.Min(writer.WrittenSpan.Length, initialBuffer.Length)).Clear();
+            writer.Dispose();
         }
     }
 
@@ -116,11 +116,11 @@ public static class QueryHelpers
         var queryIndex = uriToBeAppended.IndexOf('?');
         var hasQuery = queryIndex != -1;
 
-        var builder = new ValueStringBuilder(stackalloc char[StackallocCharThreshold]);
-        char[]? rentedBuffer = null;
+        Span<char> initialBuffer = stackalloc char[256];
+        var writer = new RefPooledArrayBufferWriter<char>(initialBuffer);
         try
         {
-            Append(ref builder, ref rentedBuffer, uriToBeAppended);
+            Append(ref writer, uriToBeAppended);
             foreach (var parameter in queryString)
             {
                 if (parameter.Value is null)
@@ -128,41 +128,44 @@ public static class QueryHelpers
                     continue;
                 }
 
-                Append(ref builder, ref rentedBuffer, hasQuery ? "&" : "?");
-                AppendUrlEncoded(ref builder, ref rentedBuffer, parameter.Key);
-                Append(ref builder, ref rentedBuffer, "=");
-                AppendUrlEncoded(ref builder, ref rentedBuffer, parameter.Value);
+                Append(ref writer, hasQuery ? "&" : "?");
+                AppendUrlEncoded(ref writer, parameter.Key);
+                Append(ref writer, "=");
+                AppendUrlEncoded(ref writer, parameter.Value);
                 hasQuery = true;
             }
 
-            Append(ref builder, ref rentedBuffer, anchorText);
-            return builder.AsSpan().ToString();
+            Append(ref writer, anchorText);
+            return writer.WrittenSpan.ToString();
         }
         finally
         {
-            ReturnRentedBuffer(builder.Length, rentedBuffer);
+            // Query values may contain sensitive data. Dispose clears any rented buffer, and only the start of the
+            // stack buffer can have been written to.
+            initialBuffer.Slice(0, Math.Min(writer.WrittenSpan.Length, initialBuffer.Length)).Clear();
+            writer.Dispose();
         }
     }
 
-    // ValueStringBuilder's own growth returns pooled arrays without clearing them, and query values may
-    // contain sensitive data, so growth is done here and the builder only ever writes into a buffer it does not own.
-    private static void Append(ref ValueStringBuilder builder, ref char[]? rentedBuffer, ReadOnlySpan<char> value)
+    private static void Append(ref RefPooledArrayBufferWriter<char> writer, ReadOnlySpan<char> value)
     {
-        if (value.Length > builder.Capacity - builder.Length)
+        // GetSpan(0) would request a default-sized buffer, so skip empty values.
+        if (!value.IsEmpty)
         {
-            Grow(ref builder, ref rentedBuffer, value.Length);
+            value.CopyTo(writer.GetSpan(value.Length));
+            writer.Advance(value.Length);
         }
-
-        builder.Append(value);
     }
 
-    private static void AppendUrlEncoded(ref ValueStringBuilder builder, ref char[]? rentedBuffer, string value)
+    private static void AppendUrlEncoded(ref RefPooledArrayBufferWriter<char> writer, string value)
     {
         var source = value.AsSpan();
-        while (true)
+        var sizeHint = source.Length;
+        while (!source.IsEmpty)
         {
-            var status = UrlEncoder.Default.Encode(source, builder.RawChars.Slice(builder.Length), out var charsConsumed, out var charsWritten, isFinalBlock: true);
-            builder.Length += charsWritten;
+            var destination = writer.GetSpan(sizeHint);
+            var status = UrlEncoder.Default.Encode(source, destination, out var charsConsumed, out var charsWritten, isFinalBlock: true);
+            writer.Advance(charsWritten);
             if (status != OperationStatus.DestinationTooSmall)
             {
                 Debug.Assert(status == OperationStatus.Done);
@@ -170,27 +173,8 @@ public static class QueryHelpers
             }
 
             source = source.Slice(charsConsumed);
-            Grow(ref builder, ref rentedBuffer, source.Length);
-        }
-    }
-
-    private static void Grow(ref ValueStringBuilder builder, ref char[]? rentedBuffer, int additionalCapacity)
-    {
-        var length = builder.Length;
-        var newBuffer = ArrayPool<char>.Shared.Rent((int)Math.Max((uint)(length + additionalCapacity), (uint)builder.Capacity * 2));
-        builder.AsSpan().CopyTo(newBuffer);
-        ReturnRentedBuffer(length, rentedBuffer);
-        rentedBuffer = newBuffer;
-        builder = new ValueStringBuilder(newBuffer);
-        builder.Length = length;
-    }
-
-    private static void ReturnRentedBuffer(int length, char[]? rentedBuffer)
-    {
-        if (rentedBuffer is not null)
-        {
-            rentedBuffer.AsSpan(0, length).Clear();
-            ArrayPool<char>.Shared.Return(rentedBuffer);
+            // Request more than the space that was left so the writer grows.
+            sizeHint = destination.Length - charsWritten + source.Length;
         }
     }
 
