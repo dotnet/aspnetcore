@@ -702,7 +702,7 @@ public class EnhancedNavigationTest : ServerTestBase<BasicTestAppServerSiteFixtu
         Browser.Equal("2", () => Browser.Exists(By.Id("query-server")).Text);
         Browser.Contains("query=2", () => Browser.Exists(By.Id("nav-uri-wasm")).Text);
         Browser.Equal("2", () => Browser.Exists(By.Id("query-wasm")).Text);
-        Assert.Equal((serverLocationChanges + 1).ToString(CultureInfo.InvariantCulture), Browser.FindElement(By.Id("location-changed-count-server")).Text);
+        Browser.Equal((serverLocationChanges + 1).ToString(CultureInfo.InvariantCulture), () => Browser.FindElement(By.Id("location-changed-count-server")).Text);
     }
 
     [Fact]
