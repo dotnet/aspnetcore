@@ -1,6 +1,5 @@
 ---
 runs-on: ubuntu-26.04
-runs-on-slim: ubuntu-26.04
 if: ${{ github.event.repository.fork == false }}
 
 on:
@@ -800,7 +799,7 @@ jobs:
   freeze_pr_head:
     needs: [pre_activation]
     if: needs.pre_activation.outputs.activated == 'true'
-    runs-on: ubuntu-26.04
+    runs-on: ubuntu-slim
     permissions:
       contents: read
       pull-requests: read
@@ -893,7 +892,7 @@ jobs:
   verify_live_head:
     needs: [agent, freeze_pr_head]
     if: needs.agent.result == 'success'
-    runs-on: ubuntu-26.04
+    runs-on: ubuntu-slim
     permissions:
       pull-requests: read
     steps:

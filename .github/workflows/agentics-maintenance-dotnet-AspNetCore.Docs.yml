@@ -78,7 +78,7 @@ jobs:
 
   apply_safe_outputs:
     if: ${{ (github.event_name == 'workflow_dispatch' || github.event_name == 'workflow_call') && inputs.operation == 'safe_outputs' && (!(github.event.repository.fork)) }}
-    runs-on: ubuntu-26.04
+    runs-on: ubuntu-slim
     permissions:
       actions: read
       contents: write
@@ -145,7 +145,7 @@ jobs:
 
   create_labels:
     if: ${{ (github.event_name == 'workflow_dispatch' || github.event_name == 'workflow_call') && inputs.operation == 'create_labels' && (!(github.event.repository.fork)) }}
-    runs-on: ubuntu-26.04
+    runs-on: ubuntu-slim
     permissions:
       contents: read
       issues: write
@@ -208,7 +208,7 @@ jobs:
 
   activity_report:
     if: ${{ (github.event_name == 'workflow_dispatch' || github.event_name == 'workflow_call') && inputs.operation == 'activity_report' && (!(github.event.repository.fork)) }}
-    runs-on: ubuntu-26.04
+    runs-on: ubuntu-slim
     timeout-minutes: 120
     permissions:
       actions: read

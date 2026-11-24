@@ -1,6 +1,5 @@
 ---
 runs-on: ubuntu-26.04
-runs-on-slim: ubuntu-26.04
 on:
   schedule: daily
   workflow_dispatch:

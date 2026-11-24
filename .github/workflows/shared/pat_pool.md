@@ -5,7 +5,7 @@ jobs:
   pat_pool:
     environment: ${{ github.aw.import-inputs.environment }}
     needs: [pre_activation]
-    runs-on: ubuntu-26.04
+    runs-on: ubuntu-slim
     outputs:
       pat_number: ${{ steps.select-pat-number.outputs.copilot_pat_number }}
     steps:
