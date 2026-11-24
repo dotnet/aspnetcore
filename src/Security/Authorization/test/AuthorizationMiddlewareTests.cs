@@ -323,6 +323,128 @@ public class AuthorizationMiddlewareTests
         Assert.Equal(3, next.CalledCount);
     }
 
+    [Fact]
+    public async Task EndpointWithoutAuthorizationMetadata_WithCache_PicksUpFallbackPolicyWhenSet()
+    {
+        // Arrange
+        AuthorizationPolicy fallbackPolicy = null;
+        var policyProvider = new Mock<IAuthorizationPolicyProvider>();
+        var getFallbackPolicyCount = 0;
+        policyProvider.Setup(p => p.GetFallbackPolicyAsync()).ReturnsAsync(() => fallbackPolicy)
+            .Callback(() => getFallbackPolicyCount++);
+        policyProvider.Setup(p => p.AllowsCachingPolicies).Returns(true);
+        var next = new TestRequestDelegate();
+        var logger = new Mock<ILogger<AuthorizationMiddleware>>();
+
+        var endpoint = CreateEndpoint(new object());
+        var services = new ServiceCollection()
+            .AddAuthorization()
+            .AddSingleton(CreateDataSource(endpoint)).BuildServiceProvider();
+        var middleware = CreateMiddleware(next.Invoke, policyProvider.Object, services, logger.Object);
+
+        // Act & Assert
+        // No fallback policy: the endpoint is allowed and the fallback policy is checked on every request.
+        await middleware.Invoke(GetHttpContext(anonymous: true, endpoint: endpoint));
+        Assert.Equal(1, next.CalledCount);
+        Assert.Equal(1, getFallbackPolicyCount);
+
+        await middleware.Invoke(GetHttpContext(anonymous: true, endpoint: endpoint));
+        Assert.Equal(2, next.CalledCount);
+        Assert.Equal(2, getFallbackPolicyCount);
+
+        // Once a fallback policy is available it is used and cached.
+        fallbackPolicy = new AuthorizationPolicyBuilder().RequireAuthenticatedUser().Build();
+        var authenticationService = new TestAuthenticationService();
+        await middleware.Invoke(GetHttpContext(anonymous: true, endpoint: endpoint, authenticationService: authenticationService));
+        Assert.Equal(2, next.CalledCount);
+        Assert.Equal(3, getFallbackPolicyCount);
+        Assert.Equal(1, authenticationService.ChallengeCount);
+
+        await middleware.Invoke(GetHttpContext(anonymous: true, endpoint: endpoint, authenticationService: authenticationService));
+        Assert.Equal(2, next.CalledCount);
+        Assert.Equal(3, getFallbackPolicyCount);
+        Assert.Equal(2, authenticationService.ChallengeCount);
+        policyProvider.Verify(p => p.GetPolicyAsync(It.IsAny<string>()), Times.Never());
+        policyProvider.Verify(p => p.GetDefaultPolicyAsync(), Times.Never());
+    }
+
+    [Fact]
+    public async Task EndpointWithoutAuthorizationMetadata_WithCache_DelayedNullFallbackDoesNotReplaceCachedPolicy()
+    {
+        // Arrange
+        var delayedNullFallback = new TaskCompletionSource<AuthorizationPolicy>();
+        var fallbackPolicyTask = delayedNullFallback.Task;
+        var policyProvider = new Mock<IAuthorizationPolicyProvider>();
+        var getFallbackPolicyCount = 0;
+        policyProvider.Setup(p => p.GetFallbackPolicyAsync()).Returns(() => fallbackPolicyTask)
+            .Callback(() => getFallbackPolicyCount++);
+        policyProvider.Setup(p => p.AllowsCachingPolicies).Returns(true);
+        var next = new TestRequestDelegate();
+        var logger = new Mock<ILogger<AuthorizationMiddleware>>();
+
+        var endpoint = CreateEndpoint(new object());
+        var services = new ServiceCollection()
+            .AddAuthorization()
+            .AddSingleton(CreateDataSource(endpoint)).BuildServiceProvider();
+        var middleware = CreateMiddleware(next.Invoke, policyProvider.Object, services, logger.Object);
+        var authenticationService = new TestAuthenticationService();
+
+        // Act
+        // The first request observes a null fallback policy, but the result is delayed.
+        var delayedRequest = middleware.Invoke(GetHttpContext(anonymous: true, endpoint: endpoint));
+        Assert.False(delayedRequest.IsCompleted);
+
+        // Meanwhile the fallback policy is set and a second request computes and caches it.
+        fallbackPolicyTask = Task.FromResult(new AuthorizationPolicyBuilder().RequireAuthenticatedUser().Build());
+        await middleware.Invoke(GetHttpContext(anonymous: true, endpoint: endpoint, authenticationService: authenticationService));
+        Assert.Equal(1, authenticationService.ChallengeCount);
+
+        // The delayed null result completes after the policy was cached.
+        delayedNullFallback.SetResult(null);
+        await delayedRequest;
+        Assert.Equal(1, next.CalledCount);
+
+        // The fallback policy reverts to null. The cached policy must still be used.
+        fallbackPolicyTask = Task.FromResult<AuthorizationPolicy>(null);
+        var fallbackPolicyCountBefore = getFallbackPolicyCount;
+        await middleware.Invoke(GetHttpContext(anonymous: true, endpoint: endpoint, authenticationService: authenticationService));
+
+        // Assert
+        Assert.Equal(1, next.CalledCount);
+        Assert.Equal(2, authenticationService.ChallengeCount);
+        Assert.Equal(fallbackPolicyCountBefore, getFallbackPolicyCount);
+    }
+
+    [Fact]
+    public async Task EndpointWithoutAuthorizationMetadata_WithCache_DoesNotAffectOtherEndpoints()
+    {
+        // Arrange
+        var policy = new AuthorizationPolicyBuilder().RequireAuthenticatedUser().Build();
+        var policyProvider = new Mock<IAuthorizationPolicyProvider>();
+        policyProvider.Setup(p => p.GetDefaultPolicyAsync()).ReturnsAsync(policy);
+        policyProvider.Setup(p => p.GetFallbackPolicyAsync()).ReturnsAsync((AuthorizationPolicy)null);
+        policyProvider.Setup(p => p.AllowsCachingPolicies).Returns(true);
+        var next = new TestRequestDelegate();
+        var logger = new Mock<ILogger<AuthorizationMiddleware>>();
+
+        var anonymousEndpoint = CreateEndpoint();
+        var authorizedEndpoint = CreateEndpoint(new AuthorizeAttribute());
+        var services = new ServiceCollection()
+            .AddAuthorization()
+            .AddSingleton(CreateDataSource(anonymousEndpoint)).BuildServiceProvider();
+        var middleware = CreateMiddleware(next.Invoke, policyProvider.Object, services, logger.Object);
+
+        // Act & Assert
+        for (var i = 1; i <= 2; i++)
+        {
+            await middleware.Invoke(GetHttpContext(anonymous: true, endpoint: anonymousEndpoint));
+            Assert.Equal(i, next.CalledCount);
+
+            await middleware.Invoke(GetHttpContext(anonymous: true, endpoint: authorizedEndpoint));
+            Assert.Equal(i, next.CalledCount);
+        }
+    }
+
     private class TestDefaultPolicyProvider : DefaultAuthorizationPolicyProvider
     {
         public int GetFallbackPolicyCount;

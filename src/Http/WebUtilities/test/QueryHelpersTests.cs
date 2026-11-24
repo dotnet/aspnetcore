@@ -17,6 +17,49 @@ public class QueryHelperTests
     }
 
     [Fact]
+    public void ParseQueryDecodesLongNamesAndValues()
+    {
+        // Encoded name and value longer than 256 characters with mixed escapes.
+        var encodedName = string.Concat(Enumerable.Repeat("n%C3%A9+", 50));
+        var encodedValue = string.Concat(Enumerable.Repeat("a%2Bb+c%26", 40));
+        var expectedName = string.Concat(Enumerable.Repeat("n\u00e9 ", 50));
+        var expectedValue = string.Concat(Enumerable.Repeat("a+b c&", 40));
+
+        var collection = QueryHelpers.ParseQuery($"?{encodedName}={encodedValue}&short=x%20y");
+
+        Assert.Equal(2, collection.Count);
+        Assert.Equal(expectedValue, collection[expectedName].FirstOrDefault());
+        Assert.Equal("x y", collection["short"].FirstOrDefault());
+    }
+
+    [Theory]
+    [InlineData(4, "%20", " ")]
+    [InlineData(4, "+", " ")]
+    [InlineData(4, "+%20", "  ")]
+    [InlineData(256, "%20", " ")]
+    [InlineData(256, "+", " ")]
+    [InlineData(256, "+%20", "  ")]
+    [InlineData(257, "%20", " ")]
+    [InlineData(257, "+", " ")]
+    [InlineData(257, "+%20", "  ")]
+    [InlineData(1000, "%20", " ")]
+    [InlineData(1000, "+", " ")]
+    [InlineData(1000, "+%20", "  ")]
+    public void ParseQueryDecodesNamesAndValuesOfVaryingLength(int encodedLength, string suffix, string decodedSuffix)
+    {
+        // Covers '%'-only, '+'-only and mixed inputs for short and long names/values, including lengths around 256.
+        var encoded = new string('x', encodedLength - suffix.Length) + suffix;
+        var expected = new string('x', encodedLength - suffix.Length) + decodedSuffix;
+        Assert.Equal(encodedLength, encoded.Length);
+
+        var collection = QueryHelpers.ParseQuery($"?{encoded}={encoded}&a+b=c%2Bd");
+
+        Assert.Equal(2, collection.Count);
+        Assert.Equal(expected, collection[expected].FirstOrDefault());
+        Assert.Equal("c+d", collection["a b"].FirstOrDefault());
+    }
+
+    [Fact]
     public void ParseQueryWithoutQuestionmarkWorks()
     {
         var collection = QueryHelpers.ParseQuery("key1=value1&key2=value2");

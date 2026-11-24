@@ -6,6 +6,7 @@ using System.Diagnostics;
 using System.Linq;
 using System.Text;
 using System.Text.Encodings.Web;
+using Microsoft.AspNetCore.Internal;
 using Microsoft.Extensions.Primitives;
 
 namespace Microsoft.AspNetCore.WebUtilities;
@@ -226,7 +227,7 @@ public static class QueryHelpers
 
         foreach (var pair in enumerable)
         {
-            accumulator.Append(pair.DecodeName().ToString(), pair.DecodeValue().ToString());
+            accumulator.Append(QueryStringDecoder.DecodeToString(pair.EncodedName), QueryStringDecoder.DecodeToString(pair.EncodedValue));
         }
 
         if (!accumulator.HasValues)

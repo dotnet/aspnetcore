@@ -11,4 +11,4 @@ permissions:
 
 jobs:
   Merge:
-    uses: dotnet/arcade/.github/workflows/inter-branch-merge-base.yml@af144b37e5910c6d28b516bd9b6ea2c4a75c95ae
+    uses: dotnet/arcade/.github/workflows/inter-branch-merge-base.yml@c27ac90fa251c0460888a432a4fb41f22643a64f
