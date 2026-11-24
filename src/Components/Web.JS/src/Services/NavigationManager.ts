@@ -62,8 +62,8 @@ function listenForNavigationEvents(
   window.addEventListener('popstate', onPopState);
   currentHistoryIndex = history.state?._index ?? 0;
 
-  attachEnhancedNavigationListener((internalDestinationHref, interceptedLink, rendererId) => {
-    notifyLocationChanged(interceptedLink, internalDestinationHref, rendererId);
+  attachEnhancedNavigationListener((internalDestinationHref, interceptedLink, rendererId, shouldRecordLocationChange) => {
+    notifyLocationChanged(interceptedLink, internalDestinationHref, rendererId, shouldRecordLocationChange);
   });
 }
 
@@ -264,12 +264,14 @@ async function onBrowserInitiatedPopState(state: PopStateEvent) {
   await notifyLocationChanged(/* interceptedLink */ true);
 }
 
-async function notifyLocationChanged(interceptedLink: boolean, internalDestinationHref?: string, targetRendererId?: WebRendererId) {
+async function notifyLocationChanged(interceptedLink: boolean, internalDestinationHref?: string, targetRendererId?: WebRendererId, shouldRecordLocationChange = true) {
   const uri = internalDestinationHref ?? location.href;
   const state = history.state?.userState;
   const notificationSequence = ++locationChangedNotificationSequence;
 
-  recordLocationChange(uri, interceptedLink);
+  if (shouldRecordLocationChange) {
+    recordLocationChange(uri, interceptedLink);
+  }
 
   const callbacksToNotify = Array.from(navigationCallbacks).filter(([rendererId]) =>
     (targetRendererId === undefined || targetRendererId === rendererId) && isRendererAttached(rendererId));

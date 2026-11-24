@@ -255,9 +255,9 @@ export async function performEnhancedPageLoad(internalDestinationHref: string, i
         abortSignal.throwIfAborted();
         const previousLocation = location.href;
 
-        // The POST hasn't changed browser history, but renderers were notified of its action URL.
+        // The POST hasn't changed browser history, so restoring renderers must not make it eligible for startup replay.
         if (previousLocation !== internalDestinationHref) {
-          notifyEnhancedNavigationListeners(previousLocation, /* interceptedLink */ false);
+          notifyEnhancedNavigationListeners(previousLocation, /* interceptedLink */ false, undefined, /* shouldRecordLocationChange */ false);
         }
         abortSignal.throwIfAborted();
         performingEnhancedPageLoad = false;
