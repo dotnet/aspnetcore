@@ -30,7 +30,8 @@ public abstract partial class JSRuntime : IJSRuntime, IDisposable
     // carrying their ids is sent, so that an abort can never reach JS before its id.
     [ThreadStatic] private static JSRuntime? t_serializingRuntime;
     [ThreadStatic] private static List<CancellationTokenLink>? t_serializingTokens;
-    private long _nextCancellationTokenId;
+    // Process-wide: a WebView page that reloads gets a new runtime but still receives messages the old one queued.
+    private static long s_nextCancellationTokenId;
     // One entry per token sent to JS, keyed by id; also the lock for the index by hash code.
     private readonly Dictionary<long, OutgoingCancellationToken> _outgoingCancellationTokens = new();
     private readonly Dictionary<int, List<OutgoingCancellationToken>> _outgoingCancellationTokensByHashCode = new();
@@ -294,7 +295,7 @@ public abstract partial class JSRuntime : IJSRuntime, IDisposable
                 _outgoingCancellationTokensByHashCode.Add(hashCode, candidates);
             }
 
-            var link = new CancellationTokenLink(this, ++_nextCancellationTokenId, token);
+            var link = new CancellationTokenLink(this, Interlocked.Increment(ref s_nextCancellationTokenId), token);
             var entry = new OutgoingCancellationToken(link, hashCode);
             candidates.Add(entry);
             _outgoingCancellationTokens.Add(link.Id, entry);
@@ -783,7 +784,14 @@ public abstract partial class JSRuntime : IJSRuntime, IDisposable
             }
         }
 
-        private void OnCanceled() => runtime.OnCancellationTokenCanceled(Id);
+        private void OnCanceled()
+        {
+            runtime.OnCancellationTokenCanceled(Id);
+
+            // The source drops the registration before the callback, so keep the link reachable until the cancel is sent:
+            // otherwise a sweep could queue "released" ahead of it.
+            GC.KeepAlive(this);
+        }
     }
 
     private sealed class OutgoingCancellationToken(CancellationTokenLink link, int hashCode)
