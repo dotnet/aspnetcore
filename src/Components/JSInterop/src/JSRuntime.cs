@@ -324,7 +324,8 @@ public abstract partial class JSRuntime : IJSRuntime, IDisposable
     // A link can only be collected by a garbage collection, so the links are checked at most once after each one.
     private void ReleaseCollectedCancellationTokens()
     {
-        var gcCount = GC.CollectionCount(0);
+        // Mono may count a full collection only in the highest generation.
+        var gcCount = GC.CollectionCount(0) + GC.CollectionCount(GC.MaxGeneration);
         if (Interlocked.Exchange(ref _cancellationTokenSweepGCCount, gcCount) == gcCount)
         {
             return;
@@ -674,7 +675,8 @@ public abstract partial class JSRuntime : IJSRuntime, IDisposable
         public int HashCode { get; } = hashCode;
 
         // Weak, because only the token's registration may keep a link alive: a disposed or collected source releases its id.
-        public WeakReference<CancellationTokenLink> Link { get; } = new(link);
+        // Tracks resurrection, so a source that a finalizer still cancels is not released first.
+        public WeakReference<CancellationTokenLink> Link { get; } = new(link, trackResurrection: true);
     }
 
     private sealed class AbortSignalSource

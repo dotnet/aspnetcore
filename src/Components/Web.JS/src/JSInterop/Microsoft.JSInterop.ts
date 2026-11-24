@@ -468,7 +468,8 @@ class CallDispatcher implements ICallDispatcher {
       // A cancel can arrive before the call that carries the id, so the id gets an aborted controller at once.
       const controller = this._cancellationTokenControllers.get(id);
       if (controller) {
-        controller.abort();
+        // Deferred: on WebAssembly this runs inside CancellationTokenSource.Cancel(), and listeners may call .NET.
+        queueMicrotask(() => controller.abort());
       } else {
         const aborted = new AbortController();
         aborted.abort();
