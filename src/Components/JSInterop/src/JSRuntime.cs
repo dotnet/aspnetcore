@@ -359,10 +359,7 @@ public abstract partial class JSRuntime : IJSRuntime, IDisposable
             released.Add(entry.Id);
         }
 
-        if (released.Count != 0)
-        {
-            SendCancellationTokenMessage(CancellationTokenReleasedIdentifier, released);
-        }
+        SendCancellationTokenMessage(CancellationTokenReleasedIdentifier, released);
     }
 
     // Swallows failures: they would otherwise surface from the caller's Cancel() or from an unrelated call.
