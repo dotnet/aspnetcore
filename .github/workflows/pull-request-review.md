@@ -972,12 +972,13 @@ environment: copilot-pat-pool
 model: gpt-6.2-sol
 engine:
   id: copilot
-  # Pin the CLI, not the model: automatic selection of 1.0.83 breaks tool discovery with
-  # stable gh-aw's bundled gateway (https://github.com/github/gh-aw-mcpg/issues/13196).
-  # On gh-aw upgrades, retry without this pin once the gateway includes gh-aw-mcpg#13221.
-  # Remove it only after fork tests verify the actual CLI, native skill/topic panel, noop,
-  # and COMMENT review with the frozen SHA. Do not patch the compiler or lock file.
-  version: "1.0.80"
+  # With gh-aw v0.92.0, a staged fork run without the pin selected CLI 1.0.103 at
+  # runtime, loaded the native skill, and staged a COMMENT review on the frozen SHA:
+  # https://github.com/PureWeen/aspnetcore/actions/runs/45446187126
+  # Remove the pin only after fork tests without it verify the actual CLI, native
+  # skill/topic panel, noop, and real COMMENT publication on the frozen SHA.
+  # Do not patch the compiler or lock file.
+  version: "1.0.103"
   env:
     COPILOT_GITHUB_TOKEN: ${{ case(needs.pat_pool.outputs.pat_number == '0', secrets.COPILOT_PAT_0, needs.pat_pool.outputs.pat_number == '1', secrets.COPILOT_PAT_1, needs.pat_pool.outputs.pat_number == '2', secrets.COPILOT_PAT_2, needs.pat_pool.outputs.pat_number == '3', secrets.COPILOT_PAT_3, needs.pat_pool.outputs.pat_number == '4', secrets.COPILOT_PAT_4, needs.pat_pool.outputs.pat_number == '5', secrets.COPILOT_PAT_5, needs.pat_pool.outputs.pat_number == '6', secrets.COPILOT_PAT_6, needs.pat_pool.outputs.pat_number == '7', secrets.COPILOT_PAT_7, needs.pat_pool.outputs.pat_number == '8', secrets.COPILOT_PAT_8, needs.pat_pool.outputs.pat_number == '9', secrets.COPILOT_PAT_9, 'NO COPILOT PAT AVAILABLE') }}
 ---
