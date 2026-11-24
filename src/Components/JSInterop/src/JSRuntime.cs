@@ -34,6 +34,8 @@ public abstract partial class JSRuntime : IJSRuntime, IDisposable
     // One entry per token sent to JS, keyed by id; also the lock for the index by hash code.
     private readonly Dictionary<long, OutgoingCancellationToken> _outgoingCancellationTokens = new();
     private readonly Dictionary<int, List<OutgoingCancellationToken>> _outgoingCancellationTokensByHashCode = new();
+    // Holds the links of each call until JS replies, so "released" always reaches JS after every call carrying the id.
+    private readonly ConcurrentDictionary<long, List<CancellationTokenLink>> _cancellationTokenCalls = new();
     private int _cancellationTokenSweepGCCount;
     private int _cancellationTokensDisposed;
     // Keyed by the id the JS side gave the AbortSignal. JS sends "released" only after every call carrying the id
@@ -191,6 +193,12 @@ public abstract partial class JSRuntime : IJSRuntime, IDisposable
                 ArgsJson = argsJson,
             };
 
+            // Before the send, because the reply can be processed before BeginInvokeJS returns.
+            if (argumentTokens is not null)
+            {
+                _cancellationTokenCalls[taskId] = argumentTokens;
+            }
+
             BeginInvokeJS(invocationInfo);
             LinkCancellationTokens(argumentTokens);
 
@@ -198,6 +206,7 @@ public abstract partial class JSRuntime : IJSRuntime, IDisposable
         }
         catch
         {
+            _cancellationTokenCalls.TryRemove(taskId, out _);
             CleanupTasksAndRegistrations(taskId);
             throw;
         }
@@ -466,6 +475,12 @@ public abstract partial class JSRuntime : IJSRuntime, IDisposable
     [UnconditionalSuppressMessage("Trimming", "IL2026", Justification = "We enforce trimmer attributes for JSON deserialized types on InvokeAsync.")]
     internal bool EndInvokeJS(long taskId, bool succeeded, ref Utf8JsonReader jsonReader)
     {
+        // Also for a reply that is ignored below: JS has revived the call's tokens either way.
+        if (!_cancellationTokenCalls.IsEmpty)
+        {
+            _cancellationTokenCalls.TryRemove(taskId, out _);
+        }
+
         if (!_pendingTasks.TryRemove(taskId, out var pendingCall))
         {
             // We should simply return if we can't find an id for the invocation.
@@ -612,24 +627,16 @@ public abstract partial class JSRuntime : IJSRuntime, IDisposable
             _outgoingCancellationTokensByHashCode.Clear();
         }
 
+        _cancellationTokenCalls.Clear();
+
         _abortSignalSources.Clear();
         ByteArraysToBeRevived.Dispose();
     }
 
+    // The id stays until the link is collected: a call carrying it may still reach JS after the cancel, and JS
+    // keeps giving it the aborted signal until "released". The source drops the link's registration once canceled.
     private void OnCancellationTokenCanceled(long id)
-    {
-        lock (_outgoingCancellationTokens)
-        {
-            if (!_outgoingCancellationTokens.TryGetValue(id, out var entry))
-            {
-                return;
-            }
-
-            RemoveOutgoingCancellationToken(entry);
-        }
-
-        SendCancellationTokenMessage(CancellationTokenCanceledIdentifier, [id]);
-    }
+        => SendCancellationTokenMessage(CancellationTokenCanceledIdentifier, [id]);
 
     // Once started, referenced strongly only by the token's registration, so it lives as long as the token can be canceled.
     internal sealed class CancellationTokenLink(JSRuntime runtime, long id, CancellationToken token)

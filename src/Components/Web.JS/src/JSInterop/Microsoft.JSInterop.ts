@@ -429,7 +429,7 @@ class CallDispatcher implements ICallDispatcher {
 
   private _nextAbortSignalId = 1;
 
-  // Held strongly until .NET cancels or releases the id: a browser operation such as fetch does not keep its signal alive.
+  // Held strongly until .NET releases the id, also after a cancel: a browser operation such as fetch does not keep its signal alive.
   private readonly _cancellationTokenControllers = new Map<number, AbortController>();
 
   // eslint-disable-next-line no-empty-function
@@ -460,11 +460,19 @@ class CallDispatcher implements ICallDispatcher {
     }
 
     for (const id of JSON.parse(argsJson!) as number[]) {
+      if (!canceled) {
+        this._cancellationTokenControllers.delete(id);
+        continue;
+      }
+
+      // A cancel can arrive before the call that carries the id, so the id gets an aborted controller at once.
       const controller = this._cancellationTokenControllers.get(id);
-      // Removed first, because abort runs the listeners synchronously.
-      this._cancellationTokenControllers.delete(id);
-      if (canceled) {
-        controller?.abort();
+      if (controller) {
+        controller.abort();
+      } else {
+        const aborted = new AbortController();
+        aborted.abort();
+        this._cancellationTokenControllers.set(id, aborted);
       }
     }
 

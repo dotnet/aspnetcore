@@ -109,7 +109,7 @@ describe("CancellationToken arguments", () => {
         expect(received[2] === received[0]).toBe(false);
     });
 
-    test("Release forgets the id without aborting, so a later cancel message does nothing", async () => {
+    test("Release forgets the id without aborting, so a later cancel message does not abort its signals", async () => {
         const runtime = createRuntime();
         await call(runtime, token(9), token(10));
 

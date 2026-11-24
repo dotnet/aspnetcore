@@ -353,11 +353,13 @@ public class CancellationTokenReferenceTest
         AssertSent(runtime, "receive", "other");
 
         runtime.Reply(0);
-        AssertSent(runtime, "receive", "other", Released(id));
+        CollectGarbage();
+        _ = runtime.InvokeVoidAsync("other");
+        AssertSent(runtime, "receive", "other", "other", Released(id));
     }
 
     [Fact]
-    public async Task ReplyToACallThatStoppedWaitingStillCountsDown()
+    public async Task ReplyToACallThatStoppedWaitingStillEndsItsHold()
     {
         using var runtime = new ReferenceRuntime { HoldReplies = true };
         using var control = new CancellationTokenSource();
@@ -373,7 +375,9 @@ public class CancellationTokenReferenceTest
         AssertSent(runtime, "receive", "other");
 
         runtime.Reply(0);
-        AssertSent(runtime, "receive", "other", Released(id));
+        CollectGarbage();
+        _ = runtime.InvokeVoidAsync("other");
+        AssertSent(runtime, "receive", "other", "other", Released(id));
     }
 
     [Fact]
