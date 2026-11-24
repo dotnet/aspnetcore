@@ -11,6 +11,7 @@ using Microsoft.AspNetCore.InternalTesting;
 using Microsoft.AspNetCore.JsonPatch.SystemTextJson;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.ModelBinding;
+using Microsoft.AspNetCore.Mvc.ModelBinding.Validation;
 
 public partial class OpenApiDocumentServiceTests : OpenApiDocumentServiceTestBase
 {
@@ -916,6 +917,172 @@ public partial class OpenApiDocumentServiceTests : OpenApiDocumentServiceTestBas
 
         [Required]
         public ConditionalFormChild? Child { get; set; }
+    }
+#nullable restore
+
+    [Theory]
+    [InlineData(nameof(ActionWithSuppressedValidation), false)]
+    [InlineData(nameof(ActionWithSuppressedValidation), true)]
+    [InlineData(nameof(ActionWithSuppressedContainer), false)]
+    [InlineData(nameof(ActionWithExcludedBinding), false)]
+    [InlineData(nameof(ActionWithExcludedBinding), true)]
+    [InlineData(nameof(ActionWithReadOnlyBinding), false)]
+    [InlineData(nameof(ActionWithReadOnlyBinding), true)]
+    [InlineData(nameof(ActionWithTypeExcludedBinding), false)]
+    [InlineData(nameof(ActionWithConditionalValidationFilter), false)]
+    public async Task GetOpenApiRequestBody_DoesNotRequireSuppressedFormProperties_MvcAction(string actionName, bool withAdditionalParameter)
+    {
+        await VerifyEffectiveFormRequirements(actionName, withAdditionalParameter, expected: "");
+    }
+
+    [Theory]
+    [InlineData(nameof(ActionWithIncludedBinding), "Bound")]
+    [InlineData(nameof(ActionWithBindingAndSuppressedValidation), "Bound")]
+    [InlineData(nameof(ActionWithMutableReadOnlyBinding), "Values")]
+    [InlineData(nameof(ActionWithParameterValidationFilter), "Name")]
+    public async Task GetOpenApiRequestBody_PreservesEffectiveFormRequirements_MvcAction(string actionName, string expected)
+    {
+        await VerifyEffectiveFormRequirements(actionName, withAdditionalParameter: false, expected);
+    }
+
+    private async Task VerifyEffectiveFormRequirements(string actionName, bool withAdditionalParameter, string expected)
+    {
+        var action = CreateActionDescriptor(actionName);
+        if (!withAdditionalParameter)
+        {
+            action.Parameters = action.Parameters.Take(1).ToArray();
+        }
+        await VerifyOpenApiDocument(action, document =>
+        {
+            var operation = Assert.Single(document.Paths.Values).Operations[HttpMethod.Post];
+            foreach (var contentType in new[] { "application/x-www-form-urlencoded", "multipart/form-data" })
+            {
+                var schema = operation.RequestBody.Content[contentType].Schema;
+                var modelSchema = withAdditionalParameter
+                    ? Assert.Single(schema.AllOf, item => item.Properties.ContainsKey("File"))
+                    : schema;
+                Assert.Equal(action.Parameters[0].ParameterType.GetProperties().Select(property => property.Name).Order(StringComparer.Ordinal),
+                    modelSchema.Properties.Keys.Order(StringComparer.Ordinal));
+                Assert.Same(operation.RequestBody.Content["application/x-www-form-urlencoded"].Schema,
+                    operation.RequestBody.Content["multipart/form-data"].Schema);
+                Assert.Equal(expected.Length == 0 ? Array.Empty<string>() : new[] { expected },
+                    (modelSchema.Required ?? new HashSet<string>()).Order(StringComparer.Ordinal));
+            }
+        });
+    }
+
+    [Consumes("application/x-www-form-urlencoded", "multipart/form-data")]
+    [HttpPost("/suppressed-validation")]
+    private void ActionWithSuppressedValidation([FromForm] SuppressedValidationForm model, [FromForm] string additional) { }
+
+    [Consumes("application/x-www-form-urlencoded", "multipart/form-data")]
+    [HttpPost("/suppressed-container")]
+    private void ActionWithSuppressedContainer([FromForm] SuppressedContainerForm model) { }
+
+    [Consumes("application/x-www-form-urlencoded", "multipart/form-data")]
+    [HttpPost("/excluded-binding")]
+    private void ActionWithExcludedBinding([FromForm, Bind("Name")] BindingFilterForm model, [FromForm] string additional) { }
+
+    [Consumes("application/x-www-form-urlencoded", "multipart/form-data")]
+    [HttpPost("/included-binding")]
+    private void ActionWithIncludedBinding([FromForm, Bind("Name,Bound")] BindingFilterForm model) { }
+
+    [Consumes("application/x-www-form-urlencoded", "multipart/form-data")]
+    [HttpPost("/binding-suppressed-validation")]
+    private void ActionWithBindingAndSuppressedValidation([FromForm] BindingFilterForm model) { }
+
+    [Consumes("application/x-www-form-urlencoded", "multipart/form-data")]
+    [HttpPost("/readonly-binding")]
+    private void ActionWithReadOnlyBinding([FromForm] ReadOnlyBindingForm model, [FromForm] string additional) { }
+
+    [Consumes("application/x-www-form-urlencoded", "multipart/form-data")]
+    [HttpPost("/mutable-readonly-binding")]
+    private void ActionWithMutableReadOnlyBinding([FromForm] MutableReadOnlyBindingForm model) { }
+
+    [Consumes("application/x-www-form-urlencoded", "multipart/form-data")]
+    [HttpPost("/parameter-validation-filter")]
+    private void ActionWithParameterValidationFilter([FromForm, ValidateNever] ParameterValidationForm model) { }
+
+    [Consumes("application/x-www-form-urlencoded", "multipart/form-data")]
+    [HttpPost("/type-excluded-binding")]
+    private void ActionWithTypeExcludedBinding([FromForm] TypeBindingFilterForm model) { }
+
+    [Consumes("application/x-www-form-urlencoded", "multipart/form-data")]
+    [HttpPost("/conditional-validation-filter")]
+    private void ActionWithConditionalValidationFilter([FromForm] ConditionalValidationForm model) { }
+
+    private sealed class ConditionalValidationAttribute : Attribute, IPropertyValidationFilter
+    {
+        public bool ShouldValidateEntry(ValidationEntry entry, ValidationEntry parentEntry)
+            => ((ConditionalValidationForm)parentEntry.Model).Validate;
+    }
+
+#nullable enable
+    private class ConditionalValidationForm
+    {
+        public IFormFile? File { get; set; }
+        public bool Validate { get; set; }
+        [Required, ConditionalValidation]
+        public string? Name { get; set; }
+    }
+
+    private class SuppressedValidationForm
+    {
+        public IFormFile? File { get; set; }
+        [Required, ValidateNever]
+        public string? Explicit { get; set; }
+        [ValidateNever]
+        public string Implicit { get; set; } = null!;
+    }
+
+    [ValidateNever]
+    private class SuppressedContainerForm
+    {
+        public IFormFile? File { get; set; }
+        [Required]
+        public string? Name { get; set; }
+    }
+
+    private class BindingFilterForm
+    {
+        public IFormFile? File { get; set; }
+        public string? Name { get; set; }
+        [BindRequired, ValidateNever]
+        public string? Bound { get; set; }
+    }
+
+    [Bind("Name")]
+    private class TypeBindingFilterForm
+    {
+        public IFormFile? File { get; set; }
+        public string? Name { get; set; }
+        [BindRequired]
+        public string? Bound { get; set; }
+    }
+
+    private class ReadOnlyBindingForm
+    {
+        public IFormFile? File { get; set; }
+        [BindRequired]
+        public int Count { get; }
+        [BindRequired]
+        public string? Text { get; }
+        [BindRequired]
+        public string[]? Array { get; }
+    }
+
+    private class MutableReadOnlyBindingForm
+    {
+        public IFormFile? File { get; set; }
+        [BindRequired]
+        public List<string>? Values { get; } = [];
+    }
+
+    private class ParameterValidationForm
+    {
+        public IFormFile? File { get; set; }
+        [Required]
+        public string? Name { get; set; }
     }
 #nullable restore
 

@@ -666,8 +666,17 @@ internal sealed class OpenApiDocumentService(
 
         // [Required] validates the resulting value, not whether it was supplied. A non-nullable
         // value type already has a valid default; [BindRequired] still requires binding it.
-        return description.IsRequired || (metadata.IsReferenceOrNullableType &&
-            metadata.ValidatorMetadata.OfType<RequiredAttribute>().Any());
+        var bindingRequired = description.IsRequired && metadata.IsBindingAllowed &&
+            metadata.ContainerMetadata?.PropertyFilterProvider?.PropertyFilter(metadata) != false &&
+            parameter.BindingInfo?.PropertyFilterProvider?.PropertyFilter(metadata) != false &&
+            // MVC can update read-only mutable references, but not values, strings, or arrays.
+            (!metadata.IsReadOnly || (!metadata.ModelType.IsValueType &&
+                metadata.ModelType != typeof(string) && !metadata.ModelType.IsArray));
+
+        // Validation filters can depend on the bound model and its parent. Without those values,
+        // a validation requirement is conditional, even if RequiredAttribute is in the metadata.
+        return bindingRequired || (metadata.PropertyValidationFilter is null &&
+            metadata.IsReferenceOrNullableType && metadata.ValidatorMetadata.OfType<RequiredAttribute>().Any());
     }
 
     // Apply [Description] attributes on the parameter to the top-level OpenApiParameter object and not the schema.
