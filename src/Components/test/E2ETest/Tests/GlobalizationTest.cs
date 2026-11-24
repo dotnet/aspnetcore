@@ -53,20 +53,20 @@ public abstract class GlobalizationTest<TServerFixture> : ServerTestBase<TServer
         // datetime
         input = Browser.Exists(By.Id("input_type_text_datetime"));
         display = Browser.Exists(By.Id("input_type_text_datetime_value"));
-        Browser.Equal(new DateTime(1985, 3, 4).ToString(cultureInfo), () => display.Text);
+        Browser.Equal(NormalizeAmPmSpacing(new DateTime(1985, 3, 4).ToString(cultureInfo)), () => NormalizeAmPmSpacing(display.Text));
 
         input.ReplaceText(new DateTime(2000, 1, 2).ToString(cultureInfo));
         input.SendKeys("\t");
-        Browser.Equal(new DateTime(2000, 1, 2).ToString(cultureInfo), () => display.Text);
+        Browser.Equal(NormalizeAmPmSpacing(new DateTime(2000, 1, 2).ToString(cultureInfo)), () => NormalizeAmPmSpacing(display.Text));
 
         // datetimeoffset
         input = Browser.Exists(By.Id("input_type_text_datetimeoffset"));
         display = Browser.Exists(By.Id("input_type_text_datetimeoffset_value"));
-        Browser.Equal(new DateTimeOffset(new DateTime(1985, 3, 4)).ToString(cultureInfo), () => display.Text);
+        Browser.Equal(NormalizeAmPmSpacing(new DateTimeOffset(new DateTime(1985, 3, 4)).ToString(cultureInfo)), () => NormalizeAmPmSpacing(display.Text));
 
         input.ReplaceText(new DateTimeOffset(new DateTime(2000, 1, 2)).ToString(cultureInfo));
         input.SendKeys("\t");
-        Browser.Equal(new DateTimeOffset(new DateTime(2000, 1, 2)).ToString(cultureInfo), () => display.Text);
+        Browser.Equal(NormalizeAmPmSpacing(new DateTimeOffset(new DateTime(2000, 1, 2)).ToString(cultureInfo)), () => NormalizeAmPmSpacing(display.Text));
     }
 
     private static string NormalizeWhitespace(string value)
@@ -74,6 +74,12 @@ public abstract class GlobalizationTest<TServerFixture> : ServerTestBase<TServer
         // In some cultures, the number group separator may be a nonbreaking space. Chrome doesn't let you type a nonbreaking space,
         // so we need to replace it with a normal space.
         return Regex.Replace(value, "\\s", " ");
+    }
+
+    private static string NormalizeAmPmSpacing(string value)
+    {
+        // Host and browser ICU data can use different spaces before AM/PM.
+        return Regex.Replace(value, @"(?<=\d)[\u00A0\u202F](?=(?:AM|PM)\b)", " ");
     }
 
     // The logic is different for verifying culture-invariant fields. The problem is that the logic for what
@@ -128,24 +134,24 @@ public abstract class GlobalizationTest<TServerFixture> : ServerTestBase<TServer
         input = Browser.Exists(By.Id("input_type_date_datetime"));
         display = Browser.Exists(By.Id("input_type_date_datetime_value"));
         var extraInput = Browser.Exists(By.Id("input_type_date_datetime_extrainput"));
-        Browser.Equal(new DateTime(1985, 3, 4).ToString(cultureInfo), () => display.Text);
+        Browser.Equal(NormalizeAmPmSpacing(new DateTime(1985, 3, 4).ToString(cultureInfo)), () => NormalizeAmPmSpacing(display.Text));
         Browser.Equal(new DateTime(1985, 3, 4).ToString("yyyy-MM-dd", CultureInfo.InvariantCulture), () => input.GetDomProperty("value"));
 
         extraInput.ReplaceText(new DateTime(2000, 1, 2).ToString(cultureInfo));
         extraInput.SendKeys("\t");
-        Browser.Equal(new DateTime(2000, 1, 2).ToString(cultureInfo), () => display.Text);
+        Browser.Equal(NormalizeAmPmSpacing(new DateTime(2000, 1, 2).ToString(cultureInfo)), () => NormalizeAmPmSpacing(display.Text));
         Browser.Equal(new DateTime(2000, 1, 2).ToString("yyyy-MM-dd", CultureInfo.InvariantCulture), () => input.GetDomProperty("value"));
 
         // datetimeoffset
         input = Browser.Exists(By.Id("input_type_date_datetimeoffset"));
         display = Browser.Exists(By.Id("input_type_date_datetimeoffset_value"));
         extraInput = Browser.Exists(By.Id("input_type_date_datetimeoffset_extrainput"));
-        Browser.Equal(new DateTimeOffset(new DateTime(1985, 3, 4)).ToString(cultureInfo), () => display.Text);
+        Browser.Equal(NormalizeAmPmSpacing(new DateTimeOffset(new DateTime(1985, 3, 4)).ToString(cultureInfo)), () => NormalizeAmPmSpacing(display.Text));
         Browser.Equal(new DateTimeOffset(new DateTime(1985, 3, 4)).ToString("yyyy-MM-dd", CultureInfo.InvariantCulture), () => input.GetDomProperty("value"));
 
         extraInput.ReplaceText(new DateTimeOffset(new DateTime(2000, 1, 2)).ToString(cultureInfo));
         extraInput.SendKeys("\t");
-        Browser.Equal(new DateTimeOffset(new DateTime(2000, 1, 2)).ToString(cultureInfo), () => display.Text);
+        Browser.Equal(NormalizeAmPmSpacing(new DateTimeOffset(new DateTime(2000, 1, 2)).ToString(cultureInfo)), () => NormalizeAmPmSpacing(display.Text));
         Browser.Equal(new DateTimeOffset(new DateTime(2000, 1, 2)).ToString("yyyy-MM-dd", CultureInfo.InvariantCulture), () => input.GetDomProperty("value"));
     }
 
@@ -209,24 +215,24 @@ public abstract class GlobalizationTest<TServerFixture> : ServerTestBase<TServer
         input = Browser.Exists(By.Id("inputdate_datetime"));
         display = Browser.Exists(By.Id("inputdate_datetime_value"));
         var extraInput = Browser.Exists(By.Id("inputdate_datetime_extrainput"));
-        Browser.Equal(new DateTime(1985, 3, 4).ToString(cultureInfo), () => display.Text);
+        Browser.Equal(NormalizeAmPmSpacing(new DateTime(1985, 3, 4).ToString(cultureInfo)), () => NormalizeAmPmSpacing(display.Text));
         Browser.Equal(new DateTime(1985, 3, 4).ToString("yyyy-MM-dd", CultureInfo.InvariantCulture), () => input.GetDomProperty("value"));
 
         extraInput.ReplaceText(new DateTime(2000, 1, 2).ToString(cultureInfo));
         extraInput.SendKeys("\t");
-        Browser.Equal(new DateTime(2000, 1, 2).ToString(cultureInfo), () => display.Text);
+        Browser.Equal(NormalizeAmPmSpacing(new DateTime(2000, 1, 2).ToString(cultureInfo)), () => NormalizeAmPmSpacing(display.Text));
         Browser.Equal(new DateTime(2000, 1, 2).ToString("yyyy-MM-dd", CultureInfo.InvariantCulture), () => input.GetDomProperty("value"));
 
         // datetimeoffset
         input = Browser.Exists(By.Id("inputdate_datetimeoffset"));
         display = Browser.Exists(By.Id("inputdate_datetimeoffset_value"));
         extraInput = Browser.Exists(By.Id("inputdate_datetimeoffset_extrainput"));
-        Browser.Equal(new DateTimeOffset(new DateTime(1985, 3, 4)).ToString(cultureInfo), () => display.Text);
+        Browser.Equal(NormalizeAmPmSpacing(new DateTimeOffset(new DateTime(1985, 3, 4)).ToString(cultureInfo)), () => NormalizeAmPmSpacing(display.Text));
         Browser.Equal(new DateTimeOffset(new DateTime(1985, 3, 4)).ToString("yyyy-MM-dd", CultureInfo.InvariantCulture), () => input.GetDomProperty("value"));
 
         extraInput.ReplaceText(new DateTimeOffset(new DateTime(2000, 1, 2)).ToString(cultureInfo));
         extraInput.SendKeys("\t");
-        Browser.Equal(new DateTimeOffset(new DateTime(2000, 1, 2)).ToString(cultureInfo), () => display.Text);
+        Browser.Equal(NormalizeAmPmSpacing(new DateTimeOffset(new DateTime(2000, 1, 2)).ToString(cultureInfo)), () => NormalizeAmPmSpacing(display.Text));
         Browser.Equal(new DateTimeOffset(new DateTime(2000, 1, 2)).ToString("yyyy-MM-dd", CultureInfo.InvariantCulture), () => input.GetDomProperty("value"));
     }
 }
