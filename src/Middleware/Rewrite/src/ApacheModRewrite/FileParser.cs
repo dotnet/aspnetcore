@@ -85,7 +85,8 @@ internal sealed class FileParser
                     // Lack of use
                     throw new NotImplementedException("RewriteMap are not implemented");
                 case "RewriteEngine":
-                    // Explicitly do nothing here, no notion of turning on regex engine.
+                    // Explicitly do nothing here: calling AddApacheModRewrite is the opt-in to evaluate
+                    // the rules in the file, and changing this behavior would break existing apps.
                     break;
                 default:
                     throw new FormatException(Resources.FormatError_ModRewriteParseError("Unrecognized keyword: " + tokens[0], lineNum));
