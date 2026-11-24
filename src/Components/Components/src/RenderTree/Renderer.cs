@@ -55,6 +55,7 @@ public abstract partial class Renderer : IDisposable, IAsyncDisposable
     private List<Task>? _pendingTasks;
     private Task? _disposeTask;
     private bool _rendererIsDisposed;
+    private bool _disposingAsynchronously;
 
     private bool _hotReloadInitialized;
     private HotReloadRenderHandler? _hotReloadRenderHandler;
@@ -1275,6 +1276,7 @@ public abstract partial class Renderer : IDisposable, IAsyncDisposable
             return;
         }
 
+        var disposingAsynchronously = _disposingAsynchronously;
         lock (_lockObject)
         {
             _rendererIsDisposed = true;
@@ -1321,13 +1323,24 @@ public abstract partial class Renderer : IDisposable, IAsyncDisposable
         _eventHandlerIdReplacements.Clear();
         _batchBuilder.Dispose();
 
-        if (asyncDisposables?.Count >= 1)
+        if (disposingAsynchronously && asyncDisposables?.Count >= 1)
         {
             _disposeTask = HandleAsyncExceptions(asyncDisposables, exceptions);
         }
         else
         {
-            NotifyExceptions(exceptions);
+            try
+            {
+                NotifyExceptions(exceptions);
+            }
+            finally
+            {
+                if (asyncDisposables?.Count >= 1)
+                {
+                    // A throwing synchronous handler must not prevent observing asynchronous cleanup.
+                    _disposeTask = HandleAsyncExceptions(asyncDisposables, exceptions: null);
+                }
+            }
         }
 
         async Task HandleAsyncExceptions(List<Task> tasks, List<Exception> exceptions)
@@ -1409,7 +1422,19 @@ public abstract partial class Renderer : IDisposable, IAsyncDisposable
         }
         else
         {
-            await Dispatcher.InvokeAsync(Dispose);
+            await Dispatcher.InvokeAsync(() =>
+            {
+                var wasDisposingAsynchronously = _disposingAsynchronously;
+                _disposingAsynchronously = true;
+                try
+                {
+                    Dispose();
+                }
+                finally
+                {
+                    _disposingAsynchronously = wasDisposingAsynchronously;
+                }
+            });
 
             if (_disposeTask != null)
             {

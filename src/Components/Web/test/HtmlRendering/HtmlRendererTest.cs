@@ -17,6 +17,110 @@ namespace Microsoft.AspNetCore.Components.HtmlRendering;
 
 public class HtmlRendererTest
 {
+    [Theory]
+    [InlineData(false, false)]
+    [InlineData(true, false)]
+    [InlineData(false, true)]
+    [InlineData(true, true)]
+    public async Task Dispose_MixedDisposal_PreservesSynchronousExceptionAndAsyncCleanupOrdering(bool asyncComponentFirst, bool disposeAsync)
+    {
+        var originalSyncException = new InvalidOperationException("Synchronous disposal failed.");
+        var cleanupStarted = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+        var releaseCleanup = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+        var cleanupFinished = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+        var timeout = TimeSpan.FromSeconds(10);
+        Task cleanupTask = Task.CompletedTask;
+        Task disposalTask = Task.CompletedTask;
+        Exception invocationException = null;
+        var htmlRenderer = GetHtmlRenderer(GetServiceProvider());
+
+        async Task CleanupAsync()
+        {
+            cleanupStarted.SetResult();
+            try
+            {
+                await releaseCleanup.Task;
+            }
+            finally
+            {
+                cleanupFinished.SetResult();
+            }
+        }
+
+        var syncParameters = ParameterView.FromDictionary(new Dictionary<string, object>
+        {
+            [nameof(ThrowingDisposableComponent.Exception)] = originalSyncException,
+        });
+        var asyncParameters = ParameterView.FromDictionary(new Dictionary<string, object>
+        {
+            [nameof(GatedAsyncDisposableComponent.Cleanup)] = (Func<Task>)(() => cleanupTask = CleanupAsync()),
+        });
+        await htmlRenderer.Dispatcher.InvokeAsync(async () =>
+        {
+            if (asyncComponentFirst)
+            {
+                await htmlRenderer.RenderComponentAsync<GatedAsyncDisposableComponent>(asyncParameters);
+                await htmlRenderer.RenderComponentAsync<ThrowingDisposableComponent>(syncParameters);
+            }
+            else
+            {
+                await htmlRenderer.RenderComponentAsync<ThrowingDisposableComponent>(syncParameters);
+                await htmlRenderer.RenderComponentAsync<GatedAsyncDisposableComponent>(asyncParameters);
+            }
+        });
+
+        // Run on the dispatcher for exception identity, but bound even an accidentally blocking Dispose.
+        var invocationTask = Task.Run(() => htmlRenderer.Dispatcher.InvokeAsync(() =>
+        {
+            invocationException = Record.Exception(() =>
+            {
+                if (disposeAsync)
+                {
+                    disposalTask = htmlRenderer.DisposeAsync().AsTask();
+                }
+                else
+                {
+                    htmlRenderer.Dispose();
+                }
+            });
+        }));
+
+        try
+        {
+            await invocationTask.WaitAsync(timeout);
+            await cleanupStarted.Task.WaitAsync(timeout);
+            Assert.False(cleanupFinished.Task.IsCompleted);
+            Assert.False(cleanupTask.IsCompleted);
+
+            if (disposeAsync)
+            {
+                Assert.Null(invocationException);
+                Assert.False(disposalTask.IsCompleted);
+            }
+            else
+            {
+                Assert.Same(originalSyncException, invocationException);
+            }
+
+            releaseCleanup.SetResult();
+            await cleanupFinished.Task.WaitAsync(timeout);
+            await cleanupTask.WaitAsync(timeout);
+
+            if (disposeAsync)
+            {
+                var exception = await Assert.ThrowsAsync<InvalidOperationException>(() => disposalTask.WaitAsync(timeout));
+                Assert.Same(originalSyncException, exception);
+            }
+        }
+        finally
+        {
+            releaseCleanup.TrySetResult();
+            await invocationTask.WaitAsync(timeout);
+            await cleanupTask.WaitAsync(timeout);
+            _ = await Record.ExceptionAsync(() => disposalTask.WaitAsync(timeout));
+        }
+    }
+
     [Fact]
     public async Task RenderComponentAsync_ThrowsIfNotOnSyncContext()
     {
@@ -1212,6 +1316,20 @@ And now with HTML encoding: Person with special chars like &#x27; &quot; &lt;/sc
     {
         var actualHtml = actual.ToHtmlString();
         Assert.Equal(expected, actualHtml);
+    }
+
+    private sealed class ThrowingDisposableComponent : ComponentBase, IDisposable
+    {
+        [Parameter] public Exception Exception { get; set; }
+
+        public void Dispose() => throw Exception;
+    }
+
+    private sealed class GatedAsyncDisposableComponent : ComponentBase, IAsyncDisposable
+    {
+        [Parameter] public Func<Task> Cleanup { get; set; }
+
+        public ValueTask DisposeAsync() => new(Cleanup());
     }
 
     private class NestedAsyncComponent : ComponentBase
