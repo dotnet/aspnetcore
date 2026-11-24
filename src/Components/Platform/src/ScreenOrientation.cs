@@ -135,7 +135,7 @@ public sealed class ScreenOrientation : IInternalAsyncDisposal
         {
             reference = await _jsRuntime.GetValueAsync<IJSObjectReference?>("screen.orientation").ConfigureAwait(false);
         }
-        catch (JSException ex)
+        catch (JSException ex) when (ex.InnerException is not OperationCanceledException)
         {
             // Interop throws for a missing screen.orientation, such as in Safari before 16.4.
             throw new NotSupportedException(NotAvailableMessage, ex);

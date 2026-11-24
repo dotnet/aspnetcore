@@ -402,6 +402,11 @@ function asyncFunctionTakesLongerThanDefaultTimeoutToResolve() {
   });
 }
 
+function neverCompletingInterop() {
+  window.neverCompletingInteropStarted = true;
+  return new Promise(() => {});
+}
+
 function collectInteropResults() {
   let result = {};
   let properties = Object.getOwnPropertyNames(results);

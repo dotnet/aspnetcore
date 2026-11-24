@@ -117,6 +117,25 @@ public class CookieStoreTest
     }
 
     [Fact]
+    public async Task CookieStore_PassesThroughAcquisitionTimeoutAndReacquires()
+    {
+        var jsRuntime = new SerializingJSRuntime
+        {
+            Timeout = TimeSpan.FromMilliseconds(100),
+            TimeoutNextAcquisition = true,
+        };
+        await using var provider = CreateServiceProvider(jsRuntime);
+        var cookieStore = provider.GetRequiredService<IBrowserPlatform>().Window.CookieStore;
+
+        var exception = await Assert.ThrowsAsync<JSException>(() => cookieStore.GetAllAsync().AsTask());
+
+        Assert.IsType<TaskCanceledException>(exception.InnerException);
+        Assert.Contains("cookieStore", exception.Message);
+        Assert.Empty(await cookieStore.GetAllAsync());
+        Assert.Equal(2, jsRuntime.ArgumentsSentTo("cookieStore").Length);
+    }
+
+    [Fact]
     public async Task CookieStore_ThrowsNotSupportedExceptionWhenTheBrowserHasNoCookieStore()
     {
         // JS interop throws this for a missing window.cookieStore, such as on a page that is not a secure context.
@@ -638,6 +657,10 @@ public class CookieStoreTest
     {
         private readonly List<(string Identifier, string? ArgsJson)> _calls = [];
 
+        public TimeSpan Timeout { set => DefaultAsyncTimeout = value; }
+
+        public bool TimeoutNextAcquisition { get; set; }
+
         public string GetAllResult { get; init; } = "[]";
 
         public string GetResult { get; set; } = "null";
@@ -650,6 +673,12 @@ public class CookieStoreTest
         protected override void BeginInvokeJS(in JSInvocationInfo invocationInfo)
         {
             _calls.Add((invocationInfo.Identifier, invocationInfo.ArgsJson));
+
+            if (invocationInfo.Identifier == "cookieStore" && TimeoutNextAcquisition)
+            {
+                TimeoutNextAcquisition = false;
+                return;
+            }
 
             var result = invocationInfo.Identifier switch
             {

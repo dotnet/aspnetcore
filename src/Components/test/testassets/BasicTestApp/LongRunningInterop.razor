@@ -5,6 +5,10 @@
 @inject IJSRuntime JSRuntime
 
 <button id="btn-interop" @onclick="@InvokeInteropAsync">Invoke interop!</button>
+<button id="default-timeout" @onclick="() => InvokeWithTimeoutAsync(useDefaultTimeout: true)">Default timeout</button>
+<button id="explicit-timeout" @onclick="() => InvokeWithTimeoutAsync(useDefaultTimeout: false)">Explicit timeout</button>
+<button id="uncaught-cancellation" @onclick="InvokeUncaughtCancellationAsync">Uncaught cancellation</button>
+<button id="observe-cancellation" @onclick="ObserveCancellationAsync">Observe cancellation</button>
 
 @if (DoneWithInterop)
 {
@@ -43,6 +47,36 @@
             TaskWasCancelled = true;
         }
 
+        DoneWithInterop = true;
+    }
+
+    private Task _cancellationTask = Task.CompletedTask;
+
+    private async Task InvokeWithTimeoutAsync(bool useDefaultTimeout)
+    {
+        if (useDefaultTimeout)
+        {
+            await JSRuntime.InvokeVoidAsync("neverCompletingInterop");
+        }
+        else
+        {
+            await JSRuntime.InvokeVoidAsync("neverCompletingInterop", TimeSpan.FromSeconds(1));
+        }
+    }
+
+    private Task InvokeUncaughtCancellationAsync()
+        => _cancellationTask = InvokeUncaughtCancellationCoreAsync();
+
+    private async Task InvokeUncaughtCancellationCoreAsync()
+    {
+        using var cancellationTokenSource = new CancellationTokenSource(TimeSpan.FromSeconds(1));
+        await JSRuntime.InvokeVoidAsync("neverCompletingInterop", cancellationTokenSource.Token);
+    }
+
+    private async Task ObserveCancellationAsync()
+    {
+        await Task.WhenAny(_cancellationTask);
+        TaskWasCancelled = _cancellationTask.IsCanceled;
         DoneWithInterop = true;
     }
 
