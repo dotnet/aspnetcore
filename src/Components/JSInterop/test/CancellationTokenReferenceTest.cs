@@ -412,6 +412,29 @@ public class CancellationTokenReferenceTest
     }
 
     [Fact]
+    public async Task SourceCanceledByAFinalizerStillSendsTheCancel()
+    {
+        using var runtime = new ReferenceRuntime();
+        // Not disposed: a finalizer may still wait on it if the test fails.
+        var gate = new ManualResetEventSlim();
+        try
+        {
+            var id = SendTokenOfFinalizableOwner(runtime, gate);
+
+            // The owner now waits for its finalizer, which keeps the source and the link reachable.
+            GC.Collect();
+            await runtime.InvokeVoidAsync("other");
+            gate.Set();
+            GC.WaitForPendingFinalizers();
+            AssertSent(runtime, "receive", "other", Canceled(id));
+        }
+        finally
+        {
+            gate.Set();
+        }
+    }
+
+    [Fact]
     public async Task LiveSourceIsNotReleasedByCollectionAndStillCancels()
     {
         using var runtime = new ReferenceRuntime();
@@ -593,7 +616,8 @@ public class CancellationTokenReferenceTest
         var result = await runtime.GetResult("call");
         var id = TokenId(result.ResultJson!);
         target.Source.Cancel();
-        AssertSent(runtime, "result:call", Canceled(id));
+        // The link is started on the thread pool after the result is sent, so it can come after this cancel.
+        await AssertSentEventuallyAsync(runtime, "result:call", Canceled(id));
     }
 
     [Fact]
@@ -629,6 +653,17 @@ public class CancellationTokenReferenceTest
 
     private static void AssertSent(ReferenceRuntime runtime, params string[] expected)
         => Assert.Equal(expected, runtime.Sent.Select(Describe));
+
+    private static async Task AssertSentEventuallyAsync(ReferenceRuntime runtime, params string[] expected)
+    {
+        var deadline = DateTime.UtcNow + TimeSpan.FromSeconds(10);
+        while (!runtime.Sent.Select(Describe).SequenceEqual(expected) && DateTime.UtcNow < deadline)
+        {
+            await Task.Delay(10);
+        }
+
+        AssertSent(runtime, expected);
+    }
 
     private static string Canceled(long id) => $"__CancellationTokenCanceled[{id}]";
 
@@ -666,6 +701,28 @@ public class CancellationTokenReferenceTest
         var source = new CancellationTokenSource();
         Assert.True(runtime.InvokeVoidAsync("receive", CancellationToken.None, source.Token).IsCompletedSuccessfully);
         return new WeakReference(source);
+    }
+
+    [MethodImpl(MethodImplOptions.NoInlining)]
+    private static long SendTokenOfFinalizableOwner(ReferenceRuntime runtime, ManualResetEventSlim gate)
+    {
+        var owner = new CancelingOwner(gate);
+        Assert.True(runtime.InvokeVoidAsync("receive", CancellationToken.None, owner.Token).IsCompletedSuccessfully);
+        return TokenId(runtime.Sent[^1]);
+    }
+
+    // Holds the only reference to its source and cancels it when finalized, after the test opens the gate.
+    private sealed class CancelingOwner(ManualResetEventSlim gate)
+    {
+        private readonly CancellationTokenSource _source = new();
+
+        public CancellationToken Token => _source.Token;
+
+        ~CancelingOwner()
+        {
+            gate.Wait(TimeSpan.FromSeconds(10));
+            _source.Cancel();
+        }
     }
 
     [MethodImpl(MethodImplOptions.NoInlining)]
@@ -763,7 +820,20 @@ public class CancellationTokenReferenceTest
 
     private sealed class ReferenceRuntime : JSInProcessRuntime
     {
-        public List<SentMessage> Sent { get; } = [];
+        private readonly List<SentMessage> _sent = [];
+
+        // A snapshot, because cancels can be sent from the thread pool or a finalizer.
+        public SentMessage[] Sent
+        {
+            get
+            {
+                lock (_sent)
+                {
+                    return [.. _sent];
+                }
+            }
+        }
+
         public bool ThrowOnDispatch { get; set; }
         // When set, JS replies to calls only through Reply, in the order of the held calls.
         public bool HoldReplies { get; init; }
@@ -771,6 +841,15 @@ public class CancellationTokenReferenceTest
 
         public void Reply(int heldIndex)
             => DotNetDispatcher.EndInvokeJS(this, $"[{_heldReplies[heldIndex]},true,null]");
+
+        private void Record(SentMessage message)
+        {
+            lock (_sent)
+            {
+                _sent.Add(message);
+            }
+        }
+
         private readonly System.Collections.Concurrent.ConcurrentDictionary<string, TaskCompletionSource<DotNetInvocationResult>> _results = new();
 
         public Task<DotNetInvocationResult> GetResult(string callId) => GetResultSource(callId).Task;
@@ -783,7 +862,7 @@ public class CancellationTokenReferenceTest
 
         protected override string? InvokeJS(in JSInvocationInfo invocationInfo)
         {
-            Sent.Add(new(invocationInfo.AsyncHandle, invocationInfo.Identifier, invocationInfo.ArgsJson));
+            Record(new(invocationInfo.AsyncHandle, invocationInfo.Identifier, invocationInfo.ArgsJson));
             return null;
         }
 
@@ -792,7 +871,7 @@ public class CancellationTokenReferenceTest
 
         protected override void BeginInvokeJS(in JSInvocationInfo invocationInfo)
         {
-            Sent.Add(new(invocationInfo.AsyncHandle, invocationInfo.Identifier, invocationInfo.ArgsJson));
+            Record(new(invocationInfo.AsyncHandle, invocationInfo.Identifier, invocationInfo.ArgsJson));
             if (ThrowOnDispatch)
             {
                 throw new InvalidOperationException("dispatch failure");
@@ -813,7 +892,7 @@ public class CancellationTokenReferenceTest
 
         protected internal override void EndInvokeDotNet(DotNetInvocationInfo invocationInfo, in DotNetInvocationResult invocationResult)
         {
-            Sent.Add(new(0, $"result:{invocationInfo.CallId}", invocationResult.ResultJson));
+            Record(new(0, $"result:{invocationInfo.CallId}", invocationResult.ResultJson));
             GetResultSource(invocationInfo.CallId!).SetResult(invocationResult);
         }
 

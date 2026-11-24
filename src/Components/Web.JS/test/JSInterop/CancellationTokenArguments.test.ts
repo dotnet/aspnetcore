@@ -109,6 +109,19 @@ describe("CancellationToken arguments", () => {
         expect(received[2] === received[0]).toBe(false);
     });
 
+    test("Abort listeners run after the cancel message is handled, not inside it", async () => {
+        // On WebAssembly .NET sends the message from inside CancellationTokenSource.Cancel().
+        const runtime = createRuntime();
+        await call(runtime, token(23));
+        const events: string[] = [];
+        received[0].addEventListener("abort", () => events.push("abort"));
+
+        const handled = cancel(runtime, 23);
+        events.push("handled");
+        await handled;
+        expect(events).toEqual(["handled", "abort"]);
+    });
+
     test("Release forgets the id without aborting, so a later cancel message does not abort its signals", async () => {
         const runtime = createRuntime();
         await call(runtime, token(9), token(10));
