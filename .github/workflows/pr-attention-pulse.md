@@ -1,4 +1,6 @@
 ---
+runs-on: ubuntu-26.04
+runs-on-slim: ubuntu-26.04
 on:
   schedule: daily
   workflow_dispatch:
@@ -26,7 +28,7 @@ checkout: false
 jobs:
   validate_dashboard_target:
     name: Validate fixed Pulse dashboard target
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-26.04
     permissions:
       issues: read
     steps:
@@ -56,7 +58,7 @@ jobs:
 
   snapshot_binding:
     name: Preserve Pulse snapshot producer binding
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-26.04
     needs: [agent]
     outputs:
       pulse_snapshot_run_attempt: ${{ steps.read_binding.outputs.run_attempt }}
@@ -506,6 +508,7 @@ safe-outputs:
   footer: false
   concurrency-group: pr-attention-pulse-dashboard-${{ github.repository }}
   threat-detection:
+    runs-on: ubuntu-26.04
     engine:
       id: copilot
       model: gpt-5.6-sol

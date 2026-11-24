@@ -1,4 +1,6 @@
 ---
+runs-on: ubuntu-26.04
+runs-on-slim: ubuntu-26.04
 if: ${{ !github.event.repository.fork }}
 
 on:
@@ -22,6 +24,8 @@ tools:
     toolsets: [issues, pull_requests]
 
 safe-outputs:
+  threat-detection:
+    runs-on: ubuntu-26.04
   report-failure-as-issue: false
   noop:
     report-as-issue: false

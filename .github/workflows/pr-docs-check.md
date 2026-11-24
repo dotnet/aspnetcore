@@ -1,4 +1,6 @@
 ---
+runs-on: ubuntu-26.04
+runs-on-slim: ubuntu-26.04
 name: "PR Documentation Check"
 
 description: >
@@ -99,6 +101,8 @@ network:
     - github
 
 safe-outputs:
+  threat-detection:
+    runs-on: ubuntu-26.04
   needs: [docs_context]
   github-app:
     client-id: ${{ secrets.ASPNETCORE_DOCS_BOT_CLIENT_ID }}
@@ -194,7 +198,7 @@ safe-outputs:
         Report the conclusive documentation analysis on the source pull request. Emit exactly one `notify_source_pr` item after the create, update, or no-op output.
 
         Use `result: "restricted"` when the source PR is excluded by the security-concern rules. Use `result: "drafted"` when documentation confidence is at least 60 and you either emitted `create_pull_request`, updated the one trusted existing draft, or confirmed that draft already contains sufficient documentation with `noop` and `docs_pr_action: "unchanged"`. The notification job converts an unfulfilled creation request to a draft-failed notification. Use `result: "skipped"` when confidence is below 60 and no docs PR was requested. Use `result: "draft_failed"` only when confidence is at least 60 but you could not request a docs PR operation.
-      runs-on: ubuntu-latest
+      runs-on: ubuntu-26.04
       needs: [safe_outputs]
       permissions:
         contents: read
@@ -523,7 +527,7 @@ jobs:
   docs_context:
     needs: [pre_activation]
     if: needs.pre_activation.outputs.activated == 'true'
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-26.04
     permissions:
       contents: read
       pull-requests: read

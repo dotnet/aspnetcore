@@ -1,4 +1,6 @@
 ---
+runs-on: ubuntu-26.04
+runs-on-slim: ubuntu-26.04
 if: ${{ github.event.repository.fork == false }}
 
 on:
@@ -575,6 +577,7 @@ safe-outputs:
     pull-requests: true
     discussions: false
   threat-detection:
+    runs-on: ubuntu-26.04
     model: gpt-6.2-sol
     max-ai-credits: 200
     max-turns: 20
@@ -797,7 +800,7 @@ jobs:
   freeze_pr_head:
     needs: [pre_activation]
     if: needs.pre_activation.outputs.activated == 'true'
-    runs-on: ubuntu-slim
+    runs-on: ubuntu-26.04
     permissions:
       contents: read
       pull-requests: read
@@ -890,7 +893,7 @@ jobs:
   verify_live_head:
     needs: [agent, freeze_pr_head]
     if: needs.agent.result == 'success'
-    runs-on: ubuntu-slim
+    runs-on: ubuntu-26.04
     permissions:
       pull-requests: read
     steps:

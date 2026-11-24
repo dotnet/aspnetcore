@@ -1,4 +1,6 @@
 ---
+runs-on: ubuntu-26.04
+runs-on-slim: ubuntu-26.04
 if: ${{ github.event_name == 'workflow_dispatch' || !github.event.repository.fork }}
 
 on:
@@ -42,7 +44,7 @@ concurrency:
 jobs:
   issue_context:
     name: Read trusted issue metadata
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-26.04
     permissions:
       issues: read
     outputs:
@@ -76,6 +78,8 @@ tools:
     min-integrity: none
 
 safe-outputs:
+  threat-detection:
+    runs-on: ubuntu-26.04
   report-failure-as-issue: false
   needs: [issue_context]
   noop:
