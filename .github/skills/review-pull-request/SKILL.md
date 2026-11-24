@@ -155,7 +155,7 @@ or other agent. Its native profile must expose only `read`, `search`, and `skill
 only batch those allowed tools and grant no shell, edit, network, or delegation
 capability do not count as additional tools); a missing profile or any additional
 worker capability tool makes that guide `incomplete`. Select the
-caller-supplied worker model, or `gpt-5.6-sol` when the caller omitted it; pass that model
+caller-supplied worker model, or `gpt-6.2-sol` when the caller omitted it; pass that model
 explicitly and independently to every worker, never inheriting the coordinator or
 session model. Pass the caller-supplied reasoning effort explicitly and independently
 to every worker; when omitted, omit the effort setting and record
@@ -171,9 +171,9 @@ same-worker clarification, collect its completed follow-up the same way before s
 requested agent type, model, and effort plus any runtime-reported values; record missing
 runtime telemetry as `unknown`, which alone does not make a guide incomplete. A confirmed
 mismatch, runtime rejection, or inability to apply an explicitly requested setting makes
-that guide `incomplete`. Mark a worker-model run other than `gpt-5.6-sol` as
-`UNEVALUATED`; effort alone does not change the evaluation label. Give each worker the
-trusted absolute bundle root (the
+that guide `incomplete`. Mark a run using a non-default worker model as `UNEVALUATED`;
+the absence of this label does not mean the default was evaluated. Effort alone does
+not change the label. Give each worker the trusted absolute bundle root (the
 directory containing `manifest.json`), its routed guide's verbatim
 `guides[].assignment` object, the frozen `target` identities, and a role-to-root mapping
 containing only `sources[role].root` for the roles named by
@@ -319,17 +319,13 @@ RIGHT-side changed `file:line`, keeps it inline in `NEW_FINDINGS` with
 `confidence: unresolved`, its claim prefixed with `[UNRESOLVED] `, and `Why unresolved:`
 stating the exact `missingEvidence` and verifier rationale; `DROP` because frozen
 source contradicts a required link records it in `DISCARDED` with the exact source
-reason and, when anchored to a RIGHT-side changed `file:line`, keeps it inline in
-`NEW_FINDINGS` with `confidence: discarded`, its claim prefixed with `[DISCARDED] `,
-and `Why discarded:` stating the refuting `file:line` and verifier rationale. Proven
+reason, refuting `file:line`, and verifier rationale, never in `NEW_FINDINGS`. Proven
 pre-existing same behavior on the candidate's exact input sequence is recorded in
-`DISCARDED` with the compared old/new source reason and surfaced inline with
-`confidence: discarded` (`[DISCARDED] ` plus `Why discarded:`). Any concrete candidate
+`DISCARDED` with the compared old/new source reason, never inline. Any concrete candidate
 that a worker proposed in `CANDIDATES` or `UNRESOLVED` and that the coordinator directly
-disproves before verification is likewise recorded in `DISCARDED` and, when anchored to a
-RIGHT-side changed `file:line`, kept inline in `NEW_FINDINGS` with `confidence: discarded`
-(`[DISCARDED] ` plus the coordinator's `Why discarded:` reason). The same inline rule applies
-to every candidate evaluated by `review-candidate-verifier`. A routine negative topic
+disproves before verification is likewise recorded only in `DISCARDED` with the
+coordinator's source reason. The same summary-only rule applies to every discarded
+candidate evaluated by `review-candidate-verifier`. A routine negative topic
 check recorded only in a worker's own `DISCARDED` section, without being proposed in
 `CANDIDATES` or `UNRESOLVED` or evaluated by the verifier, remains in the summary
 `DISCARDED` section and must not be promoted into `NEW_FINDINGS`. As a deterministic safety net,
@@ -360,23 +356,23 @@ The first line is always `STATUS: FINDINGS`, `STATUS: NO_FINDINGS`,
 `GUIDES` (each routed guide and its status, completed in-scope checks, exclusions,
 and unresolved candidates), `UNCOVERED`, `PATH` (`per-guide` or `single-reviewer`),
 `NEW_FINDINGS` (zero to five, ordered by confidence (`verified`, `question`,
-`unresolved`, `discarded`) and then severity (`P1`, `P2`, `P3`) so unresolved or
-discarded items never displace verified findings or questions),
+`unresolved`) and then severity (`P1`, `P2`, `P3`) so unresolved
+items never displace verified findings or questions),
 `EXISTING_FEEDBACK_COVERAGE` (deduplicated true positives with the existing comment or
 review reference), `UNRESOLVED` (every unresolved candidate and exact missing evidence,
 including any surfaced inline), `DISCARDED`
 (every discarded candidate or worker-discarded routine negative topic check and its
-precise source reason, identifying any candidate surfaced inline), `TEST_BOUNDARY`, and `LIMITATIONS`. Each
+precise source reason; summary only, never inline), `TEST_BOUNDARY`, and `LIMITATIONS`. Each
 `NEW_FINDINGS` entry contains a one-line claim (prefixed with `[UNRESOLVED] ` when
-`confidence` is `unresolved` or `[DISCARDED] ` when `confidence` is `discarded`); `file:line`; severity (`P1` for
+`confidence` is `unresolved`); `file:line`; severity (`P1` for
 broken/incorrect common usage or data loss, `P2` for incorrect behavior in a realistic
 narrower scenario, or `P3` for minor/edge or test/doc-only impact); confidence
-(`verified`, `question`, `unresolved`, or `discarded`); when `confidence` is `unresolved` or
-`discarded`, a one-line `Why unresolved:` or `Why discarded:` summary citing the exact
-missing evidence or refuting `file:line` and old/new comparison; a minimal repro using app/user code, CLI commands, or
+(`verified`, `question`, or `unresolved`); when `confidence` is `unresolved`,
+a one-line `Why unresolved:` summary citing the exact
+missing evidence; a minimal repro using app/user code, CLI commands, or
 workflow inputs that reaches the affected behavior; what goes wrong in at most two
-lines; and a fix snippet when possible (or `none` when `discarded`). An unresolved or
-discarded `NEW_FINDINGS` entry must come from a candidate proposed in a worker's
+lines; and a fix snippet when possible. An unresolved
+`NEW_FINDINGS` entry must come from a candidate proposed in a worker's
 `CANDIDATES` or `UNRESOLVED`, or evaluated by `review-candidate-verifier`; never create
 one solely from a routine check listed only in a worker's `DISCARDED`.
 
@@ -387,8 +383,8 @@ worker-configuration mismatch. External-contract and non-code metadata gaps stay
 `UNRESOLVED`; they do not cause either status.
 `NO_FINDINGS` is allowed only after every routed guide completes and `NEW_FINDINGS` is
 empty, but it must still disclose deduplicated true positives
-and all unresolved or discarded summary entries. Summary-only routine negative checks
-in `DISCARDED` do not require `FINDINGS`. Use `FINDINGS` when at least one `NEW_FINDINGS` entry is present.
+and all unresolved or discarded summary entries. All-discarded candidates require
+`NO_FINDINGS`, not `FINDINGS`. Use `FINDINGS` when at least one `NEW_FINDINGS` entry is present.
 An excluded scope must remain visible, never be reported as completed. Neither
 `INCOMPLETE` nor `BLOCKED` licenses partial publication; source-only confidence is not
 runtime proof.
