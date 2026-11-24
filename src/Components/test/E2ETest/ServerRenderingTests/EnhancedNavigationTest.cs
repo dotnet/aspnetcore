@@ -3,6 +3,7 @@
 
 using System;
 using System.Globalization;
+using System.Text.Json;
 using System.Threading.Tasks;
 using Components.TestServer.RazorComponents;
 using Microsoft.AspNetCore.Components.E2ETest;
@@ -122,6 +123,61 @@ public class EnhancedNavigationTest : ServerTestBase<BasicTestAppServerSiteFixtu
         }
     }
 
+    [Fact]
+    public void GetFormNetworkFailureWithFragmentFallsBackToFullPageLoad()
+    {
+        var (id, state) = StartNetworkFailureScenario();
+        try
+        {
+            var originalDocument = Browser.Exists(By.TagName("html"));
+            ((IJavaScriptExecutor)Browser).ExecuteScript("const button = document.getElementById('failed-get-form'); button.formAction = button.form.action + '#destination';");
+            Browser.Exists(By.Id("failed-get-form")).Click();
+            WaitForNetworkFailureRequest(state);
+            state.Release();
+
+            Browser.Equal(2, () => state.FullPageRequests);
+            Browser.Equal("hello & world", () => Browser.Exists(By.Id("received-value")).Text);
+            Assert.EndsWith("#destination", Browser.Url);
+            Assert.Throws<StaleElementReferenceException>(() => originalDocument.GetDomProperty("tagName"));
+        }
+        finally
+        {
+            state.Release();
+            NetworkFailures.Remove(id);
+        }
+    }
+
+    [Fact]
+    public void GetFormNetworkFailureFallsBackWhenEndListenerThrows()
+    {
+        var (id, state) = StartNetworkFailureScenario();
+        try
+        {
+            var originalDocument = Browser.Exists(By.TagName("html"));
+            // WebDriver cannot register a Blazor event listener directly.
+            ((IJavaScriptExecutor)Browser).ExecuteScript("""
+                const listener = () => {
+                    Blazor.removeEventListener('enhancednavigationend', listener);
+                    throw new Error('Enhancednavigationend callback failed');
+                };
+                Blazor.addEventListener('enhancednavigationend', listener);
+                """);
+
+            Browser.Exists(By.Id("failed-get-form")).Click();
+            WaitForNetworkFailureRequest(state);
+            state.Release();
+
+            Browser.Equal(2, () => state.FullPageRequests);
+            Browser.Equal("hello & world", () => Browser.Exists(By.Id("received-value")).Text);
+            Assert.Throws<StaleElementReferenceException>(() => originalDocument.GetDomProperty("tagName"));
+        }
+        finally
+        {
+            state.Release();
+            NetworkFailures.Remove(id);
+        }
+    }
+
     [Theory]
     [InlineData(false, false)]
     [InlineData(false, true)]
@@ -132,6 +188,7 @@ public class EnhancedNavigationTest : ServerTestBase<BasicTestAppServerSiteFixtu
         var (id, state) = StartNetworkFailureScenario(flushResponse: true, framed: framed);
         try
         {
+            var originalDocument = Browser.Exists(By.TagName("html"));
             ObserveNetworkFailureNavigation();
             Browser.Exists(By.Id(post ? "failed-post" : "failed-get-form")).Click();
             Browser.True(() => state.ResponsesStarted > 0);
@@ -139,17 +196,26 @@ public class EnhancedNavigationTest : ServerTestBase<BasicTestAppServerSiteFixtu
             {
                 Browser.Equal("Network failure response", () => Browser.Exists(By.Id("network-failure-response-started")).Text);
             }
+            else
+            {
+                Browser.True(() => Browser.Manage().Logs.GetLog("performance").Any(entry =>
+                {
+                    using var document = JsonDocument.Parse(entry.Message);
+                    var message = document.RootElement.GetProperty("message");
+
+                    return message.GetProperty("method").GetString() == "Network.responseReceived"
+                        && message.GetProperty("params").GetProperty("response").GetProperty("url").GetString().Contains($"/nav/network-failure-fetch/{id}", StringComparison.Ordinal);
+                }));
+            }
 
             state.Release();
 
             if (post)
             {
                 Browser.True(() => Browser.Exists(By.Id("blazor-error-ui")).Displayed);
-                if (!framed)
-                {
-                    Browser.Equal(1L, () => ReadNetworkFailureNavigation("ended"));
-                }
-
+                Browser.Equal(1L, () => ReadNetworkFailureNavigation("ended"));
+                Browser.Equal(false, () => ReadNetworkFailureNavigation("loading"));
+                Assert.Equal(1, state.EnhancedRequests);
                 Assert.Equal(1, state.FullPageRequests);
                 Assert.Equal(1, state.PostRequests);
             }
@@ -157,6 +223,7 @@ public class EnhancedNavigationTest : ServerTestBase<BasicTestAppServerSiteFixtu
             {
                 Browser.Equal(2, () => state.FullPageRequests);
                 Browser.Equal("hello & world", () => Browser.Exists(By.Id("received-value")).Text);
+                Assert.Throws<StaleElementReferenceException>(() => originalDocument.GetDomProperty("tagName"));
             }
         }
         finally
@@ -214,27 +281,46 @@ public class EnhancedNavigationTest : ServerTestBase<BasicTestAppServerSiteFixtu
     public void GetFormNetworkFailureDoesNotReplaceNonEnhancedNavigationFromEndListener()
     {
         var (id, state) = StartNetworkFailureScenario();
+        var nativeId = Guid.NewGuid().ToString("N");
+        var nativeState = NetworkFailures.Get(nativeId);
+        var observedId = Guid.NewGuid().ToString("N");
+        var observedState = NetworkFailures.Get(observedId);
         try
         {
+            var originalDocument = Browser.Exists(By.TagName("html"));
+            var newerUrl = new Uri(new Uri(Browser.Url), $"{ServerPathBase}/nav/network-failure-fetch/{nativeId}?flushResponse=false&framed=false&waitForRelease=true&value=newer").AbsoluteUri;
+            var observedUrl = new Uri(new Uri(Browser.Url), $"{ServerPathBase}/nav/network-failure-fetch/{observedId}?flushResponse=false&framed=false").AbsoluteUri;
             ((IJavaScriptExecutor)Browser).ExecuteScript("""
-                const newerUrl = new URL('nav/other', document.baseURI).href;
+                const newerUrl = arguments[0];
+                const observedUrl = arguments[1];
                 const listener = () => {
                     Blazor.removeEventListener('enhancednavigationend', listener);
                     location.assign(newerUrl);
+                    requestAnimationFrame(() => requestAnimationFrame(() => navigator.sendBeacon(observedUrl)));
                 };
                 Blazor.addEventListener('enhancednavigationend', listener);
-                """);
+                """, newerUrl, observedUrl);
 
             Browser.Exists(By.Id("failed-get-form")).Click();
             WaitForNetworkFailureRequest(state);
             state.Release();
 
-            Browser.Equal("Other", () => Browser.Exists(By.TagName("h1")).Text);
+            Browser.True(() => observedState.FullPageRequests > 0 || state.FullPageRequests > 1);
+            Assert.Equal(1, state.FullPageRequests);
+            Assert.Equal(1, nativeState.FullPageRequests);
+            nativeState.Release();
+
+            Browser.Equal("newer", () => Browser.Exists(By.Id("received-value")).Text);
+            Assert.Equal(newerUrl, Browser.Url);
+            Assert.Throws<StaleElementReferenceException>(() => originalDocument.GetDomProperty("tagName"));
         }
         finally
         {
             state.Release();
+            nativeState.Release();
             NetworkFailures.Remove(id);
+            NetworkFailures.Remove(nativeId);
+            NetworkFailures.Remove(observedId);
         }
     }
 
@@ -268,6 +354,84 @@ public class EnhancedNavigationTest : ServerTestBase<BasicTestAppServerSiteFixtu
         }
         finally
         {
+            state.Release();
+            NetworkFailures.Remove(id);
+        }
+    }
+
+    [Fact]
+    public void EnhancedFormCallbackErrorIsReportedWhenEndListenerStartsNewNavigation()
+    {
+        var (id, state) = StartNetworkFailureScenario();
+        try
+        {
+            var originalDocument = Browser.Exists(By.TagName("html"));
+            // WebDriver cannot register Blazor event listeners or observe console error identity directly.
+            ((IJavaScriptExecutor)Browser).ExecuteScript("""
+                const newerUrl = new URL('nav/other', document.baseURI).href;
+                const exception = new Error('Enhancedload form callback failed');
+                const originalConsoleError = console.error;
+                window.formCallbackFailureReported = false;
+                console.error = (...args) => {
+                    if (args[0] === exception) {
+                        window.formCallbackFailureReported = true;
+                    }
+                    originalConsoleError(...args);
+                };
+                window.restoreFormCallbackConsole = () => console.error = originalConsoleError;
+                const loadListener = () => {
+                    Blazor.removeEventListener('enhancedload', loadListener);
+                    throw exception;
+                };
+                const endListener = () => {
+                    Blazor.removeEventListener('enhancednavigationend', endListener);
+                    Blazor.navigateTo(newerUrl);
+                };
+                Blazor.addEventListener('enhancedload', loadListener);
+                Blazor.addEventListener('enhancednavigationend', endListener);
+                document.getElementById('failed-get-form').setAttribute('formaction', new URL('nav/callback-error', document.baseURI).href);
+                """);
+
+            Browser.Exists(By.Id("failed-get-form")).Click();
+
+            Browser.Equal(true, () => ((IJavaScriptExecutor)Browser).ExecuteScript("return window.formCallbackFailureReported;"));
+            Browser.Equal("Other", () => Browser.Exists(By.TagName("h1")).Text);
+            Assert.Equal(originalDocument, Browser.FindElement(By.TagName("html")));
+        }
+        finally
+        {
+            ((IJavaScriptExecutor)Browser).ExecuteScript("window.restoreFormCallbackConsole?.();");
+            state.Release();
+            NetworkFailures.Remove(id);
+        }
+    }
+
+    [Fact]
+    public void StreamedNotFoundGetFailureDoesNotReplayNativePost()
+    {
+        var id = Guid.NewGuid().ToString("N");
+        Navigate($"{ServerPathBase}/reexecution/nav/network-failure-not-found/{id}");
+        var state = NetworkFailures.Get(id);
+        try
+        {
+            Browser.Equal("GET", () => Browser.Exists(By.Id("request-method")).Text);
+            Browser.Manage().Cookies.AddCookie(new Cookie("native-post-network-failure", id, null, "/", null));
+            var originalUrl = Browser.Url;
+            Browser.Exists(By.Id("native-post-not-found")).Click();
+            Browser.Equal("POST", () => Browser.Exists(By.Id("request-method")).Text);
+            var postDocument = Browser.Exists(By.TagName("html"));
+            state.Release();
+
+            WaitForNetworkFailureRequest(state);
+            Browser.True(() => state.PostRequests > 1 || state.FullPageRequests > 2);
+            Assert.Equal(1, state.PostRequests);
+            Browser.Equal("GET", () => Browser.Exists(By.Id("request-method")).Text);
+            Assert.Equal(originalUrl, Browser.Url);
+            Assert.Throws<StaleElementReferenceException>(() => postDocument.GetDomProperty("tagName"));
+        }
+        finally
+        {
+            Browser.Manage().Cookies.DeleteCookieNamed("native-post-network-failure");
             state.Release();
             NetworkFailures.Remove(id);
         }
@@ -320,6 +484,7 @@ public class EnhancedNavigationTest : ServerTestBase<BasicTestAppServerSiteFixtu
         Navigate($"{ServerPathBase}/nav");
         Browser.Exists(By.Id("blazor-started"));
         var originalDocument = Browser.Exists(By.TagName("html"));
+        ObserveNetworkFailureNavigation();
 
         // WebDriver cannot register a JavaScript enhancedload listener or observe rejection identity directly.
         ((IJavaScriptExecutor)Browser).ExecuteScript("""
@@ -351,6 +516,8 @@ public class EnhancedNavigationTest : ServerTestBase<BasicTestAppServerSiteFixtu
 
         Browser.Equal(true, () => ((IJavaScriptExecutor)Browser).ExecuteScript("return window.callbackFailure?.reported === true;"));
         Browser.Equal(startNewerNavigation ? "Other" : "Callback error", () => Browser.Exists(By.TagName("h1")).Text);
+        Browser.Equal(1L, () => ReadNetworkFailureNavigation("ended"));
+        Browser.Equal(false, () => ReadNetworkFailureNavigation("loading"));
         Assert.Equal(originalDocument, Browser.FindElement(By.TagName("html")));
     }
 

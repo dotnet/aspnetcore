@@ -151,6 +151,20 @@ public class RazorComponentEndpointsStartup<TRootComponent>
 
         app.Map("/subdir", app =>
         {
+            app.Use(async (context, next) =>
+            {
+                if (context.Request.Path == "/reexecution/_framework/opaque-redirect"
+                    && context.Request.Cookies.TryGetValue("native-post-network-failure", out var id)
+                    && context.Request.Headers.Accept.ToString().Contains("blazor-enhanced-nav=on", StringComparison.Ordinal))
+                {
+                    context.RequestServices.GetRequiredService<EnhancedNavigationFailureState>().Get(id).RecordRequest(enhanced: true, isPost: false);
+                    context.Abort();
+                    return;
+                }
+
+                await next(context);
+            });
+
             app.Map("/reexecution", reexecutionApp =>
             {
                 app.Map("/trigger-404", app =>
@@ -383,7 +397,7 @@ public class RazorComponentEndpointsStartup<TRootComponent>
         });
 
         endpoints.MapMethods("/nav/network-failure-fetch/{id}", ["GET", "POST"], async (
-            string id, HttpContext context, EnhancedNavigationFailureState failures, bool flushResponse, bool framed) =>
+            string id, HttpContext context, EnhancedNavigationFailureState failures, bool flushResponse, bool framed, bool waitForRelease = false) =>
         {
             var enhanced = context.Request.Headers.Accept.ToString().Contains("blazor-enhanced-nav=on", StringComparison.Ordinal);
             var state = failures.Get(id);
@@ -421,6 +435,11 @@ public class RazorComponentEndpointsStartup<TRootComponent>
 
                 context.Abort();
                 return;
+            }
+
+            if (waitForRelease)
+            {
+                await state.WaitAsync(context.RequestAborted);
             }
 
             context.Response.ContentType = "text/html";

@@ -404,25 +404,35 @@ function handleEnhancedNavigationFailure(ex: unknown, internalDestinationHref: s
 
   if (isResponseReadFailure && isGetRequest && currentEnhancedNavigationAbortController === abortController) {
     const locationBeforeCompletion = location.href;
+    let nativeNavigationStarted = false;
+    const onBeforeUnload = () => {
+      nativeNavigationStarted = true;
+    };
+    window.addEventListener('beforeunload', onBeforeUnload);
     performingEnhancedPageLoad = false;
-    navigationEnhancementCallbacks.enhancedNavigationCompleted();
-    // Give native navigation scheduled by an enhancednavigationend listener a chance to start.
-    requestAnimationFrame(() => {
-      if (currentEnhancedNavigationAbortController === abortController && !abortController.signal.aborted && location.href === locationBeforeCompletion) {
-        if (shouldAppendHistoryEntry && location.href !== internalDestinationHref) {
-          history.pushState(null, '', internalDestinationHref);
-        }
+    try {
+      navigationEnhancementCallbacks.enhancedNavigationCompleted();
+    } finally {
+      // Give native navigation scheduled by an enhancednavigationend listener a chance to start.
+      requestAnimationFrame(() => {
+        window.removeEventListener('beforeunload', onBeforeUnload);
+        if (!nativeNavigationStarted && currentEnhancedNavigationAbortController === abortController && !abortController.signal.aborted && location.href === locationBeforeCompletion) {
+          if (shouldAppendHistoryEntry && location.href !== internalDestinationHref) {
+            history.pushState(null, '', internalDestinationHref);
+          }
 
-        retryEnhancedNavAsFullPageLoad(internalDestinationHref, changeUrl);
-      }
-    });
+          retryEnhancedNavAsFullPageLoad(internalDestinationHref, changeUrl);
+        }
+      });
+    }
     return;
   }
 
   if (currentEnhancedNavigationAbortController === abortController) {
     performingEnhancedPageLoad = false;
     navigationEnhancementCallbacks.enhancedNavigationCompleted();
-    if (suppressErrorIfSuperseded && currentEnhancedNavigationAbortController !== abortController) {
+    if (isResponseReadFailure && suppressErrorIfSuperseded && currentEnhancedNavigationAbortController !== abortController) {
+      // The completion listener replaced this navigation; do not report its stale transport failure on the new page.
       return;
     }
   }
@@ -537,9 +547,13 @@ function retryEnhancedNavAsFullPageLoad(internalDestinationHref: string, changeU
   if (changeUrl) {
     // The ? trick here is the same workaround as described in #10839, and without it, the user
     // would not be able to use the back button afterwards.
-    history.replaceState(null, '', internalDestinationHref + '?');
+    const retryUrl = new URL(internalDestinationHref);
+    retryUrl.search += '?';
+    history.replaceState(null, '', retryUrl.href);
     location.replace(internalDestinationHref);
   } else {
+    // Clear any native POST submission data without changing the URL or history state.
+    history.replaceState(history.state, '', location.href);
     location.reload();
   }
 }
