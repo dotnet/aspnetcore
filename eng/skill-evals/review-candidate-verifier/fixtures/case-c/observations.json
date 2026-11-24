@@ -1,0 +1,46 @@
+{
+  "generatedAt": "2026-11-06T16:02:09.187Z",
+  "producer": "node probe-synthetic.mjs",
+  "hashes": {
+    "base": "2c59edf3be93947a250c4c0a2787d103775265058fe3dbc533014932e2012deb",
+    "head": "13e383993dd60d8548089196ada34afcf791c7995ffda48104bbe23bf15cff11"
+  },
+  "rows": [
+    {
+      "role": "mergeBase",
+      "returned": false,
+      "thrown": "LoggingFailure",
+      "status": "Error",
+      "notifications": [
+        "Error"
+      ],
+      "callbackCalls": [
+        {
+          "callback": "work",
+          "error": "ProcessingFailure"
+        },
+        {
+          "callback": "log",
+          "error": "ProcessingFailure"
+        }
+      ]
+    },
+    {
+      "role": "head",
+      "returned": true,
+      "thrown": null,
+      "status": "Running",
+      "notifications": [],
+      "callbackCalls": [
+        {
+          "callback": "work",
+          "error": "ProcessingFailure"
+        },
+        {
+          "callback": "log",
+          "error": "ProcessingFailure"
+        }
+      ]
+    }
+  ]
+}
