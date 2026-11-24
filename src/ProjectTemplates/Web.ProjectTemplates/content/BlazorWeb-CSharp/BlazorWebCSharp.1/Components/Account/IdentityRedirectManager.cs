@@ -8,19 +8,17 @@ internal sealed class IdentityRedirectManager(NavigationManager navigationManage
 
     public void RedirectTo(string? uri)
     {
-        uri ??= "";
-
-        // Prevent open redirects.
-        // Resolve the URI the same way NavigationManager does and only allow destinations within the app's base URI.
-        // The base URI always ends with "/", so appending "/" also allows the app root without it (for example "/app?x=1").
+        // The URI often comes from a "returnUrl" query string parameter, which anyone can set in a link to the app.
+        // To prevent open redirects, resolve it to an absolute URI and only use it if it's within the app.
+        // Appending "/" to the path also accepts the app's root URI without a trailing slash, such as "/app?page=2".
         var baseUri = new Uri(navigationManager.BaseUri);
-        if (!Uri.TryCreate(baseUri, uri, out var absoluteUri)
-            || !(absoluteUri.GetLeftPart(UriPartial.Path) + "/").StartsWith(baseUri.AbsoluteUri, StringComparison.Ordinal))
+        if (!Uri.TryCreate(baseUri, uri, out var redirectUri)
+            || !(redirectUri.GetLeftPart(UriPartial.Path) + "/").StartsWith(baseUri.AbsoluteUri, StringComparison.Ordinal))
         {
-            absoluteUri = baseUri;
+            redirectUri = baseUri;
         }
 
-        navigationManager.NavigateTo(absoluteUri.AbsoluteUri);
+        navigationManager.NavigateTo(redirectUri.AbsoluteUri);
     }
 
     public void RedirectTo(string uri, Dictionary<string, object?> queryParameters)
