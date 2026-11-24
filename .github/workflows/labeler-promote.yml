@@ -33,7 +33,7 @@ permissions:
 jobs:
   promote-issues:
     if: ${{ inputs.issues }}
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-26.04
     steps:
       - name: "Promote Model for Issues"
         uses: dotnet/issue-labeler/promote@46125e85e6a568dc712f358c39f35317366f5eed # v2.0.0
@@ -44,7 +44,7 @@ jobs:
 
   promote-pulls:
     if: ${{ inputs.pulls }}
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-26.04
     steps:
       - name: "Promote Model for Pull Requests"
         uses: dotnet/issue-labeler/promote@46125e85e6a568dc712f358c39f35317366f5eed # v2.0.0

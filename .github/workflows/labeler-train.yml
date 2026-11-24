@@ -56,7 +56,7 @@ env:
 jobs:
   download-issues:
     if: ${{ contains(fromJSON('["Both", "Issues"]'), inputs.type) && contains(fromJSON('["All", "Download Data"]'), inputs.steps) }}
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-26.04
     permissions:
       issues: read
     steps:
@@ -75,7 +75,7 @@ jobs:
 
   download-pulls:
     if: ${{ contains(fromJSON('["Both", "Pull Requests"]'), inputs.type) && contains(fromJSON('["All", "Download Data"]'), inputs.steps) }}
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-26.04
     permissions:
       pull-requests: read
     steps:
@@ -94,7 +94,7 @@ jobs:
 
   train-issues:
     if: ${{ always() && contains(fromJSON('["Both", "Issues"]'), inputs.type) && contains(fromJSON('["All", "Train Model"]'), inputs.steps) && contains(fromJSON('["success", "skipped"]'), needs.download-issues.result) }}
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-26.04
     permissions: {}
     needs: download-issues
     steps:
@@ -107,7 +107,7 @@ jobs:
 
   train-pulls:
     if: ${{ always() && contains(fromJSON('["Both", "Pull Requests"]'), inputs.type) && contains(fromJSON('["All", "Train Model"]'), inputs.steps) && contains(fromJSON('["success", "skipped"]'), needs.download-pulls.result) }}
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-26.04
     permissions: {}
     needs: download-pulls
     steps:
@@ -120,7 +120,7 @@ jobs:
 
   test-issues:
     if: ${{ always() && contains(fromJSON('["Both", "Issues"]'), inputs.type) && contains(fromJSON('["All", "Test Model"]'), inputs.steps) && contains(fromJSON('["success", "skipped"]'), needs.train-issues.result) }}
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-26.04
     permissions:
       issues: read
     needs: train-issues
@@ -141,7 +141,7 @@ jobs:
 
   test-pulls:
     if: ${{ always() && contains(fromJSON('["Both", "Pull Requests"]'), inputs.type) && contains(fromJSON('["All", "Test Model"]'), inputs.steps) && contains(fromJSON('["success", "skipped"]'), needs.train-pulls.result) }}
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-26.04
     permissions:
       pull-requests: read
     needs: train-pulls

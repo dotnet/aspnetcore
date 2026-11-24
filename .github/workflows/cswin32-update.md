@@ -1,4 +1,6 @@
 ---
+runs-on: ubuntu-26.04
+runs-on-slim: ubuntu-26.04
 if: ${{ github.event_name == 'workflow_dispatch' || !github.event.repository.fork }}
 
 on:
@@ -36,6 +38,8 @@ mcp-servers:
     allowed: ["get-latest-package-version"]
 
 safe-outputs:
+  threat-detection:
+    runs-on: ubuntu-26.04
   report-failure-as-issue: false
   create-pull-request:
     title-prefix: "[package] "
