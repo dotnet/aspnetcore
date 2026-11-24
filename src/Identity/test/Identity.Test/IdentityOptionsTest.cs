@@ -3,6 +3,7 @@
 
 using System.Security.Claims;
 using Microsoft.AspNetCore.Authentication.Cookies;
+using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
 
@@ -113,6 +114,28 @@ public class IdentityOptionsTest
         Assert.NotSame(twoFactor.Events, passkey.Events);
         Assert.NotSame(twoFactor.TicketDataFormat, passkey.TicketDataFormat);
     }
+
+    [Theory]
+    [InlineData("/app-a")]
+    [InlineData("/app-b")]
+    public void PasskeyCookieDefaultsToRequestPathBase(string pathBase)
+    {
+        var services = new ServiceCollection();
+        services.AddLogging();
+        services.AddAuthentication().AddIdentityCookies();
+        using var provider = services.BuildServiceProvider();
+        var options = provider.GetRequiredService<IOptionsMonitor<CookieAuthenticationOptions>>();
+        var passkey = options.Get(IdentityConstants.PasskeyScheme);
+        var context = new DefaultHttpContext();
+        context.Request.PathBase = pathBase;
+        Assert.Equal(pathBase, new CookieAuthenticationOptions().Cookie.Build(context).Path);
+        Assert.Null(passkey.Cookie.Path);
+        Assert.Equal(pathBase, passkey.Cookie.Build(context).Path);
+
+        passkey.Cookie.Path = "/configured";
+        Assert.Equal("/configured", passkey.Cookie.Build(context).Path);
+    }
+
     [Fact]
     public void CanConfigureCookieOptions()
     {

@@ -136,20 +136,19 @@ public static class IdentityCookieAuthenticationBuilderExtensions
                     options.ExpireTimeSpan = twoFactor.ExpireTimeSpan;
                     options.SlidingExpiration = twoFactor.SlidingExpiration;
                     options.TimeProvider = twoFactor.TimeProvider;
-                    options.Cookie = new CookieBuilder
-                    {
-                        Name = twoFactor.Cookie.Name == IdentityConstants.TwoFactorUserIdScheme
-                            ? IdentityConstants.PasskeyScheme
-                            : twoFactor.Cookie.Name + ".Passkey",
-                        Path = twoFactor.Cookie.Path,
-                        Domain = twoFactor.Cookie.Domain,
-                        HttpOnly = twoFactor.Cookie.HttpOnly,
-                        SameSite = twoFactor.Cookie.SameSite,
-                        SecurePolicy = twoFactor.Cookie.SecurePolicy,
-                        IsEssential = twoFactor.Cookie.IsEssential,
-                        MaxAge = twoFactor.Cookie.MaxAge,
-                        Expiration = twoFactor.Cookie.Expiration,
-                    };
+                    // Preserve the default builder so an unset Path uses the request path base.
+                    options.Cookie.Name = twoFactor.Cookie.Name == IdentityConstants.TwoFactorUserIdScheme
+                        ? IdentityConstants.PasskeyScheme
+                        : twoFactor.Cookie.Name + ".Passkey";
+                    options.Cookie.Path = twoFactor.Cookie.Path;
+                    options.Cookie.Domain = twoFactor.Cookie.Domain;
+                    options.Cookie.HttpOnly = twoFactor.Cookie.HttpOnly;
+                    options.Cookie.SameSite = twoFactor.Cookie.SameSite;
+                    options.Cookie.SecurePolicy = twoFactor.Cookie.SecurePolicy;
+                    options.Cookie.IsEssential = twoFactor.Cookie.IsEssential;
+                    options.Cookie.MaxAge = twoFactor.Cookie.MaxAge;
+                    options.Cookie.Expiration = twoFactor.Cookie.Expiration;
+                    options.Cookie.Extensions.Clear();
                     foreach (var extension in twoFactor.Cookie.Extensions)
                     {
                         options.Cookie.Extensions.Add(extension);
