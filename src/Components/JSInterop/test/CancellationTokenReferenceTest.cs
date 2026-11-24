@@ -327,7 +327,24 @@ public class CancellationTokenReferenceTest
         Assert.Equal(after, TokenId(runtime.Sent[2]));
 
         source.Cancel();
-        AssertSent(runtime, "receive", "receive", "receive", Canceled(after));
+        // A collection during the test can add a valid "released" for the old id, so only the cancels are checked.
+        var canceled = runtime.Sent.Select(Describe).Where(message => message.StartsWith(CancellationTokenCanceledPrefix, StringComparison.Ordinal));
+        Assert.Equal([Canceled(after)], canceled);
+    }
+
+    // A registration that is gone means a new id, also for a canceled token: after a reset nothing cancels the old id,
+    // and if the callback ran instead, the old id has its cancel and the new id gets one when it is registered.
+    [Fact]
+    public void LinkWhoseRegistrationIsGoneIsNotReusedEvenWhenTheTokenIsCanceled()
+    {
+        using var runtime = new ReferenceRuntime();
+        using var source = new CancellationTokenSource();
+        var link = new JSRuntime.CancellationTokenLink(runtime, 1, source.Token);
+        link.Start();
+
+        Assert.True(source.TryReset());
+        source.Cancel();
+        Assert.False(link.TryReuse());
     }
 
     [Fact]
@@ -385,6 +402,7 @@ public class CancellationTokenReferenceTest
         _ = runtime.InvokeVoidAsync("receive", CancellationToken.None, source.Token);
         _ = runtime.InvokeVoidAsync("receive", CancellationToken.None, source.Token);
         var id = TokenId(runtime.Sent[0]);
+        Assert.Equal(id, TokenId(runtime.Sent[1]));
 
         source.Dispose();
         runtime.Reply(0);
@@ -712,7 +730,9 @@ public class CancellationTokenReferenceTest
         AssertSent(runtime, expected);
     }
 
-    private static string Canceled(long id) => $"__CancellationTokenCanceled[{id}]";
+    private const string CancellationTokenCanceledPrefix = "__CancellationTokenCanceled[";
+
+    private static string Canceled(long id) => $"{CancellationTokenCanceledPrefix}{id}]";
 
     private static string Released(long id) => $"__CancellationTokenReleased[{id}]";
 
