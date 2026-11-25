@@ -197,25 +197,12 @@ internal partial class EndpointHtmlRenderer
                 if (TryCreateScopeQualifiedEventName(change.ComponentId, assignedName, out var scopeQualifiedName))
                 {
                     var location = (change.ComponentId, change.FrameIndex);
-                    // The same batch can record more than one addition for a form that remains at this location.
-                    if (_namedSubmitEventsByLocation.TryGetValue(location, out var existingName))
-                    {
-                        if (string.Equals(existingName, scopeQualifiedName, StringComparison.Ordinal))
-                        {
-                            continue;
-                        }
-
-                        throw new InvalidOperationException($"A single named submit event is tracked more than once at the same location.");
-                    }
-
                     var locationsForName = GetOrAddNewToDictionary(_namedSubmitEventsByScopeQualifiedName, scopeQualifiedName);
-                    if (!locationsForName.Add(location))
+                    // Multiple additions at this location all resolve to the same final render-tree frame.
+                    if (locationsForName.Add(location))
                     {
-                        // This shouldn't be possible, since each NamedEvent frame innately has a distinct location
-                        throw new InvalidOperationException($"A single named submit event is tracked more than once at the same location.");
+                        _namedSubmitEventsByLocation.Add(location, scopeQualifiedName);
                     }
-
-                    _namedSubmitEventsByLocation.Add(location, scopeQualifiedName);
                 }
             }
         }
