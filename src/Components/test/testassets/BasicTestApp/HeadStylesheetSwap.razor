@@ -3,7 +3,7 @@
 }
 else if (replacement)
 {
-    <HeadContent><link id="swap-stylesheet" rel="stylesheet" href="head-swap-replacement/@(requestId).css" /></HeadContent>
+    <HeadContent><link id="swap-stylesheet" rel="stylesheet" href="@ReplacementHref" /></HeadContent>
 }
 else
 {
@@ -11,11 +11,23 @@ else
 }
 
 <button id="swap-head" @onclick="() => replacement = true">Replace stylesheet</button>
+<button id="swap-head-failure" @onclick="ReplaceWithFailedStylesheet">Replace stylesheet with a failed request</button>
 <button id="remove-head-sheet" @onclick="() => removed = true">Remove stylesheet</button>
 <div id="swap-target" style="background-color: red">Stylesheet target</div>
 
 @code {
     private readonly string requestId = Guid.NewGuid().ToString("N");
     private bool replacement;
+    private bool failedReplacement;
     private bool removed;
+
+    private string ReplacementHref => failedReplacement
+        ? $"head-swap-failure/{requestId}.css"
+        : $"head-swap-replacement/{requestId}.css";
+
+    private void ReplaceWithFailedStylesheet()
+    {
+        replacement = true;
+        failedReplacement = true;
+    }
 }

@@ -46,6 +46,7 @@ export function endHeadStylesheetTransition(): void {
       continue;
     }
 
+    previous.removeAttribute('id');
     const finish = () => {
       clearTimeout(timeout);
       replacement.removeEventListener('load', finish);
@@ -58,6 +59,12 @@ export function endHeadStylesheetTransition(): void {
     pending.set(replacement, { previous, finish });
     replacement.addEventListener('load', finish);
     replacement.addEventListener('error', finish);
+  }
+
+  for (const [replacement, transition] of pending) {
+    if (replacement.disabled || !isHeadStylesheet(replacement)) {
+      transition.finish();
+    }
   }
 }
 

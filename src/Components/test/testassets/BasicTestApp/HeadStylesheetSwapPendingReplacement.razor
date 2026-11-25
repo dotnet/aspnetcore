@@ -1,0 +1,24 @@
+<HeadContent>
+    @if (!removed)
+    {
+        <link @key="replacement" id="pending-swap-stylesheet" rel="@(alternateRel ? "alternate" : "stylesheet")" href="@StylesheetHref" disabled="@replacementDisabled" />
+    }
+</HeadContent>
+
+<button id="replace-stylesheet" @onclick="() => replacement = true">Replace stylesheet</button>
+<button id="disable-replacement" @onclick="() => replacementDisabled = true">Disable replacement stylesheet</button>
+<button id="change-replacement-rel" @onclick="() => alternateRel = true">Change replacement rel</button>
+<button id="remove-replacement" @onclick="() => removed = true">Remove replacement stylesheet</button>
+<div id="swap-target" style="background-color: red">Stylesheet target</div>
+
+@code {
+    private readonly string requestId = Guid.NewGuid().ToString("N");
+    private bool replacement;
+    private bool replacementDisabled;
+    private bool alternateRel;
+    private bool removed;
+
+    private string StylesheetHref => replacement
+        ? $"head-swap-replacement/{requestId}.css"
+        : "head-swap-initial.css";
+}
