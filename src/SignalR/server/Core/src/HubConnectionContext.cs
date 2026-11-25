@@ -200,6 +200,10 @@ public partial class HubConnectionContext
         }
     }
 
+    // The user identifier DefaultHubLifetimeManager indexed this connection under when it connected, so the
+    // disconnect removes that same entry even if UserIdentifier has been reassigned since.
+    internal string? IndexedUserIdentifier { get; set; }
+
     private DefaultHubCallerContext InitializeHubCallerContext()
     {
         var hubCallerContext = new DefaultHubCallerContext(

@@ -17,6 +17,9 @@ public class DefaultHubLifetimeManager<THub> : HubLifetimeManager<THub> where TH
 {
     private readonly HubConnectionStore _connections = new HubConnectionStore();
     private readonly HubGroupList _groups = new HubGroupList();
+    // Connections by the user identifier they had when they connected, so sending to a user does not scan
+    // every connection. Connections without a user identifier are not indexed.
+    private readonly HubGroupList _users = new HubGroupList();
     private readonly ILogger _logger;
     private readonly ClientResultsManager _clientResultsManager = new();
     private ulong _lastInvocationId;
@@ -285,13 +288,44 @@ public class DefaultHubLifetimeManager<THub> : HubLifetimeManager<THub> where TH
     /// <inheritdoc />
     public override Task SendUserAsync(string userId, string methodName, object?[] args, CancellationToken cancellationToken = default)
     {
-        return SendToAllConnections(methodName, args, (connection, state) => string.Equals(connection.UserIdentifier, (string)state!, StringComparison.Ordinal), userId, cancellationToken);
+        // A null userId matches the connections without a user identifier, which are not indexed.
+        if (userId is null)
+        {
+            return SendToAllConnections(methodName, args, IsUser, userId, cancellationToken);
+        }
+
+        var connections = _users[userId];
+        if (connections is null)
+        {
+            return Task.CompletedTask;
+        }
+
+        List<Task>? tasks = null;
+        SerializedHubMessage? message = null;
+        DefaultHubLifetimeManager<THub>.SendToGroupConnections(methodName, args, connections, IsUser, userId, ref tasks, ref message, cancellationToken);
+
+        return tasks is null ? Task.CompletedTask : Task.WhenAll(tasks);
+    }
+
+    // Also applied to indexed connections: one whose UserIdentifier was reassigned after it connected
+    // is not sent messages for the user it was indexed under.
+    private static bool IsUser(HubConnectionContext connection, object? userId)
+    {
+        return string.Equals(connection.UserIdentifier, (string?)userId, StringComparison.Ordinal);
     }
 
     /// <inheritdoc />
     public override Task OnConnectedAsync(HubConnectionContext connection)
     {
         _connections.Add(connection);
+
+        var userId = connection.UserIdentifier;
+        if (userId is not null)
+        {
+            connection.IndexedUserIdentifier = userId;
+            _users.Add(connection, userId);
+        }
+
         return Task.CompletedTask;
     }
 
@@ -305,6 +339,11 @@ public class DefaultHubLifetimeManager<THub> : HubLifetimeManager<THub> where TH
             {
                 _groups.Remove(connection.ConnectionId, groupName);
             }
+        }
+
+        if (connection.IndexedUserIdentifier is { } userId)
+        {
+            _users.Remove(connection.ConnectionId, userId);
         }
 
         _connections.Remove(connection);
@@ -333,7 +372,7 @@ public class DefaultHubLifetimeManager<THub> : HubLifetimeManager<THub> where TH
         for (var i = 0; i < connectionIds.Count; i++)
         {
             var connectionId = connectionIds[i];
-            if (IsDuplicateConnectionId(connectionIds, i, connectionId))
+            if (IsDuplicateId(connectionIds, i, connectionId))
             {
                 continue;
             }
@@ -362,16 +401,16 @@ public class DefaultHubLifetimeManager<THub> : HubLifetimeManager<THub> where TH
         return tasks is null ? Task.CompletedTask : Task.WhenAll(tasks);
     }
 
-    private static bool IsDuplicateConnectionId(IReadOnlyList<string> connectionIds, int count, string connectionId)
+    private static bool IsDuplicateId(IReadOnlyList<string> ids, int count, string id)
     {
-        if (connectionIds is string[] array)
+        if (ids is string[] array)
         {
-            return array.AsSpan(0, count).Contains(connectionId);
+            return array.AsSpan(0, count).Contains(id);
         }
 
         for (var i = 0; i < count; i++)
         {
-            if (string.Equals(connectionIds[i], connectionId, StringComparison.Ordinal))
+            if (string.Equals(ids[i], id, StringComparison.Ordinal))
             {
                 return true;
             }
@@ -383,7 +422,46 @@ public class DefaultHubLifetimeManager<THub> : HubLifetimeManager<THub> where TH
     /// <inheritdoc />
     public override Task SendUsersAsync(IReadOnlyList<string> userIds, string methodName, object?[] args, CancellationToken cancellationToken = default)
     {
-        return SendToAllConnections(methodName, args, (connection, state) => ((IReadOnlyList<string>)state!).Contains(connection.UserIdentifier), userIds, cancellationToken);
+        // As in SendConnectionsAsync, large lists keep the scan to bound deduplication costs; so do lists
+        // containing null, which matches the connections without a user identifier (not indexed).
+        if (userIds.Count > 16 || ContainsNull(userIds))
+        {
+            return SendToAllConnections(methodName, args, (connection, state) => ((IReadOnlyList<string>)state!).Contains(connection.UserIdentifier), userIds, cancellationToken);
+        }
+
+        List<Task>? tasks = null;
+        SerializedHubMessage? message = null;
+
+        // A connection has one user identifier, so skipping repeated user IDs writes each connection once.
+        for (var i = 0; i < userIds.Count; i++)
+        {
+            var userId = userIds[i];
+            if (IsDuplicateId(userIds, i, userId))
+            {
+                continue;
+            }
+
+            var connections = _users[userId];
+            if (connections is not null)
+            {
+                DefaultHubLifetimeManager<THub>.SendToGroupConnections(methodName, args, connections, IsUser, userId, ref tasks, ref message, cancellationToken);
+            }
+        }
+
+        return tasks is null ? Task.CompletedTask : Task.WhenAll(tasks);
+    }
+
+    private static bool ContainsNull(IReadOnlyList<string> ids)
+    {
+        for (var i = 0; i < ids.Count; i++)
+        {
+            if (ids[i] is null)
+            {
+                return true;
+            }
+        }
+
+        return false;
     }
 
     /// <inheritdoc/>
