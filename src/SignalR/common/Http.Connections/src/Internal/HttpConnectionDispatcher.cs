@@ -956,6 +956,10 @@ internal sealed partial class HttpConnectionDispatcher
                 connection.Features.Set(endpointFeature);
             }
         }
+        else
+        {
+            connection.Features.Set<IConnectionEndPointFeature>(null);
+        }
 
         // Configure transport-specific features.
         if (transportType == HttpTransportType.LongPolling)

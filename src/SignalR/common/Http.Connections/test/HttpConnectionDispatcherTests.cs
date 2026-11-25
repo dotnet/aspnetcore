@@ -4753,12 +4753,22 @@ public partial class HttpConnectionDispatcherTests : VerifiableLoggedTest
 
             await dispatcher.ExecuteAsync(context, options, app).DefaultTimeout();
 
+            // Simulate native IIS request cleanup after the poll completes.
+            mockEndpointFeature.Disposed = true;
+
             var endpointFeature = connection.Features.Get<IConnectionEndPointFeature>();
             Assert.NotNull(endpointFeature);
             // Must not be the live request feature instance (which would dereference native request memory on IIS)
             Assert.NotSame(mockEndpointFeature, endpointFeature);
             Assert.Equal(expectedLocalEndPoint, endpointFeature.LocalEndPoint);
             Assert.Equal(expectedRemoteEndPoint, endpointFeature.RemoteEndPoint);
+
+            // A subsequent poll without IConnectionEndPointFeature clears the previous snapshot.
+            var secondPollContext = MakeRequest("/foo", connection, services);
+            var secondPollTask = dispatcher.ExecuteAsync(secondPollContext, options, app);
+            await connection.Transport.Output.WriteAsync(Encoding.UTF8.GetBytes("hello")).DefaultTimeout();
+            await secondPollTask.DefaultTimeout();
+            Assert.Null(connection.Features.Get<IConnectionEndPointFeature>());
 
             await connection.DisposeAsync().DefaultTimeout();
         }
@@ -5272,6 +5282,20 @@ internal sealed class HttpRequestTimeoutFeature : IHttpRequestTimeoutFeature
 
 internal sealed class TestConnectionEndPointFeature : IConnectionEndPointFeature
 {
-    public System.Net.EndPoint? LocalEndPoint { get; set; }
-    public System.Net.EndPoint? RemoteEndPoint { get; set; }
+    private System.Net.EndPoint _localEndPoint;
+    private System.Net.EndPoint _remoteEndPoint;
+
+    public bool Disposed { get; set; }
+
+    public System.Net.EndPoint LocalEndPoint
+    {
+        get => Disposed ? throw new ObjectDisposedException(nameof(TestConnectionEndPointFeature)) : _localEndPoint;
+        set => _localEndPoint = value;
+    }
+
+    public System.Net.EndPoint RemoteEndPoint
+    {
+        get => Disposed ? throw new ObjectDisposedException(nameof(TestConnectionEndPointFeature)) : _remoteEndPoint;
+        set => _remoteEndPoint = value;
+    }
 }
