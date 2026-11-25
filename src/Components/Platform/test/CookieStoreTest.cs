@@ -4,6 +4,7 @@
 #nullable enable
 #pragma warning disable ASP0040 // Partitioned is experimental.
 
+using System.Collections.Concurrent;
 using System.Text.Json;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
@@ -597,7 +598,8 @@ public class CookieStoreTest
     {
         private static readonly CookieListItem _storedCookie = new() { Name = "name", Value = "stored-value" };
 
-        public List<Invocation> Invocations { get; } = [];
+        // Callers can resume concurrently after the shared acquisition completes.
+        public ConcurrentQueue<Invocation> Invocations { get; } = new();
 
         public bool Disposed { get; private set; }
 
@@ -611,7 +613,7 @@ public class CookieStoreTest
             CancellationToken cancellationToken,
             object?[]? args)
         {
-            Invocations.Add(new Invocation(identifier, args ?? []));
+            Invocations.Enqueue(new Invocation(identifier, args ?? []));
 
             object? result = identifier switch
             {
