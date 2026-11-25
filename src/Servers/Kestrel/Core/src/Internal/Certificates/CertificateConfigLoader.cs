@@ -13,6 +13,12 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Certificates;
 
 internal sealed class CertificateConfigLoader : ICertificateConfigLoader
 {
+    // Match the limits of the existing X509Certificate2 file constructor, but skip private keys in the chain.
+    private static readonly Pkcs12LoaderLimits _pkcs12ChainLoaderLimits = new(Pkcs12LoaderLimits.DangerousNoLimits)
+    {
+        IgnorePrivateKeys = true,
+    };
+
     public CertificateConfigLoader(IHostEnvironment hostEnvironment, ILogger<KestrelServer> logger)
     {
         HostEnvironment = hostEnvironment;
@@ -72,7 +78,38 @@ internal sealed class CertificateConfigLoader : ICertificateConfigLoader
                 throw new InvalidOperationException(CoreStrings.InvalidPemKey);
             }
 
-            return (new X509Certificate2(Path.Combine(HostEnvironment.ContentRootPath, certInfo.Path!), certInfo.Password), fullChain);
+            var fileCertificate = new X509Certificate2(certificatePath, certInfo.Password);
+            try
+            {
+                if (fullChain.Count == 0 && X509Certificate2.GetCertContentType(certificatePath) == X509ContentType.Pkcs12)
+                {
+                    fullChain = X509CertificateLoader.LoadPkcs12CollectionFromFile(
+                        certificatePath, certInfo.Password, X509KeyStorageFlags.DefaultKeySet, _pkcs12ChainLoaderLimits);
+
+                    var leafData = fileCertificate.RawDataMemory;
+                    for (var i = fullChain.Count - 1; i >= 0; i--)
+                    {
+                        var candidate = fullChain[i];
+                        if (candidate.RawDataMemory.Span.SequenceEqual(leafData.Span))
+                        {
+                            fullChain.RemoveAt(i);
+                            candidate.Dispose();
+                        }
+                    }
+                }
+
+                return (fileCertificate, fullChain);
+            }
+            catch
+            {
+                fileCertificate.Dispose();
+                foreach (var candidate in fullChain)
+                {
+                    candidate.Dispose();
+                }
+
+                throw;
+            }
         }
         else if (certInfo.IsStoreCert)
         {
