@@ -20,6 +20,8 @@ public abstract partial class JSRuntime : IJSRuntime, IDisposable
     // One-way messages to JS carrying the ids of tokens, handled by the JS call dispatcher itself.
     internal const string CancellationTokenCanceledIdentifier = "__CancellationTokenCanceled";
     internal const string CancellationTokenReleasedIdentifier = "__CancellationTokenReleased";
+    // One-way message to JS that .NET has read the result of a call, so JS can release the AbortSignal ids in it.
+    internal const string AbortSignalResultReadIdentifier = "__AbortSignalResultRead";
 
     private long _nextObjectReferenceId; // Initial value of 0 signals no object, but we increment prior to assignment. The first tracked object should have id 1
     private long _nextPendingTaskId = 1; // Start at 1 because zero signals "no response needed"
@@ -30,6 +32,8 @@ public abstract partial class JSRuntime : IJSRuntime, IDisposable
     // carrying their ids is sent, so that an abort can never reach JS before its id.
     [ThreadStatic] private static JSRuntime? t_serializingRuntime;
     [ThreadStatic] private static List<CancellationTokenLink>? t_serializingTokens;
+    // Raised for every AbortSignal id read, so that EndInvokeJS can tell whether a result carried any.
+    [ThreadStatic] private static int t_abortSignalsRead;
     // Process-wide: a WebView page that reloads gets a new runtime but still receives messages the old one queued.
     private static long s_nextCancellationTokenId;
     // One entry per token sent to JS, keyed by id; also the lock for the index by hash code.
@@ -496,16 +500,25 @@ public abstract partial class JSRuntime : IJSRuntime, IDisposable
         {
             // We should simply return if we can't find an id for the invocation.
             // This likely means that the method that initiated the call defined a timeout and stopped waiting.
+            // The result is not read, so it may carry AbortSignal ids that JS holds until it hears of the read.
+            if (succeeded)
+            {
+                SendCancellationTokenMessage(AbortSignalResultReadIdentifier, [taskId]);
+            }
+
             return false;
         }
 
         CleanupTasksAndRegistrations(taskId);
 
+        var abortSignalsRead = t_abortSignalsRead;
+        var resultRead = false;
         try
         {
             if (succeeded)
             {
                 pendingCall.Complete(this, ref jsonReader);
+                resultRead = true;
             }
             else
             {
@@ -520,6 +533,14 @@ public abstract partial class JSRuntime : IJSRuntime, IDisposable
             var message = $"An exception occurred executing JS interop: {exception.Message}. See InnerException for more details.";
             pendingCall.Fail(new JSException(message, exception));
             return false;
+        }
+        finally
+        {
+            // A result that failed to deserialize may carry ids that were not read, so it is reported too.
+            if (succeeded && (!resultRead || t_abortSignalsRead != abortSignalsRead))
+            {
+                SendCancellationTokenMessage(AbortSignalResultReadIdentifier, [taskId]);
+            }
         }
     }
 
@@ -596,6 +617,7 @@ public abstract partial class JSRuntime : IJSRuntime, IDisposable
 
     internal CancellationToken GetAbortSignalToken(long abortSignalId, bool aborted)
     {
+        t_abortSignalsRead++;
         var source = GetAbortSignalSource(abortSignalId);
         if (aborted)
         {

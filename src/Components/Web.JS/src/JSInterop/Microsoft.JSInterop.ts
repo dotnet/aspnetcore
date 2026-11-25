@@ -21,6 +21,7 @@ const abortSignalKey = '__abortSignal';
 const cancellationTokenKey = '__dotNetCancellationToken';
 const cancellationTokenCanceledIdentifier = '__CancellationTokenCanceled';
 const cancellationTokenReleasedIdentifier = '__CancellationTokenReleased';
+const abortSignalResultReadIdentifier = '__AbortSignalResultRead';
 
 // If undefined, no dispatcher has been attached yet.
 // If null, this means more than one dispatcher was attached, so no default can be determined.
@@ -103,6 +104,7 @@ let nextJsObjectId = 1; // Start at 1 because zero is reserved for "window"
 interface ObservedAbortSignal {
   dispatcher: CallDispatcher;
   id: number;
+  // Calls and results that carry the id and that .NET has not answered yet.
   pendingCalls: number;
   abortAcknowledgment?: Promise<void>;
   collected: boolean;
@@ -114,7 +116,7 @@ const abortSignalFinalizer = new FinalizationRegistry<ObservedAbortSignal>(obser
   observed.dispatcher.releaseAbortSignalWhenUnused(observed);
 });
 
-// The AbortSignals of the call being serialized; undefined while serializing anything else, such as a JS result.
+// The AbortSignals of the call or result being serialized; undefined while serializing anything else.
 let currentAbortSignals: Set<ObservedAbortSignal> | undefined;
 
 /**
@@ -432,6 +434,9 @@ class CallDispatcher implements ICallDispatcher {
   // Held strongly until .NET releases the id, also after a cancel: a browser operation such as fetch does not keep its signal alive.
   private readonly _cancellationTokenControllers = new Map<number, AbortController>();
 
+  // The AbortSignals in each result sent to .NET, until .NET reports that it has read the result.
+  private readonly _resultAbortSignals = new Map<number, Set<ObservedAbortSignal>>();
+
   // eslint-disable-next-line no-empty-function
   constructor(private readonly _dotNetCallDispatcher: DotNetCallDispatcher) {
   }
@@ -484,10 +489,26 @@ class CallDispatcher implements ICallDispatcher {
     return this._dotNetCallDispatcher;
   }
 
+  private tryProcessResultReadMessage(identifier: string, argsJson: string | null): boolean {
+    if (identifier !== abortSignalResultReadIdentifier) {
+      return false;
+    }
+
+    for (const asyncHandle of JSON.parse(argsJson!) as number[]) {
+      const abortSignals = this._resultAbortSignals.get(asyncHandle);
+      if (abortSignals) {
+        this._resultAbortSignals.delete(asyncHandle);
+        this.endHold(abortSignals);
+      }
+    }
+
+    return true;
+  }
+
   serializeAbortSignal(signal: AbortSignal): object {
-    // Only a call's completion tells when .NET has read the id, so a JS result cannot carry a signal.
+    // .NET must answer every message that carries an id before "released" may go, so the message must be counted.
     if (!currentAbortSignals) {
-      throw new Error('An AbortSignal can only be passed as an argument of a call from JavaScript to .NET.');
+      throw new Error('An AbortSignal can only be sent to .NET in the arguments of a call or in the result of a JavaScript function.');
     }
 
     let observed = this._abortSignals.get(signal);
@@ -537,9 +558,10 @@ class CallDispatcher implements ICallDispatcher {
     const returnValue = this.processJSCall(targetInstanceId, identifier, callType, argsJson);
     const result = createJSCallResult(returnValue, resultType);
 
+    // .NET reads the ids before this synchronous call returns, so nothing needs to be counted.
     return result === null || result === undefined
       ? null
-      : stringifyArgs(this, result);
+      : stringifyArgs(this, result, new Set());
   }
 
   async beginInvokeJSFromDotNet(asyncHandle: number, identifier: string, argsJson: string | null, resultType: JSCallResultType, targetInstanceId: number, callType: JSCallType): Promise<any> {
@@ -549,11 +571,18 @@ class CallDispatcher implements ICallDispatcher {
       // We only await the result if the caller wants to be notified about it
       if (asyncHandle) {
         const result = await valueOrPromise;
+        const abortSignals = new Set<ObservedAbortSignal>();
         const serializedResult = stringifyArgs(this, [
           asyncHandle,
           true,
           createJSCallResult(result, resultType),
-        ]);
+        ], abortSignals);
+        // Counted before sending, because WebAssembly can report the read before endInvokeJSFromDotNet returns.
+        if (abortSignals.size) {
+          this._resultAbortSignals.set(asyncHandle, abortSignals);
+          abortSignals.forEach(observed => observed.pendingCalls++);
+        }
+
         // On success, dispatch result back to .NET
         this._dotNetCallDispatcher.endInvokeJSFromDotNet(asyncHandle, true, serializedResult);
       }
@@ -571,7 +600,8 @@ class CallDispatcher implements ICallDispatcher {
   }
 
   processJSCall(targetInstanceId: number, identifier: string, callType: JSCallType, argsJson: string | null) {
-    if (targetInstanceId === windowJSObjectId && this.tryProcessCancellationTokenMessage(identifier, argsJson)) {
+    if (targetInstanceId === windowJSObjectId
+      && (this.tryProcessCancellationTokenMessage(identifier, argsJson) || this.tryProcessResultReadMessage(identifier, argsJson))) {
       return undefined;
     }
 
@@ -686,11 +716,15 @@ class CallDispatcher implements ICallDispatcher {
     const abortSignals = asyncCall?.abortSignals;
     if (abortSignals) {
       asyncCall.abortSignals = undefined;
-      abortSignals.forEach(observed => {
-        observed.pendingCalls--;
-        this.releaseAbortSignalWhenUnused(observed);
-      });
+      this.endHold(abortSignals);
     }
+  }
+
+  private endHold(abortSignals: Set<ObservedAbortSignal>) {
+    abortSignals.forEach(observed => {
+      observed.pendingCalls--;
+      this.releaseAbortSignalWhenUnused(observed);
+    });
   }
 
   private completePendingCall(asyncCallId: number, success: boolean, resultOrError: any) {
