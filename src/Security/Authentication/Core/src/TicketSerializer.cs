@@ -96,77 +96,10 @@ public class TicketSerializer : IDataSerializer<AuthenticationTicket>
         Write(ref payloadWriter, ticket);
     }
 
-    /// <summary>
-    /// Writes the specified <paramref name="identity" />.
-    /// </summary>
-    /// <param name="writer">The <see cref="BinaryWriter" />.</param>
-    /// <param name="identity">The <see cref="ClaimsIdentity" />.</param>
-    protected virtual void WriteIdentity(BinaryWriter writer, ClaimsIdentity identity)
-    {
-        ArgumentNullException.ThrowIfNull(writer);
-
-        var payloadWriter = new BinaryPayloadWriter(writer);
-        WriteIdentityCore(ref payloadWriter, identity);
-    }
-
-    /// <summary>
-    /// Writes the specified claim using the provided binary writer.
-    /// </summary>
-    /// <param name="writer">The binary writer to write to.</param>
-    /// <param name="claim">The claim to serialize.</param>
-    protected virtual void WriteClaim(BinaryWriter writer, Claim claim)
-    {
-        ArgumentNullException.ThrowIfNull(writer);
-
-        var payloadWriter = new BinaryPayloadWriter(writer);
-        WriteClaimCore(ref payloadWriter, claim);
-    }
-
-    /// <summary>
-    /// Reads an <see cref="AuthenticationTicket"/>.
-    /// </summary>
-    /// <param name="reader">The <see cref="BinaryReader"/>.</param>
-    /// <returns>The <see cref="AuthenticationTicket"/> if the format is supported, otherwise <see langword="null"/>.</returns>
-    public virtual AuthenticationTicket? Read(BinaryReader reader)
-    {
-        ArgumentNullException.ThrowIfNull(reader);
-
-        var payloadReader = new BinaryPayloadReader(reader);
-        return Read(ref payloadReader);
-    }
-
-    /// <summary>
-    /// Reads a <see cref="ClaimsIdentity"/> from a <see cref="BinaryReader"/>.
-    /// </summary>
-    /// <param name="reader">The <see cref="BinaryReader"/>.</param>
-    /// <returns>The read <see cref="ClaimsIdentity"/>.</returns>
-    protected virtual ClaimsIdentity ReadIdentity(BinaryReader reader)
-    {
-        ArgumentNullException.ThrowIfNull(reader);
-
-        var payloadReader = new BinaryPayloadReader(reader);
-        return ReadIdentityCore(ref payloadReader);
-    }
-
-    /// <summary>
-    /// Reads a <see cref="Claim"/> and adds it to the specified <paramref name="identity"/>.
-    /// </summary>
-    /// <param name="reader">The <see cref="BinaryReader"/>.</param>
-    /// <param name="identity">The <see cref="ClaimsIdentity"/> to add the claim to.</param>
-    /// <returns>The read <see cref="Claim"/>.</returns>
-    protected virtual Claim ReadClaim(BinaryReader reader, ClaimsIdentity identity)
-    {
-        ArgumentNullException.ThrowIfNull(reader);
-        ArgumentNullException.ThrowIfNull(identity);
-
-        var payloadReader = new BinaryPayloadReader(reader);
-        return ReadClaimCore(ref payloadReader, identity);
-    }
-
-    // The methods below implement the format once for both the public BinaryReader/BinaryWriter-based methods and
-    // the buffer-based fast paths. When the payload reader or writer wraps a BinaryReader or BinaryWriter, nested
-    // identities and claims are dispatched through the virtual methods so that derived serializers' overrides are honored.
-
+    // The private ref BinaryPayloadWriter/BinaryPayloadReader overloads below implement the format once for both the
+    // public BinaryWriter/BinaryReader-based methods and the buffer-based fast paths. When the payload writer or reader
+    // wraps a BinaryWriter or BinaryReader, nested identities and claims are dispatched through the virtual methods so
+    // that derived serializers' overrides are honored.
     private void Write(ref BinaryPayloadWriter writer, AuthenticationTicket ticket)
     {
         writer.WriteInt32(FormatVersion);
@@ -182,6 +115,19 @@ public class TicketSerializer : IDataSerializer<AuthenticationTicket>
         }
 
         PropertiesSerializer.Write(ref writer, ticket.Properties);
+    }
+
+    /// <summary>
+    /// Writes the specified <paramref name="identity" />.
+    /// </summary>
+    /// <param name="writer">The <see cref="BinaryWriter" />.</param>
+    /// <param name="identity">The <see cref="ClaimsIdentity" />.</param>
+    protected virtual void WriteIdentity(BinaryWriter writer, ClaimsIdentity identity)
+    {
+        ArgumentNullException.ThrowIfNull(writer);
+
+        var payloadWriter = new BinaryPayloadWriter(writer);
+        WriteIdentityCore(ref payloadWriter, identity);
     }
 
     private void WriteIdentity(ref BinaryPayloadWriter writer, ClaimsIdentity identity)
@@ -236,6 +182,19 @@ public class TicketSerializer : IDataSerializer<AuthenticationTicket>
         }
     }
 
+    /// <summary>
+    /// Writes the specified claim using the provided binary writer.
+    /// </summary>
+    /// <param name="writer">The binary writer to write to.</param>
+    /// <param name="claim">The claim to serialize.</param>
+    protected virtual void WriteClaim(BinaryWriter writer, Claim claim)
+    {
+        ArgumentNullException.ThrowIfNull(writer);
+
+        var payloadWriter = new BinaryPayloadWriter(writer);
+        WriteClaimCore(ref payloadWriter, claim);
+    }
+
     private void WriteClaim(ref BinaryPayloadWriter writer, Claim claim)
     {
         if (writer.BinaryWriter is { } binaryWriter)
@@ -268,6 +227,19 @@ public class TicketSerializer : IDataSerializer<AuthenticationTicket>
         }
     }
 
+    /// <summary>
+    /// Reads an <see cref="AuthenticationTicket"/>.
+    /// </summary>
+    /// <param name="reader">The <see cref="BinaryReader"/>.</param>
+    /// <returns>The <see cref="AuthenticationTicket"/> if the format is supported, otherwise <see langword="null"/>.</returns>
+    public virtual AuthenticationTicket? Read(BinaryReader reader)
+    {
+        ArgumentNullException.ThrowIfNull(reader);
+
+        var payloadReader = new BinaryPayloadReader(reader);
+        return Read(ref payloadReader);
+    }
+
     private AuthenticationTicket? Read(ref BinaryPayloadReader reader)
     {
         if (reader.ReadInt32() != FormatVersion)
@@ -294,6 +266,19 @@ public class TicketSerializer : IDataSerializer<AuthenticationTicket>
         var properties = PropertiesSerializer.Read(ref reader);
 
         return new AuthenticationTicket(new ClaimsPrincipal(identities), properties, scheme);
+    }
+
+    /// <summary>
+    /// Reads a <see cref="ClaimsIdentity"/> from a <see cref="BinaryReader"/>.
+    /// </summary>
+    /// <param name="reader">The <see cref="BinaryReader"/>.</param>
+    /// <returns>The read <see cref="ClaimsIdentity"/>.</returns>
+    protected virtual ClaimsIdentity ReadIdentity(BinaryReader reader)
+    {
+        ArgumentNullException.ThrowIfNull(reader);
+
+        var payloadReader = new BinaryPayloadReader(reader);
+        return ReadIdentityCore(ref payloadReader);
     }
 
     private ClaimsIdentity ReadIdentity(ref BinaryPayloadReader reader)
@@ -337,6 +322,21 @@ public class TicketSerializer : IDataSerializer<AuthenticationTicket>
         }
 
         return identity;
+    }
+
+    /// <summary>
+    /// Reads a <see cref="Claim"/> and adds it to the specified <paramref name="identity"/>.
+    /// </summary>
+    /// <param name="reader">The <see cref="BinaryReader"/>.</param>
+    /// <param name="identity">The <see cref="ClaimsIdentity"/> to add the claim to.</param>
+    /// <returns>The read <see cref="Claim"/>.</returns>
+    protected virtual Claim ReadClaim(BinaryReader reader, ClaimsIdentity identity)
+    {
+        ArgumentNullException.ThrowIfNull(reader);
+        ArgumentNullException.ThrowIfNull(identity);
+
+        var payloadReader = new BinaryPayloadReader(reader);
+        return ReadClaimCore(ref payloadReader, identity);
     }
 
     private Claim ReadClaim(ref BinaryPayloadReader reader, ClaimsIdentity identity)

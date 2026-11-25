@@ -236,7 +236,7 @@ public class TicketSerializerTests
     [Fact]
     public void Deserialize_ThrowsSameExceptionAsReadForTruncatedData()
     {
-        var data = TicketSerializer.Default.Serialize(CreateComplexTicket(0));
+        var data = TicketSerializer.Default.Serialize(CreateSmallTicket());
 
         for (var length = 0; length < data.Length; length++)
         {
@@ -382,6 +382,26 @@ public class TicketSerializerTests
         properties.Items["null"] = null;
 
         return new AuthenticationTicket(new ClaimsPrincipal(new[] { first, second }), properties, "Identity.Application");
+    }
+
+    // Covers every format element (default placeholders, bootstrap context, actor, claim properties, multi-byte
+    // UTF-8 and a two-byte string length prefix) while staying small enough to truncate at every length.
+    private static AuthenticationTicket CreateSmallTicket()
+    {
+        var actor = new ClaimsIdentity("actor-auth");
+        actor.AddClaim(new Claim("actor-claim", "actor-value"));
+
+        var identity = new ClaimsIdentity("auth") { BootstrapContext = "bootstrap", Actor = actor };
+        identity.AddClaim(new Claim(ClaimTypes.Name, "caf\u00e9 \U0001F600"));
+        identity.AddClaim(new Claim("typed", "42", ClaimValueTypes.Integer32, "issuer", "original-issuer"));
+        var withProperties = new Claim("long", new string('x', 200));
+        withProperties.Properties.Add("p", "v");
+        identity.AddClaim(withProperties);
+
+        var properties = new AuthenticationProperties { IsPersistent = true };
+        properties.Items["null"] = null;
+
+        return new AuthenticationTicket(new ClaimsPrincipal(identity), properties, "Scheme");
     }
 
     private static void AssertTicketsEqual(AuthenticationTicket expected, AuthenticationTicket actual)

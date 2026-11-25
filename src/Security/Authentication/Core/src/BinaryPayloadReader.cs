@@ -75,7 +75,7 @@ internal ref struct BinaryPayloadReader
         var length = Read7BitEncodedInt();
         if (length < 0)
         {
-            throw new IOException("BinaryReader encountered an invalid string length.");
+            throw new IOException();
         }
 
         if (_remaining.Length < length)
@@ -122,12 +122,12 @@ internal ref struct BinaryPayloadReader
         byteReadJustNow = ReadByte();
         if (byteReadJustNow > 0b_1111u)
         {
-            throw new FormatException("Too many bytes in what should have been a 7-bit encoded integer.");
+            throw new FormatException();
         }
 
         result |= (uint)byteReadJustNow << (MaxBytesWithoutOverflow * 7);
         return (int)result;
     }
 
-    private static void ThrowEndOfStream() => throw new EndOfStreamException("Unable to read beyond the end of the stream.");
+    private static void ThrowEndOfStream() => throw new EndOfStreamException();
 }
