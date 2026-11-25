@@ -193,14 +193,12 @@ public abstract class WebViewManager : IAsyncDisposable
 
         return await capturedCurrentPageContext.Renderer.Dispatcher.InvokeAsync(() =>
         {
-            if (capturedCurrentPageContext != _currentPageContext)
+            if (_disposed || capturedCurrentPageContext != _currentPageContext)
             {
-                // If the captured context doesn't match the current context, that means that there was something like
-                // a navigation event that caused the original page to be detached and a new one attached. Thus, we
-                // cancel out of the operation and return failure.
+                // Shutdown or navigation may have made the captured page unavailable before this callback ran.
                 return false;
             }
-            workItem(_currentPageContext.ServiceProvider);
+            workItem(capturedCurrentPageContext.ServiceProvider);
             return true;
         });
     }
@@ -273,22 +271,29 @@ public abstract class WebViewManager : IAsyncDisposable
     /// </summary>
     protected virtual async ValueTask DisposeAsyncCore()
     {
-        if (!_disposed)
+        await _dispatcher.InvokeAsync(async () =>
         {
-            _disposed = true;
-
-            if (_currentPageContext != null)
+            if (!_disposed)
             {
-                try
+                _disposed = true;
+
+                if (_currentPageContext != null)
                 {
-                    await _currentPageContext.DisposeAsync();
-                }
-                finally
-                {
-                    _currentPageContext = null;
+                    try
+                    {
+                        await _currentPageContext.DisposeAsync();
+                    }
+                    finally
+                    {
+                        // Custom dispatchers may resume async work outside their dispatcher context.
+                        await _dispatcher.InvokeAsync(() =>
+                        {
+                            _currentPageContext = null;
+                        });
+                    }
                 }
             }
-        }
+        });
     }
 
     /// <inheritdoc/>

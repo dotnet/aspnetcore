@@ -10,6 +10,234 @@ namespace Microsoft.AspNetCore.Components.WebView;
 
 public class WebViewManagerTests
 {
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task TryDispatchAsync_WithoutActivePage_ReturnsFalse(bool disposed)
+    {
+        await using var services = RegisterTestServices().AddTestBlazorWebView().BuildServiceProvider();
+        await using var webViewManager = new TestWebViewManager(services, new TestFileProvider());
+        if (disposed)
+        {
+            webViewManager.ReceiveAttachPageMessage();
+            await webViewManager.DisposeAsync();
+        }
+
+        var invoked = false;
+        var result = await webViewManager.TryDispatchAsync(_ => invoked = true);
+
+        Assert.False(result);
+        Assert.False(invoked);
+    }
+
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task TryDispatchAsync_WithActivePage_UsesPageServiceProvider(bool actionThrows)
+    {
+        await using var services = RegisterTestServices().AddTestBlazorWebView().BuildServiceProvider();
+        await using var webViewManager = new TestWebViewManager(services, new TestFileProvider());
+        await webViewManager.AddRootComponentAsync(typeof(MyComponent), "#app", ParameterView.Empty);
+        webViewManager.ReceiveAttachPageMessage();
+        var context = webViewManager.CurrentPageContext;
+        Assert.NotNull(context);
+        var scopedService = Assert.Single(services.GetRequiredService<SingletonService>().Services);
+        var expectedException = new InvalidOperationException("Work item failed.");
+        var invocationCount = 0;
+
+        var dispatch = webViewManager.TryDispatchAsync(provider =>
+        {
+            invocationCount++;
+            Assert.True(webViewManager.Dispatcher.CheckAccess());
+            Assert.Same(context.ServiceProvider, provider);
+            Assert.Same(scopedService, provider.GetRequiredService<ScopedService>());
+            if (actionThrows)
+            {
+                throw expectedException;
+            }
+        });
+
+        if (actionThrows)
+        {
+            var exception = await Assert.ThrowsAsync<InvalidOperationException>(() => dispatch);
+            Assert.Same(expectedException, exception);
+        }
+        else
+        {
+            Assert.True(await dispatch);
+        }
+
+        Assert.Equal(1, invocationCount);
+    }
+
+    [Fact]
+    public async Task TryDispatchAsync_AfterCapturedPageIsReplaced_ReturnsFalse()
+    {
+        await using var services = RegisterTestServices().AddTestBlazorWebView().BuildServiceProvider();
+        await using var webViewManager = new TestWebViewManager(services, new TestFileProvider());
+        await webViewManager.AddRootComponentAsync(typeof(MyComponent), "#app", ParameterView.Empty);
+        webViewManager.ReceiveAttachPageMessage();
+        var originalContext = webViewManager.CurrentPageContext;
+        Assert.NotNull(originalContext);
+        var invoked = false;
+        Task<bool> dispatch = Task.FromResult(false);
+
+        await webViewManager.Dispatcher.InvokeAsync(() =>
+        {
+            var dispatchQueued = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+            ThreadPool.QueueUserWorkItem(_ =>
+            {
+                try
+                {
+                    Assert.False(webViewManager.Dispatcher.CheckAccess());
+                    dispatch = webViewManager.TryDispatchAsync(provider => invoked = true);
+                    dispatchQueued.SetResult();
+                }
+                catch (Exception exception)
+                {
+                    dispatchQueued.SetException(exception);
+                }
+            });
+            dispatchQueued.Task.WaitAsync(TimeSpan.FromSeconds(30)).GetAwaiter().GetResult();
+            Assert.False(dispatch.IsCompleted);
+
+            // Replace the page through IPC while the captured page's dispatch is still queued.
+            webViewManager.ReceiveAttachPageMessage();
+            Assert.NotSame(originalContext, webViewManager.CurrentPageContext);
+            Assert.NotNull(webViewManager.CurrentPageContext);
+        });
+
+        Assert.False(await dispatch.WaitAsync(TimeSpan.FromSeconds(30)));
+        Assert.False(invoked);
+    }
+
+    [Fact]
+    public async Task DisposingWebViewManager_DoesNotDisconnectAnActiveDispatch()
+    {
+        await using var services = RegisterTestServices().AddTestBlazorWebView().BuildServiceProvider();
+        await using var webViewManager = new TestWebViewManager(services, new TestFileProvider());
+        var componentCaptured = new TaskCompletionSource<ComponentAwaitingJSInvocationOnDisposal>();
+        await webViewManager.AddRootComponentAsync(typeof(ComponentAwaitingJSInvocationOnDisposal), "#app",
+            ParameterView.FromDictionary(new Dictionary<string, object>
+            {
+                [nameof(ComponentAwaitingJSInvocationOnDisposal.Capture)] =
+                    (Action<ComponentAwaitingJSInvocationOnDisposal>)componentCaptured.SetResult,
+            }));
+        webViewManager.ReceiveAttachPageMessage();
+        var component = await componentCaptured.Task.WaitAsync(TimeSpan.FromSeconds(30));
+        // Keep cleanup valid if the accepted action cannot start its new invocation.
+        component.PendingInvocation = Task.FromResult("initial");
+        var context = webViewManager.CurrentPageContext;
+        var scopedService = Assert.Single(services.GetRequiredService<SingletonService>().Services);
+        var dispatchStarted = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+        var continueDispatch = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+        var disposalRequested = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+        Task disposal = Task.CompletedTask;
+        Task requestDisposal = Task.CompletedTask;
+        var dispatch = Task.Run(() => webViewManager.TryDispatchAsync(provider =>
+        {
+            Assert.Same(context.ServiceProvider, provider);
+            dispatchStarted.SetResult();
+            continueDispatch.Task.GetAwaiter().GetResult();
+            component.PendingInvocation = provider.GetRequiredService<IJSRuntime>()
+                .InvokeAsync<string>("acceptedBeforeClosing").AsTask();
+        }));
+
+        try
+        {
+            await dispatchStarted.Task.WaitAsync(TimeSpan.FromSeconds(30));
+            requestDisposal = Task.Run(() =>
+            {
+                Assert.False(webViewManager.Dispatcher.CheckAccess());
+                disposal = webViewManager.DisposeAsync().AsTask();
+                disposalRequested.SetResult();
+            });
+            await disposalRequested.Task.WaitAsync(TimeSpan.FromSeconds(30));
+            Assert.False(disposal.IsCompleted);
+            continueDispatch.SetResult();
+            Assert.True(await dispatch.WaitAsync(TimeSpan.FromSeconds(30)));
+            await Task.Run(() => webViewManager.Dispatcher.InvokeAsync(() => { }))
+                .WaitAsync(TimeSpan.FromSeconds(30));
+
+            Assert.False(component.PendingInvocation.IsFaulted, component.PendingInvocation.Exception?.ToString());
+            Assert.True(component.DisposalStarted);
+            Assert.False(disposal.IsCompleted);
+            Assert.False(scopedService.Disposed);
+            Assert.Same(context, webViewManager.CurrentPageContext);
+            Assert.True(IpcCommon.TryDeserializeOutgoing(
+                webViewManager.SentIpcMessages.Last(), out var messageType, out var args));
+            Assert.Equal(IpcCommon.OutgoingMessageType.BeginInvokeJS, messageType);
+            Assert.Equal("acceptedBeforeClosing", args[1].GetString());
+            var invocationId = args[0].GetInt64();
+            webViewManager.ReceiveIpcMessage(IpcCommon.IncomingMessageType.EndInvokeJS,
+                invocationId, true, $"[{invocationId},true,\"completed\"]");
+            await disposal.WaitAsync(TimeSpan.FromSeconds(30));
+
+            Assert.Equal("completed", component.Result);
+            Assert.True(scopedService.Disposed);
+            Assert.Null(webViewManager.CurrentPageContext);
+        }
+        finally
+        {
+            continueDispatch.TrySetResult();
+            _ = await Record.ExceptionAsync(() => dispatch.WaitAsync(TimeSpan.FromSeconds(30)));
+            _ = await Record.ExceptionAsync(() => requestDisposal.WaitAsync(TimeSpan.FromSeconds(30)));
+            if (!component.PendingInvocation.IsCompleted)
+            {
+                Assert.True(IpcCommon.TryDeserializeOutgoing(
+                    webViewManager.SentIpcMessages.Last(), out _, out var args));
+                var invocationId = args[0].GetInt64();
+                await webViewManager.Dispatcher.InvokeAsync(() =>
+                    Microsoft.JSInterop.Infrastructure.DotNetDispatcher.EndInvokeJS(
+                        context.JSRuntime, $"[{invocationId},true,\"cleanup\"]"));
+            }
+
+            _ = await Record.ExceptionAsync(() => disposal.WaitAsync(TimeSpan.FromSeconds(30)));
+        }
+    }
+
+    [Fact]
+    public async Task TryDispatchAsync_WhileScopeDisposalIsPending_ReturnsFalse()
+    {
+        var disposalEntered = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+        var releaseDisposal = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+        var scopedService = new GatedAsyncDisposableService(disposalEntered, releaseDisposal.Task);
+        await using var services = RegisterTestServices()
+            .AddTestBlazorWebView()
+            .AddScoped(_ => scopedService)
+            .BuildServiceProvider();
+        await using var webViewManager = new TestWebViewManager(services, new TestFileProvider());
+        await webViewManager.AddRootComponentAsync(typeof(ComponentWithGatedAsyncDisposableService), "#app", ParameterView.Empty);
+        webViewManager.ReceiveAttachPageMessage();
+        var context = webViewManager.CurrentPageContext;
+        Assert.NotNull(context);
+        Task disposal = Task.CompletedTask;
+        var invoked = false;
+
+        try
+        {
+            disposal = webViewManager.DisposeAsync().AsTask();
+            await disposalEntered.Task.WaitAsync(TimeSpan.FromSeconds(30));
+            Assert.False(disposal.IsCompleted);
+            Assert.False(scopedService.Disposed);
+            Assert.Same(context, webViewManager.CurrentPageContext);
+
+            var result = await webViewManager.TryDispatchAsync(_ => invoked = true)
+                .WaitAsync(TimeSpan.FromSeconds(30));
+
+            Assert.False(invoked);
+            Assert.False(result);
+        }
+        finally
+        {
+            releaseDisposal.TrySetResult();
+            await disposal.WaitAsync(TimeSpan.FromSeconds(30));
+        }
+
+        Assert.True(scopedService.Disposed);
+        Assert.Null(webViewManager.CurrentPageContext);
+    }
+
     [Fact]
     public async Task CanRenderRootComponentAsync()
     {
