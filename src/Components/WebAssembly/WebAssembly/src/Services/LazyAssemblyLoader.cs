@@ -3,6 +3,7 @@
 
 using System.Diagnostics.CodeAnalysis;
 using System.Reflection;
+using System.Reflection.Metadata;
 using System.Runtime.InteropServices.JavaScript;
 using System.Runtime.Loader;
 using Microsoft.JSInterop;
@@ -57,6 +58,17 @@ public sealed partial class LazyAssemblyLoader
                     && definition.Assembly == "Microsoft.AspNetCore.Components.Endpoints"))
             {
                 yield return definition.Assembly;
+
+                // Bound parsing by the serialized name length so valid complex generic names
+                // are not rejected by the parser's default node limit.
+                if (definition.TypeName is { } typeName && typeName.Contains("[[", StringComparison.Ordinal)
+                    && TypeName.TryParse(typeName.AsSpan(), out var parsedTypeName, new TypeNameParseOptions { MaxNodes = typeName.Length }))
+                {
+                    foreach (var assemblyName in GetGenericArgumentAssemblyNames(parsedTypeName))
+                    {
+                        yield return assemblyName;
+                    }
+                }
             }
         }
     }
@@ -83,6 +95,27 @@ public sealed partial class LazyAssemblyLoader
         if (toLoad.Count > 0)
         {
             await LoadAssembliesAsync(toLoad);
+        }
+    }
+
+    private static IEnumerable<string> GetGenericArgumentAssemblyNames(TypeName typeName)
+    {
+        while (typeName.IsArray || typeName.IsPointer || typeName.IsByRef)
+        {
+            typeName = typeName.GetElementType();
+        }
+
+        foreach (var argument in typeName.GetGenericArguments())
+        {
+            if (argument.AssemblyName is { } assemblyName)
+            {
+                yield return assemblyName.Name;
+            }
+
+            foreach (var nestedAssemblyName in GetGenericArgumentAssemblyNames(argument))
+            {
+                yield return nestedAssemblyName;
+            }
         }
     }
 

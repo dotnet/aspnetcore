@@ -4,23 +4,45 @@
 <h1>Lazy WebAssembly components</h1>
 <p id="lazy-scenario">@Scenario</p>
 <a id="lazy-parameter" href="@($"lazy-webassembly-components?scenario=parameter&prerender={Prerender}")">Lazy parameter</a>
+<a id="lazy-parameter-generic" href="@($"lazy-webassembly-components?scenario=parameter-generic&prerender={Prerender}")">Lazy generic parameter</a>
+<a id="lazy-parameter-nested-generic" href="@($"lazy-webassembly-components?scenario=parameter-nested-generic&prerender={Prerender}")">Lazy nested generic parameter</a>
+<a id="refresh-lazy" href="@($"lazy-webassembly-components?scenario={Scenario}&prerender={Prerender}&revision={Revision + 1}")">Refresh</a>
+<a id="eager-parameter" href="@($"lazy-webassembly-components?scenario=parameter-eager&prerender={Prerender}")">Eager parameter</a>
 
 @if (Scenario == "root")
 {
     <LazyTestContentPackage.LazyCounter @rendermode="@(new InteractiveWebAssemblyRenderMode(Prerender))" />
 }
-else if (Scenario == "parameter")
+else if (Scenario is "parameter" or "parameter-eager" or "parameter-generic" or "parameter-nested-generic")
 {
-    <Components.WasmMinimal.ObjectParameterCounter Value="@(new LazyTestContentPackage.LazyCounter.Payload { Text = "hello" })" @rendermode="@(new InteractiveWebAssemblyRenderMode(Prerender))" />
+    <Components.WasmMinimal.ObjectParameterCounter Value="@ParameterValue" @rendermode="@(new InteractiveWebAssemblyRenderMode(Prerender))" />
 }
 
 <a id="remove-lazy" href="@($"lazy-webassembly-components?prerender={Prerender}")">Remove</a>
 <a id="eager-control" href="@($"interactive-callsite?wasm=4&prerender={Prerender}")">Eager counter</a>
 
 @code {
+    private object ParameterValue
+    {
+        get
+        {
+            var payload = new LazyTestContentPackage.LazyCounter.Payload { Text = Revision == 0 ? "hello" : $"hello {Revision}" };
+            return Scenario switch
+            {
+                "parameter-eager" => "eager",
+                "parameter-generic" => new List<LazyTestContentPackage.LazyCounter.Payload> { payload },
+                "parameter-nested-generic" => new List<List<LazyTestContentPackage.LazyCounter.Payload>> { new() { payload } },
+                _ => payload,
+            };
+        }
+    }
+
     [SupplyParameterFromQuery]
     public string? Scenario { get; set; }
 
     [SupplyParameterFromQuery]
     public bool Prerender { get; set; }
+
+    [SupplyParameterFromQuery]
+    public int Revision { get; set; }
 }

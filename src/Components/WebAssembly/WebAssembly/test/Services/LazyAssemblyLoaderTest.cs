@@ -48,6 +48,77 @@ public class LazyAssemblyLoaderTest
         Assert.Contains("NonExistent.LazyAssembly", exception.Message);
     }
 
+    [Fact]
+    public void GetRequiredAssemblyNames_IncludesGenericArgumentAssembly()
+    {
+        var marker = new ComponentMarker();
+        marker.WriteWebAssemblyData("RootAssembly", "RootComponent", JsonSerializer.Serialize(
+            new ComponentParameter[]
+            {
+                new() { Name = "Value", Assembly = "System.Collections", TypeName = "System.Collections.Generic.List`1[[Payload, LazyPayload, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null]]" },
+            }, WebAssemblyJsonSerializerContext.Default.ComponentParameterArray), "[]");
+
+        Assert.Equal(["RootAssembly", "System.Collections", "LazyPayload"], LazyAssemblyLoader.GetRequiredAssemblyNames(marker));
+    }
+
+    [Theory]
+    [InlineData("Pair`2[[First, FirstAssembly],[Second, SecondAssembly]]", new[] { "FirstAssembly", "SecondAssembly" })]
+    [InlineData("Outer`1[[Inner`1[[Payload, PayloadAssembly]], InnerAssembly]]", new[] { "InnerAssembly", "PayloadAssembly" })]
+    [InlineData("Outer`1[[Payload[], PayloadAssembly]][,][]", new[] { "PayloadAssembly" })]
+    [InlineData("Outer`1[[Inner`1[[Payload, PayloadAssembly]][], InnerAssembly]]", new[] { "InnerAssembly", "PayloadAssembly" })]
+    [InlineData("Outer`1[Inner`1[[Payload, PayloadAssembly]]]", new[] { "PayloadAssembly" })]
+    [InlineData("Pair`2[[Payload, PayloadAssembly],[Other, PayloadAssembly]]", new[] { "PayloadAssembly", "PayloadAssembly" })]
+    [InlineData(@"Outer`1[[Namespace.Escaped\+Name, PayloadAssembly]]", new[] { "PayloadAssembly" })]
+    [InlineData("Payload", new string[0])]
+    [InlineData("Payload[]", new string[0])]
+    [InlineData("Outer`1", new string[0])]
+    [InlineData("Outer`1[Payload]", new string[0])]
+    [InlineData("Outer`1[[Payload, PayloadAssembly]", new string[0])]
+    [InlineData("Outer`1[[Payload, PayloadAssembly, Version=invalid]]", new string[0])]
+    [InlineData(null, new string[0])]
+    public void GetRequiredAssemblyNames_DiscoversGenericArgumentsWithoutResolvingTypes(string typeName, string[] argumentAssemblies)
+    {
+        var marker = new ComponentMarker();
+        marker.WriteWebAssemblyData("RootAssembly", "RootComponent", JsonSerializer.Serialize(
+            new ComponentParameter[] { new() { Name = "Value", Assembly = "ParameterAssembly", TypeName = typeName } },
+            WebAssemblyJsonSerializerContext.Default.ComponentParameterArray), "[]");
+
+        Assert.Equal(new[] { "RootAssembly", "ParameterAssembly" }.Concat(argumentAssemblies), LazyAssemblyLoader.GetRequiredAssemblyNames(marker));
+    }
+
+    [Fact]
+    public void GetRequiredAssemblyNames_UsesRuntimeGenericTypeName()
+    {
+        var parameterType = typeof(Dictionary<string, LazyAssemblyLoaderTest[]>);
+        var marker = new ComponentMarker();
+        marker.WriteWebAssemblyData("RootAssembly", "RootComponent", JsonSerializer.Serialize(
+            new ComponentParameter[]
+            {
+                new() { Name = "Value", Assembly = parameterType.Assembly.GetName().Name, TypeName = parameterType.FullName },
+            }, WebAssemblyJsonSerializerContext.Default.ComponentParameterArray), "[]");
+
+        Assert.Equal(
+            new[] { "RootAssembly", parameterType.Assembly.GetName().Name, typeof(string).Assembly.GetName().Name, typeof(LazyAssemblyLoaderTest).Assembly.GetName().Name },
+            LazyAssemblyLoader.GetRequiredAssemblyNames(marker));
+    }
+
+    [Fact]
+    public void GetRequiredAssemblyNames_OverDefaultParserLimit_IncludesGenericArgumentAssemblies()
+    {
+        var typeName = "Payload";
+        for (var i = 0; i < 32; i++)
+        {
+            typeName = $"Outer`1[[{typeName}, ArgumentAssembly]]";
+        }
+
+        var marker = new ComponentMarker();
+        marker.WriteWebAssemblyData("RootAssembly", "RootComponent", JsonSerializer.Serialize(
+            new ComponentParameter[] { new() { Name = "Value", Assembly = "ParameterAssembly", TypeName = typeName } },
+            WebAssemblyJsonSerializerContext.Default.ComponentParameterArray), "[]");
+
+        Assert.Equal(new[] { "RootAssembly", "ParameterAssembly" }.Concat(Enumerable.Repeat("ArgumentAssembly", 32)), LazyAssemblyLoader.GetRequiredAssemblyNames(marker));
+    }
+
     private static LazyAssemblyLoader CreateLoader()
         => new(Mock.Of<IJSRuntime>());
 

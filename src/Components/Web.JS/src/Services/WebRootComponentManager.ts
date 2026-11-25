@@ -45,7 +45,7 @@ export type RootComponentInfo = {
   assignedRendererId?: WebRendererId;
   uniqueIdAtLastUpdate?: number;
   hasPendingRemoveOperation?: boolean;
-  activationFailed?: boolean;
+  failedUniqueId?: number;
 };
 
 export class WebRootComponentManager implements DescriptorHandler, RootComponentManager</* InitialComponentsDescriptorType */ never> {
@@ -53,7 +53,7 @@ export class WebRootComponentManager implements DescriptorHandler, RootComponent
 
   private readonly _seenDescriptors = new Set<ComponentDescriptor>();
 
-  private readonly _pendingOperationBatches: { [batchId: number]: RootComponentOperationBatch } = {};
+  private readonly _pendingOperationBatches: { [batchId: number]: RootComponentOperationBatch & { descriptorUniqueIds?: Map<number, number> } } = {};
 
   private _nextOperationBatchId = 1;
 
@@ -338,6 +338,15 @@ export class WebRootComponentManager implements DescriptorHandler, RootComponent
       };
       this._pendingOperationBatches[batch.batchId] = batch;
       const batchJson = JSON.stringify(batch);
+      if (rendererId === WebRendererId.WebAssembly) {
+        for (const operation of operations) {
+          if (operation.type !== 'remove') {
+            const pendingBatch = this._pendingOperationBatches[batch.batchId];
+            pendingBatch.descriptorUniqueIds ??= new Map<number, number>();
+            pendingBatch.descriptorUniqueIds.set(operation.ssrComponentId, this._rootComponentsBySsrComponentId.get(operation.ssrComponentId)!.uniqueIdAtLastUpdate!);
+          }
+        }
+      }
 
       if (rendererId === WebRendererId.Server) {
         updateServerRootComponents(batchJson, serverState);
@@ -398,11 +407,21 @@ export class WebRootComponentManager implements DescriptorHandler, RootComponent
   }
 
   private determinePendingOperation(component: RootComponentInfo): RootComponentOperation | null {
+    if (component.hasPendingRemoveOperation) {
+      return null;
+    }
+
     if (isDescriptorInDocument(component.descriptor)) {
-      // Do not automatically retry a failed activation on every document refresh.
-      // A new descriptor on a subsequent visit can activate independently.
-      if (component.activationFailed) {
-        return null;
+      if (component.failedUniqueId !== undefined) {
+        if (component.failedUniqueId === component.descriptor.uniqueId || !isRendererAttached(component.assignedRendererId!)) {
+          return null;
+        }
+
+        // Both a failed add's ingestion tombstone and a failed update's live root must
+        // be removed before the latest descriptor can be added under this SSR ID.
+        setShouldPreserveContentOnInteractiveComponentDisposal(component.descriptor.start as unknown as LogicalElement, true);
+        component.hasPendingRemoveOperation = true;
+        return { type: 'remove', ssrComponentId: component.ssrComponentId };
       }
 
       if (component.assignedRendererId === undefined) {
@@ -496,16 +515,17 @@ export class WebRootComponentManager implements DescriptorHandler, RootComponent
   public onUpdateRootComponentsFailed(batchId: number): void {
     const batch = this._pendingOperationBatches[batchId];
     for (const operation of batch.operations) {
-      if (operation.type === 'add') {
+      if (operation.type !== 'remove') {
         const component = this._rootComponentsBySsrComponentId.get(operation.ssrComponentId);
         if (component) {
-          component.activationFailed = true;
+          component.failedUniqueId ??= batch.descriptorUniqueIds!.get(operation.ssrComponentId);
         }
       }
     }
 
     // The renderer will acknowledge the removal-only remainder, not the failed work.
     batch.operations = batch.operations.filter(operation => operation.type === 'remove');
+    this.rootComponentsMayRequireRefresh();
   }
 
   public onAfterUpdateRootComponents(batchId: number): void {
@@ -518,7 +538,17 @@ export class WebRootComponentManager implements DescriptorHandler, RootComponent
           // We can stop tracking this component now that .NET has acknowledged its removal.
           const component = this._rootComponentsBySsrComponentId.get(operation.ssrComponentId);
           if (component) {
-            this.unregisterComponent(component);
+            if (component.failedUniqueId !== undefined && isDescriptorInDocument(component.descriptor)) {
+              component.assignedRendererId = undefined;
+              component.uniqueIdAtLastUpdate = undefined;
+              component.failedUniqueId = undefined;
+              component.hasPendingRemoveOperation = false;
+              markAsInteractiveRootComponentElement(component.descriptor.start as unknown as LogicalElement, false);
+              setClearContentOnRootComponentRerender(component.descriptor.start as unknown as LogicalElement);
+              this.rootComponentsMayRequireRefresh();
+            } else {
+              this.unregisterComponent(component);
+            }
           }
           break;
         }

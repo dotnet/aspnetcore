@@ -1,12 +1,17 @@
 @using Microsoft.AspNetCore.Components.Web
 
 <p id="lazy-render-mode">@(OperatingSystem.IsBrowser() ? "WebAssembly" : "SSR")</p>
-<p id="lazy-payload">@Value.ToString()</p>
+<p id="lazy-payload">@FormatValue(Value)</p>
 <p id="lazy-count">@count</p>
 <button id="lazy-increment" @onclick="() => count++">Increment</button>
 
 @code {
     private int count;
+
+    private static string? FormatValue(object? value) =>
+        value is System.Collections.IEnumerable items && value is not string
+            ? string.Concat(items.Cast<object?>().Select(FormatValue))
+            : value?.ToString();
 
     [Parameter, EditorRequired]
     public object Value { get; set; } = default!;
