@@ -36,11 +36,12 @@ internal class Endpoint
         if (HandlerDelegateType is not { DelegateInvokeMethod: { } invokeMethod } ||
             !IsTypeAvailableInGeneratedCode(HandlerDelegateType) ||
             (HandlerDelegateType.CanBeReferencedByName && !semanticModel.Compilation.IsSymbolAccessibleWithin(HandlerDelegateType, semanticModel.Compilation.Assembly)) ||
-            !SymbolEqualityComparer.Default.Equals(invokeMethod.ReturnType, method.ReturnType) ||
+            !AreHandlerTypesCompatible(invokeMethod.ReturnType, method.ReturnType) ||
             invokeMethod.Parameters.Length != method.Parameters.Length ||
             method.Parameters.Where((parameter, index) =>
+                parameter.RefKind != RefKind.None ||
                 parameter.RefKind != invokeMethod.Parameters[index].RefKind ||
-                !SymbolEqualityComparer.Default.Equals(parameter.Type, invokeMethod.Parameters[index].Type)).Any())
+                !AreHandlerTypesCompatible(parameter.Type, invokeMethod.Parameters[index].Type, ignoreTopLevelNullability: true)).Any())
         {
             Diagnostics.Add(Diagnostic.Create(DiagnosticDescriptors.UnableToResolveMethod, Operation.Syntax.GetLocation()));
             return;
@@ -79,6 +80,11 @@ internal class Endpoint
             switch (parameter.Source)
             {
                 case EndpointParameterSource.BindAsync:
+                    if (UsesDeclaredDelegateType &&
+                        !AreHandlerTypesCompatible(parameter.UnwrapParameterType(), invokeMethod.Parameters[i].Type, ignoreTopLevelNullability: true))
+                    {
+                        Diagnostics.Add(Diagnostic.Create(DiagnosticDescriptors.UnableToResolveMethod, Operation.Syntax.GetLocation()));
+                    }
                     switch (parameter.BindMethod)
                     {
                         case BindabilityMethod.IBindableFromHttpContext:
@@ -113,6 +119,8 @@ internal class Endpoint
     public EmitterContext EmitterContext { get; }
     public EndpointResponse? Response { get; }
     public INamedTypeSymbol? HandlerDelegateType { get; }
+    public bool UsesDeclaredDelegateType => HandlerDelegateType is { CanBeReferencedByName: true } delegateType &&
+        delegateType is not { Name: "Func" or "Action", ContainingType: null, ContainingNamespace: { Name: "System", ContainingNamespace.IsGlobalNamespace: true } };
     public EndpointParameter[] Parameters { get; } = Array.Empty<EndpointParameter>();
     public List<Diagnostic> Diagnostics { get; } = new List<Diagnostic>();
 
@@ -162,6 +170,26 @@ internal class Endpoint
         }
 
         return hashCode.ToHashCode();
+    }
+
+    private static bool AreHandlerTypesCompatible(ITypeSymbol type, ITypeSymbol otherType, bool ignoreTopLevelNullability = false)
+    {
+        // Treat oblivious and nonnullable annotations alike, but preserve explicit nested nullable annotations.
+        if (!SymbolEqualityComparer.Default.Equals(type, otherType) ||
+            (!ignoreTopLevelNullability &&
+                (type.NullableAnnotation == NullableAnnotation.Annotated) != (otherType.NullableAnnotation == NullableAnnotation.Annotated)))
+        {
+            return false;
+        }
+
+        return (type, otherType) switch
+        {
+            (IArrayTypeSymbol array, IArrayTypeSymbol otherArray) => AreHandlerTypesCompatible(array.ElementType, otherArray.ElementType),
+            (INamedTypeSymbol named, INamedTypeSymbol otherNamed) =>
+                (named.ContainingType is null || AreHandlerTypesCompatible(named.ContainingType, otherNamed.ContainingType!)) &&
+                !named.TypeArguments.Where((argument, index) => !AreHandlerTypesCompatible(argument, otherNamed.TypeArguments[index])).Any(),
+            _ => true,
+        };
     }
 
     private static bool IsTypeAvailableInGeneratedCode(ITypeSymbol type) => type switch

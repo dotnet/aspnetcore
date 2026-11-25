@@ -6,6 +6,7 @@ using Microsoft.AspNetCore.Http.RequestDelegateGenerator;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.Text;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace Microsoft.AspNetCore.Http.Generators.Tests;
 
@@ -292,6 +293,166 @@ file class FileLocalType
         httpContext.Request.QueryString = new QueryString("?size=5");
         await endpoint.RequestDelegate(httpContext);
         await VerifyResponseBodyAsync(httpContext, "size 5");
+    }
+
+    [Theory]
+    [InlineData("string?", false)]
+    [InlineData("string?", true)]
+    [InlineData("Task<string>?", false)]
+    [InlineData("Task<string>?", true)]
+    public async Task MapGet_DelegateCast_NullableReturnMismatchFallsBack(string returnType, bool hasFilter)
+    {
+        var response = returnType == "string?" ? "\"value\"" : "Task.FromResult(\"value\")";
+        var methodReturnType = returnType.TrimEnd('?');
+        var filter = hasFilter ? ".AddEndpointFilter((context, next) => next(context))" : "";
+        var (result, compilation) = await RunDelegateCastGeneratorAsync($$"""
+app.MapGet("/", (NullableReturnHandler)Handler){{filter}};
+static {{methodReturnType}} Handler() => {{response}};
+""", additionalSource: $$"""
+internal delegate {{returnType.Replace("Task<", "System.Threading.Tasks.Task<")}} NullableReturnHandler();
+""", nullableEnabled: true);
+        var diagnostic = Assert.Single(result.Diagnostics);
+        Assert.Equal(DiagnosticDescriptors.UnableToResolveMethod.Id, diagnostic.Id);
+        var endpoint = GetEndpointFromCompilation(compilation, expectGeneratedCodeOverride: false);
+
+        var httpContext = CreateHttpContext();
+        await endpoint.RequestDelegate(httpContext);
+        await VerifyResponseBodyAsync(httpContext, "value");
+    }
+
+    [Theory]
+    [InlineData("List<string>", "List<string?>", false)]
+    [InlineData("List<string>", "List<string?>", true)]
+    [InlineData("List<string?>", "List<string>", false)]
+    [InlineData("List<string?>", "List<string>", true)]
+    public async Task MapPost_DelegateCast_NestedParameterNullabilityMismatchFallsBack(string delegateParameterType, string methodParameterType, bool hasFilter)
+    {
+        var filter = hasFilter ? ".AddEndpointFilter((context, next) => next(context))" : "";
+        var (result, compilation) = await RunDelegateCastGeneratorAsync($$"""
+#pragma warning disable CS8622
+app.MapPost("/", (NestedNullableHandler)Handler){{filter}};
+#pragma warning restore CS8622
+static string Handler([Microsoft.AspNetCore.Mvc.FromServices] System.Collections.Generic.{{methodParameterType}} input) => "bound";
+""", additionalSource: $$"""
+internal delegate string NestedNullableHandler(System.Collections.Generic.{{delegateParameterType}} input);
+""", nullableEnabled: true);
+        var diagnostic = Assert.Single(result.Diagnostics);
+        Assert.Equal(DiagnosticDescriptors.UnableToResolveMethod.Id, diagnostic.Id);
+        var endpoint = GetEndpointFromCompilation(compilation, expectGeneratedCodeOverride: false);
+
+        var httpContext = CreateHttpContext();
+        httpContext.RequestServices = new ServiceCollection()
+            .AddSingleton(new List<string> { "value" })
+            .BuildServiceProvider();
+        await endpoint.RequestDelegate(httpContext);
+        await VerifyResponseBodyAsync(httpContext, "bound");
+    }
+
+    [Theory]
+    [InlineData("BindableWithMismatchedNullability", false)]
+    [InlineData("BindableWithMismatchedNullability", true)]
+    [InlineData("BindableStructWithMismatchedNullability", false)]
+    [InlineData("BindableStructWithMismatchedNullability", true)]
+    public async Task MapGet_DelegateCast_NamedHandlerWithMismatchedBindAsyncNullabilityFallsBack(string bindableType, bool hasFilter)
+    {
+        var filter = hasFilter ? ".AddEndpointFilter((context, next) => next(context))" : "";
+        var (result, compilation) = await RunDelegateCastGeneratorAsync($$"""
+app.MapGet("/", (BindableHandler)Handler){{filter}};
+static string Handler({{bindableType}}<Todo> input) => "bound";
+""", additionalSource: $$"""
+internal delegate string BindableHandler(Microsoft.AspNetCore.Http.Generators.Tests.{{bindableType}}<Microsoft.AspNetCore.Http.Generators.Tests.Todo> input);
+""", nullableEnabled: true);
+        var diagnostic = Assert.Single(result.Diagnostics);
+        Assert.Equal(DiagnosticDescriptors.UnableToResolveMethod.Id, diagnostic.Id);
+        var endpoint = GetEndpointFromCompilation(compilation, expectGeneratedCodeOverride: false);
+
+        var httpContext = CreateHttpContext();
+        await endpoint.RequestDelegate(httpContext);
+        await VerifyResponseBodyAsync(httpContext, "bound");
+    }
+
+    [Theory]
+    [InlineData("ref")]
+    [InlineData("out")]
+    [InlineData("in")]
+    public async Task MapGet_DelegateCast_ByRefParameterFallsBack(string modifier)
+    {
+        var assignment = modifier == "out" ? "size = 5;" : "";
+        var (result, _) = await RunDelegateCastGeneratorAsync($$"""
+app.MapGet("/", (ByRefHandler)Handler);
+static string Handler({{modifier}} int size)
+{
+    {{assignment}}
+    return $"size {size}";
+}
+""", additionalSource: $$"""
+internal delegate string ByRefHandler({{modifier}} int size);
+""");
+        var diagnostic = Assert.Single(result.Diagnostics);
+        Assert.Equal(DiagnosticDescriptors.UnableToResolveMethod.Id, diagnostic.Id);
+    }
+
+    [Fact]
+    public async Task MapGet_DelegateCast_ReadonlyDelegateFieldReassignedInStaticConstructorFallsBack()
+    {
+        var (result, compilation) = await RunDelegateCastGeneratorAsync("""
+app.MapGet("/", ReassignedDelegateCastHandlers.Handler);
+""", additionalSource: """
+internal static class ReassignedDelegateCastHandlers
+{
+    internal static readonly Delegate Handler = (SizeHandler)Initial;
+
+    static ReassignedDelegateCastHandlers()
+    {
+        Handler = (Func<int, string>)Replacement;
+    }
+
+    private static string Initial(int size) => $"initial {size}";
+    private static string Replacement(int size) => $"replacement {size}";
+}
+""");
+        var endpoint = GetEndpointFromCompilation(compilation, expectGeneratedCodeOverride: false);
+        var diagnostic = Assert.Single(result.Diagnostics);
+        Assert.Equal(DiagnosticDescriptors.UnableToResolveMethod.Id, diagnostic.Id);
+
+        var httpContext = CreateHttpContext();
+        httpContext.Request.QueryString = new QueryString("?size=5");
+        await endpoint.RequestDelegate(httpContext);
+        await VerifyResponseBodyAsync(httpContext, "replacement 5");
+    }
+
+    [Theory]
+    [InlineData(false, false)]
+    [InlineData(false, true)]
+    [InlineData(true, false)]
+    [InlineData(true, true)]
+    public async Task MapGet_DelegateCast_NestedSystemDelegate(bool isAction, bool hasFilter)
+    {
+        var handler = isAction
+            ? "(global::System.Host.Action<HttpContext>)Handler"
+            : "(global::System.Host.Func<int, string>)DelegateCastHandlers.Size";
+        var filter = hasFilter ? ".AddEndpointFilter((context, next) => next(context))" : "";
+        var method = isAction ? "static void Handler(HttpContext context) => context.Response.StatusCode = 202;" : "";
+        var (result, compilation) = await RunDelegateCastGeneratorAsync($$"""
+app.MapGet("/", {{handler}}){{filter}};
+{{method}}
+""", additionalSource: """
+namespace System
+{
+    internal static class Host
+    {
+        internal delegate TResult Func<T, TResult>(T value);
+        internal delegate void Action<T>(T value);
+    }
+}
+""");
+        Assert.Empty(result.Diagnostics);
+        var endpoint = GetEndpointFromCompilation(compilation);
+
+        var httpContext = CreateHttpContext();
+        httpContext.Request.QueryString = new QueryString("?size=5");
+        await endpoint.RequestDelegate(httpContext);
+        await VerifyResponseBodyAsync(httpContext, isAction ? "" : "size 5", expectedStatusCode: isAction ? 202 : 200);
     }
 
     private static async Task<(GeneratorRunResult Result, Compilation Compilation)> RunDelegateCastGeneratorAsync(string source, bool includeInaccessibleHandler = false, string additionalSource = "", bool nullableEnabled = false)

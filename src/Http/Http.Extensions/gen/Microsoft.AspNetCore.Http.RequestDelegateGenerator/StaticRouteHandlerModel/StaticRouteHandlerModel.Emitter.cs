@@ -17,8 +17,7 @@ internal static class StaticRouteHandlerModelEmitter
     public static string EmitHandlerDelegateCast(this Endpoint endpoint, string handler)
     {
         var delegateType = endpoint.HandlerDelegateType!;
-        if (delegateType.CanBeReferencedByName &&
-            delegateType is not { Name: "Func" or "Action", ContainingNamespace: { Name: "System", ContainingNamespace.IsGlobalNamespace: true } })
+        if (endpoint.UsesDeclaredDelegateType)
         {
             var displayFormat = EmitterConstants.DisplayFormat.WithMiscellaneousOptions(
                 EmitterConstants.DisplayFormat.MiscellaneousOptions | SymbolDisplayMiscellaneousOptions.EscapeKeywordIdentifiers);

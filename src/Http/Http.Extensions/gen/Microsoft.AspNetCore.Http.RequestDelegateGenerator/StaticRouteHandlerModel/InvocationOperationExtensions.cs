@@ -109,8 +109,8 @@ internal static class InvocationOperationExtensions
         IArgumentOperation argument => ResolveDelegateTypeFromOperation(argument.Value, semanticModel),
         IConversionOperation conversion => ResolveDelegateTypeFromOperation(conversion.Operand, semanticModel),
         IDelegateCreationOperation { Type: INamedTypeSymbol delegateType } => delegateType,
-        IFieldReferenceOperation { Field.IsReadOnly: true } field when ResolveDeclarationOperation(field.Field, semanticModel) is IOperation initializer =>
-            ResolveDelegateTypeFromOperation(initializer, semanticModel),
+        IFieldReferenceOperation { Field.IsReadOnly: true } field =>
+            field.Type is INamedTypeSymbol { TypeKind: TypeKind.Delegate } fieldType ? fieldType : null,
         IParenthesizedOperation parenthesized => ResolveDelegateTypeFromOperation(parenthesized.Operand, semanticModel),
         { Parent: IDelegateCreationOperation { Type: INamedTypeSymbol delegateType } } => delegateType,
         _ => operation.Type is INamedTypeSymbol { TypeKind: TypeKind.Delegate } type ? type : null,
