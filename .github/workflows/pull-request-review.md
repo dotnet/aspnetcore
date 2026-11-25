@@ -31,9 +31,9 @@ concurrency:
   cancel-in-progress: false
   job-discriminator: ${{ github.event.issue.number || github.run_id }}
 
-timeout-minutes: 90
-max-turns: 200
-max-ai-credits: 1500
+timeout-minutes: 30
+max-turns: 100
+max-ai-credits: 150
 
 checkout: false
 sandbox:
