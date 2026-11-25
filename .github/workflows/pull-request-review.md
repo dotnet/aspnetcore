@@ -73,6 +73,7 @@ post-steps:
 
       const sessionPath = process.env.REVIEW_WORKER_SESSION_PATH || '/tmp/gh-aw/agent-session.jsonl';
       const events = fs.readFileSync(sessionPath, 'utf8').trim().split(/\r?\n/).map(line => JSON.parse(line));
+      const expectedToolCount = 11;
       const readTools = new Set(['view', 'glob', 'rg']);
       const publicationTools = new Set([
         'safeoutputs-create_pull_request_review_comment', 'safeoutputs-submit_pull_request_review',
@@ -81,6 +82,13 @@ post-steps:
       ]);
       const starts = events.filter(event => event.type === 'tool.execution_start');
       const violations = [];
+      const offeredToolCounts = events.filter(event => event.type === 'session.usage_record')
+        .map(event => event.data?.usage?.availableToolCount);
+      if (offeredToolCounts.length === 0 || offeredToolCounts.some(count => count !== expectedToolCount)) {
+        violations.push(`Expected ${expectedToolCount} offered tools in every usage record; observed ` +
+          `${offeredToolCounts.map(count => JSON.stringify(count) ?? 'missing').join(', ') || 'no usage records'}.`);
+      }
+
       if (events.some(event => event.type?.startsWith('subagent.') ||
           ((event.type === 'tool.execution_start' || event.type === 'tool.execution_complete') &&
            (event.agentId || event.data?.agentId || event.data?.parentToolCallId)))) {
@@ -541,22 +549,10 @@ engine:
   # Remove the pin only after fork tests without it verify the actual CLI, native
   # skill/topic panel, noop, and real COMMENT publication on the frozen SHA.
   # Do not patch the compiler or lock file.
+  # Rerun the staged smoke when changing the CLI pin to verify the offered tools and publication.
   version: "1.0.103"
   args:
-    - --deny-tool=bash
-    - --deny-tool=read_bash
-    - --deny-tool=stop_bash
-    - --deny-tool=list_bash
-    - --deny-tool=apply_patch
-    - --deny-tool=fetch_copilot_cli_documentation
-    - --deny-tool=run_dynamic_workflow
-    - --deny-tool=dynamic_workflows_manage
-    - --deny-tool=sql
-    - --deny-tool=session_store_sql
-    - --deny-tool=read_agent
-    - --deny-tool=list_agents
-    - --deny-tool=write_agent
-    - --deny-tool=task
+    - --available-tools=view,glob,rg,skill,safeoutputs-add_comment,safeoutputs-create_pull_request_review_comment,safeoutputs-missing_data,safeoutputs-missing_tool,safeoutputs-noop,safeoutputs-report_incomplete,safeoutputs-submit_pull_request_review
   env:
     COPILOT_GITHUB_TOKEN: ${{ case(needs.pat_pool.outputs.pat_number == '0', secrets.COPILOT_PAT_0, needs.pat_pool.outputs.pat_number == '1', secrets.COPILOT_PAT_1, needs.pat_pool.outputs.pat_number == '2', secrets.COPILOT_PAT_2, needs.pat_pool.outputs.pat_number == '3', secrets.COPILOT_PAT_3, needs.pat_pool.outputs.pat_number == '4', secrets.COPILOT_PAT_4, needs.pat_pool.outputs.pat_number == '5', secrets.COPILOT_PAT_5, needs.pat_pool.outputs.pat_number == '6', secrets.COPILOT_PAT_6, needs.pat_pool.outputs.pat_number == '7', secrets.COPILOT_PAT_7, needs.pat_pool.outputs.pat_number == '8', secrets.COPILOT_PAT_8, needs.pat_pool.outputs.pat_number == '9', secrets.COPILOT_PAT_9, 'NO COPILOT PAT AVAILABLE') }}
 ---

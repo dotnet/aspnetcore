@@ -57,17 +57,23 @@ assert.match(workflowSource, /skills:\r?\n  - \.github\/skills\/code-review/);
 assert.match(workflowSource, /skill\(skill="code-review"\)/);
 assert.doesNotMatch(workflowSource, /## agent:|expected_worker_count|review-guide-worker|review-candidate-verifier/);
 
-const deniedTools = [
-  'bash', 'read_bash', 'stop_bash', 'list_bash', 'apply_patch', 'fetch_copilot_cli_documentation',
-  'run_dynamic_workflow', 'dynamic_workflows_manage', 'sql', 'session_store_sql', 'read_agent',
-  'list_agents', 'write_agent', 'task',
-];
+const engineAllowlist = workflowSource.match(/^    - --available-tools=([\w,-]+)\r?$/m)?.[1];
+assert.ok(engineAllowlist);
+const gateTools = ['readTools', 'publicationTools'].flatMap(name => {
+  const list = sourceCheck.match(new RegExp(`const ${name} = new Set\\(\\[([^\\]]+)\\]\\)`))?.[1];
+  assert.ok(list, `The transcript gate must declare ${name}.`);
+  return [...list.matchAll(/'([\w-]+)'/g)].map(match => match[1]);
+});
+const skillTool = sourceCheck.match(/!readTools\.has\(tool\) && tool !== '([\w-]+)' && !publicationTools\.has\(tool\)/)?.[1];
+assert.ok(skillTool);
+assert.deepEqual(engineAllowlist.split(',').sort(), [...gateTools, skillTool].sort());
 const runtimeCommand = workflowLock.split(/\r?\n/).find(line => line.includes('copilot_harness.cjs'));
 assert.ok(runtimeCommand);
-assert.deepEqual([...runtimeCommand.matchAll(/--deny-tool[= ](\w+)/g)].map(match => match[1]).sort(),
-  [...deniedTools, 'workflow'].sort());
+assert.deepEqual([...runtimeCommand.matchAll(/--available-tools=([\w,-]+)/g)].map(match => match[1]), [engineAllowlist]);
+assert.deepEqual([...runtimeCommand.matchAll(/--deny-tool[= ](\w+)/g)].map(match => match[1]), ['workflow']);
 assert.match(runtimeCommand, /--allow-tool safeoutputs\b/);
 
+const usage = availableToolCount => ({ type: 'session.usage_record', data: { usage: { availableToolCount } } });
 const start = (toolName, toolCallId, args = {}) => ({
   type: 'tool.execution_start',
   data: { toolName, toolCallId, arguments: args },
@@ -86,6 +92,12 @@ const cases = [
   ['source-only findings', [skill, loaded, view, glob, rg, comment, review], null],
   ['clean result', [skill, loaded, view, noop], null],
   ['stopped result', [skill, loaded, status, incomplete], null],
+  ['multiple matching offered counts', [skill, loaded, noop], null, [usage(11), usage(11)]],
+  ['no usage records', [skill, loaded, noop], /observed no usage records/, []],
+  ['missing offered count', [skill, loaded, noop], /observed missing/, [usage(undefined)]],
+  ['count must be numeric', [skill, loaded, noop], /observed "11"/, [usage('11')]],
+  ['too few offered tools', [skill, loaded, noop], /observed 10/, [usage(10)]],
+  ['too many offered tools in a later record', [skill, loaded, noop], /observed 11, 12/, [usage(11), usage(12)]],
   ['subagent start', [skill, loaded, { type: 'subagent.started' }, noop], /must not start or use subagents/],
   ['nested read', [skill, loaded, { ...view, data: { ...view.data, parentToolCallId: 'child' } }, noop],
     /must not start or use subagents/],
@@ -127,8 +139,8 @@ try {
   assert.notEqual(execute().status, 0, 'Missing transcript must fail closed.');
   fs.writeFileSync(session, '{malformed}\n');
   assert.notEqual(execute().status, 0, 'Malformed transcript must fail closed.');
-  for (const [name, events, error] of cases) {
-    fs.writeFileSync(session, events.map(event => JSON.stringify(event)).join('\r\n') + '\r\n');
+  for (const [name, events, error, usageRecords = [usage(11)]] of cases) {
+    fs.writeFileSync(session, [...events, ...usageRecords].map(event => JSON.stringify(event)).join('\r\n') + '\r\n');
     const result = execute();
     assert.equal(result.error, undefined, name);
     if (error) {
