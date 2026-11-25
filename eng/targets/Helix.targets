@@ -22,7 +22,6 @@
       $(HelixQueueAzureLinux3);
       $(HelixQueueDebian);
       $(HelixQueueFedora);
-      $(HelixQueueUbuntu2610);
       Ubuntu.2604.Amd64.Open;
     </SkipHelixQueues>
     <SkipHelixArm>true</SkipHelixArm>
