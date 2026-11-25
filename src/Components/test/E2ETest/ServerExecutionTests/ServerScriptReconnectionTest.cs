@@ -48,6 +48,7 @@ public class ServerScriptReconnectionTest : ServerTestBase<BasicTestAppServerSit
 
         ForceCloseConnection(javascript);
         Browser.True(HasConnectedWebSocket);
+        Browser.Equal("none", () => Browser.Exists(By.Id("components-reconnect-modal")).GetCssValue("display"));
 
         Browser.Equal("6", () => Browser.Exists(counter).Text);
         Browser.Exists(increment).Click();
