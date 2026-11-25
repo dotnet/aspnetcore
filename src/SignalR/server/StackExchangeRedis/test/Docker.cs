@@ -174,10 +174,10 @@ public class Docker
 
         using (process)
         {
-            if (!process.WaitForExit((int)timeout.TotalMilliseconds))
+            ProcessExitStatus status = process.SafeHandle.WaitForExitOrKillOnTimeout(timeout);
+            if (status.Canceled)
             {
-                process.Close();
-                logger.LogError("Closing process '{processName}' because it is running longer than the configured timeout.", fileName);
+                logger.LogError("Killed process '{processName}' because it ran longer than the configured timeout.", fileName);
                 output = string.Join(Environment.NewLine, lines.ToArray());
                 return -1;
             }
@@ -189,7 +189,7 @@ public class Docker
 
             output = string.Join(Environment.NewLine, lines);
 
-            return process.ExitCode;
+            return status.ExitCode;
         }
     }
 
@@ -201,7 +201,7 @@ public class Docker
             {
                 FileName = fileName,
                 Arguments = arguments,
-                UseShellExecute = false,
+                InheritedHandles = [],
                 RedirectStandardError = true,
                 RedirectStandardOutput = true,
                 RedirectStandardInput = true
