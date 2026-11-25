@@ -4,14 +4,13 @@ import { createHash } from "node:crypto";
 import { copyFileSync, existsSync, mkdirSync, readFileSync, readdirSync, realpathSync, rmSync, unlinkSync, writeFileSync } from "node:fs";
 import { basename, dirname, isAbsolute, join, relative, resolve, sep } from "node:path";
 import { fileURLToPath } from "node:url";
-import { auditReview, parseReview, quickCaseIds, validateCohort } from "./results.mjs";
+import { auditReview, parseReview, reviewGroups, validateCohort } from "./results.mjs";
 import { reviewProfile, reviewSpec } from "./workflow.mjs";
 
 const here = dirname(fileURLToPath(import.meta.url));
 const repo = realpathSync(resolve(here, "../../.."));
 const publicRepo = "https://github.com/dotnet/aspnetcore.git";
 const guidance = "cbf730f5cd0bf8c04bf94e4f3869d6898065f37a";
-const suite = "code-review";
 const load = path => JSON.parse(readFileSync(path, "utf8"));
 const save = (path, data) => writeFileSync(path, `${JSON.stringify(data, null, 2)}\n`, { flag: "wx" });
 const jsonLines = path => readFileSync(path, "utf8").trim().split(/\r?\n/).map(line => JSON.parse(line));
@@ -48,11 +47,8 @@ function stripGuides(bundle) {
 }
 
 function prepare() {
-    const full = selection.length === 1 && selection[0] === "--full";
-    const quick = selection.length === 1 && selection[0] === "--quick";
-    assert.ok(full || quick || (selection.length >= 1 && selection.length <= 2 && new Set(selection).size === selection.length),
-        "Select one or two distinct cases, or explicitly opt in with --quick or --full");
-    const selected = full ? cases : (quick ? quickCaseIds : selection).map(id => {
+    const groups = reviewGroups(cases, selection);
+    const selected = groups.flatMap(group => group.ids).map(id => {
         const item = cases.find(candidate => candidate.id === id);
         assert.ok(item, `Unknown case: ${id}`);
         return item;
@@ -101,15 +97,10 @@ function prepare() {
         assert.equal(sha(join(bundle, "diff.patch")), item.diffSha256, `${id}: frozen diff changed`);
         stripGuides(bundle);
     }
-    const groups = full
-        ? [{ name: `${suite}-must-find`, runs: 3, items: selected.filter(item => item.rubrics.length) },
-            { name: `${suite}-controls`, runs: 1, items: selected.filter(item => !item.rubrics.length) }]
-        : [{ name: `${suite}-${quick ? "quick" : "sample"}`, runs: 1, items: selected }];
-    const plan = groups.map(({ name, runs, items }) => ({ name, runs, ids: items.map(item => item.id) }));
-    for (const group of plan) {
+    for (const group of groups) {
         save(join(specDir, `${group.name}.vally.yaml`), reviewSpec(group, profile));
     }
-    save(join(runDir, "plan.json"), { groups: plan, quick, profileHash, skillSha256: sha(skill),
+    save(join(runDir, "plan.json"), { groups, quick: selection[0] === "--quick", profileHash, skillSha256: sha(skill),
         producerSha256: sha(producer), guidance });
 }
 
@@ -119,8 +110,12 @@ function review(plan) {
     assert.ok(tools && process.env.COPILOT_CLI_PATH, "Set VALLY_TOOLS and COPILOT_CLI_PATH");
     const output = join(runDir, "reviews");
     assert.equal(sha(join(specDir, "SKILL.md")), plan.skillSha256, "Prepared skill changed");
+    const specs = plan.groups.flatMap(group => {
+        const path = join(specDir, `${group.name}.vally.yaml`);
+        assert.deepEqual(load(path), reviewSpec(group, profile), `Prepared eval spec changed: ${group.name}`);
+        return ["-e", path];
+    });
     mkdirSync(output);
-    const specs = plan.groups.flatMap(({ name }) => ["-e", join(specDir, `${name}.vally.yaml`)]);
     execFileSync(join(tools, "node_modules/.bin/vally"), ["eval", ...specs,
         "--executor-plugin", join(here, "readonly-executor.mjs"), "--backend", "local", "--workers", "1",
         "--max-retries", "0", "--require-pass", "--workspace", join(runDir, "workspaces"), "--output-dir", output],

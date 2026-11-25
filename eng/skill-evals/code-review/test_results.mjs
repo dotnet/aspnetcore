@@ -1,7 +1,7 @@
 import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
 import { test } from "node:test";
-import { auditReview, parseMatches, parseReview, quickCaseIds, validateCohort } from "./results.mjs";
+import { auditReview, parseMatches, parseReview, reviewGroups, validateCohort } from "./results.mjs";
 import { reviewProfile, reviewSpec } from "./workflow.mjs";
 
 test("offline review uses the shipped prompt, model, CLI and analysis tools", () => {
@@ -41,10 +41,16 @@ test("cohort has the public revision pins and separates controls and exploratory
     assert.equal(cases.filter(item => item.exploratory).length, 2);
     assert.equal(cases.filter(item => !item.rubrics.length).length, 11);
     assert.throws(() => validateCohort([...cases, cases[0]]));
-    const quick = quickCaseIds.map(id => cases.find(item => item.id === id));
-    assert.equal(new Set(quickCaseIds).size, 10);
+    const [quickGroup] = reviewGroups(cases, ["--quick"]);
+    assert.equal(quickGroup.runs, 1);
+    const quick = quickGroup.ids.map(id => cases.find(item => item.id === id));
+    assert.equal(new Set(quickGroup.ids).size, 10);
     assert.equal(quick.filter(item => item.rubrics.length && !item.exploratory).length, 7);
     assert.equal(quick.filter(item => !item.rubrics.length).length, 3);
+    const [mustFind, controls] = reviewGroups(cases, ["--full"]);
+    assert.equal(mustFind.ids.length * mustFind.runs, 75);
+    assert.equal(controls.ids.length * controls.runs, 11);
+    assert.throws(() => reviewGroups(cases, []), /explicitly opt in/);
 });
 
 test("an incomplete review cannot count as a clean control", () => {

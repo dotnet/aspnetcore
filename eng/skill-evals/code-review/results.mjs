@@ -6,6 +6,21 @@ const nonempty = value => typeof value === "string" && value.trim().length > 0;
 export const quickCaseIds = ["case-01", "case-03", "case-07", "case-09", "case-20", "case-21", "case-34",
     "case-04", "case-10", "case-17"];
 
+export function reviewGroups(cases, selection) {
+    if (selection.length === 1 && selection[0] === "--full") {
+        return [
+            { name: "code-review-must-find", runs: 3, ids: cases.filter(item => item.rubrics.length).map(item => item.id) },
+            { name: "code-review-controls", runs: 1, ids: cases.filter(item => !item.rubrics.length).map(item => item.id) },
+        ];
+    }
+    if (selection.length === 1 && selection[0] === "--quick") {
+        return [{ name: "code-review-quick", runs: 1, ids: quickCaseIds }];
+    }
+    assert.ok(selection.length >= 1 && selection.length <= 2 && new Set(selection).size === selection.length,
+        "Select one or two distinct cases, or explicitly opt in with --quick or --full");
+    return [{ name: "code-review-sample", runs: 1, ids: selection }];
+}
+
 export function validateCohort(cases) {
     assert.ok(Array.isArray(cases) && cases.some(item => item.rubrics?.length) &&
         cases.some(item => item.rubrics?.length === 0), "Expected must-find and control cases");
