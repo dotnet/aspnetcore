@@ -23,101 +23,84 @@ The JavaScript-side counterpart runs within a standard web browser environment, 
 
 Since `Microsoft.JSInterop.JS` is platform-independent, runtime environments such as Blazor Server or Blazor WebAssembly must initialize it by registering environment-specific callbacks that know how to dispatch invocations across their own communication channels.
 
-## Experimental cancellation parameter projections
+## Experimental cancellation arguments
 
-Cancellation is a parameter value, not an invocation mode. The runtimes automatically
-project raw browser `AbortSignal` arguments to .NET `CancellationToken` parameters
-and raw .NET token arguments to native browser signals. Application code does not
-create, wrap, or dispose interop cancellation references.
+A JavaScript `AbortSignal` passed to .NET becomes a `CancellationToken`, and a .NET `CancellationToken` passed to JavaScript becomes a native `AbortSignal`. Application code does not create, wrap, or dispose any interop object for this. The behavior is experimental and needs API review.
 
 ### JavaScript signal to .NET token
 
 ```javascript
 const controller = new AbortController();
-const result = await dotnetObject.invokeMethodAsync("Yolo", controller.signal);
+const text = await dotnetObject.invokeMethodAsync("DownloadAsync", url, controller.signal);
 
-// Static methods need no application DotNetObjectReference.
-const staticResult = await DotNet.invokeMethodAsync("MyApp", "YoloStatic", controller.signal);
+// Static methods work the same way.
+const size = await DotNet.invokeMethodAsync("MyApp", "MeasureAsync", controller.signal);
+
+// A JavaScript function can also return a signal to .NET.
+export function createTimeoutSignal(milliseconds) {
+    return AbortSignal.timeout(milliseconds);
+}
 ```
 
 ```csharp
 [JSInvokable]
-public Task<string> Yolo(CancellationToken cancellationToken);
+public Task<string> DownloadAsync(string url, CancellationToken cancellationToken) { ... }
 
 [JSInvokable]
-public static Task<string> YoloStatic(CancellationToken cancellationToken);
+public static Task<int> MeasureAsync(CancellationToken cancellationToken) { ... }
+
+var token = await module.InvokeAsync<CancellationToken>("createTimeoutSignal", 5000);
 ```
 
-The instance call selects that object's runtime. Static calls retain their existing
-default-dispatcher requirements. Tokens occupy ordinary argument positions and can
-also occur in serialized objects. The token can be retained and the signal reused
-after an invocation returns. Abort signals cancel the token, not the interop promise: an ignoring handler remains
-pending or returns normally, and a handler that catches cancellation can return a
-normal result. An already-aborted signal still invokes the method with an already
-canceled token. Browser abort reasons are not translated into .NET exceptions.
+**What the application sees**
 
-JavaScript gives each signal an id and serializes it as
-`{"__abortSignal": <id>, "aborted": <bool>}`, so the call is sent at once, with no
-extra round trip. .NET creates the token's source for that id when it reads the
-arguments, or when an abort for the id arrives first, which a host can cause by
-reordering inbound messages. On abort, JavaScript sends an acknowledged "aborted"
-call for the id. Once the browser collects the signal, JavaScript sends a one-way
-"released" message, but only after every call that carried the id has completed and
-the abort has been acknowledged, so .NET never sees a message about the id after
-"released". Repeated and concurrent uses of one signal send the same id and share one
-token in that runtime. A signal can only be a call argument, not part of a value
-JavaScript returns to .NET. Explicit generic `createJSObjectReference(signal)` values
-remain generic references, rather than implicitly changing their target type.
+- A signal can be any argument of `invokeMethodAsync` or `invokeMethod` (synchronous calls work in WebAssembly), can be part of a serialized object, and can be part of a value that a JavaScript function returns to .NET.
+- Aborting the signal cancels the token. It does not reject the promise of the call. A method that ignores the token runs to the end, and a method that handles the cancellation can return a normal result.
+- A signal that is already aborted still calls the method, with a canceled token.
+- One signal gives one token in a runtime, also when it is passed again later or to several calls at once. .NET code can keep the token after the call returns.
+- The abort reason is not passed to .NET.
+- A signal wrapped with `DotNet.createJSObjectReference(signal)` stays a plain JavaScript object reference.
+
+**How it works**
+
+JavaScript gives each signal an id and writes it as `{"__abortSignal": <id>, "aborted": <bool>}`, so the call is sent at once, with no extra round trip. .NET creates the token's source for the id when it reads the message. On abort, JavaScript sends .NET an "aborted" message for the id and waits for its acknowledgment. Interactive Server can reorder inbound messages, so the "aborted" message can arrive before the call that carries the id. .NET then creates the token already canceled.
+
+When the browser collects the signal, JavaScript sends a one-way "released" message, and .NET forgets the id without canceling the token. JavaScript counts the messages that carry each id and sends "released" only after .NET has answered every one of them and acknowledged the abort, so "released" always reaches .NET last. A call is answered by its reply. A value returned to .NET is answered by a one-way message that .NET sends after reading it. Errors from .NET cancellation callbacks during the abort are reported to the browser console.
 
 ### .NET token to JavaScript signal
 
 ```csharp
 using var cts = new CancellationTokenSource();
-var pending = jsRuntime.InvokeAsync<string>("yolo", args: [cts.Token]);
-cts.Cancel();
-var result = await pending;
+var text = await module.InvokeAsync<string>("download", args: [url, cts.Token]);
 ```
 
 ```javascript
-globalThis.yolo = async function (signal) {
-    const response = await fetch("/data", { signal });
+export async function download(url, signal) {
+    const response = await fetch(url, { signal });
     return await response.text();
 }
 ```
 
-JavaScript receives a native `AbortSignal`, not a JSON token or a promise wrapper.
-A pre-canceled token produces an aborted signal before the JavaScript function
-starts. A signal can be retained after the call returns. `CancellationToken.None`
-and already-canceled tokens need no live bridge. A token can also be part of a value
-a .NET method returns to JavaScript.
+**What the application sees**
 
-.NET gives each live serialized token occurrence a new id and serializes it as
-`{"__dotNetCancellationToken": <id>, "isCancellationRequested": false}`. JavaScript
-keeps the `AbortController` for that id strongly, because a browser operation such as
-`fetch` does not keep its signal alive. .NET registers on the token only after the
-message that carries the id is sent, so an abort never reaches JavaScript before its
-id. On cancellation, .NET sends a one-way "canceled" message for the id, and
-JavaScript aborts the signal and forgets the id. Only the token's registration holds
-the .NET side of the link, so once the `CancellationTokenSource` is disposed or
-collected, the next .NET call to JavaScript after a garbage collection sends a one-way
-"released" message, and JavaScript forgets the id without aborting. A source that
-lives as long as the app keeps one id per serialized occurrence until it is canceled.
-Managed runtime disposal unregisters the remaining links. Browser cleanup after
-transport loss or runtime teardown needs separate host/lifecycle validation.
+- JavaScript receives a native `AbortSignal`. Canceling the token aborts it, also after the call has returned, and also when JavaScript code did not keep the signal (for example after giving it to `fetch`).
+- A token can be any argument, can be part of a serialized object, and can be part of a value that a `[JSInvokable]` method returns to JavaScript (also to synchronous `invokeMethod` in WebAssembly).
+- One token gives the same `AbortSignal` until it is canceled or its source is reset with `CancellationTokenSource.TryReset()`. A canceled token gives a new aborted signal each time, and `CancellationToken.None` gives a signal that never aborts.
+- After `TryReset()`, a later cancel aborts only the calls made after the reset, as .NET notifies only the registrations made after it.
+- In WebAssembly, abort listeners run after `CancellationTokenSource.Cancel()` returns.
+- The token in `args` is not the `CancellationToken` parameter of `InvokeAsync(string, CancellationToken, object[])`. That parameter still cancels only the .NET wait. It does not become a signal and does not stop the JavaScript function.
 
-The `CancellationToken` controlling `IJSRuntime.InvokeAsync` is separate from these
-arguments: `args: [cts.Token]` is intentional. The separate invocation-control token
-still cancels only the managed wait and does not become an AbortSignal or stop the
-JavaScript function. There is no operation-cancellation mode, forced promise rejection,
-or application-owned reference lifetime. Failures of the JavaScript-to-.NET abort
-acknowledgment are reported to the browser console; failures to send the .NET-to-JavaScript
-"canceled" and "released" messages are ignored.
+**How it works**
 
-The marshalling convention is experimental and requires API review.
-Both directions have Server and WebAssembly browser scenarios in `InteropCancellationTest`.
-WebView, Native AOT/trimming, multithreaded WebAssembly, multiple attached runtimes,
-Auto activation transitions, and circuit reconnect/resumption require separate
-validation. Static SSR and prerendering do not support JavaScript interop.
+.NET gives each token one id from a counter shared by the whole process and writes it as `{"__dotNetCancellationToken": <id or null>, "isCancellationRequested": <bool>}`. JavaScript keeps the `AbortController` for the id until .NET releases the id, because a browser operation such as `fetch` does not keep its signal alive. .NET registers on the token after the message that carries the id is handed to the host. On cancel, .NET sends a one-way "canceled" message for the id. A WebView host or a synchronous result in WebAssembly can deliver it before the message that carries the id, so JavaScript then creates the controller already aborted. JavaScript keeps an aborted controller until "released", so a message that carries the id after the cancel still gives the aborted signal.
+
+Only the token's registration keeps the .NET side alive. Once the source is canceled, reset, disposed, or collected, the next message that .NET sends to JavaScript after a garbage collection also queues a one-way "released" message, and JavaScript forgets the id without aborting. A message keeps its ids alive until it is handed to the host, so "released" is always handed over after every message that carried the id. It is sent from the thread pool, because the WPF and WinForms WebView hosts send at once on the UI thread but queue messages from other threads in order. Failures to send "canceled" and "released" are ignored. Disposing the `JSRuntime` unregisters the remaining tokens.
+
+### Limits
+
+- On Interactive Server, a message sent while the circuit is disconnected is lost and is not sent again after the reconnect. An abort or a cancel can then be lost, and ids can stay until the circuit ends.
+- A canceled id stays on both sides until .NET sends its next message to JavaScript after a garbage collection.
+- Both directions have Server and WebAssembly scenarios in `InteropCancellationTest`. The WebView ordering rests on the hosts' dispatchers and has no automated test. Native AOT and trimming, multithreaded WebAssembly, Auto render mode transitions, and circuit pause and resume are not validated yet. Static SSR and prerendering do not support JavaScript interop.
 
 ## Development Setup
 
