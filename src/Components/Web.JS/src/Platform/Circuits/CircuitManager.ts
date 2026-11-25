@@ -66,8 +66,6 @@ export class CircuitManager implements DotNet.DotNetCallDispatcher {
 
   private _activePauseDeferral?: AbortController;
 
-  private _pauseUiVisible = false;
-
   public constructor(
     componentManager: RootComponentManager<ServerComponentDescriptor>,
     appState: string,
@@ -317,7 +315,6 @@ export class CircuitManager implements DotNet.DotNetCallDispatcher {
       return false;
     }
 
-    this._pauseUiVisible = false;
     this._options.reconnectionHandler!.onConnectionUp();
 
     return true;
@@ -417,7 +414,6 @@ export class CircuitManager implements DotNet.DotNetCallDispatcher {
 
       // Notify the reconnection handler that we are pausing the circuit.
       // This is used to trigger the UI display.
-      this._pauseUiVisible = true;
       this._options.reconnectionHandler?.onConnectionDown(this._options.reconnectionOptions, undefined, true, remote);
 
       // Indicate to the server that we want to pause the circuit.
@@ -527,7 +523,6 @@ export class CircuitManager implements DotNet.DotNetCallDispatcher {
         }
       }
 
-      this._pauseUiVisible = false;
       this._options.reconnectionHandler!.onConnectionUp();
       if (this.isDisposedOrDisposing()) {
         this._resumingState.complete(false);
@@ -682,14 +677,6 @@ export class CircuitManager implements DotNet.DotNetCallDispatcher {
   private async disposeCore(): Promise<void> {
     // Retire automatic pause before awaiting startup, which can overlap a replacement circuit.
     Blazor._internal.circuitEvents?.dispatchEvent(new Event('disposed'));
-    if (this._pauseUiVisible) {
-      this._pauseUiVisible = false;
-      try {
-        this._options.reconnectionHandler?.onPausedCircuitDisposed?.();
-      } catch (error) {
-        this._logger.log(LogLevel.Error, `Failed to clean up the paused circuit UI: ${error}`);
-      }
-    }
 
     if (!this._startPromise) {
       // The circuit hasn't started, so there isn't anything to dispose.
