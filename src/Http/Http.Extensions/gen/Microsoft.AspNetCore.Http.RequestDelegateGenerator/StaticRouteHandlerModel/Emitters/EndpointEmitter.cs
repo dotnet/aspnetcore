@@ -131,5 +131,10 @@ internal static class EndpointEmitter
         }
     }
 
-    public static string EmitArgumentList(this Endpoint endpoint) => string.Join(", ", endpoint.Parameters.Select(p => p.EmitArgument()));
+    // Binding follows the target method, which can accept null even when the delegate parameter is nonnullable.
+    public static string EmitArgumentList(this Endpoint endpoint, bool forHandler = false) => string.Join(", ", endpoint.Parameters.Select((p, i) =>
+        forHandler && p.IsOptional && p.Type.IsReferenceType &&
+        endpoint.HandlerDelegateType!.DelegateInvokeMethod!.Parameters[i].NullableAnnotation == NullableAnnotation.NotAnnotated
+            ? $"{p.EmitArgument()}!"
+            : p.EmitArgument()));
 }

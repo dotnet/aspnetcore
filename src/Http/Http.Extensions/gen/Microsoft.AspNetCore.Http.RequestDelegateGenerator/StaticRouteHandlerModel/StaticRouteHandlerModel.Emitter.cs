@@ -102,7 +102,7 @@ internal static class StaticRouteHandlerModelEmitter
         }
         if (endpoint.Response.IsAwaitable)
         {
-            codeWriter.WriteLine($"var task = handler({endpoint.EmitArgumentList()});");
+            codeWriter.WriteLine($"var task = handler({endpoint.EmitArgumentList(forHandler: true)});");
         }
         if (endpoint.Response.IsAwaitable && endpoint.Response.WrappedResponseType.NullableAnnotation == NullableAnnotation.Annotated)
         {
@@ -115,7 +115,7 @@ internal static class StaticRouteHandlerModelEmitter
         {
             codeWriter.Write("var result = ");
         }
-        codeWriter.WriteLine(endpoint.Response.IsAwaitable ? "await task;" : $"handler({endpoint.EmitArgumentList()});");
+        codeWriter.WriteLine(endpoint.Response.IsAwaitable ? "await task;" : $"handler({endpoint.EmitArgumentList(forHandler: true)});");
 
         endpoint.Response.EmitHttpResponseContentType(codeWriter);
 

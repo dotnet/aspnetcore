@@ -100,6 +100,38 @@ app.MapGet("/", {{handler}});
         await VerifyResponseBodyAsync(httpContext, "size 5");
     }
 
+    [Theory]
+    [InlineData(false, false)]
+    [InlineData(false, true)]
+    [InlineData(true, false)]
+    [InlineData(true, true)]
+    public async Task MapPost_DelegateCast_NamedHandlerWithNullableBody(bool isAsync, bool hasFilter)
+    {
+        var returnType = isAsync ? "Task<string>" : "string";
+        var response = isAsync ? "Task.FromResult(input is null ? \"empty\" : \"present\")" : "input is null ? \"empty\" : \"present\"";
+        var filter = hasFilter ? ".AddEndpointFilter((context, next) => next(context))" : "";
+        var (result, compilation) = await RunDelegateCastGeneratorAsync($$"""
+        app.MapPost("/", (PostHandler)Post){{filter}};
+        static {{returnType}} Post(Input? input) => {{response}};
+        """, additionalSource: $$"""
+#nullable enable
+public delegate {{(isAsync ? "System.Threading.Tasks.Task<string>" : "string")}} PostHandler(Input input);
+public sealed class Input
+{
+    public string? Value { get; set; }
+}
+""", nullableEnabled: true);
+        Assert.Empty(result.Diagnostics);
+        var endpoint = GetEndpointFromCompilation(compilation);
+
+        var emptyContext = CreateHttpContext();
+        await endpoint.RequestDelegate(emptyContext);
+        await VerifyResponseBodyAsync(emptyContext, "empty");
+
+        var bodyContext = CreateHttpContextWithJson("""{"Value":"value"}""");
+        await endpoint.RequestDelegate(bodyContext);
+        await VerifyResponseBodyAsync(bodyContext, "present");
+    }
     [Fact]
     public async Task MapGet_DelegateCast_InaccessibleTypeArgumentFallsBack()
     {
@@ -128,7 +160,7 @@ internal static class GenericDelegateCastHandlers
     [InlineData("typeArgument")]
     [InlineData("arrayTypeArgument")]
     [InlineData("containingType")]
-    public async Task MapGet_DelegateCast_OpenGenericTypeFallsBack(string handlerKind)
+    private static async Task<(GeneratorRunResult Result, Compilation Compilation)> RunDelegateCastGeneratorAsync(string source, bool includeInaccessibleHandler = false, string additionalSource = "", bool nullableEnabled = false)
     {
         var handler = handlerKind switch
         {
@@ -272,7 +304,9 @@ file class FileLocalType
         app.MapGet("/", (PrivateHandler)Size);
     }
 """ : "";
-        var project = CreateProject();
+        var project = CreateProject(options => nullableEnabled
+            ? options.WithNullableContextOptions(NullableContextOptions.Enable).WithGeneralDiagnosticOption(ReportDiagnostic.Error)
+            : options);
         project = project.AddDocument("TestMapActions.cs", SourceText.From(GetMapActionString(source), Encoding.UTF8)).Project;
         project = project.AddDocument("DelegateCastHandlers.cs", SourceText.From($$"""
 using System;
