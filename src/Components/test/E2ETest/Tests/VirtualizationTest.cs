@@ -6952,10 +6952,21 @@ public class VirtualizationTest : ServerTestBase<ToggleExecutionModeServerFixtur
         var settledOffset = double.NaN;
         Browser.True(() =>
         {
-            var offset = Convert.ToDouble(js.ExecuteScript($@"
+            var offsetResult = js.ExecuteScript($@"
                 var target = document.querySelector('#scroll-container .item[data-index=""{initialIndex}""]');
-                return target.getBoundingClientRect().top - document.getElementById('scroll-container').getBoundingClientRect().top;
-            "), CultureInfo.InvariantCulture);
+                return target
+                    ? target.getBoundingClientRect().top - document.getElementById('scroll-container').getBoundingClientRect().top
+                    : null;
+            ");
+            if (offsetResult is null)
+            {
+                lastOffset = double.NaN;
+                stableReads = 0;
+                settledOffset = double.NaN;
+                return false;
+            }
+
+            var offset = Convert.ToDouble(offsetResult, CultureInfo.InvariantCulture);
             stableReads = Math.Abs(offset - lastOffset) < 0.5 ? stableReads + 1 : 0;
             lastOffset = offset;
             settledOffset = offset;
