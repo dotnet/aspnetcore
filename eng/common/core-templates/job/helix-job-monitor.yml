@@ -172,6 +172,7 @@ jobs:
   steps:
   - checkout: self
     fetchDepth: 1
+    fetchTags: false
 
   - ${{ if and(eq(parameters.useEntraAuthentication, true), eq(parameters.azureSubscription, '')) }}:
     - pwsh: throw "azureSubscription must be set when useEntraAuthentication is true."
