@@ -160,7 +160,7 @@ internal static class GenericDelegateCastHandlers
     [InlineData("typeArgument")]
     [InlineData("arrayTypeArgument")]
     [InlineData("containingType")]
-    private static async Task<(GeneratorRunResult Result, Compilation Compilation)> RunDelegateCastGeneratorAsync(string source, bool includeInaccessibleHandler = false, string additionalSource = "", bool nullableEnabled = false)
+    public async Task MapGet_DelegateCast_OpenGenericTypeFallsBack(string handlerKind)
     {
         var handler = handlerKind switch
         {
@@ -294,7 +294,7 @@ file class FileLocalType
         await VerifyResponseBodyAsync(httpContext, "size 5");
     }
 
-    private static async Task<(GeneratorRunResult Result, Compilation Compilation)> RunDelegateCastGeneratorAsync(string source, bool includeInaccessibleHandler = false, string additionalSource = "")
+    private static async Task<(GeneratorRunResult Result, Compilation Compilation)> RunDelegateCastGeneratorAsync(string source, bool includeInaccessibleHandler = false, string additionalSource = "", bool nullableEnabled = false)
     {
         var inaccessibleHandler = includeInaccessibleHandler ? """
     private delegate string PrivateHandler(int size);
