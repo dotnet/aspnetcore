@@ -349,6 +349,8 @@ internal sealed class OutputCacheMiddleware
         }
         catch (OperationCanceledException)
         {
+            // A shared lookup can be canceled by the request that started it.
+            // Only propagate cancellation if this request was aborted; otherwise treat it as a cache miss.
             cacheContext.HttpContext.RequestAborted.ThrowIfCancellationRequested();
 
             // don't report as failure
