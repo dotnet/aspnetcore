@@ -100,11 +100,12 @@ post-steps:
       const skillResults = typeof skillId === 'string' && skillId.length > 0
         ? events.filter(event => event.type === 'tool.execution_complete' && event.data?.toolCallId === skillId)
         : [];
-      if (skillStarts.length !== 1 || starts[0] !== skill || skill.data.arguments?.skill !== 'code-review' ||
+      if (skillStarts.length !== 1 || skill.data.arguments?.skill !== 'code-review' ||
           skillResults.length !== 1 || skillResults[0].data.success !== true ||
           events.indexOf(skillResults[0]) <= events.indexOf(skill) ||
-          (starts.length > 1 && events.indexOf(skillResults[0]) >= events.indexOf(starts[1]))) {
-        violations.push('The first tool must successfully invoke the code-review skill exactly once before other tool calls.');
+          starts.some(event => publicationTools.has(event.data?.toolName) &&
+            events.indexOf(event) < events.indexOf(skillResults[0]))) {
+        violations.push('The review must successfully invoke the code-review skill exactly once before any safe-output call.');
       }
 
       if (!starts.some(event => publicationTools.has(event.data?.toolName) &&
@@ -541,6 +542,21 @@ engine:
   # skill/topic panel, noop, and real COMMENT publication on the frozen SHA.
   # Do not patch the compiler or lock file.
   version: "1.0.103"
+  args:
+    - --deny-tool=bash
+    - --deny-tool=read_bash
+    - --deny-tool=stop_bash
+    - --deny-tool=list_bash
+    - --deny-tool=apply_patch
+    - --deny-tool=fetch_copilot_cli_documentation
+    - --deny-tool=run_dynamic_workflow
+    - --deny-tool=dynamic_workflows_manage
+    - --deny-tool=sql
+    - --deny-tool=session_store_sql
+    - --deny-tool=read_agent
+    - --deny-tool=list_agents
+    - --deny-tool=write_agent
+    - --deny-tool=task
   env:
     COPILOT_GITHUB_TOKEN: ${{ case(needs.pat_pool.outputs.pat_number == '0', secrets.COPILOT_PAT_0, needs.pat_pool.outputs.pat_number == '1', secrets.COPILOT_PAT_1, needs.pat_pool.outputs.pat_number == '2', secrets.COPILOT_PAT_2, needs.pat_pool.outputs.pat_number == '3', secrets.COPILOT_PAT_3, needs.pat_pool.outputs.pat_number == '4', secrets.COPILOT_PAT_4, needs.pat_pool.outputs.pat_number == '5', secrets.COPILOT_PAT_5, needs.pat_pool.outputs.pat_number == '6', secrets.COPILOT_PAT_6, needs.pat_pool.outputs.pat_number == '7', secrets.COPILOT_PAT_7, needs.pat_pool.outputs.pat_number == '8', secrets.COPILOT_PAT_8, needs.pat_pool.outputs.pat_number == '9', secrets.COPILOT_PAT_9, 'NO COPILOT PAT AVAILABLE') }}
 ---
@@ -639,7 +655,8 @@ If none survive, it replaces the all-discarded review with a `NO_FINDINGS` noop,
 empty `FINDINGS` review. The original agent artifact retains the discarded payloads;
 a PR-visible no-findings audit comment is outside this adapter's current contract.
 For `FINDINGS`, emit one `create_pull_request_review_comment` per `newFindings` entry in order,
-anchoring it at `path` and `line` and including `severity`, `confidence`, `claim`, and `body`.
+anchoring it at `path` and `line` and including `severity`, `claim`, and `body`.
+Keep confidence labels in the structured result only; omit them from inline comments and review text.
 Then emit exactly one `submit_pull_request_review` with event `COMMENT`. Use only
 the triggering PR and include the frozen SHA in the review text. Both handlers are pinned by
 trusted configuration to that SHA; never override their target or commit. The final review

@@ -11,6 +11,8 @@ const stepName = 'Reject incomplete or partial publication sets';
 const source = fs.readFileSync(workflowSource, 'utf8');
 assert.match(source, /`path` set to `"single-reviewer"` and arrays `newFindings`,\s+`existingFeedbackCoverage`, `unresolved`, and `discarded`/);
 assert.match(source, /one `create_pull_request_review_comment` per `newFindings` entry in order,\s+anchoring it at `path` and `line`/);
+assert.match(source, /`confidence` \(`verified`, `question`, or `unresolved`\), `claim`, and `body`/);
+assert.match(source, /anchoring it at `path` and `line` and including `severity`, `claim`, and `body`\.\s+Keep confidence labels in the structured result only; omit them from inline comments and review text\./);
 assert.match(source, /`NO_FINDINGS`: invoke `noop` exactly once/);
 assert.match(source, /`BLOCKED` or `INCOMPLETE`: use the incomplete-publication path/);
 assert.match(source, /create-pull-request-review-comment:\s+max: 5\s+side: RIGHT/);

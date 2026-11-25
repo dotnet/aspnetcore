@@ -57,6 +57,17 @@ assert.match(workflowSource, /skills:\r?\n  - \.github\/skills\/code-review/);
 assert.match(workflowSource, /skill\(skill="code-review"\)/);
 assert.doesNotMatch(workflowSource, /## agent:|expected_worker_count|review-guide-worker|review-candidate-verifier/);
 
+const deniedTools = [
+  'bash', 'read_bash', 'stop_bash', 'list_bash', 'apply_patch', 'fetch_copilot_cli_documentation',
+  'run_dynamic_workflow', 'dynamic_workflows_manage', 'sql', 'session_store_sql', 'read_agent',
+  'list_agents', 'write_agent', 'task',
+];
+const runtimeCommand = workflowLock.split(/\r?\n/).find(line => line.includes('copilot_harness.cjs'));
+assert.ok(runtimeCommand);
+assert.deepEqual([...runtimeCommand.matchAll(/--deny-tool[= ](\w+)/g)].map(match => match[1]).sort(),
+  [...deniedTools, 'workflow'].sort());
+assert.match(runtimeCommand, /--allow-tool safeoutputs\b/);
+
 const start = (toolName, toolCallId, args = {}) => ({
   type: 'tool.execution_start',
   data: { toolName, toolCallId, arguments: args },
@@ -83,8 +94,12 @@ const cases = [
   ['no skill', [view, noop], /must successfully invoke the code-review skill/],
   ['different skill', [start('skill', '1', { skill: 'different' }), loaded, noop],
     /must successfully invoke the code-review skill/],
-  ['skill after read', [view, skill, loaded, noop], /must successfully invoke the code-review skill/],
-  ['read before skill completion', [skill, view, loaded, noop], /must successfully invoke the code-review skill/],
+  ['skill after read', [view, skill, loaded, noop], null],
+  ['read before skill completion', [skill, view, loaded, noop], null],
+  ['publication before skill start', [comment, skill, loaded, review], /before any safe-output call/],
+  ['publication before skill completion', [skill, comment, loaded, review], /before any safe-output call/],
+  ['missing-tool call before skill completion', [skill, start('safeoutputs-missing_tool', '10'), loaded, noop],
+    /before any safe-output call/],
   ['skill completion before start', [loaded, skill, noop], /must successfully invoke the code-review skill/],
   ['repeated skill', [skill, loaded, start('skill', '10', { skill: 'code-review' }), noop],
     /must successfully invoke the code-review skill/],
