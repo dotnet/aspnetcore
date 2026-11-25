@@ -36,6 +36,7 @@
     private async ValueTask<GridItemsProviderResult<Person>> Load(GridItemsProviderRequest<Person> request)
     {
         _requestCount++;
+        var requestNumber = _requestCount;
         StateHasChanged();
         if (_requestCount > 1)
         {
@@ -49,7 +50,7 @@
         }
 
         var items = Enumerable.Range(request.StartIndex, count)
-            .Select(i => new Person($"Person {i + 1:D3}", $"City {i + 1:D3}"))
+            .Select(i => new Person($"Person {i + 1:D3} (request {requestNumber})", $"City {i + 1:D3}"))
             .ToArray();
 
         return GridItemsProviderResult.From(items, 200);

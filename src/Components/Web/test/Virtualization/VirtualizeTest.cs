@@ -173,6 +173,47 @@ public class VirtualizeTest
     }
 
     [Fact]
+    public async Task Virtualize_ReusesRetainedItemsWhenVisibleCapacityIncreases()
+    {
+        var requests = new List<ItemsProviderRequest>();
+        var renderedItems = new List<int>();
+
+        ValueTask<ItemsProviderResult<int>> provider(ItemsProviderRequest request)
+        {
+            requests.Add(request);
+            return ValueTask.FromResult(new ItemsProviderResult<int>(
+                Enumerable.Range(request.StartIndex, 100).ToArray(), 1000));
+        }
+
+        var (virtualize, renderer) = await CreateRenderedVirtualize(
+            50f,
+            1000,
+            provider,
+            item => builder =>
+            {
+                renderedItems.Add(item);
+                builder.AddContent(0, item);
+            });
+        var callbacks = (IVirtualizeJsCallbacks)virtualize;
+
+        await renderer.Dispatcher.InvokeAsync(() =>
+            callbacks.OnBeforeSpacerVisible(0f, 0f, 500f, SpacerVisibilityReason.ViewportFill));
+
+        var request = Assert.Single(requests);
+        Assert.Equal(0, request.StartIndex);
+        Assert.Equal(40, request.Count);
+        Assert.Equal(Enumerable.Range(0, 40), renderedItems);
+
+        renderedItems.Clear();
+        await renderer.Dispatcher.InvokeAsync(() =>
+            callbacks.OnBeforeSpacerVisible(0f, 2000f, 1000f, SpacerVisibilityReason.ViewportFill));
+
+        Assert.Single(requests);
+        Assert.Equal(50, virtualize._lastRenderedItemCount);
+        Assert.Equal(Enumerable.Range(0, 50), renderedItems);
+    }
+
+    [Fact]
     public async Task Virtualize_DispatchesLazyEnumerationExceptionThroughRendererWhenSkippingRefresh()
     {
         var requests = new List<ItemsProviderRequest>();

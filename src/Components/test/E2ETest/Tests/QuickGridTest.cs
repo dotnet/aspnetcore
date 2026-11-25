@@ -191,6 +191,7 @@ public class QuickGridTest : ServerTestBase<ToggleExecutionModeServerFixture<Pro
             Browser.True(() => grid.FindElements(dataRows).Count > 0);
             Browser.Equal(0, () => grid.FindElements(placeholders).Count);
             Browser.Equal("1", () => app.FindElement(By.Id("text-resize-request-count")).Text);
+            Browser.Equal("Person 001 (request 1)", () => grid.FindElements(dataRows)[0].FindElement(By.TagName("td")).Text);
 
             js.ExecuteScript("document.documentElement.style.fontSize = '32px';");
 
@@ -204,7 +205,7 @@ public class QuickGridTest : ServerTestBase<ToggleExecutionModeServerFixture<Pro
 
             app.FindElement(By.Id("text-resize-finish-loading")).Click();
 
-            Browser.True(() => grid.FindElements(dataRows).Count > 0);
+            Browser.Equal("Person 001 (request 2)", () => grid.FindElements(dataRows)[0].FindElement(By.TagName("td")).Text);
             Browser.Equal(0, () => grid.FindElements(placeholders).Count);
         }
         finally

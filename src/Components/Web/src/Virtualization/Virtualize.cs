@@ -626,8 +626,12 @@ public sealed class Virtualize<TItem> : ComponentBase, IVirtualizeJsCallbacks, I
             builder.CloseRegion();
         }
 
-        // Only count items already enumerated by rendering, not the provider's entire sequence.
-        _loadedItemCount = _loadedItemsStartIndex == _itemsBefore ? _lastRenderedItemCount : 0;
+        // Avoid enumerating lazy provider results just to count items outside the rendered window.
+        _loadedItemCount = _loadedItemsStartIndex == _itemsBefore
+            ? _loadedItems is not null && _loadedItems.TryGetNonEnumeratedCount(out var loadedItemCount)
+                ? loadedItemCount
+                : _lastRenderedItemCount
+            : 0;
 
         _lastRenderedPlaceholderCount = Math.Max(0, lastItemIndex - _itemsBefore - _lastRenderedItemCount);
 

@@ -1,6 +1,7 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Collections;
 using System.Linq;
 using Microsoft.AspNetCore.Components.QuickGrid.Infrastructure;
 using Microsoft.AspNetCore.Components.Routing;
@@ -598,7 +599,7 @@ public partial class QuickGrid<TGridItem> : IAsyncDisposable
             // the virtualized start index. It might be more performant just to have some _latestQueryRowStartIndex field, but we'd have
             // to make sure it doesn't get out of sync with the rows being rendered.
             return new ItemsProviderResult<(int, TGridItem)>(
-                 items: providerResult.Items.Select((x, i) => ValueTuple.Create(i + request.StartIndex + 2, x)),
+                 items: new VirtualizedItems(providerResult.Items, request.StartIndex),
                  totalItemCount: _ariaBodyRowCount);
         }
 
@@ -627,6 +628,35 @@ public partial class QuickGrid<TGridItem> : IAsyncDisposable
         {
             return GridItemsProviderResult.From(Array.Empty<TGridItem>(), 0);
         }
+    }
+
+    // Preserve the collection count so Virtualize can reuse loaded rows without enumerating the projection.
+    private sealed class VirtualizedItems(ICollection<TGridItem> items, int startIndex) : ICollection<(int, TGridItem)>
+    {
+        public int Count => items.Count;
+
+        public bool IsReadOnly => true;
+
+        public IEnumerator<(int, TGridItem)> GetEnumerator()
+            => items.Select((x, i) => ValueTuple.Create(i + startIndex + 2, x)).GetEnumerator();
+
+        IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
+
+        public bool Contains((int, TGridItem) item) => this.Any(candidate => candidate.Equals(item));
+
+        public void CopyTo((int, TGridItem)[] array, int arrayIndex)
+        {
+            foreach (var item in this)
+            {
+                array[arrayIndex++] = item;
+            }
+        }
+
+        public void Add((int, TGridItem) item) => throw new NotSupportedException();
+
+        public void Clear() => throw new NotSupportedException();
+
+        public bool Remove((int, TGridItem) item) => throw new NotSupportedException();
     }
 
     private string AriaSortValue(ColumnBase<TGridItem> column)
