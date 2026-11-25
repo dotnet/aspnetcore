@@ -2,8 +2,6 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Diagnostics;
-using OpenTelemetry;
-using OpenTelemetry.Trace;
 using TestContentPackage;
 
 namespace Components.TestServer.RazorComponents;
@@ -13,6 +11,17 @@ internal static class ComponentsActivityTestCollector
     private static readonly object _lock = new();
     private static readonly Dictionary<string, List<ActivityLinksTestSpan>> _spans = [];
     private static string? _activeTestId;
+
+    static ComponentsActivityTestCollector()
+    {
+        ActivitySource.AddActivityListener(new ActivityListener
+        {
+            ShouldListenTo = source => source.Name is "Microsoft.AspNetCore.Components" or "Microsoft.AspNetCore.Components.Server.Circuits",
+            Sample = (ref ActivityCreationOptions<ActivityContext> options) => IsActive ? ActivitySamplingResult.AllDataAndRecorded : ActivitySamplingResult.None,
+            SampleUsingParentId = (ref ActivityCreationOptions<string> options) => IsActive ? ActivitySamplingResult.AllDataAndRecorded : ActivitySamplingResult.None,
+            ActivityStopped = AddServer,
+        });
+    }
 
     public static bool IsActive => Volatile.Read(ref _activeTestId) is not null;
 
@@ -69,26 +78,5 @@ internal static class ComponentsActivityTestCollector
                 Volatile.Write(ref _activeTestId, null);
             }
         }
-    }
-}
-
-internal sealed class ComponentsActivityTestSampler : Sampler
-{
-    public override SamplingResult ShouldSample(in SamplingParameters samplingParameters)
-        => ComponentsActivityTestCollector.IsActive
-            ? new SamplingResult(SamplingDecision.RecordAndSample)
-            : new SamplingResult(SamplingDecision.Drop);
-}
-
-internal sealed class ComponentsActivityTestExporter : BaseExporter<Activity>
-{
-    public override ExportResult Export(in Batch<Activity> batch)
-    {
-        foreach (var activity in batch)
-        {
-            ComponentsActivityTestCollector.AddServer(activity);
-        }
-
-        return ExportResult.Success;
     }
 }

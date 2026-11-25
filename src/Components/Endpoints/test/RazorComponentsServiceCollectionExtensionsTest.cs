@@ -40,7 +40,7 @@ public class RazorComponentsServiceCollectionExtensionsTest
             if (singleRegistrationServiceTypes.Contains(service.ServiceType))
             {
                 // 'single-registration' services should only have one implementation registered.
-                AssertServiceCountEquals(services, service.ServiceType, 1, service.ServiceKey);
+                AssertServiceCountEquals(services, service.ServiceType, 1);
             }
             else
             {
@@ -69,7 +69,7 @@ public class RazorComponentsServiceCollectionExtensionsTest
             if (singleRegistrationServiceTypes.Contains(service.ServiceType))
             {
                 // 'single-registration' services should only have one implementation registered.
-                AssertServiceCountEquals(services, service.ServiceType, 1, service.ServiceKey);
+                AssertServiceCountEquals(services, service.ServiceType, 1);
             }
             else
             {
@@ -117,11 +117,9 @@ public class RazorComponentsServiceCollectionExtensionsTest
     private void AssertServiceCountEquals(
         IServiceCollection services,
         Type serviceType,
-        int expectedServiceRegistrationCount,
-        object serviceKey)
+        int expectedServiceRegistrationCount)
     {
-        var serviceDescriptors = services.Where(serviceDescriptor =>
-            serviceDescriptor.ServiceType == serviceType && Equals(serviceDescriptor.ServiceKey, serviceKey));
+        var serviceDescriptors = services.Where(serviceDescriptor => serviceDescriptor.ServiceType == serviceType);
         var actual = serviceDescriptors.Count();
 
         Assert.True(

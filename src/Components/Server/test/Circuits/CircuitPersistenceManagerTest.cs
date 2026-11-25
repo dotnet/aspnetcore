@@ -121,7 +121,7 @@ public class CircuitPersistenceManagerTest
 
         var snapshot = circuitPersistenceProvider.State;
         Assert.NotNull(snapshot);
-        Assert.Equal(2, snapshot.ApplicationState.Values.Count(value =>
+        Assert.Equal(1, snapshot.ApplicationState.Values.Count(value =>
             Encoding.UTF8.GetString(value).Contains(navigationContext.SpanId.ToString(), StringComparison.Ordinal)));
         var store = circuitPersistenceManager.ToComponentApplicationStore(new Dictionary<string, byte[]>(snapshot.ApplicationState));
         await using var resumedHost = await CreateCircuitHostAsync(

@@ -4,28 +4,22 @@
 using System.Diagnostics;
 using System.Net.Http;
 using System.Net.Http.Json;
-using OpenTelemetry;
 using TestContentPackage;
 
 namespace Components.WasmMinimal;
 
-internal sealed class ActivityLinksWebAssemblyExporter(HttpClient client, string testId) : BaseExporter<Activity>
+internal sealed class ActivityLinksWebAssemblyExporter(HttpClient client, string testId)
 {
     private readonly object _lock = new();
     private Task _pendingExport = Task.CompletedTask;
 
-    public override ExportResult Export(in Batch<Activity> batch)
+    public void Export(Activity activity)
     {
-        var spans = new List<ActivityLinksTestSpan>();
-        foreach (var activity in batch)
-        {
-            spans.Add(ActivityLinksTestSpan.FromActivity(activity));
-        }
+        var span = ActivityLinksTestSpan.FromActivity(activity);
         lock (_lock)
         {
-            _pendingExport = ExportAfterAsync(_pendingExport, [.. spans]);
+            _pendingExport = ExportAfterAsync(_pendingExport, [span]);
         }
-        return ExportResult.Success;
     }
 
     private async Task ExportAfterAsync(Task previousExport, ActivityLinksTestSpan[] spans)

@@ -2,30 +2,44 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Diagnostics;
+using System.Text.Json;
+using System.Text.Json.Serialization;
 using Microsoft.AspNetCore.Components.Infrastructure;
 using Microsoft.Extensions.Logging;
 
 namespace Microsoft.AspNetCore.Components;
 
-/// <summary>
-/// Transfers SSR navigation activity context to interactive renderers through persistent state,
-/// including updates to existing interactive roots that do not contain a router.
-/// </summary>
-internal sealed class ComponentsActivityState(ILogger logger)
+internal sealed partial class ComponentsActivityState : IDisposable
 {
-    private ComponentsActivityLinkStore? _activityLinkStore;
-    private ComponentsActivitySource? _activitySource;
-    private ComponentsActivityStateUpdate? _pendingState;
+    private const string PersistenceKey = "Microsoft.AspNetCore.Components.ActivityState";
+    private readonly PersistentComponentState _state;
+    private readonly ComponentsActivityLinkStore _activityLinkStore;
+    private readonly ComponentsActivitySource _activitySource;
+    private readonly ILogger _logger;
+    private readonly PersistingComponentStateSubscription _persistingSubscription;
+    private readonly RestoringComponentStateSubscription _restoringSubscription;
+    private RouteState? _pendingState;
     private bool _hasPendingState;
 
-    public ComponentsActivityStateUpdate? Capture()
+    public ComponentsActivityState(
+        ComponentStatePersistenceManager manager,
+        IComponentRenderMode renderMode,
+        ComponentsActivityLinkStore activityLinkStore,
+        ComponentsActivitySource activitySource,
+        ILogger logger)
     {
-        if (_activityLinkStore is null)
-        {
-            return null;
-        }
+        _state = manager.State;
+        _activityLinkStore = activityLinkStore;
+        _activitySource = activitySource;
+        _logger = logger;
+        _activitySource.LastRouterUnregistered += ApplyPendingState;
+        _persistingSubscription = _state.RegisterOnPersisting(PersistAsync, renderMode);
+        _restoringSubscription = _state.RegisterOnRestoring(Restore, new RestoreOptions { AllowUpdates = true });
+    }
 
-        ComponentsActivityRouteState? routeState = null;
+    private Task PersistAsync()
+    {
+        RouteState? routeState = null;
         if (ComponentsActivitySource.HasListeners &&
             _activityLinkStore.TryGetActivityContext(ComponentsActivityLinkStore.Route, out var context, out var tag) &&
             context != default &&
@@ -38,41 +52,33 @@ internal sealed class ComponentsActivityState(ILogger logger)
                 route);
         }
 
-        // Omitting the payload would leave retained interactive roots with stale correlation when tracing is disabled.
-        return new(routeState);
+        // Retained interactive roots need a clear update even when the new route is not traced.
+        _state.PersistAsBytes(PersistenceKey, JsonSerializer.SerializeToUtf8Bytes(routeState, RouteStateJsonContext.Default.RouteState));
+        return Task.CompletedTask;
     }
 
-    public void Apply(ComponentsActivityStateUpdate? state)
+    private void Restore()
     {
-        _pendingState = state;
+        _pendingState = _state.TryTakeBytes(PersistenceKey, out var data)
+            ? JsonSerializer.Deserialize(data, RouteStateJsonContext.Default.RouteState)
+            : null;
         _hasPendingState = true;
-        ApplyPendingState();
-    }
-
-    public void Initialize(ComponentsActivityLinkStore activityLinkStore, ComponentsActivitySource activitySource)
-    {
-        _activityLinkStore = activityLinkStore;
-        _activitySource = activitySource;
-        _activitySource.LastRouterUnregistered += ApplyPendingState;
         ApplyPendingState();
     }
 
     private void ApplyPendingState()
     {
-        if (_activityLinkStore is null || !_hasPendingState)
+        // An interactive router owns correlation until its last instance is removed.
+        if (!_hasPendingState || _activitySource.HasActiveRouter)
         {
             return;
         }
 
-        // A live interactive router owns its route context, rather than the earlier SSR renderer.
-        if (_activitySource!.HasActiveRouter)
+        _activityLinkStore.RemoveActivityContext(ComponentsActivityLinkStore.Route);
+        if (_pendingState is { } routeState)
         {
-            return;
-        }
-
-        if (_pendingState?.Route is { } routeState)
-        {
-            if (ActivityContext.TryParse(routeState.TraceParent, routeState.TraceState, routeState.IsRemote, out var context))
+            if (ActivityContext.TryParse(routeState.TraceParent, routeState.TraceState,
+                isRemote: OperatingSystem.IsBrowser() || routeState.IsRemote, out var context))
             {
                 _activityLinkStore.SetActivityContext(
                     ComponentsActivityLinkStore.Route,
@@ -81,63 +87,23 @@ internal sealed class ComponentsActivityState(ILogger logger)
             }
             else
             {
-                logger.LogDebug("The persisted navigation activity context could not be restored.");
-                _activityLinkStore.RemoveActivityContext(ComponentsActivityLinkStore.Route);
+                _logger.LogDebug("The persisted navigation activity context could not be restored.");
             }
-        }
-        else
-        {
-            _activityLinkStore.RemoveActivityContext(ComponentsActivityLinkStore.Route);
         }
 
         _pendingState = null;
         _hasPendingState = false;
     }
-}
 
-internal sealed class ServerComponentsActivityState(PersistentComponentState state, ILogger<ComponentStatePersistenceManager> logger)
-{
-    private readonly ComponentsActivityState _activityState = state.GetActivityState(logger);
-
-    [PersistentState(AllowUpdates = true)]
-    public ComponentsActivityStateUpdate? ActivityState
+    public void Dispose()
     {
-        get => _activityState.Capture();
-        set => _activityState.Apply(value);
+        _persistingSubscription.Dispose();
+        _restoringSubscription.Dispose();
+        _activitySource.LastRouterUnregistered -= ApplyPendingState;
     }
-}
 
-internal sealed class WebAssemblyComponentsActivityState(PersistentComponentState state, ILogger<ComponentStatePersistenceManager> logger)
-{
-    private readonly ComponentsActivityState _activityState = state.GetActivityState(logger);
+    internal sealed record RouteState(string TraceParent, string? TraceState, bool IsRemote, string Route);
 
-    // Circuit snapshots contain both wrappers, but only SSR imports cross the browser boundary.
-    [PersistentState(AllowUpdates = true, RestoreBehavior = RestoreBehavior.SkipLastSnapshot)]
-    public ComponentsActivityStateUpdate? ActivityState
-    {
-        get => _activityState.Capture();
-        // The persisted route span originated on the server, not in the browser.
-        set => _activityState.Apply(value?.Route is { } route
-            ? value with { Route = route with { IsRemote = true } }
-            : value);
-    }
-}
-
-internal sealed record ComponentsActivityRouteState(
-    string TraceParent,
-    string? TraceState,
-    bool IsRemote,
-    string Route)
-{
-    // JSON restoration must not depend on constructor parameter names retained by the trimmer.
-    public ComponentsActivityRouteState() : this(string.Empty, null, false, string.Empty)
-    {
-    }
-}
-
-internal sealed record ComponentsActivityStateUpdate(ComponentsActivityRouteState? Route)
-{
-    public ComponentsActivityStateUpdate() : this(Route: null)
-    {
-    }
+    [JsonSerializable(typeof(RouteState))]
+    private sealed partial class RouteStateJsonContext : JsonSerializerContext;
 }
