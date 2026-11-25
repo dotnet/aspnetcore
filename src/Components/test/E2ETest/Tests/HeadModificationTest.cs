@@ -105,6 +105,7 @@ public class HeadModificationTest : ServerTestBase<HeadModificationTest.HeadModi
 
         Browser.Equal("rgba(0, 128, 0, 1)", () => target.GetCssValue("background-color"));
         Browser.Equal(1, () => Browser.FindElements(By.Id("swap-stylesheet")).Count);
+        Browser.Equal(0, () => Browser.FindElements(By.CssSelector("head link[href*='head-swap-initial.css']")).Count);
     }
 
     [Fact]
@@ -228,6 +229,34 @@ public class HeadModificationTest : ServerTestBase<HeadModificationTest.HeadModi
     }
 
     [Fact]
+    public async Task RemovingPendingHeadStylesheetRemovesBothStylesheets()
+    {
+        Browser.MountTestComponent<HeadStylesheetSwapPendingReplacement>();
+        var target = Browser.Exists(By.Id("swap-target"));
+        Browser.Equal("rgba(0, 0, 255, 1)", () => target.GetCssValue("background-color"));
+
+        StylesheetRequestGate request = null;
+        try
+        {
+            Browser.Exists(By.Id("replace-stylesheet")).Click();
+            var replacement = Browser.Exists(By.CssSelector("link#pending-swap-stylesheet[href*='head-swap-replacement/']"));
+            request = _serverFixture.GetRequest(GetRequestId(replacement));
+            await request.Requested.Task.WaitAsync(TimeSpan.FromSeconds(15));
+            Browser.Equal(1, () => Browser.FindElements(By.CssSelector("head link[href*='head-swap-initial.css']")).Count);
+
+            Browser.Exists(By.Id("remove-replacement")).Click();
+
+            Browser.Equal(0, () => Browser.FindElements(By.CssSelector("head link[href*='head-swap-initial.css']")).Count);
+            Browser.Equal(0, () => Browser.FindElements(By.CssSelector("head link[href*='head-swap-replacement/']")).Count);
+            Browser.Equal("rgba(255, 0, 0, 1)", () => target.GetCssValue("background-color"));
+        }
+        finally
+        {
+            request?.Release.TrySetResult();
+        }
+    }
+
+    [Fact]
     public async Task FailedHeadStylesheetReplacementRemovesPreviousStylesheet()
     {
         Browser.MountTestComponent<HeadStylesheetSwap>();
@@ -277,7 +306,6 @@ public class HeadModificationTest : ServerTestBase<HeadModificationTest.HeadModi
             var replacement = Browser.Exists(By.CssSelector("link#swap-stylesheet[href*='head-swap-replacement/']"));
             request = _serverFixture.GetRequest(GetRequestId(replacement));
             await request.Requested.Task.WaitAsync(TimeSpan.FromSeconds(15));
-            Assert.Equal("rgba(0, 0, 255, 1)", target.GetCssValue("background-color"));
 
             Browser.Equal("rgba(255, 0, 0, 1)", () => target.GetCssValue("background-color"));
             Browser.Equal(1, () => Browser.FindElements(By.Id("swap-stylesheet")).Count);
