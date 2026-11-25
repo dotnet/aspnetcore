@@ -19,7 +19,7 @@ public class MalformedAccountCodeTests
     [InlineData("V4", "TrailingPeriod")]
     [InlineData("V5", "InvalidLength")]
     [InlineData("V5", "TrailingPeriod")]
-    public async Task ResetPassword_MalformedCode_ReturnsMissingCodeBadRequest(string version, string malformedCase)
+    public async Task ResetPassword_MalformedCode_ReturnsInvalidCodeBadRequest(string version, string malformedCase)
     {
         var emails = new ContosoEmailSender();
         using var factory = CreateFactory(version);
@@ -37,7 +37,7 @@ public class MalformedAccountCodeTests
 
         using var response = await resetClient.GetAsync(link);
         var body = await AssertStatusAsync(response, HttpStatusCode.BadRequest);
-        Assert.Equal("A code must be supplied for password reset.", body);
+        Assert.Equal("The password reset link is invalid. Request a new link.", body);
     }
 
     [Theory]

@@ -104,7 +104,7 @@ internal sealed class ResetPasswordModel<TUser> : ResetPasswordModel where TUser
             }
             catch (FormatException)
             {
-                return BadRequest("A code must be supplied for password reset.");
+                return BadRequest("The password reset link is invalid. Request a new link.");
             }
 
             return Page();
