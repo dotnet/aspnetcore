@@ -1,6 +1,7 @@
 [
   {
     "id": "case-01",
+    "label": "fresh batch",
     "pr": 66671,
     "head": "686db38530dfc200621faf0eb58f508f6cd27fd4",
     "baseTip": "c405a576d1f35b02fdcb7bf09af7b60ec8d1151e",
@@ -12,6 +13,7 @@
   },
   {
     "id": "case-02",
+    "label": "fresh batch",
     "pr": 68953,
     "head": "f02a77fc6a61a118f7b85f1ba323ff573a918a7d",
     "baseTip": "9988228dcf0168dec20895bcc6be899f5e473c25",
@@ -21,6 +23,7 @@
   },
   {
     "id": "case-03",
+    "label": "fresh batch",
     "pr": 65483,
     "head": "1f54405d73c94b3ecbcc930748489ad9d0f07553",
     "baseTip": "1d5f6d893cdee1bf4655cd374ca5bae8d8d85231",
@@ -32,6 +35,7 @@
   },
   {
     "id": "case-04",
+    "label": "fresh batch",
     "pr": 68139,
     "head": "1d76f8c3774e8d3624cc5661f51c26e284676147",
     "baseTip": "9f99606fb477763ddd79279bb41379f07d89555a",
@@ -41,6 +45,7 @@
   },
   {
     "id": "case-05",
+    "label": "fresh batch",
     "pr": 68119,
     "head": "b9de303bf3a07a7999cbd110d3cb5166ac0580de",
     "baseTip": "c3b822275eb202c0b27bd163e6bbf46b1ea2ac3e",
@@ -50,6 +55,7 @@
   },
   {
     "id": "case-06",
+    "label": "fresh batch",
     "pr": 67530,
     "head": "d12a208ed2bc9063a5d496ed801182c5a11a771d",
     "baseTip": "cf0ae5e828233a520c8d7d435db130e24b8dc2aa",
@@ -61,6 +67,7 @@
   },
   {
     "id": "case-07",
+    "label": "fresh batch",
     "pr": 68344,
     "head": "60598ff7c7641137b64c041dd84c460a0038dc33",
     "baseTip": "624894db39d27189dbac06273f70d08b164b8961",
@@ -72,6 +79,7 @@
   },
   {
     "id": "case-08",
+    "label": "fresh batch",
     "pr": 67977,
     "head": "6bb2000953c68abc8028336802cf634df34c8d92",
     "baseTip": "0916dabf59443fdd52155d4b4d0fa555425e8eb0",
@@ -83,6 +91,7 @@
   },
   {
     "id": "case-09",
+    "label": "fresh batch",
     "pr": 67964,
     "head": "ea134fec86c7896217420c74b373b7f40a71f7a3",
     "baseTip": "b23361138c31f0a08726a4e83e8b24324680088d",
@@ -94,6 +103,7 @@
   },
   {
     "id": "case-10",
+    "label": "fresh batch",
     "pr": 69425,
     "head": "bdfcf34d016f590ae04f13f18aca452fb60719ec",
     "baseTip": "60a812ff26304bb6064e4d29828d4412e8a123b6",
@@ -103,6 +113,7 @@
   },
   {
     "id": "case-11",
+    "label": "fresh batch",
     "pr": 69548,
     "head": "04435a32998640c4709a5108ec29159eca500375",
     "baseTip": "6bdb34960e526f5a508ec88c60a5f34441230e25",
@@ -112,6 +123,7 @@
   },
   {
     "id": "case-12",
+    "label": "fresh batch",
     "pr": 69845,
     "head": "b77dced142db96fe520d1dac7dc2922001042fa9",
     "baseTip": "3595620ce66db77d795b5435ba44687dc94cf3ef",
@@ -123,6 +135,7 @@
   },
   {
     "id": "case-13",
+    "label": "fresh batch",
     "pr": 67618,
     "head": "4fcce480e881c52f9d748ae8415343287c4abaf9",
     "baseTip": "8f51f037469f6b2c54d921817c0435b29ba6b051",
@@ -134,6 +147,7 @@
   },
   {
     "id": "case-14",
+    "label": "fresh batch",
     "pr": 68116,
     "head": "421d69c16d2951c9fa3c41edca84edec7e930eb0",
     "baseTip": "8d2e54b9632ef5ff4f24cdbc219bfa6ff1a454d1",
@@ -145,6 +159,7 @@
   },
   {
     "id": "case-15",
+    "label": "fresh batch",
     "pr": 67757,
     "head": "943c08d32056e55663f47c17d783e6858a6030ce",
     "baseTip": "512f3138e56bb3d51d35c6dafbb305e198e8de47",
@@ -154,6 +169,7 @@
   },
   {
     "id": "case-16",
+    "label": "fresh batch",
     "pr": 67465,
     "head": "36fdd080bee84a6ad90295fd7ed4704de8133c46",
     "baseTip": "fa8126f62f64eaf37292ff1e334ace99bc757bcf",
@@ -165,6 +181,7 @@
   },
   {
     "id": "case-17",
+    "label": "fresh batch",
     "pr": 68451,
     "head": "271e9cd681b6720d26f45da27a4e9a8dd746e68b",
     "baseTip": "704fddddc31f96a26aabc36f557103a733545442",
@@ -174,6 +191,7 @@
   },
   {
     "id": "case-18",
+    "label": "fresh batch",
     "pr": 66519,
     "head": "7262d8c410c4dfdab91dcade1ce5a8d263add554",
     "baseTip": "7827aa37f475f0f0756188c3daddf55af85fb2a8",
@@ -185,6 +203,7 @@
   },
   {
     "id": "case-19",
+    "label": "fresh batch",
     "pr": 64457,
     "head": "9df9b1e4f2bf39ed7933aad0cfbc27614709b089",
     "baseTip": "e21db218505fe866a909a92b64398df911acbfca",
@@ -196,6 +215,7 @@
   },
   {
     "id": "case-20",
+    "label": "fresh batch",
     "pr": 67821,
     "head": "d541c8c76ef1defcf89d29198d70f49d924bbb00",
     "baseTip": "512f3138e56bb3d51d35c6dafbb305e198e8de47",
@@ -207,6 +227,7 @@
   },
   {
     "id": "case-21",
+    "label": "fresh batch",
     "pr": 68341,
     "head": "c21892ee5e9a881d397ee7fccf5c9cf8deaa8091",
     "baseTip": "c0c8774eea3543c610ab4b6d78921c2c5d11d1b5",
@@ -218,6 +239,7 @@
   },
   {
     "id": "case-22",
+    "label": "fresh batch",
     "pr": 69834,
     "head": "a25c1ffd86333bbe38bd6a09c3ec86db4040f8b1",
     "baseTip": "1e4a69d0aba443940f4d28dae1f8dec8a7f6310f",
@@ -229,6 +251,7 @@
   },
   {
     "id": "case-23",
+    "label": "fresh batch",
     "pr": 69702,
     "head": "8e185ff71ba1def37438decf8f5b25b7f5239b0c",
     "baseTip": "8192456de81ed6bbc6e484404069f59907bd0d6f",
@@ -238,6 +261,7 @@
   },
   {
     "id": "case-24",
+    "label": "fresh batch",
     "pr": 66977,
     "head": "f0c3925bfac640ce63510684ca4a387472221231",
     "baseTip": "33c8c07335049ba0dc7fd403c291033fe42ba87d",
@@ -249,6 +273,7 @@
   },
   {
     "id": "case-25",
+    "label": "fresh batch",
     "pr": 67934,
     "head": "1206ec0da883e4f69e8247ed54f6a358d2d359cc",
     "baseTip": "31b471d8a144abc2d681adcb44f123a9187d2c3c",
@@ -257,10 +282,11 @@
     "rubrics": [
       "At the IntersectionObserver spacer predicate in Virtualize.ts, identify that the before and after spacers use different eligibility checks: an intersecting zero-height top spacer can cause needless top-side render/callback work when nothing above is virtualized. A correct catch calls for the same nonzero spacer-height precondition on both sides, not symmetry as a style preference."
     ],
-    "exploratory": true
+    "excluded": true
   },
   {
     "id": "case-26",
+    "label": "fresh batch",
     "pr": 68613,
     "head": "9515c4c0ff7901b6c442497c93113982ecdf68e5",
     "baseTip": "a3f9cbd575c8fdff6c4c6b1c79982fb11a38c604",
@@ -272,6 +298,7 @@
   },
   {
     "id": "case-27",
+    "label": "fresh batch",
     "pr": 67674,
     "head": "7e28097b0d2ea463cea49101c409f903120a2d01",
     "baseTip": "3e156e1a749f70ffcd40f5841112505b87808372",
@@ -280,10 +307,11 @@
     "rubrics": [
       "At the boundary assertions in QuickGridNoInteractivityTest.cs, identify that the static SSR pager test does not enforce each of the four links retaining an href at both ends. The existing first-page assertions only check first/previous href, so missing next/last href can escape those assertions; the opposite boundary needs the symmetric check. A correct catch names the link-presence contract, not just extraction of a reusable assertion helper."
     ],
-    "exploratory": true
+    "excluded": true
   },
   {
     "id": "case-28",
+    "label": "fresh batch",
     "pr": 67690,
     "head": "9bf65a3906ea754749ab9d8895aa0631f7d4b437",
     "baseTip": "c4d061a54c669a55ca9aa18982b416e9d3ff4d2b",
@@ -293,6 +321,7 @@
   },
   {
     "id": "case-29",
+    "label": "fresh batch",
     "pr": 68321,
     "head": "5d78dd9eed2b7aa60ee23755c8dedfa8ed365ccf",
     "baseTip": "933baa08e981a68c9c87aa709b860284cbfbf269",
@@ -304,6 +333,7 @@
   },
   {
     "id": "case-30",
+    "label": "fresh batch",
     "pr": 66528,
     "head": "3a8ea046c34ff7a8a988bcbf6f507f39ddc89945",
     "baseTip": "05434a9e554a75c887f204d08849fba337488dc3",
@@ -315,6 +345,7 @@
   },
   {
     "id": "case-31",
+    "label": "fresh batch",
     "pr": 67742,
     "head": "ac8db8f74a69364902132fd57f7b99fa67f6318f",
     "baseTip": "5a09c126653d5bd295262f2ca96c9388b854cb24",
@@ -324,6 +355,7 @@
   },
   {
     "id": "case-32",
+    "label": "fresh batch",
     "pr": 68670,
     "head": "14eac6197adb9f2f0a785c1320fde05004f694b1",
     "baseTip": "801d77ee2ade7a2cab74ea389aeba6bf6c5f32e5",
@@ -333,6 +365,7 @@
   },
   {
     "id": "case-33",
+    "label": "fresh batch",
     "pr": 67249,
     "head": "f3dcba8354a4379eff270d5fa7dc86a11a2ddd21",
     "baseTip": "e65aaa9c148ae0c12b0619521ea9dd3551520c92",
@@ -344,6 +377,7 @@
   },
   {
     "id": "case-34",
+    "label": "fresh batch",
     "pr": 64539,
     "head": "fe4023adf712fb1ec039003032e9ebabf6017fb7",
     "baseTip": "07dc86add64091ac7805d98e90c3fa27845c21fa",
@@ -355,6 +389,7 @@
   },
   {
     "id": "case-35",
+    "label": "fresh batch",
     "pr": 63144,
     "head": "3235ee4d61916253ecf72274e03291ebc1814ee5",
     "baseTip": "7f4b60cf7782bd8e1e55e9a1c0fe33396285002e",
@@ -366,6 +401,7 @@
   },
   {
     "id": "case-36",
+    "label": "fresh batch",
     "pr": 67573,
     "head": "586149e7a1122b379b22015cde2a1bcb27cea110",
     "baseTip": "8ef91a5c3b5164046c9b21ed3cc21ff03219aafb",

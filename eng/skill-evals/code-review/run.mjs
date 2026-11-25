@@ -4,7 +4,8 @@ import { createHash } from "node:crypto";
 import { copyFileSync, existsSync, mkdirSync, readFileSync, readdirSync, realpathSync, rmSync, unlinkSync, writeFileSync } from "node:fs";
 import { basename, dirname, isAbsolute, join, relative, resolve, sep } from "node:path";
 import { fileURLToPath } from "node:url";
-import { auditReview, parseReview, reviewGroups, validateCohort } from "./results.mjs";
+import { auditReview, complete, reviewGroups, scoreTrials, validateCohort } from "./results.mjs";
+import { collectTrials } from "./collection.mjs";
 import { reviewProfile, reviewSpec } from "./workflow.mjs";
 
 const here = dirname(fileURLToPath(import.meta.url));
@@ -23,17 +24,23 @@ if (command === "cli-version") {
     console.log(profile.cliVersion);
     process.exit(0);
 }
-assert.ok(["prepare", "review", "judge"].includes(command) && requestedDir,
-    "Usage: run.mjs cli-version | prepare <new-run-dir> <case-id> [case-id] | prepare <new-run-dir> --quick|--full | review <run-dir> | judge <run-dir>");
-assert.ok(process.platform === "linux" && process.getuid() > 0, "Use Linux or WSL as an unprivileged user");
+assert.ok(["prepare", "review", "collect", "judge", "score"].includes(command) && requestedDir,
+    "Usage: run.mjs cli-version | prepare <new-run-dir> <case-id>... | prepare <new-run-dir> --quick|--full|--replay <case-id> | review|collect|judge|score <run-dir>");
+if (["prepare", "review", "judge"].includes(command)) {
+    assert.ok(process.platform === "linux" && process.getuid() > 0, "Use Linux or WSL as an unprivileged user");
+}
 const runDir = command === "prepare"
     ? join(realpathSync(dirname(resolve(requestedDir))), basename(resolve(requestedDir)))
     : realpathSync(requestedDir);
 const within = relative(repo, runDir);
 assert.ok(within.startsWith(`..${sep}`) || within === ".." || isAbsolute(within), "Keep run data outside the checkout");
 const specDir = join(runDir, "spec");
-const cases = load(join(here, "cases.json"));
+const casePath = join(here, "cases.json");
+const baselinePath = join(here, "baseline.json");
+const cases = load(casePath);
+const baseline = load(baselinePath);
 validateCohort(cases);
+const corpusHash = createHash("sha256").update(sha(casePath)).update(sha(baselinePath)).digest("hex");
 
 function stripGuides(bundle) {
     rmSync(join(bundle, ".objects"), { recursive: true });
@@ -47,7 +54,7 @@ function stripGuides(bundle) {
 }
 
 function prepare() {
-    const groups = reviewGroups(cases, selection);
+    const groups = reviewGroups(cases, baseline, selection);
     const selected = groups.flatMap(group => group.ids).map(id => {
         const item = cases.find(candidate => candidate.id === id);
         assert.ok(item, `Unknown case: ${id}`);
@@ -100,12 +107,11 @@ function prepare() {
     for (const group of groups) {
         save(join(specDir, `${group.name}.vally.yaml`), reviewSpec(group, profile));
     }
-    save(join(runDir, "plan.json"), { groups, quick: selection[0] === "--quick", profileHash, skillSha256: sha(skill),
+    save(join(runDir, "plan.json"), { groups, selection, profileHash, corpusHash, skillSha256: sha(skill),
         producerSha256: sha(producer), guidance });
 }
 
 function review(plan) {
-    const { model, cliVersion, tools: reviewTools } = profile;
     const tools = process.env.VALLY_TOOLS;
     assert.ok(tools && process.env.COPILOT_CLI_PATH, "Set VALLY_TOOLS and COPILOT_CLI_PATH");
     const output = join(runDir, "reviews");
@@ -116,40 +122,81 @@ function review(plan) {
         return ["-e", path];
     });
     mkdirSync(output);
-    execFileSync(join(tools, "node_modules/.bin/vally"), ["eval", ...specs,
+    const result = spawnSync(join(tools, "node_modules/.bin/vally"), ["eval", ...specs,
         "--executor-plugin", join(here, "readonly-executor.mjs"), "--backend", "local", "--workers", "1",
-        "--max-retries", "0", "--require-pass", "--workspace", join(runDir, "workspaces"), "--output-dir", output],
-    { cwd: specDir, env: { ...process.env, COPILOT_HOME: join(runDir, "review-home") }, stdio: "inherit" });
+        "--max-retries", "0", "--workspace", join(runDir, "workspaces"), "--output-dir", output],
+        { cwd: specDir, env: { ...process.env, COPILOT_HOME: join(runDir, "review-home") }, stdio: "inherit" });
+    if (result.error) {
+        throw result.error;
+    }
+    if (result.status !== 0) {
+        console.error(`Vally exited with ${result.signal ?? result.status}; use collect to recover saved trials without rerunning`);
+        process.exitCode = 1;
+    }
+}
+
+function collect(plan) {
+    const { cliVersion, model, tools: reviewTools } = profile;
+    const output = join(runDir, "reviews");
     const dirs = readdirSync(output, { withFileTypes: true }).filter(entry => entry.isDirectory());
-    assert.equal(dirs.length, 1, "Expected a single Vally result directory");
-    const results = join(output, dirs[0].name);
-    const expected = new Map(plan.groups.flatMap(group => group.ids.map(id => [id, group])));
-    const counts = new Map([...expected.keys()].map(id => [id, 0]));
-    const seen = new Set();
-    const trials = jsonLines(join(results, "results.jsonl")).filter(row => row.type === "trial-result").map(row => {
-        const { stimulus: id, trajectory, status, itemId, evalName, workspacePath } = row;
-        const index = Number(/::trial-(\d+)$/.exec(itemId)?.[1]);
-        const trial = `${id}/${index + 1}`;
-        const group = expected.get(id);
-        assert.ok(group && evalName === group.name && Number.isInteger(index) && index >= 0 && index < group.runs && !seen.has(trial),
-            `Unexpected or duplicate trial: ${itemId}`);
-        seen.add(trial);
-        counts.set(id, counts.get(id) + 1);
-        assert.equal(row.model, model, `${trial}: unexpected reviewer model`);
-        assert.equal(status, "success", `${trial}: Vally trial failed`);
-        assert.equal(trajectory.endReason, "completed", `${trial}: review did not complete`);
+    assert.ok(dirs.length <= 1, "Expected at most one Vally result directory");
+    const results = dirs.length ? join(output, dirs[0].name) : output;
+    const raw = join(results, "results.jsonl");
+    const lines = existsSync(raw) ? readFileSync(raw, "utf8").split(/\r?\n/) : [];
+    const { trials, warnings } = collectTrials(plan.groups, lines, (row, group, index) => {
+        const { stimulus: id, trajectory, workspacePath } = row;
+        assert.equal(row.model, model, "Unexpected reviewer model");
         assert.equal(sha(join(workspacePath, ".github/skills/code-review/SKILL.md")), plan.skillSha256,
-            `${trial}: staged skill differs from the prepared skill`);
+            "Staged skill differs from the prepared skill");
         const events = jsonLines(join(results, group.name, id, model, String(index), "events.jsonl"));
         const nanoAiu = auditReview(events, cliVersion, reviewTools);
         const cost = trajectory.metrics.tokenUsage.cost;
         assert.equal(cost.unit, "nano-aiu");
-        assert.equal(cost.amount, nanoAiu, `${trial}: native usage differs from Vally`);
-        return { id: trial, caseId: id, nanoAiu, findings: parseReview(trajectory.output) };
+        assert.equal(cost.amount, nanoAiu, "Native usage differs from Vally");
     });
-    assert.ok([...counts].every(([id, count]) => count === expected.get(id).runs), "Missing reviewer trials");
-    save(join(runDir, "trials.json"), { cliVersion, model, trials });
-    console.log(`Reviewed ${trials.length} trials for ${trials.reduce((sum, item) => sum + item.nanoAiu, 0) / 1e9} AI credits`);
+    const data = { cliVersion, model, trials, warnings };
+    const path = join(runDir, "trials.json");
+    if (existsSync(path)) {
+        assert.deepEqual(load(path), data, "Saved reviewer data changed; do not score using stale judge receipts");
+    } else {
+        save(path, data);
+    }
+    for (const warning of warnings) {
+        console.error(warning);
+    }
+    const missingCosts = trials.filter(trial => trial.nanoAiu === null).length;
+    const unfinished = trials.filter(trial => !complete(trial));
+    for (const { id, status, reason } of unfinished) {
+        console.error(`${id}: ${status}${reason ? `: ${reason}` : ""}`);
+    }
+    console.log(`Collected ${trials.length} trials (${unfinished.length} unfinished); ${missingCosts} without a Vally usage receipt`);
+}
+
+function score(plan) {
+    const { trials, cliVersion, model, warnings } = load(join(runDir, "trials.json"));
+    const path = join(runDir, "judgments.json");
+    const partialPath = join(runDir, "catch-receipts.jsonl");
+    const { receipts, judgeNanoAiu } = existsSync(path) ? load(path) : {
+        receipts: existsSync(partialPath) ? jsonLines(partialPath) : [],
+        judgeNanoAiu: null,
+    };
+    const metrics = scoreTrials(cases, baseline, trials, receipts, plan.selection[0] === "--quick");
+    const reviewNanoAiu = trials.reduce((sum, trial) => sum + (trial.nanoAiu ?? 0), 0);
+    const summary = { model, cliVersion, baseline: baseline.configuration, reviewNanoAiu, judgeNanoAiu, warnings, ...metrics };
+    writeFileSync(join(runDir, "summary.json"), `${JSON.stringify(summary, null, 2)}\n`);
+    for (const { id, path: file, line, claim, body } of summary.newControlFindings) {
+        console.log(`${id} ${file}:${line}\n${claim}\n${body}`);
+    }
+    console.log(`Recorded reviewer usage: ${reviewNanoAiu / 1e9} AI credits; judge usage: ${judgeNanoAiu === null ? "not recorded" : `${judgeNanoAiu / 1e9} AI credits`}`);
+    if (summary.quickGate) {
+        console.log(`Quick gate: ${summary.quickGate.passed ? "passed" : "failed"} (${summary.quickGate.catches}/7 catches, ${summary.controlFindings}/${summary.quickGate.controlLimit} control findings)`);
+    }
+    if (summary.unjudgedTrials.length) {
+        console.error(`${summary.unjudgedTrials.length} trial(s) lack usable judge receipts; see summary.json`);
+    }
+    if (summary.quickGate?.passed === false || !summary.mustNotRaisePassed || summary.unjudgedTrials.length) {
+        process.exitCode = 1;
+    }
 }
 
 if (command === "prepare") {
@@ -158,11 +205,17 @@ if (command === "prepare") {
     assert.equal(selection.length, 0);
     const plan = load(join(runDir, "plan.json"));
     assert.equal(plan.profileHash, profileHash, "The /review profile changed after preparation; prepare a new run");
+    assert.equal(plan.corpusHash, corpusHash, "The corpus changed after preparation; use the original checkout for this run");
+    assert.deepEqual(plan.groups, reviewGroups(cases, baseline, plan.selection), "Prepared trial groups changed");
     if (command === "review") {
         review(plan);
-    } else {
-        assert.ok(!existsSync(join(runDir, "summary.json")), "This run has already been judged");
+    } else if (command === "collect") {
+        collect(plan);
+    } else if (command === "judge") {
+        collect(plan);
         const { judge } = await import("./catch-judge.mjs");
-        await judge(runDir, cases, profile, plan.quick);
+        await judge(runDir, cases, baseline, profile);
+    } else {
+        score(plan);
     }
 }

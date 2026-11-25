@@ -1,12 +1,25 @@
 import assert from "node:assert/strict";
-import { readFileSync } from "node:fs";
+import { spawnSync } from "node:child_process";
+import { createHash } from "node:crypto";
+import { mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs";
+import { tmpdir } from "node:os";
+import { join } from "node:path";
 import { test } from "node:test";
-import { auditReview, parseMatches, parseReview, reviewGroups, validateCohort } from "./results.mjs";
+import { fileURLToPath } from "node:url";
+import { collectTrials } from "./collection.mjs";
+import { auditReview, parseMatches, parseReview, reviewGroups, rubricsFor, scoreTrials, validateCohort } from "./results.mjs";
 import { reviewProfile, reviewSpec } from "./workflow.mjs";
 
+const cases = JSON.parse(readFileSync(new URL("./cases.json", import.meta.url), "utf8"));
+const baseline = JSON.parse(readFileSync(new URL("./baseline.json", import.meta.url), "utf8"));
+const finding = { path: "src/Example.cs", line: 42, severity: "medium", confidence: "verified", claim: "A distinct claim", body: "The complete supporting text." };
+const payload = findings => JSON.stringify({
+    path: "single-reviewer", newFindings: findings, existingFeedbackCoverage: [], unresolved: [], discarded: [],
+});
+const workflow = readFileSync(new URL("../../../.github/workflows/pull-request-review.md", import.meta.url), "utf8")
+    .replaceAll("\r\n", "\n");
+
 test("offline review uses the shipped prompt, model, CLI and analysis tools", () => {
-    const workflow = readFileSync(new URL("../../../.github/workflows/pull-request-review.md", import.meta.url), "utf8")
-        .replaceAll("\r\n", "\n");
     const profile = reviewProfile(workflow);
     const spec = reviewSpec({ name: "test", runs: 1, ids: ["case-01"] }, profile);
     const { model } = spec.defaults;
@@ -34,30 +47,176 @@ test("offline review uses the shipped prompt, model, CLI and analysis tools", ()
         /offline tool boundary/);
 });
 
-test("cohort has the public revision pins and separates controls and exploratory cases", () => {
-    const cases = JSON.parse(readFileSync(new URL("./cases.json", import.meta.url), "utf8"));
+test("the Run A cohort keeps both exclusions out of every tier", () => {
     validateCohort(cases);
-    assert.equal(cases.filter(item => item.rubrics.length && !item.exploratory).length, 23);
-    assert.equal(cases.filter(item => item.exploratory).length, 2);
-    assert.equal(cases.filter(item => !item.rubrics.length).length, 11);
     assert.throws(() => validateCohort([...cases, cases[0]]));
-    const [quickGroup] = reviewGroups(cases, ["--quick"]);
+    assert.throws(() => validateCohort([{ ...cases[0], label: undefined }, ...cases.slice(1)]), /Invalid label/);
+    const [quickGroup] = reviewGroups(cases, baseline, ["--quick"]);
     assert.equal(quickGroup.runs, 1);
-    const quick = quickGroup.ids.map(id => cases.find(item => item.id === id));
-    assert.equal(new Set(quickGroup.ids).size, 10);
-    assert.equal(quick.filter(item => item.rubrics.length && !item.exploratory).length, 7);
-    assert.equal(quick.filter(item => !item.rubrics.length).length, 3);
-    const [mustFind, controls] = reviewGroups(cases, ["--full"]);
-    assert.equal(mustFind.ids.length * mustFind.runs, 75);
-    assert.equal(controls.ids.length * controls.runs, 11);
-    assert.throws(() => reviewGroups(cases, []), /explicitly opt in/);
+    const [mustFind, controls] = reviewGroups(cases, baseline, ["--full"]);
+    assert.deepEqual(quickGroup.ids, ["case-01", "case-03", "case-07", "case-09", "case-20", "case-21", "case-34", ...controls.ids]);
+    assert.equal(mustFind.runs, 3);
+    assert.equal(controls.runs, 1);
+    assert.deepEqual(mustFind.ids, Object.keys(baseline.catches));
+    assert.deepEqual(controls.ids, Object.keys(baseline.controls));
+    assert.equal(mustFind.ids.length, 23);
+    assert.equal(controls.ids.length, 11);
+    assert.deepEqual(cases.filter(item => item.excluded).map(item => item.id), ["case-25", "case-27"]);
+    for (const id of Object.keys(baseline.excluded)) {
+        assert.ok(!quickGroup.ids.includes(id) && !mustFind.ids.includes(id) && !controls.ids.includes(id));
+        assert.throws(() => reviewGroups(cases, baseline, [id]), /excluded case/);
+        assert.throws(() => reviewGroups(cases, baseline, ["--replay", id]), /active must-find case/);
+    }
+    assert.deepEqual(reviewGroups(cases, baseline, ["--replay", "case-01"])[0].runs, 3);
+    assert.throws(() => reviewGroups(cases, baseline, []), /explicitly opt in/);
 });
 
-test("an incomplete review cannot count as a clean control", () => {
-    const payload = JSON.stringify({ path: "single-reviewer", newFindings: [], existingFeedbackCoverage: [], unresolved: [], discarded: [] });
-    assert.deepEqual(parseReview(`STATUS: NO_FINDINGS\n${payload}`), []);
-    assert.throws(() => parseReview(`STATUS: BLOCKED\n${payload}`), /STATUS: BLOCKED/);
-    assert.throws(() => parseReview(`STATUS: INCOMPLETE\n${payload}`), /STATUS: INCOMPLETE/);
+test("saved Vally output preserves completed trials alongside failed and missing trials", () => {
+    const group = { name: "test", runs: 1, ids: cases.slice(0, 9).map(item => item.id) };
+    const row = (stimulus, output, status = "success") => JSON.stringify({
+        type: "trial-result", evalName: group.name, stimulus, itemId: `${stimulus}::trial-0`, status,
+        trajectory: { output, endReason: "completed", metrics: { tokenUsage: { cost: { unit: "nano-aiu", amount: 123 } } } },
+    });
+    const duplicate = row("case-08", `STATUS: NO_FINDINGS\n${payload([])}`);
+    const lines = [
+        row("case-01", `STATUS: FINDINGS\n${payload([finding])}`),
+        row("case-02", "STATUS: BLOCKED\nNo bundle"),
+        row("case-03", "STATUS: INCOMPLETE\nCould not finish"),
+        row("case-04", "STATUS: NO_FINDINGS\nnot json"),
+        row("case-05", `STATUS: NO_FINDINGS\n${payload([])}`, "error"),
+        "{truncated",
+        row("case-07", `STATUS: NO_FINDINGS\n${payload([])}`),
+        duplicate, duplicate,
+        row("case-09", `STATUS: NO_FINDINGS\n${payload([])}`),
+    ];
+    const audit = result => assert.notEqual(result.stimulus, "case-09", "Missing native trace");
+    const { trials, warnings } = collectTrials([group], lines, audit);
+    assert.deepEqual(trials.map(trial => trial.status),
+        ["findings", "blocked", "incomplete", "malformed", "error", "error", "no-findings", "error", "error"]);
+    assert.deepEqual(trials[0].findings, [finding]);
+    assert.equal(trials[1].reason, "No bundle");
+    assert.equal(trials[2].reason, "Could not finish");
+    for (const [index, reason] of [[4, "Vally trial status"], [5, "Missing Vally trial"], [7, "Duplicate Vally trial"], [8, "Missing native trace"]]) {
+        assert.ok(trials[index].reason.includes(reason));
+    }
+    assert.equal(trials[4].nanoAiu, 123);
+    assert.equal(trials[5].nanoAiu, null);
+    assert.deepEqual(warnings, ["Invalid JSON on Vally results line 6"]);
+    assert.deepEqual(collectTrials([group], lines, audit), { trials, warnings });
+    assert.equal(parseReview("missing status").status, "malformed");
+    assert.equal(parseReview(`STATUS: NO_FINDINGS\n${payload([finding])}`).status, "malformed");
+});
+
+test("quick gate applies both thresholds, names new findings, and rejects an unfinished control", () => {
+    const [{ ids }] = reviewGroups(cases, baseline, ["--quick"]);
+    const trials = ids.map(id => ({ id: `${id}/1`, caseId: id, status: "no-findings", findings: [] }));
+    const receipts = [];
+    function report(id, findings, matches) {
+        const trial = trials.find(row => row.caseId === id);
+        Object.assign(trial, { status: "findings", findings });
+        if (matches) {
+            receipts.push({ id: trial.id, matches });
+        }
+    }
+    for (const id of ids.slice(0, 6)) {
+        const item = cases.find(item => item.id === id);
+        report(id, [finding], rubricsFor(item, baseline).map(() => [1]));
+    }
+    report("case-02", [finding], [[1]]);
+    report("case-17", [finding], [[1]]);
+    report("case-04", [finding]);
+    const score = () => scoreTrials(cases, baseline, trials, receipts, true);
+    const summary = score();
+    assert.deepEqual(summary.quickGate, { catches: 6, controlLimit: 3, passed: true, noNewControlFindings: false });
+    assert.deepEqual(summary.newControlFindings, [{ id: "case-04", trial: "case-04/1", ...finding }]);
+    report("case-04", [finding, finding]);
+    assert.equal(score().quickGate.passed, false);
+    Object.assign(trials.find(row => row.caseId === "case-04"), { status: "no-findings", findings: [] });
+    assert.equal(score().quickGate.noNewControlFindings, true);
+    Object.assign(trials.find(row => row.caseId === "case-05"), { status: "blocked" });
+    assert.equal(score().quickGate.passed, false);
+    assert.deepEqual(score().groups["fresh batch"].find(item => item.id === "case-05").statuses, { blocked: 1 });
+    Object.assign(trials.find(row => row.caseId === "case-05"), { status: "no-findings" });
+    Object.assign(trials[0], { status: "incomplete", findings: [] });
+    assert.equal(score().quickGate.catches, 5);
+    assert.equal(score().quickGate.passed, false);
+});
+
+test("scoring separates labels, reports loss after three trials, and gates any forbidden match", () => {
+    const mustFind = cases.find(item => item.id === "case-01");
+    const control = { id: "case-99", label: "added for a rule", rubrics: [], mustNotRaise: "A forbidden claim" };
+    const trials = [
+        { id: "case-01/1", caseId: "case-01", status: "findings", findings: [finding] },
+        { id: "case-01/2", caseId: "case-01", status: "blocked", findings: [] },
+        { id: "case-01/3", caseId: "case-01", status: "malformed", findings: [] },
+        { id: "case-99/1", caseId: "case-99", status: "findings", findings: [finding] },
+        { id: "case-99/2", caseId: "case-99", status: "findings", findings: [finding, finding] },
+    ];
+    const receipts = [
+        { id: "case-01/1", matches: mustFind.rubrics.map(() => [1]) },
+        { id: "case-99/1", matches: [[]] },
+        { id: "case-99/2", matches: [[2]] },
+    ];
+    const score = results => scoreTrials([mustFind, control], baseline, trials, results, false);
+    const summary = score(receipts);
+    assert.deepEqual(summary.groups["fresh batch"].map(item => [item.caught, item.lost]), [[1, true]]);
+    assert.deepEqual(summary.groups["added for a rule"].map(item => [item.findings, item.forbidden]), [[2, 1]]);
+    assert.equal(summary.mustNotRaisePassed, false);
+    assert.equal(summary.controlFindings, 2);
+    assert.equal(summary.newControlFindings.length, 3);
+    const partial = score(receipts.slice(1));
+    assert.deepEqual(partial.unjudgedTrials, [{ id: "case-01/1", reason: "Missing judge receipt" }]);
+    assert.equal(partial.groups["fresh batch"][0].lost, undefined);
+    assert.equal(partial.controlFindings, 2);
+});
+
+test("collect and score replay an interrupted review without starting Vally or a judge", t => {
+    const runDir = mkdtempSync(join(tmpdir(), "aspnetcore-review-replay-"));
+    t.after(() => rmSync(runDir, { recursive: true, force: true }));
+    const sha = value => createHash("sha256").update(value).digest("hex");
+    const write = (path, data) => writeFileSync(path, `${JSON.stringify(data)}\n`);
+    const profile = reviewProfile(workflow);
+    const selection = ["case-04", "case-05"];
+    const groups = reviewGroups(cases, baseline, selection);
+    const [{ name }] = groups;
+    const hashFile = name => sha(readFileSync(new URL(name, import.meta.url)));
+    const skill = new URL("../../../.github/skills/code-review/SKILL.md", import.meta.url);
+    write(join(runDir, "plan.json"), { selection, groups, profileHash: sha(JSON.stringify(profile)),
+        corpusHash: sha(hashFile("./cases.json") + hashFile("./baseline.json")), skillSha256: sha(readFileSync(skill)) });
+
+    const workspacePath = join(runDir, "workspaces", "case-04");
+    const skillDir = join(workspacePath, ".github", "skills", "code-review");
+    mkdirSync(skillDir, { recursive: true });
+    writeFileSync(join(skillDir, "SKILL.md"), readFileSync(skill));
+    const results = join(runDir, "reviews", "saved");
+    const trace = join(results, name, "case-04", profile.model, "0");
+    mkdirSync(trace, { recursive: true });
+    writeFileSync(join(trace, "events.jsonl"), [
+        { type: "session.start", data: { copilotVersion: profile.cliVersion } },
+        { type: "tool.execution_start", data: { toolName: "skill", toolCallId: "load", arguments: { skill: "code-review" } } },
+        { type: "tool.execution_complete", data: { toolCallId: "load", success: true } },
+        { type: "session.shutdown", data: { totalNanoAiu: 123 } },
+    ].map(event => JSON.stringify(event)).join("\n"));
+    write(join(results, "results.jsonl"), {
+        type: "trial-result", stimulus: "case-04", itemId: "item::trial-0", evalName: name,
+        model: profile.model, workspacePath, status: "success",
+        trajectory: { output: `STATUS: FINDINGS\n${payload([finding])}`, endReason: "completed",
+            metrics: { tokenUsage: { cost: { unit: "nano-aiu", amount: 123 } } } },
+    });
+
+    for (const command of ["collect", "score", "collect", "score"]) {
+        const result = spawnSync(process.execPath, [fileURLToPath(new URL("./run.mjs", import.meta.url)), command, runDir],
+            { encoding: "utf8" });
+        assert.equal(result.status, 0, result.stderr);
+        if (command === "score") {
+            assert.ok(result.stdout.includes(`${finding.claim}\n${finding.body}`));
+        }
+    }
+    const summary = JSON.parse(readFileSync(join(runDir, "summary.json"), "utf8"));
+    assert.equal(summary.controlsComplete, false);
+    assert.deepEqual(summary.groups["fresh batch"].map(item => item.statuses), [{ findings: 1 }, { error: 1 }]);
+    assert.equal(summary.controlFindings, 1);
+    assert.equal(summary.reviewNanoAiu, 123);
 });
 
 test("a reviewer must load the skill successfully and use only read tools", () => {
