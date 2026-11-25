@@ -17,7 +17,7 @@ namespace Microsoft.AspNetCore.Components.Gateway;
 [RequiresBuiltGatewayCliPackage]
 public class BlazorGatewayCliPackageTests
 {
-    private static string ToolDir => $"tools/{GatewayCliTestData.DefaultTargetFramework}/any";
+    private const string ToolDir = "tools/any/any";
     private static string AnyToolDir => $"tools/{GatewayCliTestData.DefaultTargetFramework}/any";
     private static string NativeToolDir => $"tools/any/{GatewayCliTestData.HostRuntimeIdentifier}";
 

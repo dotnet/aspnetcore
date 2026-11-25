@@ -42,6 +42,9 @@
         '$(RuntimeIdentifier)' == '' and
         '$(_GatewayNativeAotSupported)' != 'true'">any</RuntimeIdentifier>
     <PublishAot Condition="'$(_GatewayNativeAotSupported)' == 'true' and '$(RuntimeIdentifier)' != 'any'">true</PublishAot>
+    <PublishAotUsingRuntimePack Condition="'$(PublishAot)' == 'true'">true</PublishAotUsingRuntimePack>
+    <!-- The repository runs the Pack target directly, so mark native inner builds as publishing. -->
+    <_IsPublishing Condition="'$(PublishAotUsingRuntimePack)' == 'true' and '$(RuntimeIdentifier)' != ''">true</_IsPublishing>
     <SelfContained Condition="'$(RuntimeIdentifier)' == 'any'">false</SelfContained>
     <!-- The tool consumes its static assets from publish output; it is not a static-web-assets
          library and must not add build-time static asset manifests to the tool package. -->
@@ -105,32 +108,16 @@
     </ItemGroup>
   </Target>
 
-  <!-- Official builds create the any fallback and host RID package before the pointer package.
-       Platform-specific CI legs set OnlyPackPlatformSpecificPackages and produce their target RID. -->
-  <Target Name="PackGatewayCliPrimaryRuntimePackages"
-          BeforeTargets="GenerateNuspec"
+  <!-- The primary build packs the fallback and target RID. Other CI legs pack their RID directly. -->
+  <Target Name="SelectGatewayCliRuntimePackages"
+          BeforeTargets="ComputeToolPackageRuntimeIdentifiersToPack"
           Condition="
             '$(_GatewayNativeAotSupported)' == 'true' and
             '$(RuntimeIdentifier)' == '' and
-            '$(OnlyPackPlatformSpecificPackages)' != 'true' and
-            '$(_PackingGatewayCliRuntimePackage)' != 'true'">
-    <MSBuild Projects="$(MSBuildProjectFullPath)"
-             Targets="Pack"
-             BuildInParallel="false"
-             Properties="
-               Configuration=$(Configuration);
-               RuntimeIdentifier=any;
-               PublishAot=false;
-               _PackingGatewayCliRuntimePackage=true;
-               PackageOutputPath=$(PackageOutputPath)" />
-    <MSBuild Projects="$(MSBuildProjectFullPath)"
-             Targets="Pack"
-             BuildInParallel="false"
-             Properties="
-               Configuration=$(Configuration);
-               RuntimeIdentifier=$(TargetRuntimeIdentifier);
-               _PackingGatewayCliRuntimePackage=true;
-               PackageOutputPath=$(PackageOutputPath)" />
+            '$(OnlyPackPlatformSpecificPackages)' != 'true'">
+    <ItemGroup>
+      <ToolPackageRuntimeIdentifiersToPack Include="any;$(TargetRuntimeIdentifier)" />
+    </ItemGroup>
   </Target>
 
 </Project>
