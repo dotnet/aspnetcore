@@ -71,6 +71,14 @@ test("the Run A cohort keeps both exclusions out of every tier", () => {
     assert.throws(() => reviewGroups(cases, baseline, []), /explicitly opt in/);
 });
 
+test("the same PR can have separate cases at different commits", () => {
+    const original = cases.find(item => item.id === "case-01");
+    const later = { ...original, id: "case-99", head: original.fixCommit, rubrics: [], mustNotRaise: original.rubrics[0] };
+    validateCohort([...cases, later]);
+    assert.throws(() => validateCohort([...cases, { ...later, head: original.head }]), /Duplicate PR and head pair/);
+    assert.throws(() => validateCohort([{ ...original, fixCommit: undefined }, cases[1]]), /missing fix commit/);
+});
+
 test("saved Vally output preserves completed trials alongside failed and missing trials", () => {
     const group = { name: "test", runs: 1, ids: cases.slice(0, 9).map(item => item.id) };
     const row = (stimulus, output, status = "success") => JSON.stringify({

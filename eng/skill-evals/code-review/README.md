@@ -148,6 +148,11 @@ upgrade comparisons.
 
 ## Tune from production misses
 
+Each case pins one commit. Each trial reviews that commit in isolation,
+even if the PR had multiple review rounds. A follow-up will pair must-find
+cases with cases at their fix commits, where the fixed issue must not be
+raised again.
+
 1. Start with a bug a maintainer flagged that `/review` missed, or a comment a
    maintainer explicitly called wrong. Declined or resolved is not enough.
    The maintainer's statement is the ruling. An agent collects the quote

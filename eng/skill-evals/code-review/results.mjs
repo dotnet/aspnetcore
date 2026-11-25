@@ -37,18 +37,18 @@ export function validateCohort(cases) {
     assert.ok(Array.isArray(cases) && cases.some(item => item.rubrics?.length) &&
         cases.some(item => item.rubrics?.length === 0), "Expected must-find and control cases");
     assert.equal(new Set(cases.map(item => item.id)).size, cases.length);
-    assert.equal(new Set(cases.map(item => item.pr)).size, cases.length);
+    assert.equal(new Set(cases.map(item => `${item.pr}/${item.head}`)).size, cases.length, "Duplicate PR and head pair");
     for (const item of cases) {
         assert.match(item.id, /^case-\d{2,}$/);
         assert.ok(Number.isInteger(item.pr) && item.pr > 0);
         for (const key of ["head", "baseTip", "mergeBase"]) {
             assert.match(item[key], shaPattern);
         }
-        if (item.fixCommit !== undefined) {
-            assert.match(item.fixCommit, shaPattern);
-        }
         assert.match(item.diffSha256, digestPattern);
         assert.ok(Array.isArray(item.rubrics) && item.rubrics.every(nonempty));
+        if (item.rubrics.length || item.fixCommit !== undefined) {
+            assert.match(item.fixCommit, shaPattern, `Invalid or missing fix commit for ${item.id}`);
+        }
         assert.ok(item.excluded === undefined || item.excluded === true);
         assert.ok(["fresh batch", "added for a rule"].includes(item.label), `Invalid label for ${item.id}`);
         assert.ok(item.mustNotRaise === undefined || (!item.rubrics.length && nonempty(item.mustNotRaise)));
