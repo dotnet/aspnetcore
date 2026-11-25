@@ -320,8 +320,20 @@ internal sealed partial class CacheViewService : IDisposable
                 // Cache hit: we are not the creator, so clear the capture reservation so TryBeginWrite does
                 // not capture this cacheView's output.
                 state.CaptureCompletion = null;
+                SerializedRenderFragment cachedPayload;
+                try
+                {
+                    cachedPayload = await inflight;
+                }
+                catch (OperationCanceledException) when (!factoryStarted.Task.IsCompleted && !cancellationToken.IsCancellationRequested)
+                {
+                    // Another request may abandon its capture (for example, after changing keys).
+                    // Render fresh without reserving a replacement capture or cancelling this request.
+                    cancellationToken.ThrowIfCancellationRequested();
+                    resolution.TrySetResult(null);
+                    return;
+                }
                 state.IsCacheHit = true;
-                var cachedPayload = await inflight;
                 // Successfully restored content replaces the original ChildContent.
                 // Checks in the original fragment and components restored as cached markup do not run again.
                 // Live components rerender and rerun their checks, but receive cached parameter values.
