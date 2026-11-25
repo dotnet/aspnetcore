@@ -18,6 +18,8 @@
     <Compile Include="$(ComponentsSharedSourceRoot)src\ComponentKeyHelper.cs" LinkBase="Shared" />
     <Compile Include="$(ComponentsSharedSourceRoot)src\JsonSerializerOptionsProvider.cs" />
     <Compile Include="$(ComponentsSharedSourceRoot)src\HotReloadManager.cs" LinkBase="HotReload" />
+    <Compile Include="$(ComponentsSharedSourceRoot)src\RendererSynchronizationContext.cs" LinkBase="Rendering" />
+    <Compile Include="$(ComponentsSharedSourceRoot)src\RendererSynchronizationContextDispatcher.cs" LinkBase="Rendering" />
     <Compile Include="$(ComponentsSharedSourceRoot)src\RootTypeCache.cs" LinkBase="Shared" />
     <Compile Include="$(ComponentsSharedSourceRoot)src\QueryParameterValueSupplier.cs" LinkBase="Routing" />
     <Compile Include="$(ComponentsSharedSourceRoot)src\StringSegmentAccumulator.cs" LinkBase="Routing" />
