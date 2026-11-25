@@ -674,6 +674,78 @@ public class HttpsTests : LoggedTest
     }
 
     [Fact]
+    public async Task Http3_TlsHandshakeCallbackOptions_TcpApplicationProtocols_ReplacedWithHttp3()
+    {
+        var callbackOptions = new SslServerAuthenticationOptions
+        {
+            ServerCertificate = _x509Certificate2,
+            ApplicationProtocols = new List<SslApplicationProtocol> { SslApplicationProtocol.Http2, SslApplicationProtocol.Http11 },
+        };
+
+        var tlsOptions = await BindHttp3WithTlsCallbackAsync(context => ValueTask.FromResult(callbackOptions));
+
+        var result = await tlsOptions.OnConnection(new TlsConnectionCallbackContext(), CancellationToken.None);
+
+        Assert.Collection(result.ApplicationProtocols, p => Assert.Equal(SslApplicationProtocol.Http3, p));
+
+        Assert.NotSame(callbackOptions, result);
+        Assert.Collection(callbackOptions.ApplicationProtocols,
+            p => Assert.Equal(SslApplicationProtocol.Http2, p),
+            p => Assert.Equal(SslApplicationProtocol.Http11, p));
+    }
+
+    [Fact]
+    public async Task Http3_TlsHandshakeCallbackOptions_NoApplicationProtocols_Unchanged()
+    {
+        var callbackOptions = new SslServerAuthenticationOptions { ServerCertificate = _x509Certificate2 };
+
+        var tlsOptions = await BindHttp3WithTlsCallbackAsync(context => ValueTask.FromResult(callbackOptions));
+
+        var result = await tlsOptions.OnConnection(new TlsConnectionCallbackContext(), CancellationToken.None);
+
+        Assert.Same(callbackOptions, result);
+        Assert.Null(result.ApplicationProtocols);
+    }
+
+    private async Task<TlsConnectionCallbackOptions> BindHttp3WithTlsCallbackAsync(
+        Func<TlsHandshakeCallbackContext, ValueTask<SslServerAuthenticationOptions>> onConnection)
+    {
+        var serverOptions = CreateServerOptions();
+        serverOptions.TestOverrideDefaultCertificate = _x509Certificate2;
+
+        IFeatureCollection bindFeatures = null;
+        var multiplexedConnectionListenerFactory = new MockMultiplexedConnectionListenerFactory();
+        multiplexedConnectionListenerFactory.OnBindAsync = (ep, features) =>
+        {
+            bindFeatures = features;
+        };
+
+        var testContext = new TestServiceContext(LoggerFactory);
+        testContext.ServerOptions = serverOptions;
+        await using (var server = new TestServer(context => Task.CompletedTask,
+            testContext,
+            serverOptions =>
+            {
+                serverOptions.ListenLocalhost(5001, listenOptions =>
+                {
+                    listenOptions.Protocols = HttpProtocols.Http3;
+                    listenOptions.UseHttps(new TlsHandshakeCallbackOptions { OnConnection = onConnection });
+                });
+            },
+            services =>
+            {
+                services.AddSingleton<IMultiplexedConnectionListenerFactory>(multiplexedConnectionListenerFactory);
+            }))
+        {
+        }
+
+        Assert.NotNull(bindFeatures);
+        var tlsOptions = bindFeatures.Get<TlsConnectionCallbackOptions>();
+        Assert.NotNull(tlsOptions);
+        return tlsOptions;
+    }
+
+    [Fact]
     public async Task ClientAttemptingToUseUnsupportedProtocolIsLoggedAsDebug()
     {
         var loggerProvider = new HandshakeErrorLoggerProvider();

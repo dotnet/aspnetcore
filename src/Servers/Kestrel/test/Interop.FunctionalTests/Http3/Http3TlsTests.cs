@@ -335,6 +335,48 @@ public class Http3TlsTests : LoggedTest
         await host.StopAsync().DefaultTimeout();
     }
 
+    [ConditionalFact]
+    [MsQuicSupported]
+    public async Task TlsHandshakeCallbackOptions_TcpApplicationProtocols_StillNegotiatesHttp3()
+    {
+        var builder = CreateHostBuilder(async context =>
+        {
+            await context.Response.WriteAsync("Hello World");
+        }, configureKestrel: kestrelOptions =>
+        {
+            kestrelOptions.ListenAnyIP(0, listenOptions =>
+            {
+                listenOptions.Protocols = HttpProtocols.Http3;
+                var sslOptions = new SslServerAuthenticationOptions
+                {
+                    ServerCertificate = TestResources.GetTestCertificate(),
+                    ApplicationProtocols = new List<SslApplicationProtocol> { SslApplicationProtocol.Http2, SslApplicationProtocol.Http11 }
+                };
+                listenOptions.UseHttps(new TlsHandshakeCallbackOptions
+                {
+                    OnConnection = context => ValueTask.FromResult(sslOptions)
+                });
+            });
+        });
+
+        using var host = builder.Build();
+        using var client = HttpHelpers.CreateClient();
+
+        await host.StartAsync().DefaultTimeout();
+
+        var request = new HttpRequestMessage(HttpMethod.Get, $"https://127.0.0.1:{host.GetPort()}/");
+        request.Version = HttpVersion.Version30;
+        request.VersionPolicy = HttpVersionPolicy.RequestVersionExact;
+        request.Headers.Host = "testhost";
+
+        var response = await client.SendAsync(request, CancellationToken.None).DefaultTimeout();
+        response.EnsureSuccessStatusCode();
+        Assert.Equal(HttpVersion.Version30, response.Version);
+        Assert.Equal("Hello World", await response.Content.ReadAsStringAsync());
+
+        await host.StopAsync().DefaultTimeout();
+    }
+
     [ConditionalTheory]
     [MsQuicSupported]
     [InlineData(true, true, true)]
@@ -504,6 +546,55 @@ public class Http3TlsTests : LoggedTest
         Assert.Equal("Hello World", result);
 
         Assert.True(ranCertificateValidation);
+
+        await host.StopAsync().DefaultTimeout();
+    }
+
+    [ConditionalFact]
+    [MsQuicSupported]
+    public async Task SniConfiguration_NegotiatesHttp3()
+    {
+        var certPath = TestResources.GetCertPath("aspnetdevcert.pfx");
+
+        var config = new ConfigurationBuilder().AddInMemoryCollection(new[]
+        {
+            new KeyValuePair<string, string>("Endpoints:end1:Url", "https://127.0.0.1:0"),
+            new KeyValuePair<string, string>("Endpoints:end1:Protocols", "Http3"),
+            new KeyValuePair<string, string>("Endpoints:end1:Certificate:Path", certPath),
+            new KeyValuePair<string, string>("Endpoints:end1:Certificate:Password", "testPassword"),
+            new KeyValuePair<string, string>("Endpoints:end1:Sni:testhost:Protocols", "Http3"),
+            new KeyValuePair<string, string>("Endpoints:end1:Sni:testhost:Certificate:Path", certPath),
+            new KeyValuePair<string, string>("Endpoints:end1:Sni:testhost:Certificate:Password", "testPassword"),
+        }).Build();
+
+        var builder = CreateHostBuilder(async context =>
+        {
+            await context.Response.WriteAsync("Hello World");
+        }, configureKestrel: kestrelOptions =>
+        {
+            kestrelOptions.Configure(config);
+        });
+
+        using var host = builder.Build();
+        await host.StartAsync().DefaultTimeout();
+
+        var request = new HttpRequestMessage(HttpMethod.Get, $"https://127.0.0.1:{host.GetPort()}/");
+        request.Version = HttpVersion.Version30;
+        request.VersionPolicy = HttpVersionPolicy.RequestVersionExact;
+        request.Headers.Host = "testhost";
+
+        var httpHandler = new SocketsHttpHandler();
+        httpHandler.SslOptions = new SslClientAuthenticationOptions
+        {
+            RemoteCertificateValidationCallback = (_, _, _, _) => true,
+            TargetHost = "testhost",
+        };
+        using var client = new HttpMessageInvoker(httpHandler);
+
+        var response = await client.SendAsync(request, CancellationToken.None).DefaultTimeout();
+        response.EnsureSuccessStatusCode();
+        Assert.Equal(HttpVersion.Version30, response.Version);
+        Assert.Equal("Hello World", await response.Content.ReadAsStringAsync());
 
         await host.StopAsync().DefaultTimeout();
     }
