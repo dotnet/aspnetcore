@@ -18,7 +18,7 @@
     <SkipHelixQueues>
       $(HelixQueueAlmaLinux);
       $(HelixQueueAlpine);
-      $(HelixQueueAzureLinux);
+      $(HelixQueueAzureLinux4);
       $(HelixQueueAzureLinux3);
       $(HelixQueueDebian);
       $(HelixQueueFedora);
