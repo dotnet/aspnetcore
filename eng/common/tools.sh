@@ -131,6 +131,31 @@ function ReadGlobalVersion {
   fi
 }
 
+# Reads the .NET SDK version to install from global.json: 'tools.dotnet' if specified, otherwise 'sdk.version'.
+function ReadDotNetSdkVersion {
+  _ReadDotNetSdkVersion=""
+
+  if command -v jq &> /dev/null; then
+    _ReadDotNetSdkVersion="$(jq -r '.tools.dotnet // .sdk.version // empty' "$global_json_file")"
+  else
+    local global_json
+    global_json="$(cat "$global_json_file")"
+    # Matches "sdk": { ... "version": "<value>" }. Quoted strings are consumed as a whole so that braces
+    # inside them (e.g. in "errorMessage") don't end the sdk object. The version is the third capture group.
+    local sdk_version_regex='"sdk"[[:space:]]*:[[:space:]]*[{]([^"}]|"([^"\\]|\\.)*")*"version"[[:space:]]*:[[:space:]]*"([^"]+)"'
+    if [[ "$global_json" =~ \"dotnet\"[[:space:]\:]*\"([^\"]+) ]]; then
+      _ReadDotNetSdkVersion=${BASH_REMATCH[1]}
+    elif [[ "$global_json" =~ $sdk_version_regex ]]; then
+      _ReadDotNetSdkVersion=${BASH_REMATCH[3]}
+    fi
+  fi
+
+  if [[ -z "$_ReadDotNetSdkVersion" ]]; then
+    Write-PipelineTelemetryError -category 'InitializeToolset' "Error: /global.json must specify 'tools.dotnet' or 'sdk.version'."
+    ExitWithExitCode 1
+  fi
+}
+
 function InitializeDotNetCli {
   if [[ -n "${_InitializeDotNetCli:-}" ]]; then
     return
@@ -159,8 +184,8 @@ function InitializeDotNetCli {
     fi
   fi
 
-  ReadGlobalVersion "dotnet"
-  local dotnet_sdk_version=$_ReadGlobalVersion
+  ReadDotNetSdkVersion
+  local dotnet_sdk_version=$_ReadDotNetSdkVersion
   local dotnet_root=""
 
   # Use dotnet installation specified in DOTNET_INSTALL_DIR if it contains the required SDK version,
