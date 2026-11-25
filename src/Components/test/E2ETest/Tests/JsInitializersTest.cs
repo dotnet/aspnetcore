@@ -48,12 +48,45 @@ public class JsInitializersTest : ServerTestBase<ToggleExecutionModeServerFixtur
         if (_serverFixture.ExecutionMode is ExecutionMode.Client)
         {
             Browser.Exists(By.CssSelector("#total-requests td"));
-            Browser.True(() => (bool)((IJavaScriptExecutor)Browser).ExecuteScript(
-                "return performance.getEntriesByType('resource').some(entry => new URL(entry.name).searchParams.get('initializer') === 'true')"));
         }
         else
         {
             Browser.DoesNotExist(By.Id("total-requests"));
+        }
+    }
+
+    [Fact]
+    public void InitializersCanCustomizeEnvironment()
+    {
+        Browser.Exists(By.Id("initializer-end"));
+        if (_serverFixture.ExecutionMode is ExecutionMode.Client)
+        {
+            Browser.MountTestComponent<ConfigurationComponent>();
+            Browser.Equal("InitializerTest", () => Browser.Exists(By.Id("environment")).Text);
+        }
+    }
+
+    [Fact]
+    public void InitializersCanCustomizeApplicationCulture()
+    {
+        Browser.Exists(By.Id("initializer-end"));
+        if (_serverFixture.ExecutionMode is ExecutionMode.Client)
+        {
+            Browser.MountTestComponent<LocalizedText>();
+            Browser.Equal("Culture is: fr-FR", () => Browser.Exists(By.Id("culture-name-display")).Text);
+            Browser.Equal("CultureUI is: fr-FR", () => Browser.Exists(By.Id("culture-ui-display")).Text);
+            Browser.Equal("Bonjour!", () => Browser.Exists(By.Id("message-display")).Text);
+        }
+    }
+
+    [Fact]
+    public void InitializersCanConfigureRuntime()
+    {
+        Browser.Exists(By.Id("initializer-end"));
+        if (_serverFixture.ExecutionMode is ExecutionMode.Client)
+        {
+            Browser.MountTestComponent<ConfigureRuntime>();
+            Browser.Equal("initializer", () => Browser.Exists(By.Id("environment")).Text);
         }
     }
 

@@ -11,6 +11,9 @@ export async function beforeStart(options) {
         if (!options.logLevel) {
             // Simple way of detecting we are in web assembly
             await Promise.resolve();
+            options.environment = 'InitializerTest';
+            options.applicationCulture = 'fr-FR';
+            options.configureRuntime = dotnet => dotnet.withEnvironmentVariable('CONFIGURE_RUNTIME', 'initializer');
             options.loadBootResource = function (type, name, defaultUri, integrity) {
                 resourceRequests.push([type, name, defaultUri, integrity]);
                 const uri = new URL(defaultUri, document.baseURI);
