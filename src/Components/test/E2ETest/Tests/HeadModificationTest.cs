@@ -135,6 +135,19 @@ public class HeadModificationTest : ServerTestBase<HeadModificationTest.HeadModi
     }
 
     [Fact]
+    public void ReplacingHeadStylesheetWithInlineScriptHidesRemovedLinkById()
+    {
+        Browser.MountTestComponent<HeadStylesheetSwapInlineScript>();
+        var target = Browser.Exists(By.Id("swap-target"));
+        Browser.Equal("rgba(0, 0, 255, 1)", () => target.GetCssValue("background-color"));
+
+        Browser.Exists(By.Id("replace-stylesheet-with-script")).Click();
+
+        Assert.False((bool)((IJavaScriptExecutor)Browser).ExecuteScript("return window.__headStylesheetInlineScriptFoundRemovedLink;"));
+        Browser.Equal(0, () => Browser.FindElements(By.CssSelector("head link[href*='head-swap-initial.css']")).Count);
+    }
+
+    [Fact]
     public void RemovingHeadContentWithoutReplacementRemovesStylesheet()
     {
         Browser.MountTestComponent<HeadStylesheetSwap>();
@@ -285,18 +298,20 @@ public class HeadModificationTest : ServerTestBase<HeadModificationTest.HeadModi
     public async Task TimedOutHeadStylesheetReplacementRemovesPreviousStylesheet()
     {
         StylesheetRequestGate request = null;
-        var timeoutOverrideInstalled = false;
+        var timeoutCaptureInstalled = false;
         try
         {
             ((IJavaScriptExecutor)Browser).ExecuteScript("""
                 window.__headStylesheetOriginalSetTimeout = window.setTimeout;
+                window.__headStylesheetTransitionTimeoutCallback = null;
                 window.setTimeout = function (callback, delay) {
-                  const args = Array.prototype.slice.call(arguments, 2);
-                  const adjustedDelay = delay === 30000 ? 5000 : delay;
-                  return window.__headStylesheetOriginalSetTimeout.apply(window, [callback, adjustedDelay].concat(args));
+                  if (delay === 30000) {
+                    window.__headStylesheetTransitionTimeoutCallback = callback;
+                  }
+                  return window.__headStylesheetOriginalSetTimeout.apply(window, arguments);
                 };
                 """);
-            timeoutOverrideInstalled = true;
+            timeoutCaptureInstalled = true;
 
             Browser.MountTestComponent<HeadStylesheetSwap>();
             var target = Browser.Exists(By.Id("swap-target"));
@@ -306,18 +321,24 @@ public class HeadModificationTest : ServerTestBase<HeadModificationTest.HeadModi
             var replacement = Browser.Exists(By.CssSelector("link#swap-stylesheet[href*='head-swap-replacement/']"));
             request = _serverFixture.GetRequest(GetRequestId(replacement));
             await request.Requested.Task.WaitAsync(TimeSpan.FromSeconds(15));
+            Assert.True((bool)((IJavaScriptExecutor)Browser).ExecuteScript("return typeof window.__headStylesheetTransitionTimeoutCallback === 'function';"));
+            Browser.Equal("rgba(0, 0, 255, 1)", () => target.GetCssValue("background-color"));
+
+            ((IJavaScriptExecutor)Browser).ExecuteScript("window.__headStylesheetTransitionTimeoutCallback();");
 
             Browser.Equal("rgba(255, 0, 0, 1)", () => target.GetCssValue("background-color"));
             Browser.Equal(1, () => Browser.FindElements(By.Id("swap-stylesheet")).Count);
+            Browser.Equal(0, () => Browser.FindElements(By.CssSelector("head link[href*='head-swap-initial.css']")).Count);
         }
         finally
         {
             request?.Release.TrySetResult();
-            if (timeoutOverrideInstalled)
+            if (timeoutCaptureInstalled)
             {
                 ((IJavaScriptExecutor)Browser).ExecuteScript("""
                     window.setTimeout = window.__headStylesheetOriginalSetTimeout;
                     delete window.__headStylesheetOriginalSetTimeout;
+                    delete window.__headStylesheetTransitionTimeoutCallback;
                     """);
             }
         }

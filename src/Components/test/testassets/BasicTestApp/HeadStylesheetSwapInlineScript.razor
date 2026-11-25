@@ -1,0 +1,19 @@
+@if (showScript)
+{
+    <HeadContent>
+        <script>window.__headStylesheetInlineScriptFoundRemovedLink = document.getElementById('theme') !== null;</script>
+    </HeadContent>
+}
+else
+{
+    <HeadContent>
+        <link id="theme" rel="stylesheet" href="head-swap-initial.css" />
+    </HeadContent>
+}
+
+<button id="replace-stylesheet-with-script" @onclick="() => showScript = true">Replace stylesheet with inline script</button>
+<div id="swap-target" style="background-color: red">Stylesheet target</div>
+
+@code {
+    private bool showScript;
+}
