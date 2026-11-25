@@ -8,7 +8,6 @@ using System.Text.Encodings.Web;
 using Microsoft.AspNetCore.Antiforgery;
 using Microsoft.AspNetCore.Components.Endpoints.Forms;
 using Microsoft.AspNetCore.Components.Endpoints.Rendering;
-using Microsoft.AspNetCore.Components.Forms;
 using Microsoft.AspNetCore.Components.Infrastructure;
 using Microsoft.AspNetCore.Diagnostics;
 using Microsoft.AspNetCore.Http;
@@ -16,7 +15,6 @@ using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.WebUtilities;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.Options;
 using Microsoft.Net.Http.Headers;
 
 namespace Microsoft.AspNetCore.Components.Endpoints;
@@ -36,6 +34,14 @@ internal partial class RazorComponentEndpointInvoker : IRazorComponentEndpointIn
 
     public Task Render(HttpContext context)
     {
+        if (HttpMethods.IsPost(context.Request.Method) &&
+            context.Request.Headers.ContainsKey(AntiforgeryTokenEndpoint.RequestHeaderName) &&
+            context.Features.Get<IExceptionHandlerFeature>() is null &&
+            context.Features.Get<IStatusCodeReExecuteFeature>() is null)
+        {
+            return AntiforgeryTokenEndpoint.WriteToken(context);
+        }
+
         return _renderer.Dispatcher.InvokeAsync(() => RenderComponentCore(context));
     }
 
@@ -92,18 +98,6 @@ internal partial class RazorComponentEndpointInvoker : IRazorComponentEndpointIn
 
         bool isErrorHandlerOrReExecuted = isErrorHandler || isReExecuted;
 
-        // A cross-site navigation may omit another tab's Strict cookie. Wait to determine whether this page needs one.
-        var isCrossSiteRequest = HttpMethods.IsGet(context.Request.Method) &&
-            string.Equals(context.Request.Headers["Sec-Fetch-Site"], "cross-site", StringComparison.OrdinalIgnoreCase) &&
-            context.Items.ContainsKey(MiddlewareInvokedKeys.Antiforgery) &&
-            context.RequestServices.GetService<AntiforgeryStateProvider>() is EndpointAntiforgeryStateProvider;
-        var bufferCrossSiteRequest = isCrossSiteRequest;
-        if (bufferCrossSiteRequest)
-        {
-            var cookieName = context.RequestServices.GetRequiredService<IOptions<AntiforgeryOptions>>().Value.Cookie.Name;
-            bufferCrossSiteRequest = string.IsNullOrEmpty(cookieName) || string.IsNullOrEmpty(context.Request.Cookies[cookieName]);
-        }
-
         // Note that we always use Static rendering mode for the top-level output from a RazorComponentResult,
         // because you never want to serialize the invocation of RazorComponentResultHost. Instead, that host
         // component takes care of switching into your desired render mode when it produces its own output.
@@ -111,7 +105,7 @@ internal partial class RazorComponentEndpointInvoker : IRazorComponentEndpointIn
             context,
             rootComponent,
             ParameterView.Empty,
-            waitForQuiescence: result.IsPost || isErrorHandlerOrReExecuted || bufferCrossSiteRequest);
+            waitForQuiescence: result.IsPost || isErrorHandlerOrReExecuted);
 
         Task quiesceTask;
         if (!result.IsPost || isReExecuted)
@@ -144,12 +138,6 @@ internal partial class RazorComponentEndpointInvoker : IRazorComponentEndpointIn
             _renderer.SetNotFoundWhenResponseNotStarted();
         }
 
-        if (bufferCrossSiteRequest && _renderer.HasInteractiveComponents)
-        {
-            // Interactive components may render a form after activation, so establish their cookie before headers are sent.
-            context.RequestServices.GetRequiredService<IAntiforgery>().SetCookieTokenAndHeader(context);
-        }
-
         if (!quiesceTask.IsCompleted)
         {
             // An incomplete QuiescenceTask indicates there may be streaming rendering updates.
@@ -157,28 +145,14 @@ internal partial class RazorComponentEndpointInvoker : IRazorComponentEndpointIn
             var bufferingFeature = context.Features.GetRequiredFeature<IHttpResponseBodyFeature>();
             bufferingFeature.DisableBuffering();
 
-            // if AntiforgeryMiddleware is not in the pipeline (it should have been invoked by the time we get here),
-            // then there is no need to get and store tokens
-            if (context.Items.ContainsKey(MiddlewareInvokedKeys.Antiforgery))
-            {
-                var antiforgery = context.RequestServices.GetRequiredService<IAntiforgery>();
-                antiforgery.GetAndStoreTokens(context);
-            }
-
             context.Response.Headers.ContentEncoding = "identity";
-        }
-        else if (endpoint.Metadata.GetMetadata<ConfiguredRenderModesMetadata>()?.ConfiguredRenderModes.Length == 0 ||
-            (isCrossSiteRequest && !_renderer.HasInteractiveComponents))
-        {
-            // Static pages without forms must not generate a cookie merely to persist component state.
-            var provider = (EndpointAntiforgeryStateProvider)context.RequestServices.GetRequiredService<AntiforgeryStateProvider>();
-            provider.DisableTokenGeneration();
         }
 
         // Importantly, we must not yield this thread (which holds exclusive access to the renderer sync context)
         // in between the first call to htmlContent.WriteTo and the point where we start listening for subsequent
         // streaming SSR batches (inside SendStreamingUpdatesAsync). Otherwise some other code might dispatch to the
         // renderer sync context and cause a batch that would get missed.
+        AntiforgeryTokenEndpoint.WriteConfiguration(context, bufferWriter);
         htmlContent.WriteTo(bufferWriter, HtmlEncoder.Default); // Don't use WriteToAsync, as per the comment above
 
         if (!quiesceTask.IsCompletedSuccessfully)

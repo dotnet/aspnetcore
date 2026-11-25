@@ -28,6 +28,25 @@ using Microsoft.Extensions.Options;
 namespace Microsoft.AspNetCore.Components.Endpoints.Tests;
 public class RazorComponentEndpointInvokerTest
 {
+    [Fact]
+    public async Task Invoker_TokenAcquisition_DoesNotInitializePage()
+    {
+        await using var services = CreateRedirectingPageServices();
+        await using var renderer = new EndpointHtmlRenderer(services, NullLoggerFactory.Instance);
+        var invoker = new RazorComponentEndpointInvoker(renderer, NullLogger<RazorComponentEndpointInvoker>.Instance);
+        var context = CreateRedirectingPageContext(services, typeof(StreamingPage));
+        context.Request.Method = "POST";
+        context.Request.Headers["Blazor-Antiforgery"] = "true";
+        context.Items[MiddlewareInvokedKeys.Antiforgery] = true;
+
+        await invoker.Render(context);
+
+        Assert.Equal(StatusCodes.Status200OK, context.Response.StatusCode);
+        Assert.Contains("application/json", context.Response.ContentType);
+        Assert.Contains("no-store", context.Response.Headers.CacheControl.ToString());
+        Assert.DoesNotContain("Waiting", await ReadBody(context));
+    }
+
     [Theory]
     [InlineData(false, true)]
     [InlineData(false, false)]
@@ -59,15 +78,15 @@ public class RazorComponentEndpointInvokerTest
 
         Assert.Equal(StatusCodes.Status200OK, context.Response.StatusCode);
         Assert.Contains("<!--Blazor:", await ReadBody(context));
-        Assert.NotEqual(0, context.Response.Headers.SetCookie.Count);
+        Assert.Equal(0, context.Response.Headers.SetCookie.Count);
     }
 
     [Theory]
-    [InlineData("missing", false)]
-    [InlineData("empty", false)]
-    [InlineData("valid", true)]
-    [InlineData("invalid", true)]
-    public async Task Invoker_CrossSiteStreamingPage_BuffersOnlyWithoutCookie(string cookie, bool streams)
+    [InlineData("missing")]
+    [InlineData("empty")]
+    [InlineData("valid")]
+    [InlineData("invalid")]
+    public async Task Invoker_CrossSiteStreamingPage_StreamsWithoutDemandingTokens(string cookie)
     {
         await using var services = CreateRedirectingPageServices();
         services.GetRequiredService<IOptions<AntiforgeryOptions>>().Value.Cookie.Name = "CustomAntiforgery";
@@ -100,7 +119,7 @@ public class RazorComponentEndpointInvokerTest
             await renderer.Dispatcher.InvokeAsync(() =>
             {
                 Assert.False(renderTask.IsCompleted);
-                Assert.Equal(streams, context.Response.Body.Length > 0);
+                Assert.True(context.Response.Body.Length > 0);
             });
         }
         finally
@@ -110,7 +129,7 @@ public class RazorComponentEndpointInvokerTest
         }
 
         Assert.Contains("Released", await ReadBody(context));
-        Assert.Equal(cookie == "invalid" ? 1 : 0, context.Response.Headers.SetCookie.Count);
+        Assert.Equal(0, context.Response.Headers.SetCookie.Count);
     }
 
     private sealed class InteractivePage : ComponentBase
@@ -184,7 +203,6 @@ public class RazorComponentEndpointInvokerTest
         Assert.Equal(StatusCodes.Status200OK, context.Response.StatusCode);
         Assert.Contains("Form-free page", await ReadBody(context));
         Assert.Equal(0, context.Response.Headers.SetCookie.Count);
-        Assert.Null(services.GetRequiredService<AntiforgeryStateProvider>().GetAntiforgeryToken());
     }
 
     [Theory]

@@ -12,7 +12,8 @@ export function isMetadataComment(node: Node): boolean {
          content.trim().startsWith('Blazor-WebAssembly-Component-State:') ||
          content.trim().startsWith('Blazor-Web-Initializers:') ||
          content.trim().startsWith('Blazor-WebAssembly:') ||
-         content.trim().startsWith('Blazor-Configuration:');
+         content.trim().startsWith('Blazor-Configuration:') ||
+         content.trim().startsWith('Blazor-Antiforgery:');
 }
 
 export function discoverComponents(root: Node, type: 'webassembly' | 'server' | 'auto'): ComponentDescriptor[] {
@@ -31,6 +32,12 @@ const blazorWebAssemblyStateCommentRegularExpression = /^\s*Blazor-WebAssembly-C
 const blazorWebInitializerCommentRegularExpression = /^\s*Blazor-Web-Initializers:(?<initializers>[a-zA-Z0-9+/=]+)$/;
 const blazorWebAssemblyOptionsCommentRegularExpression = /^\s*Blazor-WebAssembly:[^{]*(?<options>.*)$/;
 const blazorConfigurationCommentRegularExpression = /^\s*Blazor-Configuration:(?<options>[a-zA-Z0-9+/=]+)$/;
+const blazorAntiforgeryCommentRegularExpression = /^\s*Blazor-Antiforgery:(?<endpoint>[a-zA-Z0-9+/=]+)$/;
+
+export function discoverAntiforgeryEndpoint(root: Node): string | null | undefined {
+  const encoded = discoverBlazorComment(root, blazorAntiforgeryCommentRegularExpression, 'endpoint');
+  return encoded ? JSON.parse(atob(encoded)) : undefined;
+}
 
 export function discoverWebAssemblyOptions(root: Node): WebAssemblyServerOptions | undefined {
   const optionsJson = discoverBlazorComment(root, blazorWebAssemblyOptionsCommentRegularExpression, 'options');

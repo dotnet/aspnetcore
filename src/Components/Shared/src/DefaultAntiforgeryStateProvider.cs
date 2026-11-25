@@ -10,7 +10,7 @@ internal class DefaultAntiforgeryStateProvider : AntiforgeryStateProvider
     [PersistentState]
     public AntiforgeryRequestToken? CurrentToken
     {
-        get => _currentToken ??= GetAntiforgeryToken();
+        get => _currentToken;
         set => _currentToken = value;
     }
 

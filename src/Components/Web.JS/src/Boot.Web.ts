@@ -20,7 +20,8 @@ import { NavigationEnhancementCallbacks, attachProgressivelyEnhancedNavigationLi
 import { WebRootComponentManager } from './Services/WebRootComponentManager';
 import { hasProgrammaticEnhancedNavigationHandler, performProgrammaticEnhancedNavigation } from './Services/NavigationUtils';
 import { attachComponentDescriptorHandler, registerAllComponentDescriptors } from './Rendering/DomMerging/DomSync';
-import { discoverBrowserConfiguration } from './Services/ComponentDescriptorDiscovery';
+import { discoverAntiforgeryEndpoint, discoverBrowserConfiguration } from './Services/ComponentDescriptorDiscovery';
+import { attachAntiforgeryListener, cancelAntiforgeryTokenAcquisition, configureAntiforgery, refreshAntiforgeryTokens } from './Services/Antiforgery';
 import { JSEventRegistry } from './Services/JSEventRegistry';
 import { fetchAndInvokeInitializers } from './JSInitializers/JSInitializers.Web';
 import { ConsoleLogger } from './Platform/Logging/Loggers';
@@ -43,6 +44,8 @@ function boot(options?: Partial<WebStartOptions>) : Promise<void> {
   options = options || {};
   options.logLevel ??= LogLevel.Error;
   Blazor._internal.isBlazorWeb = true;
+  updateAntiforgeryConfiguration(document);
+  attachAntiforgeryListener();
 
   // Defined here to avoid inadvertently imported enhanced navigation
   // related APIs in WebAssembly or Blazor Server contexts.
@@ -57,12 +60,15 @@ function boot(options?: Partial<WebStartOptions>) : Promise<void> {
 
   const navigationEnhancementCallbacks: NavigationEnhancementCallbacks = {
     enhancedNavigationStarted: () => {
+      cancelAntiforgeryTokenAcquisition();
       jsEventRegistry.dispatchEvent('enhancednavigationstart', {});
     },
     beforeDomUpdate: (source) => {
+      updateAntiforgeryConfiguration(source);
       updateOptionsFromBrowserConfiguration(options, source);
     },
     documentUpdated: () => {
+      refreshAntiforgeryTokens();
       rootComponentManager.onDocumentUpdated();
       resetScrollIfNeeded(ScrollResetSchedule.AfterDocumentUpdate);
       jsEventRegistry.dispatchEvent('enhancedload', {});
@@ -120,6 +126,13 @@ function onInitialDomContentLoaded(options: Partial<WebStartOptions>) {
   rootComponentManager.onDocumentUpdated();
 
   callAfterStartedCallbacks(initializersPromise);
+}
+
+function updateAntiforgeryConfiguration(source: Node): void {
+  const endpoint = discoverAntiforgeryEndpoint(source);
+  if (endpoint !== undefined) {
+    configureAntiforgery(endpoint);
+  }
 }
 
 function updateOptionsFromBrowserConfiguration(options: Partial<WebStartOptions>, source: Node = document): void {

@@ -123,6 +123,7 @@ public class RazorComponentEndpointsStartup<TRootComponent>
 
         services.AddHttpContextAccessor();
         services.AddSingleton<AsyncOperationService>();
+        services.AddOutputCache();
         services.AddCascadingAuthenticationState();
         services.AddSingleton<WebSocketCompressionConfiguration>();
 
@@ -210,6 +211,20 @@ public class RazorComponentEndpointsStartup<TRootComponent>
         app.UseRouting();
         UseFakeAuthState(app);
         app.UseAntiforgery();
+        app.UseWhen(context => context.Request.Query.ContainsKey("cache"), branch => branch.UseOutputCache());
+
+        app.Use(async (context, next) =>
+        {
+            if (context.Request.Headers["Blazor-Antiforgery"] == "true" &&
+                context.Request.Query.TryGetValue("tokenAcquisitionId", out var id))
+            {
+                var operations = context.RequestServices.GetRequiredService<AsyncOperationService>();
+                var operation = operations.Start(id.ToString());
+                operations.Complete($"{id}-started");
+                await operation.WaitAsync(context.RequestAborted);
+            }
+            await next();
+        });
 
         app.UseRequestLocalization(new RequestLocalizationOptions
         {

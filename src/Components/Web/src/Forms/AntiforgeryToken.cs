@@ -15,13 +15,16 @@ public class AntiforgeryToken : IComponent
     private RenderHandle _handle;
     private bool _hasRendered;
     private AntiforgeryRequestToken? _requestToken;
+    private bool _hasProvider;
 
     [Inject] IServiceProvider Services { get; set; } = default!;
 
     void IComponent.Attach(RenderHandle renderHandle)
     {
         _handle = renderHandle;
-        _requestToken = Services.GetService<AntiforgeryStateProvider>()?.GetAntiforgeryToken();
+        var provider = Services.GetService<AntiforgeryStateProvider>();
+        _hasProvider = provider is not null;
+        _requestToken = provider?.GetAntiforgeryToken();
     }
 
     Task IComponent.SetParametersAsync(ParameterView parameters)
@@ -32,6 +35,10 @@ public class AntiforgeryToken : IComponent
             if (_requestToken != null)
             {
                 _handle.Render(RenderField);
+            }
+            else if (_hasProvider)
+            {
+                _handle.Render(RenderPlaceholder);
             }
         }
 
@@ -44,6 +51,12 @@ public class AntiforgeryToken : IComponent
         builder.AddAttribute(1, "type", "hidden");
         builder.AddAttribute(2, "name", _requestToken!.FormFieldName);
         builder.AddAttribute(3, "value", _requestToken.Value);
+        builder.CloseElement();
+    }
+
+    private static void RenderPlaceholder(RenderTreeBuilder builder)
+    {
+        builder.OpenElement(0, "blazor-antiforgery");
         builder.CloseElement();
     }
 }

@@ -28,12 +28,9 @@ internal class EndpointAntiforgeryStateProvider(IAntiforgery antiforgery) : Defa
 
         if (_currentToken == null && _canGenerateToken)
         {
-            // We already have a callback setup to generate the token when the response starts if needed.
-            // If we need the tokens before we start streaming the response, we'll generate and store them;
-            // otherwise we'll just retrieve them.
-            // In case there are no tokens available, we are going to return null and no-op.
             var tokens = !_context.Response.HasStarted ? antiforgery.GetAndStoreTokens(_context) : antiforgery.GetTokens(_context);
-            if (tokens.RequestToken is null)
+            // A token requiring a new cookie needs a separate response once headers have been sent.
+            if (tokens.RequestToken is null || (_context.Response.HasStarted && tokens.CookieToken is not null))
             {
                 return null;
             }
@@ -43,6 +40,4 @@ internal class EndpointAntiforgeryStateProvider(IAntiforgery antiforgery) : Defa
 
         return _currentToken;
     }
-
-    internal void DisableTokenGeneration() => _canGenerateToken = false;
 }

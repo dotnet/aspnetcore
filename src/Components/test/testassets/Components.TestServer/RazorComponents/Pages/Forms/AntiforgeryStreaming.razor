@@ -1,15 +1,17 @@
 @page "/forms/antiforgery-streaming"
 @attribute [StreamRendering]
+@attribute [Microsoft.AspNetCore.OutputCaching.OutputCache(Duration = 60)]
 @using Microsoft.AspNetCore.Components.Forms
 @using Microsoft.AspNetCore.Components.Rendering
 @inject Components.TestServer.Services.AsyncOperationService Operations
 
 @if (Destination is not null)
 {
-    <a id="cross-site-link" href="@Destination" target="_blank">Open streaming page</a>
+    <a id="cross-site-link" href="@Destination">Open streaming page</a>
 }
 else
 {
+    <a id="early-form-link" href="forms/default-form">Open early form</a>
     <p id="fetch-site">@HttpContext.Request.Headers["Sec-Fetch-Site"]</p>
     <p id="received-cookie">@HttpContext.Request.Cookies.Keys.Any(name => name.StartsWith(".AspNetCore.Antiforgery.", StringComparison.Ordinal))</p>
     @if (!ready)
@@ -25,7 +27,7 @@ else
         <p id="released">Released</p>
         @if (RenderForm)
         {
-            <form method="post" @formname="LateForm" @onsubmit="() => submitted = true">
+            <form method="post" data-enhance="@Enhance" @formname="LateForm" @onsubmit="() => submitted = true">
                 <AntiforgeryToken />
                 <button id="send" type="submit">Send</button>
             </form>
@@ -49,6 +51,7 @@ else
     [SupplyParameterFromQuery] public string Destination { get; set; }
     [SupplyParameterFromQuery] public string Id { get; set; }
     [SupplyParameterFromQuery] public bool RenderForm { get; set; }
+    [SupplyParameterFromQuery] public bool Enhance { get; set; }
     [SupplyParameterFromQuery] public bool InteractiveLoading { get; set; }
     [SupplyParameterFromQuery] public bool RetainInteractiveComponent { get; set; }
     [CascadingParameter] private HttpContext HttpContext { get; set; }
@@ -60,6 +63,11 @@ else
     {
         if (Destination is null && !HttpMethods.IsPost(HttpContext.Request.Method))
         {
+            HttpContext.Response.OnStarting(() =>
+            {
+                Operations.Complete($"{Id}-response-started");
+                return Task.CompletedTask;
+            });
             var operation = Operations.Start(Id);
             if (!InteractiveLoading)
             {

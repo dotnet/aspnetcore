@@ -48,7 +48,7 @@ public class EndpointAntiforgeryStateProviderTest
     }
 
     [Fact]
-    public void DisableTokenGeneration_PreventsTokenMinting_EvenIfAntiforgeryMiddlewareRan()
+    public void PersistingState_DoesNotDemandTokens()
     {
         var antiforgery = new Mock<IAntiforgery>(MockBehavior.Strict);
         var provider = new EndpointAntiforgeryStateProvider(antiforgery.Object);
@@ -56,11 +56,57 @@ public class EndpointAntiforgeryStateProviderTest
         var context = new DefaultHttpContext();
         context.Items[MiddlewareInvokedKeys.Antiforgery] = MiddlewareInvokedKeys.Sentinel;
         provider.SetRequestContext(context);
-        provider.DisableTokenGeneration();
+
+        var token = provider.CurrentToken;
+
+        Assert.Null(token);
+        antiforgery.VerifyNoOtherCalls();
+    }
+
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public void AfterResponseStarts_ReturnsOnlyPreviouslyDemandedToken(bool demandedBeforeStart)
+    {
+        var antiforgery = new Mock<IAntiforgery>(MockBehavior.Strict);
+        antiforgery.Setup(a => a.GetAndStoreTokens(It.IsAny<HttpContext>()))
+            .Returns(new AntiforgeryTokenSet("request-token", "cookie-token", "field", null));
+        antiforgery.Setup(a => a.GetTokens(It.IsAny<HttpContext>()))
+            .Returns(new AntiforgeryTokenSet("request-token", "cookie-token", "field", null));
+        var provider = new EndpointAntiforgeryStateProvider(antiforgery.Object);
+        var context = new DefaultHttpContext();
+        context.Items[MiddlewareInvokedKeys.Antiforgery] = MiddlewareInvokedKeys.Sentinel;
+        provider.SetRequestContext(context);
+        var token = demandedBeforeStart ? provider.GetAntiforgeryToken() : null;
+        var response = new Mock<Microsoft.AspNetCore.Http.Features.IHttpResponseFeature>();
+        response.SetupGet(feature => feature.HasStarted).Returns(true);
+        context.Features.Set(response.Object);
+
+        Assert.Same(token, provider.GetAntiforgeryToken());
+        antiforgery.Verify(a => a.GetAndStoreTokens(context), demandedBeforeStart ? Times.Once() : Times.Never());
+        antiforgery.Verify(a => a.GetTokens(context), demandedBeforeStart ? Times.Never() : Times.Once());
+        antiforgery.VerifyNoOtherCalls();
+    }
+
+    [Fact]
+    public void AfterResponseStarts_CanReuseTheExistingCookie()
+    {
+        var antiforgery = new Mock<IAntiforgery>(MockBehavior.Strict);
+        antiforgery.Setup(a => a.GetTokens(It.IsAny<HttpContext>()))
+            .Returns(new AntiforgeryTokenSet("request-token", null, "field", null));
+        var provider = new EndpointAntiforgeryStateProvider(antiforgery.Object);
+        var context = new DefaultHttpContext();
+        context.Items[MiddlewareInvokedKeys.Antiforgery] = MiddlewareInvokedKeys.Sentinel;
+        var response = new Mock<Microsoft.AspNetCore.Http.Features.IHttpResponseFeature>();
+        response.SetupGet(feature => feature.HasStarted).Returns(true);
+        context.Features.Set(response.Object);
+        provider.SetRequestContext(context);
 
         var token = provider.GetAntiforgeryToken();
 
-        Assert.Null(token);
+        Assert.Equal("request-token", token.Value);
+        Assert.Same(token, provider.GetAntiforgeryToken());
+        antiforgery.Verify(a => a.GetTokens(context), Times.Once);
         antiforgery.VerifyNoOtherCalls();
     }
 }
