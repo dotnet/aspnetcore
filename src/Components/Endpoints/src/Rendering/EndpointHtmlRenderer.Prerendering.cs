@@ -7,6 +7,8 @@ using System.Runtime.ExceptionServices;
 using System.Text.Encodings.Web;
 using Microsoft.AspNetCore.Components.Rendering;
 using Microsoft.AspNetCore.Components.RenderTree;
+using Microsoft.AspNetCore.Components.Sections;
+using Microsoft.AspNetCore.Components.Web;
 using Microsoft.AspNetCore.Components.Web.HtmlRendering;
 using Microsoft.AspNetCore.Html;
 using Microsoft.AspNetCore.Http;
@@ -51,6 +53,19 @@ internal partial class EndpointHtmlRenderer
         if (ssrRenderBoundary is null)
         {
             return null;
+        }
+
+        if (component is SectionOutlet or SectionContent)
+        {
+            // Sections compare hosting modes in Components, which cannot reference the Web render-mode types.
+            // Normalize supported subclasses without changing the boundary's original mode or prerender settings.
+            return ssrRenderBoundary.RenderMode switch
+            {
+                InteractiveServerRenderMode => RenderMode.InteractiveServer,
+                InteractiveWebAssemblyRenderMode => RenderMode.InteractiveWebAssembly,
+                InteractiveAutoRenderMode => RenderMode.InteractiveAuto,
+                var renderMode => renderMode,
+            };
         }
 
         return ssrRenderBoundary.RenderMode;

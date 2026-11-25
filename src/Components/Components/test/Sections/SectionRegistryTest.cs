@@ -223,9 +223,10 @@ public class SectionRegistryTest
     }
 
     [Fact]
-    public void RemovingActiveProvider_ExposesMismatchedFallback_Throws()
+    public void RemovingActiveProvider_ExposesMismatchedFallback_IsHandledByErrorBoundary()
     {
         var includeActiveContent = true;
+        TestErrorBoundary errorBoundary = null;
         var renderer = new SectionsTestRenderer(new TestSink())
         {
             OutletRenderMode = new RenderModeA(),
@@ -243,14 +244,20 @@ public class SectionRegistryTest
                 builder.CloseComponent();
             }
 
-            builder.OpenComponent<SectionOutlet>(3);
-            builder.AddComponentParameter(4, nameof(SectionOutlet.SectionName), "test-section");
+            builder.OpenComponent<TestErrorBoundary>(3);
+            builder.AddComponentParameter(4, nameof(TestErrorBoundary.ChildContent), (RenderFragment)(childBuilder =>
+            {
+                childBuilder.OpenComponent<SectionOutlet>(0);
+                childBuilder.AddComponentParameter(1, nameof(SectionOutlet.SectionName), "test-section");
+                childBuilder.CloseComponent();
+            }));
+            builder.AddComponentReferenceCapture(5, component => errorBoundary = (TestErrorBoundary)component);
             builder.CloseComponent();
 
-            builder.OpenComponent<SectionContent>(5);
-            builder.AddComponentParameter(6, nameof(SectionContent.SectionName), "test-section");
-            builder.AddComponentParameter(7, nameof(SectionContent.IsDefaultContent), true);
-            builder.AddComponentParameter(8, nameof(SectionContent.ChildContent), (RenderFragment)(b => b.AddContent(0, "Hidden content")));
+            builder.OpenComponent<SectionContent>(6);
+            builder.AddComponentParameter(7, nameof(SectionContent.SectionName), "test-section");
+            builder.AddComponentParameter(8, nameof(SectionContent.IsDefaultContent), true);
+            builder.AddComponentParameter(9, nameof(SectionContent.ChildContent), (RenderFragment)(b => b.AddContent(0, "Hidden content")));
             builder.CloseComponent();
         };
 
@@ -259,10 +266,12 @@ public class SectionRegistryTest
         renderer.RenderRootComponent(componentId);
 
         includeActiveContent = false;
-        var exception = Assert.Throws<InvalidOperationException>(() =>
+        var exception = Record.Exception(() =>
             renderer.Dispatcher.InvokeAsync(hostComponent.TriggerRender).GetAwaiter().GetResult());
 
-        Assert.Contains("RenderModeB", exception.Message);
+        Assert.Null(exception);
+        var fallbackException = Assert.IsType<InvalidOperationException>(errorBoundary.ReceivedException);
+        Assert.Contains("RenderModeB", fallbackException.Message);
     }
 
     [Fact]

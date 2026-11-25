@@ -53,14 +53,6 @@ internal sealed partial class SectionRegistry(ILoggerFactory loggerFactory)
             throw new InvalidOperationException($"The provider was not found in the providers list of the given section ID '{identifier}'.");
         }
 
-        if (index == providers.Count - 1 &&
-            index > 0 &&
-            _subscribersByIdentifier.TryGetValue(identifier, out var subscriber) &&
-            !subscriber.IsRendererDisposed)
-        {
-            ValidateRenderModeCompatibility(identifier, subscriber, providers[index - 1]);
-        }
-
         providers.RemoveAt(index);
 
         if (index == providers.Count)
@@ -69,11 +61,6 @@ internal sealed partial class SectionRegistry(ILoggerFactory loggerFactory)
             // the current content to that of second most recently added provider.
             var contentProvider = GetCurrentProviderContentOrDefault(providers);
             NotifyContentChangedForSubscriber(identifier, contentProvider);
-
-            if (_subscribersByIdentifier.TryGetValue(identifier, out var fallbackSubscriber))
-            {
-                DetectRenderModeMismatch(identifier, fallbackSubscriber, contentProvider);
-            }
         }
     }
 
@@ -125,6 +112,12 @@ internal sealed partial class SectionRegistry(ILoggerFactory loggerFactory)
                 DetectRenderModeMismatch(identifier, subscriber, provider);
             }
         }
+    }
+
+    internal void ValidateContent(object identifier, SectionOutlet subscriber, SectionContent? provider)
+    {
+        ValidateRenderModeCompatibility(identifier, subscriber, provider);
+        DetectRenderModeMismatch(identifier, subscriber, provider);
     }
 
     private static void ValidateRenderModeCompatibility(object identifier, SectionOutlet? subscriber, SectionContent? provider)
