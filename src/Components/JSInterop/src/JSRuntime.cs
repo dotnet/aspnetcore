@@ -32,8 +32,6 @@ public abstract partial class JSRuntime : IJSRuntime, IDisposable
     // carrying their ids is sent, so that an abort can never reach JS before its id.
     [ThreadStatic] private static JSRuntime? t_serializingRuntime;
     [ThreadStatic] private static List<CancellationTokenLink>? t_serializingTokens;
-    // Raised for every AbortSignal id read, so that EndInvokeJS can tell whether a result carried any.
-    [ThreadStatic] private static int t_abortSignalsRead;
     // Process-wide: a WebView page that reloads gets a new runtime but still receives messages the old one queued.
     private static long s_nextCancellationTokenId;
     // One entry per token sent to JS, keyed by id; also the lock for the index by hash code.
@@ -500,25 +498,16 @@ public abstract partial class JSRuntime : IJSRuntime, IDisposable
         {
             // We should simply return if we can't find an id for the invocation.
             // This likely means that the method that initiated the call defined a timeout and stopped waiting.
-            // The result is not read, so it may carry AbortSignal ids that JS holds until it hears of the read.
-            if (succeeded)
-            {
-                SendCancellationTokenMessage(AbortSignalResultReadIdentifier, [taskId]);
-            }
-
             return false;
         }
 
         CleanupTasksAndRegistrations(taskId);
 
-        var abortSignalsRead = t_abortSignalsRead;
-        var resultRead = false;
         try
         {
             if (succeeded)
             {
                 pendingCall.Complete(this, ref jsonReader);
-                resultRead = true;
             }
             else
             {
@@ -534,15 +523,10 @@ public abstract partial class JSRuntime : IJSRuntime, IDisposable
             pendingCall.Fail(new JSException(message, exception));
             return false;
         }
-        finally
-        {
-            // A result that failed to deserialize may carry ids that were not read, so it is reported too.
-            if (succeeded && (!resultRead || t_abortSignalsRead != abortSignalsRead))
-            {
-                SendCancellationTokenMessage(AbortSignalResultReadIdentifier, [taskId]);
-            }
-        }
     }
+
+    internal void SendAbortSignalResultRead(long taskId)
+        => SendCancellationTokenMessage(AbortSignalResultReadIdentifier, [taskId]);
 
     /// <summary>
     /// Transmits the stream data from .NET to JS. Subclasses should override this method and provide
@@ -617,7 +601,6 @@ public abstract partial class JSRuntime : IJSRuntime, IDisposable
 
     internal CancellationToken GetAbortSignalToken(long abortSignalId, bool aborted)
     {
-        t_abortSignalsRead++;
         var source = GetAbortSignalSource(abortSignalId);
         if (aborted)
         {

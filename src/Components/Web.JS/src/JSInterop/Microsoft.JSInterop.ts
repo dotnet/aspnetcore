@@ -588,6 +588,13 @@ class CallDispatcher implements ICallDispatcher {
       }
     } catch (error: any) {
       if (asyncHandle) {
+        // A result that failed to be sent is never read by .NET, so its signals are not held any longer.
+        const abortSignals = this._resultAbortSignals.get(asyncHandle);
+        if (abortSignals) {
+          this._resultAbortSignals.delete(asyncHandle);
+          this.endHold(abortSignals);
+        }
+
         const serializedError = JSON.stringify([
           asyncHandle,
           false,

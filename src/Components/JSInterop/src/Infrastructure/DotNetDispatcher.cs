@@ -382,15 +382,28 @@ public static class DotNetDispatcher
         reader.Read();
         var success = reader.GetBoolean();
 
-        reader.Read();
-        if (!jsRuntime.EndInvokeJS(taskId, success, ref reader))
+        // JS holds the AbortSignals of a successful result until .NET has processed it, whether the value is read,
+        // ignored, or fails to deserialize. JS writes each one as an object with this key.
+        var carriesAbortSignals = success && arguments.Contains("\"__abortSignal\"", StringComparison.Ordinal);
+        try
         {
-            return;
-        }
+            reader.Read();
+            if (!jsRuntime.EndInvokeJS(taskId, success, ref reader))
+            {
+                return;
+            }
 
-        if (!reader.Read() || reader.TokenType != JsonTokenType.EndArray)
+            if (!reader.Read() || reader.TokenType != JsonTokenType.EndArray)
+            {
+                throw new JsonException("Invalid JSON");
+            }
+        }
+        finally
         {
-            throw new JsonException("Invalid JSON");
+            if (carriesAbortSignals)
+            {
+                jsRuntime.SendAbortSignalResultRead(taskId);
+            }
         }
     }
 
