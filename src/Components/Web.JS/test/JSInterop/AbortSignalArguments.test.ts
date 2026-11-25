@@ -252,6 +252,30 @@ describe("AbortSignal arguments", () => {
         expect(resultSent.filter(call => call.methodIdentifier === "__AbortSignalReleased")).toHaveLength(1);
     });
 
+    test("A result that fails to be sent ends its hold, as .NET never reads it", async () => {
+        const resultSent: SentCall[] = [];
+        let failSuccess = true;
+        const failingDispatcher: DotNet.ICallDispatcher = DotNet.attachDispatcher({
+            beginInvokeDotNetFromJS: function (callId: number, assemblyName: string | null, methodIdentifier: string, dotNetObjectId: number | null, argsJson: string): void {
+                resultSent.push({ callId, methodIdentifier, argsJson });
+            },
+            sendByteArray: function (id: number, data: Uint8Array): void { },
+            endInvokeJSFromDotNet: function (callId: number, succeeded: boolean, resultOrError: any): void {
+                if (succeeded && failSuccess) {
+                    failSuccess = false;
+                    throw new Error("send failure");
+                }
+            },
+        });
+        const signal = new AbortController().signal;
+        const objectId = DotNet.createJSObjectReference({ getSignal: () => signal })["__jsObjectId"];
+        await failingDispatcher.beginInvokeJSFromDotNet(9, "getSignal", "[]", DotNet.JSCallResultType.Default, objectId, DotNet.JSCallType.FunctionCall);
+
+        collect(signal);
+        await flush();
+        expect(resultSent.filter(call => call.methodIdentifier === "__AbortSignalReleased")).toHaveLength(1);
+    });
+
     test("A result read message for a result without signals is ignored", async () => {
         await dispatcher.beginInvokeJSFromDotNet(0, "__AbortSignalResultRead", "[404]", DotNet.JSCallResultType.JSVoidResult, 0, DotNet.JSCallType.FunctionCall);
         expect(sent).toEqual([]);

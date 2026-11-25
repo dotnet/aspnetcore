@@ -664,6 +664,18 @@ public class CancellationTokenReferenceTest
         Assert.True(token.IsCancellationRequested);
     }
 
+    // The signal is in the JSON but in no property the .NET type reads, so no token is created for it.
+    [Fact]
+    public async Task JavaScriptResultWithUnreadSignalIsReportedAsRead()
+    {
+        using var runtime = new ReferenceRuntime { HoldReplies = true };
+        var call = runtime.InvokeAsync<NamedValue>("getInfo", CancellationToken.None, []);
+        var taskId = runtime.Sent[0].AsyncHandle;
+        DotNetDispatcher.EndInvokeJS(runtime, $$$"""[{{{taskId}}},true,{"name":"x","signal":{"__abortSignal":8,"aborted":false}}]""");
+        Assert.Equal("x", (await call).Name);
+        AssertSent(runtime, "getInfo", ResultRead(taskId));
+    }
+
     [Fact]
     public async Task JavaScriptResultWithoutSignalIsNotReported()
     {
@@ -925,6 +937,8 @@ public class CancellationTokenReferenceTest
         public CancellationToken Token => source.Token;
         public CancelingValue Value { get; } = new(source);
     }
+
+    public sealed record NamedValue(string Name);
 
     private sealed record SentMessage(long AsyncHandle, string Identifier, string? ArgsJson)
     {
