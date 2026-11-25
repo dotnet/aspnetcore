@@ -493,7 +493,6 @@ export class CircuitManager implements DotNet.DotNetCallDispatcher {
       }
 
       const persistedCircuitState = this._persistedCircuitState;
-      this._persistedCircuitState = undefined;
 
       let newCircuitId: string;
       try {
@@ -514,6 +513,7 @@ export class CircuitManager implements DotNet.DotNetCallDispatcher {
         return resumingPromise;
       }
 
+      this._persistedCircuitState = undefined;
       this._pausingState.transitionTo(false);
       this._resumingState.complete(true);
 

@@ -15,6 +15,7 @@ interface InternalCircuitManager {
   _connection: HubConnection;
   _pausingState: { transitionTo(value: boolean): void };
   _activePauseDeferral?: AbortController;
+  _persistedCircuitState?: { components: string, applicationState: string };
 }
 
 describe('CircuitManager failed circuit invocations', () => {
@@ -97,6 +98,41 @@ describe('CircuitManager failed circuit invocations', () => {
     await expect(retried).resolves.toBe(true);
     expect(retry.connection.state).toBe(HubConnectionState.Connected);
     expect(options.reconnectionHandler!.onConnectionUp).toHaveBeenCalledTimes(1);
+  });
+
+  test('retains client-persisted state after a failed resume until a retry succeeds', async () => {
+    const initial = createConnection();
+    const connected = manager.reconnect();
+    await initial.invocationSent;
+    initial.transport.receive({ type: 3, invocationId: initial.transport.lastInvocationId, result: true });
+    await expect(connected).resolves.toBe(true);
+
+    const state = { components: '[{"type":"test-component"}]', applicationState: 'persisted-application-state' };
+    initial.transport.receive({
+      type: 1,
+      target: 'JS.SavePersistedState',
+      arguments: ['test-circuit-id', state.components, state.applicationState],
+    });
+    expect(internal._persistedCircuitState).toEqual(state);
+    await initial.connection.stop();
+
+    const first = createConnection();
+    const resumed = manager.resume();
+    const rejected = expect(resumed).rejects.toThrow('Intentional resume failure');
+    await first.invocationSent;
+    const firstInvocation = first.transport.parsedSentData.find(message => message.target === 'ResumeCircuit');
+    expect(firstInvocation.arguments.slice(3)).toEqual([state.components, state.applicationState]);
+    first.transport.receive({ type: 3, invocationId: first.transport.lastInvocationId, error: 'Intentional resume failure' });
+    await rejected;
+
+    const retry = createConnection();
+    const retried = manager.resume();
+    await retry.invocationSent;
+    const retryInvocation = retry.transport.parsedSentData.find(message => message.target === 'ResumeCircuit');
+    retry.transport.receive({ type: 3, invocationId: retry.transport.lastInvocationId, result: 'new-circuit-id' });
+    await expect(retried).resolves.toBe(true);
+    expect(retryInvocation.arguments).toEqual(firstInvocation.arguments);
+    expect(internal._persistedCircuitState).toBeUndefined();
   });
 
   test('a late failed invocation stops its connection without tearing down a newer successful reconnect', async () => {
