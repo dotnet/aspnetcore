@@ -35,8 +35,6 @@ public abstract partial class JSRuntime : IJSRuntime, IDisposable
     // One entry per token sent to JS, keyed by id; also the lock for the index by hash code.
     private readonly Dictionary<long, OutgoingCancellationToken> _outgoingCancellationTokens = new();
     private readonly Dictionary<int, List<OutgoingCancellationToken>> _outgoingCancellationTokensByHashCode = new();
-    // The entries each call raised the count of, until JS replies, so "released" reaches JS after every call carrying the id.
-    private readonly ConcurrentDictionary<long, List<OutgoingCancellationToken>> _cancellationTokenCalls = new();
     private int _cancellationTokenSweepGCCount;
     // "released" messages queued but not sent yet; tests wait for zero.
     private int _queuedReleasedMessages;
@@ -196,11 +194,6 @@ public abstract partial class JSRuntime : IJSRuntime, IDisposable
                 ArgsJson = argsJson,
             };
 
-            if (argumentTokens is not null)
-            {
-                HoldCancellationTokens(taskId, argumentTokens);
-            }
-
             BeginInvokeJS(invocationInfo);
             LinkCancellationTokens(argumentTokens);
 
@@ -208,7 +201,6 @@ public abstract partial class JSRuntime : IJSRuntime, IDisposable
         }
         catch
         {
-            EndCancellationTokenHold(taskId);
             CleanupTasksAndRegistrations(taskId);
             throw;
         }
@@ -315,56 +307,6 @@ public abstract partial class JSRuntime : IJSRuntime, IDisposable
         }
     }
 
-    // Before the send, because the reply can be processed before BeginInvokeJS returns.
-    private void HoldCancellationTokens(long taskId, List<CancellationTokenLink> links)
-    {
-        var entries = new List<OutgoingCancellationToken>(links.Count);
-        lock (_outgoingCancellationTokens)
-        {
-            foreach (var link in links)
-            {
-                if (_outgoingCancellationTokens.TryGetValue(link.Id, out var entry))
-                {
-                    entry.PendingCalls++;
-                    entries.Add(entry);
-                }
-            }
-        }
-
-        _cancellationTokenCalls[taskId] = entries;
-    }
-
-    // Runs once per call: TryRemove succeeds only for the reply (also one that is ignored) or the failed send.
-    private void EndCancellationTokenHold(long taskId)
-    {
-        if (_cancellationTokenCalls.IsEmpty || !_cancellationTokenCalls.TryRemove(taskId, out var entries))
-        {
-            return;
-        }
-
-        List<long>? released = null;
-        lock (_outgoingCancellationTokens)
-        {
-            foreach (var entry in entries)
-            {
-                // A link collected while its calls were pending is released by the last reply, as no sweep may follow.
-                if (--entry.PendingCalls == 0
-                    && !entry.Link.TryGetTarget(out _)
-                    && _outgoingCancellationTokens.TryGetValue(entry.Id, out var current)
-                    && current == entry)
-                {
-                    RemoveOutgoingCancellationToken(entry);
-                    (released ??= []).Add(entry.Id);
-                }
-            }
-        }
-
-        if (released is not null)
-        {
-            QueueReleasedMessage(released);
-        }
-    }
-
     // Every message that carried an id starts its link, so a reused id is linked even if its first message failed.
     internal void LinkCancellationTokens(List<CancellationTokenLink>? cancellationTokens)
     {
@@ -380,6 +322,7 @@ public abstract partial class JSRuntime : IJSRuntime, IDisposable
     }
 
     // A link can only be collected by a garbage collection, so the links are checked at most once after each one.
+    // Messages hold their links until sent, so a collected link's messages are already with the host, ahead of "released".
     private void ReleaseCollectedCancellationTokens()
     {
         // Mono may count a full collection only in the highest generation.
@@ -394,7 +337,7 @@ public abstract partial class JSRuntime : IJSRuntime, IDisposable
         {
             foreach (var entry in _outgoingCancellationTokens.Values)
             {
-                if (entry.PendingCalls == 0 && !entry.Link.TryGetTarget(out _))
+                if (!entry.Link.TryGetTarget(out _))
                 {
                     (collected ??= []).Add(entry);
                 }
@@ -549,9 +492,6 @@ public abstract partial class JSRuntime : IJSRuntime, IDisposable
     [UnconditionalSuppressMessage("Trimming", "IL2026", Justification = "We enforce trimmer attributes for JSON deserialized types on InvokeAsync.")]
     internal bool EndInvokeJS(long taskId, bool succeeded, ref Utf8JsonReader jsonReader)
     {
-        // Also for a reply that is ignored below: JS has revived the call's tokens either way.
-        EndCancellationTokenHold(taskId);
-
         if (!_pendingTasks.TryRemove(taskId, out var pendingCall))
         {
             // We should simply return if we can't find an id for the invocation.
@@ -705,8 +645,6 @@ public abstract partial class JSRuntime : IJSRuntime, IDisposable
             link.Stop();
         }
 
-        _cancellationTokenCalls.Clear();
-
         _abortSignalSources.Clear();
         ByteArraysToBeRevived.Dispose();
     }
@@ -799,9 +737,6 @@ public abstract partial class JSRuntime : IJSRuntime, IDisposable
         public long Id { get; } = link.Id;
 
         public int HashCode { get; } = hashCode;
-
-        // Asynchronous calls carrying the id that wait for their JS reply; guarded by the table lock.
-        public int PendingCalls { get; set; }
 
         // Weak, because only the token's registration may keep a link alive: a disposed or collected source releases its id.
         // Tracks resurrection, so a source that a finalizer still cancels is not released first.

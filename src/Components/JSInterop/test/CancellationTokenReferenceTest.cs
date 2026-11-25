@@ -376,8 +376,10 @@ public class CancellationTokenReferenceTest
         Assert.Equal(0, OutgoingTokenCount(runtime));
     }
 
+    // JS revives the id when the call arrives, and the call is handed to the host before its link can be collected,
+    // so "released" needs no reply: it queues behind the call.
     [Fact]
-    public void ReleaseWaitsForTheRepliesOfCallsCarryingTheId()
+    public void ReleaseDoesNotWaitForTheRepliesOfCallsCarryingTheId()
     {
         using var runtime = new ReferenceRuntime { HoldReplies = true };
         using var source = new CancellationTokenSource();
@@ -387,31 +389,7 @@ public class CancellationTokenReferenceTest
         source.Dispose();
         CollectGarbage();
         _ = runtime.InvokeVoidAsync("other");
-        AssertSent(runtime, "receive", "other");
-
-        // The link is already collected, so the last reply releases the id at once.
-        runtime.Reply(0);
         AssertSent(runtime, "receive", "other", Released(id));
-    }
-
-    [Fact]
-    public void ReleaseWaitsForEveryCallCarryingTheId()
-    {
-        using var runtime = new ReferenceRuntime { HoldReplies = true };
-        using var source = new CancellationTokenSource();
-        _ = runtime.InvokeVoidAsync("receive", CancellationToken.None, source.Token);
-        _ = runtime.InvokeVoidAsync("receive", CancellationToken.None, source.Token);
-        var id = TokenId(runtime.Sent[0]);
-        Assert.Equal(id, TokenId(runtime.Sent[1]));
-
-        source.Dispose();
-        runtime.Reply(0);
-        CollectGarbage();
-        _ = runtime.InvokeVoidAsync("other");
-        AssertSent(runtime, "receive", "receive", "other");
-
-        runtime.Reply(1);
-        AssertSent(runtime, "receive", "receive", "other", Released(id));
     }
 
     [Fact]
@@ -422,27 +400,6 @@ public class CancellationTokenReferenceTest
 
         CollectGarbage();
         Assert.False(source.IsAlive);
-    }
-
-    [Fact]
-    public async Task ReplyToACallThatStoppedWaitingStillEndsItsHold()
-    {
-        using var runtime = new ReferenceRuntime { HoldReplies = true };
-        using var control = new CancellationTokenSource();
-        using var source = new CancellationTokenSource();
-        var call = runtime.InvokeVoidAsync("receive", control.Token, source.Token);
-        var id = TokenId(runtime.Sent[0]);
-        control.Cancel();
-        await Assert.ThrowsAnyAsync<OperationCanceledException>(async () => await call);
-
-        source.Dispose();
-        CollectGarbage();
-        _ = runtime.InvokeVoidAsync("other");
-        AssertSent(runtime, "receive", "other");
-
-        // The link is already collected, so the last reply releases the id at once.
-        runtime.Reply(0);
-        AssertSent(runtime, "receive", "other", Released(id));
     }
 
     [Fact]
@@ -936,12 +893,9 @@ public class CancellationTokenReferenceTest
         }
 
         public bool ThrowOnDispatch { get; set; }
-        // When set, JS replies to calls only through Reply, in the order of the held calls.
-        public bool HoldReplies { get; init; }
-        private readonly List<long> _heldReplies = [];
 
-        public void Reply(int heldIndex)
-            => DotNetDispatcher.EndInvokeJS(this, $"[{_heldReplies[heldIndex]},true,null]");
+        // When set, JS never replies to calls, as when a reply is lost.
+        public bool HoldReplies { get; init; }
 
         private void Record(SentMessage message)
         {
@@ -978,16 +932,9 @@ public class CancellationTokenReferenceTest
                 throw new InvalidOperationException("dispatch failure");
             }
 
-            if (invocationInfo.AsyncHandle != 0)
+            if (invocationInfo.AsyncHandle != 0 && !HoldReplies)
             {
-                if (HoldReplies)
-                {
-                    _heldReplies.Add(invocationInfo.AsyncHandle);
-                }
-                else
-                {
-                    DotNetDispatcher.EndInvokeJS(this, $"[{invocationInfo.AsyncHandle},true,null]");
-                }
+                DotNetDispatcher.EndInvokeJS(this, $"[{invocationInfo.AsyncHandle},true,null]");
             }
         }
 
