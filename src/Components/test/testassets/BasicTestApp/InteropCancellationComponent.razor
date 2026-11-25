@@ -19,6 +19,8 @@
 <button id="start-outgoing" @onclick="SendToken">Pass token to JS</button>
 <button id="start-outgoing-pre" @onclick="SendCanceledToken">Pass canceled token</button>
 <button id="cancel-outgoing" @onclick="() => outgoingSource.Cancel()">Cancel outgoing token</button>
+<button id="start-outgoing-sync" @onclick="SendTokenSynchronously">Pass token to a synchronous JS call</button>
+<button id="cancel-outgoing-sync" @onclick="() => syncOutgoingSource.Cancel()">Cancel token of the synchronous call</button>
 <button id="drop-outgoing" onclick="cancellationTests.dropOutgoing()">Drop outgoing signal</button>
 <button id="start-disposable" @onclick="SendDisposableToken">Pass token of a disposed source</button>
 <button id="collect-dotnet" @onclick="CollectThenCallJS">Collect .NET garbage, then call JS</button>
@@ -51,7 +53,7 @@
 <button id="cancel-control" @onclick="() => controlSource.Cancel()">Cancel managed wait</button>
 <button id="release-control" onclick="cancellationTests.releaseControl()">Complete JS function</button>
 <p id="cancellation-ready">@(module is null ? "loading" : "ready")</p>
-@foreach (var id in new[] { "first", "second", "ignored", "preaborted", "retained", "failure", "outgoing", "control", "sync", "overtaken", "collected", "dropped", "disposable", "returned", "signalresult" })
+@foreach (var id in new[] { "first", "second", "ignored", "preaborted", "retained", "failure", "outgoing", "control", "sync", "overtaken", "collected", "dropped", "disposable", "returned", "signalresult", "outgoingsync" })
 {
     <p id="@($"{id}-managed")">@(states.GetValueOrDefault(id, "not started"))</p>
     <p id="@($"{id}-js")"></p>
@@ -63,6 +65,7 @@
     private readonly Dictionary<string, string> states = new();
     private readonly List<CancellationTokenRegistration> registrations = new();
     private readonly CancellationTokenSource outgoingSource = new();
+    private readonly CancellationTokenSource syncOutgoingSource = new();
     private readonly CancellationTokenSource controlSource = new();
     private readonly CancellationTokenSource returnedSource = new();
     private DotNetObjectReference<InteropCancellationComponent> reference;
@@ -210,6 +213,14 @@
         await SendToken();
     }
 
+    // Only WebAssembly has synchronous calls to JavaScript.
+    private void SendTokenSynchronously()
+    {
+        states["outgoingsync"] = module is IJSInProcessObjectReference inProcessModule
+            ? inProcessModule.Invoke<string>("receive", "outgoingsync", syncOutgoingSource.Token)
+            : "no synchronous calls";
+    }
+
     private async Task SendDisposableToken()
     {
         using var source = new CancellationTokenSource();
@@ -309,6 +320,7 @@
 
         reference?.Dispose();
         outgoingSource.Dispose();
+        syncOutgoingSource.Dispose();
         controlSource.Dispose();
         returnedSource.Dispose();
     }

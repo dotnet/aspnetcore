@@ -132,6 +132,24 @@ public class InteropCancellationTest(
     }
 
     [Fact]
+    public void TokenPassedToSynchronousJavaScriptCallBecomesSignalThatCancelAbortsInWebAssembly()
+    {
+        // Interactive Server has no synchronous calls from .NET to JS.
+        if (_serverFixture.ExecutionMode != ExecutionMode.Client)
+        {
+            return;
+        }
+
+        Click("start-outgoing-sync");
+        Equal("outgoingsync-js", "native signal retained");
+        Equal("outgoingsync-managed", "returned normally");
+        Click("drop-outgoing");
+        CollectGarbage();
+        Click("cancel-outgoing-sync");
+        Equal("outgoingsync-js", "aborted in JS");
+    }
+
+    [Fact]
     public void SignalIsReleasedAfterTokenSourceIsDisposedAndCollected()
     {
         Click("start-disposable");
