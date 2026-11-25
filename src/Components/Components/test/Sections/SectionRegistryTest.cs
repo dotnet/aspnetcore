@@ -323,19 +323,19 @@ public class SectionRegistryTest
 
         RenderFragment host = builder =>
         {
-            builder.OpenComponent<SectionOutlet>(0);
-            builder.AddComponentParameter(1, nameof(SectionOutlet.SectionName), "new-section");
+            builder.OpenComponent<SectionContent>(0);
+            builder.AddComponentParameter(1, nameof(SectionContent.SectionName), contentName);
+            builder.AddComponentParameter(2, nameof(SectionContent.ChildContent), (RenderFragment)(b => b.AddContent(0, "Section content")));
             builder.CloseComponent();
 
-            builder.OpenComponent<TestErrorBoundary>(2);
-            builder.AddComponentParameter(3, nameof(TestErrorBoundary.ChildContent), (RenderFragment)(childBuilder =>
+            builder.OpenComponent<TestErrorBoundary>(3);
+            builder.AddComponentParameter(4, nameof(TestErrorBoundary.ChildContent), (RenderFragment)(childBuilder =>
             {
-                childBuilder.OpenComponent<SectionContent>(0);
-                childBuilder.AddComponentParameter(1, nameof(SectionContent.SectionName), contentName);
-                childBuilder.AddComponentParameter(2, nameof(SectionContent.ChildContent), (RenderFragment)(b => b.AddContent(0, "Section content")));
+                childBuilder.OpenComponent<SectionOutlet>(0);
+                childBuilder.AddComponentParameter(1, nameof(SectionOutlet.SectionName), "new-section");
                 childBuilder.CloseComponent();
             }));
-            builder.AddComponentReferenceCapture(4, component => errorBoundary = (TestErrorBoundary)component);
+            builder.AddComponentReferenceCapture(5, component => errorBoundary = (TestErrorBoundary)component);
             builder.CloseComponent();
         };
 

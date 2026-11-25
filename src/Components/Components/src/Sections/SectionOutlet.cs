@@ -100,8 +100,8 @@ public sealed class SectionOutlet : IComponent, IDisposable
 
     private void BuildRenderTree(RenderTreeBuilder builder)
     {
-        // A fallback can be selected while disposing providers. Wait until rendering so that
-        // an outlet removed in the same batch never validates content it will not render.
+        // Registration and disposal can select a provider temporarily. Wait until rendering so
+        // an outlet that is removed or gets another provider first never validates the interim selection.
         _registry.ValidateContent(SectionName ?? SectionId!, this, _currentContentProvider);
         var fragment = _currentContentProvider?.ChildContent ?? _emptyRenderFragment;
 

@@ -123,7 +123,11 @@ public abstract partial class Renderer : IDisposable, IAsyncDisposable
     internal ComponentsMetrics? ComponentMetrics => _componentsMetrics;
     internal ComponentsActivitySource? ComponentActivitySource => _componentsActivitySource;
 
-    internal SectionRegistry SectionRegistry => _sectionRegistry ??= new SectionRegistry(_loggerFactory);
+    internal SectionRegistry SectionRegistry => _sectionRegistry ??= new SectionRegistry(
+        _loggerFactory,
+        _serviceProvider is IKeyedServiceProvider
+            ? _serviceProvider.GetKeyedService<Func<IComponentRenderMode?, IComponentRenderMode?, bool>>(typeof(SectionOutlet))
+            : null);
 
     internal ICascadingValueSupplier[] ServiceProviderCascadingValueSuppliers { get; }
 

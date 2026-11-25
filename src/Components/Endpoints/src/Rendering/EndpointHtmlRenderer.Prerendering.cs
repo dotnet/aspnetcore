@@ -7,7 +7,6 @@ using System.Runtime.ExceptionServices;
 using System.Text.Encodings.Web;
 using Microsoft.AspNetCore.Components.Rendering;
 using Microsoft.AspNetCore.Components.RenderTree;
-using Microsoft.AspNetCore.Components.Sections;
 using Microsoft.AspNetCore.Components.Web;
 using Microsoft.AspNetCore.Components.Web.HtmlRendering;
 using Microsoft.AspNetCore.Html;
@@ -55,21 +54,18 @@ internal partial class EndpointHtmlRenderer
             return null;
         }
 
-        if (component is SectionOutlet or SectionContent)
-        {
-            // Sections compare hosting modes in Components, which cannot reference the Web render-mode types.
-            // Normalize supported subclasses without changing the boundary's original mode or prerender settings.
-            return ssrRenderBoundary.RenderMode switch
-            {
-                InteractiveServerRenderMode => RenderMode.InteractiveServer,
-                InteractiveWebAssemblyRenderMode => RenderMode.InteractiveWebAssembly,
-                InteractiveAutoRenderMode => RenderMode.InteractiveAuto,
-                var renderMode => renderMode,
-            };
-        }
-
         return ssrRenderBoundary.RenderMode;
     }
+
+    internal static bool AreSectionRenderModesCompatible(IComponentRenderMode? left, IComponentRenderMode? right)
+        => (left, right) switch
+        {
+            (InteractiveServerRenderMode, InteractiveServerRenderMode or InteractiveAutoRenderMode) => true,
+            (InteractiveWebAssemblyRenderMode, InteractiveWebAssemblyRenderMode or InteractiveAutoRenderMode) => true,
+            // Auto's destination is not known until activation, so only reject pairs known to be incompatible.
+            (InteractiveAutoRenderMode, InteractiveServerRenderMode or InteractiveWebAssemblyRenderMode or InteractiveAutoRenderMode) => true,
+            _ => left?.GetType() == right?.GetType(),
+        };
 
     private SSRRenderModeBoundary? GetClosestRenderModeBoundary(int componentId)
     {

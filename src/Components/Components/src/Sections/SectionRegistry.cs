@@ -5,7 +5,9 @@ using Microsoft.Extensions.Logging;
 
 namespace Microsoft.AspNetCore.Components.Sections;
 
-internal sealed partial class SectionRegistry(ILoggerFactory loggerFactory)
+internal sealed partial class SectionRegistry(
+    ILoggerFactory loggerFactory,
+    Func<IComponentRenderMode?, IComponentRenderMode?, bool>? areRenderModesCompatible)
 {
     private readonly Dictionary<object, SectionOutlet> _subscribersByIdentifier = new();
     private readonly Dictionary<object, List<SectionContent>> _providersByIdentifier = new();
@@ -19,12 +21,6 @@ internal sealed partial class SectionRegistry(ILoggerFactory loggerFactory)
         if (!_providersByIdentifier.TryGetValue(identifier, out var providers))
         {
             providers = new();
-        }
-
-        if ((!isDefaultProvider || providers.Count == 0) &&
-            _subscribersByIdentifier.TryGetValue(identifier, out var subscriber))
-        {
-            ValidateRenderModeCompatibility(identifier, subscriber, provider);
         }
 
         _providersByIdentifier.TryAdd(identifier, providers);
@@ -73,12 +69,9 @@ internal sealed partial class SectionRegistry(ILoggerFactory loggerFactory)
 
         // Notify the new subscriber with any existing content.
         var provider = GetCurrentProviderContentOrDefault(identifier);
-        ValidateRenderModeCompatibility(identifier, subscriber, provider);
         subscriber.ContentUpdated(provider);
 
         _subscribersByIdentifier.Add(identifier, subscriber);
-
-        DetectRenderModeMismatch(identifier, subscriber, provider);
     }
 
     public void Unsubscribe(object identifier)
@@ -105,12 +98,6 @@ internal sealed partial class SectionRegistry(ILoggerFactory loggerFactory)
         if (providers.Count != 0 && providers[^1] == provider)
         {
             NotifyContentChangedForSubscriber(identifier, provider);
-
-            if (_subscribersByIdentifier.TryGetValue(identifier, out var subscriber))
-            {
-                ValidateRenderModeCompatibility(identifier, subscriber, provider);
-                DetectRenderModeMismatch(identifier, subscriber, provider);
-            }
         }
     }
 
@@ -120,7 +107,7 @@ internal sealed partial class SectionRegistry(ILoggerFactory loggerFactory)
         DetectRenderModeMismatch(identifier, subscriber, provider);
     }
 
-    private static void ValidateRenderModeCompatibility(object identifier, SectionOutlet? subscriber, SectionContent? provider)
+    private void ValidateRenderModeCompatibility(object identifier, SectionOutlet? subscriber, SectionContent? provider)
     {
         // Framework-owned head/title sections use BuiltInSectionIdentifier and retain the existing warning behavior.
         // This validation is intentionally limited to application components sharing this renderer's registry.
@@ -169,8 +156,10 @@ internal sealed partial class SectionRegistry(ILoggerFactory loggerFactory)
         }
     }
 
-    private static bool RenderModesDiffer(IComponentRenderMode? left, IComponentRenderMode? right)
-        => left?.GetType() != right?.GetType();
+    private bool RenderModesDiffer(IComponentRenderMode? left, IComponentRenderMode? right)
+        => areRenderModesCompatible is not null
+            ? !areRenderModesCompatible(left, right)
+            : left?.GetType() != right?.GetType();
 
     private static string DescribeRenderMode(IComponentRenderMode? renderMode)
         => renderMode is null ? "static server-side rendering" : renderMode.GetType().Name;
