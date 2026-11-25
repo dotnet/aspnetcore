@@ -187,7 +187,35 @@ async function createRuntimeInstance(options: Partial<WebAssemblyStartOptions>, 
 
     onConfigLoaded?.(loadedConfig);
 
+    // Capture the option values before invoking initializers. The JS initializer's
+    // beforeStart may replace any of these on options, and we want the new values
+    // to take effect for resource loading, runtime configuration, and
+    // environment/culture reads during startup. The initial values were already
+    // applied to the dotnet host builder above, so we only re-apply on change.
+    const initialLoadBootResource = options.loadBootResource;
+    const initialEnvironment = options.environment;
+    const initialApplicationCulture = options.applicationCulture;
+    const initialConfigureRuntime = options.configureRuntime;
+
     jsInitializer = await fetchAndInvokeInitializers(options, loadedConfig);
+
+    if (options.loadBootResource && options.loadBootResource !== initialLoadBootResource) {
+      dotnet.withResourceLoader(options.loadBootResource);
+    }
+
+    if (options.environment && options.environment !== initialEnvironment) {
+      dotnet.withApplicationEnvironment(options.environment);
+      loadedConfig.applicationEnvironment = options.environment;
+    }
+
+    if (options.applicationCulture && options.applicationCulture !== initialApplicationCulture) {
+      dotnet.withApplicationCulture(options.applicationCulture);
+      loadedConfig.applicationCulture = options.applicationCulture;
+    }
+
+    if (options.configureRuntime && options.configureRuntime !== initialConfigureRuntime) {
+      options.configureRuntime(dotnet);
+    }
   });
   dotnet.withDownloadResourceProgress(setProgress);
 

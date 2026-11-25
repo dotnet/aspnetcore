@@ -10,9 +10,12 @@ export async function beforeStart(options) {
     if (runInitializer) {
         if (!options.logLevel) {
             // Simple way of detecting we are in web assembly
+            await Promise.resolve();
             options.loadBootResource = function (type, name, defaultUri, integrity) {
                 resourceRequests.push([type, name, defaultUri, integrity]);
-                return defaultUri;
+                const uri = new URL(defaultUri, document.baseURI);
+                uri.searchParams.set('initializer', 'true');
+                return uri.href;
             }
         }
         const start = document.createElement('p');

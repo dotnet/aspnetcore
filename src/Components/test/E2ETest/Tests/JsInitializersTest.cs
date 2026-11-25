@@ -41,6 +41,22 @@ public class JsInitializersTest : ServerTestBase<ToggleExecutionModeServerFixtur
         }
     }
 
+    [Fact]
+    public void InitializersCanCustomizeBootResourceLoading()
+    {
+        Browser.Exists(By.Id("initializer-end"));
+        if (_serverFixture.ExecutionMode is ExecutionMode.Client)
+        {
+            Browser.Exists(By.CssSelector("#total-requests td"));
+            Browser.True(() => (bool)((IJavaScriptExecutor)Browser).ExecuteScript(
+                "return performance.getEntriesByType('resource').some(entry => new URL(entry.name).searchParams.get('initializer') === 'true')"));
+        }
+        else
+        {
+            Browser.DoesNotExist(By.Id("total-requests"));
+        }
+    }
+
     protected virtual string[] GetExpectedCallbacks()
     {
         return ["classic-before-start",
