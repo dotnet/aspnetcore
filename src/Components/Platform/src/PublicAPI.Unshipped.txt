@@ -68,6 +68,43 @@ Microsoft.AspNetCore.Components.Platform.EventType<TTarget, TEvent>
 Microsoft.AspNetCore.Components.Platform.EventType<TTarget, TEvent>.Name.get -> string!
 Microsoft.AspNetCore.Components.Platform.IBrowserPlatform
 Microsoft.AspNetCore.Components.Platform.IBrowserPlatform.Window.get -> Microsoft.AspNetCore.Components.Platform.Window!
+Microsoft.AspNetCore.Components.Platform.Lock
+Microsoft.AspNetCore.Components.Platform.Lock.Lock() -> void
+Microsoft.AspNetCore.Components.Platform.Lock.Mode.get -> Microsoft.AspNetCore.Components.Platform.LockMode
+Microsoft.AspNetCore.Components.Platform.Lock.Mode.init -> void
+Microsoft.AspNetCore.Components.Platform.Lock.Name.get -> string!
+Microsoft.AspNetCore.Components.Platform.Lock.Name.init -> void
+Microsoft.AspNetCore.Components.Platform.LockInfo
+Microsoft.AspNetCore.Components.Platform.LockInfo.ClientId.get -> string?
+Microsoft.AspNetCore.Components.Platform.LockInfo.ClientId.init -> void
+Microsoft.AspNetCore.Components.Platform.LockInfo.LockInfo() -> void
+Microsoft.AspNetCore.Components.Platform.LockInfo.Mode.get -> Microsoft.AspNetCore.Components.Platform.LockMode?
+Microsoft.AspNetCore.Components.Platform.LockInfo.Mode.init -> void
+Microsoft.AspNetCore.Components.Platform.LockInfo.Name.get -> string?
+Microsoft.AspNetCore.Components.Platform.LockInfo.Name.init -> void
+Microsoft.AspNetCore.Components.Platform.LockManager
+Microsoft.AspNetCore.Components.Platform.LockManager.QueryAsync() -> System.Threading.Tasks.ValueTask<Microsoft.AspNetCore.Components.Platform.LockManagerSnapshot!>
+Microsoft.AspNetCore.Components.Platform.LockManager.RequestAsync(string! name, Microsoft.AspNetCore.Components.Platform.LockOptions! options, System.Func<Microsoft.AspNetCore.Components.Platform.Lock?, System.Threading.Tasks.Task!>! callback) -> System.Threading.Tasks.ValueTask
+Microsoft.AspNetCore.Components.Platform.LockManager.RequestAsync(string! name, System.Func<Microsoft.AspNetCore.Components.Platform.Lock?, System.Threading.Tasks.Task!>! callback) -> System.Threading.Tasks.ValueTask
+Microsoft.AspNetCore.Components.Platform.LockManagerSnapshot
+Microsoft.AspNetCore.Components.Platform.LockManagerSnapshot.Held.get -> System.Collections.Immutable.ImmutableArray<Microsoft.AspNetCore.Components.Platform.LockInfo!>?
+Microsoft.AspNetCore.Components.Platform.LockManagerSnapshot.Held.init -> void
+Microsoft.AspNetCore.Components.Platform.LockManagerSnapshot.LockManagerSnapshot() -> void
+Microsoft.AspNetCore.Components.Platform.LockManagerSnapshot.Pending.get -> System.Collections.Immutable.ImmutableArray<Microsoft.AspNetCore.Components.Platform.LockInfo!>?
+Microsoft.AspNetCore.Components.Platform.LockManagerSnapshot.Pending.init -> void
+Microsoft.AspNetCore.Components.Platform.LockMode
+Microsoft.AspNetCore.Components.Platform.LockMode.Equals(Microsoft.AspNetCore.Components.Platform.LockMode other) -> bool
+Microsoft.AspNetCore.Components.Platform.LockMode.LockMode() -> void
+Microsoft.AspNetCore.Components.Platform.LockMode.LockMode(string! value) -> void
+Microsoft.AspNetCore.Components.Platform.LockMode.Value.get -> string!
+Microsoft.AspNetCore.Components.Platform.LockOptions
+Microsoft.AspNetCore.Components.Platform.LockOptions.IfAvailable.get -> bool
+Microsoft.AspNetCore.Components.Platform.LockOptions.IfAvailable.set -> void
+Microsoft.AspNetCore.Components.Platform.LockOptions.LockOptions() -> void
+Microsoft.AspNetCore.Components.Platform.LockOptions.Mode.get -> Microsoft.AspNetCore.Components.Platform.LockMode
+Microsoft.AspNetCore.Components.Platform.LockOptions.Mode.set -> void
+Microsoft.AspNetCore.Components.Platform.LockOptions.Steal.get -> bool
+Microsoft.AspNetCore.Components.Platform.LockOptions.Steal.set -> void
 Microsoft.AspNetCore.Components.Platform.Navigator
 Microsoft.AspNetCore.Components.Platform.Navigator.GetCookieEnabledAsync() -> System.Threading.Tasks.ValueTask<bool>
 Microsoft.AspNetCore.Components.Platform.Navigator.GetHardwareConcurrencyAsync() -> System.Threading.Tasks.ValueTask<ulong>
@@ -76,6 +113,9 @@ Microsoft.AspNetCore.Components.Platform.Navigator.GetLanguagesAsync() -> System
 Microsoft.AspNetCore.Components.Platform.Navigator.GetMaxTouchPointsAsync() -> System.Threading.Tasks.ValueTask<int>
 Microsoft.AspNetCore.Components.Platform.Navigator.GetOnLineAsync() -> System.Threading.Tasks.ValueTask<bool>
 Microsoft.AspNetCore.Components.Platform.Navigator.GetUserAgentAsync() -> System.Threading.Tasks.ValueTask<string!>
+Microsoft.AspNetCore.Components.Platform.NavigatorLockManagerExtensions
+Microsoft.AspNetCore.Components.Platform.NavigatorLockManagerExtensions.extension(Microsoft.AspNetCore.Components.Platform.Navigator!)
+Microsoft.AspNetCore.Components.Platform.NavigatorLockManagerExtensions.extension(Microsoft.AspNetCore.Components.Platform.Navigator!).Locks.get -> Microsoft.AspNetCore.Components.Platform.LockManager!
 Microsoft.AspNetCore.Components.Platform.OrientationType
 Microsoft.AspNetCore.Components.Platform.OrientationType.Equals(Microsoft.AspNetCore.Components.Platform.OrientationType other) -> bool
 Microsoft.AspNetCore.Components.Platform.OrientationType.OrientationType() -> void
@@ -193,6 +233,9 @@ Microsoft.Extensions.DependencyInjection.BrowserPlatformServiceCollectionExtensi
 override Microsoft.AspNetCore.Components.Platform.CookieSameSite.Equals(object? obj) -> bool
 override Microsoft.AspNetCore.Components.Platform.CookieSameSite.GetHashCode() -> int
 override Microsoft.AspNetCore.Components.Platform.CookieSameSite.ToString() -> string!
+override Microsoft.AspNetCore.Components.Platform.LockMode.Equals(object? obj) -> bool
+override Microsoft.AspNetCore.Components.Platform.LockMode.GetHashCode() -> int
+override Microsoft.AspNetCore.Components.Platform.LockMode.ToString() -> string!
 override Microsoft.AspNetCore.Components.Platform.OrientationType.Equals(object? obj) -> bool
 override Microsoft.AspNetCore.Components.Platform.OrientationType.GetHashCode() -> int
 override Microsoft.AspNetCore.Components.Platform.OrientationType.ToString() -> string!
@@ -201,6 +244,10 @@ static Microsoft.AspNetCore.Components.Platform.CookieSameSite.operator !=(Micro
 static Microsoft.AspNetCore.Components.Platform.CookieSameSite.operator ==(Microsoft.AspNetCore.Components.Platform.CookieSameSite left, Microsoft.AspNetCore.Components.Platform.CookieSameSite right) -> bool
 static Microsoft.AspNetCore.Components.Platform.CookieSameSite.None.get -> Microsoft.AspNetCore.Components.Platform.CookieSameSite
 static Microsoft.AspNetCore.Components.Platform.CookieSameSite.Strict.get -> Microsoft.AspNetCore.Components.Platform.CookieSameSite
+static Microsoft.AspNetCore.Components.Platform.LockMode.Exclusive.get -> Microsoft.AspNetCore.Components.Platform.LockMode
+static Microsoft.AspNetCore.Components.Platform.LockMode.operator !=(Microsoft.AspNetCore.Components.Platform.LockMode left, Microsoft.AspNetCore.Components.Platform.LockMode right) -> bool
+static Microsoft.AspNetCore.Components.Platform.LockMode.operator ==(Microsoft.AspNetCore.Components.Platform.LockMode left, Microsoft.AspNetCore.Components.Platform.LockMode right) -> bool
+static Microsoft.AspNetCore.Components.Platform.LockMode.Shared.get -> Microsoft.AspNetCore.Components.Platform.LockMode
 static Microsoft.AspNetCore.Components.Platform.OrientationType.LandscapePrimary.get -> Microsoft.AspNetCore.Components.Platform.OrientationType
 static Microsoft.AspNetCore.Components.Platform.OrientationType.LandscapeSecondary.get -> Microsoft.AspNetCore.Components.Platform.OrientationType
 static Microsoft.AspNetCore.Components.Platform.OrientationType.operator !=(Microsoft.AspNetCore.Components.Platform.OrientationType left, Microsoft.AspNetCore.Components.Platform.OrientationType right) -> bool

@@ -1,0 +1,97 @@
+@inject Microsoft.AspNetCore.Components.Platform.IBrowserPlatform Browser
+
+<h2>Web Locks</h2>
+
+<div>
+    <button id="query-locks" @onclick="QueryAsync">Query</button>
+</div>
+<div>
+    <button id="request-lock" @onclick="RequestAsync">Request and hold</button>
+    <button id="release-lock" @onclick="Release">Release</button>
+    <button id="request-lock-shared" @onclick="RequestSharedAsync">Request shared</button>
+    <button id="request-lock-if-available" @onclick="RequestIfAvailableAsync">Request if available</button>
+    <button id="request-lock-steal" @onclick="RequestStealAsync">Request with steal</button>
+    <button id="request-lock-throwing" @onclick="RequestThrowingAsync">Request with throwing callback</button>
+</div>
+<p id="locks-result" role="status" data-run="@runCount">@result</p>
+
+@code {
+    private string result = "No operation has run.";
+    private int runCount;
+    private TaskCompletionSource? release;
+
+    private Task QueryAsync() => RunAsync("Query", async () =>
+    {
+        var snapshot = await Browser.Window.Navigator.Locks.QueryAsync();
+
+        return $"held [{Format(snapshot.Held)}], pending [{Format(snapshot.Pending)}]";
+    });
+
+    // Holds the lock until Release is clicked, and reports when the callback starts.
+    private Task RequestAsync() => RunAsync("Request", async () =>
+    {
+        release = new TaskCompletionSource();
+        await Browser.Window.Navigator.Locks.RequestAsync("e2e-dotnet-lock", async grantedLock =>
+        {
+            Report($"Request: held {grantedLock?.Name} {grantedLock?.Mode}");
+            await release.Task;
+        });
+
+        return "released";
+    });
+
+    private void Release() => release?.TrySetResult();
+
+    private Task RequestSharedAsync() => RunAsync("Request shared", () =>
+        RequestOnceAsync("e2e-shared", new LockOptions { Mode = LockMode.Shared }));
+
+    private Task RequestIfAvailableAsync() => RunAsync("Request if available", () =>
+        RequestOnceAsync("e2e-busy", new LockOptions { IfAvailable = true }));
+
+    private Task RequestStealAsync() => RunAsync("Request with steal", () =>
+        RequestOnceAsync("e2e-busy", new LockOptions { Steal = true }));
+
+    private Task RequestThrowingAsync() => RunAsync("Request with throwing callback", async () =>
+    {
+        try
+        {
+            await Browser.Window.Navigator.Locks.RequestAsync("e2e-dotnet-lock", _ => throw new InvalidOperationException("The work failed."));
+            return "completed";
+        }
+        catch (InvalidOperationException ex)
+        {
+            return $"{ex.GetType().Name}: {ex.Message}";
+        }
+    });
+
+    private async Task<string> RequestOnceAsync(string name, LockOptions options)
+    {
+        var state = "not called";
+        await Browser.Window.Navigator.Locks.RequestAsync(name, options, grantedLock =>
+        {
+            state = grantedLock is null ? "not granted" : $"granted {grantedLock.Name} {grantedLock.Mode}";
+            return Task.CompletedTask;
+        });
+
+        return state;
+    }
+
+    private static string Format(System.Collections.Immutable.ImmutableArray<LockInfo>? locks)
+        => locks is { } items
+            ? string.Join(", ", items.Select(info => $"{info.Name} {info.Mode} {info.ClientId}"))
+            : "missing";
+
+    private async Task RunAsync(string operation, Func<Task<string>> run)
+    {
+        var value = await run();
+        Report($"{operation}: {value}");
+    }
+
+    private void Report(string text)
+    {
+        result = text;
+        // Counts only completed steps, so a test waits for its own click and an exception fails at its step.
+        runCount++;
+        StateHasChanged();
+    }
+}
