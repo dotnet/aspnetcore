@@ -29,6 +29,7 @@
     <SkipHelixQueues>
       $(HelixQueueArmDebian);
       $(HelixQueueAzureLinux);
+      $(HelixQueueAzureLinux3);
       $(HelixQueueArmAzureLinux);
       $(HelixQueueDebian);
       $(SkipHelixQueues)
