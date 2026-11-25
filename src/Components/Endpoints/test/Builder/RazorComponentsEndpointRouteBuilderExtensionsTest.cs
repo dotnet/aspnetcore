@@ -10,6 +10,8 @@ using Microsoft.AspNetCore.DataProtection;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Routing;
+using Microsoft.AspNetCore.Routing.Matching;
+using Microsoft.AspNetCore.Routing.Patterns;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.FileProviders;
@@ -36,6 +38,12 @@ public class RazorComponentsEndpointRouteBuilderExtensionsTest
         foreach (var host in overlappingHosts ? new[] { "a.example", "b.example", "c.example" } : new[] { "a.example", "b.example" })
         {
             var context = CreateHttpContext(services, prefix + BrowserToolsHotReloadSettings.Path, host);
+            if (overlappingHosts && host == "b.example")
+            {
+                var exception = await Assert.ThrowsAnyAsync<Exception>(() => application(context));
+                Assert.Equal("Microsoft.AspNetCore.Routing.Matching.AmbiguousMatchException", exception.GetType().FullName);
+                continue;
+            }
 
             await application(context);
 
@@ -71,6 +79,12 @@ public class RazorComponentsEndpointRouteBuilderExtensionsTest
         foreach (var host in overlappingHosts ? new[] { "a.example", "b.example", "c.example" } : new[] { "a.example", "b.example" })
         {
             var invalidRequest = CreateHttpContext(services, $"{prefix}/_framework/opaque-redirect?url=x", host);
+            if (overlappingHosts && host == "b.example")
+            {
+                var exception = await Assert.ThrowsAnyAsync<Exception>(() => application(invalidRequest));
+                Assert.Equal("Microsoft.AspNetCore.Routing.Matching.AmbiguousMatchException", exception.GetType().FullName);
+                continue;
+            }
 
             await application(invalidRequest);
 
@@ -183,6 +197,105 @@ public class RazorComponentsEndpointRouteBuilderExtensionsTest
         }
     }
 
+    [Theory]
+    [InlineData(BrowserToolsHotReloadSettings.Path, StatusCodes.Status200OK)]
+    [InlineData("/_framework/opaque-redirect?url=x", StatusCodes.Status400BadRequest)]
+    public async Task MapRazorComponents_PreservesSecondRootForCustomEndpointSelector(string path, int expectedStatusCode)
+    {
+        using var services = CreateServices(services =>
+        {
+            services.AddSingleton<MatcherPolicy, TaggedEndpointPolicy>();
+            services.AddSingleton<EndpointSelector, TaggedEndpointSelector>();
+        });
+        var application = CreateApplication(services, endpoints =>
+        {
+            endpoints.MapRazorComponents<HeadOutlet>().WithMetadata("first");
+            endpoints.MapRazorComponents<PageTitle>().WithMetadata("second");
+        });
+
+        var context = CreateHttpContext(services, path);
+        await application(context);
+
+        Assert.Equal(expectedStatusCode, context.Response.StatusCode);
+        Assert.Equal("second", context.GetEndpoint()!.Metadata.GetMetadata<string>());
+    }
+
+    [Theory]
+    [InlineData(false, false)]
+    [InlineData(false, true)]
+    [InlineData(true, false)]
+    [InlineData(true, true)]
+    public async Task MapRazorComponents_PublishesEquivalentFrameworkEndpointsOnce(bool withStaticAssets, bool grouped)
+    {
+        const string manifest = "TestManifests/Test.staticwebassets.endpoints.json";
+        using var services = CreateServices();
+        var application = CreateApplication(services, endpoints =>
+        {
+            var roots = grouped ? endpoints.MapGroup("/{tenant:alpha}") : endpoints;
+            if (withStaticAssets)
+            {
+                roots.MapStaticAssets(manifest);
+            }
+
+            roots.MapRazorComponents<HeadOutlet>().WithStaticAssets(withStaticAssets ? manifest : null);
+            roots.MapRazorComponents<PageTitle>().WithStaticAssets(withStaticAssets ? manifest : null);
+
+            var prefix = grouped ? "/{tenant:alpha}" : "";
+            var frameworkEndpoints = endpoints.DataSources.SelectMany(source => source.Endpoints).OfType<RouteEndpoint>().ToArray();
+            Assert.Single(frameworkEndpoints, endpoint => endpoint.RoutePattern.RawText == prefix + BrowserToolsHotReloadSettings.Path);
+            Assert.Single(frameworkEndpoints, endpoint => endpoint.RoutePattern.RawText == prefix + "/_framework/opaque-redirect");
+        });
+
+        var context = CreateHttpContext(services, (grouped ? "/abc" : "") + BrowserToolsHotReloadSettings.Path);
+        await application(context);
+        Assert.Equal(StatusCodes.Status200OK, context.Response.StatusCode);
+    }
+
+    [Fact]
+    public async Task MapRazorComponents_PreservesProgrammaticGroupConstraintsWithIdenticalRawText()
+    {
+        using var services = CreateServices();
+        var application = CreateApplication(services, endpoints =>
+        {
+            var alpha = RoutePatternFactory.Pattern(null, RoutePatternFactory.Parse("/{tenant:alpha}").PathSegments);
+            var length = RoutePatternFactory.Pattern(null, RoutePatternFactory.Parse("/{locale:length(2)}").PathSegments);
+            endpoints.MapGroup(alpha).MapRazorComponents<HeadOutlet>().WithMetadata("alpha");
+            endpoints.MapGroup(length).MapRazorComponents<PageTitle>().WithMetadata("length");
+        });
+
+        var alphaRequest = CreateHttpContext(services, "/abc" + BrowserToolsHotReloadSettings.Path);
+        await application(alphaRequest);
+        Assert.Equal(StatusCodes.Status200OK, alphaRequest.Response.StatusCode);
+        Assert.Equal("alpha", alphaRequest.GetEndpoint()!.Metadata.GetMetadata<string>());
+
+        var lengthRequest = CreateHttpContext(services, "/12" + BrowserToolsHotReloadSettings.Path);
+        await application(lengthRequest);
+        Assert.Equal(StatusCodes.Status200OK, lengthRequest.Response.StatusCode);
+        Assert.Equal("length", lengthRequest.GetEndpoint()!.Metadata.GetMetadata<string>());
+
+        var overlappingRequest = CreateHttpContext(services, "/ab" + BrowserToolsHotReloadSettings.Path);
+        var exception = await Assert.ThrowsAnyAsync<Exception>(() => application(overlappingRequest));
+        Assert.Equal("Microsoft.AspNetCore.Routing.Matching.AmbiguousMatchException", exception.GetType().FullName);
+    }
+
+    [Fact]
+    public void MapRazorComponents_NotifiesSubscribersWhenAnotherRootIsMapped()
+    {
+        using var services = CreateServices();
+        var application = new ApplicationBuilder(services);
+        application.UseRouting();
+        application.UseEndpoints(endpoints => endpoints.MapRazorComponents<HeadOutlet>());
+
+        var dataSource = services.GetRequiredService<EndpointDataSource>();
+        Assert.NotEmpty(dataSource.Endpoints);
+        var changeToken = dataSource.GetChangeToken();
+
+        application.UseEndpoints(endpoints => endpoints.MapRazorComponents<PageTitle>().WithMetadata("second"));
+
+        Assert.True(changeToken.HasChanged);
+        Assert.Contains(dataSource.Endpoints, endpoint => endpoint.Metadata.GetMetadata<string>() == "second");
+    }
+
     private static void MapRoots(IEndpointRouteBuilder endpoints, bool separateGroups, bool overlappingHosts, bool reverseOrder)
     {
         IEndpointRouteBuilder first = separateGroups ? endpoints.MapGroup("/shared") : endpoints;
@@ -210,7 +323,7 @@ public class RazorComponentsEndpointRouteBuilderExtensionsTest
         return application.Build();
     }
 
-    private static ServiceProvider CreateServices()
+    private static ServiceProvider CreateServices(Action<IServiceCollection> configureServices = null)
     {
         var environment = new Mock<IWebHostEnvironment>();
         environment.SetupGet(environment => environment.EnvironmentName).Returns(Environments.Development);
@@ -229,6 +342,7 @@ public class RazorComponentsEndpointRouteBuilderExtensionsTest
         services.AddRouting();
         services.AddRazorComponents().AddInteractiveWebAssemblyComponents();
         services.AddDataProtection().UseEphemeralDataProtectionProvider();
+        configureServices?.Invoke(services);
 
         return services.BuildServiceProvider();
     }
@@ -247,6 +361,40 @@ public class RazorComponentsEndpointRouteBuilderExtensionsTest
         context.Response.Body = new MemoryStream();
 
         return context;
+    }
+
+    private sealed class TaggedEndpointPolicy : MatcherPolicy, IEndpointSelectorPolicy
+    {
+        public override int Order => int.MaxValue;
+
+        public bool AppliesToEndpoints(IReadOnlyList<Endpoint> endpoints) => true;
+
+        public Task ApplyAsync(HttpContext httpContext, CandidateSet candidates)
+        {
+            Assert.Equal(2, candidates.Count);
+            Assert.True(candidates.IsValidCandidate(0));
+            Assert.True(candidates.IsValidCandidate(1));
+
+            return Task.CompletedTask;
+        }
+    }
+
+    private sealed class TaggedEndpointSelector : EndpointSelector
+    {
+        public override Task SelectAsync(HttpContext httpContext, CandidateSet candidates)
+        {
+            for (var i = 0; i < candidates.Count; i++)
+            {
+                if (candidates.IsValidCandidate(i) && candidates[i].Endpoint.Metadata.GetMetadata<string>() == "second")
+                {
+                    httpContext.SetEndpoint(candidates[i].Endpoint);
+                    httpContext.Request.RouteValues = candidates[i].Values!;
+                    break;
+                }
+            }
+
+            return Task.CompletedTask;
+        }
     }
 
     private sealed class FirstApp : ComponentBase;

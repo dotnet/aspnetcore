@@ -9,6 +9,7 @@ using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Components.Discovery;
 using Microsoft.AspNetCore.Components.Endpoints.Infrastructure;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Http.Metadata;
 using Microsoft.AspNetCore.Routing;
 using Microsoft.Extensions.Primitives;
 using static Microsoft.AspNetCore.Internal.LinkerFlags;
@@ -193,7 +194,8 @@ internal class RazorComponentEndpointDataSource<[DynamicallyAccessedMembers(Comp
 
         foreach (var endpoint in blazorWebEndpoints)
         {
-            endpoint.Metadata.Add(new BlazorWebEndpointMetadata(endpoint.RequestDelegate!));
+            var marker = new BlazorWebEndpointMetadata(endpoint.RequestDelegate!);
+            endpoint.Metadata.Add(marker);
 
             foreach (var convention in _conventions)
             {
@@ -205,7 +207,15 @@ internal class RazorComponentEndpointDataSource<[DynamicallyAccessedMembers(Comp
                 convention(endpoint);
             }
 
-            endpoints.Add(endpoint.Build());
+            var hasDiagnosticsMetadata = endpoint.Metadata.OfType<IRouteDiagnosticsMetadata>().Any();
+            var builtEndpoint = endpoint.Build();
+            if (!hasDiagnosticsMetadata)
+            {
+                // Only framework-generated diagnostics metadata can be compared across roots.
+                marker.GeneratedDiagnosticsMetadata = builtEndpoint.Metadata.GetMetadata<IRouteDiagnosticsMetadata>();
+            }
+
+            endpoints.Add(builtEndpoint);
         }
     }
 

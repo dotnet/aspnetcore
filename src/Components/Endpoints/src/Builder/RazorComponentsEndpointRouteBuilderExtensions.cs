@@ -42,12 +42,21 @@ public static class RazorComponentsEndpointRouteBuilderExtensions
     private static RazorComponentEndpointDataSource<TRootComponent> GetOrCreateDataSource<[DynamicallyAccessedMembers(Component)] TRootComponent>(
         IEndpointRouteBuilder endpoints)
     {
-        var dataSource = endpoints.DataSources.OfType<RazorComponentEndpointDataSource<TRootComponent>>().FirstOrDefault();
-        if (dataSource == null)
+        var aggregates = endpoints.DataSources.OfType<RazorComponentsEndpointDataSource>().ToArray();
+        var dataSource = aggregates.SelectMany(source => source.DataSources).OfType<RazorComponentEndpointDataSource<TRootComponent>>().FirstOrDefault();
+        if (dataSource is null)
         {
+            var aggregate = aggregates.LastOrDefault();
+            if (aggregate is null || aggregate.IsInitialized)
+            {
+                // Publish later registrations through UseEndpoints, after their conventions have been configured.
+                aggregate = new RazorComponentsEndpointDataSource();
+                endpoints.DataSources.Add(aggregate);
+            }
+
             var factory = endpoints.ServiceProvider.GetRequiredService<RazorComponentEndpointDataSourceFactory>();
             dataSource = factory.CreateDataSource<TRootComponent>(endpoints);
-            endpoints.DataSources.Add(dataSource);
+            aggregate.DataSources.Add(dataSource);
         }
 
         return dataSource;
