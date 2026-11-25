@@ -317,11 +317,10 @@ uniquely to this workflow.
 
 Hosted `Validate`, `Lint`, and `Run` operations use the toolchain pinned by
 `evaluation-tools/package-lock.json`, including `@microsoft/vally-cli@0.19.0`
-and `@github/copilot@1.0.80`. The manifest also constrains transitive Copilot
-packages to that compatible version so the SDK and native platform package
-retain the same `./sdk` entry point. The workflow installs that lockfile with
-`npm ci` before any Copilot credential enters scope and verifies the Vally,
-Copilot, and Linux x64 platform entry points.
+and `@github/copilot@1.0.103`. The workflow installs that lockfile with `npm ci`
+before any Copilot credential enters scope. It configures the SDK to launch
+the installed Linux x64 Copilot binary over stdio, then checks the runtime
+version and lists its tools without sending a model prompt.
 
 The local runner defaults to the installed pinned toolchain when present.
 Local model-bearing `Run` operations require
