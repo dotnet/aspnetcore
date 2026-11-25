@@ -3,10 +3,11 @@
   <PropertyGroup>
     <HelixQueueAlmaLinux>(AlmaLinux.9.Amd64.Open)azurelinux.3.Amd64.Open@mcr.microsoft.com/dotnet-buildtools/prereqs:almalinux-9-helix-amd64</HelixQueueAlmaLinux>
     <HelixQueueAlpine>(Alpine.321.Amd64.Open)azurelinux.3.Amd64.Open@mcr.microsoft.com/dotnet-buildtools/prereqs:alpine-3.21-helix-amd64</HelixQueueAlpine>
-    <HelixQueueAzureLinux>(AzureLinux.30.Amd64.Open)azurelinux.3.Amd64.Open@mcr.microsoft.com/dotnet-buildtools/prereqs:azurelinux-3.0-helix-amd64</HelixQueueAzureLinux>
+    <HelixQueueAzureLinux>azurelinux.4.amd64.open</HelixQueueAzureLinux>
     <HelixQueueDebian>(Debian.13.Amd64.Open)azurelinux.3.Amd64.Open@mcr.microsoft.com/dotnet-buildtools/prereqs:debian-13-helix-amd64</HelixQueueDebian>
     <HelixQueueFedora>(Fedora.42.Amd64.Open)azurelinux.3.Amd64.Open@mcr.microsoft.com/dotnet-buildtools/prereqs:fedora-42-helix-amd64</HelixQueueFedora>
     <!-- Arm64 -->
+    <HelixQueueArmAzureLinux>azurelinux.4.arm64.open</HelixQueueArmAzureLinux>
     <HelixQueueArmDebian>(Debian.13.Arm64.Open)ubuntu.2604.armarch.open@mcr.microsoft.com/dotnet-buildtools/prereqs:debian-13-helix-arm64v8</HelixQueueArmDebian>
 
     <!-- Do not attempt to override global property. -->
@@ -30,6 +31,7 @@
       <!-- aspnetcore-quarantined-pr (quarantined-pr.yml) -->
       <ItemGroup>
         <HelixAvailableTargetQueue Include="$(HelixQueueAzureLinux)" Platform="Linux" Condition="'$(OnlyTestProjectTemplates)' != 'true'" />
+        <HelixAvailableTargetQueue Include="$(HelixQueueArmAzureLinux)" Platform="Linux" Condition="'$(OnlyTestProjectTemplates)' != 'true'" />
         <HelixAvailableTargetQueue Include="Ubuntu.2604.Amd64.Open" Platform="Linux" Condition="'$(OnlyTestProjectTemplates)' == 'true'" />
         <HelixAvailableTargetQueue Include="OSX.15.Amd64.Open" Platform="OSX" />
         <HelixAvailableTargetQueue Include="Windows.Amd64.VS2026.Pre.Scout.Open" Platform="Windows" />
@@ -42,10 +44,11 @@
         <!-- Linux -->
         <HelixAvailableTargetQueue Include="$(HelixQueueAlmaLinux)" Platform="Linux" />
         <HelixAvailableTargetQueue Include="Ubuntu.2604.Amd64.Open" Platform="Linux" />
+        <HelixAvailableTargetQueue Include="$(HelixQueueAzureLinux)" Platform="Linux" />
+        <HelixAvailableTargetQueue Include="$(HelixQueueArmAzureLinux)" Platform="Linux" />
 
         <!-- Containers -->
         <HelixAvailableTargetQueue Include="$(HelixQueueAlpine)" Platform="Linux" />
-        <HelixAvailableTargetQueue Include="$(HelixQueueAzureLinux)" Platform="Linux" />
         <HelixAvailableTargetQueue Include="$(HelixQueueDebian)" Platform="Linux" />
         <HelixAvailableTargetQueue Include="$(HelixQueueFedora)" Platform="Linux" />
         <!-- Arm64 -->
