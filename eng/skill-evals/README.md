@@ -21,6 +21,10 @@ beside the spec that consumes them, normally under a `fixtures` directory. Do
 not place eval specs, `evals` directories, or eval runners in runtime skill
 directories. A runtime skill may use a `fixtures` directory for non-eval assets.
 
+The [code-review regression corpus](code-review/README.md) is a manual run
+against frozen public PR inputs. It stages its own Vally specs outside the
+checkout; it is not part of standard skill discovery or per-PR CI.
+
 `review-pull-request/catch-policy.vally.yaml` is a specialized, offline policy
 exercise. It stages the current reviewer skill, cross-cutting guide, diff, old/head source,
 dependency implementations, and one selected scenario into each trial workspace.

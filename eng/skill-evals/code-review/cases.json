@@ -1,0 +1,378 @@
+[
+  {
+    "id": "case-01",
+    "pr": 66671,
+    "head": "686db38530dfc200621faf0eb58f508f6cd27fd4",
+    "baseTip": "c405a576d1f35b02fdcb7bf09af7b60ec8d1151e",
+    "mergeBase": "4b983385ec50470ba83002a2f3c12d4aa51176a8",
+    "diffSha256": "3ae0b42bef30717fc6cfbbb57bcd76767d946941740e2b5b24c3d2c71ce059a9",
+    "rubrics": [
+      "At the raw IIS response assertion in RequestResponseTests.cs, identify that a body containing `Hello World` plus unwanted bytes still passes `Assert.Contains`. This test is supposed to verify exact response framing and payload, not just echo a substring. A correct catch requires the complete known body/length or chunk framing to match, so trailing or extra output is observable."
+    ]
+  },
+  {
+    "id": "case-02",
+    "pr": 68953,
+    "head": "f02a77fc6a61a118f7b85f1ba323ff573a918a7d",
+    "baseTip": "9988228dcf0168dec20895bcc6be899f5e473c25",
+    "mergeBase": "833ccc210faa0fc5e104b253a4068e5978029d86",
+    "diffSha256": "516ae823309f2ba86d7cf505ad7e8426862d4207e4dad3c0addc624f0f0babcb",
+    "rubrics": []
+  },
+  {
+    "id": "case-03",
+    "pr": 65483,
+    "head": "1f54405d73c94b3ecbcc930748489ad9d0f07553",
+    "baseTip": "1d5f6d893cdee1bf4655cd374ca5bae8d8d85231",
+    "mergeBase": "51a14e4ed38741ad2fceec17971b484d1d7ef494",
+    "diffSha256": "7ea2099eff8ecd2cb13a199411b41e4600c5dd62c08defb6822aae89e5ee8988",
+    "rubrics": [
+      "At JsonStoredDataSerializer's typed `Deserialize` branch, identify that an explicit `object[]` target takes general JSON deserialization even though the writer encoded each child as a typed storage entry. It can return wrapper JSON values rather than the original element types. A correct catch requires the recursive `DeserializeEntry` path for `object[]`, as for the untyped target."
+    ]
+  },
+  {
+    "id": "case-04",
+    "pr": 68139,
+    "head": "1d76f8c3774e8d3624cc5661f51c26e284676147",
+    "baseTip": "9f99606fb477763ddd79279bb41379f07d89555a",
+    "mergeBase": "b5220c34d86e50dc85a590ff4f109e4c263003e8",
+    "diffSha256": "56ee32f678841119aea32c755afdacb89867fbd2c03cba6dc1fce1a7b0add6c3",
+    "rubrics": []
+  },
+  {
+    "id": "case-05",
+    "pr": 68119,
+    "head": "b9de303bf3a07a7999cbd110d3cb5166ac0580de",
+    "baseTip": "c3b822275eb202c0b27bd163e6bbf46b1ea2ac3e",
+    "mergeBase": "747d2cdb584079a0c7309115979f13c331fb7df7",
+    "diffSha256": "e7e8c436999607c7ed65313ccdc44343fa4fa0848261f85b124c9ee01350d551",
+    "rubrics": []
+  },
+  {
+    "id": "case-06",
+    "pr": 67530,
+    "head": "d12a208ed2bc9063a5d496ed801182c5a11a771d",
+    "baseTip": "cf0ae5e828233a520c8d7d435db130e24b8dc2aa",
+    "mergeBase": "cf0ae5e828233a520c8d7d435db130e24b8dc2aa",
+    "diffSha256": "6da052d9f8ef5c96a9c69c8b4d3eb5b7a916d0ff1c85c9c93878b82fe068a60e",
+    "rubrics": [
+      "At the full-root `Formatter.Format` call in JSInteropCodeFixProvider.cs, report that applying a local try/catch fix can also modify unrelated trivia or line endings using the workspace defaults, e.g. for an input file with LF and a CRLF workspace. A correct catch points to the unscoped formatter call and asks to preserve existing trivia or scope formatting to the introduced syntax."
+    ]
+  },
+  {
+    "id": "case-07",
+    "pr": 68344,
+    "head": "60598ff7c7641137b64c041dd84c460a0038dc33",
+    "baseTip": "624894db39d27189dbac06273f70d08b164b8961",
+    "mergeBase": "45317bee954f2eb1e4f892c63166dec822caedae",
+    "diffSha256": "9b6d34da6f622669469a90163764cccafc4e6b475f75b16cd7d7b87d1e2a9a08",
+    "rubrics": [
+      "At the `employee.X-MyCustomHeader` API-description expectation, identify that the explicitly named header is looked up as `X-MyCustomHeader`, not as the prefixed path used for composite route/model fields. The test enshrines documentation that disagrees with runtime binding; a correct catch keeps the header name unprefixed while leaving the route path distinct."
+    ]
+  },
+  {
+    "id": "case-08",
+    "pr": 67977,
+    "head": "6bb2000953c68abc8028336802cf634df34c8d92",
+    "baseTip": "0916dabf59443fdd52155d4b4d0fa555425e8eb0",
+    "mergeBase": "0ae3b028b124d49f9239945aa9336b313fdd4515",
+    "diffSha256": "123b2867e70b8117da4bc0971a701817e5f08ed3a57c35bd413de85420e4fe0f",
+    "rubrics": [
+      "At SectionRegistry.DescribeIdentifier, identify that formatting a nonstring section identifier for a diagnostic can invoke an overridden `ToString()` that throws and aborts rendering. A correct catch explains the mismatch-diagnostic path and calls for diagnostic formatting to fail harmlessly rather than changing behavior of the render process."
+    ]
+  },
+  {
+    "id": "case-09",
+    "pr": 67964,
+    "head": "ea134fec86c7896217420c74b373b7f40a71f7a3",
+    "baseTip": "b23361138c31f0a08726a4e83e8b24324680088d",
+    "mergeBase": "8f51f037469f6b2c54d921817c0435b29ba6b051",
+    "diffSha256": "7d079de589719d5a457cc22108aaf507a4cafb479bce3ed1f1b35372870c35be",
+    "rubrics": [
+      "At AccessTokenHttpClient.send, identify that URL substring matching confuses the operation with the application's chosen hub route. An ordinary transport request to a hub mapped to `/refresh` can include `/refresh?` and be handled as a refresh, changing request-token and retry behavior; `/negotiate` has the analogous ambiguity. A correct catch distinguishes operation intent from the text of the request URL."
+    ]
+  },
+  {
+    "id": "case-10",
+    "pr": 69425,
+    "head": "bdfcf34d016f590ae04f13f18aca452fb60719ec",
+    "baseTip": "60a812ff26304bb6064e4d29828d4412e8a123b6",
+    "mergeBase": "60a812ff26304bb6064e4d29828d4412e8a123b6",
+    "diffSha256": "3d2e77f67167e20f9039f311b2426d1efda629f3ea24e398a8062e11db6e3760",
+    "rubrics": []
+  },
+  {
+    "id": "case-11",
+    "pr": 69548,
+    "head": "04435a32998640c4709a5108ec29159eca500375",
+    "baseTip": "6bdb34960e526f5a508ec88c60a5f34441230e25",
+    "mergeBase": "c7cef3bfadeb7416a67e6b06bf2a736dd540806b",
+    "diffSha256": "237187679a356978482a8144a8993887d8d2af5cd446c0aa835bbe700d919ed5",
+    "rubrics": []
+  },
+  {
+    "id": "case-12",
+    "pr": 69845,
+    "head": "b77dced142db96fe520d1dac7dc2922001042fa9",
+    "baseTip": "3595620ce66db77d795b5435ba44687dc94cf3ef",
+    "mergeBase": "0fe823627dddb94849b8a737b547b14dff2f46ca",
+    "diffSha256": "dcb7767191208ffea8d681612e41f0c5f223e70690b7e4c639522c7a92c9eb61",
+    "rubrics": [
+      "At CookieStore.DeleteAsync(string)'s public XML summary, identify that host and `/` path are not sufficient conditions for this overload to delete a cookie: it only targets the unpartitioned identity. A caller who creates a partitioned cookie can be misled by the promise and find it still present. A correct catch distinguishes overload scope from deletion by explicit options; do not claim the browser should change its contract."
+    ]
+  },
+  {
+    "id": "case-13",
+    "pr": 67618,
+    "head": "4fcce480e881c52f9d748ae8415343287c4abaf9",
+    "baseTip": "8f51f037469f6b2c54d921817c0435b29ba6b051",
+    "mergeBase": "026930436484c8ee0062b0ce2568d19bb71986c5",
+    "diffSha256": "9413057b5bacdd7a4a2fd236d1bf7cfd966fca9f5bfe69fa6ec1c29422b5838e",
+    "rubrics": [
+      "At the `OnReroute` test in CsrfProtectionIntegrationTests.cs, identify that the test cannot exercise the re-execution behavior in its name: `/` returns 200, so the status-code middleware does not dispatch `/not-found`; the probe also observes only the original handler. A correct catch either narrows the claim to the middleware-present scenario or asks for a real failure response and observation at the re-executed endpoint."
+    ]
+  },
+  {
+    "id": "case-14",
+    "pr": 68116,
+    "head": "421d69c16d2951c9fa3c41edca84edec7e930eb0",
+    "baseTip": "8d2e54b9632ef5ff4f24cdbc219bfa6ff1a454d1",
+    "mergeBase": "0aa2e101a04acc4a738a574f75da655a3852deba",
+    "diffSha256": "afad74c07bbfd8a0c05b338b9d1d60cd30d8e55af0bfbdf089f40e6553dc9cdc",
+    "rubrics": [
+      "At ApplyNullabilityContextInfo in JsonNodeSchemaExtensions.cs:561, identify that a nonpublic CLR setter (without JsonInclude) can exist in reflection while System.Text.Json treats the property as read-only. For a nonnullable public getter and an AllowNull private setter, the serializer has no Set delegate and still reports IsSetNullable. The reflection check at this head skips the get-only correction, leaving null in the OpenAPI string type. A correct catch uses effective JsonPropertyInfo.Set rather than physical PropertyInfo.SetMethod."
+    ]
+  },
+  {
+    "id": "case-15",
+    "pr": 67757,
+    "head": "943c08d32056e55663f47c17d783e6858a6030ce",
+    "baseTip": "512f3138e56bb3d51d35c6dafbb305e198e8de47",
+    "mergeBase": "f82669acc283a66b046dc4fbd39b65c08ed72488",
+    "diffSha256": "a5306c86294506621c35f13cf6e4446d6baf9fb00f8c6fe2530e02007a25246e",
+    "rubrics": []
+  },
+  {
+    "id": "case-16",
+    "pr": 67465,
+    "head": "36fdd080bee84a6ad90295fd7ed4704de8133c46",
+    "baseTip": "fa8126f62f64eaf37292ff1e334ace99bc757bcf",
+    "mergeBase": "2f6d1ba411f7c2a91cf82efb58d4cb012cfee809",
+    "diffSha256": "6067076d1e49c59ee871b105819ddfd7d4accdd3a253102c7c1ec8b8a98b4378",
+    "rubrics": [
+      "Chained KeyRingBasedDataProtector.CreateProtector eagerly resolves the key ring. A finding need not request a chained-creation regression test."
+    ]
+  },
+  {
+    "id": "case-17",
+    "pr": 68451,
+    "head": "271e9cd681b6720d26f45da27a4e9a8dd746e68b",
+    "baseTip": "704fddddc31f96a26aabc36f557103a733545442",
+    "mergeBase": "ee12843e843a11036c8a88e5636619df0c7cc0f8",
+    "diffSha256": "f0acc6148340537f4750e332a48ee1c8268a2bab9a84bee15f4f828ed2cfa621",
+    "rubrics": []
+  },
+  {
+    "id": "case-18",
+    "pr": 66519,
+    "head": "7262d8c410c4dfdab91dcade1ce5a8d263add554",
+    "baseTip": "7827aa37f475f0f0756188c3daddf55af85fb2a8",
+    "mergeBase": "c31cb17a6dc348ba66a731902922ae5bc796d2a9",
+    "diffSha256": "46a9f1f7870f7dc342dc8e0a588607f2efbcf3b8f4ce50e2886710e31cc34160",
+    "rubrics": [
+      "The added MVC-hosted test does not check the generated minimal API request-delegate path for the required JSON property 400 problem-details behavior. Do not require naming a test fixture or proposing a fix."
+    ]
+  },
+  {
+    "id": "case-19",
+    "pr": 64457,
+    "head": "9df9b1e4f2bf39ed7933aad0cfbc27614709b089",
+    "baseTip": "e21db218505fe866a909a92b64398df911acbfca",
+    "mergeBase": "3979cca72929d1330613a96951b6483032b56778",
+    "diffSha256": "6898d4912cba5714bc7d8e93efd5445fca9376fb35f1811c3617606fd3805596",
+    "rubrics": [
+      "At Operation.ValueHolder.GetHashCode, identify that a present JSON null can leave `ShouldSerializeValue` true but `Value` null. The current branch dereferences it and can throw when an otherwise valid operation is hashed. A correct catch distinguishes presence from the value itself and uses a null-safe hash contribution."
+    ]
+  },
+  {
+    "id": "case-20",
+    "pr": 67821,
+    "head": "d541c8c76ef1defcf89d29198d70f49d924bbb00",
+    "baseTip": "512f3138e56bb3d51d35c6dafbb305e198e8de47",
+    "mergeBase": "1d6552f3a0860eeadf9463c30595d877c9c75ed6",
+    "diffSha256": "22890042de6565276dc314be3e3a338dea913af04d28f26a15e87b14d6ae8097",
+    "rubrics": [
+      "At InvocationOperationExtensions.ResolveMethodFromType, identify that the zero-parameter exception includes custom delegate types, not only Func/Action. The emitted handler cast targets the reconstructed standard delegate, so a custom delegate object with that signature can fail at runtime. A correct catch asks to retain fallback for unfamiliar delegate types or emit the real type."
+    ]
+  },
+  {
+    "id": "case-21",
+    "pr": 68341,
+    "head": "c21892ee5e9a881d397ee7fccf5c9cf8deaa8091",
+    "baseTip": "c0c8774eea3543c610ab4b6d78921c2c5d11d1b5",
+    "mergeBase": "5c9be5bed95190ab5affbd0b2a21533b8aad5f9c",
+    "diffSha256": "63c4e028d4f4db9cdbc52f037a4afb10c89842887783b2dfeaa5a7710871d072",
+    "rubrics": [
+      "At the ANCM_TESTING conditional in CommonLibTests/filewatcher_tests.cpp, identify that the repository's normal build never defines the macro. Both exact-match and prefix-match tests therefore skip without invoking the code or checking detection. A correct catch requires test setup that runs in the configured native test project so changes to matching behavior can fail the test."
+    ]
+  },
+  {
+    "id": "case-22",
+    "pr": 69834,
+    "head": "a25c1ffd86333bbe38bd6a09c3ec86db4040f8b1",
+    "baseTip": "1e4a69d0aba443940f4d28dae1f8dec8a7f6310f",
+    "mergeBase": "77e4202bed594e8c1063e697b289221e57858bd5",
+    "diffSha256": "2fed612696639d93218b52bc2f32302cd8c01d0aefe7f4430e9abc3a3149ccd9",
+    "rubrics": [
+      "At GetUnionCaseMetadata in ValidationVisitor.cs, identify that a valid IModelMetadataProvider decorator does not satisfy the concrete provider check, so a union Value property is validated as plain metadata for the active type. Property validators, for example MaxLength on a string case, are dropped and an overlong input can pass. A correct catch preserves property metadata through the decorator fallback."
+    ]
+  },
+  {
+    "id": "case-23",
+    "pr": 69702,
+    "head": "8e185ff71ba1def37438decf8f5b25b7f5239b0c",
+    "baseTip": "8192456de81ed6bbc6e484404069f59907bd0d6f",
+    "mergeBase": "851622243f8aad5d72636142ec2414be966c2449",
+    "diffSha256": "50ef44f480b9410375308e3d417f8c88302675ad2ce0046a56dd0150e7369a63",
+    "rubrics": []
+  },
+  {
+    "id": "case-24",
+    "pr": 66977,
+    "head": "f0c3925bfac640ce63510684ca4a387472221231",
+    "baseTip": "33c8c07335049ba0dc7fd403c291033fe42ba87d",
+    "mergeBase": "27a6a87368d65f679665f05d6df43021fc1f3190",
+    "diffSha256": "a0e943e9f2d41d96ff602e7754f1fc82f88a5242e8a3da6158a00355790a2521",
+    "rubrics": [
+      "A test-only override is present in shipped code. Credit the same override in QuickGrid.razor.cs or Paginator.razor.cs (line 22 at head f0c3925b)."
+    ]
+  },
+  {
+    "id": "case-25",
+    "pr": 67934,
+    "head": "1206ec0da883e4f69e8247ed54f6a358d2d359cc",
+    "baseTip": "31b471d8a144abc2d681adcb44f123a9187d2c3c",
+    "mergeBase": "31b471d8a144abc2d681adcb44f123a9187d2c3c",
+    "diffSha256": "0404146b30edc88108e2f7d4cc103dc0ad4789c4b4274d217e77b4d39cf08e1d",
+    "rubrics": [
+      "At the IntersectionObserver spacer predicate in Virtualize.ts, identify that the before and after spacers use different eligibility checks: an intersecting zero-height top spacer can cause needless top-side render/callback work when nothing above is virtualized. A correct catch calls for the same nonzero spacer-height precondition on both sides, not symmetry as a style preference."
+    ],
+    "exploratory": true
+  },
+  {
+    "id": "case-26",
+    "pr": 68613,
+    "head": "9515c4c0ff7901b6c442497c93113982ecdf68e5",
+    "baseTip": "a3f9cbd575c8fdff6c4c6b1c79982fb11a38c604",
+    "mergeBase": "a019c0b84e9d073f819aebf3cdbb5942e6bb521a",
+    "diffSha256": "01cb32998940e44f72ffb3a1a4bb9d115786a59556e942ae994ed90ca53db12d",
+    "rubrics": [
+      "At the final empty-builder check in ParsedPath.ParsePath, flag that `/` is a valid one-segment JSON Pointer naming an empty property key, unlike `\"\"`, which names the root. The current loop leaves its builder empty for `/` and throws. A correct catch preserves the distinction rather than aliasing both inputs to the root."
+    ]
+  },
+  {
+    "id": "case-27",
+    "pr": 67674,
+    "head": "7e28097b0d2ea463cea49101c409f903120a2d01",
+    "baseTip": "3e156e1a749f70ffcd40f5841112505b87808372",
+    "mergeBase": "ce86c1affb2f6cdb9006d70eb296a9b3ead33f1c",
+    "diffSha256": "b80928bece7e89e43babe293ab16bade806a7cc8b85995b62b38f5cb667de6e9",
+    "rubrics": [
+      "At the boundary assertions in QuickGridNoInteractivityTest.cs, identify that the static SSR pager test does not enforce each of the four links retaining an href at both ends. The existing first-page assertions only check first/previous href, so missing next/last href can escape those assertions; the opposite boundary needs the symmetric check. A correct catch names the link-presence contract, not just extraction of a reusable assertion helper."
+    ],
+    "exploratory": true
+  },
+  {
+    "id": "case-28",
+    "pr": 67690,
+    "head": "9bf65a3906ea754749ab9d8895aa0631f7d4b437",
+    "baseTip": "c4d061a54c669a55ca9aa18982b416e9d3ff4d2b",
+    "mergeBase": "c4d061a54c669a55ca9aa18982b416e9d3ff4d2b",
+    "diffSha256": "d7a796053b15954f2a63c4ad14d2bc8f7c4281a19a5c0cfe3464c9a3db5ea96e",
+    "rubrics": []
+  },
+  {
+    "id": "case-29",
+    "pr": 68321,
+    "head": "5d78dd9eed2b7aa60ee23755c8dedfa8ed365ccf",
+    "baseTip": "933baa08e981a68c9c87aa709b860284cbfbf269",
+    "mergeBase": "0ae3b028b124d49f9239945aa9336b313fdd4515",
+    "diffSha256": "f833bc7e1f9401aacce892c10e47be20502915ad845a20053a1557bfe2fb00e6",
+    "rubrics": [
+      "At QPackDecoder.ThrowIfInvalidStaticIndex, identify that a QPACK static-table bounds error uses an HPACK diagnostic that incorrectly implies a dynamic-table lookup. A correct catch ties the resource to the actual static-only branch and asks for a QPACK-specific error, rather than merely renaming an identifier."
+    ]
+  },
+  {
+    "id": "case-30",
+    "pr": 66528,
+    "head": "3a8ea046c34ff7a8a988bcbf6f507f39ddc89945",
+    "baseTip": "05434a9e554a75c887f204d08849fba337488dc3",
+    "mergeBase": "8a687407a378a981dc1d7a4694d42ec8a735bdd6",
+    "diffSha256": "242b9762e7a3d8e9812e70659bdeccbfac367b9019d691fcbbc0b972eec20b33",
+    "rubrics": [
+      "At RenderFragmentSerializer.Serialize, identify that the prerendered interactive component can already execute its original RenderFragment when rendering child content. Descriptor generation invokes the original delegate again, so application side effects can run twice and stateful content can differ between prerendered HTML and hydration data. A correct catch proposes capturing the first execution's render-tree frames rather than rerunning the fragment."
+    ]
+  },
+  {
+    "id": "case-31",
+    "pr": 67742,
+    "head": "ac8db8f74a69364902132fd57f7b99fa67f6318f",
+    "baseTip": "5a09c126653d5bd295262f2ca96c9388b854cb24",
+    "mergeBase": "d516a8d1efd70e1f6b0dd023407b100622adc16e",
+    "diffSha256": "c1274356a231160097f18525f265b17f6c282e015d091aaed098ff20f98f4ef2",
+    "rubrics": []
+  },
+  {
+    "id": "case-32",
+    "pr": 68670,
+    "head": "14eac6197adb9f2f0a785c1320fde05004f694b1",
+    "baseTip": "801d77ee2ade7a2cab74ea389aeba6bf6c5f32e5",
+    "mergeBase": "801d77ee2ade7a2cab74ea389aeba6bf6c5f32e5",
+    "diffSha256": "bdccb87488c324b252bb28b43ae0bfa9a0d4c86ab987e38e70d3476559e48915",
+    "rubrics": []
+  },
+  {
+    "id": "case-33",
+    "pr": 67249,
+    "head": "f3dcba8354a4379eff270d5fa7dc86a11a2ddd21",
+    "baseTip": "e65aaa9c148ae0c12b0619521ea9dd3551520c92",
+    "mergeBase": "7393d18ac4669f183c92abf731580a510f7cc543",
+    "diffSha256": "520c38e71a50603c3d160eb798f4096da17da5096b46872274549296b07464f6",
+    "rubrics": [
+      "Routing is tied to the concrete sealed ShortCircuitAttribute; consumers need a metadata interface. Do not require calling the interface approved."
+    ]
+  },
+  {
+    "id": "case-34",
+    "pr": 64539,
+    "head": "fe4023adf712fb1ec039003032e9ebabf6017fb7",
+    "baseTip": "07dc86add64091ac7805d98e90c3fa27845c21fa",
+    "mergeBase": "0d1029654a05e1685eea0b7689b42ca07b2af201",
+    "diffSha256": "86d275191dd739fc43c20b04da1e793e937fb3007fd32765cfb08b0d1cf9e030",
+    "rubrics": [
+      "At the binding-failure condition in RequestDelegateFactory, identify that a no-op filter factory can leave the actual pipeline null, while a handler's own ValueTask<object?> makes the return-type heuristic true. A failed parameter bind can therefore execute the user handler and write its result despite the 400 status. A correct catch tests actual pipeline construction rather than registration count and return shape."
+    ]
+  },
+  {
+    "id": "case-35",
+    "pr": 63144,
+    "head": "3235ee4d61916253ecf72274e03291ebc1814ee5",
+    "baseTip": "7f4b60cf7782bd8e1e55e9a1c0fe33396285002e",
+    "mergeBase": "31fc9ba8e5668ca299c42f3a1cead7201c7cee39",
+    "diffSha256": "373facaa49e56f324fc0ce0aefe1915a126e9719d525ca87bb19031d6d60a032",
+    "rubrics": [
+      "At CultureStateProvider.ApplyStoredCulture, identify that a nonempty culture persisted by the server can be unsupported on the WebAssembly client. The unguarded GetCultureInfo invocation then raises CultureNotFoundException during hydration rather than retaining the client's defaults. A correct catch distinguishes client/server globalization data and handles the unsupported culture gracefully."
+    ]
+  },
+  {
+    "id": "case-36",
+    "pr": 67573,
+    "head": "586149e7a1122b379b22015cde2a1bcb27cea110",
+    "baseTip": "8ef91a5c3b5164046c9b21ed3cc21ff03219aafb",
+    "mergeBase": "c9bdc09d4e5650b6caf696e0281607f6deb2908a",
+    "diffSha256": "2f0be6a8f4c6ba74325c561b748331ed1f96dcbe8aa46eb1631735f46d35e674",
+    "rubrics": [
+      "At OpenApiSchemaService.ParseReferenceToken, flag that the code applies JSON Pointer `~1`/`~0` decoding before URI percent-decoding. A percent-encoded tilde such as `%7E1` consequently produces `~1` rather than `/`, so the reference lookup uses the wrong property token. A correct catch requires URI decoding first, then JSON Pointer escape decoding."
+    ]
+  }
+]
