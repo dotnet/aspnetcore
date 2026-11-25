@@ -23,6 +23,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.ApiExplorer;
 using Microsoft.AspNetCore.Mvc.Infrastructure;
 using Microsoft.AspNetCore.Mvc.ModelBinding;
+using Microsoft.AspNetCore.Mvc.ModelBinding.Metadata;
 using Microsoft.AspNetCore.Routing;
 using Microsoft.AspNetCore.WebUtilities;
 using Microsoft.Extensions.DependencyInjection;
@@ -664,18 +665,34 @@ internal sealed class OpenApiDocumentService(
             return false;
         }
 
+        var containerMetadata = metadata.ContainerMetadata;
+        // ApiExplorer describes record properties, but MVC binds and validates their matching
+        // constructor parameters. In particular, inferred [Required] respects parameter defaults.
+        metadata = containerMetadata?.BoundConstructor?.BoundConstructorParameters?.FirstOrDefault(
+            candidate => candidate.ParameterName == metadata.PropertyName && candidate.ModelType == metadata.ModelType) ?? metadata;
+
+        // Only promote requirements for fields MVC can bind. Validation of an unbindable
+        // property's initialized value does not imply that a client must supply that field.
+        var canBind = metadata.IsBindingAllowed &&
+            containerMetadata?.PropertyFilterProvider?.PropertyFilter(metadata) != false &&
+            parameter.BindingInfo?.PropertyFilterProvider?.PropertyFilter(metadata) != false &&
+            // Constructor parameters are not subject to the property's read-only restriction.
+            // MVC can update read-only mutable references, but not values, strings, or arrays.
+            (metadata.MetadataKind != ModelMetadataKind.Property ||
+                !metadata.IsReadOnly || (!metadata.ModelType.IsValueType &&
+                    metadata.ModelType != typeof(string) && !metadata.ModelType.IsArray));
+        if (!canBind)
+        {
+            return false;
+        }
+
         // [Required] validates the resulting value, not whether it was supplied. A non-nullable
         // value type already has a valid default; [BindRequired] still requires binding it.
-        var bindingRequired = description.IsRequired && metadata.IsBindingAllowed &&
-            metadata.ContainerMetadata?.PropertyFilterProvider?.PropertyFilter(metadata) != false &&
-            parameter.BindingInfo?.PropertyFilterProvider?.PropertyFilter(metadata) != false &&
-            // MVC can update read-only mutable references, but not values, strings, or arrays.
-            (!metadata.IsReadOnly || (!metadata.ModelType.IsValueType &&
-                metadata.ModelType != typeof(string) && !metadata.ModelType.IsArray));
+        var bindingRequired = metadata.IsBindingRequired;
 
         // Validation filters can depend on the bound model and its parent. Without those values,
         // a validation requirement is conditional, even if RequiredAttribute is in the metadata.
-        return bindingRequired || (metadata.ContainerMetadata?.ValidateChildren != false &&
+        return bindingRequired || (containerMetadata?.ValidateChildren != false &&
             metadata.PropertyValidationFilter is null &&
             metadata.IsReferenceOrNullableType && metadata.ValidatorMetadata.OfType<RequiredAttribute>().Any());
     }

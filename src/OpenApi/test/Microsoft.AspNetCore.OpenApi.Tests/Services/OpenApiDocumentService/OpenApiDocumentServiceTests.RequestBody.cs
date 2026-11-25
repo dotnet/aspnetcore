@@ -1023,6 +1023,112 @@ public partial class OpenApiDocumentServiceTests : OpenApiDocumentServiceTestBas
     }
 #nullable restore
 
+    [Theory]
+    [InlineData(nameof(ActionWithDefaultRecord), "")]
+    [InlineData(nameof(ActionWithRequiredRecord), "Id,Name")]
+    [InlineData(nameof(ActionWithExplicitDefaultRecord), "Name")]
+    [InlineData(nameof(ActionWithInitializedUnbindableForm), "")]
+    [InlineData(nameof(ActionWithNullReadOnlyForm), "")]
+    [InlineData(nameof(ActionWithInitForm), "Name")]
+    [InlineData(nameof(ActionWithFilteredRecord), "")]
+    [InlineData(nameof(ActionWithGetOnlyRecord), "Name")]
+    [InlineData(nameof(ActionWithNeverRecord), "")]
+    public async Task GetOpenApiRequestBody_UsesBindableEffectiveMetadata_MvcAction(string actionName, string expected)
+    {
+        // Exercise both the direct object and allOf layouts, and both advertised form media types.
+        foreach (var withAdditionalParameter in new[] { false, true })
+        {
+            await VerifyEffectiveFormRequirements(actionName, withAdditionalParameter, expected);
+        }
+    }
+
+    [Consumes("application/x-www-form-urlencoded", "multipart/form-data")]
+    [HttpPost("/record-default")]
+    private void ActionWithDefaultRecord([FromForm] DefaultRecord model, [FromForm] string additional) { }
+
+    [Consumes("application/x-www-form-urlencoded", "multipart/form-data")]
+    [HttpPost("/record-required")]
+    private void ActionWithRequiredRecord([FromForm] RequiredRecord model, [FromForm] string additional) { }
+
+    [Consumes("application/x-www-form-urlencoded", "multipart/form-data")]
+    [HttpPost("/record-explicit-default")]
+    private void ActionWithExplicitDefaultRecord([FromForm] ExplicitDefaultRecord model, [FromForm] string additional) { }
+
+    [Consumes("application/x-www-form-urlencoded", "multipart/form-data")]
+    [HttpPost("/initialized-unbindable")]
+    private void ActionWithInitializedUnbindableForm([FromForm] InitializedUnbindableForm model, [FromForm] string additional) { }
+
+    [Consumes("application/x-www-form-urlencoded", "multipart/form-data")]
+    [HttpPost("/null-readonly")]
+    private void ActionWithNullReadOnlyForm([FromForm] NullReadOnlyForm model, [FromForm] string additional) { }
+
+    [Consumes("application/x-www-form-urlencoded", "multipart/form-data")]
+    [HttpPost("/init-form")]
+    private void ActionWithInitForm([FromForm] InitForm model, [FromForm] string additional) { }
+
+    [Consumes("application/x-www-form-urlencoded", "multipart/form-data")]
+    [HttpPost("/filtered-record")]
+    private void ActionWithFilteredRecord([FromForm, Bind("File")] RequiredRecord model, [FromForm] string additional) { }
+
+    [Consumes("application/x-www-form-urlencoded", "multipart/form-data")]
+    [HttpPost("/getonly-record")]
+    private void ActionWithGetOnlyRecord([FromForm] GetOnlyRecord model, [FromForm] string additional) { }
+
+    [Consumes("application/x-www-form-urlencoded", "multipart/form-data")]
+    [HttpPost("/never-record")]
+    private void ActionWithNeverRecord([FromForm] NeverRecord model, [FromForm] string additional) { }
+
+#nullable enable
+    private record GetOnlyRecord([Required] string? Name)
+    {
+        public string? Name { get; } = Name;
+        public IFormFile? File { get; init; }
+    }
+
+    private record NeverRecord([BindNever] string? Name = "default")
+    {
+        public IFormFile? File { get; init; }
+    }
+
+    private record DefaultRecord(string Name = "default")
+    {
+        public IFormFile? File { get; init; }
+    }
+
+    private record RequiredRecord([BindRequired] int Id, [Required] string? Name)
+    {
+        public IFormFile? File { get; init; }
+    }
+
+    private record ExplicitDefaultRecord([Required] string Name = "default")
+    {
+        public IFormFile? File { get; init; }
+    }
+
+    private class InitializedUnbindableForm
+    {
+        public IFormFile? File { get; set; }
+        [Required]
+        public string ReadOnly { get; } = "default";
+        [BindNever, Required]
+        public string Name { get; set; } = "default";
+    }
+
+    private class NullReadOnlyForm
+    {
+        public IFormFile? File { get; set; }
+        [Required]
+        public string? Name { get; }
+    }
+
+    private class InitForm
+    {
+        public IFormFile? File { get; init; }
+        [Required]
+        public string? Name { get; init; }
+    }
+#nullable restore
+
     private async Task VerifyEffectiveFormRequirements(string actionName, bool withAdditionalParameter, string expected)
     {
         var action = CreateActionDescriptor(actionName);
@@ -1043,7 +1149,7 @@ public partial class OpenApiDocumentServiceTests : OpenApiDocumentServiceTestBas
                     modelSchema.Properties.Keys.Order(StringComparer.Ordinal));
                 Assert.Same(operation.RequestBody.Content["application/x-www-form-urlencoded"].Schema,
                     operation.RequestBody.Content["multipart/form-data"].Schema);
-                Assert.Equal(expected.Length == 0 ? Array.Empty<string>() : new[] { expected },
+                Assert.Equal(expected.Length == 0 ? Array.Empty<string>() : expected.Split(','),
                     (modelSchema.Required ?? new HashSet<string>()).Order(StringComparer.Ordinal));
             }
         });
