@@ -54,7 +54,7 @@ internal class CollectionConverter<TCollection, TCollectionPolicy, TBuffer, TEle
         ref FormDataReader context,
         Type type,
         FormDataMapperOptions options,
-        out TCollection? result,
+        [NotNullWhen(true)] out TCollection? result,
         out bool found)
     {
         TElement currentElement;
