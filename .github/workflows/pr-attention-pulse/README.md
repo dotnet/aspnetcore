@@ -12,6 +12,10 @@ Actions API access, by reading that embedded block directly. The snapshot is
 find only displayed candidates; no matching row does not establish that no
 matching PR exists.
 
+Successful scheduled and manually dispatched publications replace the issue
+body, so manual edits are temporary. Failed publication attempts leave the last
+accepted report in place.
+
 The existing `pulse-publication-evidence` Actions artifact still contains
 exactly:
 
@@ -83,7 +87,7 @@ nonzero inventory out of the display.
 | `filter` | `name`, `description`, `coverage`, `selection`, `allRepositoryPullRequests`; the resolved scope, not a request to run another query. |
 | `census` | `openPullRequests`, `matched`, `labelOnly`, `pathOnly`, `labelAndPath`, `incidentalPathExcluded`, `unresolvedMergeable`, and `byBucket`. |
 | `caps` | `reviewNow`, `reviewNowPerAuthor`, `needsRescue`, `readyToMerge`: configured display limits, not promised row counts. |
-| `overflow` | `reviewNow`, `needsRescue`, `readyToMerge`: legacy inventory-minus-displayed counts for those buckets. They can include verification-needed, unassessed, or excluded candidates; they are not another list of PRs. |
+| `overflow` | `reviewNow`, `needsRescue`, `readyToMerge`: legacy source counts derived from the producer's `shownInDigest` selection. They are preserved for compatibility and can differ from the final Pulse main lists after discussion or compatibility projection. |
 | `discussion` | `candidateLimit`, `assessedCandidateCount`, `verificationNeededCount`, `unassessedReviewNowCount`: bounded review-candidate assessment coverage. |
 | `mergeDiscussion` | Independent merge assessment `candidateLimit`, `assessedCandidateCount`, `eligibleCount`, `verificationNeededCount`, `unassessedCandidateCount`, `excludedCandidateCount`, and display `verificationLimit`. |
 | `warnings` | Ordered display strings describing limitations; keep them visible rather than replacing them with a success indicator. |
@@ -99,6 +103,12 @@ together account for the prospective merge inventory.
 The snapshot omits the producer's full `items` universe, raw discussion text,
 community/personal inboxes, and other nonprojected data. Census, overflow, and
 caps do not make the omitted PR records recoverable.
+
+The human-facing Review now, Needs rescue, and Ready to merge sections compute
+their "Inventory candidates not shown in this list" counts from each inventory
+census minus the final displayed rows. Those counts can include
+verification-needed, unassessed, or excluded candidates; they are not a claim
+that every omitted candidate is actionable.
 
 ### Views, ranks, and items
 

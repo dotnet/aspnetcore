@@ -1,4 +1,5 @@
 ---
+runs-on: ubuntu-26.04
 if: ${{ github.event.repository.fork == false }}
 
 on:
@@ -575,7 +576,8 @@ safe-outputs:
     pull-requests: true
     discussions: false
   threat-detection:
-    model: gpt-5.6-sol
+    runs-on: ubuntu-26.04
+    model: gpt-6.2-sol
     max-ai-credits: 200
     max-turns: 20
     engine-timeout: 10m
@@ -969,7 +971,7 @@ imports:
       environment: copilot-pat-pool
 
 environment: copilot-pat-pool
-model: gpt-5.6-sol
+model: gpt-6.2-sol
 engine:
   id: copilot
   # Pin the CLI, not the model: automatic selection of 1.0.83 breaks tool discovery with
@@ -1018,7 +1020,7 @@ reading, searching, and skill loading. Any post-gate candidate verification must
 the native `review-candidate-verifier` profile, whose explicit tool list exposes only
 reading and searching. Workers are source-only and must not receive
 coordinator-only inputs.
-Use `gpt-5.6-sol` as the explicit hosted worker model, with no Anthropic model or automatic substitution.
+Use `gpt-6.2-sol` as the explicit hosted worker model, with no Anthropic model or automatic substitution.
 After launching workers, stay in your turn and collect each worker's report with `read_agent`
 using `wait: true` rather than ending your response to wait for a notification.
 Address `write_agent` clarifications with explicit `agent_id` or `agent_ids`, not `scope`,
