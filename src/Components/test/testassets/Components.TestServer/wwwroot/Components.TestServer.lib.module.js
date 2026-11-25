@@ -1,3 +1,17 @@
+let blazor;
+
+export function afterServerStarted(instance) {
+    blazor = instance;
+}
+
+export function forceCloseConnection() {
+    if (!blazor) {
+        throw new Error('The Blazor Server initializer has not run.');
+    }
+
+    return blazor._internal.forceCloseConnection();
+}
+
 export function beforeWebAssemblyStart() {
     appendElement('server--classic-and-modern-before-web-assembly-start', 'Server project Classic and modern "beforeWebAssemblyStart"');
 }

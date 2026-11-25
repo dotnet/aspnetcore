@@ -17,7 +17,7 @@
 
     <ServerApp @rendermode="@RenderMode.InteractiveServer" />
 
-    <script src="@Assets["_framework/blazor.web.js"]" autostart="false"></script>
+    <script src="@Assets[UseBlazorServerJs ? "_framework/blazor.server.js" : "_framework/blazor.web.js"]" autostart="false"></script>
     <script>
         const suppressEnhancedNavigation = sessionStorage.getItem('suppress-enhanced-navigation') === 'true';
 
@@ -94,6 +94,7 @@
 </html>
 
 @code {
+    [SupplyParameterFromQuery(Name = "use-blazor-server-js")] public bool UseBlazorServerJs { get; set; }
     [SupplyParameterFromQuery(Name = "custom-reconnect-ui")] public bool CustomReconnectUI { get; set; }
     [SupplyParameterFromQuery(Name = "auto-pause")] public bool AutoPause { get; set; }
     [SupplyParameterFromQuery(Name = "auto-pause-delay-ms")] public int AutoPauseDelayMs { get; set; }
