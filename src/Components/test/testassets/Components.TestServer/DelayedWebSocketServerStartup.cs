@@ -30,9 +30,11 @@ public sealed class DelayedWebSocketServerStartup(IConfiguration configuration)
                 endpoints.MapBlazorHub(options => options.Transports = HttpTransportType.WebSockets)
                     .AddEndpointFilter(async (context, next) =>
                     {
-                        var feature = context.HttpContext.Features.Get<IHttpWebSocketFeature>()!;
-                        context.HttpContext.Features.Set<IHttpWebSocketFeature>(new DelayedSocketFeature(feature, this));
-                        return await next(context);
+                        if (context.HttpContext.WebSockets.IsWebSocketRequest)
+                        {
+                            var feature = context.HttpContext.Features.Get<IHttpWebSocketFeature>()!;
+                            context.HttpContext.Features.Set<IHttpWebSocketFeature>(new DelayedSocketFeature(feature, this));
+                        }
                     });
                 endpoints.MapFallbackToPage("/_ServerHost");
             });
