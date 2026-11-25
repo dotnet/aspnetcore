@@ -156,6 +156,7 @@ raised again.
    The maintainer's statement is the ruling. An agent collects the quote
    and a person spot-checks it. Add one rule after two misses of the same
    kind on different PRs, or one explicitly wrong claim.
+   When a case leads to a rule, relabel it `added for a rule`; it no longer counts toward the fresh group.
 2. Admit a case only after verifying the maintainer's claim on the exact
    reviewed head and checking that it concerns changed code. Pin that head,
    the base tip, merge base, and diff digest. For a missed bug, pin the fix
