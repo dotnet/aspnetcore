@@ -851,6 +851,74 @@ public class ParameterListWithReadOnlyProperties
     public int PrivateSetValue { get; private set;  }
 }
 
+public class ParameterListBaseClass
+{
+    public int BaseValue { get; set; }
+}
+
+public class ParameterListWithBaseClass : ParameterListBaseClass
+{
+    public int Value { get; set; }
+}
+
+public class ParameterListWithGrandparentClass : ParameterListWithBaseClass
+{
+    public int DerivedValue { get; set; }
+}
+
+public class ParameterListHiddenPropertiesBase
+{
+    public int HiddenValue { get; set; }
+
+    public virtual int OverriddenValue { get; set; }
+}
+
+public class ParameterListWithHiddenProperties : ParameterListHiddenPropertiesBase
+{
+    [FromQuery(Name = "derivedHiddenValue")]
+    public new int HiddenValue { get; set; }
+
+    public override int OverriddenValue { get; set; }
+}
+
+public class ParameterListReadOnlyPropertiesBase
+{
+    public ParameterListReadOnlyPropertiesBase()
+    {
+        ReadOnlyValue = 1;
+        PrivateSetValue = 2;
+        ProtectedSetValue = 3;
+    }
+
+    public int ReadOnlyValue { get; }
+
+    public int PrivateSetValue { get; private set; }
+
+    public int ProtectedSetValue { get; protected set; }
+}
+
+public class ParameterListWithInheritedReadOnlyProperties : ParameterListReadOnlyPropertiesBase
+{
+    public int Value { get; set; }
+}
+
+public class ParameterListBindingAttributesBase
+{
+    [FromQuery(Name = "customQuery")]
+    public int QueryValue { get; set; }
+
+    [FromHeader(Name = "X-Custom-Header")]
+    public int HeaderValue { get; set; }
+}
+
+public class ParameterListWithInheritedBindingAttributes : ParameterListBindingAttributesBase
+{
+    public int Value { get; set; }
+}
+
+public record ParameterListRecordBase(int BaseValue);
+public record ParameterListRecordWithBaseRecord(int BaseValue, int Value) : ParameterListRecordBase(BaseValue);
+
 public record struct SampleParameterList(int Foo);
 public record struct AdditionalSampleParameterList(int Bar);
 

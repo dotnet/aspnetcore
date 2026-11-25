@@ -477,8 +477,10 @@ internal class EndpointParameter
         var numOfConstructors = constructors.Count();
         // When leveraging parameterless constructors, we want to ensure we only emit for writable
         // properties. We do not have this constraint if we are leveraging a parameterized constructor.
-        var properties = type.GetMembers().OfType<IPropertySymbol>().Where(property => property.DeclaredAccessibility == Accessibility.Public);
-        var writableProperties = properties.Where(property => !property.IsReadOnly);
+        var properties = GetPublicProperties(type);
+        // The generated code is outside of the type hierarchy, so it cannot call a private or protected setter.
+        var writableProperties = properties.Where(property => !property.IsReadOnly
+            && property.SetMethod?.DeclaredAccessibility is not (Accessibility.Private or Accessibility.Protected or Accessibility.ProtectedAndInternal));
 
         if (numOfConstructors == 1)
         {
@@ -533,6 +535,35 @@ internal class EndpointParameter
 
         endpoint.Diagnostics.Add(Diagnostic.Create(DiagnosticDescriptors.InvalidAsParametersNoConstructorFound, location, parameterTypeString));
         return false;
+    }
+
+    // Matches the Type.GetProperties() call in RequestDelegateFactory: public properties declared on the type or
+    // inherited from a base type. When a more derived type overrides or hides a property, the most derived one wins.
+    private static IEnumerable<IPropertySymbol> GetPublicProperties(INamedTypeSymbol type)
+    {
+        var seenPropertyNames = new HashSet<string>(StringComparer.Ordinal);
+        foreach (var currentType in type.GetThisAndBaseTypes())
+        {
+            if (currentType.SpecialType == SpecialType.System_Object)
+            {
+                break;
+            }
+
+            var isBaseType = !SymbolEqualityComparer.Default.Equals(currentType, type);
+            foreach (var property in currentType.GetMembers().OfType<IPropertySymbol>())
+            {
+                // Reflection does not return static or private properties that a base type declares.
+                if (isBaseType && (property.IsStatic || property.DeclaredAccessibility == Accessibility.Private))
+                {
+                    continue;
+                }
+
+                if (seenPropertyNames.Add(property.Name) && property.DeclaredAccessibility == Accessibility.Public)
+                {
+                    yield return property;
+                }
+            }
+        }
     }
 
     // Lifted from:

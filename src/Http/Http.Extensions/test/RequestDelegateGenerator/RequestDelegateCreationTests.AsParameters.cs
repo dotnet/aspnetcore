@@ -312,6 +312,193 @@ app.MapGet("/{value}", TestAction);
     }
 
     [Fact]
+    public async Task RequestDelegatePopulatesFromParameterListWithPropertyFromBaseClass()
+    {
+        var source = """
+void TestAction(HttpContext context, [AsParameters] ParameterListWithBaseClass args)
+{
+    context.Items.Add("input", args);
+}
+app.MapGet("/", TestAction);
+""";
+        var (_, compilation) = await RunGeneratorAsync(source);
+        var endpoint = GetEndpointFromCompilation(compilation);
+
+        var httpContext = CreateHttpContext();
+        httpContext.Request.Query = new QueryCollection(new Dictionary<string, StringValues>()
+        {
+            [nameof(ParameterListWithBaseClass.BaseValue)] = "1",
+            [nameof(ParameterListWithBaseClass.Value)] = "2",
+        });
+
+        await endpoint.RequestDelegate(httpContext);
+
+        var input = Assert.IsType<ParameterListWithBaseClass>(httpContext.Items["input"]);
+        Assert.Equal(1, input.BaseValue);
+        Assert.Equal(2, input.Value);
+
+        var baseValueMetadata = Assert.Single(endpoint.Metadata.OfType<Microsoft.AspNetCore.Http.Metadata.IParameterBindingMetadata>(), p => p.Name == nameof(ParameterListWithBaseClass.BaseValue));
+        Assert.Equal(typeof(ParameterListBaseClass), baseValueMetadata.ParameterInfo.Member.DeclaringType);
+    }
+
+    [Fact]
+    public async Task RequestDelegatePopulatesFromParameterListWithPropertyFromGrandparentClass()
+    {
+        var source = """
+void TestAction(HttpContext context, [AsParameters] ParameterListWithGrandparentClass args)
+{
+    context.Items.Add("input", args);
+}
+app.MapGet("/", TestAction);
+""";
+        var (_, compilation) = await RunGeneratorAsync(source);
+        var endpoint = GetEndpointFromCompilation(compilation);
+
+        var httpContext = CreateHttpContext();
+        httpContext.Request.Query = new QueryCollection(new Dictionary<string, StringValues>()
+        {
+            [nameof(ParameterListWithGrandparentClass.BaseValue)] = "1",
+            [nameof(ParameterListWithGrandparentClass.Value)] = "2",
+            [nameof(ParameterListWithGrandparentClass.DerivedValue)] = "3",
+        });
+
+        await endpoint.RequestDelegate(httpContext);
+
+        var input = Assert.IsType<ParameterListWithGrandparentClass>(httpContext.Items["input"]);
+        Assert.Equal(1, input.BaseValue);
+        Assert.Equal(2, input.Value);
+        Assert.Equal(3, input.DerivedValue);
+
+        var baseValueMetadata = Assert.Single(endpoint.Metadata.OfType<Microsoft.AspNetCore.Http.Metadata.IParameterBindingMetadata>(), p => p.Name == nameof(ParameterListWithGrandparentClass.BaseValue));
+        Assert.Equal(typeof(ParameterListBaseClass), baseValueMetadata.ParameterInfo.Member.DeclaringType);
+    }
+
+    [Fact]
+    public async Task RequestDelegatePopulatesFromParameterListUsingMostDerivedHiddenAndOverriddenProperties()
+    {
+        var source = """
+void TestAction(HttpContext context, [AsParameters] ParameterListWithHiddenProperties args)
+{
+    context.Items.Add("input", args);
+}
+app.MapGet("/", TestAction);
+""";
+        var (_, compilation) = await RunGeneratorAsync(source);
+        var endpoint = GetEndpointFromCompilation(compilation);
+
+        var httpContext = CreateHttpContext();
+        httpContext.Request.Query = new QueryCollection(new Dictionary<string, StringValues>()
+        {
+            [nameof(ParameterListWithHiddenProperties.HiddenValue)] = "1",
+            ["derivedHiddenValue"] = "2",
+            [nameof(ParameterListWithHiddenProperties.OverriddenValue)] = "3",
+        });
+
+        await endpoint.RequestDelegate(httpContext);
+
+        var input = Assert.IsType<ParameterListWithHiddenProperties>(httpContext.Items["input"]);
+        Assert.Equal(2, input.HiddenValue);
+        Assert.Equal(0, ((ParameterListHiddenPropertiesBase)input).HiddenValue);
+        Assert.Equal(3, input.OverriddenValue);
+
+        var parameterBindingMetadata = endpoint.Metadata.OfType<Microsoft.AspNetCore.Http.Metadata.IParameterBindingMetadata>().ToArray();
+        var hiddenValueMetadata = Assert.Single(parameterBindingMetadata, p => p.Name == nameof(ParameterListWithHiddenProperties.HiddenValue));
+        Assert.Equal(typeof(ParameterListWithHiddenProperties), hiddenValueMetadata.ParameterInfo.Member.DeclaringType);
+        var overriddenValueMetadata = Assert.Single(parameterBindingMetadata, p => p.Name == nameof(ParameterListWithHiddenProperties.OverriddenValue));
+        Assert.Equal(typeof(ParameterListWithHiddenProperties), overriddenValueMetadata.ParameterInfo.Member.DeclaringType);
+    }
+
+    [Fact]
+    public async Task RequestDelegatePopulatesFromParameterListAndSkipInheritedReadOnlyProperties()
+    {
+        var source = """
+void TestAction(HttpContext context, [AsParameters] ParameterListWithInheritedReadOnlyProperties args)
+{
+    context.Items.Add("input", args);
+}
+app.MapGet("/", TestAction);
+""";
+        var (_, compilation) = await RunGeneratorAsync(source);
+        var endpoint = GetEndpointFromCompilation(compilation);
+
+        var httpContext = CreateHttpContext();
+        httpContext.Request.Query = new QueryCollection(new Dictionary<string, StringValues>()
+        {
+            [nameof(ParameterListWithInheritedReadOnlyProperties.Value)] = "42",
+            [nameof(ParameterListWithInheritedReadOnlyProperties.ReadOnlyValue)] = "42",
+            [nameof(ParameterListWithInheritedReadOnlyProperties.PrivateSetValue)] = "42",
+            [nameof(ParameterListWithInheritedReadOnlyProperties.ProtectedSetValue)] = "42",
+        });
+
+        await endpoint.RequestDelegate(httpContext);
+
+        var input = Assert.IsType<ParameterListWithInheritedReadOnlyProperties>(httpContext.Items["input"]);
+        Assert.Equal(42, input.Value);
+        Assert.Equal(1, input.ReadOnlyValue);
+        Assert.Equal(2, input.PrivateSetValue);
+        Assert.Equal(3, input.ProtectedSetValue);
+    }
+
+    [Fact]
+    public async Task RequestDelegatePopulatesFromParameterListWithInheritedBindingAttributes()
+    {
+        const string customHeaderName = "X-Custom-Header";
+
+        var source = """
+void TestAction(HttpContext context, [AsParameters] ParameterListWithInheritedBindingAttributes args)
+{
+    context.Items.Add("input", args);
+}
+app.MapGet("/", TestAction);
+""";
+        var (_, compilation) = await RunGeneratorAsync(source);
+        var endpoint = GetEndpointFromCompilation(compilation);
+
+        var httpContext = CreateHttpContext();
+        httpContext.Request.Query = new QueryCollection(new Dictionary<string, StringValues>()
+        {
+            ["customQuery"] = "1",
+            [nameof(ParameterListWithInheritedBindingAttributes.QueryValue)] = "10",
+            [nameof(ParameterListWithInheritedBindingAttributes.Value)] = "3",
+        });
+        httpContext.Request.Headers[customHeaderName] = "2";
+
+        await endpoint.RequestDelegate(httpContext);
+
+        var input = Assert.IsType<ParameterListWithInheritedBindingAttributes>(httpContext.Items["input"]);
+        Assert.Equal(1, input.QueryValue);
+        Assert.Equal(2, input.HeaderValue);
+        Assert.Equal(3, input.Value);
+    }
+
+    [Fact]
+    public async Task RequestDelegatePopulatesFromParameterListWithConstructorParameterMatchingInheritedProperty()
+    {
+        var source = """
+void TestAction(HttpContext context, [AsParameters] ParameterListRecordWithBaseRecord args)
+{
+    context.Items.Add("input", args);
+}
+app.MapGet("/", TestAction);
+""";
+        var (_, compilation) = await RunGeneratorAsync(source);
+        var endpoint = GetEndpointFromCompilation(compilation);
+
+        var httpContext = CreateHttpContext();
+        httpContext.Request.Query = new QueryCollection(new Dictionary<string, StringValues>()
+        {
+            [nameof(ParameterListRecordWithBaseRecord.BaseValue)] = "1",
+            [nameof(ParameterListRecordWithBaseRecord.Value)] = "2",
+        });
+
+        await endpoint.RequestDelegate(httpContext);
+
+        var input = Assert.IsType<ParameterListRecordWithBaseRecord>(httpContext.Items["input"]);
+        Assert.Equal(1, input.BaseValue);
+        Assert.Equal(2, input.Value);
+    }
+
+    [Fact]
     public async Task RequestDelegatePopulatesFromMultipleParameterLists()
     {
         const int foo = 1;
