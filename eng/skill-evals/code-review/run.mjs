@@ -189,7 +189,12 @@ function score(plan) {
     }
     console.log(`Recorded reviewer usage: ${reviewNanoAiu / 1e9} AI credits; judge usage: ${judgeNanoAiu === null ? "not recorded" : `${judgeNanoAiu / 1e9} AI credits`}`);
     if (summary.quickGate) {
-        console.log(`Quick gate: ${summary.quickGate.passed ? "passed" : "failed"} (${summary.quickGate.catches}/7 catches, ${summary.controlFindings}/${summary.quickGate.controlLimit} control findings)`);
+        const { passed, catches, pairedFindings, controlLimit, unpairedControls } = summary.quickGate;
+        console.log(`Quick gate: ${passed ? "passed" : "failed"} (${catches}/7 catches, ${pairedFindings}/${controlLimit} paired control findings)`);
+        for (const { id, baselineStatus, statuses, findings } of unpairedControls) {
+            const candidate = Object.entries(statuses).map(([status, count]) => `${status}: ${count}`).join(", ");
+            console.log(`Unpaired control ${id}: baseline ${baselineStatus}; candidate ${candidate}; ${findings} ordinary findings (not compared)`);
+        }
     }
     if (summary.unjudgedTrials.length) {
         console.error(`${summary.unjudgedTrials.length} trial(s) lack usable judge receipts; see summary.json`);

@@ -3,7 +3,7 @@ import assert from "node:assert/strict";
 const shaPattern = /^[a-f0-9]{40}$/;
 const digestPattern = /^[a-f0-9]{64}$/;
 const nonempty = value => typeof value === "string" && value.trim().length > 0;
-export const complete = trial => ["findings", "no-findings"].includes(trial.status);
+export const complete = trial => ["findings", "no-findings"].includes(trial?.status);
 
 export function reviewGroups(cases, baseline, selection) {
     const active = cases.filter(item => !item.excluded);
@@ -25,8 +25,8 @@ export function reviewGroups(cases, baseline, selection) {
             "Replay requires one active must-find case");
         return [{ name: "code-review-replay", runs: 3, ids: [selection[1]] }];
     }
-    assert.ok(selection.length >= 1 && selection.length <= 15 && new Set(selection).size === selection.length,
-        "Select distinct case IDs, or explicitly opt in with --quick or --full");
+    assert.ok(selection.length >= 1 && selection.length <= 20 && new Set(selection).size === selection.length,
+        "Select up to 20 distinct case IDs, or explicitly opt in with --quick or --full");
     for (const id of selection) {
         assert.ok(active.some(item => item.id === id), `Unknown or excluded case: ${id}`);
     }
@@ -156,15 +156,27 @@ export function scoreTrials(cases, baseline, trials, receipts, quick) {
         [label, [...scores.values()].filter(score => score.label === label)]));
     const controls = [...scores.values()].filter(score => score.kind !== "must-find");
     const controlFindings = controls.reduce((sum, score) => sum + score.findings, 0);
-    const controlLimit = Object.values(baseline.controls).reduce((sum, item) => sum + item.findings.length, 1);
     const mustNotRaisePassed = controls.every(score => score.forbidden === 0);
-    const controlsComplete = trials.filter(trial => !byId.get(trial.caseId).rubrics.length).every(complete);
+    const incompleteControls = new Set(trials.filter(trial => !byId.get(trial.caseId).rubrics.length && !complete(trial))
+        .map(trial => trial.caseId));
+    const controlsComplete = incompleteControls.size === 0;
     const result = { groups, controlFindings, newControlFindings, mustNotRaisePassed, controlsComplete, unjudgedTrials };
     if (quick) {
         const catches = [...scores.values()].filter(score => score.caught > 0).length;
-        result.quickGate = { catches, controlLimit, passed: catches >= 6 && controlFindings <= controlLimit &&
-            controlsComplete && mustNotRaisePassed && unjudgedTrials.length === 0,
-            noNewControlFindings: controlsComplete && unjudgedTrials.length === 0 && newControlFindings.length === 0 };
+        const historicallyComplete = controls.filter(score => complete(baseline.controls[score.id]));
+        const paired = historicallyComplete.filter(score => !incompleteControls.has(score.id) && !score.unjudged);
+        const pairedIds = new Set(paired.map(score => score.id));
+        const pairedFindings = paired.reduce((sum, score) => sum + score.findings, 0);
+        const controlLimit = paired.reduce((sum, score) => sum + baseline.controls[score.id].findings.length, 1);
+        const pairedCoverageComplete = paired.length === historicallyComplete.length;
+        const unpairedControls = controls.filter(score => !pairedIds.has(score.id)).map(score => ({
+            id: score.id, baselineStatus: baseline.controls[score.id]?.status ?? "missing",
+            statuses: score.statuses, findings: score.findings,
+        }));
+        result.quickGate = { catches, controlLimit, pairedFindings, unpairedControls,
+            passed: catches >= 6 && pairedFindings <= controlLimit && pairedCoverageComplete &&
+                mustNotRaisePassed && unjudgedTrials.length === 0,
+            noNewControlFindings: pairedCoverageComplete && unjudgedTrials.length === 0 && newControlFindings.length === 0 };
     }
     return result;
 }

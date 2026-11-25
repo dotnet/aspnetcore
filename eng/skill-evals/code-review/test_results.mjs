@@ -57,10 +57,8 @@ test("the Run A cohort keeps both exclusions out of every tier", () => {
     assert.deepEqual(quickGroup.ids, ["case-01", "case-03", "case-07", "case-09", "case-20", "case-21", "case-34", ...controls.ids]);
     assert.equal(mustFind.runs, 3);
     assert.equal(controls.runs, 1);
-    assert.deepEqual(mustFind.ids, Object.keys(baseline.catches));
-    assert.deepEqual(controls.ids, Object.keys(baseline.controls));
-    assert.equal(mustFind.ids.length, 23);
-    assert.equal(controls.ids.length, 11);
+    assert.deepEqual(mustFind.ids.filter(id => id in baseline.catches), Object.keys(baseline.catches));
+    assert.deepEqual(controls.ids.filter(id => id in baseline.controls), Object.keys(baseline.controls));
     assert.deepEqual(cases.filter(item => item.excluded).map(item => item.id), ["case-25", "case-27"]);
     for (const id of Object.keys(baseline.excluded)) {
         assert.ok(!quickGroup.ids.includes(id) && !mustFind.ids.includes(id) && !controls.ids.includes(id));
@@ -68,6 +66,8 @@ test("the Run A cohort keeps both exclusions out of every tier", () => {
         assert.throws(() => reviewGroups(cases, baseline, ["--replay", id]), /active must-find case/);
     }
     assert.deepEqual(reviewGroups(cases, baseline, ["--replay", "case-01"])[0].runs, 3);
+    const freshBatch = [...mustFind.ids.slice(0, 15), ...controls.ids.slice(0, 5)];
+    assert.deepEqual(reviewGroups(cases, baseline, freshBatch), [{ name: "code-review-sample", runs: 1, ids: freshBatch }]);
     assert.throws(() => reviewGroups(cases, baseline, []), /explicitly opt in/);
 });
 
@@ -127,16 +127,33 @@ test("quick gate applies both thresholds, names new findings, and rejects an unf
     report("case-04", [finding]);
     const score = () => scoreTrials(cases, baseline, trials, receipts, true);
     const summary = score();
-    assert.deepEqual(summary.quickGate, { catches: 6, controlLimit: 3, passed: true, noNewControlFindings: false });
+    assert.deepEqual(summary.quickGate, { catches: 6, controlLimit: 3, pairedFindings: 3, passed: true, noNewControlFindings: false,
+        unpairedControls: [{ id: "case-05", baselineStatus: "blocked", statuses: { "no-findings": 1 }, findings: 0 }] });
     assert.deepEqual(summary.newControlFindings, [{ id: "case-04", trial: "case-04/1", ...finding }]);
     report("case-04", [finding, finding]);
     assert.equal(score().quickGate.passed, false);
     Object.assign(trials.find(row => row.caseId === "case-04"), { status: "no-findings", findings: [] });
     assert.equal(score().quickGate.noNewControlFindings, true);
     Object.assign(trials.find(row => row.caseId === "case-05"), { status: "blocked" });
-    assert.equal(score().quickGate.passed, false);
+    assert.equal(score().quickGate.passed, true);
     assert.deepEqual(score().groups["fresh batch"].find(item => item.id === "case-05").statuses, { blocked: 1 });
-    Object.assign(trials.find(row => row.caseId === "case-05"), { status: "no-findings" });
+    report("case-05", [finding, finding, finding, finding]);
+    const unpaired = score();
+    assert.equal(unpaired.controlFindings, 6);
+    assert.equal(unpaired.quickGate.pairedFindings, 2);
+    assert.equal(unpaired.quickGate.passed, true);
+    assert.equal(unpaired.quickGate.noNewControlFindings, false);
+    assert.deepEqual(unpaired.quickGate.unpairedControls, [
+        { id: "case-05", baselineStatus: "blocked", statuses: { findings: 1 }, findings: 4 },
+    ]);
+    assert.deepEqual(unpaired.newControlFindings.map(item => item.id), Array(4).fill("case-05"));
+    const formerlyComplete = trials.find(row => row.caseId === "case-02");
+    Object.assign(formerlyComplete, { status: "incomplete", findings: [] });
+    const incompletePair = score().quickGate;
+    assert.equal(incompletePair.pairedFindings, 1);
+    assert.equal(incompletePair.controlLimit, 2);
+    assert.equal(incompletePair.passed, false);
+    Object.assign(formerlyComplete, { status: "findings", findings: [finding] });
     Object.assign(trials[0], { status: "incomplete", findings: [] });
     assert.equal(score().quickGate.catches, 5);
     assert.equal(score().quickGate.passed, false);

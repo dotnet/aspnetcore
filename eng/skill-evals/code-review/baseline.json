@@ -34,7 +34,11 @@
       ]
     },
     "case-04": { "status": "no-findings", "findings": [] },
-    "case-05": { "status": "blocked", "findings": [] },
+    "case-05": {
+      "status": "blocked",
+      "findings": [],
+      "note": "No completed baseline review. Report the candidate separately from the paired control comparison."
+    },
     "case-10": { "status": "no-findings", "findings": [] },
     "case-11": { "status": "no-findings", "findings": [] },
     "case-15": { "status": "no-findings", "findings": [] },

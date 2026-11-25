@@ -5,11 +5,17 @@ It is separate from the `eval.vally.yaml` smoke test. Losing catches or adding
 control findings warrants investigation. A higher score on known cases is
 weak evidence of improvement. Watch production `/review` for a sharp drop.
 
-Only a quarterly fresh batch measures quality. Harvest 10 to 15 new cases from
-merged PRs without looking at `/review` output. Stage them in a local copy of
-`cases.json` and score them once before anyone reads the misses. Then add
-them to the public corpus. Label each case
-`fresh batch` or `added for a rule`; the runner reports them separately.
+Only a quarterly fresh batch measures quality. Harvest 10 to 15 new bug cases
+from merged PRs where `/review` had not run when the maintainer commented.
+Do not look at `/review` output while selecting cases. Add about five fresh
+clean PRs; a person reads any findings on those controls. Stage the batch in
+a local copy of `cases.json` and score it once before anyone reads the misses.
+Then add it to the public corpus. Label each case `fresh batch` or
+`added for a rule`; the runner reports them separately.
+
+One batch is a rough reading. With 10 to 15 bug cases run once, the catch
+rate is uncertain by 20 percentage points or more. Look at the trend over
+three or four batches.
 
 The corpus never runs automatically. A person starts every paid run. CI runs
 only model-free harness checks.
@@ -45,7 +51,8 @@ prompt, model, CLI pin, and read/skill tool list from the checked-out `/review`
 workflow. There are three deliberate differences: the bundle path is local,
 the hosted publication adapter and tools are omitted, and the bundles are
 code-only with guidance files stripped. Hosted bundles keep guidance files
-and include existing PR comments. The shared tool lockfile is unchanged.
+and include existing PR comments. This corpus PR does not edit the shared
+eval lockfile. A separate PR bumps the shared tooling to the `/review` CLI.
 
 Select explicit case IDs to check the setup or score a fresh batch. Each
 selected case gets one trial:
@@ -99,10 +106,14 @@ included a failed ingress attempt; it is not a per-review rate.
 
 **Quick:** Use for a rule edit or CLI bump. Run the seven always-caught cases
 from [`baseline.json`](baseline.json) and all 11 controls, one trial each.
-Pass with at least six catches, completed controls, no forbidden claim, and
-at most three ordinary control findings (Run A's two, plus one). The rule
-shipping bar is stricter: no new control findings. A new finding is not
-automatically wrong; compare it to the frozen source.
+Pass with at least six catches, no forbidden claim, and no more than one
+ordinary finding above Run A on controls that completed in both runs. With
+all comparable controls complete, that limit is three. An unfinished
+candidate review for a historically completed control prevents a pass;
+it does not count as clean. Run A was blocked on `case-05`, so the runner
+reports it separately and excludes it from both compared totals. The rule
+shipping bar is stricter: no new control findings. Read any unpaired control
+findings before shipping; compare them to the frozen source.
 
 ```bash
 node "$runner" prepare "$scratch/quick" --quick
@@ -113,10 +124,12 @@ node "$runner" score "$scratch/quick"
 ```
 
 **Full:** Use for a model or review-method change and once a quarter with the
-fresh batch. Run the 23 scored cases three times each and the 11 controls
-once each. The two cases marked `excluded` stay in the corpus for the record;
-neither tier nor a direct case selection runs them. Allow tens of gigabytes
-for bundles and workspaces, not a RAM-backed `/tmp`.
+fresh batch. Skip the quarterly full run if the skill, model, CLI and review
+method are unchanged since the last full run; still run the fresh batch.
+Run the 23 scored cases three times each and the 11 controls once each.
+The two cases marked `excluded` stay in the corpus for the record; neither
+tier nor a direct case selection runs them. Allow tens of gigabytes for
+bundles and workspaces, not a RAM-backed `/tmp`.
 
 ```bash
 node "$runner" prepare "$scratch/full" --full
