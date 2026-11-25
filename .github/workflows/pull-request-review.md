@@ -1,4 +1,5 @@
 ---
+runs-on: ubuntu-26.04
 if: ${{ github.event.repository.fork == false }}
 
 on:
@@ -507,18 +508,9 @@ post-steps:
           event.data?.toolName === 'safeoutputs-submit_pull_request_review');
         const hasFindingsPublication =
           reviewComments.length > 0 || reviewSubmissions.length > 0;
-        const isDiscardedOnlyFindingsPublication =
-          reviewComments.length > 0 &&
-          reviewComments.every(event => {
-            const body = toolInput(event)?.body;
-            return typeof body === 'string' &&
-              /(?:^|\n)\s*(?:[-*]\s+|\d+\.\s+|#+\s+|\*\*)?\[DISCARDED\]\s+\S/.test(body) &&
-              (/\bconfidence\s*:\s*`?discarded`?\b/i.test(body) ||
-                /\bWhy discarded\s*:/i.test(body));
-          });
-        if (hasFindingsPublication && !isDiscardedOnlyFindingsPublication && verifiers.size !== 1) {
+        if (hasFindingsPublication && verifiers.size !== 1) {
           violations.push(
-            `Findings publication requires 1 '${verifierAgentName}' subagent unless every inline comment is a pre-verification [DISCARDED] candidate, but recorded ${verifiers.size}.`);
+            `Findings publication requires 1 '${verifierAgentName}' subagent, but recorded ${verifiers.size}.`);
         }
 
         const latestWorkerPreVerifierIndex = Math.max(
@@ -584,7 +576,8 @@ safe-outputs:
     pull-requests: true
     discussions: false
   threat-detection:
-    model: gpt-5.6-sol
+    runs-on: ubuntu-26.04
+    model: gpt-6.2-sol
     max-ai-credits: 200
     max-turns: 20
     engine-timeout: 10m
@@ -600,6 +593,207 @@ safe-outputs:
     target: triggering
     commit-id: ${{ needs.freeze_pr_head.outputs.head_sha }}
     allowed-events: [COMMENT]
+
+  steps:
+      - name: Reject incomplete or partial publication sets
+        uses: actions/github-script@v9.0.0
+        env:
+          GH_AW_AGENT_OUTPUT: ${{ steps.setup-agent-output-env.outputs.GH_AW_AGENT_OUTPUT }}
+        with:
+          script: |
+            const fs = require('fs');
+            const filename = process.env.GH_AW_AGENT_OUTPUT;
+            let output;
+            try {
+              output = JSON.parse(fs.readFileSync(filename, 'utf8'));
+            } catch {
+              core.setFailed('The agent output is not valid JSON.');
+              return;
+            }
+            const isObject = value => value !== null && typeof value === 'object' && !Array.isArray(value);
+            if (!isObject(output)) {
+              core.setFailed('The agent output root must be an object.');
+              return;
+            }
+            if (!Array.isArray(output.items)) {
+              core.setFailed('The agent output has no complete items list.');
+              return;
+            }
+            if (Object.hasOwn(output, 'errors')) {
+              if (!Array.isArray(output.errors) || !output.errors.every(error => typeof error === 'string')) {
+                core.setFailed('The agent output errors field is malformed.');
+                return;
+              }
+              if (output.errors.length > 0) {
+                core.setFailed('The agent output contains collection errors.');
+                return;
+              }
+            }
+            if (!output.items.every(item => isObject(item) && typeof item.type === 'string')) {
+              core.setFailed('Every agent output item must be an object with a string type.');
+              return;
+            }
+            const supported = new Set([
+              'add_comment',
+              'create_pull_request_review_comment',
+              'missing_data',
+              'missing_tool',
+              'noop',
+              'report_incomplete',
+              'submit_pull_request_review',
+            ]);
+            if (output.items.some(item => !supported.has(item.type))) {
+              core.setFailed('The agent output contains an unsupported item type.');
+              return;
+            }
+            const isDiscardedInline = body => {
+              let fence;
+              let paragraph = false;
+              const containers = [];
+              const thematicBreak = /^ {0,3}(?:(?:\* *){3,}|(?:- *){3,}|(?:_ *){3,})$/;
+              const listMarker = /^( {0,3})([-+*]|\d{1,9}[.)])( +|$)/;
+              const lines = body.split(/\r?\n/).map(rawLine => {
+                let tabExpansion = 0;
+                let line = rawLine.replace(/\t/g, (_, index) => {
+                  const width = 4 - (index + tabExpansion) % 4;
+                  tabExpansion += width - 1;
+                  return ' '.repeat(width);
+                });
+                let matched = 0;
+                for (; matched < containers.length; matched++) {
+                  const container = containers[matched];
+                  if (container.quote) {
+                    const marker = line.match(/^ {0,3}> ?/);
+                    if (!marker) {
+                      break;
+                    }
+                    line = line.slice(marker[0].length);
+                  } else if (line.trim().length === 0) {
+                    line = '';
+                  } else if (line.startsWith(' '.repeat(container.indent))) {
+                    line = line.slice(container.indent);
+                  } else {
+                    break;
+                  }
+                }
+                if (matched < containers.length) {
+                  const sibling = line.match(listMarker);
+                  const sameList = sibling && containers[matched].marker === sibling[2].replace(/^\d+/, '');
+                  const interruptsParagraph = sibling && line.slice(sibling[0].length).trim().length > 0 &&
+                    (!/^\d/.test(sibling[2]) || Number.parseInt(sibling[2], 10) === 1);
+                  const delimiter = line.match(/^ {0,3}(`{3,}|~{3,})/);
+                  const startsFence = delimiter && (delimiter[1][0] !== '`' ||
+                    !line.slice(delimiter[0].length).includes('`'));
+                  const lazyContinuation = !containers.slice(matched).some(container => container.quote) &&
+                    !fence && paragraph && line.trim().length > 0 &&
+                    !sameList && !interruptsParagraph && !startsFence && !thematicBreak.test(line) &&
+                    !/^ {0,3}(?:>|#{1,6}(?: |$)|(?:=+|-+) *$)/.test(line);
+                  if (!lazyContinuation) {
+                    if (sameList) {
+                      // A sibling item has its own paragraph, even when its number is not one.
+                      paragraph = false;
+                    }
+                    containers.length = matched;
+                    fence = undefined;
+                  }
+                }
+                if (!fence) {
+                  // Fence indentation is relative to each CommonMark container's content.
+                  while (true) {
+                    const quote = line.match(/^ {0,3}> ?/);
+                    if (quote) {
+                      containers.push({ quote: true });
+                      line = line.slice(quote[0].length);
+                      paragraph = false;
+                      continue;
+                    }
+                    const list = line.match(listMarker);
+                    const interruptsParagraph = list && line.slice(list[0].length).trim().length > 0 &&
+                      (!/^\d/.test(list[2]) || Number.parseInt(list[2], 10) === 1);
+                    if (!list || thematicBreak.test(line) || (paragraph && !interruptsParagraph)) {
+                      break;
+                    }
+                    const padding = list[3].length >= 1 && list[3].length <= 4 ? list[3].length : 1;
+                    const indent = list[1].length + list[2].length + padding;
+                    containers.push({ indent, marker: list[2].replace(/^\d+/, '') });
+                    line = line.slice(indent);
+                    paragraph = false;
+                  }
+                }
+                if (!fence && !paragraph && /^ {4}/.test(line)) {
+                  return '';
+                }
+                const delimiter = line.match(/^ {0,3}(`{3,}|~{3,})/);
+                if (fence) {
+                  if (delimiter && delimiter[1][0] === fence[0] &&
+                      delimiter[1].length >= fence.length &&
+                      /^[ \t]*$/.test(line.slice(delimiter[0].length))) {
+                    fence = undefined;
+                  }
+                  paragraph = false;
+                  return '';
+                }
+                if (delimiter && (delimiter[1][0] !== '`' ||
+                    !line.slice(delimiter[0].length).includes('`'))) {
+                  fence = delimiter[1];
+                  paragraph = false;
+                  return '';
+                }
+                const endsParagraph = thematicBreak.test(line) || /^ {0,3}#{1,6}(?: |$)/.test(line) ||
+                  (paragraph && /^ {0,3}(?:=+|-+) *$/.test(line));
+                paragraph = line.trim().length > 0 && (paragraph || !/^ {4}/.test(line)) && !endsParagraph;
+                return containers.some(container => container.quote) ? '' : line;
+              }).map(line => line.replace(/[*_]/g, '')
+                .replace(/^[ \t]*(?:(?:[-+]|[0-9]+[.)]|#{1,6})[ \t]+)+/, '').trim())
+                .filter(line => line.length > 0);
+              return /^(?:\[P[0-3]\][ \t]*)?\[DISCARDED\]/i.test(lines[0] ?? '') ||
+                lines.some(line => /^Why[ \t]+discarded[ \t]*:/i.test(line)) ||
+                lines.some(line => /^Confidence[ \t]*:[ \t]*`?discarded`?[ \t]*$/i.test(line));
+            };
+            const count = type => output.items.filter(item => item.type === type).length;
+            const comments = count('create_pull_request_review_comment');
+            const reviews = count('submit_pull_request_review');
+            const noop = count('noop');
+            const statusComments = output.items.filter(item => item.type === 'add_comment');
+            const incompleteItems = output.items.filter(item =>
+              ['report_incomplete', 'missing_data', 'missing_tool'].includes(item.type));
+            const incompleteReason = incompleteItems.length === 1 &&
+              typeof incompleteItems[0].reason === 'string'
+              ? incompleteItems[0].reason
+              : null;
+            const reasonIsValid = incompleteReason !== null && incompleteReason.length >= 1 &&
+              incompleteReason.length <= 240 && !/[\r\n]/.test(incompleteReason);
+            const expectedStatusBodies = reasonIsValid
+              ? ['BLOCKED', 'INCOMPLETE'].map(status =>
+                  `Review not published (${status}): ${incompleteReason}\n\nNo partial findings were published.`)
+              : [];
+            const findings = comments >= 1 && comments <= 5 && reviews === 1 &&
+              output.items.length === comments + 1;
+            const clean = noop === 1 && output.items.length === 1;
+            const stopped = incompleteItems.length === 1 && statusComments.length === 1 &&
+              output.items.length === 2 && typeof statusComments[0].body === 'string' &&
+              expectedStatusBodies.includes(statusComments[0].body);
+            if (!findings && !clean && !stopped) {
+              core.setFailed('Incomplete or partial review output cannot be published.');
+              return;
+            }
+            const discarded = output.items.filter(item =>
+              item.type === 'create_pull_request_review_comment' &&
+              typeof item.body === 'string' &&
+              isDiscardedInline(item.body));
+            if (discarded.length > 0) {
+              output.items = output.items.filter(item => !discarded.includes(item));
+              const remaining = comments - discarded.length;
+              if (remaining === 0) {
+                output.items = [{
+                  type: 'noop',
+                  message: 'STATUS: NO_FINDINGS\nAll inline candidates were discarded; see the original agent output for details.',
+                }];
+              }
+              fs.writeFileSync(filename, JSON.stringify(output));
+              core.notice(`Removed ${discarded.length} discarded inline candidate(s); ${remaining} inline finding(s) remain. ` +
+                'The original agent artifact retains the discarded candidates.');
+            }
 
 jobs:
   freeze_pr_head:
@@ -702,88 +896,6 @@ jobs:
     permissions:
       pull-requests: read
     steps:
-      - name: Download review output for publication preflight
-        uses: actions/download-artifact@v8.0.2
-        with:
-          pattern: "{agent,agent-output-fallback}"
-          merge-multiple: true
-          path: ${{ runner.temp }}/review-publication-gate
-      - name: Reject incomplete or partial publication sets
-        uses: actions/github-script@v9.0.0
-        with:
-          script: |
-            const fs = require('fs');
-            const path = require('path');
-            const filename = path.join(process.env.RUNNER_TEMP, 'review-publication-gate', 'agent_output.json');
-            let output;
-            try {
-              output = JSON.parse(fs.readFileSync(filename, 'utf8'));
-            } catch {
-              core.setFailed('The agent output is not valid JSON.');
-              return;
-            }
-            const isObject = value => value !== null && typeof value === 'object' && !Array.isArray(value);
-            if (!isObject(output)) {
-              core.setFailed('The agent output root must be an object.');
-              return;
-            }
-            if (!Array.isArray(output.items)) {
-              core.setFailed('The agent output has no complete items list.');
-              return;
-            }
-            if (Object.hasOwn(output, 'errors')) {
-              if (!Array.isArray(output.errors) || !output.errors.every(error => typeof error === 'string')) {
-                core.setFailed('The agent output errors field is malformed.');
-                return;
-              }
-              if (output.errors.length > 0) {
-                core.setFailed('The agent output contains collection errors.');
-                return;
-              }
-            }
-            if (!output.items.every(item => isObject(item) && typeof item.type === 'string')) {
-              core.setFailed('Every agent output item must be an object with a string type.');
-              return;
-            }
-            const supported = new Set([
-              'add_comment',
-              'create_pull_request_review_comment',
-              'missing_data',
-              'missing_tool',
-              'noop',
-              'report_incomplete',
-              'submit_pull_request_review',
-            ]);
-            if (output.items.some(item => !supported.has(item.type))) {
-              core.setFailed('The agent output contains an unsupported item type.');
-              return;
-            }
-            const count = type => output.items.filter(item => item.type === type).length;
-            const comments = count('create_pull_request_review_comment');
-            const reviews = count('submit_pull_request_review');
-            const noop = count('noop');
-            const statusComments = output.items.filter(item => item.type === 'add_comment');
-            const incompleteItems = output.items.filter(item =>
-              ['report_incomplete', 'missing_data', 'missing_tool'].includes(item.type));
-            const incompleteReason = incompleteItems.length === 1 &&
-              typeof incompleteItems[0].reason === 'string'
-              ? incompleteItems[0].reason
-              : null;
-            const reasonIsValid = incompleteReason !== null && incompleteReason.length >= 1 &&
-              incompleteReason.length <= 240 && !/[\r\n]/.test(incompleteReason);
-            const expectedStatusBodies = reasonIsValid
-              ? ['BLOCKED', 'INCOMPLETE'].map(status =>
-                  `Review not published (${status}): ${incompleteReason}\n\nNo partial findings were published.`)
-              : [];
-            const findings = comments >= 1 && comments <= 5 && reviews === 1 &&
-              output.items.length === comments + 1;
-            const clean = noop === 1 && output.items.length === 1;
-            const stopped = incompleteItems.length === 1 && statusComments.length === 1 &&
-              output.items.length === 2 && typeof statusComments[0].body === 'string' &&
-              expectedStatusBodies.includes(statusComments[0].body);
-            if (!findings && !clean && !stopped) {
-              core.setFailed('Incomplete or partial review output cannot be published.');
-            }
       - name: Reject a moved pull request before safe outputs
         uses: actions/github-script@v9.0.0
         env:
@@ -859,7 +971,7 @@ imports:
       environment: copilot-pat-pool
 
 environment: copilot-pat-pool
-model: gpt-5.6-sol
+model: gpt-6.2-sol
 engine:
   id: copilot
   # Pin the CLI, not the model: automatic selection of 1.0.83 breaks tool discovery with
@@ -908,7 +1020,7 @@ reading, searching, and skill loading. Any post-gate candidate verification must
 the native `review-candidate-verifier` profile, whose explicit tool list exposes only
 reading and searching. Workers are source-only and must not receive
 coordinator-only inputs.
-Use `gpt-5.6-sol` as the explicit hosted worker model, with no Anthropic model or automatic substitution.
+Use `gpt-6.2-sol` as the explicit hosted worker model, with no Anthropic model or automatic substitution.
 After launching workers, stay in your turn and collect each worker's report with `read_agent`
 using `wait: true` rather than ending your response to wait for a notification.
 Address `write_agent` clarifications with explicit `agent_id` or `agent_ids`, not `scope`,
@@ -939,7 +1051,8 @@ Map only the skill's exact structured status:
 
 - `FINDINGS`: require one to five `NEW_FINDINGS` entries, then use the review outputs below.
 - `NO_FINDINGS`: invoke `noop` exactly once, with no review or status-comment output.
-  Disclosed existing feedback and unresolved candidates do not change this mapping.
+  Disclosed existing feedback and unresolved or discarded summary candidates do not change this mapping.
+  When every candidate is discarded, require `NO_FINDINGS` and this `noop` path.
 - `BLOCKED` or `INCOMPLETE`: use the incomplete-publication path below, with no review or `noop`.
 
 A missing or unknown status, missing required result fields, contradictory status/payload,
@@ -965,12 +1078,19 @@ supported `jobs.safe_outputs.pre-steps` hook rechecks the live head inside that 
 publication. Neither read is atomic with publication; the trusted `commit-id` pins
 attribution to the reviewed SHA if a push races the in-job check.
 
+Never publish a `DISCARDED` candidate as an inline comment or count it in `NEW_FINDINGS`.
+As a publication backstop, the trusted preflight removes an erroneously emitted discarded
+inline item without withholding surviving findings or changing their review summary.
+If none survive, it replaces the all-discarded review with a `NO_FINDINGS` noop, not an
+empty `FINDINGS` review. The original agent artifact retains the discarded payloads;
+a PR-visible no-findings audit comment is outside this adapter's current contract.
 For `FINDINGS`, emit one `create_pull_request_review_comment` per selected entry, preserving
 the skill's format and order, then exactly one `submit_pull_request_review` with event `COMMENT`. Use only
 the triggering PR and include the frozen SHA in the review text. Both handlers are pinned by
 trusted configuration to that SHA; never override their target or commit. The final review
 summarizes the validated new findings, existing-feedback coverage, unresolved
-candidates, per-guide completion, immutable provenance, test boundary, uncovered areas
+candidates, discarded candidates in a `<details>` section headed `DISCARDED`,
+per-guide completion, immutable provenance, test boundary, uncovered areas
 and limitations, and identifies the proof as source-only.
 Each RIGHT-side line, including every line in a range, must be added or modified in the
 frozen diff; never anchor a comment to a nearby unchanged line.

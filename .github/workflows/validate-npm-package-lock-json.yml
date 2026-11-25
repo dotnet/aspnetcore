@@ -10,7 +10,7 @@ on:
 jobs:
   validate-package-lock-json:
     name: 'Validate package-lock.json against source feeds'
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-26.04
 
     steps:
       - name: Checkout repository

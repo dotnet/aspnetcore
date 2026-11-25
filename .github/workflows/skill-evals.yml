@@ -69,7 +69,7 @@ jobs:
       github.event_name == 'pull_request' ||
       github.event_name == 'push' ||
       (github.event_name == 'workflow_dispatch' && inputs.action != 'Run')
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-26.04
     timeout-minutes: 15
     steps:
       - name: Checkout repository
@@ -123,7 +123,7 @@ jobs:
       (github.event_name == 'workflow_dispatch' &&
        inputs.action == 'Run' &&
        inputs.pr_number != '')
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-26.04
     timeout-minutes: 10
     concurrency:
       group: skill-eval-gate-${{ github.event.issue.number || inputs.pr_number }}
@@ -353,7 +353,7 @@ jobs:
         inputs.pr_number == '') ||
        (needs.gate.result == 'success' &&
         needs.gate.outputs.should_eval == 'true'))
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-26.04
     timeout-minutes: 5
     environment: copilot-pat-pool
     permissions: {}
@@ -435,7 +435,7 @@ jobs:
         inputs.pr_number == '') ||
        (needs.gate.result == 'success' &&
         needs.gate.outputs.should_eval == 'true'))
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-26.04
     timeout-minutes: 120
     environment: copilot-pat-pool
     permissions:
@@ -627,24 +627,11 @@ jobs:
               $arguments += @('--workers', '1')
 
               & pwsh @arguments
-              $vallyExitCode = $LASTEXITCODE
-              if ($vallyExitCode -notin @(0, 1)) {
-                  Write-Error "Vally failed for '$evalName' with unexpected exit code $vallyExitCode." -ErrorAction Continue
+              $runnerExitCode = $LASTEXITCODE
+              if ($runnerExitCode -ne 0) {
+                  Write-Error "Skill-eval runner failed for '$evalName' with exit code $runnerExitCode." -ErrorAction Continue
                   $failedEvals += $evalName
                   continue
-              }
-
-              try {
-                  & (Join-Path $executionRoot 'eng/skill-evals/assert_results.ps1') `
-                      -OutputDirectory $outputDirectory
-              } catch {
-                  Write-Error "The complete result-set gate failed for '$evalName': $_" -ErrorAction Continue
-                  $failedEvals += $evalName
-                  continue
-              }
-
-              if ($vallyExitCode -eq 1) {
-                  Write-Warning "Vally exited with code 1 for '$evalName'. Complete primary trials passed the applicable result-set checks."
               }
           }
 
@@ -670,7 +657,7 @@ jobs:
       needs.gate.result == 'success' &&
       needs.gate.outputs.should_eval == 'true' &&
       needs.run.outputs.claimed != 'false'
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-26.04
     timeout-minutes: 5
     permissions:
       pull-requests: write
