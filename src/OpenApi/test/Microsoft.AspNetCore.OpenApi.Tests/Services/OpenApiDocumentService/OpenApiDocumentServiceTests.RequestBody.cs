@@ -945,6 +945,84 @@ public partial class OpenApiDocumentServiceTests : OpenApiDocumentServiceTestBas
         await VerifyEffectiveFormRequirements(actionName, withAdditionalParameter: false, expected);
     }
 
+    [Theory]
+    [InlineData(false, false, false, "application/x-www-form-urlencoded")]
+    [InlineData(false, false, false, "multipart/form-data")]
+    [InlineData(false, false, true, "application/x-www-form-urlencoded")]
+    [InlineData(false, false, true, "multipart/form-data")]
+    [InlineData(false, true, false, "application/x-www-form-urlencoded")]
+    [InlineData(false, true, false, "multipart/form-data")]
+    [InlineData(false, true, true, "application/x-www-form-urlencoded")]
+    [InlineData(false, true, true, "multipart/form-data")]
+    [InlineData(true, false, false, "application/x-www-form-urlencoded")]
+    [InlineData(true, false, false, "multipart/form-data")]
+    [InlineData(true, false, true, "application/x-www-form-urlencoded")]
+    [InlineData(true, false, true, "multipart/form-data")]
+    [InlineData(true, true, false, "application/x-www-form-urlencoded")]
+    [InlineData(true, true, false, "multipart/form-data")]
+    [InlineData(true, true, true, "application/x-www-form-urlencoded")]
+    [InlineData(true, true, true, "multipart/form-data")]
+    public async Task GetOpenApiRequestBody_RespectsSuppressChildValidationMetadataProvider_MvcAction(
+        bool suppressChildren, bool bindingRequired, bool withAdditionalParameter, string contentType)
+    {
+        var action = CreateActionDescriptor(bindingRequired
+            ? nameof(ActionWithChildValidationAndBinding)
+            : nameof(ActionWithChildValidation));
+        if (!withAdditionalParameter)
+        {
+            action.Parameters = action.Parameters.Take(1).ToArray();
+        }
+        await VerifyOpenApiDocument(action, document =>
+        {
+            var operation = Assert.Single(document.Paths.Values).Operations[HttpMethod.Post];
+            var schema = operation.RequestBody.Content[contentType].Schema;
+            var modelSchema = withAdditionalParameter
+                ? Assert.Single(schema.AllOf, item => item.Properties.ContainsKey("File"))
+                : schema;
+            Assert.Equal(action.Parameters[0].ParameterType.GetProperties().Select(property => property.Name).Order(StringComparer.Ordinal),
+                modelSchema.Properties.Keys.Order(StringComparer.Ordinal));
+            if (suppressChildren)
+            {
+                Assert.DoesNotContain("Name", modelSchema.Required ?? new HashSet<string>());
+            }
+            var expected = bindingRequired ? new List<string> { "Bound" } : [];
+            if (!suppressChildren)
+            {
+                expected.Add("Name");
+            }
+            Assert.Equal(expected, (modelSchema.Required ?? new HashSet<string>()).Order(StringComparer.Ordinal));
+        }, configureMvcOptions: options =>
+        {
+            if (suppressChildren)
+            {
+                options.ModelMetadataDetailsProviders.Add(new SuppressChildValidationMetadataProvider(action.Parameters[0].ParameterType));
+            }
+        });
+    }
+
+    [Consumes("application/x-www-form-urlencoded", "multipart/form-data")]
+    [HttpPost("/child-validation")]
+    private void ActionWithChildValidation([FromForm] ChildValidationForm model, [FromForm] string additional) { }
+
+    [Consumes("application/x-www-form-urlencoded", "multipart/form-data")]
+    [HttpPost("/child-validation-binding")]
+    private void ActionWithChildValidationAndBinding([FromForm] ChildValidationBindingForm model, [FromForm] string additional) { }
+
+#nullable enable
+    private class ChildValidationForm
+    {
+        public IFormFile? File { get; set; }
+        [Required]
+        public string? Name { get; set; }
+    }
+
+    private class ChildValidationBindingForm : ChildValidationForm
+    {
+        [BindRequired]
+        public string? Bound { get; set; }
+    }
+#nullable restore
+
     private async Task VerifyEffectiveFormRequirements(string actionName, bool withAdditionalParameter, string expected)
     {
         var action = CreateActionDescriptor(actionName);

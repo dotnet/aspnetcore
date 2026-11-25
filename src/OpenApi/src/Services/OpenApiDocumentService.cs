@@ -675,7 +675,8 @@ internal sealed class OpenApiDocumentService(
 
         // Validation filters can depend on the bound model and its parent. Without those values,
         // a validation requirement is conditional, even if RequiredAttribute is in the metadata.
-        return bindingRequired || (metadata.PropertyValidationFilter is null &&
+        return bindingRequired || (metadata.ContainerMetadata?.ValidateChildren != false &&
+            metadata.PropertyValidationFilter is null &&
             metadata.IsReferenceOrNullableType && metadata.ValidatorMetadata.OfType<RequiredAttribute>().Any());
     }
 
