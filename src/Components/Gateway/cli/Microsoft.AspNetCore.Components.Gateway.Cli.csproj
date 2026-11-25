@@ -9,7 +9,6 @@
     <PackageId>Microsoft.AspNetCore.Components.Gateway.Cli</PackageId>
     <IsShippingPackage>true</IsShippingPackage>
     <IsPackable>true</IsPackable>
-    <ExcludeFromSourceOnlyBuild>false</ExcludeFromSourceOnlyBuild>
     <PackAsTool>true</PackAsTool>
     <ToolCommandName>blazor-gateway</ToolCommandName>
     <Description>Command line tool (blazor-gateway) for hosting Blazor applications.</Description>
