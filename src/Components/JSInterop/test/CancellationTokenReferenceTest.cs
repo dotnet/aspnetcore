@@ -746,16 +746,9 @@ public class CancellationTokenReferenceTest
 
     private static void AssertSent(ReferenceRuntime runtime, params string[] expected)
     {
-        WaitForQueuedReleasedMessages(runtime);
+        // "released" is sent from the thread pool, so wait until every queued one is sent before comparing.
+        Assert.True(SpinWait.SpinUntil(() => runtime.QueuedReleasedMessages == 0, TimeSpan.FromSeconds(10)));
         Assert.Equal(expected, runtime.Sent.Select(Describe));
-    }
-
-    // "released" is sent from the thread pool, so wait until every queued one is sent before comparing.
-    private static void WaitForQueuedReleasedMessages(JSRuntime runtime)
-    {
-        var field = typeof(JSRuntime).GetField("_queuedReleasedMessages",
-            System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.NonPublic)!;
-        Assert.True(SpinWait.SpinUntil(() => (int)field.GetValue(runtime)! == 0, TimeSpan.FromSeconds(10)));
     }
 
     private static async Task AssertSentEventuallyAsync(ReferenceRuntime runtime, params string[] expected)
@@ -966,6 +959,16 @@ public class CancellationTokenReferenceTest
         // When set, JS never replies to calls, as when a reply is lost.
         public bool HoldReplies { get; init; }
 
+        private int _queuedReleasedMessages;
+
+        public int QueuedReleasedMessages => Volatile.Read(ref _queuedReleasedMessages);
+
+        internal override void QueueReleasedMessage(List<long> ids)
+        {
+            Interlocked.Increment(ref _queuedReleasedMessages);
+            base.QueueReleasedMessage(ids);
+        }
+
         private void Record(SentMessage message)
         {
             lock (_sent)
@@ -996,6 +999,11 @@ public class CancellationTokenReferenceTest
         protected override void BeginInvokeJS(in JSInvocationInfo invocationInfo)
         {
             Record(new(invocationInfo.AsyncHandle, invocationInfo.Identifier, invocationInfo.ArgsJson));
+            if (invocationInfo.Identifier == CancellationTokenReleasedIdentifier)
+            {
+                Interlocked.Decrement(ref _queuedReleasedMessages);
+            }
+
             if (ThrowOnDispatch)
             {
                 throw new InvalidOperationException("dispatch failure");
