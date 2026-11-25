@@ -9,22 +9,30 @@ export type BeforeBlazorServerStartedCallback = (options: Partial<CircuitStartOp
 export type AfterBlazorServerStartedCallback = (blazor: IBlazor) => Promise<void>;
 
 export type ServerInitializers = {
-  beforeStart: BeforeBlazorServerStartedCallback [],
-  afterStarted: AfterBlazorServerStartedCallback [],
+  beforeStart: BeforeBlazorServerStartedCallback[],
+  afterStarted: AfterBlazorServerStartedCallback[],
 }
 
 export interface CircuitStartOptions {
   configureSignalR: (builder: HubConnectionBuilder) => void;
   logLevel: LogLevel;
+  /**
+   * Maximum time to wait for a monitored hub method to complete, in milliseconds.
+   * This does not await asynchronous application work. Defaults to 2000; zero disables monitoring.
+   * High latency or synchronous server work can exceed this deadline even on a live connection.
+   */
+  messageAckTimeoutMilliseconds: number;
   reconnectionOptions: ReconnectionOptions;
   reconnectionHandler?: ReconnectionHandler;
-  initializers : ServerInitializers;
+  initializers: ServerInitializers;
   circuitHandlers: CircuitHandler[];
 }
 
 export function resolveOptions(userOptions?: Partial<CircuitStartOptions>): CircuitStartOptions {
   const result = { ...defaultOptions, ...userOptions };
-
+  if (!Number.isInteger(result.messageAckTimeoutMilliseconds) || result.messageAckTimeoutMilliseconds < 0 || result.messageAckTimeoutMilliseconds > 2147483647) {
+    throw new Error('messageAckTimeoutMilliseconds must be an integer between 0 and 2147483647.');
+  }
   // The spread operator can't be used for a deep merge, so do the same for subproperties
   if (userOptions && userOptions.reconnectionOptions) {
     result.reconnectionOptions = { ...defaultOptions.reconnectionOptions, ...userOptions.reconnectionOptions };
@@ -73,6 +81,7 @@ const defaultOptions: CircuitStartOptions = {
   // eslint-disable-next-line @typescript-eslint/no-empty-function
   configureSignalR: (_) => { },
   logLevel: LogLevel.Warning,
+  messageAckTimeoutMilliseconds: 2000,
   initializers: undefined!,
   circuitHandlers: [],
   reconnectionOptions: {
