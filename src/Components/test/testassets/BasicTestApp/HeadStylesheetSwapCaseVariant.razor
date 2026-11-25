@@ -1,0 +1,16 @@
+@if (replacement)
+{
+    <HeadContent><link id="case-variant-swap-stylesheet" rel="StyleSheet" href="head-swap-replacement/@(requestId).css" /></HeadContent>
+}
+else
+{
+    <HeadContent><link id="case-variant-swap-stylesheet" rel="StyleSheet" href="head-swap-initial.css" /></HeadContent>
+}
+
+<button id="swap-head-case-variant" @onclick="() => replacement = true">Replace case-variant stylesheet</button>
+<div id="swap-target" style="background-color: red">Stylesheet target</div>
+
+@code {
+    private readonly string requestId = Guid.NewGuid().ToString("N");
+    private bool replacement;
+}

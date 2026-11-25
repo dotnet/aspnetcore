@@ -69,5 +69,11 @@ export function endHeadStylesheetTransition(): void {
 }
 
 function isHeadStylesheet(node: Node): node is HTMLLinkElement {
-  return node instanceof HTMLLinkElement && node.parentNode === document.head && node.relList.contains('stylesheet');
+  if (!(node instanceof HTMLLinkElement) || node.parentNode !== document.head) {
+    return false;
+  }
+
+  return node.relList.value
+    .split(/[ \t\n\f\r]+/)
+    .some(rel => rel.toLowerCase() === 'stylesheet');
 }

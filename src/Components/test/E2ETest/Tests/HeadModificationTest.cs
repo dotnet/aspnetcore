@@ -108,6 +108,32 @@ public class HeadModificationTest : ServerTestBase<HeadModificationTest.HeadModi
     }
 
     [Fact]
+    public async Task ReplacingHeadContentWithCaseVariantRelKeepsStylesheetUntilReplacementLoads()
+    {
+        Browser.MountTestComponent<HeadStylesheetSwapCaseVariant>();
+        var target = Browser.Exists(By.Id("swap-target"));
+        Browser.Equal("rgba(0, 0, 255, 1)", () => target.GetCssValue("background-color"));
+
+        StylesheetRequestGate request = null;
+        try
+        {
+            Browser.Exists(By.Id("swap-head-case-variant")).Click();
+            var replacement = Browser.Exists(By.CssSelector("link#case-variant-swap-stylesheet[href*='head-swap-replacement/']"));
+            request = _serverFixture.GetRequest(GetRequestId(replacement));
+            await request.Requested.Task.WaitAsync(TimeSpan.FromSeconds(15));
+            Assert.Equal("rgba(0, 0, 255, 1)", target.GetCssValue("background-color"));
+            Browser.Equal(1, () => Browser.FindElements(By.Id("case-variant-swap-stylesheet")).Count);
+            Browser.True(() => Browser.Exists(By.Id("case-variant-swap-stylesheet")).GetDomAttribute("href") is { } href && href.Contains("head-swap-replacement/"));
+        }
+        finally
+        {
+            request?.Release.TrySetResult();
+        }
+
+        Browser.Equal("rgba(0, 128, 0, 1)", () => target.GetCssValue("background-color"));
+    }
+
+    [Fact]
     public void RemovingHeadContentWithoutReplacementRemovesStylesheet()
     {
         Browser.MountTestComponent<HeadStylesheetSwap>();
