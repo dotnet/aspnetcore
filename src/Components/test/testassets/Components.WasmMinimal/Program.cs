@@ -13,9 +13,12 @@ using TestContentPackage.Services;
 
 var builder = WebAssemblyHostBuilder.CreateDefault(args);
 
-var enUs = new CultureInfo("en-US");
-CultureInfo.DefaultThreadCurrentCulture = enUs;
-CultureInfo.DefaultThreadCurrentUICulture = enUs;
+if (!string.Equals(Environment.GetEnvironmentVariable("BROWSER_CONFIGURATION_USE_APPLICATION_CULTURE"), "true", StringComparison.Ordinal))
+{
+    var enUs = new CultureInfo("en-US");
+    CultureInfo.DefaultThreadCurrentCulture = enUs;
+    CultureInfo.DefaultThreadCurrentUICulture = enUs;
+}
 builder.Services.AddSingleton<AsyncOperationService>();
 builder.Services.AddSingleton<InteractiveWebAssemblyService>();
 builder.Services.AddSingleton<InteractiveAutoService>();
