@@ -6,6 +6,7 @@ using System.Security.Claims;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.InternalTesting;
 using Microsoft.AspNetCore.TestHost;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
@@ -968,6 +969,142 @@ public class OutputCacheTests
     }
 
     sealed class SomeException : Exception { }
+
+    [Theory]
+    [InlineData(false, false)]
+    [InlineData(true, false)]
+    [InlineData(false, true)]
+    [InlineData(true, true)]
+    public async Task Locking_ClientDisconnectDoesNotFailQueuedWaiters(bool writePartialBody, bool wrapCancellationInIOException)
+    {
+        var endpointCount = 0;
+        var waiterDispatchCount = 0;
+        var leaderStarted = new TaskCompletionSource<CancellationToken>(TaskCreationOptions.RunContinuationsAsynchronously);
+        var leaderCanceled = new TaskCompletionSource<OperationCanceledException>(TaskCreationOptions.RunContinuationsAsynchronously);
+        var waitersDispatched = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+
+        using var host = new HostBuilder()
+            .ConfigureWebHost(webHostBuilder =>
+            {
+                webHostBuilder
+                    .UseTestServer()
+                    .ConfigureServices(services => services.AddOutputCache(options => options.AddBasePolicy(builder => builder.Cache())))
+                    .Configure(app =>
+                    {
+                        app.Use(next => context =>
+                        {
+                            var task = next(context);
+
+                            // The memory-store lookup and dispatcher run synchronously before next returns.
+                            if (context.Request.Headers.ContainsKey("X-Waiter") &&
+                                Interlocked.Increment(ref waiterDispatchCount) == 2)
+                            {
+                                waitersDispatched.TrySetResult();
+                            }
+
+                            return task;
+                        });
+                        app.UseOutputCache();
+                        app.Run(async context =>
+                        {
+                            if (Interlocked.Increment(ref endpointCount) == 1)
+                            {
+                                if (writePartialBody)
+                                {
+                                    await context.Response.WriteAsync("aborted");
+                                    await context.Response.Body.FlushAsync();
+                                }
+
+                                leaderStarted.TrySetResult(context.RequestAborted);
+                                try
+                                {
+                                    await Task.Delay(Timeout.Infinite, context.RequestAborted);
+                                }
+                                catch (OperationCanceledException exception)
+                                {
+                                    leaderCanceled.TrySetResult(exception);
+                                    if (wrapCancellationInIOException)
+                                    {
+                                        throw new IOException("The request was aborted.", exception);
+                                    }
+
+                                    throw;
+                                }
+                            }
+
+                            await context.Response.WriteAsync("healthy response");
+                        });
+                    });
+            })
+            .Build();
+
+        await host.StartAsync().DefaultTimeout();
+
+        using var server = host.GetTestServer();
+        using var leaderClient = server.CreateClient();
+        using var waiterClient = server.CreateClient();
+        waiterClient.DefaultRequestHeaders.Add("X-Waiter", "true");
+        using var leaderCancellation = new CancellationTokenSource();
+        using var waiterCancellation = new CancellationTokenSource();
+        var requests = new List<Task<HttpResponseMessage>>();
+
+        try
+        {
+            var leaderTask = leaderClient.GetAsync("", leaderCancellation.Token);
+            requests.Add(leaderTask);
+            var requestAborted = await leaderStarted.Task.DefaultTimeout();
+
+            var waiter1 = waiterClient.GetAsync("", waiterCancellation.Token);
+            requests.Add(waiter1);
+            var waiter2 = waiterClient.GetAsync("", waiterCancellation.Token);
+            requests.Add(waiter2);
+
+            await waitersDispatched.Task.DefaultTimeout();
+            Assert.Equal(1, Volatile.Read(ref endpointCount));
+            Assert.False(waiter1.IsCompleted);
+            Assert.False(waiter2.IsCompleted);
+
+            leaderCancellation.Cancel();
+
+            var serverCancellation = await leaderCanceled.Task.DefaultTimeout();
+            Assert.True(requestAborted.IsCancellationRequested);
+            Assert.Equal(requestAborted, serverCancellation.CancellationToken);
+            var clientException = await Record.ExceptionAsync(() => leaderTask.DefaultTimeout());
+            Assert.True(clientException is OperationCanceledException ||
+                (wrapCancellationInIOException && clientException is IOException { InnerException: OperationCanceledException }));
+
+            foreach (var waiter in new[] { waiter1, waiter2 })
+            {
+                using var response = await waiter.DefaultTimeout();
+                Assert.Equal(StatusCodes.Status200OK, (int)response.StatusCode);
+                Assert.Equal("healthy response", await response.Content.ReadAsStringAsync().DefaultTimeout());
+            }
+
+            var endpointCountBeforeCachedRequest = Volatile.Read(ref endpointCount);
+            using var cachedResponse = await leaderClient.GetAsync("", waiterCancellation.Token).DefaultTimeout();
+            Assert.Equal(StatusCodes.Status200OK, (int)cachedResponse.StatusCode);
+            Assert.Equal("healthy response", await cachedResponse.Content.ReadAsStringAsync().DefaultTimeout());
+            Assert.True(cachedResponse.Headers.Contains(HeaderNames.Age));
+            Assert.Equal(endpointCountBeforeCachedRequest, Volatile.Read(ref endpointCount));
+        }
+        finally
+        {
+            leaderCancellation.Cancel();
+            waiterCancellation.Cancel();
+            foreach (var request in requests)
+            {
+                await Record.ExceptionAsync(async () =>
+                {
+                    using var response = await request.DefaultTimeout();
+                });
+            }
+
+            if (leaderStarted.Task.IsCompletedSuccessfully)
+            {
+                await Record.ExceptionAsync(() => leaderCanceled.Task.DefaultTimeout());
+            }
+        }
+    }
 
     [Fact]
     public async Task ServesCorrectlyUnderConcurrentLoad()

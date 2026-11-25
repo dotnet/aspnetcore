@@ -1193,6 +1193,106 @@ public abstract class OutputCacheMiddlewareTests
         Assert.Equal(2, responseCounter);
     }
 
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task Locking_PropagatesNonAbortExceptionsWithoutRetry(bool cancellationException)
+    {
+        var responseCounter = 0;
+        var cache = GetStore();
+        var releaseLeader = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+        using var unrelatedCancellation = new CancellationTokenSource();
+        unrelatedCancellation.Cancel();
+        Exception expectedException = cancellationException
+            ? new OperationCanceledException("Application cancellation", unrelatedCancellation.Token)
+            : new InvalidOperationException("Application failure");
+
+        var options = new OutputCacheOptions();
+        options.AddBasePolicy(builder => builder.Cache());
+        var middleware = TestUtils.CreateTestMiddleware(options: options, cache: cache, next: async context =>
+        {
+            Interlocked.Increment(ref responseCounter);
+            await releaseLeader.Task;
+            throw expectedException;
+        });
+
+        var contexts = Enumerable.Range(0, 3).Select(_ =>
+        {
+            var context = TestUtils.CreateTestContext(cache: cache).HttpContext;
+            context.Request.Method = "GET";
+            context.Request.Path = "/";
+            return context;
+        }).ToArray();
+        var tasks = new List<Task>();
+
+        try
+        {
+            foreach (var context in contexts)
+            {
+                tasks.Add(middleware.Invoke(context));
+            }
+
+            Assert.Equal(1, Volatile.Read(ref responseCounter));
+            Assert.All(tasks, task => Assert.False(task.IsCompleted));
+            Assert.All(contexts, context => Assert.False(context.RequestAborted.IsCancellationRequested));
+            releaseLeader.TrySetResult();
+
+            foreach (var task in tasks)
+            {
+                Assert.Same(expectedException, await Record.ExceptionAsync(() => task.DefaultTimeout()));
+            }
+
+            Assert.Equal(1, Volatile.Read(ref responseCounter));
+            Assert.Equal(0, cache.SetCount);
+        }
+        finally
+        {
+            releaseLeader.TrySetResult();
+            foreach (var task in tasks)
+            {
+                await Record.ExceptionAsync(() => task.DefaultTimeout());
+            }
+        }
+    }
+
+    [Fact]
+    public async Task AbortedRequest_PropagatesCancellationWithoutReExecutingRequest()
+    {
+        var responseCounter = 0;
+        var cache = GetStore();
+        using var cancellation = new CancellationTokenSource();
+        var options = new OutputCacheOptions();
+        options.AddBasePolicy(builder => builder.Cache());
+        var middleware = TestUtils.CreateTestMiddleware(options: options, cache: cache, next: async context =>
+        {
+            Interlocked.Increment(ref responseCounter);
+            await Task.Delay(Timeout.Infinite, context.RequestAborted);
+        });
+
+        var context = TestUtils.CreateTestContext(cache: cache).HttpContext;
+        context.Request.Method = "GET";
+        context.Request.Path = "/";
+        context.RequestAborted = cancellation.Token;
+        var task = middleware.Invoke(context);
+
+        try
+        {
+            Assert.Equal(1, Volatile.Read(ref responseCounter));
+            Assert.False(task.IsCompleted);
+            cancellation.Cancel();
+
+            var exception = await Assert.ThrowsAnyAsync<OperationCanceledException>(() => task.DefaultTimeout());
+            Assert.Equal(cancellation.Token, exception.CancellationToken);
+            Assert.Equal(1, Volatile.Read(ref responseCounter));
+            Assert.Equal(0, cache.SetCount);
+        }
+        finally
+        {
+            cancellation.Cancel();
+            await Record.ExceptionAsync(() => task.DefaultTimeout());
+        }
+    }
+
     [Fact]
     public async Task AbortedRequest_DoesNotReExecuteRequest()
     {
