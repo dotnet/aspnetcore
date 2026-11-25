@@ -2,6 +2,7 @@ import assert from "node:assert/strict";
 import { createRequire } from "node:module";
 import { resolve } from "node:path";
 import { pathToFileURL } from "node:url";
+import { runtimeToolName } from "./workflow.mjs";
 
 assert.ok(process.env.VALLY_TOOLS, "Set VALLY_TOOLS to the evaluation-tools directory");
 const require = createRequire(resolve(process.env.VALLY_TOOLS, "package.json"));
@@ -31,7 +32,8 @@ export class ReadonlyClient extends CopilotClient {
         try {
             await session.rpc.tools.initializeAndValidate();
             const { tools } = await session.rpc.tools.getCurrentMetadata();
-            assert.deepEqual(tools.map(tool => tool.name).sort(), this.tools, "Unexpected runtime tool set");
+            assert.deepEqual(tools.map(tool => runtimeToolName(tool.name)).sort(), this.tools.map(runtimeToolName).sort(),
+                "Unexpected runtime tool set");
             return session;
         } catch (error) {
             await session.disconnect();

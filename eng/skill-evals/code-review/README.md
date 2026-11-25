@@ -35,12 +35,9 @@ export VALLY_TOOLS="$PWD/eng/skill-evals/evaluation-tools"
 npm ci --prefix "$VALLY_TOOLS"
 
 runner=eng/skill-evals/code-review/run.mjs
-cli_version=$(node "$runner" cli-version)
-test -n "$cli_version"
 scratch=$(mktemp -d "$HOME/code-review-eval.XXXXXXXX")
-cli_package="@github/copilot-linux-$(node -p 'process.arch')"
-npm install --prefix "$scratch/cli" --no-save --no-package-lock "$cli_package@$cli_version"
-export COPILOT_CLI_PATH="$scratch/cli/node_modules/$cli_package/copilot"
+export COPILOT_CLI_PATH="$VALLY_TOOLS/node_modules/@github/copilot-linux-$(node -p 'process.arch')/copilot"
+export COPILOT_SDK_DEFAULT_CONNECTION=stdio
 "$COPILOT_CLI_PATH" --version
 ```
 
@@ -51,8 +48,7 @@ prompt, model, CLI pin, and read/skill tool list from the checked-out `/review`
 workflow. There are three deliberate differences: the bundle path is local,
 the hosted publication adapter and tools are omitted, and the bundles are
 code-only with guidance files stripped. Hosted bundles keep guidance files
-and include existing PR comments. This corpus PR does not edit the shared
-eval lockfile. A separate PR bumps the shared tooling to the `/review` CLI.
+and include existing PR comments.
 
 Select explicit case IDs to check the setup or score a fresh batch. Each
 selected case gets one trial:
@@ -114,6 +110,8 @@ it does not count as clean. Run A was blocked on `case-05`, so the runner
 reports it separately and excludes it from both compared totals. The rule
 shipping bar is stricter: no new control findings. Read any unpaired control
 findings before shipping; compare them to the frozen source.
+Run A predates the CLI 1.0.103 bump, so the first quick run may differ because
+of the CLI change.
 
 ```bash
 node "$runner" prepare "$scratch/quick" --quick

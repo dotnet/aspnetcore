@@ -1,5 +1,9 @@
 import assert from "node:assert/strict";
 
+// The SDK can report the CLI's rg command as grep in tool metadata.
+export const runtimeToolName = name => name === "rg" ? "grep" : name;
+export const reviewToolNames = tools => [...new Set(tools.flatMap(name => [name, runtimeToolName(name)]))];
+
 export function reviewProfile(source) {
     const text = source.replaceAll("\r\n", "\n");
     const model = /^model: ([\w.-]+)$/m.exec(text)?.[1];
@@ -44,7 +48,7 @@ export function reviewSpec({ name, runs, ids }, { prompt, model, cliVersion, too
             prompt,
             agent_environment: { files: [{ src: `bundles/${id}`, dest: "bundle" }] },
             graders: [{ type: "tool-calls", config: {
-                disallowed: [{ name: `^(?!(?:${tools.join("|")})$).+` }],
+                disallowed: [{ name: `^(?!(?:${reviewToolNames(tools).join("|")})$).+` }],
             } }],
         })),
     };

@@ -1,4 +1,5 @@
 import assert from "node:assert/strict";
+import { reviewToolNames } from "./workflow.mjs";
 
 const shaPattern = /^[a-f0-9]{40}$/;
 const digestPattern = /^[a-f0-9]{64}$/;
@@ -187,7 +188,8 @@ export function auditReview(events, cliVersion, reviewTools) {
     assert.equal(starts[0].data.copilotVersion, cliVersion);
     assert.ok(!events.some(event => event.type.startsWith("subagent.")), "Unexpected subagent");
     const tools = events.filter(event => event.type === "tool.execution_start").map(event => event.data);
-    assert.ok(tools.every(tool => reviewTools.includes(tool.toolName)), "Unexpected executed tool");
+    const allowed = reviewToolNames(reviewTools);
+    assert.ok(tools.every(tool => allowed.includes(tool.toolName)), "Unexpected executed tool");
     const skills = tools.filter(tool => tool.toolName === "skill");
     assert.equal(skills.length, 1, "Expected one native skill invocation");
     assert.equal(skills[0].arguments.skill, "code-review");

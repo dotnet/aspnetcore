@@ -30,6 +30,11 @@ test("offline review uses the shipped prompt, model, CLI and analysis tools", ()
     assert.ok(workflow.includes(`\n  version: "${cliVersion}"\n`));
     const shippedTools = workflow.split("--available-tools=")[1].split("\n")[0].split(",");
     assert.deepEqual(tools, shippedTools.filter(tool => !tool.startsWith("safeoutputs-")).sort());
+    const [grader] = spec.stimuli[0].graders;
+    const disallowed = new RegExp(grader.config.disallowed[0].name);
+    assert.equal(disallowed.test("grep"), false);
+    assert.equal(disallowed.test("rg"), false);
+    assert.equal(disallowed.test("bash"), true);
     const shared = [
         ["Review the supplied version-2 bundle", "Wait for native invocation to succeed; reading a file is not an invocation."],
         ["Use `manifest.json`", "Do not assess vulnerabilities."],
@@ -45,6 +50,15 @@ test("offline review uses the shipped prompt, model, CLI and analysis tools", ()
     assert.doesNotMatch(prompt, /gh-aw\/review-bundle|All GitHub-visible output|safeoutputs-/);
     assert.throws(() => reviewProfile(workflow.replace("--available-tools=view,", "--available-tools=bash,view,")),
         /offline tool boundary/);
+});
+
+test("the shared eval lockfile pins the same CLI as /review", () => {
+    const { packages } = JSON.parse(readFileSync(new URL("../evaluation-tools/package-lock.json", import.meta.url), "utf8"));
+    const { cliVersion } = reviewProfile(workflow);
+    assert.equal(packages["node_modules/@github/copilot"].version, cliVersion);
+    for (const arch of ["x64", "arm64"]) {
+        assert.equal(packages[`node_modules/@github/copilot-linux-${arch}`].version, cliVersion);
+    }
 });
 
 test("the Run A cohort keeps both exclusions out of every tier", () => {
@@ -251,6 +265,8 @@ test("a reviewer must load the skill successfully and use only read tools", () =
     const usage = { type: "session.shutdown", data: { totalNanoAiu: 123 } };
     const tools = ["glob", "rg", "skill", "view"];
     assert.equal(auditReview([start, load, done, usage], "1.2.3", tools), 123);
+    const grep = { type: "tool.execution_start", data: { toolName: "grep" } };
+    assert.equal(auditReview([start, load, done, grep, usage], "1.2.3", tools), 123);
     assert.throws(() => auditReview([start, load, usage], "1.2.3", tools), /Skill did not load/);
     const unexpected = { type: "tool.execution_start", data: { toolName: "edit" } };
     assert.throws(() => auditReview([start, load, done, unexpected, usage], "1.2.3", tools), /Unexpected executed tool/);
