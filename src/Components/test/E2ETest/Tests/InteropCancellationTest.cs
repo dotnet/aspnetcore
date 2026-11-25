@@ -233,6 +233,30 @@ public class InteropCancellationTest(
     }
 
     [Fact]
+    public void SignalReturnedFromJavaScriptBecomesTokenThatAbortCancels()
+    {
+        Click("start-signal-result");
+        Equal("signalresult-managed", "received:True:False");
+        Click("abort-signal-result");
+        Equal("signalresult-managed", "canceled in .NET");
+    }
+
+    [Fact]
+    public void SignalReturnedFromSynchronousJavaScriptCallBecomesTokenInWebAssembly()
+    {
+        // Interactive Server has no synchronous calls from .NET to JS.
+        if (_serverFixture.ExecutionMode != ExecutionMode.Client)
+        {
+            return;
+        }
+
+        Click("start-signal-result-sync");
+        Equal("signalresult-managed", "received:True:False");
+        Click("abort-signal-result");
+        Equal("signalresult-managed", "canceled in .NET");
+    }
+
+    [Fact]
     public void AbortThatOvertakesTheCallStillCancelsTokenInServer()
     {
         // Only Interactive Server runs CircuitHandlers, which can reorder inbound messages.

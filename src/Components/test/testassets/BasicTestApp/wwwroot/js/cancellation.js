@@ -113,6 +113,9 @@ export function initialize(target) {
             const preAborted = target.invokeMethod("Inspect", aborted.signal);
             document.getElementById("sync-js").textContent = `${live}:${preAborted}`;
         },
+        abortSignalResult() {
+            signalResultController.abort();
+        },
         async syncReturned() {
             const result = target.invokeMethod("GetCancelingResult");
             await nextTask();
@@ -187,6 +190,13 @@ export function receiveAndForget(id, signal) {
 }
 
 export function noop() {
+}
+
+// Kept so that the page can abort the returned signal later.
+let signalResultController;
+export function createSignal() {
+    signalResultController = new AbortController();
+    return signalResultController.signal;
 }
 
 export async function waitIgnoringSignal(id, signal) {

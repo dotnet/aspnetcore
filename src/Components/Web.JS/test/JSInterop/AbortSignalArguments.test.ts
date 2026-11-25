@@ -190,16 +190,70 @@ describe("AbortSignal arguments", () => {
         expect(inlineSent.filter(call => call.methodIdentifier === "__AbortSignalReleased")).toHaveLength(1);
     });
 
-    test("A signal in a value returned to .NET is rejected", () => {
+    test("A signal in a synchronous result is written with its id and is not held, as .NET reads it before returning", async () => {
         const signal = new AbortController().signal;
         const objectId = DotNet.createJSObjectReference({ getSignal: () => signal })["__jsObjectId"];
 
-        expect(() => dispatcher.invokeJSFromDotNet(
-            "getSignal",
-            "[]",
-            DotNet.JSCallResultType.Default,
-            objectId,
-            DotNet.JSCallType.FunctionCall
-        )).toThrow();
+        const resultJson = dispatcher.invokeJSFromDotNet("getSignal", "[]", DotNet.JSCallResultType.Default, objectId, DotNet.JSCallType.FunctionCall)!;
+        const id = JSON.parse(resultJson).__abortSignal;
+        expect(JSON.parse(resultJson)).toEqual({ __abortSignal: id, aborted: false });
+
+        collect(signal);
+        await flush();
+        expect(messages("__AbortSignalReleased")).toEqual([{ callId: 0, methodIdentifier: "__AbortSignalReleased", argsJson: `[${id}]` }]);
+    });
+
+    test("Release waits until .NET has read the asynchronous result that carried the signal", async () => {
+        const results: string[] = [];
+        const resultSent: SentCall[] = [];
+        const resultDispatcher: DotNet.ICallDispatcher = DotNet.attachDispatcher({
+            beginInvokeDotNetFromJS: function (callId: number, assemblyName: string | null, methodIdentifier: string, dotNetObjectId: number | null, argsJson: string): void {
+                resultSent.push({ callId, methodIdentifier, argsJson });
+            },
+            sendByteArray: function (id: number, data: Uint8Array): void { },
+            endInvokeJSFromDotNet: function (callId: number, succeeded: boolean, resultOrError: any): void {
+                results.push(resultOrError);
+            },
+        });
+        const signal = new AbortController().signal;
+        const objectId = DotNet.createJSObjectReference({ getSignal: () => signal })["__jsObjectId"];
+
+        await resultDispatcher.beginInvokeJSFromDotNet(7, "getSignal", "[]", DotNet.JSCallResultType.Default, objectId, DotNet.JSCallType.FunctionCall);
+        const id = JSON.parse(results[0])[2].__abortSignal;
+        expect(id).toBeGreaterThan(0);
+
+        collect(signal);
+        await flush();
+        expect(resultSent.filter(call => call.methodIdentifier === "__AbortSignalReleased")).toHaveLength(0);
+
+        // .NET tells JS with a one-way message that it has read the result of call 7.
+        await resultDispatcher.beginInvokeJSFromDotNet(0, "__AbortSignalResultRead", "[7]", DotNet.JSCallResultType.JSVoidResult, 0, DotNet.JSCallType.FunctionCall);
+        await flush();
+        expect(resultSent.filter(call => call.methodIdentifier === "__AbortSignalReleased")).toEqual([{ callId: 0, methodIdentifier: "__AbortSignalReleased", argsJson: `[${id}]` }]);
+    });
+
+    test("A result that .NET reads before endInvokeJSFromDotNet returns is counted", async () => {
+        const resultSent: SentCall[] = [];
+        const inlineDispatcher: DotNet.ICallDispatcher = DotNet.attachDispatcher({
+            beginInvokeDotNetFromJS: function (callId: number, assemblyName: string | null, methodIdentifier: string, dotNetObjectId: number | null, argsJson: string): void {
+                resultSent.push({ callId, methodIdentifier, argsJson });
+            },
+            sendByteArray: function (id: number, data: Uint8Array): void { },
+            endInvokeJSFromDotNet: function (callId: number, succeeded: boolean, resultOrError: any): void {
+                inlineDispatcher.beginInvokeJSFromDotNet(0, "__AbortSignalResultRead", `[${callId}]`, DotNet.JSCallResultType.JSVoidResult, 0, DotNet.JSCallType.FunctionCall);
+            },
+        });
+        const signal = new AbortController().signal;
+        const objectId = DotNet.createJSObjectReference({ getSignal: () => signal })["__jsObjectId"];
+        await inlineDispatcher.beginInvokeJSFromDotNet(8, "getSignal", "[]", DotNet.JSCallResultType.Default, objectId, DotNet.JSCallType.FunctionCall);
+
+        collect(signal);
+        await flush();
+        expect(resultSent.filter(call => call.methodIdentifier === "__AbortSignalReleased")).toHaveLength(1);
+    });
+
+    test("A result read message for a result without signals is ignored", async () => {
+        await dispatcher.beginInvokeJSFromDotNet(0, "__AbortSignalResultRead", "[404]", DotNet.JSCallResultType.JSVoidResult, 0, DotNet.JSCallType.FunctionCall);
+        expect(sent).toEqual([]);
     });
 });

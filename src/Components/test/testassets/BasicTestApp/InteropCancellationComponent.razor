@@ -33,6 +33,9 @@
 <button id="abort-sync" onclick="cancellationTests.abort('sync')">Abort synchronous signal</button>
 <button id="drop-sync" onclick="cancellationTests.drop('sync')">Drop synchronous signal</button>
 <button id="start-sync-returned" onclick="cancellationTests.syncReturned()">Return a token canceled during serialization</button>
+<button id="start-signal-result" @onclick="ReceiveSignalResult">Receive a signal returned by JS</button>
+<button id="start-signal-result-sync" @onclick="ReceiveSignalResultSynchronously">Receive a signal returned by a synchronous JS call</button>
+<button id="abort-signal-result" onclick="cancellationTests.abortSignalResult()">Abort the returned signal</button>
 <button id="start-overtaken" onclick="cancellationTests.overtaken()">Abort before the delayed call arrives</button>
 <button id="start-collected" onclick="cancellationTests.collectedDuringCall(true)">Abort and drop during the delayed call</button>
 <button id="start-dropped" onclick="cancellationTests.collectedDuringCall(false)">Drop during the delayed call</button>
@@ -48,7 +51,7 @@
 <button id="cancel-control" @onclick="() => controlSource.Cancel()">Cancel managed wait</button>
 <button id="release-control" onclick="cancellationTests.releaseControl()">Complete JS function</button>
 <p id="cancellation-ready">@(module is null ? "loading" : "ready")</p>
-@foreach (var id in new[] { "first", "second", "ignored", "preaborted", "retained", "failure", "outgoing", "control", "sync", "overtaken", "collected", "dropped", "disposable", "returned" })
+@foreach (var id in new[] { "first", "second", "ignored", "preaborted", "retained", "failure", "outgoing", "control", "sync", "overtaken", "collected", "dropped", "disposable", "returned", "signalresult" })
 {
     <p id="@($"{id}-managed")">@(states.GetValueOrDefault(id, "not started"))</p>
     <p id="@($"{id}-js")"></p>
@@ -223,6 +226,32 @@
 
     [JSInvokable]
     public CancellationToken GetReturnedToken() => returnedSource.Token;
+
+    private async Task ReceiveSignalResult()
+        => WatchSignalResult(await module.InvokeAsync<CancellationToken>("createSignal"));
+
+    // Only WebAssembly has synchronous calls to JavaScript.
+    private void ReceiveSignalResultSynchronously()
+    {
+        if (module is IJSInProcessObjectReference inProcessModule)
+        {
+            WatchSignalResult(inProcessModule.Invoke<CancellationToken>("createSignal"));
+        }
+        else
+        {
+            states["signalresult"] = "no synchronous calls";
+        }
+    }
+
+    private void WatchSignalResult(CancellationToken token)
+    {
+        registrations.Add(token.Register(() => _ = InvokeAsync(() =>
+        {
+            states["signalresult"] = "canceled in .NET";
+            StateHasChanged();
+        })));
+        states["signalresult"] = $"received:{token.CanBeCanceled}:{token.IsCancellationRequested}";
+    }
 
     // In a synchronous call, returning is the send, so a cancel during serialization reaches JS before the token's id.
     [JSInvokable]

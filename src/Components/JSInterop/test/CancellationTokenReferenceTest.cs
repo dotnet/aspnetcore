@@ -648,6 +648,59 @@ public class CancellationTokenReferenceTest
         await AssertSentEventuallyAsync(runtime, "result:call", Canceled(id));
     }
 
+    // JS counts a result that carries a signal until .NET reports that it has read it, so "released" comes after.
+    [Fact]
+    public async Task SignalInAJavaScriptResultBecomesATokenAndTheReadIsReported()
+    {
+        using var runtime = new ReferenceRuntime { HoldReplies = true };
+        var call = runtime.InvokeAsync<CancellationToken>("getSignal", CancellationToken.None, []);
+        var taskId = runtime.Sent[0].AsyncHandle;
+        DotNetDispatcher.EndInvokeJS(runtime, $$"""[{{taskId}},true,{"__abortSignal":5,"aborted":false}]""");
+        var token = await call;
+        Assert.False(token.IsCancellationRequested);
+        AssertSent(runtime, "getSignal", ResultRead(taskId));
+
+        SendAbort(runtime, 5);
+        Assert.True(token.IsCancellationRequested);
+    }
+
+    [Fact]
+    public async Task JavaScriptResultWithoutSignalIsNotReported()
+    {
+        using var runtime = new ReferenceRuntime { HoldReplies = true };
+        var call = runtime.InvokeAsync<string>("getText", CancellationToken.None, []);
+        var taskId = runtime.Sent[0].AsyncHandle;
+        DotNetDispatcher.EndInvokeJS(runtime, $$"""[{{taskId}},true,"text"]""");
+        Assert.Equal("text", await call);
+        AssertSent(runtime, "getText");
+    }
+
+    // .NET does not read an ignored result, so it cannot tell whether a signal was in it.
+    [Fact]
+    public async Task IgnoredJavaScriptResultIsReportedAsRead()
+    {
+        using var runtime = new ReferenceRuntime { HoldReplies = true };
+        using var control = new CancellationTokenSource();
+        var call = runtime.InvokeAsync<CancellationToken>("getSignal", control.Token, []);
+        var taskId = runtime.Sent[0].AsyncHandle;
+        control.Cancel();
+        await Assert.ThrowsAnyAsync<OperationCanceledException>(async () => await call);
+
+        DotNetDispatcher.EndInvokeJS(runtime, $$"""[{{taskId}},true,{"__abortSignal":6,"aborted":false}]""");
+        AssertSent(runtime, "getSignal", ResultRead(taskId));
+    }
+
+    [Fact]
+    public async Task JavaScriptResultThatFailsToDeserializeIsReportedAsRead()
+    {
+        using var runtime = new ReferenceRuntime { HoldReplies = true };
+        var call = runtime.InvokeAsync<int>("getNumber", CancellationToken.None, []);
+        var taskId = runtime.Sent[0].AsyncHandle;
+        DotNetDispatcher.EndInvokeJS(runtime, $$"""[{{taskId}},true,{"__abortSignal":7,"aborted":false}]""");
+        await Assert.ThrowsAnyAsync<Exception>(async () => await call);
+        AssertSent(runtime, "getNumber", ResultRead(taskId));
+    }
+
     [Fact]
     public void MissingArgumentDoesNotInjectCancellationToken()
     {
@@ -710,9 +763,11 @@ public class CancellationTokenReferenceTest
 
     private static string Released(long id) => $"__CancellationTokenReleased[{id}]";
 
+    private static string ResultRead(long taskId) => $"__AbortSignalResultRead[{taskId}]";
+
     // The identifier alone for ordinary calls; the one-way cancellation messages also show their ids.
     private static string Describe(SentMessage message)
-        => message.Identifier.StartsWith("__CancellationToken", StringComparison.Ordinal)
+        => message.Identifier.StartsWith("__CancellationToken", StringComparison.Ordinal) || message.Identifier.StartsWith("__AbortSignal", StringComparison.Ordinal)
             ? message.Identifier + message.ArgsJson
             : message.Identifier;
 
