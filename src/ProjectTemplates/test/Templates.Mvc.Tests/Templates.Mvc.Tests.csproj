@@ -28,7 +28,10 @@
     <!-- Disabling on those OSes until a better fix can be identified -->
     <SkipHelixQueues>
       $(HelixQueueArmDebian);
-      $(HelixQueueAzureLinux);
+      $(HelixQueueAzureLinux4);
+      $(HelixQueueAzureLinux3);
+      $(HelixQueueArmAzureLinux4);
+      $(HelixQueueArmAzureLinux3);
       $(HelixQueueDebian);
       $(SkipHelixQueues)
     </SkipHelixQueues>

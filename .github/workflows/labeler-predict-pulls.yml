@@ -52,7 +52,7 @@ jobs:
   poll-pull-requests:
     # Run on schedule trigger or workflow_dispatch without PR numbers, within the 'dotnet' org
     if: ${{ (github.event_name == 'schedule' || (github.event_name == 'workflow_dispatch' && inputs.pulls == '')) && github.repository_owner == 'dotnet' }}
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-26.04
     permissions:
       actions: read
       pull-requests: read
@@ -93,7 +93,7 @@ jobs:
     # Do not automatically run the workflow on forks outside the 'dotnet' org
     if: ${{ always() && (github.event_name == 'workflow_dispatch' || github.repository_owner == 'dotnet') }}
     needs: [poll-pull-requests]
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-26.04
     permissions:
       pull-requests: write
     steps:

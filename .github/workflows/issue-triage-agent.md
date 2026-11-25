@@ -1,4 +1,5 @@
 ---
+runs-on: ubuntu-26.04
 if: ${{ github.event_name == 'workflow_dispatch' || !github.event.repository.fork }}
 
 on:
@@ -40,6 +41,8 @@ tools:
     min-integrity: none
 
 safe-outputs:
+  threat-detection:
+    runs-on: ubuntu-26.04
   report-failure-as-issue: false
   noop:
     report-as-issue: false
