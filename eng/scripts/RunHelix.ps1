@@ -9,7 +9,7 @@
     Set the Helix queues to use. The list is '+' or ';'-separated.
     Some supported queues:
     Debian.11.Amd64.Open
-    Mariner
+    azurelinux.4.arm64.open
     AlmaLinux.8.Amd64.Open
     Ubuntu.2004.Amd64.Open
     OSX.1100.Amd64.Open

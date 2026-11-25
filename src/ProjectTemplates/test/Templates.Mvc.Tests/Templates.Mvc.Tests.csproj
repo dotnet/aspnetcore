@@ -24,7 +24,7 @@
     <TestDependsOnAspNetPackages>true</TestDependsOnAspNetPackages>
     <HelixTimeout>02:30:00</HelixTimeout>
 
-    <!-- These tests fail in Helix in Debian and Mariner due to error -901 -->
+    <!-- These tests fail in Helix in Debian and Azure Linux due to error -901 -->
     <!-- Disabling on those OSes until a better fix can be identified -->
     <SkipHelixQueues>
       $(HelixQueueArmDebian);
