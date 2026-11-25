@@ -4,6 +4,7 @@
 using System.Collections.ObjectModel;
 using System.Diagnostics.CodeAnalysis;
 using System.Security.Claims;
+using System.Text.Json;
 using System.Text.RegularExpressions;
 using Microsoft.AspNetCore.Components.Authorization;
 using Microsoft.AspNetCore.Components.Server.Circuits;
@@ -16,6 +17,7 @@ using Microsoft.AspNetCore.SignalR;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
+using Microsoft.Extensions.Logging.Testing;
 using Microsoft.Extensions.Options;
 using Moq;
 
@@ -133,6 +135,117 @@ public class ComponentHubTest
         Assert.NotNull(circuitSecret);
         await hub.UpdateRootComponents("""{ batchId: 1, operations: [] }""", "");
         Assert.True(called);
+    }
+
+    [Fact]
+    public async Task UpdateRootComponents_OperationLimitRejectionDoesNotLogError()
+    {
+        var deserializer = new TestServerComponentDeserializer();
+        deserializer.OnTryDeserializeTestComponentOperations =
+            (serializedComponentOperations, out operationsWithDescriptors, deserializeDescriptors) =>
+            {
+                var key1 = new ComponentMarkerKey("1", "");
+                var key2 = new ComponentMarkerKey("2", "");
+                operationsWithDescriptors = new RootComponentOperationBatch
+                {
+                    BatchId = 1,
+                    Operations =
+                    [
+                        new RootComponentOperation
+                        {
+                            Type = RootComponentOperationType.Add,
+                            SsrComponentId = 1,
+                            Marker = ComponentMarker.Create(ComponentMarker.ServerMarkerType, prerendered: false, key1),
+                            Descriptor = new(typeof(TestComponent), WebRootComponentParameters.Empty),
+                        },
+                        new RootComponentOperation
+                        {
+                            Type = RootComponentOperationType.Add,
+                            SsrComponentId = 2,
+                            Marker = ComponentMarker.Create(ComponentMarker.ServerMarkerType, prerendered: false, key2),
+                            Descriptor = new(typeof(TestComponent), WebRootComponentParameters.Empty),
+                        },
+                    ],
+                };
+                return true;
+            };
+        var options = new CircuitOptions();
+        options.RootComponents.MaxJSRootComponents = 1;
+        var sink = new TestSink();
+        var loggerFactory = new TestLoggerFactory(sink, enabled: true);
+        var circuitHost = TestCircuitHost.Create(
+            logger: loggerFactory.CreateLogger<CircuitHost>(),
+            options: options);
+        var circuitFactory = new Mock<ICircuitFactory>();
+        circuitFactory
+            .Setup(factory => factory.CreateCircuitHostAsync(
+                It.IsAny<IReadOnlyList<ComponentDescriptor>>(),
+                It.IsAny<CircuitClientProxy>(),
+                It.IsAny<string>(),
+                It.IsAny<string>(),
+                It.IsAny<ClaimsPrincipal>(),
+                It.IsAny<IPersistentComponentStateStore>(),
+                It.IsAny<ResourceAssetCollection>()))
+            .ReturnsAsync(circuitHost);
+        var exceptionSource = new TaskCompletionSource<Exception>(TaskCreationOptions.RunContinuationsAsynchronously);
+        circuitHost.UnhandledException += (_, eventArgs) => exceptionSource.SetResult((Exception)eventArgs.ExceptionObject);
+        var (_, hub) = InitializeComponentHub(deserializer, circuitFactory: circuitFactory.Object);
+        await hub.StartCircuit("https://localhost:5000", "https://localhost:5000/subdir", "[]", null);
+
+        await hub.UpdateRootComponents("""{"batchId":1,"operations":[]}""", "");
+        var exception = await exceptionSource.Task.WaitAsync(TimeSpan.FromSeconds(10));
+
+        Assert.Equal("Exceeded the maximum number of allowed server interactive root components.", exception.Message);
+        Assert.DoesNotContain(sink.Writes, write => write.LogLevel == LogLevel.Error);
+    }
+
+    [Fact]
+    public async Task UpdateRootComponents_ResumedCircuitMissingMarkerKeyDoesNotLogError()
+    {
+        var dataProtectionProvider = new EphemeralDataProtectionProvider();
+        var deserializer = new ServerComponentDeserializer(
+            dataProtectionProvider,
+            NullLogger<ServerComponentDeserializer>.Instance,
+            new RootTypeCache(),
+            new ComponentParameterDeserializer(
+                NullLogger<ComponentParameterDeserializer>.Instance,
+                new ComponentParametersTypeCache()));
+        var sink = new TestSink();
+        var loggerFactory = new TestLoggerFactory(sink, enabled: true);
+        var circuitHost = TestCircuitHost.Create(logger: loggerFactory.CreateLogger<CircuitHost>());
+        circuitHost.AttachPersistedState(new ResumedPersistedCircuitState
+        {
+            ApplicationState = ReadOnlyDictionary<string, byte[]>.Empty,
+            RootComponentDescriptors = new Dictionary<int, WebRootComponentDescriptor>
+            {
+                [1] = new(typeof(TestComponent), WebRootComponentParameters.Empty),
+            },
+        });
+        var handleRegistry = new TestCircuitHandleRegistry();
+        handleRegistry.SetCircuit(new Dictionary<object, object>(), new object(), circuitHost);
+        var exceptionSource = new TaskCompletionSource<Exception>(TaskCreationOptions.RunContinuationsAsynchronously);
+        circuitHost.UnhandledException += (_, eventArgs) => exceptionSource.SetResult((Exception)eventArgs.ExceptionObject);
+        var (_, hub) = InitializeComponentHub(deserializer, handleRegistry);
+        var operations = new RootComponentOperationBatch
+        {
+            BatchId = 1,
+            Operations =
+            [
+                new RootComponentOperation
+                {
+                    Type = RootComponentOperationType.Add,
+                    SsrComponentId = 1,
+                    Marker = ComponentMarker.Create(ComponentMarker.ServerMarkerType, prerendered: false, key: null),
+                },
+            ],
+        };
+        var serializedOperations = JsonSerializer.Serialize(operations, ServerComponentSerializationSettings.JsonSerializationOptions);
+
+        await hub.UpdateRootComponents(serializedOperations, "");
+        var exception = await exceptionSource.Task.WaitAsync(TimeSpan.FromSeconds(10));
+
+        Assert.Equal("An invalid component marker key was provided.", exception.Message);
+        Assert.DoesNotContain(sink.Writes, write => write.LogLevel == LogLevel.Error);
     }
 
     [Fact]
@@ -392,7 +505,7 @@ public class ComponentHubTest
     }
 
     private static (Mock<ISingleClientProxy>, ComponentHub) InitializeComponentHub(
-        TestServerComponentDeserializer deserializer = null,
+        IServerComponentDeserializer deserializer = null,
         ICircuitHandleRegistry handleRegistry = null,
         ICircuitPersistenceProvider provider = null,
         ICircuitFactory circuitFactory = null,
@@ -546,4 +659,6 @@ public class ComponentHubTest
             return ValueTask.FromResult(circuitHost);
         }
     }
+
+    private sealed class TestComponent : ComponentBase;
 }
