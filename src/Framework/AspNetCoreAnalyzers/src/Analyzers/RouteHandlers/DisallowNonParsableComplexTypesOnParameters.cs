@@ -44,10 +44,10 @@ public partial class RouteHandlerAnalyzer : DiagnosticAnalyzer
                 continue;
             }
 
-            // Parameters of a method group declared in a referenced assembly have no declaring syntax
-            // in the current compilation. Fall back to reporting on the delegate passed to the Map method.
-            var location = handlerDelegateParameter.DeclaringSyntaxReferences.FirstOrDefault()?.GetSyntax(context.CancellationToken).GetLocation()
-                ?? delegateCreationSyntax.GetLocation();
+            var parameterSyntaxReference = handlerDelegateParameter.DeclaringSyntaxReferences.FirstOrDefault();
+            var location = parameterSyntaxReference is not null && context.Compilation.ContainsSyntaxTree(parameterSyntaxReference.SyntaxTree)
+                ? parameterSyntaxReference.GetSyntax(context.CancellationToken).GetLocation()
+                : delegateCreationSyntax.GetLocation();
 
             if (ReportFromAttributeDiagnostic(
                 context,

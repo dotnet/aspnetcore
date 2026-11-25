@@ -766,12 +766,12 @@ public class CommercialCustomer : ICustomer
         await VerifyCS.VerifyAnalyzerAsync(source);
     }
 
-    [Fact]
-    public async Task Handler_MethodGroup_FromReferencedAssembly_WithParsableParameter_Works()
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task Handler_MethodGroup_FromReferencedAssembly_WithParsableParameter_Works(bool useCompilationReference)
     {
         // Arrange
-        // Regression test for https://github.com/dotnet/aspnetcore/issues/68976. Parameters of a method
-        // declared in a referenced assembly have no declaring syntax references in the current compilation.
         var referencedAssemblySource = """
             using Microsoft.AspNetCore.Http;
 
@@ -791,14 +791,16 @@ public class CommercialCustomer : ICustomer
             """;
 
         // Act
-        var diagnostics = await GetDiagnosticsWithReferencedAssemblyAsync(referencedAssemblySource, source);
+        var diagnostics = await GetDiagnosticsWithReferencedAssemblyAsync(referencedAssemblySource, source, useCompilationReference);
 
         // Assert
         Assert.Empty(diagnostics);
     }
 
-    [Fact]
-    public async Task Handler_MethodGroup_FromReferencedAssembly_WithNonParsableRouteParameter_ReportsOnMethodGroup()
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task Handler_MethodGroup_FromReferencedAssembly_WithNonParsableRouteParameter_ReportsOnMethodGroup(bool useCompilationReference)
     {
         // Arrange
         var referencedAssemblySource = """
@@ -824,7 +826,7 @@ public class CommercialCustomer : ICustomer
             """);
 
         // Act
-        var diagnostics = await GetDiagnosticsWithReferencedAssemblyAsync(referencedAssemblySource, source.Source);
+        var diagnostics = await GetDiagnosticsWithReferencedAssemblyAsync(referencedAssemblySource, source.Source, useCompilationReference);
 
         // Assert
         var diagnostic = Assert.Single(diagnostics);
@@ -833,22 +835,30 @@ public class CommercialCustomer : ICustomer
         Assert.Equal("Parameter 'customer' of type Customer should define a bool TryParse(string, IFormatProvider, out Customer) method, or implement IParsable<Customer>", diagnostic.GetMessage(CultureInfo.InvariantCulture));
     }
 
-    private async Task<Diagnostic[]> GetDiagnosticsWithReferencedAssemblyAsync(string referencedAssemblySource, string source)
+    private async Task<Diagnostic[]> GetDiagnosticsWithReferencedAssemblyAsync(string referencedAssemblySource, string source, bool useCompilationReference)
     {
         var project = TestDiagnosticAnalyzerRunner.CreateProjectWithReferencesInBinDir(typeof(DisallowNonParsableComplexTypesOnParametersTest).Assembly, source);
 
-        // Compile the referenced code into a separate assembly so the analyzer sees metadata symbols
-        // rather than source symbols, matching a handler declared in a ProjectReference.
         var referencedCompilation = CSharpCompilation.Create(
             "ReferencedAssembly",
             [CSharpSyntaxTree.ParseText(referencedAssemblySource)],
             project.MetadataReferences,
             new CSharpCompilationOptions(OutputKind.DynamicallyLinkedLibrary));
-        using var stream = new MemoryStream();
-        var emitResult = referencedCompilation.Emit(stream);
-        Assert.True(emitResult.Success, string.Join(Environment.NewLine, emitResult.Diagnostics));
 
-        project = project.AddMetadataReference(MetadataReference.CreateFromImage(stream.ToArray()));
-        return await Runner.GetDiagnosticsAsync(project);
+        MetadataReference reference;
+        if (useCompilationReference)
+        {
+            Assert.DoesNotContain(referencedCompilation.GetDiagnostics(), d => d.Severity == DiagnosticSeverity.Error);
+            reference = referencedCompilation.ToMetadataReference();
+        }
+        else
+        {
+            using var stream = new MemoryStream();
+            var emitResult = referencedCompilation.Emit(stream);
+            Assert.True(emitResult.Success, string.Join(Environment.NewLine, emitResult.Diagnostics));
+            reference = MetadataReference.CreateFromImage(stream.ToArray());
+        }
+
+        return await Runner.GetDiagnosticsAsync(project.AddMetadataReference(reference));
     }
 }
