@@ -428,6 +428,8 @@ app.MapGet("/", TestAction);
             [nameof(ParameterListWithInheritedReadOnlyProperties.ReadOnlyValue)] = "42",
             [nameof(ParameterListWithInheritedReadOnlyProperties.PrivateSetValue)] = "42",
             [nameof(ParameterListWithInheritedReadOnlyProperties.ProtectedSetValue)] = "42",
+            [nameof(ParameterListWithInheritedReadOnlyProperties.ProtectedInternalSetValue)] = "42",
+            [nameof(ParameterListWithInheritedReadOnlyProperties.OverriddenGetterValue)] = "42",
         });
 
         await endpoint.RequestDelegate(httpContext);
@@ -437,6 +439,35 @@ app.MapGet("/", TestAction);
         Assert.Equal(1, input.ReadOnlyValue);
         Assert.Equal(2, input.PrivateSetValue);
         Assert.Equal(3, input.ProtectedSetValue);
+        Assert.Equal(4, input.ProtectedInternalSetValue);
+        Assert.Equal(5, input.OverriddenGetterValue);
+    }
+
+    [Fact]
+    public async Task RequestDelegatePopulatesFromParameterListWithInheritedPropertyThatDiffersOnlyByCase()
+    {
+        var source = """
+void TestAction(HttpContext context, [AsParameters] ParameterListWithCaseVariantProperty args)
+{
+    context.Items.Add("input", args);
+}
+app.MapGet("/", TestAction);
+""";
+        var (_, compilation) = await RunGeneratorAsync(source);
+        var endpoint = GetEndpointFromCompilation(compilation);
+
+        var httpContext = CreateHttpContext();
+        httpContext.Request.Query = new QueryCollection(new Dictionary<string, StringValues>()
+        {
+            [nameof(ParameterListWithCaseVariantProperty.ID)] = "1",
+            [nameof(ParameterListWithCaseVariantProperty.Id)] = "2",
+        });
+
+        await endpoint.RequestDelegate(httpContext);
+
+        var input = Assert.IsType<ParameterListWithCaseVariantProperty>(httpContext.Items["input"]);
+        Assert.Equal(1, input.ID);
+        Assert.Equal(2, input.Id);
     }
 
     [Fact]

@@ -478,19 +478,12 @@ internal class EndpointParameter
         // When leveraging parameterless constructors, we want to ensure we only emit for writable
         // properties. We do not have this constraint if we are leveraging a parameterized constructor.
         var properties = GetPublicProperties(type);
-        // The generated code is outside of the type hierarchy, so it cannot call a private or protected setter.
-        var writableProperties = properties.Where(property => !property.IsReadOnly
-            && property.SetMethod?.DeclaredAccessibility is not (Accessibility.Private or Accessibility.Protected or Accessibility.ProtectedAndInternal));
+        // Like RequestDelegateFactory, only assign properties that have a public setter.
+        var writableProperties = properties.Where(property => property.SetMethod is { DeclaredAccessibility: Accessibility.Public });
 
         if (numOfConstructors == 1)
         {
             var targetConstructor = constructors.Single();
-            var lookupTable = new Dictionary<ParameterLookupKey, IPropertySymbol>();
-            foreach (var property in properties)
-            {
-                lookupTable.Add(new ParameterLookupKey(property.Name, property.Type), property);
-            }
-
             var parameters = targetConstructor.GetParameters();
             var propertiesWithParameterInfo = new List<ConstructorParameter>();
 
@@ -499,6 +492,12 @@ internal class EndpointParameter
                 isDefaultConstructor = true;
                 matchedProperties = writableProperties.Select(property => new ConstructorParameter(property, null));
                 return true;
+            }
+
+            var lookupTable = new Dictionary<ParameterLookupKey, IPropertySymbol>();
+            foreach (var property in properties)
+            {
+                lookupTable.Add(new ParameterLookupKey(property.Name, property.Type), property);
             }
 
             foreach (var parameter in parameters)
@@ -537,8 +536,9 @@ internal class EndpointParameter
         return false;
     }
 
-    // Matches the Type.GetProperties() call in RequestDelegateFactory: public properties declared on the type or
-    // inherited from a base type. When a more derived type overrides or hides a property, the most derived one wins.
+    // Matches the Type.GetProperties() call in RequestDelegateFactory: public instance properties declared on the type
+    // or inherited from a base type. When a more derived type overrides or hides a property, the most derived one wins.
+    // Static properties and indexers cannot be set in an object initializer, so they are not returned.
     private static IEnumerable<IPropertySymbol> GetPublicProperties(INamedTypeSymbol type)
     {
         var seenPropertyNames = new HashSet<string>(StringComparer.Ordinal);
@@ -552,13 +552,13 @@ internal class EndpointParameter
             var isBaseType = !SymbolEqualityComparer.Default.Equals(currentType, type);
             foreach (var property in currentType.GetMembers().OfType<IPropertySymbol>())
             {
-                // Reflection does not return static or private properties that a base type declares.
-                if (isBaseType && (property.IsStatic || property.DeclaredAccessibility == Accessibility.Private))
+                // A private property of a base type is not visible to derived types, so it does not hide anything.
+                if (isBaseType && property.DeclaredAccessibility == Accessibility.Private)
                 {
                     continue;
                 }
 
-                if (seenPropertyNames.Add(property.Name) && property.DeclaredAccessibility == Accessibility.Public)
+                if (seenPropertyNames.Add(property.Name) && property is { DeclaredAccessibility: Accessibility.Public, IsStatic: false, IsIndexer: false })
                 {
                     yield return property;
                 }
