@@ -1,12 +1,13 @@
 <Project>
   <!-- This file is shared between Helix.proj and .csproj files. -->
   <PropertyGroup>
-    <HelixQueueAlmaLinux>(AlmaLinux.9.Amd64.Open)azurelinux.4.Amd64.Open@mcr.microsoft.com/dotnet-buildtools/prereqs:almalinux-9-helix-amd64</HelixQueueAlmaLinux>
-    <HelixQueueAlpine>(Alpine.321.Amd64.Open)azurelinux.4.Amd64.Open@mcr.microsoft.com/dotnet-buildtools/prereqs:alpine-3.21-helix-amd64</HelixQueueAlpine>
+    <HelixQueueAlmaLinux>(AlmaLinux.10.Amd64.Open)azurelinux.4.Amd64.Open@mcr.microsoft.com/dotnet-buildtools/prereqs:almalinux-10-helix-amd64</HelixQueueAlmaLinux>
+    <HelixQueueAlpine>(Alpine.324.Amd64.Open)azurelinux.4.Amd64.Open@mcr.microsoft.com/dotnet-buildtools/prereqs:alpine-3.24-helix-amd64</HelixQueueAlpine>
     <HelixQueueAzureLinux4>azurelinux.4.amd64.open</HelixQueueAzureLinux4>
     <HelixQueueAzureLinux3>(AzureLinux.30.Amd64.Open)azurelinux.4.Amd64.Open@mcr.microsoft.com/dotnet-buildtools/prereqs:azurelinux-3.0-helix-amd64</HelixQueueAzureLinux3>
     <HelixQueueDebian>(Debian.13.Amd64.Open)azurelinux.4.Amd64.Open@mcr.microsoft.com/dotnet-buildtools/prereqs:debian-13-helix-amd64</HelixQueueDebian>
-    <HelixQueueFedora>(Fedora.42.Amd64.Open)azurelinux.4.Amd64.Open@mcr.microsoft.com/dotnet-buildtools/prereqs:fedora-42-helix-amd64</HelixQueueFedora>
+    <HelixQueueFedora>(Fedora.45.Amd64.Open)azurelinux.4.Amd64.Open@mcr.microsoft.com/dotnet-buildtools/prereqs:fedora-45-helix-amd64</HelixQueueFedora>
+    <HelixQueueUbuntu2610>(Ubuntu.2610.Amd64.Open)azurelinux.4.Amd64.Open@mcr.microsoft.com/dotnet-buildtools/prereqs:ubuntu-26.10-helix-amd64</HelixQueueUbuntu2610>
     <!-- Arm64 -->
     <HelixQueueArmAzureLinux4>azurelinux.4.arm64.open</HelixQueueArmAzureLinux4>
     <HelixQueueArmAzureLinux3>(AzureLinux.30.Arm64.Open)azurelinux.4.arm64.open@mcr.microsoft.com/dotnet-buildtools/prereqs:azurelinux-3.0-helix-arm64v8</HelixQueueArmAzureLinux3>
@@ -45,7 +46,7 @@
       <ItemGroup>
         <!-- Linux -->
         <HelixAvailableTargetQueue Include="$(HelixQueueAlmaLinux)" Platform="Linux" />
-        <HelixAvailableTargetQueue Include="Ubuntu.2604.Amd64.Open" Platform="Linux" />
+        <HelixAvailableTargetQueue Include="$(HelixQueueUbuntu2610)" Platform="Linux" />
         <HelixAvailableTargetQueue Include="$(HelixQueueAzureLinux4)" Platform="Linux" />
         <HelixAvailableTargetQueue Include="$(HelixQueueArmAzureLinux4)" Platform="Linux" />
 
