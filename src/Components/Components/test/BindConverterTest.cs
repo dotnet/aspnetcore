@@ -478,6 +478,18 @@ public class BindConverterTest
         Assert.Null(actual);
     }
 
+    [Theory]
+    [InlineData("-42")]
+    [InlineData("4294967296")]
+    [InlineData("not a number")]
+    public void TryConvertTo_TypeConverter_InvalidValueReturnsFalse(string incomingValue)
+    {
+        var successfullyConverted = BindConverter.TryConvertTo<uint>(incomingValue, CultureInfo.InvariantCulture, out var actual);
+
+        Assert.False(successfullyConverted);
+        Assert.Equal(default(uint), actual);
+    }
+
     private enum SomeLetters
     {
         A,
