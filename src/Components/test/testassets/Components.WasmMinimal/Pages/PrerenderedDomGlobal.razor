@@ -1,0 +1,8 @@
+@page "/prerendered-dom-global"
+@using Microsoft.AspNetCore.Components.Web
+
+<HeadContent>
+    <style id="dom-global-head-style">.prerendered-dom { --prerendered-dom-head: present; }</style>
+</HeadContent>
+<TestContentPackage.PrerenderedDomContent IdSuffix="global" />
+@((MarkupString)"<script>window.globalPrerenderedDomRoot ||= document.getElementById('dom-global-root');</script>")

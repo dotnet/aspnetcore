@@ -110,7 +110,7 @@ export function restoreNavigationFocus(focus: PendingNavigationFocus): void {
     return;
   }
 
-  // Match FocusOnNavigate's document.querySelector order, limited to the replaced root.
+  // Match FocusOnNavigate's document.querySelector order, limited to the activated root.
   const rootElements = getElementsInLogicalRoot(focus.root);
   const replacement = Array.from(document.querySelectorAll(focus.selector)).find(element => isInLogicalRoot(rootElements, element));
   if (!replacement) {
@@ -130,8 +130,7 @@ export function restoreNavigationFocus(focus: PendingNavigationFocus): void {
 }
 
 function canRestoreFocus(focus: PendingNavigationFocus): boolean {
-  return !focus.element.isConnected
-    && (document.activeElement === null || document.activeElement === document.body)
+  return (document.activeElement === null || document.activeElement === document.body)
     && currentFocusOnNavigateElement === focus.owner
     && focus.owner.isConnected
     && focus.owner.getAttribute('selector') === focus.selector;

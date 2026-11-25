@@ -74,14 +74,19 @@ export function renderBatch(browserRendererId: number, batch: RenderBatch): void
   const diffReader = batch.diffReader;
 
   let pendingFocus: PendingNavigationFocus | null = null;
-  for (let i = 0; i < updatedComponentsLength; i++) {
-    const diff = batch.updatedComponentsEntry(updatedComponentsValues, i);
-    const componentId = diffReader.componentId(diff);
-    const edits = diffReader.edits(diff);
-    const capturedFocus = browserRenderer.updateComponent(batch, componentId, edits, referenceFramesValues);
-    if (capturedFocus) {
-      pendingFocus = capturedFocus;
+  try {
+    browserRenderer.beginBatch(batch);
+    for (let i = 0; i < updatedComponentsLength; i++) {
+      const diff = batch.updatedComponentsEntry(updatedComponentsValues, i);
+      const componentId = diffReader.componentId(diff);
+      const edits = diffReader.edits(diff);
+      const capturedFocus = browserRenderer.updateComponent(batch, componentId, edits, referenceFramesValues);
+      if (capturedFocus) {
+        pendingFocus = capturedFocus;
+      }
     }
+  } finally {
+    browserRenderer.endBatch();
   }
 
   const disposedComponentIdsRange = batch.disposedComponentIds();
