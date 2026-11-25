@@ -116,12 +116,13 @@ public class BlazorGatewayCliToolTests
         var upstreamUri = new Uri(upstream.BaseUrl);
 
         using var tool = GatewayToolInstallation.Install();
-        var manifestPath = Path.Combine(
-            tool.SelectedToolDirectory,
-            "blazor-gateway.staticwebassets.endpoints.json");
+        var toolDirectory = tool.SelectedToolDirectory;
+        var manifestPath = Path.Combine(toolDirectory, "blazor-gateway.staticwebassets.endpoints.json");
+        var webRootPath = Path.Combine(toolDirectory, "wwwroot");
 
         await using var running = await tool.StartAsync(
             "--environment", "Development",
+            "--webroot", $"\"{webRootPath}\"",
             "--ClientApps:app:ConfigEndpointPath", "/app/_blazor/_configuration",
             "--ClientApps:app:ConfigResponse", "\"{\\\"enabled\\\":true}\"",
             "--ClientApps:app:EndpointsManifest", $"\"{manifestPath}\"",
