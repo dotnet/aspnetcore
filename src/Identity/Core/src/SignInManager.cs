@@ -535,6 +535,10 @@ public class SignInManager<TUser> where TUser : class
     /// account, callers should require the user to confirm their identity with a credential the account
     /// already holds before calling this method. This does not apply when registering a new account,
     /// where the passkey is the account's initial credential.
+    /// Passkey ceremonies require the separate <c>Identity.Passkey</c> cookie scheme. Custom Identity
+    /// compositions that previously registered only the two-factor cookie with <c>AddCookie</c> should
+    /// use <see cref="IdentityCookieAuthenticationBuilderExtensions.AddTwoFactorUserIdCookie"/> instead
+    /// and reapply their two-factor cookie settings using the returned options builder.
     /// </remarks>
     /// <param name="userEntity">The user entity for which to create passkey options.</param>
     /// <returns>A JSON string representing the created passkey options.</returns>
@@ -587,6 +591,12 @@ public class SignInManager<TUser> where TUser : class
     /// </summary>
     /// <param name="user">The user for whom to create passkey assertion options.</param>
     /// <returns>A JSON string representing the created passkey assertion options.</returns>
+    /// <remarks>
+    /// Passkey ceremonies require the separate <c>Identity.Passkey</c> cookie scheme. Custom Identity
+    /// compositions that previously registered only the two-factor cookie with <c>AddCookie</c> should
+    /// use <see cref="IdentityCookieAuthenticationBuilderExtensions.AddTwoFactorUserIdCookie"/> instead
+    /// and reapply their two-factor cookie settings using the returned options builder.
+    /// </remarks>
     public virtual async Task<string> MakePasskeyRequestOptionsAsync(TUser? user)
     {
         ThrowIfNoPasskeyHandler();

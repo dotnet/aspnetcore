@@ -95,6 +95,22 @@ public static class IdentityCookieAuthenticationBuilderExtensions
     /// </summary>
     /// <param name="builder">The current <see cref="AuthenticationBuilder"/> instance.</param>
     /// <returns>The <see cref="OptionsBuilder{TOptions}"/> which can be used to configure the cookie authentication.</returns>
+    /// <remarks>
+    /// This also registers the separate <c>Identity.Passkey</c> cookie used by passkey ceremonies.
+    /// Applications that manually register <see cref="IdentityConstants.TwoFactorUserIdScheme"/> with
+    /// <c>AddCookie</c> and use passkeys should replace that registration with this method and reapply
+    /// their two-factor cookie settings using the returned options builder.
+    /// Because this method registers two schemes, applications that previously relied on the two-factor
+    /// cookie being the only scheme must configure an explicit default scheme for operations that
+    /// do not specify a scheme. Applications with an existing explicit default should keep that default.
+    /// </remarks>
+    /// <example>
+    /// To retain the two-factor cookie as the default in a standalone registration:
+    /// <code>
+    /// services.AddAuthentication(IdentityConstants.TwoFactorUserIdScheme)
+    ///     .AddTwoFactorUserIdCookie();
+    /// </code>
+    /// </example>
     public static OptionsBuilder<CookieAuthenticationOptions> AddTwoFactorUserIdCookie(this AuthenticationBuilder builder)
     {
         builder.AddCookie(IdentityConstants.TwoFactorUserIdScheme, o =>

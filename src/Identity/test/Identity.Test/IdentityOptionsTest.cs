@@ -2,10 +2,12 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Security.Claims;
+using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
+using Moq;
 
 namespace Microsoft.AspNetCore.Identity.Test;
 
@@ -134,6 +136,56 @@ public class IdentityOptionsTest
 
         passkey.Cookie.Path = "/configured";
         Assert.Equal("/configured", passkey.Cookie.Build(context).Path);
+    }
+
+    [Fact]
+    public async Task PasskeyOptionsCanBeCreatedWithStandaloneCookieRegistration()
+    {
+        var services = new ServiceCollection();
+        services.AddLogging();
+        services.AddIdentityCore<PocoUser>().AddSignInManager();
+        services.AddSingleton(Mock.Of<IUserStore<PocoUser>>());
+        var passkeyHandler = new Mock<IPasskeyHandler<PocoUser>>();
+        passkeyHandler.Setup(handler => handler.MakeRequestOptionsAsync(null, It.IsAny<HttpContext>()))
+            .ReturnsAsync(new PasskeyRequestOptionsResult
+            {
+                RequestOptionsJson = "{}",
+                AssertionState = "assertion-state",
+            });
+        services.AddSingleton(passkeyHandler.Object);
+        services.AddAuthentication().AddTwoFactorUserIdCookie();
+        using var provider = services.BuildServiceProvider();
+        using var scope = provider.CreateScope();
+        var context = new DefaultHttpContext { RequestServices = scope.ServiceProvider };
+        var signIn = scope.ServiceProvider.GetRequiredService<SignInManager<PocoUser>>();
+        signIn.Context = context;
+
+        Assert.Equal("{}", await signIn.MakePasskeyRequestOptionsAsync(null));
+        var cookie = context.Response.Headers.SetCookie.ToString();
+        Assert.StartsWith(IdentityConstants.PasskeyScheme + "=", cookie);
+        Assert.DoesNotContain(IdentityConstants.TwoFactorUserIdScheme + "=", cookie);
+
+        using var nextScope = provider.CreateScope();
+        var nextContext = new DefaultHttpContext { RequestServices = nextScope.ServiceProvider };
+        nextContext.Request.Headers.Cookie = cookie.Split(';')[0];
+        var result = await nextContext.AuthenticateAsync(IdentityConstants.PasskeyScheme);
+        Assert.True(result.Succeeded);
+        Assert.Equal("assertion-state", result.Properties.Items["PasskeyState"]);
+    }
+
+    [Fact]
+    public async Task StandaloneTwoFactorCookieCanAuthenticateWithExplicitDefaultScheme()
+    {
+        var services = new ServiceCollection();
+        services.AddLogging();
+        services.AddAuthentication(IdentityConstants.TwoFactorUserIdScheme).AddTwoFactorUserIdCookie();
+        using var provider = services.BuildServiceProvider();
+        using var scope = provider.CreateScope();
+        var context = new DefaultHttpContext { RequestServices = scope.ServiceProvider };
+
+        var result = await context.AuthenticateAsync();
+
+        Assert.True(result.None);
     }
 
     [Fact]
