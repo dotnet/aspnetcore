@@ -157,11 +157,11 @@ try {
   const verifierPath = path.join(tempRoot, 'verify.cjs');
   fs.writeFileSync(verifierPath, sourceVerifier);
 
-  const runVerifier = (events, expectedWorkerCount) => {
+  const runVerifier = (events, expectedWorkerCount, scriptPath = verifierPath) => {
     const sessionPath = path.join(tempRoot, 'agent-session.jsonl');
     fs.writeFileSync(sessionPath, events.map(event => JSON.stringify(event)).join('\n'));
 
-    return spawnSync(process.execPath, [verifierPath], {
+    return spawnSync(process.execPath, [scriptPath], {
       encoding: 'utf8',
       env: {
         ...process.env,
@@ -358,6 +358,60 @@ try {
     assert.doesNotMatch(cli.stderr, /Expected .*worker|was not collected/, cliName);
     console.log(`Validated ${cliName}.`);
   }
+
+  const missingToolArguments = { reason: 'A separate tool is unavailable.' };
+  const missingTool = safeOutputCall('diagnostic', 'safeoutputs-missing_tool', missingToolArguments);
+  const failedMissingTool = safeOutputCall('diagnostic', 'safeoutputs-missing_tool', missingToolArguments, false);
+  const workerEvents = hostedWorker();
+  const workerBeforeReadCompletes = workerEvents.slice(0, -1);
+  const readCompletion = workerEvents.at(-1);
+  const stopReason = 'The review could not complete.';
+  const stoppedComment = safeOutputCall('comment', 'safeoutputs-add_comment', {
+    body: `Review not published (BLOCKED): ${stopReason}\n\nNo partial findings were published.`,
+  });
+  const diagnosticCases = [
+    ['missing tool before worker read completes',
+      [...workerBeforeReadCompletes, ...missingTool, readCompletion, ...publication()], null],
+    ['actual publication before worker read completes',
+      [...workerBeforeReadCompletes, ...missingTool, ...publication(), readCompletion],
+      /read_agent.*did not complete before publication/],
+    ['missing tool without publication', [...workerEvents, ...missingTool],
+      /No native safe-output publication call was recorded/],
+    ...['report_incomplete', 'missing_data'].flatMap(type => {
+      const signal = safeOutputCall('signal', `safeoutputs-${type}`, { reason: stopReason });
+      return [
+        [`stopped with separate diagnostic and ${type}`, [...missingTool, ...stoppedComment, ...signal], null],
+        [`stopped with failed diagnostic and ${type}`,
+          [...failedMissingTool, ...stoppedComment, ...signal], null],
+        [`stopped with uncompleted diagnostic and ${type}`, [missingTool[0], ...stoppedComment, ...signal], null],
+      ];
+    }),
+    ['stopped with matching missing tool as the only signal',
+      [...stoppedComment, ...safeOutputCall('signal', 'safeoutputs-missing_tool', { reason: stopReason })], null],
+    ['stopped with failed matching missing tool as the only signal',
+      [...stoppedComment, ...safeOutputCall('signal', 'safeoutputs-missing_tool', { reason: stopReason }, false)],
+      /Expected 1 per-guide review worker\(s\), but recorded 0/],
+    ['stopped with mismatched missing tool as the only signal', [...stoppedComment, ...missingTool],
+      /Expected 1 per-guide review worker\(s\), but recorded 0/],
+    ['stopped with duplicate explicit signals',
+      [...missingTool, ...stoppedComment,
+        ...safeOutputCall('signal', 'safeoutputs-report_incomplete', { reason: stopReason }),
+        ...safeOutputCall('duplicate', 'safeoutputs-missing_data', { reason: stopReason })],
+      /Expected 1 per-guide review worker\(s\), but recorded 0/],
+  ];
+  const lockVerifierPath = path.join(tempRoot, 'verify-lock.cjs');
+  fs.writeFileSync(lockVerifierPath, lockVerifierMatch[1]);
+  const diagnosticMismatches = [];
+  for (const [workflowName, scriptPath] of [['source', verifierPath], ['lock', lockVerifierPath]]) {
+    for (const [name, events, expectedFailure] of diagnosticCases) {
+      const { status, stderr } = runVerifier(events, '1', scriptPath);
+      if (expectedFailure === null ? status !== 0 : status === 0 || !expectedFailure.test(stderr)) {
+        diagnosticMismatches.push(`${workflowName} ${name}: exit ${status}, ${stderr.trim()}`);
+      }
+    }
+  }
+  assert.deepEqual(diagnosticMismatches, [], diagnosticMismatches.join('\n'));
+  console.log(`Validated ${diagnosticCases.length} missing-tool transcript cases against source and compiled lock.`);
 
   assert.equal(runVerifier([
     ...hostedWorker('task-hosted', 'guide-hosted'),
