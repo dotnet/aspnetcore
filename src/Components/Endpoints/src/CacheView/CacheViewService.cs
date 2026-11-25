@@ -90,6 +90,12 @@ internal sealed partial class CacheViewService : IDisposable
         }
 
         var key = CacheViewKeyResolver.ComputeKey(cacheView, httpContext);
+        if (cacheView.RenderState is { } previousState && previousState.Key != key)
+        {
+            // The previous key will no longer reach EndCapture when this state is replaced.
+            OnCacheViewDisposed(previousState);
+        }
+
         var state = new CacheViewRenderState(key, GetVaryBy(cacheView))
         {
             Content = cacheView.ChildContent,
