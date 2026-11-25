@@ -802,6 +802,8 @@ public class RoutingTest : ServerTestBase<ToggleExecutionModeServerFixture<Progr
         Browser.FindElement(By.Id("add-navigation-lock")).Click();
         Browser.FindElement(By.CssSelector("#navigation-lock-0 > input.block-internal-navigation")).Click();
         Browser.FindElement(By.CssSelector("#navigation-lock-1 > input.block-internal-navigation")).Click();
+        Browser.Equal("true", () => Browser.FindElement(By.CssSelector("#navigation-lock-0 > input.navigation-lock-ready")).GetDomProperty("value"));
+        Browser.Equal("true", () => Browser.FindElement(By.CssSelector("#navigation-lock-1 > input.navigation-lock-ready")).GetDomProperty("value"));
 
         var uriBeforeBlockedNavigation = Browser.FindElement(By.Id("test-info")).Text;
 
