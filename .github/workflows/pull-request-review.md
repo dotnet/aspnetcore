@@ -1,4 +1,5 @@
 ---
+runs-on: ubuntu-26.04
 if: ${{ github.event.repository.fork == false }}
 
 on:
@@ -580,6 +581,7 @@ safe-outputs:
     pull-requests: true
     discussions: false
   threat-detection:
+    runs-on: ubuntu-26.04
     model: gpt-6.2-sol
     max-ai-credits: 200
     max-turns: 20
