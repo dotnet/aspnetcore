@@ -2,12 +2,17 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using Microsoft.AspNetCore.Builder;
+using System.Collections.ObjectModel;
+using System.Globalization;
 using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Localization;
 using Microsoft.AspNetCore.TestHost;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging.Abstractions;
+using Microsoft.Extensions.Primitives;
 using Microsoft.Net.Http.Headers;
 
 namespace Microsoft.Extensions.Localization;
@@ -115,5 +120,57 @@ public class RequestLocalizationMiddlewareTest
 
             response.EnsureSuccessStatusCode();
         }
+    }
+
+    public static TheoryData<string, string> CollectionKinds => new()
+    {
+        { "List", "List" },
+        { "Array", "Array" },
+        { "ReadOnlyCollection", "ReadOnlyCollection" },
+        { "List", "ReadOnlyCollection" },
+        { "ReadOnlyCollection", "Array" },
+    };
+
+    [Theory]
+    [MemberData(nameof(CollectionKinds))]
+    public async Task RequestLocalizationMiddleware_MatchesCultures_ForDifferentCollectionTypes(string cultureNamesKind, string supportedCulturesKind)
+    {
+        StringSegment[] cultureNames = ["xx-XX", "FR-fr", "en-US"];
+        CultureInfo[] supportedCultures = [new CultureInfo("en-US"), new CultureInfo("fr-FR")];
+
+        var options = new RequestLocalizationOptions
+        {
+            DefaultRequestCulture = new RequestCulture("en-US"),
+            SupportedCultures = Wrap(supportedCultures, supportedCulturesKind),
+            SupportedUICultures = Wrap(supportedCultures, supportedCulturesKind),
+        };
+        options.RequestCultureProviders.Clear();
+        options.RequestCultureProviders.Add(new CustomRequestCultureProvider(_ =>
+            Task.FromResult(new ProviderCultureResult(Wrap(cultureNames, cultureNamesKind)))));
+
+        IRequestCultureFeature feature = null;
+        var middleware = new RequestLocalizationMiddleware(
+            context =>
+            {
+                feature = context.Features.Get<IRequestCultureFeature>();
+                return Task.CompletedTask;
+            },
+            Microsoft.Extensions.Options.Options.Create(options),
+            NullLoggerFactory.Instance);
+
+        await middleware.Invoke(new DefaultHttpContext());
+
+        Assert.NotNull(feature);
+        Assert.Equal("fr-FR", feature.RequestCulture.Culture.Name);
+        Assert.Equal("fr-FR", feature.RequestCulture.UICulture.Name);
+        Assert.True(feature.RequestCulture.Culture.IsReadOnly);
+
+        static IList<T> Wrap<T>(T[] values, string kind) => kind switch
+        {
+            "List" => new List<T>(values),
+            "Array" => (T[])values.Clone(),
+            "ReadOnlyCollection" => new ReadOnlyCollection<T>(values),
+            _ => throw new ArgumentOutOfRangeException(nameof(kind)),
+        };
     }
 }
