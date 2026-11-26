@@ -6,6 +6,7 @@ using System.ComponentModel;
 using System.Diagnostics.CodeAnalysis;
 using System.Reflection;
 using System.Text.Json;
+using System.Text.Json.Serialization.Metadata;
 using Microsoft.AspNetCore.Components.HotReload;
 using Microsoft.AspNetCore.Components.Reflection;
 using Microsoft.AspNetCore.Components.RenderTree;
@@ -108,13 +109,12 @@ public class JSComponentInterop
                 {
                     ParameterKind.Value => JsonSerializer.Deserialize(
                         parameterJsonValue,
-                        parameterInfo.Type,
-                        jsonOptions),
+                        jsonOptions.GetTypeInfo(parameterInfo.Type)),
                     ParameterKind.EventCallbackWithNoParameters => CreateEventCallbackWithNoParameters(
-                        JsonSerializer.Deserialize<IJSObjectReference>(parameterJsonValue, jsonOptions)),
+                        DeserializeJSObjectReference(parameterJsonValue, jsonOptions)),
                     ParameterKind.EventCallbackWithSingleParameter => CreateEventCallbackWithSingleParameter(
                         parameterInfo.Type,
-                        JsonSerializer.Deserialize<IJSObjectReference>(parameterJsonValue, jsonOptions)),
+                        DeserializeJSObjectReference(parameterJsonValue, jsonOptions)),
                     var x => throw new InvalidOperationException($"Invalid {nameof(ParameterKind)} '{x}'.")
                 };
             }
@@ -179,6 +179,9 @@ public class JSComponentInterop
             var x when x.IsGenericType && x.GetGenericTypeDefinition() == typeof(EventCallback<>) => ParameterKind.EventCallbackWithSingleParameter,
             _ => ParameterKind.Value,
         };
+
+    private static IJSObjectReference? DeserializeJSObjectReference(JsonElement json, JsonSerializerOptions jsonOptions)
+        => JsonSerializer.Deserialize(json, (JsonTypeInfo<IJSObjectReference>)jsonOptions.GetTypeInfo(typeof(IJSObjectReference)));
 
     private static EventCallback CreateEventCallbackWithNoParameters(IJSObjectReference? jsObjectReference)
     {
