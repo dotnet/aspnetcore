@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Security.Cryptography.X509Certificates;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Features;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Primitives;
@@ -13,13 +14,15 @@ internal sealed class CertificateForwardingFeature : ITlsConnectionFeature
     private readonly ILogger _logger;
     private readonly StringValues _header;
     private readonly CertificateForwardingOptions _options;
+    private readonly HttpResponse _response;
     private Task<X509Certificate2?>? _certificateTask;
 
-    public CertificateForwardingFeature(ILogger logger, StringValues header, CertificateForwardingOptions options)
+    public CertificateForwardingFeature(ILogger logger, StringValues header, CertificateForwardingOptions options, HttpResponse response)
     {
         _logger = logger;
         _options = options;
         _header = header;
+        _response = response;
     }
 
     public X509Certificate2? ClientCertificate
@@ -35,6 +38,7 @@ internal sealed class CertificateForwardingFeature : ITlsConnectionFeature
             try
             {
                 var certificate = _options.HeaderConverter(_header.ToString());
+                _response.RegisterForDispose(certificate);
                 _certificateTask = Task.FromResult<X509Certificate2?>(certificate);
                 return _certificateTask;
             }

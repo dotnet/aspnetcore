@@ -1,4 +1,4 @@
-// Licensed to the .NET Foundation under one or more agreements.
+ // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
 import { synchronizeDomContent } from '../Rendering/DomMerging/DomSync';
@@ -421,7 +421,7 @@ function handleEnhancedNavigationFailure(ex: unknown, internalDestinationHref: s
             history.pushState(null, '', internalDestinationHref);
           }
 
-          retryEnhancedNavAsFullPageLoad(internalDestinationHref, changeUrl);
+          retryEnhancedNavAsFullPageLoad(internalDestinationHref, /* warn */ true, changeUrl);
         }
       });
     }
@@ -542,8 +542,10 @@ function enhancedNavigationIsEnabledForForm(form: HTMLFormElement): boolean {
     && attributeValue === '' || attributeValue?.toLowerCase() === 'true';
 }
 
-function retryEnhancedNavAsFullPageLoad(internalDestinationHref: string, changeUrl = true) {
-  console.warn(`Enhanced navigation failed for destination ${internalDestinationHref}. Falling back to full page load.`);
+function retryEnhancedNavAsFullPageLoad(internalDestinationHref: string, warn = true, changeUrl = true) {
+  if (warn) {
+    console.warn(`Enhanced navigation failed for destination ${internalDestinationHref}. Falling back to full page load.`);
+  }
   if (changeUrl) {
     // The ? trick here is the same workaround as described in #10839, and without it, the user
     // would not be able to use the back button afterwards.
@@ -558,3 +560,17 @@ function retryEnhancedNavAsFullPageLoad(internalDestinationHref: string, changeU
   }
 }
 
+// Comments after </html>, such as persisted component state, are children of the document rather than <html>.
+function replaceDocumentLevelComments(newDocument: Document) {
+  for (const node of Array.from(document.childNodes)) {
+    if (node.nodeType === Node.COMMENT_NODE) {
+      document.removeChild(node);
+    }
+  }
+
+  for (const node of Array.from(newDocument.childNodes)) {
+    if (node.nodeType === Node.COMMENT_NODE) {
+      document.appendChild(document.importNode(node, true));
+    }
+  }
+}

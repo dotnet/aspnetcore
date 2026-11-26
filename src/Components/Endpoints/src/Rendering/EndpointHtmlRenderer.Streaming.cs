@@ -433,6 +433,15 @@ internal partial class EndpointHtmlRenderer
     private static readonly string? s_aspnetcoreBrowserTools =
         Environment.GetEnvironmentVariable("__ASPNETCORE_BROWSER_TOOLS") is { Length: > 0 } v2 ? v2 : null;
 
+    internal void EmitBrowserConfigurationForInitialContent(TextWriter output)
+    {
+        if (!_browserConfigurationEmitted)
+        {
+            // A later streaming batch can configure the browser before emitting the first interactive component.
+            WriteBrowserConfiguration(output);
+        }
+    }
+
     private void EmitBrowserConfigurationOnce(TextWriter output)
     {
         if (_browserConfigurationEmitted)
@@ -441,7 +450,11 @@ internal partial class EndpointHtmlRenderer
         }
 
         _browserConfigurationEmitted = true;
+        WriteBrowserConfiguration(output);
+    }
 
+    private void WriteBrowserConfiguration(TextWriter output)
+    {
         var config = BrowserOptions.GetBrowserOptions(_httpContext);
 
         // Apply framework defaults: environment name and tooling env vars
