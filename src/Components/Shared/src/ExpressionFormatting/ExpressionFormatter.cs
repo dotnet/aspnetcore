@@ -301,7 +301,13 @@ internal static class ExpressionFormatter
             var parameterExpression = Expression.Parameter(typeof(object));
             var convertExpression = Expression.Convert(parameterExpression, memberExpression.Member.DeclaringType!);
             var replacedMemberExpression = memberExpression.Update(convertExpression);
-            var replacedExpression = Expression.Lambda<Func<object, TResult>>(replacedMemberExpression, parameterExpression);
+            Expression valueExpression = replacedMemberExpression;
+            if (valueExpression.Type.IsValueType && valueExpression.Type != typeof(TResult))
+            {
+                valueExpression = Expression.Convert(valueExpression, typeof(TResult));
+            }
+
+            var replacedExpression = Expression.Lambda<Func<object, TResult>>(valueExpression, parameterExpression);
             return replacedExpression.Compile();
         }
     }

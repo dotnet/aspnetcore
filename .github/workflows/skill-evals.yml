@@ -69,7 +69,7 @@ jobs:
       github.event_name == 'pull_request' ||
       github.event_name == 'push' ||
       (github.event_name == 'workflow_dispatch' && inputs.action != 'Run')
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-26.04
     timeout-minutes: 15
     steps:
       - name: Checkout repository
@@ -96,11 +96,31 @@ jobs:
             --userconfig "$RUNNER_TEMP/evaluation.npmrc" \
             --registry https://packagefeedproxy.microsoft.io/npm/
           "$RUNNER_TEMP/evaluation-tools/node_modules/.bin/vally" --version
-          "$RUNNER_TEMP/evaluation-tools/node_modules/.bin/copilot" --version
+          export COPILOT_CLI_PATH="$RUNNER_TEMP/evaluation-tools/node_modules/@github/copilot-linux-x64/copilot"
+          export COPILOT_SDK_DEFAULT_CONNECTION=stdio
+          "$COPILOT_CLI_PATH" --no-auto-update --version
           (
-            cd "$RUNNER_TEMP/evaluation-tools/node_modules/@github/copilot-sdk/dist"
-            node --input-type=module -e "import.meta.resolve('@github/copilot-linux-x64/sdk')"
+            cd "$RUNNER_TEMP/evaluation-tools"
+            node --input-type=module <<'JS'
+          import { readFileSync } from 'node:fs';
+          import { CopilotClient } from '@github/copilot-sdk';
+
+          const expected = JSON.parse(readFileSync('package.json', 'utf8')).dependencies['@github/copilot'];
+          const client = new CopilotClient({ useLoggedInUser: false, telemetry: { enabled: false } });
+          try {
+            await client.start();
+            const { version } = await client.getStatus();
+            const { tools } = await client.rpc.tools.list({});
+            if (version !== expected || tools.length === 0) {
+              throw new Error(`Expected Copilot ${expected} with discoverable tools; got ${version} with ${tools.length} tools.`);
+            }
+          } finally {
+            await client.stop();
+          }
+          JS
           )
+          printf 'COPILOT_CLI_PATH=%s\nCOPILOT_SDK_DEFAULT_CONNECTION=%s\n' \
+            "$COPILOT_CLI_PATH" "$COPILOT_SDK_DEFAULT_CONNECTION" >> "$GITHUB_ENV"
 
       - name: Run skill eval checks
         shell: pwsh
@@ -123,7 +143,7 @@ jobs:
       (github.event_name == 'workflow_dispatch' &&
        inputs.action == 'Run' &&
        inputs.pr_number != '')
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-26.04
     timeout-minutes: 10
     concurrency:
       group: skill-eval-gate-${{ github.event.issue.number || inputs.pr_number }}
@@ -353,7 +373,7 @@ jobs:
         inputs.pr_number == '') ||
        (needs.gate.result == 'success' &&
         needs.gate.outputs.should_eval == 'true'))
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-26.04
     timeout-minutes: 5
     environment: copilot-pat-pool
     permissions: {}
@@ -435,7 +455,7 @@ jobs:
         inputs.pr_number == '') ||
        (needs.gate.result == 'success' &&
         needs.gate.outputs.should_eval == 'true'))
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-26.04
     timeout-minutes: 120
     environment: copilot-pat-pool
     permissions:
@@ -546,11 +566,31 @@ jobs:
             --userconfig "$RUNNER_TEMP/evaluation.npmrc" \
             --registry https://packagefeedproxy.microsoft.io/npm/
           "$RUNNER_TEMP/evaluation-tools/node_modules/.bin/vally" --version
-          "$RUNNER_TEMP/evaluation-tools/node_modules/.bin/copilot" --version
+          export COPILOT_CLI_PATH="$RUNNER_TEMP/evaluation-tools/node_modules/@github/copilot-linux-x64/copilot"
+          export COPILOT_SDK_DEFAULT_CONNECTION=stdio
+          "$COPILOT_CLI_PATH" --no-auto-update --version
           (
-            cd "$RUNNER_TEMP/evaluation-tools/node_modules/@github/copilot-sdk/dist"
-            node --input-type=module -e "import.meta.resolve('@github/copilot-linux-x64/sdk')"
+            cd "$RUNNER_TEMP/evaluation-tools"
+            node --input-type=module <<'JS'
+          import { readFileSync } from 'node:fs';
+          import { CopilotClient } from '@github/copilot-sdk';
+
+          const expected = JSON.parse(readFileSync('package.json', 'utf8')).dependencies['@github/copilot'];
+          const client = new CopilotClient({ useLoggedInUser: false, telemetry: { enabled: false } });
+          try {
+            await client.start();
+            const { version } = await client.getStatus();
+            const { tools } = await client.rpc.tools.list({});
+            if (version !== expected || tools.length === 0) {
+              throw new Error(`Expected Copilot ${expected} with discoverable tools; got ${version} with ${tools.length} tools.`);
+            }
+          } finally {
+            await client.stop();
+          }
+          JS
           )
+          printf 'COPILOT_CLI_PATH=%s\nCOPILOT_SDK_DEFAULT_CONNECTION=%s\n' \
+            "$COPILOT_CLI_PATH" "$COPILOT_SDK_DEFAULT_CONNECTION" >> "$GITHUB_ENV"
 
       - name: Stage trusted skill eval inputs
         if: steps.claim.outputs.claimed == 'true'
@@ -657,7 +697,7 @@ jobs:
       needs.gate.result == 'success' &&
       needs.gate.outputs.should_eval == 'true' &&
       needs.run.outputs.claimed != 'false'
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-26.04
     timeout-minutes: 5
     permissions:
       pull-requests: write

@@ -241,6 +241,8 @@ public class EventTest : ServerTestBase<ToggleExecutionModeServerFixture<Program
         var output = Browser.Exists(By.Id("output"));
         Assert.Equal(string.Empty, output.Text);
 
+        // Bring both elements into view before pointerdown so scrolling doesn't interrupt the drag.
+        new Actions(Browser).ScrollToElement(target).Perform();
         var actions = new Actions(Browser).DragAndDrop(input, target);
 
         actions.Perform();
