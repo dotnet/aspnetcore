@@ -5,9 +5,13 @@ using System.Security.Cryptography.X509Certificates;
 using System.Text;
 using Castle.Core.Internal;
 using Microsoft.AspNetCore.Antiforgery;
+using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.DataProtection;
+using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.Http.Metadata;
 using Microsoft.AspNetCore.Routing;
+using Microsoft.AspNetCore.TestHost;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Primitives;
@@ -15,6 +19,198 @@ namespace Microsoft.AspNetCore.Http.Generators.Tests;
 
 public abstract partial class RequestDelegateCreationTests : RequestDelegateCreationTestBase
 {
+    [Theory]
+    [InlineData("cross-site", "https://example.org", 400)]
+    [InlineData("same-site", "https://example.org", 400)]
+    [InlineData(null, "https://example.org", 400)]
+    [InlineData("same-origin", "http://localhost", 200)]
+    public async Task RequestDelegateHandlesFormAntiforgeryValidationFromAutomaticMiddleware(string fetchSite, string origin, int expectedStatusCode)
+    {
+        var source = """app.MapPost("/form", ([FromForm] string message) => $"handler:{message}");""";
+        var (_, compilation) = await RunGeneratorAsync(source);
+        var builder = WebApplication.CreateSlimBuilder();
+        builder.WebHost.UseTestServer();
+        builder.Services.Configure<RouteHandlerOptions>(options => options.ThrowOnBadRequest = false);
+        await using var app = builder.Build();
+        var endpoint = GetEndpointFromCompilation(compilation, serviceProvider: app.Services);
+        ((IEndpointRouteBuilder)app).DataSources.Add(new DefaultEndpointDataSource(endpoint));
+
+        IAntiforgeryValidationFeature validationFeature = null;
+        app.Use(async (context, next) =>
+        {
+            await next(context);
+            validationFeature = context.Features.Get<IAntiforgeryValidationFeature>();
+        });
+        await app.StartAsync();
+
+        using var client = app.GetTestClient();
+        using var request = new HttpRequestMessage(HttpMethod.Post, "/form")
+        {
+            Content = new FormUrlEncodedContent(new Dictionary<string, string> { ["message"] = "hello" })
+        };
+        if (fetchSite is not null)
+        {
+            request.Headers.Add("Sec-Fetch-Site", fetchSite);
+        }
+        request.Headers.Add("Origin", origin);
+
+        using var response = await client.SendAsync(request);
+
+        Assert.NotNull(validationFeature);
+        Assert.Equal(expectedStatusCode == 200, validationFeature.IsValid);
+        Assert.Equal(expectedStatusCode, (int)response.StatusCode);
+        Assert.Equal(expectedStatusCode == 200 ? "handler:hello" : "", await response.Content.ReadAsStringAsync());
+    }
+
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task RequestDelegateRejectsMissingFormBodyBeforeAntiforgeryValidation(bool throwOnBadRequest)
+    {
+        var source = """app.MapPost("/form", ([FromForm] string message, HttpContext context) => context.Items["invoked"] = message);""";
+        var (_, compilation) = await RunGeneratorAsync(source);
+        var builder = WebApplication.CreateSlimBuilder();
+        builder.WebHost.UseTestServer();
+        builder.Services.AddSingleton(LoggerFactory);
+        builder.Services.Configure<RouteHandlerOptions>(options => options.ThrowOnBadRequest = throwOnBadRequest);
+        await using var app = builder.Build();
+        var endpoint = GetEndpointFromCompilation(compilation, serviceProvider: app.Services);
+        ((IEndpointRouteBuilder)app).DataSources.Add(new DefaultEndpointDataSource(endpoint));
+
+        app.Use(async (context, next) =>
+        {
+            try
+            {
+                await next(context);
+            }
+            finally
+            {
+                Assert.False(context.Features.Get<IHttpRequestBodyDetectionFeature>().CanHaveBody);
+                var validationFeature = context.Features.Get<IAntiforgeryValidationFeature>();
+                Assert.NotNull(validationFeature);
+                Assert.False(validationFeature.IsValid);
+                Assert.NotNull(validationFeature.Error);
+                Assert.Null(context.Items["invoked"]);
+            }
+        });
+        await app.StartAsync();
+
+        using var client = app.GetTestClient();
+        using var request = new HttpRequestMessage(HttpMethod.Post, "/form");
+        request.Headers.Add("Sec-Fetch-Site", "cross-site");
+        request.Headers.Add("Origin", "https://example.org");
+
+        if (throwOnBadRequest)
+        {
+            var exception = await Assert.ThrowsAsync<BadHttpRequestException>(() => client.SendAsync(request));
+            Assert.Equal(400, exception.StatusCode);
+            Assert.Equal(@"Unexpected request without body, failed to bind parameter ""string message"" from the request body as form.", exception.Message);
+            Assert.Null(exception.InnerException);
+            Assert.DoesNotContain(TestSink.Writes, write => write.EventId.Name == "UnexpectedRequestWithoutBody");
+        }
+        else
+        {
+            using var response = await client.SendAsync(request);
+            Assert.Equal(400, (int)response.StatusCode);
+            Assert.Equal("", await response.Content.ReadAsStringAsync());
+            var logMessage = Assert.Single(TestSink.Writes.Where(write => write.EventId.Name == "UnexpectedRequestWithoutBody"));
+            Assert.Equal(new EventId(11, "UnexpectedRequestWithoutBody"), logMessage.EventId);
+            Assert.Equal(LogLevel.Debug, logMessage.LogLevel);
+            Assert.Equal(@"Unexpected request without body, failed to bind parameter ""string message"" from the request body as form.", logMessage.Message);
+            Assert.Null(logMessage.Exception);
+        }
+
+        Assert.DoesNotContain(TestSink.Writes, write => write.EventId.Name == "InvalidAntiforgeryToken");
+    }
+
+    [Theory]
+    [InlineData("missing-token", false)]
+    [InlineData("invalid-token", false)]
+    [InlineData("missing-cookie", false)]
+    [InlineData("missing-token", true)]
+    [InlineData("invalid-token", true)]
+    [InlineData("missing-cookie", true)]
+    public async Task RequestDelegateRejectsInvalidAntiforgeryTokenBeforeFormBinding(string failure, bool throwOnBadRequest)
+    {
+        var source = """app.MapPost("/", ([FromForm] string message, HttpContext context) => context.Items["invoked"] = message);""";
+        var (_, compilation) = await RunGeneratorAsync(source);
+        using var serviceProvider = CreateServiceProvider(services =>
+        {
+            services.AddAntiforgery(options => options.Cookie.Name = "antiforgery");
+            services.AddDataProtection().UseEphemeralDataProtectionProvider();
+            services.Configure<RouteHandlerOptions>(options => options.ThrowOnBadRequest = throwOnBadRequest);
+        });
+        var endpoint = GetEndpointFromCompilation(compilation, serviceProvider: serviceProvider);
+        var httpContext = CreateHttpContextWithCustomContentType("message=hello", "application/x-www-form-urlencoded", serviceProvider);
+        httpContext.SetEndpoint(endpoint);
+        var tokens = serviceProvider.GetRequiredService<IAntiforgery>().GetAndStoreTokens(CreateHttpContext(serviceProvider));
+        if (failure != "missing-cookie")
+        {
+            httpContext.Request.Headers.Cookie = $"antiforgery={tokens.CookieToken}";
+        }
+        if (failure != "missing-token")
+        {
+            httpContext.Request.Headers[tokens.HeaderName] = failure == "invalid-token" ? "invalid" : tokens.RequestToken;
+        }
+
+        var applicationBuilder = new ApplicationBuilder(serviceProvider);
+        applicationBuilder.UseAntiforgery();
+        applicationBuilder.Run(endpoint.RequestDelegate);
+        var pipeline = applicationBuilder.Build();
+
+        if (throwOnBadRequest)
+        {
+            var exception = await Assert.ThrowsAsync<BadHttpRequestException>(() => pipeline(httpContext));
+            Assert.Equal(400, exception.StatusCode);
+            Assert.Equal(@"Antiforgery validation failed when reading parameter ""string message"" from the request body as form.", exception.Message);
+            Assert.Same(httpContext.Features.Get<IAntiforgeryValidationFeature>().Error, exception.InnerException);
+            Assert.DoesNotContain(TestSink.Writes, write => write.EventId.Name == "InvalidAntiforgeryToken");
+        }
+        else
+        {
+            await pipeline(httpContext);
+            Assert.Equal(400, httpContext.Response.StatusCode);
+            var logMessage = Assert.Single(TestSink.Writes.Where(write => write.EventId.Name == "InvalidAntiforgeryToken"));
+            Assert.Equal(new EventId(9, "InvalidAntiforgeryToken"), logMessage.EventId);
+            Assert.Equal(LogLevel.Debug, logMessage.LogLevel);
+            Assert.Equal(@"Antiforgery validation failed when reading parameter ""string message"" from the request body as form.", logMessage.Message);
+            Assert.Same(httpContext.Features.Get<IAntiforgeryValidationFeature>().Error, logMessage.Exception);
+        }
+
+        Assert.False(httpContext.Features.Get<IAntiforgeryValidationFeature>().IsValid);
+        Assert.IsType<AntiforgeryValidationException>(httpContext.Features.Get<IAntiforgeryValidationFeature>().Error);
+        Assert.Null(httpContext.Items["invoked"]);
+        Assert.False(httpContext.Response.HasStarted);
+        Assert.False(httpContext.RequestAborted.IsCancellationRequested);
+    }
+
+    [Fact]
+    public async Task RequestDelegateBindsFormWithValidAntiforgeryToken()
+    {
+        var source = """app.MapPost("/", ([FromForm] string message, HttpContext context) => context.Items["invoked"] = message);""";
+        var (_, compilation) = await RunGeneratorAsync(source);
+        using var serviceProvider = CreateServiceProvider(services =>
+        {
+            services.AddAntiforgery(options => options.Cookie.Name = "antiforgery");
+            services.AddDataProtection().UseEphemeralDataProtectionProvider();
+        });
+        var endpoint = GetEndpointFromCompilation(compilation, serviceProvider: serviceProvider);
+        var httpContext = CreateHttpContextWithCustomContentType("message=hello", "application/x-www-form-urlencoded", serviceProvider);
+        httpContext.SetEndpoint(endpoint);
+        var tokens = serviceProvider.GetRequiredService<IAntiforgery>().GetAndStoreTokens(CreateHttpContext(serviceProvider));
+        httpContext.Request.Headers.Cookie = $"antiforgery={tokens.CookieToken}";
+        httpContext.Request.Headers[tokens.HeaderName] = tokens.RequestToken;
+        var applicationBuilder = new ApplicationBuilder(serviceProvider);
+        applicationBuilder.UseAntiforgery();
+        applicationBuilder.Run(endpoint.RequestDelegate);
+
+        await applicationBuilder.Build()(httpContext);
+
+        Assert.True(httpContext.Features.Get<IAntiforgeryValidationFeature>().IsValid);
+        Assert.Equal(200, httpContext.Response.StatusCode);
+        Assert.Equal("hello", httpContext.Items["invoked"]);
+    }
+
     [Fact]
     public async Task RequestDelegatePopulatesFromIFormFileCollectionParameter()
     {

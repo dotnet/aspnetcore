@@ -454,7 +454,7 @@ internal abstract partial class Http2Stream : HttpProtocol, IThreadPoolWorkItem,
             for (var i = 0; i < pathSegment.Length; i++)
             {
                 var ch = pathSegment[i];
-                if (ch > byte.MaxValue)
+                if (ch < 0x20 || ch > 0x7E)
                 {
                     ResetAndAbort(new ConnectionAbortedException(CoreStrings.FormatHttp2StreamErrorPathInvalid(RawTarget)), Http2ErrorCode.PROTOCOL_ERROR);
                     return false;
@@ -475,6 +475,8 @@ internal abstract partial class Http2Stream : HttpProtocol, IThreadPoolWorkItem,
 
     public Task OnDataAsync(Http2Frame dataFrame, in ReadOnlySequence<byte> payload)
     {
+        _inputFlowControl.Advance(dataFrame.PayloadLength);
+
         // Since padding isn't buffered, immediately count padding bytes as read for flow control purposes.
         if (dataFrame.DataHasPadding)
         {
@@ -497,8 +499,6 @@ internal abstract partial class Http2Stream : HttpProtocol, IThreadPoolWorkItem,
                     // Call before flushing the request body pipe, because that might induce a window update.
                     _inputFlowControl.StopWindowUpdates();
                 }
-
-                _inputFlowControl.Advance((int)dataPayload.Length);
 
                 // This check happens after flow control so that when we throw and abort, the byte count is returned to the connection
                 // level accounting.

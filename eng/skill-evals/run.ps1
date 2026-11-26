@@ -348,6 +348,12 @@ switch ($Action) {
                 throw 'Disposition grader self-test failed.'
             }
         }
+        if (Test-Path (Join-Path $PSScriptRoot 'l3\test_l3.mjs')) {
+            & node --test (Join-Path $PSScriptRoot 'l3\test_l3.mjs')
+            if ($LASTEXITCODE -ne 0) {
+                throw 'L3 corpus tool self-test failed.'
+            }
+        }
     }
     'Lint' {
         Invoke-VallyLint
@@ -389,6 +395,12 @@ switch ($Action) {
         }
         $selectedSuite = if ($resolvedEval) {
             Split-Path (Split-Path $resolvedEval -Parent) -Leaf
+        }
+        if ($resolvedEval -and (
+            $selectedSuite -eq 'review-candidate-verifier' -or
+            (Split-Path $resolvedEval -Leaf) -ne 'eval.vally.yaml'
+        ) -and ($Arguments -match '^--dry-run(?:=|$)')) {
+            throw '--dry-run is not supported by direct Vally eval runs. Use Validate to check the selected specification without running models.'
         }
         if ($selectedSuite -eq 'review-pull-request' -and (Test-Path $reviewExperiment)) {
             $selectedExperiment = if ($selectedExperiment -eq $smokeExperiment) {
@@ -526,7 +538,9 @@ switch ($Action) {
         }
         $invocationCompleted = $false
         try {
-            Invoke-VallyIsolated $vallyArguments -TolerateExitOne:$assertsResults
+            Invoke-VallyIsolated $vallyArguments -TolerateExitOne:(
+                $assertsResults -and $Arguments -notcontains '--require-pass'
+            )
             $invocationCompleted = $true
         } finally {
             if ($selectedSuite -eq 'review-candidate-verifier' -and $assertsResults) {
@@ -546,6 +560,9 @@ switch ($Action) {
                         })
                     } | ConvertTo-Json -Depth 10 | Set-Content -LiteralPath (Join-Path $runDirectories[0].FullName 'plan-snapshot.json')
                 } elseif ($invocationCompleted) {
+                    if ($script:vallyExitCode -ne 0) {
+                        throw "Vally exited with code $script:vallyExitCode for '$selectedSuite' without producing component results.jsonl."
+                    }
                     throw 'Expected one completed component output directory with results.jsonl.'
                 }
             }
@@ -555,12 +572,18 @@ switch ($Action) {
                 Get-ChildItem -LiteralPath $output -Directory -ErrorAction SilentlyContinue |
                     Where-Object { -not $existingRunDirectoryNames.Contains($_.Name) }
             )
+            if ($script:vallyExitCode -ne 0 -and (
+                $newRunDirectories.Count -ne 1 -or
+                -not (Test-Path -LiteralPath (Join-Path $newRunDirectories[0].FullName 'plan-snapshot.json') -PathType Leaf)
+            )) {
+                throw "Vally exited with code $script:vallyExitCode for '$selectedSuite' without producing a completed experiment plan."
+            }
             if ($newRunDirectories.Count -ne 1) {
                 throw "Expected one new Vally run directory under '$output'; found $($newRunDirectories.Count)."
             }
             & (Join-Path $PSScriptRoot 'assert_results.ps1') -RunDirectory $newRunDirectories[0].FullName @assertOptions
             if ($script:vallyExitCode -eq 1) {
-                Write-Warning 'Vally exited with code 1. Complete primary trials passed the applicable result-set checks.'
+                Write-Warning "Vally exited with code 1 for '$selectedSuite'. Complete primary trials passed the applicable result-set checks."
             }
             $global:LASTEXITCODE = 0
         }

@@ -1,11 +1,12 @@
 # Mints a short-lived GitHub App installation access token by signing a JWT
-# with an RSA private key (RS256). The JWT is exchanged with the GitHub API
-# for a token scoped to a single installation.
+# via Azure Key Vault's RSA signing operation (RS256), without reading the
+# private key. The JWT is exchanged for a single installation's token.
 #
 # Requirements (per GitHub App you want to authenticate as):
-#   - A GitHub App ID and PEM private key stored as Azure Key Vault secrets.
+#   - The GitHub App's private key imported as a Key Vault RSA key.
+#   - Read access to the configured App-ID secret projection.
 #   - The Azure service connection passed via `azureSubscription` must have
-#     `Get` access to those two secrets.
+#     the `Sign` action on that key.
 #   - The App must be installed on the target organization/account
 #     (`installationOwner`) with the permissions/repositories you need.
 #
@@ -15,18 +16,18 @@
 # enterprise classic-PAT lifetime policy.
 
 parameters:
-# Azure DevOps service connection (federated) that can read the App credentials.
+# Federated service connection authorized to sign with the App's RSA key.
 - name: azureSubscription
   type: string
 
-# Name of the Key Vault holding Secret Manager's github-app-secret projections.
+# Name of the Key Vault holding the App's RSA key.
 - name: keyVaultName
   type: string
 
-- name: appIdSecretName
+- name: keyName
   type: string
 
-- name: appPrivateKeySecretName
+- name: appIdSecretName
   type: string
 
 # Login of the organization or user account whose installation we should
@@ -66,7 +67,7 @@ steps:
     inlineScript: |
       & "$(System.DefaultWorkingDirectory)/eng/common/Get-GitHubAppToken.ps1" `
           -KeyVaultName '${{ parameters.keyVaultName }}' `
+          -KeyName '${{ parameters.keyName }}' `
           -AppIdSecretName '${{ parameters.appIdSecretName }}' `
-          -AppPrivateKeySecretName '${{ parameters.appPrivateKeySecretName }}' `
           -InstallationOwner '${{ parameters.installationOwner }}' `
           -OutputVariableName '${{ parameters.outputVariableName }}'

@@ -34,7 +34,7 @@ jobs:
           && github.event.issue.user.login == 'pr-benchmarks[bot]'
           && contains(github.event.issue.labels.*.name, 'area-perf')
           && contains(github.event.issue.labels.*.name, 'perf-regression') }}
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-26.04
     steps:
       - name: Detect direction and swap labels
         uses: actions/github-script@d746ffe35508b1917358783b479e04febd2b8f71 # v9.0.0

@@ -1,0 +1,59 @@
+name: code-review
+description: Smoke checks for material findings and clean code changes.
+type: capability
+defaults:
+  runs: 1
+  timeout: 120s
+scoring:
+  weights:
+    output-matches: 1
+  threshold: 1
+stimuli:
+- name: skipped-last-item
+  prompt: |
+    Review this change to a helper that totals every item in the array.
+
+    ```diff
+     static int Total(int[] items)
+     {
+         var total = 0;
+    -    for (var i = 0; i < items.Length; i++)
+    +    for (var i = 0; i < items.Length - 1; i++)
+         {
+             total += items[i];
+         }
+         return total;
+     }
+    ```
+
+    If there is a material finding, give a short explanation and include
+    a line `EXAMPLE: expected=<number>, actual=<number>` for `Total(new[] { 4, 7 })`.
+    Otherwise return only `NO_FINDINGS`.
+  graders:
+  - type: output-matches
+    config:
+      pattern: 'EXAMPLE: expected=11, actual=4\b'
+- name: equivalent-local-rename
+  prompt: |
+    Review this change to a helper that totals every item in the array.
+
+    ```diff
+     static int Total(int[] items)
+     {
+    -    var total = 0;
+    +    var sum = 0;
+         for (var i = 0; i < items.Length; i++)
+         {
+    -        total += items[i];
+    +        sum += items[i];
+         }
+    -    return total;
+    +    return sum;
+     }
+    ```
+
+    Report any material findings. If there are none, return only `NO_FINDINGS`.
+  graders:
+  - type: output-matches
+    config:
+      pattern: '^\s*NO_FINDINGS\s*$'

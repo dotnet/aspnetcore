@@ -78,12 +78,12 @@ public class Http1ConnectionParsingOverheadBenchmark
         _http1Connection.Reset();
 
         var reader = new SequenceReader<byte>(_buffer);
-        if (!_http1Connection.TakeStartLine(ref reader))
+        if (!_http1Connection.TryTakeStartLineCore(ref reader).IsComplete)
         {
             ErrorUtilities.ThrowInvalidRequestLine();
         }
 
-        if (!_http1Connection.TakeMessageHeaders(ref reader, trailers: false))
+        if (!_http1Connection.TryTakeMessageHeadersCore(ref reader, trailers: false).IsComplete)
         {
             ErrorUtilities.ThrowInvalidRequestHeaders();
         }
@@ -94,7 +94,7 @@ public class Http1ConnectionParsingOverheadBenchmark
         _http1Connection.Reset();
 
         var reader = new SequenceReader<byte>(_buffer);
-        if (!_http1Connection.TakeStartLine(ref reader))
+        if (!_http1Connection.TryTakeStartLineCore(ref reader).IsComplete)
         {
             ErrorUtilities.ThrowInvalidRequestLine();
         }
@@ -105,7 +105,7 @@ public class Http1ConnectionParsingOverheadBenchmark
         _http1Connection.Reset();
 
         var reader = new SequenceReader<byte>(_buffer);
-        if (!_http1Connection.TakeMessageHeaders(ref reader, trailers: false))
+        if (!_http1Connection.TryTakeMessageHeadersCore(ref reader, trailers: false).IsComplete)
         {
             ErrorUtilities.ThrowInvalidRequestHeaders();
         }
