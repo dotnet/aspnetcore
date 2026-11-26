@@ -131,7 +131,7 @@ public static class EventCallbackFactoryBinderExtensions
         CultureInfo? culture = null)
     {
         return factory.Create<ChangeEventArgs>(receiver,
-            new NullableBooleanBinder<bool?>(setter, culture, ConvertToNullableBool, EmptyStringHandling.SetDefault).Invoke);
+            new BooleanBinder<bool?>(setter, culture, ConvertToNullableBool, EmptyStringHandling.SetDefault).Invoke);
     }
 
     /// <summary>
@@ -152,7 +152,7 @@ public static class EventCallbackFactoryBinderExtensions
         CultureInfo? culture = null)
     {
         return factory.Create<ChangeEventArgs>(receiver,
-            new AsyncNullableBooleanBinder<bool?>(setter, culture, ConvertToNullableBool, EmptyStringHandling.SetDefault).InvokeAsync);
+            new AsyncBooleanBinder<bool?>(setter, culture, ConvertToNullableBool, EmptyStringHandling.SetDefault).InvokeAsync);
     }
 
     /// <summary>
@@ -1325,12 +1325,6 @@ public static class EventCallbackFactoryBinderExtensions
         T existingValue,
         CultureInfo? culture = null)
     {
-        if (typeof(T) == typeof(bool?))
-        {
-            return factory.Create<ChangeEventArgs>(receiver,
-                new NullableBooleanBinder<T>(setter, culture, ParserDelegateCache.Get<T>(), EmptyStringHandling.SetDefault).Invoke);
-        }
-
         return CreateBinderCore<T>(factory, receiver, setter, culture, ParserDelegateCache.Get<T>());
     }
 
@@ -1352,16 +1346,27 @@ public static class EventCallbackFactoryBinderExtensions
         T existingValue,
         CultureInfo? culture = null)
     {
-        if (typeof(T) == typeof(bool?))
-        {
-            return factory.Create<ChangeEventArgs>(receiver,
-                new AsyncNullableBooleanBinder<T>(setter, culture, ParserDelegateCache.Get<T>(), EmptyStringHandling.SetDefault).InvokeAsync);
-        }
-
         return CreateBinderCoreAsync<T>(factory, receiver, setter, culture, ParserDelegateCache.Get<T>());
     }
 
     private static EventCallback<ChangeEventArgs> CreateBinderCore<T>(
+        this EventCallbackFactory factory,
+        object receiver,
+        Action<T> setter,
+        CultureInfo? culture,
+        BindConverter.BindParser<T> converter,
+        EmptyStringHandling emptyStringHandling = EmptyStringHandling.SetDefault)
+    {
+        if (typeof(T) == typeof(bool) || typeof(T) == typeof(bool?))
+        {
+            return factory.Create<ChangeEventArgs>(receiver,
+                new BooleanBinder<T>(setter, culture, converter, emptyStringHandling).Invoke);
+        }
+
+        return CreateNonBooleanBinderCore(factory, receiver, setter, culture, converter, emptyStringHandling);
+    }
+
+    private static EventCallback<ChangeEventArgs> CreateNonBooleanBinderCore<T>(
         this EventCallbackFactory factory,
         object receiver,
         Action<T> setter,
@@ -1413,6 +1418,23 @@ public static class EventCallbackFactoryBinderExtensions
         BindConverter.BindParser<T> converter,
         EmptyStringHandling emptyStringHandling = EmptyStringHandling.SetDefault)
     {
+        if (typeof(T) == typeof(bool) || typeof(T) == typeof(bool?))
+        {
+            return factory.Create<ChangeEventArgs>(receiver,
+                new AsyncBooleanBinder<T>(setter, culture, converter, emptyStringHandling).InvokeAsync);
+        }
+
+        return CreateNonBooleanBinderCoreAsync(factory, receiver, setter, culture, converter, emptyStringHandling);
+    }
+
+    private static EventCallback<ChangeEventArgs> CreateNonBooleanBinderCoreAsync<T>(
+        this EventCallbackFactory factory,
+        object receiver,
+        Func<T, Task> setter,
+        CultureInfo? culture,
+        BindConverter.BindParser<T> converter,
+        EmptyStringHandling emptyStringHandling = EmptyStringHandling.SetDefault)
+    {
         Func<ChangeEventArgs, Task> callback = async e =>
         {
             T? value = default;
@@ -1449,15 +1471,15 @@ public static class EventCallbackFactoryBinderExtensions
         return factory.Create<ChangeEventArgs>(receiver, callback);
     }
 
-    internal interface INullableBooleanBinder
+    internal interface IBooleanBinder
     {
     }
 
-    private sealed class NullableBooleanBinder<T>(
+    private sealed class BooleanBinder<T>(
         Action<T> setter,
         CultureInfo? culture,
         BindConverter.BindParser<T> converter,
-        EmptyStringHandling emptyStringHandling) : INullableBooleanBinder
+        EmptyStringHandling emptyStringHandling) : IBooleanBinder
     {
         public void Invoke(ChangeEventArgs e)
         {
@@ -1482,11 +1504,11 @@ public static class EventCallbackFactoryBinderExtensions
         }
     }
 
-    private sealed class AsyncNullableBooleanBinder<T>(
+    private sealed class AsyncBooleanBinder<T>(
         Func<T, Task> setter,
         CultureInfo? culture,
         BindConverter.BindParser<T> converter,
-        EmptyStringHandling emptyStringHandling) : INullableBooleanBinder
+        EmptyStringHandling emptyStringHandling) : IBooleanBinder
     {
         public async Task InvokeAsync(ChangeEventArgs e)
         {

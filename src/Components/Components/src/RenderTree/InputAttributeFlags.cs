@@ -10,5 +10,5 @@ internal enum InputAttributeFlags : byte
     BooleanValue = 1,
     OmittedBooleanValue = 2,
     OmittedChecked = 4,
-    NullableBooleanBinding = 8,
+    BooleanBinding = 8,
 }

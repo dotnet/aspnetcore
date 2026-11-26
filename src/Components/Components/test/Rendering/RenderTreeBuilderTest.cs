@@ -956,14 +956,91 @@ public class RenderTreeBuilderTest
             frame => AssertFrame.Attribute(frame, "attr", value, 1));
     }
 
+    [Fact]
+    public void AddAttribute_UnboundBooleanInput_PreservesValue()
+    {
+        using var builder = new RenderTreeBuilder();
+        builder.OpenElement(0, "input");
+        builder.AddAttribute(1, "type", "checkbox");
+        builder.AddAttribute(2, "value", true);
+        builder.CloseElement();
+        Assert.Equal("value", builder.GetFrames().Array[2].AttributeName);
+    }
+
     [Theory]
-    [InlineData(true, false, true)]
-    [InlineData(false, false, true)]
-    [InlineData(true, true, false)]
-    [InlineData(false, true, false)]
-    [InlineData(true, true, true)]
-    [InlineData(false, true, true)]
-    public void AddAttribute_InputBooleanBinding_UsesCheckedAttribute(bool value, bool typeAfterValue, bool hasBinding)
+    [InlineData(false, false)]
+    [InlineData(true, false)]
+    [InlineData(true, true)]
+    public void AddMultipleAttributes_BindingIdentitySurvivesValueOverride(bool booleanBinding, bool nullableBinding)
+    {
+        using var builder = new RenderTreeBuilder();
+        builder.OpenElement(0, "input");
+        builder.AddAttribute(1, "type", "checkbox");
+        builder.AddAttribute(2, "value", booleanBinding ? (object)true : "text");
+        builder.AddAttribute(3, "onchange", nullableBinding
+            ? EventCallback.Factory.CreateBinder<bool?>(builder, _ => { }, null)
+            : booleanBinding
+            ? EventCallback.Factory.CreateBinder<bool>(builder, _ => { }, true)
+            : EventCallback.Factory.CreateBinder<string>(builder, _ => { }, "text"));
+        builder.SetUpdatesAttributeName("value");
+        builder.AddMultipleAttributes(4, new Dictionary<string, object> { ["value"] = booleanBinding ? "override" : false });
+        builder.CloseElement();
+        var attributes = builder.GetFrames().AsEnumerable().Skip(1).ToArray();
+        Assert.Equal(booleanBinding ? "checked" : "value", Assert.Single(attributes, f => f.AttributeName == "onchange").AttributeEventUpdatesAttributeName);
+        Assert.DoesNotContain(attributes, f => f.AttributeName == "checked");
+        if (booleanBinding)
+        {
+            AssertFrame.Attribute(Assert.Single(attributes, f => f.AttributeName == "value"), "value", "override", 4);
+        }
+        else
+        {
+            Assert.DoesNotContain(attributes, f => f.AttributeName == "value");
+        }
+    }
+
+    [Theory]
+    [InlineData(false, false, "value")]
+    [InlineData(true, false, "value")]
+    [InlineData(true, true, "value")]
+    [InlineData(false, false, "VALUE")]
+    [InlineData(true, false, "VALUE")]
+    [InlineData(true, true, "VALUE")]
+    public void AddAttribute_ReplayedValue_PreservesBooleanProvenance(bool booleanValue, bool replaceWithString, string attributeName)
+    {
+        using var source = new RenderTreeBuilder();
+        source.OpenElement(0, "input");
+        if (booleanValue)
+        {
+            source.AddAttribute(1, attributeName, true);
+        }
+        else
+        {
+            source.AddAttribute(1, attributeName);
+        }
+        if (replaceWithString)
+        {
+#pragma warning disable ASP0032 // Experimental RenderTreeBuilder API
+            source.SetAttributeValue(1, "replacement");
+#pragma warning restore ASP0032
+        }
+        source.CloseElement();
+        using var builder = new RenderTreeBuilder();
+        builder.OpenElement(0, "input");
+        builder.AddAttribute(1, "type", "checkbox");
+        builder.AddAttribute(2, source.GetFrames().Array[1]);
+        builder.AddAttribute(3, "onchange", EventCallback.Factory.CreateBinder<bool>(builder, _ => { }, true));
+        builder.SetUpdatesAttributeName("value");
+        builder.CloseElement();
+        Assert.Equal(booleanValue && !replaceWithString ? "checked" : attributeName, builder.GetFrames().Array[2].AttributeName);
+        Assert.Equal("checked", builder.GetFrames().Array[3].AttributeEventUpdatesAttributeName);
+    }
+
+    [Theory]
+    [InlineData(true, false)]
+    [InlineData(false, false)]
+    [InlineData(true, true)]
+    [InlineData(false, true)]
+    public void AddAttribute_InputBooleanBinding_UsesCheckedAttribute(bool value, bool typeAfterValue)
     {
         using var builder = new RenderTreeBuilder();
         builder.OpenElement(0, "input");
@@ -974,11 +1051,8 @@ public class RenderTreeBuilderTest
 
         builder.AddAttribute(2, "value", BindConverter.FormatValue(value));
         Assert.Equal(1 + (typeAfterValue ? 0 : 1) + (value ? 1 : 0), builder.GetFrames().Count);
-        if (hasBinding)
-        {
-            builder.AddAttribute(3, "onchange", EventCallback.Factory.CreateBinder<bool>(builder, _ => { }, value));
-            builder.SetUpdatesAttributeName("value");
-        }
+        builder.AddAttribute(3, "onchange", EventCallback.Factory.CreateBinder<bool>(builder, _ => { }, value));
+        builder.SetUpdatesAttributeName("value");
 
         if (typeAfterValue)
         {
@@ -988,14 +1062,11 @@ public class RenderTreeBuilderTest
         builder.CloseElement();
 
         var frames = builder.GetFrames();
-        AssertFrame.Element(frames.Array[0], "input", 2 + (value ? 1 : 0) + (hasBinding ? 1 : 0), 0);
+        AssertFrame.Element(frames.Array[0], "input", 3 + (value ? 1 : 0), 0);
         var attributes = frames.AsEnumerable().Skip(1).ToArray();
-        var target = hasBinding ? "checked" : "value";
-        Assert.DoesNotContain(attributes, frame => frame.AttributeName == (hasBinding ? "value" : "checked"));
-        if (hasBinding)
-        {
-            Assert.Equal("checked", Assert.Single(attributes, frame => frame.AttributeName == "onchange").AttributeEventUpdatesAttributeName);
-        }
+        const string target = "checked";
+        Assert.DoesNotContain(attributes, frame => frame.AttributeName == "value");
+        Assert.Equal("checked", Assert.Single(attributes, frame => frame.AttributeName == "onchange").AttributeEventUpdatesAttributeName);
 
         Assert.Equal("checkbox", Assert.Single(attributes, frame => frame.AttributeName == "type").AttributeValue);
         if (value)
@@ -1058,7 +1129,7 @@ public class RenderTreeBuilderTest
     public void AddAttribute_InputNullableBooleanBinding_WithExplicitReceiver_UsesCheckedAttribute(bool? value, bool useAsyncBinder)
     {
         using var builder = new RenderTreeBuilder();
-        var receiver = Mock.Of<IHandleEvent>();
+        var receiver = new ForwardingEventReceiver();
         var callback = useAsyncBinder
             ? EventCallback.Factory.CreateBinder<bool?>(receiver, _ => Task.CompletedTask, value)
             : EventCallback.Factory.CreateBinder<bool?>(receiver, _ => { }, value);
@@ -1233,7 +1304,7 @@ public class RenderTreeBuilderTest
             frame => AssertFrame.Element(frame, "input", 4, 0),
             frame => AssertFrame.Attribute(frame, "type", "checkbox", 1),
             frame => AssertFrame.Attribute(frame, target, true, 4),
-            frame => Assert.Equal(target, frame.AttributeEventUpdatesAttributeName));
+            frame => Assert.Equal("checked", frame.AttributeEventUpdatesAttributeName));
     }
 
     [Theory]
@@ -2587,6 +2658,36 @@ public class RenderTreeBuilderTest
             builder.AddAttribute(2, "a", "b");
         });
         Assert.Equal($"Attributes may only be added immediately after frames of type {RenderTreeFrameType.Element} or {RenderTreeFrameType.Component}", ex.Message);
+    }
+
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public void SetAttributeValue_InputBinding_UpdatesBooleanProvenance(bool replaceWithBoolean)
+    {
+        using var builder = new RenderTreeBuilder();
+        builder.OpenElement(0, "input");
+        builder.AddAttribute(1, "type", "checkbox");
+        builder.AddAttribute(2, "value", replaceWithBoolean ? (object)"original" : true);
+        builder.AddAttribute(3, "onchange", EventCallback.Factory.CreateBinder<bool>(builder, _ => { }, true));
+        builder.SetUpdatesAttributeName("value");
+
+#pragma warning disable ASP0032 // Experimental RenderTreeBuilder API
+        builder.SetAttributeValue(2, replaceWithBoolean ? (object)true : "replacement");
+#pragma warning restore ASP0032
+        builder.CloseElement();
+
+        Assert.Collection(builder.GetFrames().AsEnumerable(),
+            frame => AssertFrame.Element(frame, "input", 4, 0),
+            frame => AssertFrame.Attribute(frame, "type", "checkbox", 1),
+            frame => AssertFrame.Attribute(frame, replaceWithBoolean ? "checked" : "value",
+                replaceWithBoolean ? (object)true : "replacement", 2),
+            frame => Assert.Equal("checked", frame.AttributeEventUpdatesAttributeName));
+    }
+
+    private sealed class ForwardingEventReceiver : IHandleEvent
+    {
+        public Task HandleEventAsync(EventCallbackWorkItem callback, object arg) => callback.InvokeAsync(arg);
     }
 
     private class TestComponent : IComponent
