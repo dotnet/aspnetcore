@@ -51,7 +51,7 @@ export function endHeadStylesheetTransition(): void {
         link.remove();
       }
 
-      if (!replacement || replacement.disabled || !previous.sheet || replacement.sheet || pending.has(replacement)) {
+      if (!replacement || replacement.disabled || !matchesCurrentMedia(replacement) || !previous.sheet || replacement.sheet || pending.has(replacement)) {
         previous.remove();
         continue;
       }
@@ -72,10 +72,15 @@ export function endHeadStylesheetTransition(): void {
   }
 
   for (const [replacement, transition] of pending) {
-    if (replacement.disabled || !isHeadStylesheet(replacement)) {
+    if (replacement.disabled || !isHeadStylesheet(replacement) || !matchesCurrentMedia(replacement)) {
       transition.finish();
     }
   }
+}
+
+function matchesCurrentMedia(link: HTMLLinkElement): boolean {
+  const media = link.media.trim();
+  return media.length === 0 || window.matchMedia(media).matches;
 }
 
 function isHeadStylesheet(node: Node): node is HTMLLinkElement {

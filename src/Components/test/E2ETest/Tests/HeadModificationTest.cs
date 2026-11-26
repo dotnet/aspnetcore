@@ -242,6 +242,59 @@ public class HeadModificationTest : ServerTestBase<HeadModificationTest.HeadModi
     }
 
     [Fact]
+    public async Task ReplacingWithNonmatchingMediaStylesheetRemovesPreviousStylesheet()
+    {
+        Browser.MountTestComponent<HeadStylesheetSwapPendingReplacement>();
+        var target = Browser.Exists(By.Id("swap-target"));
+        Browser.Equal("rgba(0, 0, 255, 1)", () => target.GetCssValue("background-color"));
+
+        StylesheetRequestGate request = null;
+        try
+        {
+            Browser.Exists(By.Id("replace-with-print-stylesheet")).Click();
+            var replacement = Browser.Exists(By.CssSelector("link#pending-swap-stylesheet[href*='head-swap-replacement/']"));
+            request = _serverFixture.GetRequest(GetRequestId(replacement));
+            await request.Requested.Task.WaitAsync(TimeSpan.FromSeconds(15));
+
+            Browser.Equal("print", () => Browser.Exists(By.Id("pending-swap-stylesheet")).GetDomAttribute("media"));
+            Browser.Equal("rgba(255, 0, 0, 1)", () => target.GetCssValue("background-color"));
+            Browser.Equal(0, () => Browser.FindElements(By.CssSelector("head link[href='head-swap-initial.css']")).Count);
+        }
+        finally
+        {
+            request?.Release.TrySetResult();
+        }
+    }
+
+    [Fact]
+    public async Task ChangingPendingHeadStylesheetMediaRemovesPreviousStylesheet()
+    {
+        Browser.MountTestComponent<HeadStylesheetSwapPendingReplacement>();
+        var target = Browser.Exists(By.Id("swap-target"));
+        Browser.Equal("rgba(0, 0, 255, 1)", () => target.GetCssValue("background-color"));
+
+        StylesheetRequestGate request = null;
+        try
+        {
+            Browser.Exists(By.Id("replace-stylesheet")).Click();
+            var replacement = Browser.Exists(By.CssSelector("link#pending-swap-stylesheet[href*='head-swap-replacement/']"));
+            request = _serverFixture.GetRequest(GetRequestId(replacement));
+            await request.Requested.Task.WaitAsync(TimeSpan.FromSeconds(15));
+            Browser.Equal("rgba(0, 0, 255, 1)", () => target.GetCssValue("background-color"));
+
+            Browser.Exists(By.Id("change-replacement-media")).Click();
+
+            Browser.Equal("print", () => Browser.Exists(By.Id("pending-swap-stylesheet")).GetDomAttribute("media"));
+            Browser.Equal("rgba(255, 0, 0, 1)", () => target.GetCssValue("background-color"));
+            Browser.Equal(0, () => Browser.FindElements(By.CssSelector("head link[href='head-swap-initial.css']")).Count);
+        }
+        finally
+        {
+            request?.Release.TrySetResult();
+        }
+    }
+
+    [Fact]
     public async Task RemovingPendingHeadStylesheetRemovesBothStylesheets()
     {
         Browser.MountTestComponent<HeadStylesheetSwapPendingReplacement>();
