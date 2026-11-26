@@ -168,6 +168,7 @@ internal class SourceDerivedParameterList : SourceBaseParameterList
             parseOptions: ParseOptions);
         driver = driver.RunGeneratorsAndUpdateCompilation(compilation, out var updatedCompilation, out var _);
 
+        // An indexer or a static property in the generated object initializer would be a compile error here.
         Assert.Empty(updatedCompilation.GetDiagnostics().Where(d => d.Severity >= DiagnosticSeverity.Warning));
         var endpoint = GetEndpointFromCompilation(updatedCompilation);
 

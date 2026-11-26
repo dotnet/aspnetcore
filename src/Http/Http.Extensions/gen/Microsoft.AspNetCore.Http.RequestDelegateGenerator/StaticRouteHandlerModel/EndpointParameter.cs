@@ -478,10 +478,11 @@ internal class EndpointParameter
         // When leveraging parameterless constructors, we want to ensure we only emit for writable
         // properties. We do not have this constraint if we are leveraging a parameterized constructor.
         // Like RequestDelegateFactory, a property is writable when it has a public setter. A required
-        // property is also assigned, because the object initializer must set it.
-        var properties = GetPublicInstanceProperties(type).ToImmutableArray();
-        var writableProperties = properties.Where(property => property.SetMethod is { DeclaredAccessibility: Accessibility.Public }
-            || property is { IsRequired: true, SetMethod: not null });
+        // property is also assigned, because the object initializer must set it. An object initializer
+        // cannot set a static property.
+        var properties = GetPublicProperties(type);
+        var writableProperties = properties.Where(property => property is { IsStatic: false, SetMethod: { } setter }
+            && (setter.DeclaredAccessibility == Accessibility.Public || property.IsRequired));
 
         if (numOfConstructors == 1)
         {
@@ -540,10 +541,11 @@ internal class EndpointParameter
 
     // Mirrors Type.GetProperties() as RequestDelegateFactory and ParameterBindingMethodCache.FindConstructor use it:
     // public properties declared on the type or inherited from a base type, where the most derived declaration of a
-    // name wins. Static properties and indexers are left out, because an object initializer cannot set them and
-    // RequestDelegateFactory cannot bind them either.
-    private static IEnumerable<IPropertySymbol> GetPublicInstanceProperties(INamedTypeSymbol type)
+    // name wins. As in reflection, static properties of base types are not returned. Indexers are not returned either,
+    // because neither a constructor parameter nor an object initializer can bind them.
+    private static ImmutableArray<IPropertySymbol> GetPublicProperties(INamedTypeSymbol type)
     {
+        var properties = ImmutableArray.CreateBuilder<IPropertySymbol>();
         var seenPropertyNames = new HashSet<string>(StringComparer.Ordinal);
         foreach (var currentType in type.GetThisAndBaseTypes())
         {
@@ -563,12 +565,14 @@ internal class EndpointParameter
                     continue;
                 }
 
-                if (property is { DeclaredAccessibility: Accessibility.Public, IsStatic: false, IsIndexer: false })
+                if (property is { DeclaredAccessibility: Accessibility.Public, IsIndexer: false } && !(isBaseType && property.IsStatic))
                 {
-                    yield return property;
+                    properties.Add(property);
                 }
             }
         }
+
+        return properties.ToImmutable();
     }
 
     // Lifted from:

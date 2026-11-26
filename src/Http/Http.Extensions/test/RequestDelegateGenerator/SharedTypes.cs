@@ -947,6 +947,18 @@ public class ParameterListWithInheritedBindingAttributes : ParameterListBindingA
     public int Value { get; set; }
 }
 
+public class ParameterListWithStaticPropertyConstructor
+{
+    public ParameterListWithStaticPropertyConstructor(int count)
+    {
+        Value = count;
+    }
+
+    public static int Count { get; set; }
+
+    public int Value { get; }
+}
+
 public record ParameterListRecordBase(int BaseValue);
 public record ParameterListRecordWithBaseRecord(int BaseValue, int Value) : ParameterListRecordBase(BaseValue);
 

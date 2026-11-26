@@ -565,6 +565,31 @@ app.MapGet("/", TestAction);
     }
 
     [Fact]
+    public async Task RequestDelegatePopulatesFromParameterListWithConstructorParameterMatchingStaticProperty()
+    {
+        var source = """
+void TestAction(HttpContext context, [AsParameters] ParameterListWithStaticPropertyConstructor args)
+{
+    context.Items.Add("input", args);
+}
+app.MapGet("/", TestAction);
+""";
+        var (_, compilation) = await RunGeneratorAsync(source);
+        var endpoint = GetEndpointFromCompilation(compilation);
+
+        var httpContext = CreateHttpContext();
+        httpContext.Request.Query = new QueryCollection(new Dictionary<string, StringValues>()
+        {
+            [nameof(ParameterListWithStaticPropertyConstructor.Count)] = "5",
+        });
+
+        await endpoint.RequestDelegate(httpContext);
+
+        var input = Assert.IsType<ParameterListWithStaticPropertyConstructor>(httpContext.Items["input"]);
+        Assert.Equal(5, input.Value);
+    }
+
+    [Fact]
     public async Task RequestDelegatePopulatesFromMultipleParameterLists()
     {
         const int foo = 1;
