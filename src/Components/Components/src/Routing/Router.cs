@@ -9,7 +9,6 @@ using System.Reflection.Metadata;
 using System.Runtime.ExceptionServices;
 using Microsoft.AspNetCore.Components.HotReload;
 using Microsoft.AspNetCore.Components.Rendering;
-using Microsoft.AspNetCore.Internal;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 
@@ -78,7 +77,6 @@ public partial class Router : IComponent, IHandleAfterRender, IDisposable
     /// Gets or sets the page content to display when no match is found for the requested route.
     /// </summary>
     [Parameter]
-    [DynamicallyAccessedMembers(LinkerFlags.Component)]
     public Type? NotFoundPage { get; set; }
 
     /// <summary>
@@ -437,6 +435,10 @@ public partial class Router : IComponent, IHandleAfterRender, IDisposable
         return null;
     }
 
+    // Like routable pages discovered by RouteTableFactory, NotFoundPage must be a routable page in
+    // application code. An annotation on the property would not preserve it: Razor sets component
+    // parameters through reflection, so the trimmer reports IL2111 in every application that sets it.
+    [UnconditionalSuppressMessage("Trimming", "IL2072", Justification = "Application code does not get trimmed, and NotFoundPage must be a routable page.")]
     private void RenderNotFound()
     {
         _renderHandle.Render(builder =>

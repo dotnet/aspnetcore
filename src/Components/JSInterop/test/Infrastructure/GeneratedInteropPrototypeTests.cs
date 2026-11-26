@@ -89,7 +89,8 @@ public class GeneratedInteropPrototypeTests
         runtime.GeneratedInterop.RegisterStatic("App", "One", 1, (_, _, _) => default);
 
         Assert.Null(await runtime.GeneratedInterop.Invoke(runtime, new("App", "None", 0, "1"), "[1,2]", synchronous: true));
-        Assert.Throws<JsonException>(() => runtime.GeneratedInterop.Invoke(runtime, new("App", "One", 0, "2"), "[1,2]", synchronous: true));
+        var tooMany = Assert.Throws<JsonException>(() => runtime.GeneratedInterop.Invoke(runtime, new("App", "One", 0, "2"), "[1,{}]", synchronous: true));
+        Assert.Equal("Unexpected JSON token StartObject. Ensure that the call to `One' is supplied with exactly '1' parameters.", tooMany.Message);
         Assert.Throws<JsonException>(() => runtime.GeneratedInterop.Invoke(runtime, new("App", "One", 0, "3"), "null", synchronous: true));
         var tooFew = Assert.Throws<ArgumentException>(() => runtime.GeneratedInterop.Invoke(runtime, new("App", "One", 0, "4"), "[]", synchronous: true));
         Assert.Equal("The call to 'One' expects '1' parameters, but received '0'.", tooFew.Message);

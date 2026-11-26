@@ -281,7 +281,7 @@ public sealed class GeneratedInteropPrototype
 
                 if (args.Length > entry.Arity)
                 {
-                    throw new JsonException($"Unexpected JSON token {args[entry.Arity].ValueKind}. Ensure that the call to `{info.MethodIdentifier}' is supplied with exactly '{entry.Arity}' parameters.");
+                    throw new JsonException($"Unexpected JSON token {ToTokenType(args[entry.Arity].ValueKind)}. Ensure that the call to `{info.MethodIdentifier}' is supplied with exactly '{entry.Arity}' parameters.");
                 }
             }
 
@@ -294,6 +294,19 @@ public sealed class GeneratedInteropPrototype
             runtime.ByteArraysToBeRevived.Clear();
         }
     }
+
+    // Reflection dispatch reports the extra argument's JsonTokenType.
+    private static JsonTokenType ToTokenType(JsonValueKind kind) => kind switch
+    {
+        JsonValueKind.Object => JsonTokenType.StartObject,
+        JsonValueKind.Array => JsonTokenType.StartArray,
+        JsonValueKind.String => JsonTokenType.String,
+        JsonValueKind.Number => JsonTokenType.Number,
+        JsonValueKind.True => JsonTokenType.True,
+        JsonValueKind.False => JsonTokenType.False,
+        JsonValueKind.Null => JsonTokenType.Null,
+        _ => JsonTokenType.None,
+    };
 
     private bool TryGetInstance(Type targetType, string method, out Registration entry)
     {
