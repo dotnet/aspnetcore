@@ -164,6 +164,7 @@ public class Http2ConnectionTests : Http2TestBase
     }
 
     [Fact]
+    [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/65915", OperatingSystems.Linux)]
     public async Task RequestHeaderStringReuse_MultipleStreams_KnownHeaderReused()
     {
         var requestHeaders = new[]
@@ -719,6 +720,172 @@ public class Http2ConnectionTests : Http2TestBase
         Assert.True(((Http2OutputProducer)pooledStream.Output)._disposed);
 
         await StopConnectionAsync(expectedLastStreamId: 1, ignoreNonGoAwayFrames: false);
+        AssertConnectionNoError();
+    }
+
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task StreamPool_ScheduledAfterResponseCompleted_PooledStreamReusedAndResponseSent(bool largeResponse)
+    {
+        var responseBody = new byte[largeResponse ? Http2PeerSettings.MinAllowedMaxFrameSize * 2 : 11];
+        var appCompletedTcs = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+
+        await InitializeConnectionAsync(async context =>
+        {
+            if (context.Features.Get<IHttp2StreamIdFeature>().StreamId == 1)
+            {
+                return;
+            }
+
+            if (largeResponse)
+            {
+                await context.Response.Body.WriteAsync(responseBody);
+            }
+            else
+            {
+                // Buffer the small response so the app completes without waiting for it to be written.
+                context.Response.BodyWriter.Write(responseBody);
+            }
+
+            context.Response.AppendTrailer("CustomName", "Custom Value");
+            appCompletedTcs.SetResult();
+        });
+
+        await StartStreamAsync(1, _browserRequestHeaders, endStream: true);
+
+        await ExpectAsync(Http2FrameType.HEADERS,
+            withLength: 36,
+            withFlags: (byte)(Http2HeadersFrameFlags.END_HEADERS | Http2HeadersFrameFlags.END_STREAM),
+            withStreamId: 1);
+
+        await WaitForAllStreamsAsync().DefaultTimeout();
+
+        var stream = _connection._streams[1];
+        var output = (Http2OutputProducer)stream.Output;
+        Assert.True(output.CompletedResponse);
+
+        // Simulate a late schedule, such as one from a stream WINDOW_UPDATE that raced the end of the response.
+        output.Schedule();
+
+        // TriggerTick will trigger the stream to be returned to the pool so we can assert it
+        TriggerTick();
+
+        Assert.Equal(1, _connection.StreamPool.Count);
+        Assert.True(_connection.StreamPool.TryPeek(out var pooledStream));
+        Assert.Same(stream, pooledStream);
+
+        // The pooled stream is reused for this request.
+        await StartStreamAsync(3, _browserRequestHeaders, endStream: true);
+
+        await ExpectAsync(Http2FrameType.HEADERS,
+            withLength: 2,
+            withFlags: (byte)Http2HeadersFrameFlags.END_HEADERS,
+            withStreamId: 3);
+
+        for (var remaining = responseBody.Length; remaining > 0; remaining -= Http2PeerSettings.MinAllowedMaxFrameSize)
+        {
+            await ExpectAsync(Http2FrameType.DATA,
+                withLength: Math.Min(remaining, Http2PeerSettings.MinAllowedMaxFrameSize),
+                withFlags: (byte)Http2DataFrameFlags.NONE,
+                withStreamId: 3);
+        }
+
+        await ExpectAsync(Http2FrameType.HEADERS,
+            withLength: 25,
+            withFlags: (byte)(Http2HeadersFrameFlags.END_HEADERS | Http2HeadersFrameFlags.END_STREAM),
+            withStreamId: 3);
+
+        await appCompletedTcs.Task.DefaultTimeout();
+        await WaitForAllStreamsAsync().DefaultTimeout();
+
+        TriggerTick();
+
+        Assert.Equal(1, _connection.StreamPool.Count);
+        Assert.True(_connection.StreamPool.TryPeek(out pooledStream));
+        Assert.Same(stream, pooledStream);
+
+        await StopConnectionAsync(expectedLastStreamId: 3, ignoreNonGoAwayFrames: false);
+        AssertConnectionNoError();
+    }
+
+    [Fact]
+    public async Task StreamPool_ScheduledDuringFinalWrite_PooledStreamReusedAndResponseSent()
+    {
+        // The final write of the first response fills the output buffer, so its flush can't complete until the client reads it.
+        _serviceContext.ServerOptions.Limits.MaxResponseBufferSize = 1024;
+
+        await InitializeConnectionAsync(async context =>
+        {
+            if (context.Features.Get<IHttp2StreamIdFeature>().StreamId == 1)
+            {
+                // Buffer the response so it's written by the same write that completes the response.
+                context.Response.BodyWriter.Write(new byte[4096]);
+                return;
+            }
+
+            await context.Response.WriteAsync("Hello World");
+            context.Response.AppendTrailer("CustomName", "Custom Value");
+        });
+
+        await StartStreamAsync(1, _browserRequestHeaders, endStream: true);
+
+        // Wait for the final write to be flushed, but don't read it yet.
+        var readResult = await _pair.Application.Input.ReadAsync().AsTask().DefaultTimeout();
+        _pair.Application.Input.AdvanceTo(readResult.Buffer.Start);
+
+        var stream = _connection._streams[1];
+        var output = (Http2OutputProducer)stream.Output;
+        Assert.False(output.CompletedResponse);
+
+        // TryUpdateStreamWindow() calls ScheduleResumeFromWindowUpdate() after releasing the producer's lock, so a stream
+        // WINDOW_UPDATE can schedule the producer after its final write was observed but before the response is completed.
+        output.ScheduleResumeFromWindowUpdate();
+
+        await ExpectAsync(Http2FrameType.HEADERS,
+            withLength: 32,
+            withFlags: (byte)Http2HeadersFrameFlags.END_HEADERS,
+            withStreamId: 1);
+        await ExpectAsync(Http2FrameType.DATA,
+            withLength: 4096,
+            withFlags: (byte)Http2DataFrameFlags.END_STREAM,
+            withStreamId: 1);
+
+        await WaitForAllStreamsAsync().DefaultTimeout();
+        Assert.True(output.CompletedResponse);
+
+        // TriggerTick will trigger the stream to be returned to the pool so we can assert it
+        TriggerTick();
+
+        Assert.Equal(1, _connection.StreamPool.Count);
+        Assert.True(_connection.StreamPool.TryPeek(out var pooledStream));
+        Assert.Same(stream, pooledStream);
+
+        // The pooled stream is reused for this request.
+        await StartStreamAsync(3, _browserRequestHeaders, endStream: true);
+
+        await ExpectAsync(Http2FrameType.HEADERS,
+            withLength: 2,
+            withFlags: (byte)Http2HeadersFrameFlags.END_HEADERS,
+            withStreamId: 3);
+        await ExpectAsync(Http2FrameType.DATA,
+            withLength: 11,
+            withFlags: (byte)Http2DataFrameFlags.NONE,
+            withStreamId: 3);
+        await ExpectAsync(Http2FrameType.HEADERS,
+            withLength: 25,
+            withFlags: (byte)(Http2HeadersFrameFlags.END_HEADERS | Http2HeadersFrameFlags.END_STREAM),
+            withStreamId: 3);
+
+        await WaitForAllStreamsAsync().DefaultTimeout();
+
+        TriggerTick();
+
+        Assert.Equal(1, _connection.StreamPool.Count);
+        Assert.True(_connection.StreamPool.TryPeek(out pooledStream));
+        Assert.Same(stream, pooledStream);
+
+        await StopConnectionAsync(expectedLastStreamId: 3, ignoreNonGoAwayFrames: false);
         AssertConnectionNoError();
     }
 
@@ -1349,6 +1516,78 @@ public class Http2ConnectionTests : Http2TestBase
 
         var updateSize = ((framesInWindow / 2) + 1) * _maxData.Length;
         Assert.Equal(updateSize, connectionWindowUpdateFrame.WindowUpdateSizeIncrement);
+    }
+
+    [Fact]
+    public async Task DATA_Received_WithPaddingOnly_DoesNotIncreaseInputFlowControlWindow()
+    {
+        var initialWindowSize = (int)Http2PeerSettings.DefaultInitialWindowSize;
+        _serviceContext.ServerOptions.Limits.Http2.InitialStreamWindowSize = initialWindowSize;
+        _serviceContext.ServerOptions.Limits.Http2.InitialConnectionWindowSize = initialWindowSize * 2;
+
+        await InitializeConnectionAsync(_waitForAbortApplication, expectedSettingsCount: 3);
+
+        await StartStreamAsync(1, _browserRequestHeaders, endStream: false);
+        await SendDataWithPaddingAsync(1, _noData, padLength: 255, endStream: false);
+
+        var bytesRemaining = initialWindowSize;
+        while (bytesRemaining > 0)
+        {
+            var dataLength = Math.Min(bytesRemaining, _maxData.Length);
+            await SendDataAsync(1, _maxData.AsMemory(0, dataLength), endStream: false);
+            bytesRemaining -= dataLength;
+        }
+
+        await SendDataAsync(1, _maxData.AsMemory(0, 1), endStream: false);
+
+        await WaitForConnectionErrorAsync<Http2ConnectionErrorException>(
+            ignoreNonGoAwayFrames: false,
+            expectedLastStreamId: 1,
+            expectedErrorCode: Http2ErrorCode.FLOW_CONTROL_ERROR,
+            expectedErrorMessage: CoreStrings.Http2ErrorFlowControlWindowExceeded);
+
+        AssertConnectionEndReason(ConnectionEndReason.FlowControlWindowExceeded);
+    }
+
+    [Theory]
+    [InlineData(false, 0, 0)]
+    [InlineData(false, 255, 0)]
+    [InlineData(false, 0, 1)]
+    [InlineData(false, 255, 1)]
+    [InlineData(true, 0, 0)]
+    [InlineData(true, 255, 0)]
+    [InlineData(true, 0, 1)]
+    [InlineData(true, 255, 1)]
+    public async Task DATA_Received_WithPadding_ExceedsInputFlowControlWindow_ConnectionError(bool connectionWindow, byte padLength, int dataLength)
+    {
+        var initialWindowSize = (int)Http2PeerSettings.DefaultInitialWindowSize;
+        _serviceContext.ServerOptions.Limits.Http2.InitialStreamWindowSize = connectionWindow ? initialWindowSize * 2 : initialWindowSize;
+        _serviceContext.ServerOptions.Limits.Http2.InitialConnectionWindowSize = connectionWindow ? initialWindowSize : initialWindowSize * 2;
+
+        await InitializeConnectionAsync(_waitForAbortApplication,
+            expectedSettingsCount: connectionWindow ? 4 : 3,
+            expectedWindowUpdate: !connectionWindow);
+
+        await StartStreamAsync(1, _browserRequestHeaders, endStream: false);
+
+        // Leave one byte less than the padded frame's full payload in the selected window.
+        var bytesRemaining = initialWindowSize - padLength - dataLength;
+        while (bytesRemaining > 0)
+        {
+            var frameLength = Math.Min(bytesRemaining, _maxData.Length);
+            await SendDataAsync(1, _maxData.AsMemory(0, frameLength), endStream: false);
+            bytesRemaining -= frameLength;
+        }
+
+        await SendDataWithPaddingAsync(1, _maxData.AsMemory(0, dataLength), padLength, endStream: false);
+
+        await WaitForConnectionErrorAsync<Http2ConnectionErrorException>(
+            ignoreNonGoAwayFrames: false,
+            expectedLastStreamId: 1,
+            expectedErrorCode: Http2ErrorCode.FLOW_CONTROL_ERROR,
+            expectedErrorMessage: CoreStrings.Http2ErrorFlowControlWindowExceeded);
+
+        AssertConnectionEndReason(ConnectionEndReason.FlowControlWindowExceeded);
     }
 
     [Fact]
@@ -5973,6 +6212,15 @@ public class Http2ConnectionTests : Http2TestBase
 
         await SendRstStreamAsync(1);
 
+        await WaitForStreamAsync(1).DefaultTimeout();
+
+        // Confirm the connection loop has processed the completed stream.
+        await SendPingAsync(Http2PingFrameFlags.NONE);
+        await ExpectAsync(Http2FrameType.PING,
+            withLength: 8,
+            withFlags: (byte)Http2PingFrameFlags.ACK,
+            withStreamId: 0);
+
         // Send an extra frame to make it fail
         switch (finalFrameType)
         {
@@ -5988,15 +6236,11 @@ public class Http2ConnectionTests : Http2TestBase
                 throw new NotImplementedException(finalFrameType.ToString());
         }
 
-        // There's a race where either of these messages could be logged, depending on if the stream cleanup has finished yet.
         await WaitForConnectionErrorAsync<Http2ConnectionErrorException>(
             ignoreNonGoAwayFrames: false,
             expectedLastStreamId: 1,
             expectedErrorCode: Http2ErrorCode.STREAM_CLOSED,
-            expectedErrorMessage: new[] {
-                    CoreStrings.FormatHttp2ErrorStreamClosed(finalFrameType, streamId: 1),
-                    CoreStrings.FormatHttp2ErrorStreamAborted(finalFrameType, streamId: 1)
-            });
+            expectedErrorMessage: CoreStrings.FormatHttp2ErrorStreamClosed(finalFrameType, streamId: 1));
 
         switch (finalFrameType)
         {

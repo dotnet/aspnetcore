@@ -1,6 +1,7 @@
 <Project>
   <PropertyGroup>
     <DefaultNetCoreTargetFramework>${DefaultNetCoreTargetFramework}</DefaultNetCoreTargetFramework>
+    <UseMonoRuntime>false</UseMonoRuntime>
     <ArtifactsShippingPackagesDir>${ArtifactsShippingPackagesDir}</ArtifactsShippingPackagesDir>
     <TreatWarningsAsErrors Condition="'$(BuildingInsideVisualStudio)' != 'true'">true</TreatWarningsAsErrors>
     <LibNetHostAppPackVersion Condition=" '$(LibNetHostAppPackVersion)' == '' ">${LibNetHostAppPackVersion}</LibNetHostAppPackVersion>

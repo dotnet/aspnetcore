@@ -184,8 +184,17 @@ internal static class DiagnosticDescriptors
         isEnabledByDefault: true,
         description: CreateLocalizableResourceString(nameof(Resources.VirtualizeSpacerElementIsInvalid_Description)));
 
-    public static readonly DiagnosticDescriptor JsInteropUsageWithoutIsInteractiveCheck = new(
+    public static readonly DiagnosticDescriptor RazorComponentResultParameterDoesNotExist = new(
         "BL0020",
+        CreateLocalizableResourceString(nameof(Resources.RazorComponentResultParameterDoesNotExist_Title)),
+        CreateLocalizableResourceString(nameof(Resources.RazorComponentResultParameterDoesNotExist_Format)),
+        Usage,
+        DiagnosticSeverity.Warning,
+        isEnabledByDefault: true,
+        description: CreateLocalizableResourceString(nameof(Resources.RazorComponentResultParameterDoesNotExist_Description)));
+
+    public static readonly DiagnosticDescriptor JsInteropUsageWithoutIsInteractiveCheck = new(
+        "BL0021",
         CreateLocalizableResourceString(nameof(Resources.JsInteropUsageWithoutIsInteractiveCheck_Title)),
         CreateLocalizableResourceString(nameof(Resources.JsInteropUsageWithoutIsInteractiveCheck_Format)),
         Usage,

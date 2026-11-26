@@ -5,6 +5,60 @@ Set-StrictMode -Version 3
 
 $workflowPath = Join-Path $PSScriptRoot '../../.github/workflows/skill-evals.yml'
 $workflow = Get-Content $workflowPath -Raw
+if ($workflow -match 'both variants produced complete successful results and the skilled score met its threshold|Smoke validates the pipeline and skilled thresholds') {
+    throw 'Completion-only review/verifier smoke reporting falsely claims score thresholds were met.'
+}
+$runStep = [regex]::Match(
+    $workflow,
+    '(?ms)^      - name: Run skill eval\r?\n.*?^        run: \|\r?\n(?<script>.*?)(?=^      - name:)'
+)
+if (-not $runStep.Success) {
+    throw 'Could not extract the workflow execution step.'
+}
+$runScript = ($runStep.Groups['script'].Value -split '\r?\n' |
+    ForEach-Object { $_ -replace '^          ', '' }) -join "`n"
+$executionTestRoot = Join-Path ([IO.Path]::GetTempPath()) (
+    'aspnetcore-skill-eval-workflow-test-' + [guid]::NewGuid().ToString('N')
+)
+New-Item -ItemType Directory -Path $executionTestRoot | Out-Null
+try {
+    $checkerRoot = Join-Path $executionTestRoot 'suite-a/eng/skill-evals'
+    New-Item -ItemType Directory -Path $checkerRoot -Force | Out-Null
+    Set-Content (Join-Path $checkerRoot 'assert_results.ps1') "throw 'Checker was called outside the runner.'"
+    $failures = [Collections.Generic.List[string]]::new()
+    foreach ($exitCode in @(0, 1, 2)) {
+        $scriptPath = Join-Path $executionTestRoot "run-$exitCode.ps1"
+        @"
+`$env:COPILOT_GITHUB_TOKEN = 'workflow-test'
+`$env:EVALS_JSON = '["suite-a"]'
+`$env:RUN_TYPE = 'Smoke'
+`$env:STAGING_ROOT = '$executionTestRoot'
+`$env:GITHUB_WORKSPACE = '$executionTestRoot'
+function pwsh { Write-Output 'Runner invoked'; `$global:LASTEXITCODE = $exitCode }
+$runScript
+"@ | Set-Content $scriptPath
+        $messages = (& pwsh -NoProfile -File $scriptPath 2>&1 | Out-String)
+        $actualExitCode = $LASTEXITCODE
+        $caseName = "WorkflowOwnsRunnerExit$exitCode"
+        if (($actualExitCode -eq 0) -ne ($exitCode -eq 0) -or
+            $messages -notlike '*Runner invoked*' -or
+            $messages -like '*Checker was called outside the runner*' -or
+            ($exitCode -ne 0 -and $messages -notlike "*Skill evaluation failed for: suite-a*")) {
+            $failures.Add("$caseName`: $messages")
+            Write-Host "$caseName failed."
+        } else {
+            Write-Host "$caseName passed."
+        }
+    }
+    if ($failures.Count -gt 0) {
+        throw ($failures -join "`n")
+    }
+} finally {
+    Remove-Item -Recurse -Force $executionTestRoot
+}
+if ($workflow -notmatch '(?i)Smoke[^.\r\n]*(?:does not|is not|no)[^.\r\n]*accuracy') {
+    throw 'Smoke reporting does not state that smoke completion is not accuracy evidence.'
+}
 
 if ($workflow -match '(?m)^\s{2}pull_request_review:') {
     throw 'The PAT-backed workflow must not activate from pull_request_review.'
@@ -53,9 +107,12 @@ foreach ($expectedInstallFragment in @(
     '--userconfig "$RUNNER_TEMP/evaluation.npmrc"',
     '--registry https://packagefeedproxy.microsoft.io/npm/',
     'node_modules/.bin/vally" --version',
-    'node_modules/.bin/copilot" --version',
-    'cd "$RUNNER_TEMP/evaluation-tools/node_modules/@github/copilot-sdk/dist"',
-    "import.meta.resolve('@github/copilot-linux-x64/sdk')",
+    'export COPILOT_CLI_PATH="$RUNNER_TEMP/evaluation-tools/node_modules/@github/copilot-linux-x64/copilot"',
+    'export COPILOT_SDK_DEFAULT_CONNECTION=stdio',
+    '"$COPILOT_CLI_PATH" --no-auto-update --version',
+    'const { version } = await client.getStatus();',
+    'const { tools } = await client.rpc.tools.list({});',
+    '"$COPILOT_CLI_PATH" "$COPILOT_SDK_DEFAULT_CONNECTION" >> "$GITHUB_ENV"',
     'SKILL_EVAL_VALLY: ${{ runner.temp }}/evaluation-tools/node_modules/.bin/vally'
 )) {
     $fragmentCount = ([regex]::Matches(
@@ -73,26 +130,41 @@ if ($workflow -notmatch [regex]::Escape(
     throw 'The credentialed job does not install the trusted evaluation tool manifest.'
 }
 
+$validateJob = [regex]::Match(
+    $workflow,
+    '(?ms)^  validate:\r?\n(?<job>.*?)(?=^  \S|\z)'
+)
+if (-not $validateJob.Success) {
+    throw 'The workflow does not contain the validate job.'
+}
+$validateJobText = $validateJob.Groups['job'].Value
+if ($validateJobText -notmatch '(?ms)if:\s*github\.event_name != ''workflow_dispatch'' \|\| inputs\.action == ''Validate''\r?\n\s*shell:\s*pwsh\r?\n\s*run:\s*\./eng/skill-evals/run\.ps1 -Action Test') {
+    throw 'The validate job does not run ./eng/skill-evals/run.ps1 -Action Test under the Validate condition.'
+}
+if ($workflow -match 'test_stage_run\.ps1') {
+    throw 'The workflow still contains a standalone test_stage_run.ps1 step.'
+}
+
 $evaluationToolsRoot = Join-Path $PSScriptRoot 'evaluation-tools'
 $evaluationToolsManifest = Get-Content (
     Join-Path $evaluationToolsRoot 'package.json'
 ) -Raw | ConvertFrom-Json
-if ($evaluationToolsManifest.dependencies.'@github/copilot' -ne '1.0.80') {
-    throw 'The evaluation tool manifest does not pin @github/copilot 1.0.80.'
+if ($evaluationToolsManifest.dependencies.'@github/copilot' -ne '1.0.103') {
+    throw 'The evaluation tool manifest does not pin @github/copilot 1.0.103.'
 }
-if ($evaluationToolsManifest.overrides.'@github/copilot' -ne '1.0.80') {
-    throw 'The evaluation tool manifest does not constrain transitive Copilot packages to 1.0.80.'
+if ($evaluationToolsManifest.overrides.'@github/copilot' -ne '1.0.103') {
+    throw 'The evaluation tool manifest does not constrain transitive Copilot packages to 1.0.103.'
 }
-if ($evaluationToolsManifest.dependencies.'@microsoft/vally-cli' -ne '0.14.0') {
-    throw 'The evaluation tool manifest does not pin @microsoft/vally-cli 0.14.0.'
+if ($evaluationToolsManifest.dependencies.'@microsoft/vally-cli' -ne '0.19.0') {
+    throw 'The evaluation tool manifest does not pin @microsoft/vally-cli 0.19.0.'
 }
 
 $evaluationToolsLock = Get-Content (
     Join-Path $evaluationToolsRoot 'package-lock.json'
 ) -Raw | ConvertFrom-Json -AsHashtable
 $lockedRoot = $evaluationToolsLock.packages['']
-if ($lockedRoot.dependencies['@github/copilot'] -ne '1.0.80' -or
-    $lockedRoot.dependencies['@microsoft/vally-cli'] -ne '0.14.0') {
+if ($lockedRoot.dependencies['@github/copilot'] -ne '1.0.103' -or
+    $lockedRoot.dependencies['@microsoft/vally-cli'] -ne '0.19.0') {
     throw 'The evaluation tool lockfile root does not match the pinned manifest.'
 }
 foreach ($lockedPackage in @(

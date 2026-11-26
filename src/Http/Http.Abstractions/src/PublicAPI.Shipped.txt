@@ -150,8 +150,12 @@ const Microsoft.AspNetCore.Http.StatusCodes.Status507InsufficientStorage = 507 -
 const Microsoft.AspNetCore.Http.StatusCodes.Status508LoopDetected = 508 -> int
 const Microsoft.AspNetCore.Http.StatusCodes.Status510NotExtended = 510 -> int
 const Microsoft.AspNetCore.Http.StatusCodes.Status511NetworkAuthenticationRequired = 511 -> int
+Microsoft.AspNetCore.Antiforgery.CsrfProtectionResult
+Microsoft.AspNetCore.Antiforgery.CsrfProtectionResult.IsAllowed.get -> bool
 Microsoft.AspNetCore.Antiforgery.IAntiforgeryMetadata
 Microsoft.AspNetCore.Antiforgery.IAntiforgeryMetadata.RequiresValidation.get -> bool
+Microsoft.AspNetCore.Antiforgery.ICsrfProtection
+Microsoft.AspNetCore.Antiforgery.ICsrfProtection.ValidateAsync(Microsoft.AspNetCore.Http.HttpContext! context) -> System.Threading.Tasks.ValueTask<Microsoft.AspNetCore.Antiforgery.CsrfProtectionResult!>
 Microsoft.AspNetCore.Builder.EndpointBuilder
 Microsoft.AspNetCore.Builder.EndpointBuilder.ApplicationServices.get -> System.IServiceProvider!
 Microsoft.AspNetCore.Builder.EndpointBuilder.ApplicationServices.init -> void
@@ -203,6 +207,22 @@ Microsoft.AspNetCore.Builder.UseExtensions
 Microsoft.AspNetCore.Builder.UseMiddlewareExtensions
 Microsoft.AspNetCore.Builder.UsePathBaseExtensions
 Microsoft.AspNetCore.Builder.UseWhenExtensions
+Microsoft.AspNetCore.Connections.Features.AuthenticationRefreshContext
+Microsoft.AspNetCore.Connections.Features.AuthenticationRefreshContext.AuthenticationRefreshContext() -> void
+Microsoft.AspNetCore.Connections.Features.AuthenticationRefreshContext.ConnectionId.get -> string!
+Microsoft.AspNetCore.Connections.Features.AuthenticationRefreshContext.ConnectionId.init -> void
+Microsoft.AspNetCore.Connections.Features.AuthenticationRefreshContext.HttpContext.get -> Microsoft.AspNetCore.Http.HttpContext!
+Microsoft.AspNetCore.Connections.Features.AuthenticationRefreshContext.HttpContext.init -> void
+Microsoft.AspNetCore.Connections.Features.AuthenticationRefreshContext.NewExpiration.get -> System.DateTimeOffset?
+Microsoft.AspNetCore.Connections.Features.AuthenticationRefreshContext.NewExpiration.init -> void
+Microsoft.AspNetCore.Connections.Features.AuthenticationRefreshContext.NewUser.get -> System.Security.Claims.ClaimsPrincipal!
+Microsoft.AspNetCore.Connections.Features.AuthenticationRefreshContext.NewUser.init -> void
+Microsoft.AspNetCore.Connections.Features.AuthenticationRefreshContext.PreviousUser.get -> System.Security.Claims.ClaimsPrincipal!
+Microsoft.AspNetCore.Connections.Features.AuthenticationRefreshContext.PreviousUser.init -> void
+Microsoft.AspNetCore.Connections.Features.IConnectionAuthenticationRefreshFeature
+Microsoft.AspNetCore.Connections.Features.IConnectionAuthenticationRefreshFeature.OnAuthenticationRefresh.get -> System.Func<Microsoft.AspNetCore.Connections.Features.AuthenticationRefreshContext!, System.Threading.Tasks.Task<bool>!>!
+Microsoft.AspNetCore.Connections.Features.IConnectionAuthenticationRefreshFeature.OnAuthenticationRefresh.set -> void
+Microsoft.AspNetCore.Connections.Features.IConnectionAuthenticationRefreshFeature.OnAuthenticationRefreshed(System.Action<Microsoft.AspNetCore.Connections.Features.AuthenticationRefreshContext!, object?>! callback, object? state) -> System.IDisposable!
 Microsoft.AspNetCore.Cors.Infrastructure.ICorsMetadata
 Microsoft.AspNetCore.Http.AsParametersAttribute
 Microsoft.AspNetCore.Http.AsParametersAttribute.AsParametersAttribute() -> void
@@ -508,6 +528,8 @@ override Microsoft.AspNetCore.Http.ProducesResponseTypeMetadata.ToString() -> st
 override Microsoft.AspNetCore.Http.QueryString.Equals(object? obj) -> bool
 override Microsoft.AspNetCore.Http.QueryString.GetHashCode() -> int
 override Microsoft.AspNetCore.Http.QueryString.ToString() -> string!
+static Microsoft.AspNetCore.Antiforgery.CsrfProtectionResult.Allowed() -> Microsoft.AspNetCore.Antiforgery.CsrfProtectionResult!
+static Microsoft.AspNetCore.Antiforgery.CsrfProtectionResult.Denied() -> Microsoft.AspNetCore.Antiforgery.CsrfProtectionResult!
 static Microsoft.AspNetCore.Builder.MapExtensions.Map(this Microsoft.AspNetCore.Builder.IApplicationBuilder! app, Microsoft.AspNetCore.Http.PathString pathMatch, bool preserveMatchedPathSegment, System.Action<Microsoft.AspNetCore.Builder.IApplicationBuilder!>! configuration) -> Microsoft.AspNetCore.Builder.IApplicationBuilder!
 static Microsoft.AspNetCore.Builder.MapExtensions.Map(this Microsoft.AspNetCore.Builder.IApplicationBuilder! app, Microsoft.AspNetCore.Http.PathString pathMatch, System.Action<Microsoft.AspNetCore.Builder.IApplicationBuilder!>! configuration) -> Microsoft.AspNetCore.Builder.IApplicationBuilder!
 static Microsoft.AspNetCore.Builder.MapExtensions.Map(this Microsoft.AspNetCore.Builder.IApplicationBuilder! app, string! pathMatch, System.Action<Microsoft.AspNetCore.Builder.IApplicationBuilder!>! configuration) -> Microsoft.AspNetCore.Builder.IApplicationBuilder!

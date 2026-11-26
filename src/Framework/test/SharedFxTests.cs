@@ -32,6 +32,7 @@ public class SharedFxTests
     }
 
     [Fact]
+    [SkipNonHelix("https://github.com/dotnet/aspnetcore/issues/57426")]
     public void SharedFrameworkContainsListedAssemblies()
     {
         var actualAssemblies = Directory.GetFiles(_sharedFxRoot, "*.dll")
@@ -56,6 +57,7 @@ public class SharedFxTests
     }
 
     [Fact]
+    [SkipNonHelix("https://github.com/dotnet/aspnetcore/issues/57426")]
     public void SharedFrameworkContainsExpectedFiles()
     {
         var actualAssemblies = Directory.GetFiles(_sharedFxRoot, "*.dll")
@@ -83,6 +85,7 @@ public class SharedFxTests
     }
 
     [Fact]
+    [SkipNonHelix("https://github.com/dotnet/aspnetcore/issues/57426")]
     public void SharedFrameworkContainsValidRuntimeConfigFile()
     {
         var runtimeConfigFilePath = Path.Combine(_sharedFxRoot, "Microsoft.AspNetCore.App.runtimeconfig.json");
@@ -100,6 +103,7 @@ public class SharedFxTests
     }
 
     [Fact]
+    [SkipNonHelix("https://github.com/dotnet/aspnetcore/issues/57426")]
     public void SharedFrameworkContainsValidDepsJson()
     {
         var depsFilePath = Path.Combine(_sharedFxRoot, "Microsoft.AspNetCore.App.deps.json");
@@ -158,6 +162,7 @@ public class SharedFxTests
     }
 
     [Fact]
+    [SkipNonHelix("https://github.com/dotnet/aspnetcore/issues/57426")]
     public void SharedFrameworkAssembliesHaveExpectedAssemblyVersions()
     {
         // Assemblies from this repo and dotnet/runtime don't always have identical assembly versions.
@@ -212,6 +217,7 @@ public class SharedFxTests
 
     // ASP.NET Core shared Fx assemblies should reference only ASP.NET Core assemblies with Revsion == 0.
     [Fact]
+    [SkipNonHelix("https://github.com/dotnet/aspnetcore/issues/57426")]
     public void SharedFrameworkAssemblyReferencesHaveExpectedAssemblyVersions()
     {
         // Only test managed assemblies from dotnet/aspnetcore.
@@ -245,6 +251,7 @@ public class SharedFxTests
     }
 
     [Fact]
+    [SkipNonHelix("https://github.com/dotnet/aspnetcore/issues/57426")]
     public void ItContainsVersionFile()
     {
         var versionFile = Path.Combine(_sharedFxRoot, ".version");

@@ -333,7 +333,7 @@ internal static class ILEmitTrieFactory
         if (groups.Length >= binarySearchThreshold)
         {
             // Only sort if binary search will be used.
-            Array.Sort(groups, static (a, b) => unchecked((long)a.Key).CompareTo(unchecked((long)b.Key)));
+            Array.Sort(groups, static (a, b) => a.Key.CompareTo(b.Key));
         }
 
         EmitIfLadder(groups);
@@ -542,7 +542,7 @@ internal static class ILEmitTrieFactory
     private static ulong GetUInt64Key(string text, int index)
     {
         Debug.Assert(index + 4 <= text.Length);
-        var span = text.ToLowerInvariant().AsSpan(index);
+        var span = text.ToLowerOrdinal().AsSpan(index);
         ref var p = ref Unsafe.As<char, byte>(ref MemoryMarshal.GetReference(span));
         return Unsafe.ReadUnaligned<ulong>(ref p);
     }
@@ -550,7 +550,7 @@ internal static class ILEmitTrieFactory
     private static ushort GetUInt16Key(string text, int index)
     {
         Debug.Assert(index + 1 <= text.Length);
-        return (ushort)char.ToLowerInvariant(text[index]);
+        return (ushort)char.ToLowerOrdinal(text[index]);
     }
 
     // We require a special build-time define since this is a testing/debugging

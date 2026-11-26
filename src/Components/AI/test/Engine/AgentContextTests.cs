@@ -3,6 +3,8 @@
 
 using Microsoft.AspNetCore.Components.AI.Tests.TestHelpers;
 using Microsoft.Extensions.AI;
+using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging.Testing;
 
 namespace Microsoft.AspNetCore.Components.AI.Tests.Engine;
 
@@ -90,6 +92,59 @@ public class AgentContextTests
     }
 
     [Fact]
+    public async Task SendMessageAsync_Failure_LogsException()
+    {
+        var exception = new InvalidOperationException("boom");
+        var sink = new TestSink();
+        var loggerFactory = new TestLoggerFactory(sink, enabled: true);
+        var client = new DelegatingStreamingChatClient();
+
+        client.SetHandler((messages, options, cancellationToken) =>
+            ResponseEmitters.EmitErrorAfterTokens(
+                ["partial"],
+                exception,
+                cancellationToken));
+
+        using var agent = new UIAgent(client, configure: null, loggerFactory);
+        using var context = new AgentContext(agent);
+
+        await context.SendMessageAsync("Hello");
+
+        Assert.Equal(ConversationStatus.Error, context.Status);
+        Assert.Same(exception, context.Error);
+
+        var log = Assert.Single(
+            sink.Writes,
+            write => write.LogLevel == LogLevel.Error);
+
+        Assert.Same(exception, log.Exception);
+    }
+
+    [Fact]
+    public async Task SendMessageAsync_LoggingFailure_PropagatesException()
+    {
+        var processingException = new InvalidOperationException("processing failed");
+        var loggerFactory = new ThrowingLoggerFactory();
+        var client = new DelegatingStreamingChatClient();
+
+        client.SetHandler((messages, options, cancellationToken) =>
+            ResponseEmitters.EmitErrorAfterTokens(
+                ["partial"],
+                processingException,
+                cancellationToken));
+
+        using var agent = new UIAgent(client, configure: null, loggerFactory);
+        using var context = new AgentContext(agent);
+
+        var exception = await Assert.ThrowsAsync<InvalidOperationException>(
+            () => context.SendMessageAsync("Hello"));
+
+        Assert.Same(loggerFactory.LoggingException, exception);
+        Assert.Equal(ConversationStatus.Error, context.Status);
+        Assert.Same(processingException, context.Error);
+    }
+
+    [Fact]
     public async Task RetryAsync_AfterError_ReplacesResponseBlocks()
     {
         var callCount = 0;
@@ -163,5 +218,37 @@ public class AgentContextTests
         var client = new DelegatingStreamingChatClient();
         client.SetHandler((msgs, opts, ct) => respond(ct));
         return new AgentContext(new UIAgent(client));
+    }
+
+    private sealed class ThrowingLoggerFactory : ILoggerFactory, ILogger
+    {
+        public InvalidOperationException LoggingException { get; } = new("logging failed");
+
+        public void AddProvider(ILoggerProvider provider)
+        {
+        }
+
+        public ILogger CreateLogger(string categoryName) => this;
+
+        public void Dispose()
+        {
+        }
+
+        public bool IsEnabled(LogLevel logLevel) => true;
+
+        public IDisposable? BeginScope<TState>(TState state) where TState : notnull => null;
+
+        public void Log<TState>(
+            LogLevel logLevel,
+            EventId eventId,
+            TState state,
+            Exception? exception,
+            Func<TState, Exception?, string> formatter)
+        {
+            if (logLevel == LogLevel.Error)
+            {
+                throw LoggingException;
+            }
+        }
     }
 }

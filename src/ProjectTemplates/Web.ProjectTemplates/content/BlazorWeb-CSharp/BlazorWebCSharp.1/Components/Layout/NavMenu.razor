@@ -51,8 +51,9 @@
             <AuthorizeView>
                 <Authorized>
                     <div class="nav-item px-3">
-                        <NavLink class="nav-link" href="Account/Manage">
-                            <span class="bi bi-person-fill-nav-menu" aria-hidden="true"></span> @context.User.Identity?.Name
+                        <NavLink class="nav-link h-auto" href="Account/Manage" style="min-height: 3rem;">
+                            <span class="bi bi-person-fill-nav-menu flex-shrink-0" aria-hidden="true"></span>
+                            <span class="text-break lh-base">@context.User.Identity?.Name</span>
                         </NavLink>
                     </div>
                     <div class="nav-item px-3">
