@@ -6,7 +6,6 @@ using Microsoft.AspNetCore.Components.E2ETest.Infrastructure;
 using Microsoft.AspNetCore.Components.E2ETest.Infrastructure.ServerFixtures;
 using Microsoft.AspNetCore.E2ETesting;
 using OpenQA.Selenium;
-using OpenQA.Selenium.Support.UI;
 using TestServer;
 using Xunit.Abstractions;
 
@@ -310,27 +309,32 @@ public class AutoPauseEnhancedNavigationTests : AutoPauseTestBase<App>
 
         try
         {
-            // Observe an early replacement on the baseline; correct startup waits for the gate.
-            new WebDriverWait(Browser, TimeSpan.FromSeconds(3)).Until(
-                _ => (long)js.ExecuteScript("return transportProbe.opened;") > 1);
-        }
-        catch (WebDriverTimeoutException)
-        {
-            // A replacement cannot open yet when teardown is correctly serialized.
+            Browser.Equal(2L, () => js.ExecuteScript("return transportProbe.opened;"));
+            Browser.Exists(By.Id("increment-persistent-counter-count")).Click();
+            Browser.Equal("1", () => Browser.Exists(By.Id("persistent-counter-count")).Text);
         }
         finally
         {
             js.ExecuteScript("transportProbe.release();");
         }
 
+        const string expectedCancellation = "Error: Failed to start the connection: Error: The connection was stopped during negotiation.";
+        var browserErrors = new List<LogEntry>();
+        Browser.True(() =>
+        {
+            browserErrors.AddRange(Browser.GetBrowserLogs(LogLevel.Severe));
+            return browserErrors.Any(entry => entry.Message.Contains(expectedCancellation, StringComparison.Ordinal));
+        });
         Browser.True(() => (bool)js.ExecuteScript("""
             return performance.getEntriesByType('resource').some(entry => entry.name.includes('/_blazor/disconnect'));
             """));
         Browser.NotEqual("", () => Browser.Exists(By.Id("circuit-id")).Text);
         Browser.Exists(By.Id("increment-persistent-counter-count")).Click();
-        Browser.Equal("1", () => Browser.Exists(By.Id("persistent-counter-count")).Text);
+        Browser.Equal("2", () => Browser.Exists(By.Id("persistent-counter-count")).Text);
         Browser.False(() => htmlElement.IsStale());
-        Assert.Empty(Browser.GetBrowserLogs(LogLevel.Severe));
+        browserErrors.AddRange(Browser.GetBrowserLogs(LogLevel.Severe));
+        var cancellation = Assert.Single(browserErrors);
+        Assert.Contains(expectedCancellation, cancellation.Message, StringComparison.Ordinal);
     }
 
     private void WithHiddenTab(Action<IJavaScriptExecutor> action)
