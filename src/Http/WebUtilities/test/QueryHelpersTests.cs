@@ -144,6 +144,71 @@ public class QueryHelperTests
         Assert.Empty(collection);
     }
 
+    [Theory]
+    [InlineData("", "a", "b")]
+    [InlineData("/path", "", "")]
+    [InlineData("/path?", "na me", "va&lue=")]
+    [InlineData("/path#frag?x=1", "k", "v")]
+    [InlineData("/path?q=1#frag#more", "\u00e9", "\ud83d\ude00/?#")]
+    [InlineData("#", "k", "v")]
+    [InlineData("/path", "k", "LONG")]
+    [InlineData("/path?x=y#a", "LONG", "LONG")]
+    [InlineData("/path", "\ud800", "a\udc00b")]
+    [InlineData("/path", "k", "HEAVY")]
+    [InlineData("/path?k=", "k", "SPLIT")]
+    [InlineData("LONG#frag", "k", "v")]
+    public void AddQueryStringMatchesReferenceImplementation(string uri, string name, string value)
+    {
+        var longValue = string.Concat(Enumerable.Repeat("x y&z/\u00e9", 200));
+        uri = uri.Replace("LONG", longValue);
+        name = name == "LONG" ? longValue : name;
+        value = value switch
+        {
+            "LONG" => longValue,
+            // Every char expands to nine chars, forcing several buffer growths.
+            "HEAVY" => new string('\u4e2d', 300),
+            // Surrogate pairs that straddle the end of the initial 256-char buffer.
+            "SPLIT" => new string('a', 240) + string.Concat(Enumerable.Repeat("\ud83d\ude00", 10)),
+            _ => value,
+        };
+
+        Assert.Equal(ReferenceAddQueryString(uri, [new(name, value)]), QueryHelpers.AddQueryString(uri, name, value));
+
+        var pairs = new List<KeyValuePair<string, string?>>
+        {
+            new(name, value),
+            new("skipped", null),
+            new(value, name),
+            new(longValue, longValue),
+            new("last", ""),
+        };
+        Assert.Equal(ReferenceAddQueryString(uri, pairs), QueryHelpers.AddQueryString(uri, pairs));
+    }
+
+    private static string ReferenceAddQueryString(string uri, IEnumerable<KeyValuePair<string, string?>> queryString)
+    {
+        var anchorIndex = uri.IndexOf('#');
+        var anchorText = anchorIndex == -1 ? "" : uri.Substring(anchorIndex);
+        var baseUri = anchorIndex == -1 ? uri : uri.Substring(0, anchorIndex);
+        var hasQuery = baseUri.Contains('?');
+        var sb = new System.Text.StringBuilder(baseUri);
+        foreach (var parameter in queryString)
+        {
+            if (parameter.Value is null)
+            {
+                continue;
+            }
+
+            sb.Append(hasQuery ? '&' : '?');
+            sb.Append(System.Text.Encodings.Web.UrlEncoder.Default.Encode(parameter.Key));
+            sb.Append('=');
+            sb.Append(System.Text.Encodings.Web.UrlEncoder.Default.Encode(parameter.Value));
+            hasQuery = true;
+        }
+
+        return sb.Append(anchorText).ToString();
+    }
+
     [Fact]
     public void AddQueryStringWithNullValueThrows()
     {
