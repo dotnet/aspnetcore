@@ -2,7 +2,10 @@
 @using System.Text.Json;
 @using System.Collections.Immutable;
 @using Microsoft.AspNetCore.Mvc;
+@using Microsoft.Extensions.Configuration;
 @using TestContentPackage;
+
+@inject IConfiguration Configuration
 
 <h3>Current status:</h3>
 
@@ -52,6 +55,15 @@ else
 </p>
 
 <div>
+    @if (Configuration.GetValue<bool>("BrowserConfigurationDisableOnCounter") && !_state.Counters.IsEmpty)
+    {
+        <ConfigureBrowser Options="@_disableDomOptions" />
+    }
+    @if (Configuration.GetValue<bool>("BrowserConfigurationTraceOnStreamingCounter") && _isStreaming && !_state.Counters.IsEmpty)
+    {
+        <ConfigureBrowser Options="@_traceLogOptions" />
+    }
+
     @foreach (var counter in _state.Counters)
     {
         <hr />
@@ -95,6 +107,8 @@ else
 </div>
 
 @code {
+    private static readonly BrowserOptions _disableDomOptions = new() { StaticServer = { PreserveDom = false } };
+    private static readonly BrowserOptions _traceLogOptions = new() { LogLevel = Microsoft.Extensions.Logging.LogLevel.Trace };
     static Channel<ComponentState> StreamingStateChannel;
 
     ComponentState _state = new(ImmutableArray<CounterInfo>.Empty, NextCounterId: 0);
