@@ -102,7 +102,8 @@ let nextJsObjectId = 1; // Start at 1 because zero is reserved for "window"
 
 // Never references the signal: it is the FinalizationRegistry's held value, which would keep the signal alive.
 interface ObservedAbortSignal {
-  dispatcher: CallDispatcher;
+  // Weak, so that a signal that outlives its Server circuit does not keep the circuit's dispatcher.
+  dispatcher: WeakRef<CallDispatcher>;
   id: number;
   // Calls and results that carry the id and that .NET has not answered yet.
   pendingCalls: number;
@@ -113,7 +114,7 @@ interface ObservedAbortSignal {
 
 const abortSignalFinalizer = new FinalizationRegistry<ObservedAbortSignal>(observed => {
   observed.collected = true;
-  observed.dispatcher.releaseAbortSignalWhenUnused(observed);
+  observed.dispatcher.deref()?.releaseAbortSignalWhenUnused(observed);
 });
 
 // The AbortSignals of the call or result being serialized; undefined while serializing anything else.
@@ -513,7 +514,7 @@ class CallDispatcher implements ICallDispatcher {
 
     let observed = this._abortSignals.get(signal);
     if (!observed) {
-      observed = { dispatcher: this, id: this._nextAbortSignalId++, pendingCalls: 0, collected: false, released: false };
+      observed = { dispatcher: new WeakRef(this), id: this._nextAbortSignalId++, pendingCalls: 0, collected: false, released: false };
       this._abortSignals.set(signal, observed);
       this.observeAbortSignal(signal, observed);
     }
@@ -541,11 +542,12 @@ class CallDispatcher implements ICallDispatcher {
 
   private observeAbortSignal(signal: AbortSignal, observed: ObservedAbortSignal): void {
     if (!signal.aborted) {
+      // Does not capture this, as the signal keeps its listener alive.
       const onAbort = (event: Event) => {
         event.target!.removeEventListener('abort', onAbort);
         // Deferred so that an abort raised while arguments are serialized does not start a nested call.
         observed.abortAcknowledgment = Promise.resolve()
-          .then(() => this.invokeDotNetStaticMethodAsync<void>('Microsoft.JSInterop', '__AbortSignalAborted', observed.id))
+          .then(() => observed.dispatcher.deref()?.invokeDotNetStaticMethodAsync<void>('Microsoft.JSInterop', '__AbortSignalAborted', observed.id))
           .catch(error => console.error(error));
       };
       signal.addEventListener('abort', onAbort);
