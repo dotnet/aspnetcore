@@ -83,6 +83,44 @@ public class InputTextTest
         Assert.Equal("model_StringProperty", idAttribute.AttributeValue);
     }
 
+    [Fact]
+    public async Task RendersIdAttribute_ForCapturedLongDictionaryKey()
+    {
+        var values = new Dictionary<long, string> { [1L] = "Test" };
+        long key = 1;
+        var rootComponent = new TestInputHostComponent<string, InputText>
+        {
+            EditContext = new EditContext(values),
+            Value = values[key],
+            ValueExpression = () => values[key],
+        };
+
+        var componentId = await RenderAndGetInputTextComponentIdAsync(rootComponent);
+        var frames = _testRenderer.GetCurrentRenderTreeFrames(componentId);
+
+        var idAttribute = frames.Array.Single(f => f.FrameType == RenderTreeFrameType.Attribute && f.AttributeName == "id");
+        Assert.Equal("values[1]", idAttribute.AttributeValue);
+    }
+
+    [Fact]
+    public async Task RendersIdAttribute_ForCapturedGuidDictionaryKey()
+    {
+        var key = new Guid("00112233-4455-6677-8899-aabbccddeeff");
+        var values = new Dictionary<Guid, string> { [key] = "Test" };
+        var rootComponent = new TestInputHostComponent<string, InputText>
+        {
+            EditContext = new EditContext(values),
+            Value = values[key],
+            ValueExpression = () => values[key],
+        };
+
+        var componentId = await RenderAndGetInputTextComponentIdAsync(rootComponent);
+        var frames = _testRenderer.GetCurrentRenderTreeFrames(componentId);
+
+        var idAttribute = frames.Array.Single(f => f.FrameType == RenderTreeFrameType.Attribute && f.AttributeName == "id");
+        Assert.Equal("values[00112233-4455-6677-8899-aabbccddeeff]", idAttribute.AttributeValue);
+    }
+
     private async Task<int> RenderAndGetInputTextComponentIdAsync(TestInputHostComponent<string, InputText> hostComponent)
     {
         var hostComponentId = _testRenderer.AssignRootComponentId(hostComponent);

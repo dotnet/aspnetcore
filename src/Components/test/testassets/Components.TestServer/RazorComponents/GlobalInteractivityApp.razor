@@ -11,6 +11,7 @@
     <script>
         Blazor.start({
             webAssembly: {
+                applicationCulture: new URLSearchParams(location.search).get('application-culture') ?? undefined,
                 loadBootResource: (type, name, defaultUri, integrity) => `WasmMinimal/_framework/${name}`
             }
         });
