@@ -53,7 +53,7 @@ public class Test2Controller : ControllerBase
     /// <param name="name">The name of the person.</param>
     /// <response code="200">Returns the greeting.</response>
     [HttpGet]
-    public string Get(string name)
+    public string Get(string name, [FromQuery] DerivedQuery query)
     {
         return $"Hello, {name}!";
     }
@@ -76,6 +76,18 @@ public class Test2Controller : ControllerBase
 public partial class Program {}
 
 public record Todo(int Id, string Title, bool Completed);
+
+public class BaseQuery
+{
+    /// <summary>The ID to filter by.</summary>
+    public int? Id { get; set; }
+}
+
+public class DerivedQuery : BaseQuery
+{
+    /// <summary>The limit to apply.</summary>
+    public int? Limit { get; set; }
+}
 """;
         var generator = new XmlCommentGenerator();
         await SnapshotTestHelper.Verify(source, generator, out var compilation);
@@ -86,7 +98,9 @@ public record Todo(int Id, string Title, bool Completed);
             Assert.Equal("A description of the action.", path.Description);
 
             var path2 = document.Paths["/Test2"].Operations[HttpMethod.Get];
-            Assert.Equal("The name of the person.", path2.Parameters[0].Description);
+            Assert.Equal("The name of the person.", Assert.Single(path2.Parameters, parameter => parameter.Name == "name").Description);
+            Assert.Equal("The ID to filter by.", Assert.Single(path2.Parameters, parameter => parameter.Name == "Id").Description);
+            Assert.Equal("The limit to apply.", Assert.Single(path2.Parameters, parameter => parameter.Name == "Limit").Description);
             Assert.Equal("Returns the greeting.", path2.Responses["200"].Description);
 
             var path2again = document.Paths["/Test2/HelloByInt"].Operations[HttpMethod.Get];
