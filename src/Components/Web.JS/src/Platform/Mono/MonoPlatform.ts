@@ -173,6 +173,25 @@ async function createRuntimeInstance(options: Partial<WebAssemblyStartOptions>, 
   const anyDotnet = (dotnet as any);
   anyDotnet.withModuleConfig(moduleConfig);
 
+  type ConfigLoadedCallback = (config: LoaderConfig) => void | Promise<void>;
+  const configLoadedCallbacks: ConfigLoadedCallback[] = [];
+
+  async function captureConfigLoadedCallbacks(action: () => void | Promise<void>) {
+    const withConfigLoaded = dotnet.withConfigLoaded;
+    // The runtime has already snapshotted its callbacks when initializers run.
+    dotnet.withConfigLoaded = (callback?: ConfigLoadedCallback) => {
+      if (callback) {
+        configLoadedCallbacks.push(callback);
+      }
+      return dotnet;
+    };
+    try {
+      await action();
+    } finally {
+      dotnet.withConfigLoaded = withConfigLoaded;
+    }
+  }
+
   dotnet.withConfigLoaded(async (loadedConfig: LoaderConfig) => {
     if (!loadedConfig.environmentVariables) {
       loadedConfig.environmentVariables = {};
@@ -214,7 +233,7 @@ async function createRuntimeInstance(options: Partial<WebAssemblyStartOptions>, 
     }
 
     if (options.configureRuntime && options.configureRuntime !== initialConfigureRuntime) {
-      options.configureRuntime(dotnet);
+      await captureConfigLoadedCallbacks(() => options.configureRuntime!(dotnet));
     }
   });
   dotnet.withDownloadResourceProgress(setProgress);
@@ -232,6 +251,16 @@ async function createRuntimeInstance(options: Partial<WebAssemblyStartOptions>, 
     };
     options.configureRuntime(dotnet);
   }
+
+  // Preserve the order of callbacks registered before startup and by initializers.
+  dotnet.withConfigLoaded(async (loadedConfig: LoaderConfig) => {
+    await captureConfigLoadedCallbacks(async () => {
+      for (const callback of configLoadedCallbacks) {
+        await callback(loadedConfig);
+      }
+    });
+  });
+
   if (justDownload) {
     await dotnet.download(true);
   } else {
