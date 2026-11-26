@@ -83,11 +83,9 @@ public class StatePersistenceTest : ServerTestBase<BasicTestAppServerSiteFixture
         }
         else
         {
+            // For auto mode, the WebAssembly resource load is blocked on the destination page right before
+            // Blazor starts. The page loaded here auto-starts Blazor, which would consume the one-shot block flag.
             EnhancedNavigationTestUtil.SuppressEnhancedNavigation(this, true);
-            if (mode == "auto")
-            {
-                BlockWebAssemblyResourceLoad();
-            }
         }
 
         if (mode != "auto")
@@ -418,6 +416,11 @@ public class StatePersistenceTest : ServerTestBase<BasicTestAppServerSiteFixture
                 streamingId: streaming,
                 streamingCompleted: false,
                 interactiveRuntime: interactiveRuntime);
+
+            if (mode == "auto" && interactiveRuntime == "server")
+            {
+                BlockWebAssemblyResourceLoad();
+            }
 
             Browser.Click(By.Id("call-blazor-start"));
         }
