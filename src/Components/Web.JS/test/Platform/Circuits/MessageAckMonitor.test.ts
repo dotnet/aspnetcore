@@ -60,6 +60,41 @@ describe('MessageAckMonitor', () => {
     expect(completed).toBe(true);
   });
 
+  test('zero timeout returns a rejected transport send without stopping the connection', async () => {
+    const error = new Error('The transport send failed.');
+    const handoff = Promise.reject(error);
+    jest.spyOn(connection, 'send').mockReturnValue(handoff);
+    jest.spyOn(connection, 'invoke');
+    const monitor = new MessageAckMonitor(connection, 0, logger);
+
+    const sending = monitor.send('OnLocationChanged', '/next', undefined, true);
+
+    expect(sending).toBe(handoff);
+    await expect(sending).rejects.toBe(error);
+    expect(connection.send).toHaveBeenCalledWith('OnLocationChanged', '/next', undefined, true);
+    expect(connection.invoke).not.toHaveBeenCalled();
+    expect(jest.getTimerCount()).toBe(0);
+    expect(connection.stop).not.toHaveBeenCalled();
+    expect(logger.log).not.toHaveBeenCalled();
+  });
+
+  test('a rejected monitored invocation stops the connection once and cancels its deadline', async () => {
+    const error = new Error('The invocation failed.');
+    const acknowledgement = Promise.reject(error);
+    jest.spyOn(connection, 'invoke').mockReturnValue(acknowledgement);
+    const monitor = new MessageAckMonitor(connection, 2000, logger);
+
+    const sending = monitor.send('OnLocationChanged', '/next', undefined, true);
+
+    expect(sending).toBe(acknowledgement);
+    await expect(sending).rejects.toBe(error);
+    expect(connection.stop).toHaveBeenCalledTimes(1);
+    expect(logger.log).toHaveBeenCalledWith(LogLevel.Warning, error);
+    expect(jest.getTimerCount()).toBe(0);
+    jest.advanceTimersByTime(2000);
+    expect(connection.stop).toHaveBeenCalledTimes(1);
+  });
+
   test('a later acknowledgement does not extend an earlier message deadline', async () => {
     const first = Promise.withResolvers<void>();
     const second = Promise.withResolvers<void>();

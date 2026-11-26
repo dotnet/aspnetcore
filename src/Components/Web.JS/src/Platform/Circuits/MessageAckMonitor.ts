@@ -22,9 +22,7 @@ export class MessageAckMonitor {
     }
 
     if (this._timeout === 0) {
-      const sending = this._connection.send(method, ...args);
-      sending.catch(error => this.fail(error));
-      return sending;
+     return this._connection.send(method, ...args);
     }
 
     const timer = setTimeout(() => this.fail(new Error(`Server receipt of '${method}' was not acknowledged within ${this._timeout} milliseconds.`)), this._timeout);

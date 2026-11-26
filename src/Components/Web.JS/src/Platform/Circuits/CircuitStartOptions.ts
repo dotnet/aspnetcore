@@ -9,8 +9,8 @@ export type BeforeBlazorServerStartedCallback = (options: Partial<CircuitStartOp
 export type AfterBlazorServerStartedCallback = (blazor: IBlazor) => Promise<void>;
 
 export type ServerInitializers = {
-  beforeStart: BeforeBlazorServerStartedCallback[],
-  afterStarted: AfterBlazorServerStartedCallback[],
+  beforeStart: BeforeBlazorServerStartedCallback [],
+  afterStarted: AfterBlazorServerStartedCallback [],
 }
 
 export interface CircuitStartOptions {
@@ -24,7 +24,7 @@ export interface CircuitStartOptions {
   messageAckTimeoutMilliseconds: number;
   reconnectionOptions: ReconnectionOptions;
   reconnectionHandler?: ReconnectionHandler;
-  initializers: ServerInitializers;
+  initializers : ServerInitializers;
   circuitHandlers: CircuitHandler[];
 }
 
