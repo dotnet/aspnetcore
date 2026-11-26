@@ -82,7 +82,7 @@ describe('EventDelegator debounce and throttle', () => {
     delegator.removeListenersForElement(input);
   });
 
-  test('discrete throttle (leading-only) dispatches first click immediately and drops clicks during cooldown', () => {
+  test('throttling click dispatches the first click immediately and drops clicks during the interval', () => {
     const delegator = new EventDelegator(WebRendererId.Server);
     const button = document.createElement('button');
     container.appendChild(button);
@@ -110,7 +110,7 @@ describe('EventDelegator debounce and throttle', () => {
     delegator.removeListenersForElement(button);
   });
 
-  test('continuous throttle (leading + trailing) dispatches immediately and emits final trailing state', () => {
+  test('throttling mousemove dispatches immediately and also dispatches the latest position when the interval ends', () => {
     const delegator = new EventDelegator(WebRendererId.Server);
     const div = document.createElement('div');
     container.appendChild(div);
@@ -136,64 +136,175 @@ describe('EventDelegator debounce and throttle', () => {
     delegator.removeListenersForElement(div);
   });
 
-  test('custom events throttle as continuous only when registered so or when aliasing a continuous browser event', () => {
-    registerCustomEventType('testcontinuousevent', { continuous: true });
-    registerCustomEventType('testdiscreteevent', {});
+  test('throttling wheel dispatches only the first occurrence of each interval, because wheel events carry deltas', () => {
+    const delegator = new EventDelegator(WebRendererId.Server);
+    const div = document.createElement('div');
+    container.appendChild(div);
+
+    delegator.setListener(div, 'wheel', 4, 10);
+    delegator.setThrottle(div, 'wheel', 200);
+
+    div.dispatchEvent(new WheelEvent('wheel', { bubbles: true, deltaY: 100 }));
+    div.dispatchEvent(new WheelEvent('wheel', { bubbles: true, deltaY: 100 }));
+    div.dispatchEvent(new WheelEvent('wheel', { bubbles: true, deltaY: 100 }));
+    jest.advanceTimersByTime(200);
+
+    expect(dispatchedCalls.length).toBe(1);
+
+    delegator.removeListenersForElement(div);
+  });
+
+  test('throttling change dispatches the latest selection when the interval ends and keeps renders from overwriting it meanwhile', () => {
+    const delegator = new EventDelegator(WebRendererId.Server);
+    const select = document.createElement('select');
+    for (const value of ['a', 'b', 'c', 'd']) {
+      const option = document.createElement('option');
+      option.value = value;
+      select.appendChild(option);
+    }
+    container.appendChild(select);
+
+    delegator.setListener(select, 'change', 5, 10);
+    delegator.setThrottle(select, 'change', 500);
+
+    select.value = 'b';
+    select.dispatchEvent(new Event('change', { bubbles: true }));
+    select.value = 'c';
+    select.dispatchEvent(new Event('change', { bubbles: true }));
+    select.value = 'd';
+    select.dispatchEvent(new Event('change', { bubbles: true }));
+    expect(dispatchedCalls.map(c => c.eventArgs.value)).toEqual(['b']);
+
+    // A render that writes another value while the latest selection is pending doesn't overwrite it
+    tryApplySpecialProperty(select, 'value', 'b');
+    expect(select.value).toBe('d');
+
+    jest.advanceTimersByTime(500);
+    expect(dispatchedCalls.map(c => c.eventArgs.value)).toEqual(['b', 'd']);
+
+    delegator.removeListenersForElement(select);
+  });
+
+  test('custom events throttle with a trailing call when registered with throttleTrailing or when aliasing such a browser event', () => {
+    registerCustomEventType('testtrailingevent', { throttleTrailing: true });
+    registerCustomEventType('testleadingevent', {});
     registerCustomEventType('testscrollalias', { browserEventName: 'scroll' });
+    registerCustomEventType('testleadingscrollalias', { browserEventName: 'scroll', throttleTrailing: false });
 
     const delegator = new EventDelegator(WebRendererId.Server);
     const element = document.createElement('div');
     container.appendChild(element);
 
-    for (const [eventName, eventHandlerId] of [['testcontinuousevent', 110], ['testdiscreteevent', 111], ['testscrollalias', 112]] as const) {
+    const handlers = [['testtrailingevent', 110], ['testleadingevent', 111], ['testscrollalias', 112], ['testleadingscrollalias', 113]] as const;
+    for (const [eventName, eventHandlerId] of handlers) {
       delegator.setListener(element, eventName, eventHandlerId, 1);
       delegator.setThrottle(element, eventName, 200);
     }
 
-    for (const browserEventName of ['testcontinuousevent', 'testdiscreteevent', 'scroll']) {
+    for (const browserEventName of ['testtrailingevent', 'testleadingevent', 'scroll']) {
       element.dispatchEvent(new Event(browserEventName, { bubbles: true }));
       element.dispatchEvent(new Event(browserEventName, { bubbles: true }));
     }
-    expect(dispatchedCalls.map(c => c.eventDescriptor.eventHandlerId)).toEqual([110, 111, 112]);
+    expect(dispatchedCalls.map(c => c.eventDescriptor.eventHandlerId)).toEqual([110, 111, 112, 113]);
 
     jest.advanceTimersByTime(200);
-    expect(dispatchedCalls.map(c => c.eventDescriptor.eventHandlerId)).toEqual([110, 111, 112, 110, 112]);
+    expect(dispatchedCalls.map(c => c.eventDescriptor.eventHandlerId)).toEqual([110, 111, 112, 113, 110, 112]);
 
     delegator.removeListenersForElement(element);
   });
 
-  test('flushes pending debounced input before dispatching un-delayed submit or click event', () => {
+  test('throttling keydown limits auto-repeat, while each fresh key press gets through and starts a new interval', () => {
     const delegator = new EventDelegator(WebRendererId.Server);
-    const form = document.createElement('form');
     const input = document.createElement('input');
-    const submitBtn = document.createElement('button');
-    submitBtn.type = 'button';
-    form.appendChild(input);
-    form.appendChild(submitBtn);
-    container.appendChild(form);
+    container.appendChild(input);
+
+    delegator.setListener(input, 'keydown', 6, 1);
+    delegator.setThrottle(input, 'keydown', 500);
+
+    input.dispatchEvent(new KeyboardEvent('keydown', { bubbles: true, key: 'a' }));
+    input.dispatchEvent(new KeyboardEvent('keydown', { bubbles: true, key: 'a', repeat: true }));
+    input.dispatchEvent(new KeyboardEvent('keydown', { bubbles: true, key: 'a', repeat: true }));
+    expect(dispatchedCalls.map(c => c.eventArgs.key)).toEqual(['a']);
+
+    jest.advanceTimersByTime(300);
+    input.dispatchEvent(new KeyboardEvent('keydown', { bubbles: true, key: 'b' }));
+    jest.advanceTimersByTime(300);
+    input.dispatchEvent(new KeyboardEvent('keydown', { bubbles: true, key: 'b', repeat: true }));
+    expect(dispatchedCalls.map(c => c.eventArgs.key)).toEqual(['a', 'b']);
+
+    jest.advanceTimersByTime(200);
+    input.dispatchEvent(new KeyboardEvent('keydown', { bubbles: true, key: 'b', repeat: true }));
+    expect(dispatchedCalls.map(c => c.eventArgs.key)).toEqual(['a', 'b', 'b']);
+
+    delegator.removeListenersForElement(input);
+  });
+
+  test('leaving an element or pressing Enter in it dispatches its pending events, while presses, clicks and other keys do not', () => {
+    const delegator = new EventDelegator(WebRendererId.Server);
+    const input = document.createElement('input');
+    const button = document.createElement('button');
+    const other = document.createElement('input');
+    container.appendChild(input);
+    container.appendChild(button);
+    container.appendChild(other);
 
     delegator.setListener(input, 'input', 10, 1);
     delegator.setDebounce(input, 'input', 500);
-    delegator.setListener(submitBtn, 'click', 11, 1);
+    delegator.setListener(button, 'mousedown', 11, 1);
+    delegator.setListener(button, 'click', 12, 1);
+    delegator.setListener(other, 'keydown', 13, 1);
+    const dispatchedIds = () => dispatchedCalls.map(c => c.eventDescriptor.eventHandlerId);
 
-    input.value = 'search query';
+    input.value = 'a';
     input.dispatchEvent(new Event('input', { bubbles: true }));
-    expect(dispatchedCalls.length).toBe(0);
 
-    // User immediately clicks submit before 500ms elapses
-    submitBtn.dispatchEvent(new MouseEvent('click', { bubbles: true }));
+    // Handlers that run before the input loses focus observe the previous value
+    button.dispatchEvent(new MouseEvent('mousedown', { bubbles: true }));
+    other.dispatchEvent(new KeyboardEvent('keydown', { bubbles: true, key: 'Enter' }));
+    input.dispatchEvent(new KeyboardEvent('keydown', { bubbles: true, key: 'Tab' }));
+    expect(dispatchedIds()).toEqual([11, 13]);
 
-    expect(dispatchedCalls.length).toBe(2);
-    expect(dispatchedCalls[0].eventDescriptor.eventName).toBe('input');
-    expect(dispatchedCalls[0].eventArgs).toEqual({ value: 'search query' });
-    expect(dispatchedCalls[1].eventDescriptor.eventName).toBe('click');
+    // Browsers blur the input when the user presses another element, before the click
+    input.dispatchEvent(new FocusEvent('blur'));
+    button.dispatchEvent(new MouseEvent('click', { bubbles: true }));
+    expect(dispatchedIds()).toEqual([11, 13, 10, 12]);
+    expect(dispatchedCalls[2].eventArgs).toEqual({ value: 'a' });
 
-    // Timer must be cancelled so input does not fire again at 500ms
+    input.value = 'ab';
+    input.dispatchEvent(new Event('input', { bubbles: true }));
+    input.dispatchEvent(new KeyboardEvent('keydown', { bubbles: true, key: 'Enter' }));
+    expect(dispatchedIds()).toEqual([11, 13, 10, 12, 10]);
+    expect(dispatchedCalls[4].eventArgs).toEqual({ value: 'ab' });
+
     jest.advanceTimersByTime(600);
-    expect(dispatchedCalls.length).toBe(2);
+    expect(dispatchedCalls.length).toBe(5);
 
     delegator.removeListenersForElement(input);
-    delegator.removeListenersForElement(submitBtn);
+    delegator.removeListenersForElement(button);
+    delegator.removeListenersForElement(other);
+  });
+
+  test('a blur raised while a render batch is applied does not dispatch pending events', () => {
+    const delegator = new EventDelegator(WebRendererId.Server);
+    const input = document.createElement('input');
+    container.appendChild(input);
+
+    delegator.setListener(input, 'input', 15, 1);
+    delegator.setDebounce(input, 'input', 500);
+
+    input.value = 'typed';
+    input.dispatchEvent(new Event('input', { bubbles: true }));
+
+    delegator.beginRenderBatch();
+    input.dispatchEvent(new FocusEvent('blur'));
+    delegator.endRenderBatch();
+    expect(dispatchedCalls.length).toBe(0);
+
+    jest.advanceTimersByTime(500);
+    expect(dispatchedCalls.length).toBe(1);
+    expect(dispatchedCalls[0].eventArgs).toEqual({ value: 'typed' });
+
+    delegator.removeListenersForElement(input);
   });
 
   test('flushes pending debounced input on blur even when blur has no .NET handler', () => {
@@ -430,50 +541,14 @@ describe('EventDelegator debounce and throttle', () => {
     delegator.removeListenersForElement(siblingInput);
   });
 
-  test('only acting events flush pending input: hover and presses inside the input do not, pressing another element does', () => {
+  test('keys that are part of an IME composition do not dispatch pending input, while Enter after the composition does', () => {
     const delegator = new EventDelegator(WebRendererId.Server);
     const input = document.createElement('input');
-    const suggestion = document.createElement('li');
     container.appendChild(input);
-    container.appendChild(suggestion);
-
-    delegator.setListener(input, 'input', 90, 1);
-    delegator.setDebounce(input, 'input', 500);
-    delegator.setListener(input, 'mousedown', 91, 1);
-    delegator.setListener(suggestion, 'mouseover', 92, 1);
-    delegator.setListener(suggestion, 'mousedown', 93, 1);
-
-    input.value = 'app';
-    input.dispatchEvent(new Event('input', { bubbles: true }));
-
-    // Hovering a suggestion and clicking inside the input to move the caret keep the input pending
-    suggestion.dispatchEvent(new MouseEvent('mouseover', { bubbles: true }));
-    input.dispatchEvent(new MouseEvent('mousedown', { bubbles: true }));
-    expect(dispatchedCalls.map(c => c.eventDescriptor.eventHandlerId)).toEqual([92, 91]);
-
-    // Pressing a suggestion delivers the typed text before the suggestion's handler runs
-    suggestion.dispatchEvent(new MouseEvent('mousedown', { bubbles: true }));
-    expect(dispatchedCalls.map(c => c.eventDescriptor.eventHandlerId)).toEqual([92, 91, 90, 93]);
-    expect(dispatchedCalls[2].eventArgs).toEqual({ value: 'app' });
-
-    jest.advanceTimersByTime(600);
-    expect(dispatchedCalls.length).toBe(4);
-
-    delegator.removeListenersForElement(input);
-    delegator.removeListenersForElement(suggestion);
-  });
-
-  test('keys that are part of an IME composition do not commit pending input, and keys in another element flush it', () => {
-    const delegator = new EventDelegator(WebRendererId.Server);
-    const input = document.createElement('input');
-    const other = document.createElement('input');
-    container.appendChild(input);
-    container.appendChild(other);
 
     delegator.setListener(input, 'input', 100, 1);
     delegator.setDebounce(input, 'input', 500);
     delegator.setListener(input, 'keydown', 101, 1);
-    delegator.setListener(other, 'keydown', 102, 1);
 
     input.value = 'nihon';
     input.dispatchEvent(new Event('input', { bubbles: true }));
@@ -483,48 +558,12 @@ describe('EventDelegator debounce and throttle', () => {
     input.dispatchEvent(new KeyboardEvent('keydown', { bubbles: true, key: 'Process', keyCode: 229 }));
     expect(dispatchedCalls.filter(c => c.eventDescriptor.eventHandlerId === 100).length).toBe(0);
 
-    // Enter after the composition ends commits the pending input before the keydown handler runs
+    // Enter after the composition ends dispatches the pending input before the keydown handler runs
     input.value = '日本';
     input.dispatchEvent(new Event('input', { bubbles: true }));
     input.dispatchEvent(new KeyboardEvent('keydown', { bubbles: true, key: 'Enter' }));
     expect(dispatchedCalls.slice(-2).map(c => c.eventDescriptor.eventHandlerId)).toEqual([100, 101]);
     expect(dispatchedCalls[dispatchedCalls.length - 2].eventArgs).toEqual({ value: '日本' });
-
-    // An ordinary key in another element flushes the input that is still pending
-    input.value = '日本語';
-    input.dispatchEvent(new Event('input', { bubbles: true }));
-    other.dispatchEvent(new KeyboardEvent('keydown', { bubbles: true, key: 'a' }));
-    expect(dispatchedCalls.slice(-2).map(c => c.eventDescriptor.eventHandlerId)).toEqual([100, 102]);
-
-    delegator.removeListenersForElement(input);
-    delegator.removeListenersForElement(other);
-  });
-
-  test('clicking a link flushes pending debounced input before notifyAfterClick navigation interception runs', () => {
-    const delegator = new EventDelegator(WebRendererId.Server);
-    const input = document.createElement('input');
-    const link = document.createElement('a');
-    link.href = '/other';
-    container.appendChild(input);
-    container.appendChild(link);
-
-    const eventsOrder: string[] = [];
-    delegator.notifyAfterClick(() => {
-      eventsOrder.push(`afterClick(dispatched=${dispatchedCalls.length})`);
-    });
-
-    delegator.setListener(input, 'input', 80, 1);
-    delegator.setDebounce(input, 'input', 500);
-
-    input.value = 'before-nav';
-    input.dispatchEvent(new Event('input', { bubbles: true }));
-    expect(dispatchedCalls.length).toBe(0);
-
-    link.dispatchEvent(new MouseEvent('click', { bubbles: true, cancelable: true }));
-
-    expect(dispatchedCalls.length).toBe(1);
-    expect(dispatchedCalls[0].eventArgs).toEqual({ value: 'before-nav' });
-    expect(eventsOrder).toEqual(['afterClick(dispatched=1)']);
 
     delegator.removeListenersForElement(input);
   });
@@ -591,35 +630,19 @@ describe('EventDelegator debounce and throttle', () => {
     delegator.removeListenersForElement(input);
   });
 
-  test('disconnected element does not dispatch when debounce timer expires, and keyup resets keydown throttle cooldown', () => {
+  test('disconnected element does not dispatch when its debounce timer expires', () => {
     const delegator = new EventDelegator(WebRendererId.Server);
     const input = document.createElement('input');
     container.appendChild(input);
 
     delegator.setListener(input, 'keydown', 100, 1);
-    delegator.setThrottle(input, 'keydown', 500);
-
-    // First keydown dispatches immediately
-    input.dispatchEvent(new KeyboardEvent('keydown', { bubbles: true, key: 'a' }));
-    expect(dispatchedCalls.length).toBe(1);
-
-    // Held keydown during cooldown is ignored
-    jest.advanceTimersByTime(50);
-    input.dispatchEvent(new KeyboardEvent('keydown', { bubbles: true, key: 'a', repeat: true }));
-    expect(dispatchedCalls.length).toBe(1);
-
-    // Releasing key (keyup) resets cooldown immediately
-    input.dispatchEvent(new KeyboardEvent('keyup', { bubbles: true, key: 'a' }));
-    input.dispatchEvent(new KeyboardEvent('keydown', { bubbles: true, key: 'a' }));
-    expect(dispatchedCalls.length).toBe(2);
-
-    // Now test disconnected element with debounce
     delegator.setDebounce(input, 'keydown', 300);
+
     input.dispatchEvent(new KeyboardEvent('keydown', { bubbles: true, key: 'z' }));
-    input.remove(); // Disconnect from DOM before timer fires
+    input.remove();
 
     jest.advanceTimersByTime(300);
-    expect(dispatchedCalls.length).toBe(2);
+    expect(dispatchedCalls.length).toBe(0);
 
     delegator.removeListenersForElement(input);
   });

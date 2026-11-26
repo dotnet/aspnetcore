@@ -72,27 +72,32 @@ export function renderBatch(browserRendererId: number, batch: RenderBatch): void
   const referenceFramesValues = arrayRangeReader.values(referenceFrames);
   const diffReader = batch.diffReader;
 
-  for (let i = 0; i < updatedComponentsLength; i++) {
-    const diff = batch.updatedComponentsEntry(updatedComponentsValues, i);
-    const componentId = diffReader.componentId(diff);
-    const edits = diffReader.edits(diff);
-    browserRenderer.updateComponent(batch, componentId, edits, referenceFramesValues);
-  }
+  browserRenderer.eventDelegator.beginRenderBatch();
+  try {
+    for (let i = 0; i < updatedComponentsLength; i++) {
+      const diff = batch.updatedComponentsEntry(updatedComponentsValues, i);
+      const componentId = diffReader.componentId(diff);
+      const edits = diffReader.edits(diff);
+      browserRenderer.updateComponent(batch, componentId, edits, referenceFramesValues);
+    }
 
-  const disposedComponentIdsRange = batch.disposedComponentIds();
-  const disposedComponentIdsValues = arrayRangeReader.values(disposedComponentIdsRange);
-  const disposedComponentIdsLength = arrayRangeReader.count(disposedComponentIdsRange);
-  for (let i = 0; i < disposedComponentIdsLength; i++) {
-    const componentId = batch.disposedComponentIdsEntry(disposedComponentIdsValues, i);
-    browserRenderer.disposeComponent(componentId);
-  }
+    const disposedComponentIdsRange = batch.disposedComponentIds();
+    const disposedComponentIdsValues = arrayRangeReader.values(disposedComponentIdsRange);
+    const disposedComponentIdsLength = arrayRangeReader.count(disposedComponentIdsRange);
+    for (let i = 0; i < disposedComponentIdsLength; i++) {
+      const componentId = batch.disposedComponentIdsEntry(disposedComponentIdsValues, i);
+      browserRenderer.disposeComponent(componentId);
+    }
 
-  const disposedEventHandlerIdsRange = batch.disposedEventHandlerIds();
-  const disposedEventHandlerIdsValues = arrayRangeReader.values(disposedEventHandlerIdsRange);
-  const disposedEventHandlerIdsLength = arrayRangeReader.count(disposedEventHandlerIdsRange);
-  for (let i = 0; i < disposedEventHandlerIdsLength; i++) {
-    const eventHandlerId = batch.disposedEventHandlerIdsEntry(disposedEventHandlerIdsValues, i);
-    browserRenderer.disposeEventHandler(eventHandlerId);
+    const disposedEventHandlerIdsRange = batch.disposedEventHandlerIds();
+    const disposedEventHandlerIdsValues = arrayRangeReader.values(disposedEventHandlerIdsRange);
+    const disposedEventHandlerIdsLength = arrayRangeReader.count(disposedEventHandlerIdsRange);
+    for (let i = 0; i < disposedEventHandlerIdsLength; i++) {
+      const eventHandlerId = batch.disposedEventHandlerIdsEntry(disposedEventHandlerIdsValues, i);
+      browserRenderer.disposeEventHandler(eventHandlerId);
+    }
+  } finally {
+    browserRenderer.eventDelegator.endRenderBatch();
   }
 
   resetScrollIfNeeded(ScrollResetSchedule.AfterBatch);

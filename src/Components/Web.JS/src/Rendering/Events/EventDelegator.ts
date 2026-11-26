@@ -3,7 +3,7 @@
 
 import { EventFieldInfo } from './EventFieldInfo';
 import {
-  eventNameAliasRegisteredCallbacks, getBrowserEventName, getEventNameAliases, getEventTypeOptions, isContinuousEvent,
+  eventNameAliasRegisteredCallbacks, getBrowserEventName, getEventNameAliases, getEventTypeOptions, usesTrailingThrottle,
 } from './EventTypes';
 import { isRendererAttached, dispatchEvent } from '../WebRendererInteropMethods';
 import {
@@ -66,54 +66,28 @@ const disableableEventNames = toLookup([
   'mouseup',
 ]);
 
-const nonFlushingContinuousEvents = toLookup([
-  'drag',
-  'dragover',
-  'mousemove',
-  'mousewheel',
-  'pointermove',
-  'progress',
-  'ratechange',
-  'scroll',
-  'seeking',
-  'selectionchange',
-  'timeupdate',
-  'touchmove',
-  'volumechange',
-  'wheel',
-]);
-
-// Before one of these events is processed, pending delayed events are dispatched,
-// so .NET observes what the user did before they acted on it.
-// Other events, such as hover, focus, or load, never flush pending events.
-// Presses on the element that produced a pending event, such as clicking to move the caret,
-// continue the same interaction and do not flush that event.
-const pointerFlushTriggerEvents = toLookup([
-  'auxclick',
-  'click',
-  'contextmenu',
-  'dblclick',
-  'mousedown',
-  'pointerdown',
-  'touchstart',
-]);
-
-// These events commit or act on the current state, including the element's own pending events.
-const commitFlushTriggerEvents = toLookup([
-  'change',
-  'drop',
-  'reset',
-  'submit',
-]);
-
-function isCommitOrNavigationKey(event: KeyboardEvent): boolean {
-  return event.key === 'Enter' || event.key === 'Tab' || event.key === 'Escape';
-}
-
 // Keys pressed while an IME composes text (for example, Enter selecting a Japanese candidate) belong to the IME.
 // Browsers report keyCode 229 for such keys, including the key that starts a composition.
 function isImeCompositionKeyEvent(event: KeyboardEvent): boolean {
   return event.isComposing || event.keyCode === 229;
+}
+
+// Leaving an element or pressing Enter in it dispatches its pending events,
+// so .NET observes what the user did before they acted on it.
+function isFlushTriggerEvent(event: Event): boolean {
+  return event.type === 'blur'
+    || (event.type === 'keydown' && event instanceof KeyboardEvent && event.key === 'Enter' && !isImeCompositionKeyEvent(event));
+}
+
+// Throttling key events limits only auto-repeat. Each fresh key press gets through.
+function isFreshKeyPress(event: Event): boolean {
+  return (event.type === 'keydown' || event.type === 'keypress') && event instanceof KeyboardEvent && !event.repeat;
+}
+
+// While these events are delayed, the element's value is protected from stale renders.
+function reportsElementValue(eventName: string): boolean {
+  const browserEventName = getBrowserEventName(eventName);
+  return browserEventName === 'input' || browserEventName === 'change';
 }
 
 // Responsible for adding/removing the eventInfo on an expando property on DOM elements, and
@@ -128,7 +102,9 @@ export class EventDelegator {
 
   private eventInfoStore: EventInfoStore;
 
-  private pendingRateLimitedStates = new Set<EventRateLimitState>();
+  private renderBatchDepth = 0;
+
+  private flushTriggerListenersAdded = false;
 
   constructor(private browserRendererId: number) {
     const eventDelegatorId = ++EventDelegator.nextEventDelegatorId;
@@ -186,7 +162,6 @@ export class EventDelegator {
       for (const state of infosForElement.enumerateRateLimitStates()) {
         this.clearRateLimitTimer(state);
         state.pendingSnapshot = null;
-        this.pendingRateLimitedStates.delete(state);
       }
 
       for (const eventName of infosForElement.enumerateDebounceEventNames()) {
@@ -202,17 +177,14 @@ export class EventDelegator {
     }
   }
 
-  public hasPendingRateLimitedEvents(): boolean {
-    return this.pendingRateLimitedStates.size > 0;
+  // Applying a render batch can blur the focused element, for example when Chrome removes or moves it.
+  // Such a blur doesn't dispatch pending events, because the user didn't leave the element and its handler may already be disposed.
+  public beginRenderBatch(): void {
+    this.renderBatchDepth++;
   }
 
-  public cancelPendingRateLimitedEvents(element: Element): void {
-    const infosForElement = this.getEventHandlerInfosForElement(element, false);
-    if (infosForElement) {
-      for (const state of infosForElement.enumerateRateLimitStates()) {
-        this.cancelRateLimitState(infosForElement, state.eventName);
-      }
-    }
+  public endRenderBatch(): void {
+    this.renderBatchDepth--;
   }
 
   public notifyAfterClick(callback: (event: MouseEvent) => void): void {
@@ -264,17 +236,10 @@ export class EventDelegator {
 
     if (previousDuration === 0 && normalizedDuration > 0) {
       this.eventInfoStore.addGlobalListener(eventName);
-      if (eventName === 'input') {
-        this.eventInfoStore.addGlobalListener('blur');
-        this.eventInfoStore.addGlobalListener('change');
-      }
+      this.addFlushTriggerListeners();
     } else if (previousDuration > 0 && normalizedDuration === 0) {
       this.flushRateLimitState(infoForElement, eventName);
       this.eventInfoStore.decrementCountByEventName(getBrowserEventName(eventName));
-      if (eventName === 'input') {
-        this.eventInfoStore.decrementCountByEventName('blur');
-        this.eventInfoStore.decrementCountByEventName('change');
-      }
     }
   }
 
@@ -289,25 +254,21 @@ export class EventDelegator {
 
     infoForElement.throttle(eventName, normalizedDuration);
 
-    const isKeyRepeatEvent = eventName === 'keydown' || eventName === 'keypress';
-
     if (previousDuration === 0 && normalizedDuration > 0) {
       this.eventInfoStore.addGlobalListener(eventName);
-      if (eventName === 'input') {
-        this.eventInfoStore.addGlobalListener('blur');
-        this.eventInfoStore.addGlobalListener('change');
-      } else if (isKeyRepeatEvent) {
-        this.eventInfoStore.addGlobalListener('keyup');
-      }
+      this.addFlushTriggerListeners();
     } else if (previousDuration > 0 && normalizedDuration === 0) {
       this.flushRateLimitState(infoForElement, eventName);
       this.eventInfoStore.decrementCountByEventName(getBrowserEventName(eventName));
-      if (eventName === 'input') {
-        this.eventInfoStore.decrementCountByEventName('blur');
-        this.eventInfoStore.decrementCountByEventName('change');
-      } else if (isKeyRepeatEvent) {
-        this.eventInfoStore.decrementCountByEventName('keyup');
-      }
+    }
+  }
+
+  // Registered once and never removed, so flushing doesn't depend on which handlers exist elsewhere on the page.
+  private addFlushTriggerListeners(): void {
+    if (!this.flushTriggerListenersAdded) {
+      this.flushTriggerListenersAdded = true;
+      this.eventInfoStore.addGlobalListener('blur');
+      this.eventInfoStore.addGlobalListener('keydown');
     }
   }
 
@@ -321,12 +282,8 @@ export class EventDelegator {
       return;
     }
 
-    if (this.pendingRateLimitedStates.size > 0) {
-      this.flushPendingRateLimitedEventsBefore(evt);
-    }
-
-    if (evt.type === 'keyup') {
-      this.resetKeyThrottleCooldownsOnPath(evt);
+    if (this.flushTriggerListenersAdded && this.renderBatchDepth === 0 && isFlushTriggerEvent(evt)) {
+      this.flushPendingEventsOnPath(evt);
     }
 
     // Always dispatch to any listeners for the original underlying browser event name
@@ -386,7 +343,7 @@ export class EventDelegator {
           const throttleMs = handlerInfos.throttle(eventName);
 
           if (debounceMs > 0) {
-            this.scheduleDebouncedEvent(candidateElement, handlerInfos, eventName, debounceMs, eventFieldInfo, eventArgs, browserEvent);
+            this.scheduleDebouncedEvent(candidateElement, handlerInfos, eventName, debounceMs, eventFieldInfo, eventArgs);
           } else if (throttleMs > 0) {
             this.scheduleThrottledEvent(candidateElement, handlerInfos, eventName, throttleMs, eventFieldInfo, eventArgs, browserEvent);
           } else {
@@ -417,23 +374,16 @@ export class EventDelegator {
     eventName: string,
     debounceMs: number,
     eventFieldInfo: EventFieldInfo | null,
-    eventArgs: unknown,
-    sourceEvent: Event
+    eventArgs: unknown
   ): void {
     const state = handlerInfos.getOrCreateRateLimitState(element, eventName);
     if (state.timerId !== null) {
       clearTimeout(state.timerId);
     }
 
-    state.pendingSnapshot = {
-      eventFieldInfo,
-      eventArgs,
-      sourceEvent,
-      sourceTarget: sourceEvent.composedPath()[0] ?? null,
-    };
-    this.pendingRateLimitedStates.add(state);
+    state.pendingSnapshot = { eventFieldInfo, eventArgs };
 
-    if (eventName === 'input') {
+    if (reportsElementValue(eventName)) {
       setHasPendingUserInput(element, true);
     }
 
@@ -454,10 +404,15 @@ export class EventDelegator {
   ): void {
     const state = handlerInfos.getOrCreateRateLimitState(element, eventName);
 
+    if (state.inThrottleCooldown && isFreshKeyPress(sourceEvent)) {
+      this.clearRateLimitTimer(state);
+      state.pendingSnapshot = null;
+    }
+
     if (!state.inThrottleCooldown) {
       const handlerInfo = handlerInfos.getHandler(eventName);
       if (handlerInfo && isRendererAttached(this.browserRendererId)) {
-        const onCompleted = (eventName === 'input' && eventFieldInfo)
+        const onCompleted = (reportsElementValue(eventName) && eventFieldInfo)
           ? beginInFlightUserInputDispatch(element, eventFieldInfo.fieldValue, /* advanceSequence */ true)
           : undefined;
         dispatchEvent(this.browserRendererId, {
@@ -471,16 +426,10 @@ export class EventDelegator {
       state.timerId = setTimeout(() => {
         this.onThrottleCooldownElapsed(state);
       }, throttleMs);
-    } else if (isContinuousEvent(eventName)) {
-      state.pendingSnapshot = {
-        eventFieldInfo,
-        eventArgs,
-        sourceEvent,
-        sourceTarget: sourceEvent.composedPath()[0] ?? null,
-      };
-      this.pendingRateLimitedStates.add(state);
+    } else if (usesTrailingThrottle(eventName)) {
+      state.pendingSnapshot = { eventFieldInfo, eventArgs };
 
-      if (eventName === 'input') {
+      if (reportsElementValue(eventName)) {
         setHasPendingUserInput(element, true);
       }
     }
@@ -512,9 +461,8 @@ export class EventDelegator {
     }
 
     state.pendingSnapshot = null;
-    this.pendingRateLimitedStates.delete(state);
 
-    if (state.eventName === 'input') {
+    if (reportsElementValue(state.eventName)) {
       setHasPendingUserInput(state.element, false);
     }
 
@@ -525,7 +473,7 @@ export class EventDelegator {
 
     const handlerInfo = state.handlerInfos.getHandler(state.eventName);
     if (handlerInfo && isRendererAttached(this.browserRendererId)) {
-      const onCompleted = (state.eventName === 'input' && snapshot.eventFieldInfo)
+      const onCompleted = (reportsElementValue(state.eventName) && snapshot.eventFieldInfo)
         ? beginInFlightUserInputDispatch(state.element, snapshot.eventFieldInfo.fieldValue)
         : undefined;
       dispatchEvent(this.browserRendererId, {
@@ -536,87 +484,18 @@ export class EventDelegator {
     }
   }
 
-  private flushPendingRateLimitedEventsBefore(evt: Event): void {
-    if (evt.type === 'blur') {
-      // Leaving an element commits what was typed in it. Blur does not bubble, so only its path is flushed.
-      this.flushPendingRateLimitedEventsOnPath(evt);
-    } else if (Object.prototype.hasOwnProperty.call(commitFlushTriggerEvents, evt.type)) {
-      this.flushAllPendingRateLimitedEvents(evt, /* includeSameTarget */ true);
-    } else if (Object.prototype.hasOwnProperty.call(pointerFlushTriggerEvents, evt.type)) {
-      this.flushAllPendingRateLimitedEvents(evt, /* includeSameTarget */ false);
-    } else if (evt.type === 'keydown' && evt instanceof KeyboardEvent && !isImeCompositionKeyEvent(evt)) {
-      // Typing in the element continues the interaction. Enter, Tab and Escape commit it.
-      // Keys pressed in other elements always flush.
-      this.flushAllPendingRateLimitedEvents(evt, /* includeSameTarget */ isCommitOrNavigationKey(evt));
-    }
-  }
-
-  private flushAllPendingRateLimitedEvents(triggerEvent: Event, includeSameTarget: boolean): void {
-    const eventPath = triggerEvent.composedPath();
-    const triggerTarget = eventPath[0] ?? null;
-
-    const statesToFlush = Array.from(this.pendingRateLimitedStates);
-    for (const state of statesToFlush) {
-      const snapshot = state.pendingSnapshot;
-      if (!snapshot || snapshot.sourceEvent === triggerEvent) {
-        continue;
-      }
-
-      if (Object.prototype.hasOwnProperty.call(nonFlushingContinuousEvents, state.eventName)) {
-        // Continuous spatial/media observation events (scroll, mousemove, pointermove, etc.)
-        // should complete their own throttle/debounce window rather than being flushed by clicks.
-        continue;
-      }
-
-      if (getBrowserEventName(state.eventName) === triggerEvent.type && eventPath.indexOf(state.element) !== -1) {
-        // A repeat of the same event on the same path, such as a second click on a debounced button,
-        // continues that event's own debounce or throttle window.
-        continue;
-      }
-
-      if (!includeSameTarget && isSameOrDescendant(triggerTarget, snapshot.sourceTarget)) {
-        continue;
-      }
-
-      this.clearRateLimitTimer(state);
-      this.dispatchPendingSnapshot(state);
-    }
-  }
-
-  private flushPendingRateLimitedEventsOnPath(evt: Event): void {
-    const path = evt.composedPath();
-    for (const target of path) {
-      if (target instanceof Element) {
-        const infos = this.getEventHandlerInfosForElement(target, false);
-        if (infos) {
-          for (const state of infos.enumerateRateLimitStates()) {
-            if (state.pendingSnapshot && state.eventName !== evt.type) {
-              this.clearRateLimitTimer(state);
-              this.dispatchPendingSnapshot(state);
-            }
+  private flushPendingEventsOnPath(triggerEvent: Event): void {
+    for (const target of triggerEvent.composedPath()) {
+      const infos = target instanceof Element ? this.getEventHandlerInfosForElement(target, false) : null;
+      if (infos) {
+        for (const state of infos.enumerateRateLimitStates()) {
+          // A pending event of the trigger's own type continues its own debounce or throttle window.
+          if (state.pendingSnapshot && getBrowserEventName(state.eventName) !== triggerEvent.type) {
+            this.clearRateLimitTimer(state);
+            this.dispatchPendingSnapshot(state);
           }
         }
       }
-    }
-  }
-
-  private resetKeyThrottleCooldownsOnPath(evt: Event): void {
-    const path = evt.composedPath();
-    for (const target of path) {
-      if (target instanceof Element) {
-        const infos = this.getEventHandlerInfosForElement(target, false);
-        if (infos) {
-          this.resetKeyThrottleCooldown(infos, 'keydown');
-          this.resetKeyThrottleCooldown(infos, 'keypress');
-        }
-      }
-    }
-  }
-
-  private resetKeyThrottleCooldown(infos: EventHandlerInfosForElement, eventName: string): void {
-    const state = infos.getRateLimitState(eventName);
-    if (state && state.inThrottleCooldown && !state.pendingSnapshot) {
-      this.clearRateLimitTimer(state);
     }
   }
 
@@ -635,8 +514,7 @@ export class EventDelegator {
     if (state) {
       this.clearRateLimitTimer(state);
       state.pendingSnapshot = null;
-      this.pendingRateLimitedStates.delete(state);
-      if (eventName === 'input') {
+      if (reportsElementValue(eventName)) {
         setHasPendingUserInput(state.element, false);
       }
     }
@@ -902,9 +780,6 @@ class EventHandlerInfosForElement {
 interface PendingEventSnapshot {
   eventFieldInfo: EventFieldInfo | null;
   eventArgs: unknown;
-  sourceEvent: Event;
-  // Captured during dispatch, because browsers clear the target of events from shadow trees afterward.
-  sourceTarget: EventTarget | null;
 }
 
 interface EventRateLimitState {
@@ -939,14 +814,6 @@ function toLookup(items: string[]): { [key: string]: boolean } {
     result[value] = true;
   });
   return result;
-}
-
-function isSameOrDescendant(target: EventTarget | null, ancestor: EventTarget | null): boolean {
-  if (!target || !ancestor) {
-    return false;
-  }
-
-  return target === ancestor || (ancestor instanceof Node && target instanceof Node && ancestor.contains(target));
 }
 
 function eventIsDisabledOnElement(element: Element, rawBrowserEventName: string): boolean {

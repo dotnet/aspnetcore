@@ -74,6 +74,7 @@ public static class WebRenderTreeBuilderExtensions
     /// <remarks>
     /// For events whose latest value matters, such as <c>onscroll</c> or <c>oninput</c>, the latest occurrence during
     /// the interval is dispatched when the interval ends. Occurrences of other events during the interval are dropped.
+    /// For <c>onkeydown</c> and <c>onkeypress</c>, only auto-repeated occurrences are throttled, so each new key press is dispatched.
     /// </remarks>
     /// <param name="builder">The <see cref="RenderTreeBuilder"/>.</param>
     /// <param name="sequence">An integer that represents the position of the instruction in the source code.</param>

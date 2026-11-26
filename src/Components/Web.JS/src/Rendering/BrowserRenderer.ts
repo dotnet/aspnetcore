@@ -93,7 +93,6 @@ export class BrowserRenderer {
       // no parent to remove that child), so we empty it to restore it to the state it was in before the root
       // component was added.
       const logicalElement = this.childComponentLocations[componentId];
-      this.cancelPendingRateLimitedEvents(logicalElement);
       markAsInteractiveRootComponentElement(logicalElement, false);
 
       if (shouldPreserveContentOnInteractiveComponentDisposal(logicalElement)) {
@@ -118,20 +117,6 @@ export class BrowserRenderer {
     for (const childNode of depthFirstNodeTreeTraversal(element)) {
       if (childNode instanceof Element) {
         this.eventDelegator.removeListenersForElement(childNode as Element);
-      }
-    }
-  }
-
-  // Removing a focused element raises a synchronous blur, which must not flush pending events for that element.
-  // Regular handlers stay attached so .NET still receives events caused by the removal itself, such as focusout.
-  private cancelPendingRateLimitedEvents(element: LogicalElement): void {
-    if (!this.eventDelegator.hasPendingRateLimitedEvents()) {
-      return;
-    }
-
-    for (const childNode of depthFirstNodeTreeTraversal(element)) {
-      if (childNode instanceof Element) {
-        this.eventDelegator.cancelPendingRateLimitedEvents(childNode);
       }
     }
   }
@@ -162,10 +147,6 @@ export class BrowserRenderer {
         }
         case EditType.removeFrame: {
           const siblingIndex = editReader.siblingIndex(edit);
-          const childToRemove = getLogicalChild(parent, childIndexAtCurrentDepth + siblingIndex);
-          if (childToRemove) {
-            this.cancelPendingRateLimitedEvents(childToRemove);
-          }
           removeLogicalChild(parent, childIndexAtCurrentDepth + siblingIndex);
           break;
         }

@@ -4,33 +4,38 @@
 export interface EventTypeOptions {
   browserEventName?: string;
   createEventArgs?: (event: Event) => unknown;
-  continuous?: boolean;
+  throttleTrailing?: boolean;
 }
 
 const eventTypeRegistry: Map<string, EventTypeOptions> = new Map();
 const browserEventNamesToAliases: Map<string, string[]> = new Map();
 const createBlankEventArgsOptions: EventTypeOptions = { createEventArgs: () => ({}) };
 
-// The final occurrence of these events matters, because it carries the latest value or position.
-// Throttling therefore dispatches the latest occurrence from each cooldown when the cooldown ends.
-// Other events are discrete actions, so occurrences during a cooldown are dropped.
-const continuousBuiltInEventNames = new Set([
+// Each occurrence of these events reports the current value or position, so the last one matters.
+// Throttling therefore also dispatches the latest occurrence from each interval when the interval ends.
+// Throttling other events only dispatches the first occurrence of each interval.
+const throttleTrailingBuiltInEventNames = new Set([
+  'change',
+  'cuechange',
   'drag',
   'dragover',
+  'durationchange',
+  'fullscreenchange',
   'input',
   'mousemove',
-  'mousewheel',
+  'pointerlockchange',
   'pointermove',
   'progress',
   'ratechange',
+  'readystatechange',
   'scroll',
   'seeking',
   'select',
   'selectionchange',
   'timeupdate',
+  'toggle',
   'touchmove',
   'volumechange',
-  'wheel',
 ]);
 
 export const eventNameAliasRegisteredCallbacks: ((aliasEventName: string, browserEventName) => void)[] = [];
@@ -84,14 +89,14 @@ export function getBrowserEventName(possibleAliasEventName: string): string {
   return eventOptions?.browserEventName || possibleAliasEventName;
 }
 
-// A custom event that aliases a browser event uses that event's classification unless it specifies its own.
-export function isContinuousEvent(eventName: string): boolean {
+// A custom event that aliases a browser event behaves like that event unless it specifies throttleTrailing.
+export function usesTrailingThrottle(eventName: string): boolean {
   const eventOptions = eventTypeRegistry.get(eventName);
-  if (eventOptions?.continuous !== undefined) {
-    return eventOptions.continuous;
+  if (eventOptions?.throttleTrailing !== undefined) {
+    return eventOptions.throttleTrailing;
   }
 
-  return continuousBuiltInEventNames.has(eventOptions?.browserEventName || eventName);
+  return throttleTrailingBuiltInEventNames.has(eventOptions?.browserEventName || eventName);
 }
 
 function registerBuiltInEventType(eventNames: string[], options: EventTypeOptions) {
