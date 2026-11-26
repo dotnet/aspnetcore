@@ -170,7 +170,7 @@ internal sealed class HttpsConfigurationService : IHttpsConfigurationService
                         Connection = new ConnectionContextAdapter(context.Connection),
                     }).ConfigureAwait(false);
 
-                    var allowedProtocols = context.Connection.Features.Get<IHttpProtocolsFeature>()?.HttpProtocols
+                    var allowedProtocols = context.Connection.Features.Get<HttpProtocolsFeature>()?.HttpProtocols
                         ?? listenOptions.Protocols;
 
                     return EnsureHttp3Alpn(sslOptions, allowedProtocols);
