@@ -48,7 +48,8 @@ prompt, model, CLI pin, and read/skill tool list from the checked-out `/review`
 workflow. There are three deliberate differences: the bundle path is local,
 the hosted publication adapter and tools are omitted, and the bundles are
 code-only with guidance files stripped. Hosted bundles keep guidance files
-and include existing PR comments.
+and include existing PR comments. Each review trial uses the hosted review
+step's timeout (currently 30 minutes), not a whole-workflow deadline.
 
 Select explicit case IDs to check the setup or score a fresh batch. Each
 selected case gets one trial:

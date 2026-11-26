@@ -61,6 +61,20 @@ test("the shared eval lockfile pins the same CLI as /review", () => {
     }
 });
 
+test("changing the hosted review step timeout changes the eval timeout and plan hash", () => {
+    const [setting, minutes] = /^timeout-minutes: (\d+)$/m.exec(workflow);
+    const changedMinutes = Number(minutes) + 1;
+    const profile = reviewProfile(workflow);
+    const changedProfile = reviewProfile(workflow.replace(setting, `timeout-minutes: ${changedMinutes}`));
+    const group = { name: "test", runs: 1, ids: ["case-01"] };
+    const hash = value => createHash("sha256").update(JSON.stringify(value)).digest("hex");
+
+    assert.equal(reviewSpec(group, profile).defaults.timeout, `${Number(minutes) * 60}s`);
+    assert.equal(reviewSpec(group, changedProfile).defaults.timeout, `${changedMinutes * 60}s`);
+    assert.notEqual(hash(profile), hash(changedProfile));
+    assert.throws(() => reviewProfile(workflow.replace(setting, "")), /timeout/i);
+});
+
 test("the Run A cohort keeps both exclusions out of every tier", () => {
     validateCohort(cases);
     assert.throws(() => validateCohort([...cases, cases[0]]));

@@ -8,9 +8,11 @@ export function reviewProfile(source) {
     const text = source.replaceAll("\r\n", "\n");
     const model = /^model: ([\w.-]+)$/m.exec(text)?.[1];
     const cliVersion = /^engine:\n  id: copilot\n(?:  #[^\n]*\n)*  version: "(\d+\.\d+\.\d+)"/m.exec(text)?.[1];
+    const timeoutSeconds = Number(/^timeout-minutes: ([1-9]\d*)$/m.exec(text)?.[1]) * 60;
     const tools = /^    - --available-tools=([\w,-]+)$/m.exec(text)?.[1]?.split(",")
         .filter(tool => !tool.startsWith("safeoutputs-")).sort();
     assert.ok(model && cliVersion && tools, "Cannot read the /review runtime profile");
+    assert.ok(Number.isSafeInteger(timeoutSeconds), "Cannot read the /review step timeout");
     assert.deepEqual(tools, ["glob", "rg", "skill", "view"], "Review the offline tool boundary before adopting a workflow tool change");
 
     const prompt = /\n## Invoke the skill and consume the trusted bundle\n\n([\s\S]+?)\nAll GitHub-visible output/.exec(text)?.[1];
@@ -24,19 +26,19 @@ export function reviewProfile(source) {
     }
 
     return {
-        model, cliVersion, tools,
+        model, cliVersion, tools, timeout: `${timeoutSeconds}s`,
         prompt: prompt.replace(hostedBundle, "The bundle is `bundle/manifest.json` in the trial workspace. Require complete version-2 readiness.")
             .replace(hostedGitHub, "No live GitHub tool is available to the agent.")
             .replace(hostedResults, "Return the structured result in the final message. Do not publish."),
     };
 }
 
-export function reviewSpec({ name, runs, ids }, { prompt, model, cliVersion, tools }) {
+export function reviewSpec({ name, runs, ids }, { prompt, model, cliVersion, tools, timeout }) {
     return {
         name,
         description: "Frozen code-only review corpus",
         type: "capability",
-        defaults: { executor: "readonly-copilot", runs, model, timeout: "900s" },
+        defaults: { executor: "readonly-copilot", runs, model, timeout },
         scoring: { weights: { "tool-calls": 1 }, threshold: 1 },
         agent_environment: {
             env: { REVIEW_EXPECTED_CLI_VERSION: cliVersion, REVIEW_TOOLS: tools.join(",") },
