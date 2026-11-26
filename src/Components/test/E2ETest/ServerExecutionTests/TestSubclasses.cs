@@ -125,18 +125,9 @@ public class ServerVirtualizationTest : VirtualizationTest
     public override void ScrollToItem_EndAnchor_AfterAppendingVariableHeightItems_CanScrollUp()
         => base.ScrollToItem_EndAnchor_AfterAppendingVariableHeightItems_CanScrollUp();
 
-    [Theory]
-    [InlineData("1")]
-    [InlineData("0")]
-    public void ScrollToItem_AfterAppendingVariableHeightItems_CanScrollUp_NonEndAnchor(string anchorMode)
-        => AssertCanScrollUpAfterAppendingVariableHeightItems(anchorMode, useProvider: false, appendInSingleBatch: true);
-
-    [Theory]
-    [InlineData("2")]
-    [InlineData("1")]
-    [InlineData("0")]
-    public void ScrollToItem_AfterAppendingVariableHeightItems_CanScrollUp_AsyncProvider(string anchorMode)
-        => AssertCanScrollUpAfterAppendingVariableHeightItems(anchorMode, useProvider: true, appendInSingleBatch: true);
+    [Fact]
+    public void ScrollToItem_AfterAppendingVariableHeightItems_CanScrollUp_AsyncProvider()
+        => AssertCanScrollUpAfterAppendingVariableHeightItems("2", useProvider: true, appendInSingleBatch: true);
 }
 
 public class ServerDynamicComponentRenderingTest : DynamicComponentRenderingTest

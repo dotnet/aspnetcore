@@ -150,8 +150,11 @@ function init(dotNetHelper: DotNet.DotNetObject, spacerBefore: HTMLElement, spac
       const spacerHeight = Number(spacerBefore.getAttribute('data-blazor-virtualize-reserved-height'));
       const delta = spacerHeight * (1 - previousItemSize / itemSize);
       if (Number.isFinite(delta) && Math.abs(delta) > 1) {
-        scrollActivity.ignoreNextScroll();
-        scrollElement.scrollTop = scrollTop + delta;
+        const beforeCorrection = scrollElement.scrollTop;
+        scrollElement.scrollTo({ top: scrollTop + delta, behavior: 'instant' });
+        if (scrollElement.scrollTop !== beforeCorrection) {
+          scrollActivity.ignoreNextScroll();
+        }
       }
     }
   }
