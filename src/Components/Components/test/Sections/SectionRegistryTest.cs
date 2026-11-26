@@ -97,18 +97,21 @@ public class SectionRegistryTest
     }
 
     [Fact]
-    public void NamedSection_InteractiveContentWithStaticOutlet_Throws()
+    public void NamedSection_InteractiveContentWithStaticOutlet_LogsWarning()
     {
-        var renderer = new SectionsTestRenderer(new TestSink())
+        var sink = new TestSink();
+        var renderer = new SectionsTestRenderer(sink)
         {
             OutletRenderMode = null,
             ContentRenderMode = new RenderModeA(),
         };
 
-        var exception = Assert.Throws<InvalidOperationException>(() => Render(renderer, outletFirst: true, useSectionName: true));
+        Render(renderer, outletFirst: true, useSectionName: true);
 
-        Assert.Contains("static", exception.Message);
-        Assert.Contains(nameof(RenderModeA), exception.Message);
+        var write = Assert.Single(GetWrites(sink, "SectionRenderModeMismatch"));
+        Assert.Equal(LogLevel.Warning, write.LogLevel);
+        Assert.Contains("static", write.Message);
+        Assert.Contains(nameof(RenderModeA), write.Message);
     }
 
     [Fact]

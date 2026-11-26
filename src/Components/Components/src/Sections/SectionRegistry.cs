@@ -15,6 +15,7 @@ internal sealed partial class SectionRegistry(
     private readonly ILogger _logger = loggerFactory.CreateLogger<SectionRegistry>();
 
     private HashSet<object>? _mismatchLoggedIdentifiers;
+    private HashSet<SectionOutlet>? _pendingValidations;
 
     public void AddProvider(object identifier, SectionContent provider, bool isDefaultProvider)
     {
@@ -76,10 +77,12 @@ internal sealed partial class SectionRegistry(
 
     public void Unsubscribe(object identifier)
     {
-        if (!_subscribersByIdentifier.Remove(identifier))
+        if (!_subscribersByIdentifier.Remove(identifier, out var subscriber))
         {
             throw new InvalidOperationException($"The subscriber with the given section ID '{identifier}' is already unsubscribed.");
         }
+
+        _pendingValidations?.Remove(subscriber);
 
         // The section pair is no longer complete, so re-arm the mismatch diagnostic in case the outlet
         // and content are later reconnected in mismatched render modes.
@@ -101,6 +104,23 @@ internal sealed partial class SectionRegistry(
         }
     }
 
+    internal void ScheduleValidation(SectionOutlet subscriber)
+        => (_pendingValidations ??= new()).Add(subscriber);
+
+    internal SectionOutlet? TakePendingValidation()
+    {
+        if (_pendingValidations is not null)
+        {
+            foreach (var subscriber in _pendingValidations)
+            {
+                _pendingValidations.Remove(subscriber);
+                return subscriber;
+            }
+        }
+
+        return null;
+    }
+
     internal void ValidateContent(object identifier, SectionOutlet subscriber, SectionContent? provider)
     {
         ValidateRenderModeCompatibility(identifier, subscriber, provider);
@@ -119,7 +139,8 @@ internal sealed partial class SectionRegistry(
         var outletRenderMode = subscriber.SectionRenderMode;
         var contentRenderMode = provider.SectionRenderMode;
 
-        if (!RenderModesDiffer(outletRenderMode, contentRenderMode))
+        // Static outlets can display prerendered content without requiring interactive updates.
+        if (outletRenderMode is null || !RenderModesDiffer(outletRenderMode, contentRenderMode))
         {
             return;
         }
@@ -144,7 +165,7 @@ internal sealed partial class SectionRegistry(
         var outletRenderMode = subscriber.SectionRenderMode;
         var contentRenderMode = provider.SectionRenderMode;
 
-        if (!RenderModesDiffer(outletRenderMode, contentRenderMode))
+        if (outletRenderMode?.GetType() == contentRenderMode?.GetType())
         {
             _mismatchLoggedIdentifiers?.Remove(identifier);
             return;

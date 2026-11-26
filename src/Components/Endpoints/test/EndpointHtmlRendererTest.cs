@@ -1444,19 +1444,46 @@ public class EndpointHtmlRendererTest
     }
 
     [Fact]
-    public async Task SectionOutletAndContentInDifferentRenderModes_ThrowsDuringPrerendering()
+    public async Task StaticSectionOutletAndInteractiveContent_RendersWithWarningDuringPrerendering()
     {
-        // Arrange
-        var renderer = GetEndpointHtmlRenderer();
-        var httpContext = GetHttpContext();
+        var sink = new TestSink();
+        using var loggerFactory = new LoggerFactory([new TestLoggerProvider(sink)]);
+        await using var renderer = GetEndpointHtmlRenderer(loggerFactory: loggerFactory);
+        var result = await renderer.PrerenderComponentAsync(
+            GetHttpContext(),
+            typeof(SectionOutletAndContentWithDifferentRenderModes),
+            null,
+            ParameterView.Empty);
+        var writer = new StringWriter();
+        await renderer.Dispatcher.InvokeAsync(() => result.WriteTo(writer, HtmlEncoder.Default));
 
-        // Act
-        await Assert.ThrowsAsync<InvalidOperationException>(async () =>
-            await renderer.PrerenderComponentAsync(
-                httpContext,
-                typeof(SectionOutletAndContentWithDifferentRenderModes),
-                null,
-                ParameterView.Empty));
+        Assert.Contains("<p>Content provided from an InteractiveServer render mode</p>", writer.ToString());
+        var warning = Assert.Single(sink.Writes, write => write.EventId.Name == "SectionRenderModeMismatch");
+        Assert.Equal(LogLevel.Warning, warning.LogLevel);
+        Assert.Contains("static server-side rendering", warning.Message);
+        Assert.Contains(nameof(InteractiveServerRenderMode), warning.Message);
+    }
+
+    [Fact]
+    public async Task RootStaticSectionOutlet_WithExistingInteractiveContent_LogsOneWarning()
+    {
+        var sink = new TestSink();
+        using var loggerFactory = new LoggerFactory([new TestLoggerProvider(sink)]);
+        await using var renderer = GetEndpointHtmlRenderer(loggerFactory: loggerFactory);
+        var httpContext = GetHttpContext();
+        await renderer.PrerenderComponentAsync(httpContext, typeof(SectionContentHost), RenderMode.InteractiveServer, ParameterView.Empty);
+        var parameters = ParameterView.FromDictionary(new Dictionary<string, object>
+        {
+            [nameof(SectionOutlet.SectionName)] = "test-section",
+        });
+
+        var result = await renderer.PrerenderComponentAsync(httpContext, typeof(SectionOutlet), null, parameters);
+        var writer = new StringWriter();
+        await renderer.Dispatcher.InvokeAsync(() => result.WriteTo(writer, HtmlEncoder.Default));
+
+        Assert.Contains("Interactive section content", writer.ToString());
+        var warning = Assert.Single(sink.Writes, write => write.EventId.Name == "SectionRenderModeMismatch");
+        Assert.Contains("test-section", warning.Message);
     }
 
     [Fact]
@@ -1624,22 +1651,24 @@ public class EndpointHtmlRendererTest
     }
 
     [Fact]
-    public async Task HeadOutletAndInteractivePageTitle_DoesNotThrowDuringPrerendering()
+    public async Task HeadOutletAndInteractivePageTitle_LogsWarningDuringPrerendering()
     {
-        // Arrange
-        var renderer = GetEndpointHtmlRenderer();
-        var httpContext = GetHttpContext();
+        var sink = new TestSink();
+        using var loggerFactory = new LoggerFactory([new TestLoggerProvider(sink)]);
+        await using var renderer = GetEndpointHtmlRenderer(loggerFactory: loggerFactory);
+        var result = await renderer.PrerenderComponentAsync(
+            GetHttpContext(),
+            typeof(HeadOutletAndInteractivePageTitle),
+            null,
+            ParameterView.Empty);
+        var writer = new StringWriter();
+        await renderer.Dispatcher.InvokeAsync(() => result.WriteTo(writer, HtmlEncoder.Default));
 
-        // Act
-        var exception = await Record.ExceptionAsync(async () =>
-            await renderer.PrerenderComponentAsync(
-                httpContext,
-                typeof(HeadOutletAndInteractivePageTitle),
-                null,
-                ParameterView.Empty));
-
-        // Assert
-        Assert.Null(exception);
+        Assert.Contains("<title>Test title</title>", writer.ToString());
+        var warning = Assert.Single(sink.Writes, write => write.EventId.Name == "SectionRenderModeMismatch");
+        Assert.Equal(LogLevel.Warning, warning.LogLevel);
+        Assert.Contains(nameof(InteractiveServerRenderMode), warning.Message);
+        Assert.Contains(nameof(InteractiveAutoRenderMode), warning.Message);
     }
 
     [Fact]
@@ -2205,7 +2234,13 @@ public class EndpointHtmlRendererTest
             {
                 builder.OpenComponent<SectionOutletHost>(0);
                 builder.CloseComponent();
-                builder.OpenComponent<SectionContentHost>(1);
+                builder.OpenComponent<CascadingValue<string>>(1);
+                builder.AddComponentParameter(2, nameof(CascadingValue<string>.Value), "wrapper");
+                builder.AddComponentParameter(3, nameof(CascadingValue<string>.ChildContent), (RenderFragment)(childBuilder =>
+                {
+                    childBuilder.OpenComponent<SectionContentHost>(0);
+                    childBuilder.CloseComponent();
+                }));
                 builder.CloseComponent();
             }
             else

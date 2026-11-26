@@ -873,10 +873,30 @@ public abstract partial class Renderer : IDisposable, IAsyncDisposable
             }
 
             // Process render queue until empty
-            while (_batchBuilder.ComponentRenderQueue.Count > 0)
+            while (true)
             {
-                var nextToRender = _batchBuilder.ComponentRenderQueue.Dequeue();
-                RenderInExistingBatch(nextToRender);
+                while (_batchBuilder.ComponentRenderQueue.Count > 0)
+                {
+                    var nextToRender = _batchBuilder.ComponentRenderQueue.Dequeue();
+                    RenderInExistingBatch(nextToRender);
+                }
+
+                // Deeper providers may register after their outlet renders. Validate only after
+                // synchronous rendering settles, and process error-boundary renders before continuing.
+                var sectionOutlet = _sectionRegistry?.TakePendingValidation();
+                if (sectionOutlet is null)
+                {
+                    break;
+                }
+
+                try
+                {
+                    sectionOutlet.ValidateContent();
+                }
+                catch (Exception ex)
+                {
+                    HandleExceptionViaErrorBoundary(ex, _componentStateByComponent[sectionOutlet]);
+                }
             }
 
             var batch = _batchBuilder.ToBatch();

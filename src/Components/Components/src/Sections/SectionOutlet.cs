@@ -100,9 +100,7 @@ public sealed class SectionOutlet : IComponent, IDisposable
 
     private void BuildRenderTree(RenderTreeBuilder builder)
     {
-        // Registration and disposal can select a provider temporarily. Wait until rendering so
-        // an outlet that is removed or gets another provider first never validates the interim selection.
-        _registry.ValidateContent(SectionName ?? SectionId!, this, _currentContentProvider);
+        _registry.ScheduleValidation(this);
         var fragment = _currentContentProvider?.ChildContent ?? _emptyRenderFragment;
 
         builder.OpenComponent<SectionOutletContentRenderer>(0);
@@ -110,6 +108,9 @@ public sealed class SectionOutlet : IComponent, IDisposable
         builder.AddComponentParameter(1, SectionOutletContentRenderer.ContentParameterName, fragment);
         builder.CloseComponent();
     }
+
+    internal void ValidateContent()
+        => _registry.ValidateContent(SectionName ?? SectionId!, this, _currentContentProvider);
 
     /// <inheritdoc/>
     public void Dispose()
