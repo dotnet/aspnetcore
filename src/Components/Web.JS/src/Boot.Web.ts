@@ -16,7 +16,7 @@ import { Blazor } from './GlobalExports';
 import { WebStartOptions } from './Platform/WebStartOptions';
 import { attachStreamingRenderingListener } from './Rendering/StreamingRendering';
 import { resetScrollIfNeeded, ScrollResetSchedule } from './Rendering/Renderer';
-import { NavigationEnhancementCallbacks, attachProgressivelyEnhancedNavigationListener } from './Services/NavigationEnhancement';
+import { NavigationEnhancementCallbacks, attachProgressivelyEnhancedNavigationListener, updateProgrammaticEnhancedNavigationHandler } from './Services/NavigationEnhancement';
 import { WebRootComponentManager } from './Services/WebRootComponentManager';
 import { hasProgrammaticEnhancedNavigationHandler, performProgrammaticEnhancedNavigation } from './Services/NavigationUtils';
 import { attachComponentDescriptorHandler, registerAllComponentDescriptors } from './Rendering/DomMerging/DomSync';
@@ -29,10 +29,18 @@ import { resolveOptions, CircuitStartOptions, ReconnectionOptions } from './Plat
 import { JSInitializer } from './JSInitializers/JSInitializers';
 import { enableFocusOnNavigate } from './Rendering/FocusOnNavigate';
 import { WebAssemblyStartOptions } from './Platform/WebAssemblyStartOptions';
+import { SsrStartOptions } from './Platform/SsrStartOptions';
 import { createBlazorValidation, ensureNovalidateOnForms } from './Validation';
 
 let started = false;
 let rootComponentManager: WebRootComponentManager;
+let initialOptions: {
+  logLevel?: LogLevel;
+  circuitLogLevel?: LogLevel;
+  circuitInactivityTimeoutMs?: number;
+  disableDomPreservation?: boolean;
+  reconnectionRetryIntervalMilliseconds?: ReconnectionOptions['retryIntervalMilliseconds'];
+};
 
 function boot(options?: Partial<WebStartOptions>) : Promise<void> {
   if (started) {
@@ -41,7 +49,16 @@ function boot(options?: Partial<WebStartOptions>) : Promise<void> {
 
   started = true;
   options = options || {};
+  // Resolved options also contain defaults and values from previous enhanced navigations.
+  initialOptions = {
+    logLevel: options.logLevel,
+    circuitLogLevel: options.circuit?.logLevel,
+    circuitInactivityTimeoutMs: options.ssr?.circuitInactivityTimeoutMs,
+    disableDomPreservation: options.ssr?.disableDomPreservation,
+    reconnectionRetryIntervalMilliseconds: options.circuit?.reconnectionOptions?.retryIntervalMilliseconds,
+  };
   options.logLevel ??= LogLevel.Error;
+  options.ssr ??= {};
   Blazor._internal.isBlazorWeb = true;
 
   // Defined here to avoid inadvertently imported enhanced navigation
@@ -53,7 +70,7 @@ function boot(options?: Partial<WebStartOptions>) : Promise<void> {
   };
 
   const jsEventRegistry = JSEventRegistry.create(Blazor);
-  rootComponentManager = new WebRootComponentManager(options?.ssr?.circuitInactivityTimeoutMs ?? 2000, jsEventRegistry);
+  rootComponentManager = new WebRootComponentManager(() => options.ssr, jsEventRegistry);
   Blazor._internal.endDisposeRootComponent = ssrComponentId => rootComponentManager.onAfterDisposeRootComponent(ssrComponentId);
 
   const navigationEnhancementCallbacks: NavigationEnhancementCallbacks = {
@@ -63,6 +80,7 @@ function boot(options?: Partial<WebStartOptions>) : Promise<void> {
     beforeDomUpdate: (source) => {
       updateOptionsFromBrowserConfiguration(options, source);
     },
+    isDomPreservationDisabled: () => options.ssr?.disableDomPreservation === true,
     documentUpdated: () => {
       rootComponentManager.onDocumentUpdated();
       resetScrollIfNeeded(ScrollResetSchedule.AfterDocumentUpdate);
@@ -75,11 +93,9 @@ function boot(options?: Partial<WebStartOptions>) : Promise<void> {
   };
 
   attachComponentDescriptorHandler(rootComponentManager);
-  attachStreamingRenderingListener(options?.ssr, navigationEnhancementCallbacks);
-
-  if (!options?.ssr?.disableDomPreservation) {
-    attachProgressivelyEnhancedNavigationListener(navigationEnhancementCallbacks);
-  }
+  // Attach navigation first, since defining the streaming element can synchronously process buffered batches.
+  attachProgressivelyEnhancedNavigationListener(navigationEnhancementCallbacks);
+  attachStreamingRenderingListener(() => options.ssr, navigationEnhancementCallbacks);
 
   enableFocusOnNavigate(jsEventRegistry);
 
@@ -112,7 +128,78 @@ function onInitialDomContentLoaded(options: Partial<WebStartOptions>) {
   options.circuit = initialCircuitOptions;
   options.webAssembly = options.webAssembly || ({} as WebAssemblyStartOptions);
   const logger = new ConsoleLogger(initialCircuitOptions.logLevel);
-  const initializersPromise = fetchAndInvokeInitializers(options, logger);
+  const initialSsrOptions = options.ssr || {};
+  options.ssr = initialSsrOptions;
+  const initializerSsrProxies = new WeakMap<SsrStartOptions, SsrStartOptions>();
+  const initializerSsrTargets = new WeakMap<SsrStartOptions, SsrStartOptions>();
+  const initializerSsrHandler: ProxyHandler<SsrStartOptions> = {
+    set(target, property, value) {
+      if (property === 'disableDomPreservation') {
+        initialOptions.disableDomPreservation = value;
+      } else if (property === 'circuitInactivityTimeoutMs') {
+        initialOptions.circuitInactivityTimeoutMs = value;
+      }
+      const result = Reflect.set(target, property, value);
+      if (property === 'disableDomPreservation') {
+        updateProgrammaticEnhancedNavigationHandler();
+      }
+      return result;
+    },
+  };
+  function getInitializerSsrOptions(ssrOptions: SsrStartOptions): SsrStartOptions {
+    let proxy = initializerSsrProxies.get(ssrOptions);
+    if (!proxy) {
+      proxy = new Proxy(ssrOptions, initializerSsrHandler);
+      initializerSsrProxies.set(ssrOptions, proxy);
+      initializerSsrTargets.set(proxy, ssrOptions);
+    }
+    return proxy;
+  }
+  const initializerCircuitOptions = new Proxy(initialCircuitOptions, {
+    get(target, property, receiver) {
+      const value = Reflect.get(target, property, receiver);
+      return property === 'reconnectionOptions' && value
+        ? new Proxy(value, {
+          set(reconnectionTarget, reconnectionProperty, reconnectionValue) {
+            if (reconnectionProperty === 'retryIntervalMilliseconds') {
+              initialOptions.reconnectionRetryIntervalMilliseconds = reconnectionValue;
+            }
+            return Reflect.set(reconnectionTarget, reconnectionProperty, reconnectionValue);
+          },
+        })
+        : value;
+    },
+    set(target, property, value) {
+      if (property === 'logLevel') {
+        initialOptions.circuitLogLevel = value;
+      } else if (property === 'reconnectionOptions' && value?.retryIntervalMilliseconds !== undefined) {
+        initialOptions.reconnectionRetryIntervalMilliseconds = value.retryIntervalMilliseconds;
+      }
+      return Reflect.set(target, property, value);
+    },
+  });
+  const initializerOptions = new Proxy(options, {
+    get(target, property, receiver) {
+      if (property === 'ssr' && target.ssr) {
+        return getInitializerSsrOptions(target.ssr);
+      }
+      return property === 'circuit' && target.circuit === initialCircuitOptions
+        ? initializerCircuitOptions
+        : Reflect.get(target, property, receiver);
+    },
+    set(target, property, value, receiver) {
+      if (property === 'ssr') {
+        value = initializerSsrTargets.get(value) ?? value;
+        initialOptions.disableDomPreservation = value?.disableDomPreservation;
+        initialOptions.circuitInactivityTimeoutMs = value?.circuitInactivityTimeoutMs;
+        const result = Reflect.set(target, property, value, receiver);
+        updateProgrammaticEnhancedNavigationHandler();
+        return result;
+      }
+      return Reflect.set(target, property, value, receiver);
+    },
+  });
+  const initializersPromise = fetchAndInvokeInitializers(initializerOptions, logger);
   setCircuitOptions(resolveConfiguredOptions(initializersPromise, initialCircuitOptions));
   setWebAssemblyOptions(resolveConfiguredOptions(initializersPromise, options.webAssembly));
 
@@ -127,17 +214,20 @@ function updateOptionsFromBrowserConfiguration(options: Partial<WebStartOptions>
   const browserConfig = discoverBrowserConfiguration(source);
   if (browserConfig) {
     if (browserConfig.logLevel !== undefined) {
-      options.logLevel = browserConfig.logLevel;
+      options.logLevel = initialOptions.logLevel ?? browserConfig.logLevel;
+      options.circuit ??= {} as CircuitStartOptions;
+      options.circuit.logLevel = initialOptions.circuitLogLevel ?? browserConfig.logLevel;
     }
 
     // SSR options
     if (browserConfig.ssr) {
       options.ssr = options.ssr || {};
       if (browserConfig.ssr.disableDomPreservation !== undefined) {
-        options.ssr.disableDomPreservation = browserConfig.ssr.disableDomPreservation;
+        options.ssr.disableDomPreservation = initialOptions.disableDomPreservation ?? browserConfig.ssr.disableDomPreservation;
+        updateProgrammaticEnhancedNavigationHandler();
       }
       if (browserConfig.ssr.circuitInactivityTimeoutMs !== undefined) {
-        options.ssr.circuitInactivityTimeoutMs = browserConfig.ssr.circuitInactivityTimeoutMs;
+        options.ssr.circuitInactivityTimeoutMs = initialOptions.circuitInactivityTimeoutMs ?? browserConfig.ssr.circuitInactivityTimeoutMs;
       }
     }
 
@@ -152,7 +242,7 @@ function updateOptionsFromBrowserConfiguration(options: Partial<WebStartOptions>
         reconnOpts.maxRetries = browserConfig.server.reconnectionMaxRetries;
       }
       if (browserConfig.server.reconnectionRetryIntervalMilliseconds !== undefined) {
-        reconnOpts.retryIntervalMilliseconds = browserConfig.server.reconnectionRetryIntervalMilliseconds;
+        reconnOpts.retryIntervalMilliseconds = initialOptions.reconnectionRetryIntervalMilliseconds ?? browserConfig.server.reconnectionRetryIntervalMilliseconds;
       }
       if (browserConfig.server.reconnectionDialogId !== undefined) {
         reconnOpts.dialogId = browserConfig.server.reconnectionDialogId;
@@ -171,6 +261,7 @@ function updateOptionsFromBrowserConfiguration(options: Partial<WebStartOptions>
     if (browserConfig.webAssembly) {
       rootComponentManager.setWebAssemblyOptions({
         environmentName: browserConfig.webAssembly.environmentName ?? '',
+        applicationCulture: browserConfig.webAssembly.applicationCulture,
         environmentVariables: browserConfig.webAssembly.environmentVariables ?? {},
       });
     }

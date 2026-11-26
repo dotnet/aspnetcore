@@ -1,4 +1,4 @@
-﻿{
+{
   "author": "Microsoft",
   "name": "Blazor WebAssembly 服務預設值",
   "description": "用於建立 Blazor WebAssembly 應用程式服務預設程式庫的專案範本。包含 OpenTelemetry、服務探索，以及支援 Aspire 整合的復原功能。",

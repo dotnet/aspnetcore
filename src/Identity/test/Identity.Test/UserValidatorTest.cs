@@ -91,4 +91,27 @@ public class UserValidatorTest
             IdentityResultAssert.IsFailure(result);
         }
     }
+
+    [Fact]
+    public async Task UsesCurrentAllowedUserNameCharacters()
+    {
+        var manager = MockHelpers.TestUserManager(new NoopUserStore());
+        var validator = new UserValidator<PocoUser>();
+        var user = new PocoUser { UserName = "abc" };
+
+        manager.Options.User.AllowedUserNameCharacters = "abc";
+        IdentityResultAssert.IsSuccess(await validator.ValidateAsync(manager, user));
+
+        manager.Options.User.AllowedUserNameCharacters = "ab";
+        IdentityResultAssert.IsFailure(await validator.ValidateAsync(manager, user));
+
+        manager.Options.User.AllowedUserNameCharacters = "\u00e9cba";
+        IdentityResultAssert.IsSuccess(await validator.ValidateAsync(manager, user));
+
+        user.UserName = "abc\u00e8";
+        IdentityResultAssert.IsFailure(await validator.ValidateAsync(manager, user));
+
+        manager.Options.User.AllowedUserNameCharacters = "abc\u00e8";
+        IdentityResultAssert.IsSuccess(await validator.ValidateAsync(manager, user));
+    }
 }

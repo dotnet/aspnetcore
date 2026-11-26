@@ -20,7 +20,6 @@ internal sealed class ClientValidationCache : IDisposable
 {
     private readonly ConcurrentDictionary<FieldKey, ClientValidationFieldMetadata?> _metadataCache = new();
     private readonly ConcurrentDictionary<Type, bool> _typeHasValidatableInfo = new();
-    private readonly ConcurrentDictionary<(Type FormType, string RenderedName), bool> _fieldReachabilityCache = new();
     private readonly ValidationOptions _validationOptions;
 
     [UnconditionalSuppressMessage("Trimming", "IL2066",
@@ -47,17 +46,25 @@ internal sealed class ClientValidationCache : IDisposable
 
         foreach (var (fieldIdentifier, renderedName) in fields)
         {
-            // Don't enable client-side validation for fields that would not get server-side validation
-            // to help developers avoid security mistakes.
+            // Don't enable client-side validation for fields that would not get server-side validation.
             if (!IsServerValidatable(fieldIdentifier, renderedName, formType, formModel, formHasValidatableInfo))
             {
                 continue;
             }
 
-            var fieldKey = (fieldIdentifier.Model.GetType(), fieldIdentifier.FieldName);
-            var cachedMetadata = _metadataCache.GetOrAdd(
-                fieldKey,
-                static key => BuildFieldMetadata(key.ContainerType, key.FieldName));
+            FieldKey fieldKey = (fieldIdentifier.Model.GetType(), fieldIdentifier.FieldName);
+            if (!_metadataCache.TryGetValue(fieldKey, out var cachedMetadata))
+            {
+                // Don't cache unknown names, which can be arbitrary dictionary keys.
+                if (fieldKey.ContainerType.GetProperty(fieldKey.FieldName, BindingFlags.Public | BindingFlags.Instance) is null)
+                {
+                    continue;
+                }
+
+                cachedMetadata = _metadataCache.GetOrAdd(
+                    fieldKey,
+                    static key => BuildFieldMetadata(key.ContainerType, key.FieldName));
+            }
 
             if (cachedMetadata is { } fieldMetadata)
             {
@@ -75,12 +82,8 @@ internal sealed class ClientValidationCache : IDisposable
     {
         if (formHasValidatableInfo)
         {
-            // MEV submit path (ValidateAsync) validates a field only if it recurses to it from th form model.
-            // The result depends only on the form type + rendered name, so it is cached across requests.
-            return _fieldReachabilityCache.GetOrAdd(
-                (formType, renderedName),
-                static (key, self) => self.IsFieldValidatedByMev(key.FormType, key.RenderedName),
-                this);
+            // MEV submit path (ValidateAsync) validates a field only if it recurses to it from the form model.
+            return IsFieldValidatedByMev(formType, renderedName);
         }
         else
         {
@@ -199,7 +202,6 @@ internal sealed class ClientValidationCache : IDisposable
     {
         _metadataCache.Clear();
         _typeHasValidatableInfo.Clear();
-        _fieldReachabilityCache.Clear();
     }
 
     public void Dispose()
