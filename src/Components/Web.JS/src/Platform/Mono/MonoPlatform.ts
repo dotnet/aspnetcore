@@ -220,6 +220,16 @@ async function createRuntimeInstance(options: Partial<WebAssemblyStartOptions>, 
   dotnet.withDownloadResourceProgress(setProgress);
 
   if (options.configureRuntime) {
+    const configureRuntime = options.configureRuntime;
+    let invoked = false;
+
+    // Initializers may decorate this callback after its initial invocation.
+    options.configureRuntime = builder => {
+      if (!invoked) {
+        invoked = true;
+        configureRuntime.call(options, builder);
+      }
+    };
     options.configureRuntime(dotnet);
   }
   if (justDownload) {
