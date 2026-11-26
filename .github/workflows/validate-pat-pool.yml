@@ -13,7 +13,7 @@ jobs:
     environment: copilot-pat-pool
     name: Validate Copilot PAT Pool
     if: ${{ github.event_name == 'workflow_dispatch' || !github.event.repository.fork }}
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-26.04
     env:
       VALIDATE_PAT: |
         if [ -z "$COPILOT_GITHUB_TOKEN" ]; then echo "status=empty" >> "$GITHUB_OUTPUT"; exit 0; fi

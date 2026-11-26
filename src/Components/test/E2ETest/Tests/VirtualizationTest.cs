@@ -409,18 +409,26 @@ public class VirtualizationTest : ServerTestBase<ToggleExecutionModeServerFixtur
         var finishLoadingButton = Browser.Exists(By.Id("finish-loading-button"));
         var js = (IJavaScriptExecutor)Browser;
 
+        Browser.Exists(By.CssSelector("#async-container > [data-blazor-virtualize-loading]"));
         finishLoadingButton.Click();
+        Browser.Exists(By.Id("async-item"));
 
         Browser.Equal("0", () => Browser.FindElement(By.Id("cancellation-count")).Text);
 
         for (var y = 1000; y <= 5000; y += 1000)
         {
+            var previousPlaceholder = Browser.FindElements(By.Id("async-placeholder")).FirstOrDefault()?.Text;
             js.ExecuteScript($"document.getElementById('async-container').scrollTo({{ top: {y} }})");
             var targetY = y;
             Browser.True(() =>
             {
                 var scrollTop = (long)js.ExecuteScript("return document.getElementById('async-container').scrollTop");
                 return scrollTop == targetY;
+            });
+            Browser.True(() =>
+            {
+                var placeholder = Browser.FindElements(By.Id("async-placeholder")).FirstOrDefault();
+                return placeholder is not null && placeholder.Text != previousPlaceholder;
             });
         }
 
@@ -6908,6 +6916,7 @@ public class VirtualizationTest : ServerTestBase<ToggleExecutionModeServerFixtur
     [Theory]
     [InlineData(false)]
     [InlineData(true)]
+    [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/68772")]
     public void InitialIndex_RetainsTargetWhenPreviousItemExpandsThenHomeEndTakeOver(bool useProvider)
     {
         const int initialIndex = 500;
