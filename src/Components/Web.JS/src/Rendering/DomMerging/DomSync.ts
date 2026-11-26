@@ -18,6 +18,7 @@ export interface DescriptorHandler {
 
 export interface DomSyncOptions {
   preserveModalState?: boolean;
+  preserveExisting?: boolean;
 }
 
 export function attachComponentDescriptorHandler(handler: DescriptorHandler) {
@@ -92,11 +93,12 @@ function synchronizeDomContentCore(destination: CommentBoundedRange | Node, newC
   }
 
   // Run the diff
-  const editScript = computeEditScript(
-    originalNodesForDiff,
-    newNodesForDiff,
-    (a, b) => domNodeComparer(a, b, options)
-  );
+  const editScript = options.preserveExisting !== false
+    ? computeEditScript(originalNodesForDiff, newNodesForDiff, (a, b) => domNodeComparer(a, b, options))
+    : {
+      skipCount: 0,
+      edits: [...Array<Operation>(originalNodesForDiff.length).fill(Operation.Delete), ...Array<Operation>(newNodesForDiff.length).fill(Operation.Insert)],
+    };
 
   let destinationWalker: EditWalker;
   let sourceWalker: EditWalker;

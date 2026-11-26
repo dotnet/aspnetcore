@@ -413,10 +413,10 @@ internal class Http3InMemory
         return CreateControlStream(id: 0, clientWriterScheduler);
     }
 
-    internal async ValueTask<Http3ControlStream> CreateControlStream(int? id, PipeScheduler clientWriterScheduler = null)
+    internal async ValueTask<Http3ControlStream> CreateControlStream(int? id, PipeScheduler clientWriterScheduler = null, long streamId = 2)
     {
         var testStreamContext = new TestStreamContext(canRead: true, canWrite: false, this);
-        testStreamContext.Initialize(streamId: 2, clientWriterScheduler);
+        testStreamContext.Initialize(streamId, clientWriterScheduler);
 
         var stream = new Http3ControlStream(this, testStreamContext);
         _runningStreams[stream.StreamId] = stream;

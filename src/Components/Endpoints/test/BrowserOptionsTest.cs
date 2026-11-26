@@ -92,6 +92,8 @@ public class BrowserOptionsTest
     public void GetBrowserOptions_SeedsFromEndpointMetadata()
     {
         var metadataOptions = new BrowserOptions();
+        metadataOptions.StaticServer.PreserveDom = true;
+        metadataOptions.InteractiveWebAssembly.EnvironmentVariables["KEY"] = "value";
         var context = new DefaultHttpContext();
         context.SetEndpoint(new Endpoint(
             requestDelegate: null,
@@ -100,7 +102,29 @@ public class BrowserOptionsTest
 
         var result = BrowserOptions.GetBrowserOptions(context);
 
-        Assert.Same(metadataOptions, result);
+        Assert.True(result.StaticServer.PreserveDom);
+        Assert.Equal("value", result.InteractiveWebAssembly.EnvironmentVariables["KEY"]);
+    }
+
+    [Fact]
+    public void GetBrowserOptions_RequestChangesDoNotAffectEndpointMetadata()
+    {
+        var metadataOptions = new BrowserOptions();
+        var endpoint = new Endpoint(
+            requestDelegate: null,
+            metadata: new EndpointMetadataCollection(metadataOptions),
+            displayName: "Test");
+        var firstContext = new DefaultHttpContext();
+        firstContext.SetEndpoint(endpoint);
+        var pageOptions = new BrowserOptions();
+        pageOptions.StaticServer.PreserveDom = false;
+
+        ConfigureBrowser.MergeInto(BrowserOptions.GetBrowserOptions(firstContext), pageOptions);
+        var secondContext = new DefaultHttpContext();
+        secondContext.SetEndpoint(endpoint);
+
+        Assert.Null(BrowserOptions.GetBrowserOptions(secondContext).StaticServer.PreserveDom);
+        Assert.Null(metadataOptions.StaticServer.PreserveDom);
     }
 
     [Fact]

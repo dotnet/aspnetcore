@@ -333,7 +333,7 @@ internal static class ILEmitTrieFactory
         if (groups.Length >= binarySearchThreshold)
         {
             // Only sort if binary search will be used.
-            Array.Sort(groups, static (a, b) => unchecked((long)a.Key).CompareTo(unchecked((long)b.Key)));
+            Array.Sort(groups, static (a, b) => a.Key.CompareTo(b.Key));
         }
 
         EmitIfLadder(groups);
