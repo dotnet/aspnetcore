@@ -2,12 +2,26 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 import * as DotNet from '../JSInterop/Microsoft.JSInterop';
-import { depthFirstNodeTreeTraversal, LogicalElement } from './LogicalElements';
+import { depthFirstNodeTreeTraversal, getLogicalParent, LogicalElement } from './LogicalElements';
 
-const pendingRootComponentDisposals = new Map<number, Map<string, Element>>();
+const pendingRootComponentDisposals = new Map<number, { root: LogicalElement, references: Map<string, Element> }>();
+const retainedReferencesByRoot = new WeakMap<LogicalElement, Map<string, Element>>();
 
-export function applyCaptureIdToElement(element: Element, referenceCaptureId: string): void {
+export function applyCaptureIdToElement(element: Element & LogicalElement, referenceCaptureId: string): void {
   element.setAttribute(getCaptureIdAttributeName(referenceCaptureId), '');
+
+  if (pendingRootComponentDisposals.size === 0 || element.isConnected) {
+    return;
+  }
+
+  // A render batch can add captures after navigation has moved the logical root out of the document.
+  for (let ancestor: LogicalElement | null = element; ancestor; ancestor = getLogicalParent(ancestor)) {
+    const references = retainedReferencesByRoot.get(ancestor);
+    if (references) {
+      references.set(referenceCaptureId, element);
+      return;
+    }
+  }
 }
 
 export function retainRootComponentElementReferences(ssrComponentId: number, root: LogicalElement): void {
@@ -23,11 +37,16 @@ export function retainRootComponentElementReferences(ssrComponentId: number, roo
     }
   }
 
-  pendingRootComponentDisposals.set(ssrComponentId, references);
+  pendingRootComponentDisposals.set(ssrComponentId, { root, references });
+  retainedReferencesByRoot.set(root, references);
 }
 
 export function releaseRootComponentElementReferences(ssrComponentId: number): void {
-  pendingRootComponentDisposals.delete(ssrComponentId);
+  const pendingDisposal = pendingRootComponentDisposals.get(ssrComponentId);
+  if (pendingDisposal) {
+    retainedReferencesByRoot.delete(pendingDisposal.root);
+    pendingRootComponentDisposals.delete(ssrComponentId);
+  }
 }
 
 function getElementByCaptureId(referenceCaptureId: string) {
@@ -37,7 +56,7 @@ function getElementByCaptureId(referenceCaptureId: string) {
     return element;
   }
 
-  for (const references of pendingRootComponentDisposals.values()) {
+  for (const { references } of pendingRootComponentDisposals.values()) {
     const retainedElement = references.get(referenceCaptureId);
     if (retainedElement) {
       return retainedElement;

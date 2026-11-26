@@ -495,8 +495,16 @@ export class WebRootComponentManager implements DescriptorHandler, RootComponent
   }
 
   public onRendererDisposed(browserRendererId: number): void {
+    this.unregisterRendererComponents(browserRendererId, /* onlyPendingRemovals */ false);
+  }
+
+  public onPendingRootComponentDisposalsAbandoned(browserRendererId: number): void {
+    this.unregisterRendererComponents(browserRendererId, /* onlyPendingRemovals */ true);
+  }
+
+  private unregisterRendererComponents(browserRendererId: number, onlyPendingRemovals: boolean): void {
     for (const component of this._rootComponentsBySsrComponentId.values()) {
-      if (component.assignedRendererId === browserRendererId) {
+      if (component.assignedRendererId === browserRendererId && (!onlyPendingRemovals || component.hasPendingRemoveOperation)) {
         releaseRootComponentElementReferences(component.ssrComponentId);
         this.unregisterComponent(component);
       }

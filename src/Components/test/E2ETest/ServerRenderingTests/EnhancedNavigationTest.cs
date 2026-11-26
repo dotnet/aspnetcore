@@ -82,6 +82,50 @@ public class EnhancedNavigationTest : ServerTestBase<BasicTestAppServerSiteFixtu
         Assert.Contains(logs, log => log.Message.Contains("Enhanced navigation failed for destination") && log.Message.Contains("Falling back to full page load.") && !log.Message.Contains("Error"));
     }
 
+    [Fact]
+    public void EnhancedNavigationRetainsElementReferenceFromInFlightServerRenderBatch()
+    {
+        Navigate($"{ServerPathBase}/nav/element-reference-disposal?captureLateReference=true");
+
+        Browser.Equal("True", () => Browser.Exists(By.Id("element-reference-disposal-initialized-server")).Text);
+        Browser.Equal("True", () => Browser.Exists(By.Id("element-reference-disposal-initialized-server-child")).Text);
+        Browser.Equal("True", () => Browser.Exists(By.Id("element-reference-disposal-initialized-webassembly")).Text);
+        Browser.Equal("True", () => Browser.Exists(By.Id("element-reference-disposal-initialized-webassembly-child")).Text);
+
+        try
+        {
+            Browser.ExecuteJavaScript("window.elementReferenceDisposalTest.holdRenderBatches()");
+            Browser.Click(By.Id("element-reference-disposal-capture-late"));
+            Browser.Equal(1L, () => Browser.ExecuteJavaScript<long>("return window.elementReferenceDisposalTest.heldRenderBatches"));
+
+            var originalDocument = Browser.Exists(By.TagName("html"));
+            Browser.Click(By.Id("element-reference-disposal-navigation"));
+            Browser.Equal("Other", () => Browser.Exists(By.TagName("h1")).Text);
+            Assert.Equal(originalDocument, Browser.FindElement(By.TagName("html")));
+            Browser.True(() => Browser.ExecuteJavaScript<long>("return window.elementReferenceDisposalTest.acknowledgedRemovals") > 0);
+            Browser.True(() => Browser.ExecuteJavaScript<long>("return window.elementReferenceDisposalTest.heldRenderBatches") >= 2);
+            Browser.Equal("true", () => Browser.ExecuteJavaScript<string>(
+                "return sessionStorage.getItem('element-reference-disposal-pending-server')"));
+
+            Browser.ExecuteJavaScript("window.elementReferenceDisposalTest.releaseRenderBatches()");
+            Browser.True(() => Browser.ExecuteJavaScript<bool>(
+                "const test = window.elementReferenceDisposalTest; return test.completedHeldRenderBatches === test.heldRenderBatches;"));
+            Browser.ExecuteJavaScript(
+                "import('./_content/TestContentPackage/ElementReferenceDisposal.razor.js').then(module => module.releaseDisposal('server'));");
+            Browser.True(() => Browser.ExecuteJavaScript<string>("return sessionStorage.getItem('element-reference-disposed-server-late')") is not null);
+            Assert.Equal("true", Browser.ExecuteJavaScript<string>("return sessionStorage.getItem('element-reference-disposed-server-late')"));
+        }
+        finally
+        {
+            Browser.ExecuteJavaScript(
+                "window.elementReferenceDisposalTest.releaseRenderBatches();" +
+                "import('./_content/TestContentPackage/ElementReferenceDisposal.razor.js').then(module => module.releaseAllDisposals());");
+        }
+
+        Browser.True(() => Browser.ExecuteJavaScript<bool>(
+            "return window.elementReferenceDisposalTest.referencesReleased()"));
+    }
+
     [Theory]
     [InlineData(false)]
     [InlineData(true)]

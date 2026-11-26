@@ -1,8 +1,36 @@
 const removalBatches = new Set();
+let renderBatchGate;
 window.elementReferenceDisposalTest = {
   acknowledgedRemovals: 0,
   circuitDisposals: 0,
   captures: new Map(),
+  heldRenderBatches: 0,
+  completedHeldRenderBatches: 0,
+  holdRenderBatches() {
+    renderBatchGate = Promise.withResolvers();
+  },
+  releaseRenderBatches() {
+    renderBatchGate?.resolve();
+    renderBatchGate = undefined;
+  },
+  configureSignalR(builder) {
+    const build = builder.build.bind(builder);
+    builder.build = () => {
+      const connection = build();
+      const on = connection.on.bind(connection);
+      connection.on = (method, callback) => on(method, method === 'JS.RenderBatch' ? async (...args) => {
+        if (renderBatchGate) {
+          this.heldRenderBatches++;
+          await renderBatchGate.promise;
+          await callback(...args);
+          this.completedHeldRenderBatches++;
+        } else {
+          await callback(...args);
+        }
+      } : callback);
+      return connection;
+    };
+  },
   isMissing: element => element === null,
   referenceIsMissing(captureId) {
     return JSON.parse(Blazor._internal.invokeJSJson(

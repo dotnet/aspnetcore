@@ -311,6 +311,8 @@ export class CircuitManager implements DotNet.DotNetCallDispatcher {
       if (isRendererAttached(WebRendererId.Server)) {
         this._interopMethodsForReconnection = detachWebRendererInterop(WebRendererId.Server);
       }
+      // The old circuit cannot complete these disposals, but live roots may still be resumed.
+      this._componentManager.onPendingRootComponentDisposalsAbandoned?.(WebRendererId.Server);
       return false;
     }
 
@@ -476,6 +478,7 @@ export class CircuitManager implements DotNet.DotNetCallDispatcher {
         persistedCircuitState?.applicationState ?? '',
       );
       if (!newCircuitId) {
+        this._componentManager.onPendingRootComponentDisposalsAbandoned?.(WebRendererId.Server);
         this._resumingState.complete(false);
         return resumingPromise;
       }

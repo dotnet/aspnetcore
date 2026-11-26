@@ -277,6 +277,7 @@
                 enableClassicInitializers: enableClassicInitializers,
                 webAssembly: webAssemblySettings,
                 circuit: {
+                    configureSignalR: builder => window.elementReferenceDisposalTest?.configureSignalR(builder),
                     reconnectionOptions: {
                         // It's easier to test the reconnection logic if we wait a bit
                         // before attempting to reconnect

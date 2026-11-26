@@ -6,6 +6,16 @@
     Initialized: <span id="element-reference-disposal-initialized-@Id">@_initialized</span>
 </div>
 <button id="element-reference-disposal-click-@Id" @onclick="() => _clickCount++">Clicks: @_clickCount</button>
+@if (CaptureLateReference)
+{
+    <button id="element-reference-disposal-capture-late" @onclick="() => _showLateElement = true">Capture late reference</button>
+    @if (_showLateElement)
+    {
+        <div>
+            <span id="element-reference-disposal-late-@Id" @ref="_lateElement"></span>
+        </div>
+    }
+}
 @if (!IsChild)
 {
     <ElementReferenceDisposal Id="@(Id + "-child")" IsChild="true" />
@@ -13,8 +23,10 @@
 
 @code {
     private ElementReference _element;
+    private ElementReference _lateElement;
     private IJSObjectReference _module = null;
     private bool _initialized;
+    private bool _showLateElement;
     private int _clickCount;
 
     [Parameter, EditorRequired]
@@ -25,6 +37,9 @@
 
     [Parameter]
     public bool ThrowOnDispose { get; set; }
+
+    [Parameter]
+    public bool CaptureLateReference { get; set; }
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
@@ -50,6 +65,10 @@
             }
 
             await _module.InvokeVoidAsync("dispose", _element, Id);
+            if (_showLateElement)
+            {
+                await _module.InvokeVoidAsync("disposeLateElement", _lateElement, Id);
+            }
             await _module.DisposeAsync();
         }
     }

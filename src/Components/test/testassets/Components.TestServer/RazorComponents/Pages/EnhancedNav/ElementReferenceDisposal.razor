@@ -14,6 +14,7 @@
         <TestContentPackage.ElementReferenceDisposal
             @rendermode="@(new InteractiveServerRenderMode(prerender: Prerender))"
             Id="server"
+            CaptureLateReference="CaptureLateReference"
             ThrowOnDispose="FailServerDisposal" />
         <TestContentPackage.ElementReferenceDisposal
             @rendermode="@(new InteractiveWebAssemblyRenderMode(prerender: Prerender))"
@@ -37,6 +38,9 @@
 
     [SupplyParameterFromQuery]
     public bool FailServerDisposal { get; set; }
+
+    [SupplyParameterFromQuery]
+    public bool CaptureLateReference { get; set; }
 
     [SupplyParameterFromQuery]
     public bool Removed { get; set; }

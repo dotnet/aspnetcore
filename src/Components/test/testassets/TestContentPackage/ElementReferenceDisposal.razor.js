@@ -30,6 +30,15 @@ export function dispose(element, id) {
   sessionStorage.setItem(`element-reference-disposed-${id}`, 'true');
 }
 
+export function disposeLateElement(element, id) {
+  const resolved = element?.id === `element-reference-disposal-late-${id}` && !element.isConnected;
+  if (resolved) {
+    const captureAttribute = element.getAttributeNames().find(name => name.startsWith('_bl_'));
+    window.elementReferenceDisposalTest.captures.set(`${id}-late`, captureAttribute.substring(4));
+  }
+  sessionStorage.setItem(`element-reference-disposed-${id}-late`, String(resolved));
+}
+
 export async function waitForDisposal(id) {
   const pendingDisposal = pendingDisposals.get(id);
   if (!pendingDisposal) {
