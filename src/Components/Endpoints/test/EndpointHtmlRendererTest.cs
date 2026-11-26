@@ -1532,6 +1532,28 @@ public class EndpointHtmlRendererTest
     }
 
     [Fact]
+    public async Task SectionOutletBeforeAsyncCompatibleContent_UsesSettledProviderDuringNonStreamingPrerendering()
+    {
+        var loadCompatibleProvider = new TaskCompletionSource();
+        var parameters = ParameterView.FromDictionary(new Dictionary<string, object>
+        {
+            [nameof(DelayedCompatibleSectionHost.LoadCompatibleProvider)] = loadCompatibleProvider.Task,
+        });
+        await renderer.PrerenderComponentAsync(GetHttpContext(), typeof(EmptyComponent), null, ParameterView.Empty);
+        var result = await renderer.Dispatcher.InvokeAsync(() => renderer.BeginRenderingComponent(typeof(DelayedCompatibleSectionHost), parameters));
+
+        var initialHtml = await renderer.Dispatcher.InvokeAsync(result.ToHtmlString);
+        Assert.Contains("Static fallback", initialHtml);
+
+        loadCompatibleProvider.SetResult();
+        await result.QuiescenceTask;
+
+        var finalHtml = await renderer.Dispatcher.InvokeAsync(result.ToHtmlString);
+        Assert.Contains("Interactive section content", finalHtml);
+        Assert.DoesNotContain("Static fallback", finalHtml);
+    }
+
+    [Fact]
     public async Task SectionOutletBeforeContent_WithStaticFallback_CanPrerender()
     {
         var removeIsland = new TaskCompletionSource();
@@ -2189,6 +2211,47 @@ public class EndpointHtmlRendererTest
     private sealed class OtherDerivedWebAssemblyMode : InteractiveWebAssemblyRenderMode;
     private sealed class DerivedAutoMode : InteractiveAutoRenderMode;
     private sealed class OtherDerivedAutoMode : InteractiveAutoRenderMode;
+
+    private sealed class DelayedCompatibleSectionHost : ComponentBase
+    {
+        [Parameter] public Task LoadCompatibleProvider { get; set; }
+
+        protected override void BuildRenderTree(RenderTreeBuilder builder)
+        {
+            builder.OpenComponent<SectionContent>(0);
+            builder.AddComponentParameter(1, nameof(SectionContent.SectionName), "test-section");
+            builder.AddComponentParameter(2, nameof(SectionContent.ChildContent), (RenderFragment)(content => content.AddContent(0, "Static fallback")));
+            builder.CloseComponent();
+            builder.OpenComponent<DelayedCompatibleSectionIsland>(3);
+            builder.AddComponentParameter(4, nameof(DelayedCompatibleSectionIsland.LoadCompatibleProvider), LoadCompatibleProvider);
+            builder.AddComponentRenderMode(RenderMode.InteractiveServer);
+            builder.CloseComponent();
+        }
+    }
+
+    private sealed class DelayedCompatibleSectionIsland : ComponentBase
+    {
+        private bool _providerReady;
+
+        [Parameter] public Task LoadCompatibleProvider { get; set; }
+
+        protected override async Task OnInitializedAsync()
+        {
+            await LoadCompatibleProvider;
+            _providerReady = true;
+        }
+
+        protected override void BuildRenderTree(RenderTreeBuilder builder)
+        {
+            builder.OpenComponent<SectionOutletHost>(0);
+            builder.CloseComponent();
+            if (_providerReady)
+            {
+                builder.OpenComponent<SectionContentHost>(1);
+                builder.CloseComponent();
+            }
+        }
+    }
 
     private sealed class RemovableSectionHost : ComponentBase
     {

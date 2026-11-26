@@ -3,7 +3,12 @@
 
 using System.Diagnostics;
 using System.Text.RegularExpressions;
+using Microsoft.AspNetCore.Components.Endpoints.DependencyInjection;
+using Microsoft.AspNetCore.Components.Rendering;
 using Microsoft.AspNetCore.Components.Endpoints.Forms;
+using Microsoft.AspNetCore.Components.Sections;
+using Microsoft.AspNetCore.Components.Web;
+using Microsoft.AspNetCore.Diagnostics;
 using Microsoft.AspNetCore.Components.Endpoints.Tests.TestComponents;
 using Microsoft.AspNetCore.Components.Forms;
 using Microsoft.AspNetCore.Components.Infrastructure;
@@ -332,6 +337,48 @@ public class RazorComponentResultTest
     }
 
     [Fact]
+    public async Task StreamingSectionErrorBoundary_AfterInitialFlush_EmitsErrorContentWithoutStreamError()
+    {
+        var releaseProvider = new TaskCompletionSource();
+        var httpContext = GetTestHttpContext();
+        httpContext.SetEndpoint(new Endpoint(_ => Task.CompletedTask, EndpointMetadataCollection.Empty, "streaming-section"));
+        var responseBody = new MemoryStream();
+        httpContext.Response.Body = responseBody;
+        var result = new RazorComponentResult(
+            typeof(StreamingSectionErrorBoundaryHost),
+            PropertyHelper.ObjectToDictionary(new { ReleaseProvider = releaseProvider.Task }).AsReadOnly());
+        var completionTask = result.ExecuteAsync(httpContext);
+        await WaitForContentWrittenAsync(responseBody);
+
+        releaseProvider.SetResult();
+        await completionTask;
+
+        var html = MaskComponentIds(GetStringContent(responseBody));
+        Assert.Contains("Boundary fallback", html);
+        Assert.DoesNotContain("type=\"error\"", html);
+    }
+
+    [Fact]
+    public async Task AbandonedSectionValidation_DoesNotFaultSameScopeErrorEndpoint()
+    {
+        var httpContext = GetTestHttpContext();
+        httpContext.SetEndpoint(new Endpoint(_ => Task.CompletedTask, EndpointMetadataCollection.Empty, "error-endpoint"));
+        var renderer = httpContext.RequestServices.GetRequiredService<EndpointHtmlRenderer>();
+        renderer.SetHttpContext(httpContext);
+        var failingComponent = new MultiplePendingSectionValidationHost();
+        var exception = await Assert.ThrowsAsync<InvalidOperationException>(() => renderer.Dispatcher.InvokeAsync(
+            () => renderer.BeginRenderingComponent(failingComponent, ParameterView.Empty)));
+        Assert.Contains("section-one", exception.Message);
+
+        httpContext.Features.Set<IExceptionHandlerFeature>(new ExceptionHandlerFeature { Error = exception });
+        var responseBody = new MemoryStream();
+        httpContext.Response.Body = responseBody;
+        await new RazorComponentResult(typeof(PlainErrorEndpoint)).ExecuteAsync(httpContext);
+
+        Assert.Equal("Error endpoint rendered", GetStringContent(responseBody));
+    }
+
+    [Fact]
     public async Task StreamingRendering_IsOffByDefault_AndCanBeEnabledForSubtree()
     {
         // Arrange
@@ -456,6 +503,7 @@ public class RazorComponentResultTest
             .AddAntiforgery()
             .AddSingleton(new DiagnosticListener("test"))
             .AddSingleton<IWebHostEnvironment>(mockWebHostEnvironment)
+            .AddSingleton<IHostEnvironment>(mockWebHostEnvironment)
             .AddSingleton<EndpointHtmlRenderer>()
             .AddSingleton<IComponentPrerenderer>(services => services.GetRequiredService<EndpointHtmlRenderer>())
             .AddSingleton<NavigationManager, FakeNavigationManager>()
@@ -466,7 +514,11 @@ public class RazorComponentResultTest
             .AddSingleton<ComponentStatePersistenceManager>()
             .AddSingleton<PersistentComponentState>(sp => sp.GetRequiredService<ComponentStatePersistenceManager>().State)
             .AddSingleton<AntiforgeryStateProvider, EndpointAntiforgeryStateProvider>()
+            .AddKeyedSingleton<Func<IComponentRenderMode, IComponentRenderMode, bool>>(
+                typeof(SectionOutlet), EndpointHtmlRenderer.AreSectionRenderModesCompatible)
+            .AddSingleton<IErrorBoundaryLogger, TestErrorBoundaryLogger>()
             .AddLogging();
+        serviceCollection.AddOptions<RazorComponentsServiceOptions>();
 
         var result = new DefaultHttpContext { RequestServices = serviceCollection.BuildServiceProvider() };
         result.Request.Scheme = "https";
@@ -506,6 +558,88 @@ public class RazorComponentResultTest
             public byte[] Protect(byte[] plaintext) => new byte[] { 1, 2, 3 };
             public byte[] Unprotect(byte[] protectedData) => throw new NotImplementedException();
         }
+    }
+
+    [StreamRendering(true)]
+    private sealed class StreamingSectionErrorBoundaryHost : ComponentBase
+    {
+        [Parameter] public Task ReleaseProvider { get; set; }
+
+        protected override void BuildRenderTree(RenderTreeBuilder builder)
+        {
+            builder.OpenComponent<StreamingSectionRegion>(0);
+            builder.AddComponentParameter(1, nameof(StreamingSectionRegion.ReleaseProvider), ReleaseProvider);
+            builder.CloseComponent();
+        }
+    }
+
+    private sealed class StreamingSectionRegion : ComponentBase
+    {
+        private bool _showProvider;
+
+        [Parameter] public Task ReleaseProvider { get; set; }
+
+        protected override async Task OnInitializedAsync()
+        {
+            await ReleaseProvider;
+            _showProvider = true;
+        }
+
+        protected override void BuildRenderTree(RenderTreeBuilder builder)
+        {
+            builder.OpenComponent<ErrorBoundary>(0);
+            builder.AddComponentParameter(1, nameof(ErrorBoundary.ErrorContent), (RenderFragment<Exception>)(_ => content => content.AddContent(0, "Boundary fallback")));
+            builder.AddComponentParameter(2, nameof(ErrorBoundary.ChildContent), (RenderFragment)(child =>
+            {
+                child.OpenComponent<SectionOutlet>(0);
+                child.AddComponentParameter(1, nameof(SectionOutlet.SectionName), "streaming-section");
+                child.AddComponentRenderMode(RenderMode.InteractiveWebAssembly);
+                child.CloseComponent();
+            }));
+            builder.CloseComponent();
+            if (_showProvider)
+            {
+                builder.OpenComponent<SectionContent>(3);
+                builder.AddComponentParameter(4, nameof(SectionContent.SectionName), "streaming-section");
+                builder.AddComponentParameter(5, nameof(SectionContent.ChildContent), (RenderFragment)(content => content.AddContent(0, "Mismatched content")));
+                builder.AddComponentRenderMode(RenderMode.InteractiveServer);
+                builder.CloseComponent();
+            }
+        }
+    }
+
+    private sealed class MultiplePendingSectionValidationHost : ComponentBase
+    {
+        protected override void BuildRenderTree(RenderTreeBuilder builder)
+        {
+            AddMismatchedSection(builder, 0, "section-one");
+            AddMismatchedSection(builder, 10, "section-two");
+        }
+
+        private static void AddMismatchedSection(RenderTreeBuilder builder, int sequence, string name)
+        {
+            builder.OpenComponent<SectionOutlet>(sequence);
+            builder.AddComponentParameter(sequence + 1, nameof(SectionOutlet.SectionName), name);
+            builder.AddComponentRenderMode(RenderMode.InteractiveServer);
+            builder.CloseComponent();
+            builder.OpenComponent<SectionContent>(sequence + 2);
+            builder.AddComponentParameter(sequence + 3, nameof(SectionContent.SectionName), name);
+            builder.AddComponentParameter(sequence + 4, nameof(SectionContent.ChildContent), (RenderFragment)(content => content.AddContent(0, name)));
+            builder.AddComponentRenderMode(RenderMode.InteractiveWebAssembly);
+            builder.CloseComponent();
+        }
+    }
+
+    private sealed class PlainErrorEndpoint : ComponentBase
+    {
+        protected override void BuildRenderTree(RenderTreeBuilder builder)
+            => builder.AddContent(0, "Error endpoint rendered");
+    }
+
+    private sealed class TestErrorBoundaryLogger : IErrorBoundaryLogger
+    {
+        public ValueTask LogErrorAsync(Exception exception)
+            => ValueTask.CompletedTask;
     }
 
     class FakeNavigationManager : NavigationManager, IHostEnvironmentNavigationManager

@@ -400,6 +400,13 @@ public abstract partial class Renderer : IDisposable, IAsyncDisposable
             _ongoingQuiescenceTask = ProcessAsynchronousWork();
             await _ongoingQuiescenceTask;
         }
+        catch
+        {
+            // The failed render may leave section validations that do not belong to a later
+            // error response rendered by this same renderer.
+            _sectionRegistry?.InvalidatePendingValidations();
+            throw;
+        }
         finally
         {
             Debug.Assert(_pendingTasks is null || _pendingTasks.Count == 0);
@@ -423,6 +430,9 @@ public abstract partial class Renderer : IDisposable, IAsyncDisposable
                 // the child components to finish executing SetParametersAsync
                 await pendingWork;
             }
+
+            // Async initialization can replace a temporary provider after the first synchronous pass.
+            ValidatePendingSections();
         }
     }
 
@@ -873,30 +883,16 @@ public abstract partial class Renderer : IDisposable, IAsyncDisposable
             }
 
             // Process render queue until empty
-            while (true)
+            while (_batchBuilder.ComponentRenderQueue.Count > 0)
             {
-                while (_batchBuilder.ComponentRenderQueue.Count > 0)
-                {
-                    var nextToRender = _batchBuilder.ComponentRenderQueue.Dequeue();
-                    RenderInExistingBatch(nextToRender);
-                }
+                var nextToRender = _batchBuilder.ComponentRenderQueue.Dequeue();
+                RenderInExistingBatch(nextToRender);
+            }
 
-                // Deeper providers may register after their outlet renders. Validate only after
-                // synchronous rendering settles, and process error-boundary renders before continuing.
-                var sectionOutlet = _sectionRegistry?.TakePendingValidation();
-                if (sectionOutlet is null)
-                {
-                    break;
-                }
-
-                try
-                {
-                    sectionOutlet.ValidateContent();
-                }
-                catch (Exception ex)
-                {
-                    HandleExceptionViaErrorBoundary(ex, _componentStateByComponent[sectionOutlet]);
-                }
+            // During quiescence, async initialization may still replace a temporary provider.
+            if (_pendingTasks is null && _ongoingQuiescenceTask is null)
+            {
+                ValidatePendingSections();
             }
 
             var batch = _batchBuilder.ToBatch();
@@ -916,6 +912,13 @@ public abstract partial class Renderer : IDisposable, IAsyncDisposable
             if (ComponentsMetrics.IsSupported && ComponentMetrics != null && ComponentMetrics.IsBatchEnabled)
             {
                 ComponentMetrics.FailBatchSync(e, batchStartTimestamp);
+            }
+
+            // A failed batch must not leave validations for a renderer reused by error handling.
+            // During quiescence, the final pass still needs the validations scheduled by this render.
+            if (_pendingTasks is null)
+            {
+                _sectionRegistry?.InvalidatePendingValidations();
             }
 
             // Ensure we catch errors while running the render functions of the components.
@@ -1055,6 +1058,33 @@ public abstract partial class Renderer : IDisposable, IAsyncDisposable
         // Queue up the task and we can inspect it later.
         batch = batch ?? new List<Task>();
         batch.Add(GetErrorHandledTask(task, state));
+    }
+
+    private void ValidatePendingSections()
+    {
+        while (true)
+        {
+            var sectionOutlet = _sectionRegistry?.TakePendingValidation();
+            if (sectionOutlet is null)
+            {
+                break;
+            }
+
+            try
+            {
+                sectionOutlet.ValidateContent();
+            }
+            catch (Exception ex)
+            {
+                HandleExceptionViaErrorBoundary(ex, _componentStateByComponent[sectionOutlet]);
+            }
+
+            while (_batchBuilder.ComponentRenderQueue.Count > 0)
+            {
+                var nextToRender = _batchBuilder.ComponentRenderQueue.Dequeue();
+                RenderInExistingBatch(nextToRender);
+            }
+        }
     }
 
     private void RenderInExistingBatch(RenderQueueEntry renderQueueEntry)

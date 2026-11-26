@@ -109,17 +109,22 @@ internal sealed partial class SectionRegistry(
 
     internal SectionOutlet? TakePendingValidation()
     {
-        if (_pendingValidations is not null)
+        if (_pendingValidations is null)
         {
-            foreach (var subscriber in _pendingValidations)
-            {
-                _pendingValidations.Remove(subscriber);
-                return subscriber;
-            }
+            return null;
+        }
+
+        foreach (var subscriber in _pendingValidations)
+        {
+            _pendingValidations.Remove(subscriber);
+            return subscriber;
         }
 
         return null;
     }
+
+    internal void InvalidatePendingValidations()
+        => _pendingValidations?.Clear();
 
     internal void ValidateContent(object identifier, SectionOutlet subscriber, SectionContent? provider)
     {
