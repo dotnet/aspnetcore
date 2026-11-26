@@ -7,6 +7,7 @@
 @inject IJSRuntime JSRuntime
 
 <button id="btn-interop" @onclick="InvokeInteropAsync">Invoke interop!</button>
+<button id="btn-named-errors" @onclick="InvokeNamedErrorsAsync">Invoke named errors</button>
 
 <div>
     <h1>Invocations</h1>
@@ -50,6 +51,10 @@
     <p id="@nameof(AsyncExceptionFromAsyncMethod)">@AsyncExceptionFromAsyncMethod?.Message</p>
     <h2>@nameof(JSObjectReferenceInvokeNonFunctionException)</h2>
     <p id="@nameof(JSObjectReferenceInvokeNonFunctionException)">@JSObjectReferenceInvokeNonFunctionException?.Message</p>
+    @foreach (var result in NamedErrorResults)
+    {
+        <p id="@result.Key">@result.Value</p>
+    }
 </div>
 
 <p @ref="element">Element reference.</p>
@@ -67,6 +72,7 @@
     public JSException SyncExceptionFromAsyncMethod { get; set; }
     public JSException AsyncExceptionFromAsyncMethod { get; set; }
     public JSException JSObjectReferenceInvokeNonFunctionException { get; set; }
+    public IDictionary<string, string> NamedErrorResults { get; } = new Dictionary<string, string>();
 
     public IDictionary<string, object> ReceiveDotNetObjectByRefResult { get; set; } = new Dictionary<string, object>();
     public IDictionary<string, object> ReceiveDotNetObjectByRefAsyncResult { get; set; } = new Dictionary<string, object>();
@@ -74,6 +80,35 @@
     public bool DoneWithInterop { get; set; }
 
     public ElementReference element;
+
+    private async Task InvokeNamedErrorsAsync()
+    {
+        try
+        {
+            await JSRuntime.InvokeVoidAsync("jsInteropTests.throwTypeError");
+        }
+        catch (JSException exception)
+        {
+            NamedErrorResults["sync-error-type"] = exception.GetType().FullName;
+            NamedErrorResults["sync-error-name"] = exception.Name;
+            NamedErrorResults["sync-error-message"] = exception.Message;
+        }
+
+        try
+        {
+            await JSRuntime.InvokeVoidAsync("jsInteropTests.rejectAbortError");
+        }
+        catch (JSException exception) when (exception.Name == "AbortError")
+        {
+            NamedErrorResults["abort-error-type"] = exception.GetType().FullName;
+            NamedErrorResults["abort-error-name"] = exception.Name;
+            NamedErrorResults["abort-error-message"] = exception.Message;
+        }
+        catch (JSException)
+        {
+            NamedErrorResults["abort-error-name"] = "Name filter did not match";
+        }
+    }
 
     public async Task InvokeInteropAsync()
     {

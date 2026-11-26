@@ -296,6 +296,8 @@ public class DotNetDispatcherTest
         // Assert
         var ex = await Assert.ThrowsAsync<JSException>(async () => await task);
         Assert.Equal(expected, ex.Message);
+        Assert.Null(ex.Name);
+        Assert.Null(ex.InnerException);
     }
 
     [Fact]
@@ -312,6 +314,128 @@ public class DotNetDispatcherTest
         // Assert
         var ex = await Assert.ThrowsAsync<JSException>(async () => await task);
         Assert.Empty(ex.Message);
+        Assert.Null(ex.Name);
+        Assert.Null(ex.InnerException);
+    }
+
+    [Theory]
+    [InlineData("TypeError")]
+    [InlineData("AbortError")]
+    [InlineData("MyLibraryError")]
+    [InlineData("SyntaxError")]
+    [InlineData("")]
+    [InlineData(null)]
+    public async Task EndInvokeJS_WithStructuredError(string name)
+    {
+        var jsRuntime = new TestJSRuntime();
+        var expectedMessage = "Original message\nOriginal stack";
+        var task = jsRuntime.InvokeAsync<TestDTO>("unimportant");
+        var argsJson = JsonSerializer.Serialize(new object[]
+        {
+            jsRuntime.LastInvocationAsyncHandle,
+            false,
+            new { name, formattedMessage = expectedMessage, extra = new { ignored = true } },
+        });
+
+        DotNetDispatcher.EndInvokeJS(jsRuntime, argsJson);
+
+        var ex = await Assert.ThrowsAsync<JSException>(async () => await task);
+        Assert.Equal(name, ex.Name);
+        Assert.Equal(expectedMessage, ex.Message);
+        Assert.Null(ex.InnerException);
+    }
+
+    [Fact]
+    public async Task EndInvokeJS_WithStructuredErrorWithoutName()
+    {
+        var jsRuntime = new TestJSRuntime();
+        var task = jsRuntime.InvokeAsync<object>("unimportant");
+
+        DotNetDispatcher.EndInvokeJS(jsRuntime, $"[{jsRuntime.LastInvocationAsyncHandle},false,{{\"formattedMessage\":\"Failure\"}}]");
+
+        var ex = await Assert.ThrowsAsync<JSException>(async () => await task);
+        Assert.Null(ex.Name);
+        Assert.Equal("Failure", ex.Message);
+        Assert.Null(ex.InnerException);
+    }
+
+    [Fact]
+    public async Task EndInvokeJS_CanCatchStructuredErrorByName()
+    {
+        var jsRuntime = new TestJSRuntime();
+        var task = jsRuntime.InvokeAsync<object>("unimportant");
+
+        DotNetDispatcher.EndInvokeJS(jsRuntime, $"[{jsRuntime.LastInvocationAsyncHandle},false,{{\"name\":\"AbortError\",\"formattedMessage\":\"Aborted\"}}]");
+
+        try
+        {
+            await task;
+            Assert.Fail("Expected an AbortError.");
+        }
+        catch (JSException ex) when (ex.Name == "AbortError")
+        {
+            Assert.IsType<JSException>(ex);
+            Assert.Equal("Aborted", ex.Message);
+        }
+    }
+
+    [Fact]
+    public async Task EndInvokeJS_DoesNotInferNameFromLegacyError()
+    {
+        var jsRuntime = new TestJSRuntime();
+        var task = jsRuntime.InvokeAsync<object>("unimportant");
+        var message = "name:AbortError\nLegacy failure";
+        var argsJson = JsonSerializer.Serialize(new object[] { jsRuntime.LastInvocationAsyncHandle, false, message });
+
+        DotNetDispatcher.EndInvokeJS(jsRuntime, argsJson);
+
+        try
+        {
+            await task;
+            Assert.Fail("Expected a JSException.");
+        }
+        catch (JSException ex)
+        {
+            Assert.IsType<JSException>(ex);
+            Assert.Null(ex.Name);
+            Assert.Equal(message, ex.Message);
+            Assert.Null(ex.InnerException);
+        }
+    }
+
+    [Theory]
+    [InlineData("{}", typeof(JsonException))]
+    [InlineData("{\"name\":\"AbortError\",\"formattedMessage\":42}", typeof(JsonException))]
+    [InlineData("{\"name\":\"AbortError\",\"formattedMessage\":null}", typeof(JsonException))]
+    [InlineData("{\"name\":42,\"formattedMessage\":\"Failure\"}", typeof(InvalidOperationException))]
+    [InlineData("{\"name\":\"AbortError\",\"formattedMessage\":\"Failure\"", typeof(JsonException))]
+    public async Task EndInvokeJS_WithMalformedStructuredError(string errorJson, Type innerExceptionType)
+    {
+        var jsRuntime = new TestJSRuntime();
+        var task = jsRuntime.InvokeAsync<object>("unimportant");
+
+        DotNetDispatcher.EndInvokeJS(jsRuntime, $"[{jsRuntime.LastInvocationAsyncHandle},false,{errorJson}]");
+
+        var ex = await Assert.ThrowsAsync<JSException>(async () => await task);
+        Assert.Null(ex.Name);
+        Assert.IsAssignableFrom(innerExceptionType, ex.InnerException);
+        Assert.Equal($"An exception occurred executing JS interop: {ex.InnerException.Message}. See InnerException for more details.", ex.Message);
+    }
+
+    [Fact]
+    public async Task EndInvokeJS_LateStructuredErrorCannotCompleteCanceledCall()
+    {
+        var jsRuntime = new TestJSRuntime();
+        using var cts = new CancellationTokenSource();
+        var task = jsRuntime.InvokeAsync<object>("unimportant", cts.Token);
+        var handle = jsRuntime.LastInvocationAsyncHandle;
+        cts.Cancel();
+
+        DotNetDispatcher.EndInvokeJS(jsRuntime, $"[{handle},false,{{\"name\":\"AbortError\",\"formattedMessage\":\"Late failure\"}}]");
+        DotNetDispatcher.EndInvokeJS(jsRuntime, $"[{handle},true,null]");
+
+        await Assert.ThrowsAsync<TaskCanceledException>(async () => await task);
+        Assert.True(task.IsCanceled);
     }
 
     [Fact]

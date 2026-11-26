@@ -321,7 +321,8 @@ public static class DotNetDispatcher
 
         // The payload that we're trying to parse is of the format
         // [ taskId: long, success: boolean, value: string? | object ]
-        // where value is the .NET type T originally specified on InvokeAsync<T> or the error string if success is false.
+        // where value is the .NET type T originally specified on InvokeAsync<T> on success, or
+        // { name, formattedMessage }, a legacy error string, or null on failure.
         // We parse the first two arguments and call in to JSRuntimeBase to deserialize the actual value.
 
         var reader = new Utf8JsonReader(utf8JsonBytes);
