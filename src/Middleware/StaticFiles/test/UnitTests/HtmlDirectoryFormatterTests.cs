@@ -30,6 +30,6 @@ public class HtmlDirectoryFormatterTests
 
         Assert.Equal(segmentCount + 2, html.Split("<a href=").Length - 1);
         Assert.Contains("<a href=\"/dir/\\/\">", html);
-        Assert.Contains("<a href=\"/dir/\\\\/\">", html);
+        Assert.Contains("<a href=\"/dir/\\/\\/\">", html);
     }
 }

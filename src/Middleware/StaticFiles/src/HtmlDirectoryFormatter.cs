@@ -113,7 +113,7 @@ public class HtmlDirectoryFormatter : IDirectoryFormatter
                 .Append(cumulativePath)
                 .Append(@""">")
                 .Append(HtmlEncode(segment))
-                .Append("</a>");
+                .Append("/</a>");
         }
 
         builder.AppendFormat(
