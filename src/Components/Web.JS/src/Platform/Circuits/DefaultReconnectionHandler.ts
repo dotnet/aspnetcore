@@ -21,6 +21,7 @@ export class DefaultReconnectionHandler implements ReconnectionHandler {
     try {
       this.clearReconnectionProcess();
     } catch (error) {
+      this._currentReconnectionProcess = null;
       this._logger.log(LogLevel.Error, `Failed to clean up the paused circuit UI: ${error}`);
     }
   };

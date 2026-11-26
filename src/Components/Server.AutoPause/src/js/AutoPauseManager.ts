@@ -96,6 +96,9 @@ export class AutoPauseManager {
     this._hiddenTimerPending = this._pauseInFlight && document.visibilityState === 'hidden';
     this._activeAbortController?.abort();
     this.onActivityChanged(false);
+    if (document.visibilityState === 'hidden') {
+      this.startHiddenTimer();
+    }
   }
 
   private onActivityChanged(busy: boolean): void {

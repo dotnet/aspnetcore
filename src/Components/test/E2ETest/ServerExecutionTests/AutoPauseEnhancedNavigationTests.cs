@@ -110,34 +110,59 @@ public class AutoPauseEnhancedNavigationTests : AutoPauseTestBase<App>
         Browser.Equal("2", () => Browser.Exists(By.Id("persistent-counter-count")).Text);
     }
 
-    [Fact]
-    public void PausedCircuitDisposal_DoesNotReportConnectionUp()
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public void PausedCircuitDisposal_DoesNotReportConnectionUp(bool delegateToDefaultHandler)
     {
         Navigate("/subdir/persistent-state/server-pause?suppress-autostart");
         var htmlElement = Browser.Exists(By.TagName("html"));
         var js = (IJavaScriptExecutor)Browser;
         js.ExecuteScript("""
             window.retirement = { connected: true, paused: false, up: 0, closed: 0 };
+            const delegateToDefaultHandler = arguments[0];
             const handler = {
                 onConnectionDown: (...args) => {
                     retirement.connected = false;
                     retirement.paused = true;
-                    Blazor.defaultReconnectionHandler.onConnectionDown(...args);
+                    if (delegateToDefaultHandler) {
+                        Blazor.defaultReconnectionHandler.onConnectionDown(...args);
+                    } else {
+                        let modal = document.getElementById('components-reconnect-modal');
+                        if (!modal) {
+                            modal = document.createElement('div');
+                            modal.id = 'components-reconnect-modal';
+                            document.body.appendChild(modal);
+                        }
+                        modal.style.display = 'block';
+                    }
                 },
                 onConnectionUp: () => {
                     retirement.connected = true;
                     retirement.up++;
-                    Blazor.defaultReconnectionHandler.onConnectionUp();
+                    if (delegateToDefaultHandler) {
+                        Blazor.defaultReconnectionHandler.onConnectionUp();
+                    } else {
+                        document.getElementById('components-reconnect-modal').style.display = 'none';
+                    }
                 }
             };
             Blazor.start({
                 ssr: { circuitInactivityTimeoutMs: 2000 },
                 circuit: {
                     reconnectionHandler: handler,
-                    circuitHandlers: [{ onCircuitClosed: () => { retirement.closed++; retirement.paused = false; } }]
+                    circuitHandlers: [{
+                        onCircuitClosed: () => {
+                            retirement.closed++;
+                            retirement.paused = false;
+                            if (!delegateToDefaultHandler) {
+                                document.getElementById('components-reconnect-modal').style.display = 'none';
+                            }
+                        }
+                    }]
                 }
             });
-            """);
+            """, delegateToDefaultHandler);
         Browser.NotEqual("", () => Browser.Exists(By.Id("circuit-id")).Text);
         Browser.Exists(By.Id("increment-persistent-counter-count")).Click();
         Browser.Equal("1", () => Browser.Exists(By.Id("persistent-counter-count")).Text);

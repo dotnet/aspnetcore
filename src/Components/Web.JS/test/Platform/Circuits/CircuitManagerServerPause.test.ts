@@ -571,10 +571,10 @@ describe('CircuitManager pause deferral', () => {
       expect(disposed).toHaveBeenCalledTimes(1);
     });
 
-    test('display cleanup errors are logged without preventing transport disposal', async () => {
+    test('display cleanup errors are logged without preventing transport disposal or handler reuse', async () => {
       const { display, onConnectionUp } = configureHandler('default');
       const error = new Error('Display cleanup failed');
-      display.hide.mockImplementation(() => { throw error; });
+      display.hide.mockImplementationOnce(() => { throw error; });
       await circuit.start();
       expect(await circuit.pauseCircuit()).toBe(true);
       jest.mocked(connection.stop).mockClear();
@@ -595,6 +595,15 @@ describe('CircuitManager pause deferral', () => {
       expect(log.mock.calls.filter(([level]) => level === LogLevel.Error))
         .toEqual([[LogLevel.Error, `Failed to clean up the paused circuit UI: ${error}`]]);
       expect(result).toEqual([{ status: 'fulfilled', value: undefined }]);
+      expect(onConnectionUp).not.toHaveBeenCalled();
+
+      const replacement = new CircuitManager(componentManager, '', options, logger, new JSEventRegistry());
+      await replacement.start();
+      expect(await replacement.pauseCircuit()).toBe(true);
+      expect(display.show).toHaveBeenCalledTimes(2);
+      await replacement.dispose();
+
+      expect(display.hide).toHaveBeenCalledTimes(2);
       expect(onConnectionUp).not.toHaveBeenCalled();
     });
   });
