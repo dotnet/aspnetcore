@@ -110,10 +110,10 @@
             </div>
         </div>
 
-        <!-- Scenario 2: Discrete Throttle (Click & Keydown) -->
+        <!-- Scenario 2: Leading-Only Throttle (Click & Keydown) -->
         <div class="card mb-3 shadow-sm">
             <div class="card-header d-flex justify-content-between align-items-center">
-                <strong>2. Discrete Events — Leading-Only Throttle (<code>onclick</code> &amp; <code>onkeydown</code>)</strong>
+                <strong>2. Leading-Only Throttle (<code>onclick</code> &amp; <code>onkeydown</code>)</strong>
                 <div class="d-flex align-items-center gap-2">
                     <label class="small mb-0" for="click-throttle-ms-input">Interval (ms):</label>
                     <input id="click-throttle-ms-input" type="number" class="form-control form-control-sm" style="width: 90px;" @bind="discreteThrottleMs" />
@@ -154,7 +154,7 @@
                             </button>
                         </div>
                         <div class="small text-muted mt-1">
-                            Discrete throttle emits immediately on first click and ignores clicks during cooldown (no trailing click).
+                            Throttle dispatches the first click at once and drops clicks during the interval (no trailing click).
                         </div>
                     </div>
                 </div>
@@ -166,7 +166,7 @@
                         </label>
                         <input id="throttled-keydown-input"
                                class="form-control form-control-sm"
-                               placeholder="Hold down a key (resets on keyup)..."
+                               placeholder="Hold down a key (each new key press gets through)..."
                                @onkeydown="OnThrottledKeyDown"
                                @onkeydown:throttle="discreteThrottleMs" />
                         <div class="small mt-1">
@@ -190,10 +190,10 @@
             </div>
         </div>
 
-        <!-- Scenario 3: Continuous Throttle (MouseMove & Range Slider) -->
+        <!-- Scenario 3: Leading + Trailing Throttle (MouseMove & Range Slider) -->
         <div class="card mb-3 shadow-sm">
             <div class="card-header d-flex justify-content-between align-items-center">
-                <strong>3. Continuous Events — Leading + Trailing Throttle (<code>onmousemove</code> &amp; Range <code>oninput</code>)</strong>
+                <strong>3. Latest-Value Events — Leading + Trailing Throttle (<code>onmousemove</code> &amp; Range <code>oninput</code>)</strong>
                 <div class="d-flex align-items-center gap-2">
                     <label class="small mb-0" for="continuous-throttle-ms-input">Interval (ms):</label>
                     <input id="continuous-throttle-ms-input" type="number" class="form-control form-control-sm" style="width: 90px;" @bind="continuousThrottleMs" />
@@ -320,10 +320,10 @@
             </div>
         </div>
 
-        <!-- Scenario 5: EditForm + Validation + Debounced Input + Immediate Submit Flush -->
+        <!-- Scenario 5: EditForm + Validation + Debounced Input + Blur Flush Before Submit -->
         <div class="card mb-3 shadow-sm">
             <div class="card-header">
-                <strong>5. <code>EditForm</code> Validation + Debounced Input + Immediate Submit/Blur Flush</strong>
+                <strong>5. <code>EditForm</code> Validation + Debounced Input + Blur Flush Before Submit</strong>
             </div>
             <div class="card-body">
                 <EditForm EditContext="editContext" OnValidSubmit="HandleValidFormSubmit" OnInvalidSubmit="HandleInvalidFormSubmit">

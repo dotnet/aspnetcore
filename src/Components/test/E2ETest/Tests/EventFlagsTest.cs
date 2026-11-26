@@ -158,22 +158,7 @@ public class EventFlagsTest : ServerTestBase<ToggleExecutionModeServerFixture<Pr
     }
 
     [Fact]
-    public void OnInput_WithDebounce_FlushesImmediatelyBeforeSubsequentClickEvent()
-    {
-        var input = Browser.Exists(By.Id("debounced-input"));
-        var submitButton = Browser.Exists(By.Id("debounced-submit"));
-
-        ((IJavaScriptExecutor)Browser).ExecuteScript(
-            "const el = arguments[0]; el.value = 'flushed'; el.dispatchEvent(new Event('input', { bubbles: true })); arguments[1].click();",
-            input,
-            submitButton);
-
-        Browser.Equal("flushed", () => Browser.Exists(By.Id("debounced-submitted")).Text);
-        Browser.Equal("1", () => Browser.Exists(By.Id("debounced-count")).Text);
-    }
-
-    [Fact]
-    public void OnClick_WithDiscreteThrottle_FiresLeadingOnlyDuringCooldown()
+    public void OnClick_WithThrottle_DropsClicksDuringInterval()
     {
         var button = Browser.Exists(By.Id("throttled-click-button"));
 
@@ -185,7 +170,7 @@ public class EventFlagsTest : ServerTestBase<ToggleExecutionModeServerFixture<Pr
     }
 
     [Fact]
-    public void OnScroll_WithContinuousThrottle_FiresLeadingAndTrailing()
+    public void OnScroll_WithThrottle_DeliversLatestScrollPosition()
     {
         var scrollArea = Browser.Exists(By.Id("throttled-scroll-area"));
 
@@ -223,7 +208,7 @@ public class EventFlagsTest : ServerTestBase<ToggleExecutionModeServerFixture<Pr
     }
 
     [Fact]
-    public void OnInput_WithDebounce_HoverDoesNotFlush_ButMouseDownOnSuggestionDoes()
+    public void OnInput_WithDebounce_HoverDoesNotDeliverPendingInput_ButClickingSuggestionDoes()
     {
         var input = Browser.Exists(By.Id("typeahead-input"));
         var suggestion = Browser.Exists(By.Id("typeahead-suggestion"));
@@ -232,8 +217,38 @@ public class EventFlagsTest : ServerTestBase<ToggleExecutionModeServerFixture<Pr
         new Actions(Browser).MoveToElement(suggestion).Perform();
         Browser.Equal("[]", () => Browser.Exists(By.Id("typeahead-query-on-hover")).Text);
 
-        new Actions(Browser).ClickAndHold(suggestion).Release().Perform();
-        Browser.Equal("[app]", () => Browser.Exists(By.Id("typeahead-query-on-mousedown")).Text);
+        // Pressing the suggestion blurs the input, which delivers the typed text before the click
+        suggestion.Click();
+        Browser.Equal("[app]", () => Browser.Exists(By.Id("typeahead-query-on-click")).Text);
         Assert.Equal("[]", Browser.Exists(By.Id("typeahead-query-on-hover")).Text);
+    }
+
+    [Fact]
+    public void OnChange_WithThrottle_DeliversLatestSelection()
+    {
+        var select = Browser.Exists(By.Id("throttled-select"));
+
+        // The first change is dispatched at once, and the latest one when the interval ends
+        select.SendKeys(Keys.ArrowDown + Keys.ArrowDown + Keys.ArrowDown);
+
+        Browser.Equal("4", () => Browser.Exists(By.Id("throttled-select-value")).Text);
+        Assert.Equal("4", select.GetDomProperty("value"));
+    }
+
+    [Fact]
+    public void OnInput_WithDebounce_RemovingFocusedInputDropsPendingInput()
+    {
+        var input = Browser.Exists(By.Id("removable-input"));
+        input.SendKeys("abc");
+
+        // Chrome blurs the input while the render removes it, which must not deliver the pending text to the removed handler
+        input.SendKeys(Keys.Escape);
+        Browser.DoesNotExist(By.Id("removable-input"));
+
+        // Showing the input again goes through .NET, so anything dispatched during the removal has been processed by then
+        Browser.Exists(By.Id("show-removable-input")).Click();
+        Browser.Exists(By.Id("removable-input"));
+        Assert.Equal(string.Empty, Browser.Exists(By.Id("removable-value")).Text);
+        Assert.Equal("none", Browser.Exists(By.Id("blazor-error-ui")).GetCssValue("display"));
     }
 }

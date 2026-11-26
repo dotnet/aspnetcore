@@ -76,14 +76,12 @@ else
                @bind:event="oninput"
                @bind:after="OnDebouncedInput"
                __internal_debounce_oninput="@(debounceInterval.ToString(CultureInfo.InvariantCulture))" />
-        <button id="debounced-submit" @onclick="OnDebouncedSubmit">Submit</button>
         <span id="debounced-value">@debouncedText</span>
         <span id="debounced-count">@debouncedInputCount</span>
-        <span id="debounced-submitted">@submittedDebouncedText</span>
     </div>
 
     <div id="throttle-click-scenario">
-        <h3>Scenario 5: onclick:throttle (discrete)</h3>
+        <h3>Scenario 5: onclick:throttle</h3>
         <button id="throttled-click-button"
                 @onclick="OnThrottledClick"
                 __internal_throttle_onclick="@(throttleClickInterval.ToString(CultureInfo.InvariantCulture))">
@@ -93,7 +91,7 @@ else
     </div>
 
     <div id="throttle-scroll-scenario">
-        <h3>Scenario 6: onscroll:throttle (continuous)</h3>
+        <h3>Scenario 6: onscroll:throttle</h3>
         <div id="throttled-scroll-area"
              @onscroll="OnThrottledScroll"
              __internal_throttle_onscroll="@(throttleScrollInterval.ToString(CultureInfo.InvariantCulture))"
@@ -120,20 +118,48 @@ else
     </div>
 
     <div id="typeahead-scenario">
-        <h3>Scenario 8: oninput:debounce with a suggestion that reacts to hover and mousedown</h3>
+        <h3>Scenario 8: oninput:debounce with a suggestion that reacts to hover and click</h3>
         @* The long interval keeps the typed text pending for the whole test, so only flushing can deliver it. *@
         <input id="typeahead-input"
                @bind="typeaheadQuery"
                @bind:event="oninput"
-               __internal_debounce_oninput="@(typeaheadDebounceInterval.ToString(CultureInfo.InvariantCulture))" />
+               __internal_debounce_oninput="@(longDebounceInterval.ToString(CultureInfo.InvariantCulture))" />
         <div id="typeahead-suggestion"
              style="padding: 10px; border: 1px solid gray;"
              @onmouseover="OnSuggestionHover"
-             @onmousedown="OnSuggestionMouseDown">
+             @onclick="OnSuggestionClick">
             Suggestion
         </div>
         <span id="typeahead-query-on-hover">@typeaheadQueryOnHover</span>
-        <span id="typeahead-query-on-mousedown">@typeaheadQueryOnMouseDown</span>
+        <span id="typeahead-query-on-click">@typeaheadQueryOnClick</span>
+    </div>
+
+    <div id="throttle-select-scenario">
+        <h3>Scenario 9: onchange:throttle on a list box</h3>
+        <select id="throttled-select"
+                size="6"
+                @bind="selectedOption"
+                __internal_throttle_onchange="@(throttleSelectInterval.ToString(CultureInfo.InvariantCulture))">
+            @for (var i = 1; i <= 6; i++)
+            {
+                <option value="@i">Option @i</option>
+            }
+        </select>
+        <span id="throttled-select-value">@selectedOption</span>
+    </div>
+
+    <div id="remove-focused-scenario">
+        <h3>Scenario 10: oninput:debounce on an input that Escape removes</h3>
+        @if (showRemovableInput)
+        {
+            <input id="removable-input"
+                   @bind="removableText"
+                   @bind:event="oninput"
+                   __internal_debounce_oninput="@(longDebounceInterval.ToString(CultureInfo.InvariantCulture))"
+                   @onkeydown="OnRemovableKeyDown" />
+        }
+        <button id="show-removable-input" @onclick="() => showRemovableInput = true">Show input</button>
+        <span id="removable-value">@removableText</span>
     </div>
 </div>
 
@@ -148,7 +174,6 @@ else
     private int debounceInterval = 300;
     private string debouncedText = string.Empty;
     private int debouncedInputCount;
-    private string submittedDebouncedText = string.Empty;
 
     private int throttleClickInterval = 400;
     private int throttledClickCount;
@@ -162,10 +187,16 @@ else
     private int comboKeyUpCount;
     private string comboCommittedOnEnter = string.Empty;
 
-    private int typeaheadDebounceInterval = 30000;
+    private int longDebounceInterval = 30000;
     private string typeaheadQuery = string.Empty;
     private string typeaheadQueryOnHover = "(not hovered)";
-    private string typeaheadQueryOnMouseDown = "(not pressed)";
+    private string typeaheadQueryOnClick = "(not clicked)";
+
+    private int throttleSelectInterval = 1000;
+    private string selectedOption = "1";
+
+    private bool showRemovableInput = true;
+    private string removableText = string.Empty;
 
     private string eventLog = string.Empty;
 
@@ -212,11 +243,6 @@ else
         debouncedInputCount++;
     }
 
-    private void OnDebouncedSubmit()
-    {
-        submittedDebouncedText = debouncedText;
-    }
-
     private void OnThrottledClick()
     {
         throttledClickCount++;
@@ -251,8 +277,16 @@ else
         typeaheadQueryOnHover = $"[{typeaheadQuery}]";
     }
 
-    private void OnSuggestionMouseDown()
+    private void OnSuggestionClick()
     {
-        typeaheadQueryOnMouseDown = $"[{typeaheadQuery}]";
+        typeaheadQueryOnClick = $"[{typeaheadQuery}]";
+    }
+
+    private void OnRemovableKeyDown(KeyboardEventArgs e)
+    {
+        if (e.Key == "Escape")
+        {
+            showRemovableInput = false;
+        }
     }
 }

@@ -68,6 +68,14 @@ public class ServerEventCallbackTest : EventCallbackTest
     }
 }
 
+public class ServerEventFlagsTest : EventFlagsTest
+{
+    public ServerEventFlagsTest(BrowserFixture browserFixture, ToggleExecutionModeServerFixture<Program> serverFixture, ITestOutputHelper output)
+        : base(browserFixture, serverFixture.WithServerExecution(), output)
+    {
+    }
+}
+
 public class ServerFormsTest : FormsTest
 {
     public ServerFormsTest(BrowserFixture browserFixture, ToggleExecutionModeServerFixture<Program> serverFixture, ITestOutputHelper output)
