@@ -136,7 +136,8 @@ function isHeadStylesheet(node: Node): node is HTMLLinkElement {
     return false;
   }
 
-  return node.relList.value
+  const relTokens = node.relList.value
     .split(/[ \t\n\f\r]+/)
-    .some(rel => rel.toLowerCase() === 'stylesheet');
+    .map(rel => rel.toLowerCase());
+  return relTokens.includes('stylesheet') && !(node.title && relTokens.includes('alternate'));
 }

@@ -229,11 +229,36 @@ public class HeadModificationTest : ServerTestBase<HeadModificationTest.HeadModi
 
             Browser.Exists(By.Id("change-replacement-rel")).Click();
 
-            Browser.Equal("alternate", () => Browser.Exists(By.Id("pending-swap-stylesheet")).GetDomAttribute("rel"));
+            Browser.Equal("alternate stylesheet", () => Browser.Exists(By.Id("pending-swap-stylesheet")).GetDomAttribute("rel"));
+            Browser.Equal("Optional", () => Browser.Exists(By.Id("pending-swap-stylesheet")).GetDomAttribute("title"));
             Browser.Equal("rgba(255, 0, 0, 1)", () => target.GetCssValue("background-color"));
 
             Browser.Exists(By.Id("remove-replacement")).Click();
             Browser.Equal(0, () => Browser.FindElements(By.Id("pending-swap-stylesheet")).Count);
+        }
+        finally
+        {
+            request?.Release.TrySetResult();
+        }
+    }
+
+    [Fact]
+    public async Task ReplacingWithTitledAlternateStylesheetDoesNotRetainPreviousStylesheet()
+    {
+        Browser.MountTestComponent<HeadStylesheetSwapPendingReplacement>();
+        var target = Browser.Exists(By.Id("swap-target"));
+        Browser.Equal("rgba(0, 0, 255, 1)", () => target.GetCssValue("background-color"));
+
+        StylesheetRequestGate request = null;
+        try
+        {
+            Browser.Exists(By.Id("replace-with-alternate-stylesheet")).Click();
+            var replacement = Browser.Exists(By.CssSelector("link#pending-swap-stylesheet[rel~='alternate'][title='Optional'][href*='head-swap-replacement/']"));
+            request = _serverFixture.GetRequest(GetRequestId(replacement));
+            await request.Requested.Task.WaitAsync(TimeSpan.FromSeconds(15));
+
+            Browser.Equal("rgba(255, 0, 0, 1)", () => target.GetCssValue("background-color"));
+            Browser.Equal(0, () => Browser.FindElements(By.CssSelector("head link[href='head-swap-initial.css']")).Count);
         }
         finally
         {

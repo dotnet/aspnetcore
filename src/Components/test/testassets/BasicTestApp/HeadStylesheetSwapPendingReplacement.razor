@@ -1,7 +1,7 @@
 <HeadContent>
     @if (!removed)
     {
-        <link @key="replacement" id="pending-swap-stylesheet" rel="@(alternateRel ? "alternate" : "stylesheet")" href="@(missingHref ? null : StylesheetHref)" media="@StylesheetMedia" disabled="@replacementDisabled" />
+        <link @key="replacement" id="pending-swap-stylesheet" rel="@(alternateRel ? "alternate stylesheet" : "stylesheet")" title="@(alternateRel ? "Optional" : null)" href="@(missingHref ? null : StylesheetHref)" media="@StylesheetMedia" disabled="@replacementDisabled" />
     }
 </HeadContent>
 
@@ -11,6 +11,7 @@
 <button id="replace-with-responsive-stylesheet" @onclick="ReplaceWithResponsiveStylesheet">Replace with responsive stylesheet</button>
 <button id="disable-replacement" @onclick="() => replacementDisabled = true">Disable replacement stylesheet</button>
 <button id="change-replacement-rel" @onclick="() => alternateRel = true">Change replacement rel</button>
+<button id="replace-with-alternate-stylesheet" @onclick="ReplaceWithAlternateStylesheet">Replace with alternate stylesheet</button>
 <button id="clear-replacement-href" @onclick="() => missingHref = true">Clear replacement href</button>
 <button id="change-replacement-media" @onclick="() => printMedia = true">Change replacement media to print</button>
 <button id="change-replacement-media-query" @onclick="() => updatedResponsiveMedia = true">Change replacement media query</button>
@@ -54,5 +55,11 @@
     {
         replacement = true;
         responsiveMedia = true;
+    }
+
+    private void ReplaceWithAlternateStylesheet()
+    {
+        replacement = true;
+        alternateRel = true;
     }
 }
