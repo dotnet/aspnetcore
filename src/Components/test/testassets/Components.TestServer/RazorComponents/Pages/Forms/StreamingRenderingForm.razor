@@ -3,10 +3,25 @@
 @inject AsyncOperationService AsyncOperation
 @inject NavigationManager Navigation;
 @using Components.TestServer.Services;
+@using System.Collections.Concurrent
 @using Microsoft.AspNetCore.Components.Forms
 @using Microsoft.AspNetCore.Mvc;
+@using Microsoft.Extensions.Configuration
+@using TestContentPackage
+@inject IConfiguration Configuration
 
 <h2>Streaming rendering async form</h2>
+
+@if (Configuration.GetValue<bool>("BrowserConfigurationDisableOnFormPost") && HttpContext.Request.Method == "POST")
+{
+    <ConfigureBrowser Options="@_disableDomOptions" />
+    <p id="browser-options-post-count">@_postCount</p>
+}
+
+@if (Configuration.GetValue<bool>("BrowserConfigurationDisableOnFormPost"))
+{
+    <Counter @rendermode="RenderMode.InteractiveServer" IdSuffix="form" IncrementAmount="1" />
+}
 
 <EditForm Enhance EditContext="_editContext" method="POST" OnValidSubmit="HandleSubmit" FormName="someform">
     <input id="send" type="submit" value="Send" />
@@ -22,10 +37,23 @@ else if (_submitted)
 }
 
 @code {
+    private static readonly BrowserOptions _disableDomOptions = new() { StaticServer = { PreserveDom = false } };
+    private static readonly ConcurrentDictionary<string, int> _postCounts = new();
+    private int _postCount;
     bool _submitted = false;
     bool _submitting = false;
     EditContext _editContext = new EditContext(new object());
     [Parameter] public string? OperationId { get; set; }
+    [CascadingParameter] public HttpContext HttpContext { get; set; } = default!;
+
+    protected override void OnInitialized()
+    {
+        if (Configuration.GetValue<bool>("BrowserConfigurationDisableOnFormPost") &&
+            HttpContext.Request.Method == "POST" && OperationId is { } operationId)
+        {
+            _postCount = _postCounts.AddOrUpdate(operationId, 1, (_, count) => count + 1);
+        }
+    }
 
     public async Task HandleSubmit()
     {

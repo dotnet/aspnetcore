@@ -329,7 +329,7 @@ public class StreamingRenderingTest : ServerTestBase<BasicTestAppServerSiteFixtu
             req.Headers.Add("accept", "text/html; blazor-enhanced-nav=on");
             var response = await httpClient.SendAsync(req);
             var html = await response.Content.ReadAsStringAsync();
-            Assert.Matches(new Regex(@"</html><!--[0-9a-f\-]{36}--><blazor-ssr>"), html);
+            Assert.Matches(new Regex(@"</html>(<!--Blazor-Configuration:[^>]*-->)?<!--[0-9a-f\-]{36}--><blazor-ssr>"), html);
         }
     }
 
