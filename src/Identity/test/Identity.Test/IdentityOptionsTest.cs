@@ -4,6 +4,7 @@
 using System.Security.Claims;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.Cookies;
+using Microsoft.AspNetCore.DataProtection;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
@@ -136,6 +137,72 @@ public class IdentityOptionsTest
 
         passkey.Cookie.Path = "/configured";
         Assert.Equal("/configured", passkey.Cookie.Build(context).Path);
+    }
+
+    [Theory]
+    [InlineData(false, false)]
+    [InlineData(false, true)]
+    [InlineData(true, false)]
+    [InlineData(true, true)]
+    public async Task PasskeyCookieUsesConfiguredDataProtectionProvider(bool configurePasskeyProvider, bool configureBeforeRegistration)
+    {
+        var twoFactorProvider = new EphemeralDataProtectionProvider();
+        var passkeyProvider = new EphemeralDataProtectionProvider();
+        var expectedProvider = configurePasskeyProvider ? passkeyProvider : twoFactorProvider;
+        var services = new ServiceCollection();
+        services.AddLogging();
+        services.AddIdentityCore<PocoUser>().AddSignInManager();
+        services.AddSingleton(Mock.Of<IUserStore<PocoUser>>());
+        var passkeyHandler = new Mock<IPasskeyHandler<PocoUser>>();
+        passkeyHandler.Setup(handler => handler.MakeRequestOptionsAsync(null, It.IsAny<HttpContext>()))
+            .ReturnsAsync(new PasskeyRequestOptionsResult
+            {
+                RequestOptionsJson = "{}",
+                AssertionState = "assertion-state",
+            });
+        services.AddSingleton(passkeyHandler.Object);
+        if (configurePasskeyProvider && configureBeforeRegistration)
+        {
+            services.Configure<CookieAuthenticationOptions>(IdentityConstants.PasskeyScheme,
+                options => options.DataProtectionProvider = passkeyProvider);
+        }
+        services.AddAuthentication().AddTwoFactorUserIdCookie()
+            .Configure(options => options.DataProtectionProvider = twoFactorProvider);
+        if (configurePasskeyProvider && !configureBeforeRegistration)
+        {
+            services.Configure<CookieAuthenticationOptions>(IdentityConstants.PasskeyScheme,
+                options => options.DataProtectionProvider = passkeyProvider);
+        }
+        services.AddSingleton<IDataProtectionProvider>(_ => new EphemeralDataProtectionProvider());
+        using var firstProvider = services.BuildServiceProvider();
+        using var secondProvider = services.BuildServiceProvider();
+        Assert.NotSame(firstProvider.GetRequiredService<IDataProtectionProvider>(),
+            secondProvider.GetRequiredService<IDataProtectionProvider>());
+        using var firstScope = firstProvider.CreateScope();
+        var context = new DefaultHttpContext { RequestServices = firstScope.ServiceProvider };
+        var signIn = firstScope.ServiceProvider.GetRequiredService<SignInManager<PocoUser>>();
+        signIn.Context = context;
+
+        Assert.Equal("{}", await signIn.MakePasskeyRequestOptionsAsync(null));
+        var cookie = context.Response.Headers.SetCookie.ToString().Split(';')[0];
+        Assert.StartsWith(IdentityConstants.PasskeyScheme + "=", cookie);
+
+        using var secondScope = secondProvider.CreateScope();
+        var nextContext = new DefaultHttpContext { RequestServices = secondScope.ServiceProvider };
+        nextContext.Request.Headers.Cookie = cookie;
+        var result = await nextContext.AuthenticateAsync(IdentityConstants.PasskeyScheme);
+        Assert.True(result.Succeeded);
+        Assert.Equal("assertion-state", result.Properties.Items["PasskeyState"]);
+
+        var monitor = secondProvider.GetRequiredService<IOptionsMonitor<CookieAuthenticationOptions>>();
+        var passkey = monitor.Get(IdentityConstants.PasskeyScheme);
+        var twoFactor = monitor.Get(IdentityConstants.TwoFactorUserIdScheme);
+        Assert.Same(expectedProvider, passkey.DataProtectionProvider);
+        var cookieValue = cookie[(cookie.IndexOf('=') + 1)..];
+        var passkeyFormat = new TicketDataFormat(expectedProvider.CreateProtector(
+            "Microsoft.AspNetCore.Authentication.Cookies.CookieAuthenticationMiddleware", IdentityConstants.PasskeyScheme, "v2"));
+        Assert.Equal("assertion-state", passkeyFormat.Unprotect(cookieValue).Properties.Items["PasskeyState"]);
+        Assert.Null(twoFactor.TicketDataFormat.Unprotect(cookieValue));
     }
 
     [Fact]
