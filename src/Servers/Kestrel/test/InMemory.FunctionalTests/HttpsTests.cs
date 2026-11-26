@@ -695,6 +695,30 @@ public class HttpsTests : LoggedTest
     }
 
     [Fact]
+    public async Task Http3_TlsHandshakeCallbackOptions_Http3NotAllowedByFeature_Unchanged()
+    {
+        var callbackOptions = new SslServerAuthenticationOptions
+        {
+            ServerCertificate = _x509Certificate2,
+            ApplicationProtocols = new List<SslApplicationProtocol> { SslApplicationProtocol.Http11 },
+        };
+
+        var tlsOptions = await BindHttp3WithTlsCallbackAsync(context =>
+        {
+            context.Connection.Features.Set<IHttpProtocolsFeature>(
+                new HttpProtocolsFeature(HttpProtocols.Http1));
+
+            return ValueTask.FromResult(callbackOptions);
+        });
+
+        var result = await tlsOptions.OnConnection(new TlsConnectionCallbackContext(), CancellationToken.None);
+
+        Assert.Same(callbackOptions, result);
+        Assert.Collection(result.ApplicationProtocols,
+            p => Assert.Equal(SslApplicationProtocol.Http11, p));
+    }
+
+    [Fact]
     public async Task Http3_TlsHandshakeCallbackOptions_NoApplicationProtocols_Unchanged()
     {
         var callbackOptions = new SslServerAuthenticationOptions { ServerCertificate = _x509Certificate2 };

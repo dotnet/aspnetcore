@@ -170,7 +170,10 @@ internal sealed class HttpsConfigurationService : IHttpsConfigurationService
                         Connection = new ConnectionContextAdapter(context.Connection),
                     }).ConfigureAwait(false);
 
-                    return EnsureHttp3Alpn(sslOptions);
+                    var allowedProtocols = context.Connection.Features.Get<IHttpProtocolsFeature>()?.HttpProtocols
+                        ?? listenOptions.Protocols;
+
+                    return EnsureHttp3Alpn(sslOptions, allowedProtocols);
                 },
                 OnConnectionState = listenOptions.HttpsCallbackOptions.OnConnectionState,
             });
@@ -181,8 +184,13 @@ internal sealed class HttpsConfigurationService : IHttpsConfigurationService
     /// Options returned by a TLS callback may carry a TCP ALPN list (for example, the SNI options contain h2/http1.1).
     /// QUIC only negotiates h3, so such a list would make every HTTP/3 handshake fail with no_application_protocol.
     /// </summary>
-    private static SslServerAuthenticationOptions EnsureHttp3Alpn(SslServerAuthenticationOptions sslOptions)
+    private static SslServerAuthenticationOptions EnsureHttp3Alpn(SslServerAuthenticationOptions sslOptions, HttpProtocols allowedProtocols)
     {
+        if ((allowedProtocols & HttpProtocols.Http3) == 0)
+        {
+            return sslOptions;
+        }
+
         if (sslOptions.ApplicationProtocols is null || sslOptions.ApplicationProtocols.Contains(SslApplicationProtocol.Http3))
         {
             return sslOptions;

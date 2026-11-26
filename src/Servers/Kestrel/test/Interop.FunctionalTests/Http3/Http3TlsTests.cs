@@ -599,6 +599,156 @@ public class Http3TlsTests : LoggedTest
         await host.StopAsync().DefaultTimeout();
     }
 
+    [Fact]
+    public async Task PopulateMultiplexedTransportFeatures_SniProtocols_OnlyEnablesHttp3WhenAllowed()
+    {
+        var features = new FeatureCollection();
+        var listenOptions = new ListenOptions(new IPEndPoint(IPAddress.Loopback, 0))
+        {
+            Protocols = HttpProtocols.Http1AndHttp2AndHttp3,
+            HttpsCallbackOptions = new TlsHandshakeCallbackOptions
+            {
+                OnConnection = context =>
+                {
+                    var host = context.ClientHelloInfo.ServerName;
+
+                    if (string.Equals(host, "h3.example.com", StringComparison.OrdinalIgnoreCase))
+                    {
+                        context.Connection.Features.Set<IHttpProtocolsFeature>(
+                            new HttpProtocolsFeature(HttpProtocols.Http1AndHttp2AndHttp3));
+
+                        return ValueTask.FromResult(new SslServerAuthenticationOptions
+                        {
+                            ApplicationProtocols = [SslApplicationProtocol.Http2]
+                        });
+                    }
+
+                    if (string.Equals(host, "legacy.example.org", StringComparison.OrdinalIgnoreCase))
+                    {
+                        context.Connection.Features.Set<IHttpProtocolsFeature>(
+                            new HttpProtocolsFeature(HttpProtocols.Http1));
+
+                        return ValueTask.FromResult(new SslServerAuthenticationOptions
+                        {
+                            ApplicationProtocols = [SslApplicationProtocol.Http11]
+                        });
+                    }
+
+                    throw new InvalidOperationException($"Unexpected SNI host: {host}");
+                }
+            }
+        };
+
+        HttpsConfigurationService.PopulateMultiplexedTransportFeaturesWorker(
+            features,
+            listenOptions,
+            NullLogger<HttpsConnectionMiddleware>.Instance);
+
+        var tlsCallback = features.Get<TlsConnectionCallbackOptions>();
+        Assert.NotNull(tlsCallback);
+
+        var h3Options = await tlsCallback.OnConnection(new TlsHandshakeCallbackContext
+        {
+            ClientHelloInfo = new SslClientHelloInfo { ServerName = "h3.example.com" },
+            Connection = new DefaultConnectionContext(),
+            CancellationToken = CancellationToken.None
+        });
+
+        Assert.NotNull(h3Options.ApplicationProtocols);
+        Assert.Contains(SslApplicationProtocol.Http3, h3Options.ApplicationProtocols);
+
+        var legacyConnection = new DefaultConnectionContext();
+        var legacyOptions = await tlsCallback.OnConnection(new TlsHandshakeCallbackContext
+        {
+            ClientHelloInfo = new SslClientHelloInfo { ServerName = "legacy.example.org" },
+            Connection = legacyConnection,
+            CancellationToken = CancellationToken.None
+        });
+
+        Assert.NotNull(legacyOptions.ApplicationProtocols);
+        Assert.DoesNotContain(SslApplicationProtocol.Http3, legacyOptions.ApplicationProtocols);
+        Assert.Equal([SslApplicationProtocol.Http11], legacyOptions.ApplicationProtocols);
+    }
+
+    [ConditionalFact]
+    [MsQuicSupported]
+    public async Task SniConfiguration_TwoHosts_OnlyAllowedHttp3HostNegotiatesHttp3()
+    {
+        var certPath = TestResources.GetCertPath("aspnetdevcert.pfx");
+
+        var config = new ConfigurationBuilder().AddInMemoryCollection(new[]
+        {
+            new KeyValuePair<string, string>("Endpoints:end1:Url", "https://127.0.0.1:0"),
+            new KeyValuePair<string, string>("Endpoints:end1:Protocols", "Http1AndHttp2AndHttp3"),
+            new KeyValuePair<string, string>("Endpoints:end1:Certificate:Path", certPath),
+            new KeyValuePair<string, string>("Endpoints:end1:Certificate:Password", "testPassword"),
+            new KeyValuePair<string, string>("Endpoints:end1:Sni:h3host:Protocols", "Http3"),
+            new KeyValuePair<string, string>("Endpoints:end1:Sni:h3host:Certificate:Path", certPath),
+            new KeyValuePair<string, string>("Endpoints:end1:Sni:h3host:Certificate:Password", "testPassword"),
+            new KeyValuePair<string, string>("Endpoints:end1:Sni:http1host:Protocols", "Http1"),
+            new KeyValuePair<string, string>("Endpoints:end1:Sni:http1host:Certificate:Path", certPath),
+            new KeyValuePair<string, string>("Endpoints:end1:Sni:http1host:Certificate:Password", "testPassword"),
+        }).Build();
+
+        var builder = CreateHostBuilder(async context =>
+        {
+            await context.Response.WriteAsync($"Hello from {context.Request.Host.Host}");
+        }, configureKestrel: kestrelOptions =>
+        {
+            kestrelOptions.Configure(config);
+        });
+
+        using var host = builder.Build();
+        await host.StartAsync().DefaultTimeout();
+
+        var port = host.GetPort();
+
+        using (var h3Client = CreateHttp3Client("h3host"))
+        {
+            var request = new HttpRequestMessage(HttpMethod.Get, $"https://127.0.0.1:{port}/")
+            {
+                Version = HttpVersion.Version30,
+                VersionPolicy = HttpVersionPolicy.RequestVersionExact,
+                Headers = { Host = "h3host" },
+            };
+
+            var response = await h3Client.SendAsync(request, CancellationToken.None).DefaultTimeout();
+            response.EnsureSuccessStatusCode();
+            Assert.Equal(HttpVersion.Version30, response.Version);
+            Assert.Equal("Hello from h3host", await response.Content.ReadAsStringAsync());
+        }
+
+        using (var http1Client = CreateHttp3Client("http1host"))
+        {
+            var request = new HttpRequestMessage(HttpMethod.Get, $"https://127.0.0.1:{port}/")
+            {
+                Version = HttpVersion.Version30,
+                VersionPolicy = HttpVersionPolicy.RequestVersionExact,
+                Headers = { Host = "http1host" },
+            };
+
+            await Assert.ThrowsAnyAsync<HttpRequestException>(async () =>
+            {
+                await http1Client.SendAsync(request, CancellationToken.None).DefaultTimeout();
+            });
+        }
+
+        await host.StopAsync().DefaultTimeout();
+
+        static HttpMessageInvoker CreateHttp3Client(string targetHost)
+        {
+            var handler = new SocketsHttpHandler
+            {
+                SslOptions = new SslClientAuthenticationOptions
+                {
+                    RemoteCertificateValidationCallback = (_, _, _, _) => true,
+                    TargetHost = targetHost,
+                },
+            };
+            return new HttpMessageInvoker(handler);
+        }
+    }
+
     ///<remarks>
     /// This is something of a hack - we should actually be calling
     /// <see cref="Microsoft.AspNetCore.Server.Kestrel.KestrelConfigurationLoader.TryGetCertificatePath"/>.
