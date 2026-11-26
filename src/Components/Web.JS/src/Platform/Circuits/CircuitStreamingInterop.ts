@@ -15,8 +15,12 @@ export function sendJSDataStream(connection: HubConnection, data: ArrayBufferVie
   // otherwise we'll deadlock (.NET can't begin reading until this completes, but it won't complete
   // because nobody's reading the pipe)
   setTimeout(async () => {
+    // Acknowledgements must stay frequent enough for navigation and other hub events to interleave.
+    // The previous sender estimated its next window from elapsed acknowledgement time against this bound.
+    const maxMillisecondsBetweenAcks = 500;
     const maxChunksInFlight = 100;
     let chunksInFlight = 5;
+    let lastAcknowledgementTime = Date.now();
     const maxBackoffMilliseconds = jsInteropCallTimeoutMilliseconds > 0
       ? Math.max(1, Math.min(1000, Math.floor(jsInteropCallTimeoutMilliseconds / 4)))
       : 1000;
@@ -86,7 +90,16 @@ export function sendJSDataStream(connection: HubConnection, data: ArrayBufferVie
           continue;
         }
 
-        chunksInFlight = Math.min(maxChunksInFlight, chunksInFlight * 2);
+        // Retain the previous sender's estimate: one chunk per acknowledgement interval, targeting
+        // an acknowledgement about every 500ms. A slow interval therefore shrinks the next window
+        // instead of letting accepted chunks grow it toward the maximum.
+        const acknowledgementTime = Date.now();
+        const elapsedMilliseconds = Math.max(1, acknowledgementTime - lastAcknowledgementTime);
+        lastAcknowledgementTime = acknowledgementTime;
+        chunksInFlight = Math.min(
+          maxChunksInFlight,
+          Math.max(1, Math.round(maxMillisecondsBetweenAcks / elapsedMilliseconds)),
+        );
         backoffMilliseconds = initialBackoffMilliseconds;
       }
     } catch (error) {
