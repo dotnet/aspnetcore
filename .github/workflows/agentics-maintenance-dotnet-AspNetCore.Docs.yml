@@ -334,7 +334,7 @@ jobs:
 
   validate_workflows:
     if: ${{ (github.event_name == 'workflow_dispatch' || github.event_name == 'workflow_call') && inputs.operation == 'validate' && (!(github.event.repository.fork)) }}
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-26.04
     permissions:
       contents: read
       issues: write

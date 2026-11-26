@@ -107,9 +107,12 @@ foreach ($expectedInstallFragment in @(
     '--userconfig "$RUNNER_TEMP/evaluation.npmrc"',
     '--registry https://packagefeedproxy.microsoft.io/npm/',
     'node_modules/.bin/vally" --version',
-    'node_modules/.bin/copilot" --version',
-    'cd "$RUNNER_TEMP/evaluation-tools/node_modules/@github/copilot-sdk/dist"',
-    "import.meta.resolve('@github/copilot-linux-x64/sdk')",
+    'export COPILOT_CLI_PATH="$RUNNER_TEMP/evaluation-tools/node_modules/@github/copilot-linux-x64/copilot"',
+    'export COPILOT_SDK_DEFAULT_CONNECTION=stdio',
+    '"$COPILOT_CLI_PATH" --no-auto-update --version',
+    'const { version } = await client.getStatus();',
+    'const { tools } = await client.rpc.tools.list({});',
+    '"$COPILOT_CLI_PATH" "$COPILOT_SDK_DEFAULT_CONNECTION" >> "$GITHUB_ENV"',
     'SKILL_EVAL_VALLY: ${{ runner.temp }}/evaluation-tools/node_modules/.bin/vally'
 )) {
     $fragmentCount = ([regex]::Matches(
@@ -146,11 +149,11 @@ $evaluationToolsRoot = Join-Path $PSScriptRoot 'evaluation-tools'
 $evaluationToolsManifest = Get-Content (
     Join-Path $evaluationToolsRoot 'package.json'
 ) -Raw | ConvertFrom-Json
-if ($evaluationToolsManifest.dependencies.'@github/copilot' -ne '1.0.80') {
-    throw 'The evaluation tool manifest does not pin @github/copilot 1.0.80.'
+if ($evaluationToolsManifest.dependencies.'@github/copilot' -ne '1.0.103') {
+    throw 'The evaluation tool manifest does not pin @github/copilot 1.0.103.'
 }
-if ($evaluationToolsManifest.overrides.'@github/copilot' -ne '1.0.80') {
-    throw 'The evaluation tool manifest does not constrain transitive Copilot packages to 1.0.80.'
+if ($evaluationToolsManifest.overrides.'@github/copilot' -ne '1.0.103') {
+    throw 'The evaluation tool manifest does not constrain transitive Copilot packages to 1.0.103.'
 }
 if ($evaluationToolsManifest.dependencies.'@microsoft/vally-cli' -ne '0.19.0') {
     throw 'The evaluation tool manifest does not pin @microsoft/vally-cli 0.19.0.'
@@ -160,7 +163,7 @@ $evaluationToolsLock = Get-Content (
     Join-Path $evaluationToolsRoot 'package-lock.json'
 ) -Raw | ConvertFrom-Json -AsHashtable
 $lockedRoot = $evaluationToolsLock.packages['']
-if ($lockedRoot.dependencies['@github/copilot'] -ne '1.0.80' -or
+if ($lockedRoot.dependencies['@github/copilot'] -ne '1.0.103' -or
     $lockedRoot.dependencies['@microsoft/vally-cli'] -ne '0.19.0') {
     throw 'The evaluation tool lockfile root does not match the pinned manifest.'
 }

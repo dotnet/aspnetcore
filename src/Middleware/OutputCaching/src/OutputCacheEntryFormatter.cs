@@ -264,7 +264,7 @@ internal static class OutputCacheEntryFormatter
         //     Values count: 7-bit encoded int
         if (headersCount > 0)
         {
-            var headerArr = ArrayPool<(string Name, StringValues Values)>.Shared.Rent(headersCount);
+            var headerArr = new (string Name, StringValues Values)[headersCount];
 
             for (var i = 0; i < headersCount; i++)
             {
@@ -296,7 +296,7 @@ internal static class OutputCacheEntryFormatter
                 }
                 headerArr[i] = (key, value);
             }
-            result.SetHeaders(new ReadOnlyMemory<(string Name, StringValues Values)>(headerArr, 0, headersCount));
+            result.SetHeaders(headerArr);
         }
 
         if (revision == SerializationRevision.V1_Original)
