@@ -881,7 +881,7 @@ internal partial class CircuitHost : IAsyncDisposable
                     var parameterUpdateTask = store is null || store.IsEmpty || !previousStateTask.IsCompleted
                         ? WaitForRootComponentParametersAsync(_rootComponentParameterTask)
                         : postRemovalTask;
-                    _rootComponentParameterTask = store is null || store.IsEmpty ? parameterUpdateTask : postRemovalTask;
+                    _rootComponentParameterTask = parameterUpdateTask;
                     var operationsTask = PerformRootComponentOperations(
                         operations,
                         shouldWaitForQuiescence,
@@ -967,7 +967,10 @@ internal partial class CircuitHost : IAsyncDisposable
         if (store is not null)
         {
             var manager = _scope.ServiceProvider.GetRequiredService<ComponentStatePersistenceManager>();
-            await manager.RestoreStateAsync(store, RestoreContext.ValueUpdate);
+            // Queued restores must not block parameters that can end initial rendering.
+            // Once restoration starts, later parameters must wait until it finishes.
+            _rootComponentParameterTask = manager.RestoreStateAsync(store, RestoreContext.ValueUpdate);
+            await _rootComponentParameterTask;
         }
     }
 
@@ -1116,7 +1119,10 @@ internal partial class CircuitHost : IAsyncDisposable
     }
 
     private void LogRootComponentInitializationFailure(Exception exception)
-        => Log.RootComponentInitializationFailed(_logger, exception);
+    {
+        _rootComponentUpdateFailed = true;
+        Log.RootComponentInitializationFailed(_logger, exception);
+    }
 
     internal void AttachPersistedState(ResumedPersistedCircuitState persistedCircuitState)
     {

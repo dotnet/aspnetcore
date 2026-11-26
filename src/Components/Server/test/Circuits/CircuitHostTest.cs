@@ -1485,7 +1485,8 @@ public class CircuitHostTest
     [InlineData(false, false)]
     [InlineData(true, false)]
     [InlineData(true, true)]
-    public async Task UpdateRootComponents_KeyedParametersCancelInitialWork(bool hasInitialState, bool hasUpdateState)
+    [InlineData(true, true, true)]
+    public async Task UpdateRootComponents_KeyedParametersCancelInitialWork(bool hasInitialState, bool hasUpdateState, bool hasInterveningState = false)
     {
         var state = new ParameterCancellationState();
         await using var services = new ServiceCollection()
@@ -1507,6 +1508,7 @@ public class CircuitHostTest
         var initial = AddComponentAsync<ParameterCancellationComponent>(host, 1,
             new() { [nameof(ParameterCancellationComponent.Id)] = 1 }, componentKey: "retained", store: initialStore);
         Task update = Task.CompletedTask;
+        Task intervening = Task.CompletedTask;
         try
         {
             await state.Started.Task.WaitAsync(TimeSpan.FromSeconds(10));
@@ -1518,6 +1520,12 @@ public class CircuitHostTest
             using var subscription = host.Services.GetRequiredService<ComponentStatePersistenceManager>().State.RegisterOnRestoring(
                 () => restoredIds.Add(((ParameterCancellationComponent)component).Id),
                 new RestoreOptions { AllowUpdates = true });
+            if (hasInterveningState)
+            {
+                var interveningStore = CreateStore();
+                interveningStore.ExistingState.Add("intervening", JsonSerializer.SerializeToUtf8Bytes("B"));
+                intervening = host.UpdateRootComponents(new() { Operations = [] }, interveningStore, false, CancellationToken.None);
+            }
             var parameters = new Dictionary<string, object> { [nameof(ParameterCancellationComponent.Id)] = 2 };
             var updateStore = CreateStore();
             if (hasUpdateState)
@@ -1540,7 +1548,7 @@ public class CircuitHostTest
 
             await state.Cancelled.Task.WaitAsync(TimeSpan.FromSeconds(10));
             await state.UpdatedRender.Task.WaitAsync(TimeSpan.FromSeconds(10));
-            await Task.WhenAll(initial, update).WaitAsync(TimeSpan.FromSeconds(10));
+            await Task.WhenAll(initial, intervening, update).WaitAsync(TimeSpan.FromSeconds(10));
             await renderer.Dispatcher.InvokeAsync(() =>
             {
                 Assert.Same(component, renderer.GetTestComponentState(0).Component);
@@ -1554,7 +1562,7 @@ public class CircuitHostTest
         finally
         {
             await host.DisposeAsync();
-            await Task.WhenAll(initial, update).WaitAsync(TimeSpan.FromSeconds(10));
+            await Task.WhenAll(initial, intervening, update).WaitAsync(TimeSpan.FromSeconds(10));
         }
     }
 
@@ -2169,6 +2177,58 @@ public class CircuitHostTest
         Assert.Single(sink.Writes, entry => entry.EventId.Name == "UpdateRootComponentsSucceeded");
         proxy.Verify(c => c.SendCoreAsync("JS.Error", It.IsAny<object[]>(), It.IsAny<CancellationToken>()), Times.Once);
         proxy.Verify(c => c.SendCoreAsync("JS.EndUpdateRootComponents", It.IsAny<object[]>(), It.IsAny<CancellationToken>()), Times.Once);
+    }
+
+    [Fact]
+    public async Task UpdateRootComponents_InitialActivationFailurePreventsPauseBeforeQuiescence()
+    {
+        var renderer = GetRemoteRenderer();
+        var sink = new TestSink();
+        var host = TestCircuitHost.Create(remoteRenderer: renderer,
+            logger: new TestLoggerFactory(sink, enabled: true).CreateLogger<CircuitHost>());
+        var release = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+        var entered = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+        var errors = new List<object>();
+        var failureReported = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+        host.UnhandledException += (_, args) =>
+        {
+            errors.Add(args.ExceptionObject);
+            failureReported.TrySetResult();
+        };
+        var initial = host.UpdateRootComponents(new()
+        {
+            Operations =
+            [
+                CreateGatedAddOperation(1, release.Task, entered, new(), disposal: release),
+                CreateAddOperation<ThrowOnActivationComponent>(2, new()),
+            ],
+        }, CreateStore(), false, CancellationToken.None);
+        try
+        {
+            await entered.Task.WaitAsync(TimeSpan.FromSeconds(10));
+            await renderer.Dispatcher.InvokeAsync(async () =>
+            {
+                Assert.False(initial.IsCompleted);
+                await Assert.ThrowsAsync<InvalidOperationException>(() => host.PrepareForPauseAsync());
+            });
+        }
+        finally
+        {
+            await host.DisposeAsync();
+            release.TrySetResult();
+            await initial.WaitAsync(TimeSpan.FromSeconds(10));
+        }
+
+        await failureReported.Task.WaitAsync(TimeSpan.FromSeconds(10));
+        await renderer.Dispatcher.InvokeAsync(() => { });
+        Assert.Single(errors);
+        Assert.Single(sink.Writes, entry => entry.EventId.Name == "RootComponentInitializationFailed");
+        Assert.Single(sink.Writes, entry => entry.EventId.Name == "UpdateRootComponentsFailed");
+    }
+
+    private sealed class ThrowOnActivationComponent : ComponentBase
+    {
+        public ThrowOnActivationComponent() => throw new InvalidOperationException("Activation failed.");
     }
 
     [Fact]
