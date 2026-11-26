@@ -18,12 +18,17 @@
     <SkipHelixQueues>
       $(HelixQueueAlmaLinux);
       $(HelixQueueAlpine);
-      $(HelixQueueAzureLinux);
+      $(HelixQueueAzureLinux4);
+      $(HelixQueueAzureLinux3);
       $(HelixQueueDebian);
       $(HelixQueueFedora);
-      Ubuntu.2204.Amd64.Open;
+      Ubuntu.2604.Amd64.Open;
     </SkipHelixQueues>
     <SkipHelixArm>true</SkipHelixArm>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(_UseHelixOpenQueues)' != 'true'">
+    <SkipHelixQueues>$(SkipHelixQueues.Replace('.Open', '').Replace('.open', ''))</SkipHelixQueues>
   </PropertyGroup>
 
   <ItemGroup Condition="'$(TestDependsOnPlaywright)' == 'true' AND '$(IsWindowsHelixQueue)' == 'true'">
