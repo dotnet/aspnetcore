@@ -140,11 +140,16 @@ export function initialize(target) {
                 return;
             }
             let controller = new AbortController();
-            const collected = new Promise(resolve => collectedSignals.set(id, resolve));
-            pageFinalizer.register(controller.signal, id);
             const pending = abort
                 ? target.invokeMethodAsync("Receive", controller.signal, id, "wait")
                 : target.invokeMethodAsync("Inspect", controller.signal);
+            // The interop's own cleanup callback, as callbacks of different registries are not ordered.
+            const collected = window.finalizationRegistryObserver?.cleanupOf(controller.signal);
+            if (!collected) {
+                document.getElementById(`${id}-js`).textContent = "no interop registration observed";
+                await target.invokeMethodAsync("ReleaseHeldInboundActivity");
+                return;
+            }
             if (abort) {
                 controller.abort();
             }
@@ -153,8 +158,6 @@ export function initialize(target) {
             document.getElementById(`${id}-js`).textContent = "pending";
             await collected;
             document.getElementById(`${id}-gc`).textContent = "signal collected";
-            // Registries are not ordered, so give the interop's own cleanup callback time to run before the release.
-            await new Promise(resolve => setTimeout(resolve, 200));
             await target.invokeMethodAsync("ReleaseHeldInboundActivity");
             try {
                 document.getElementById(`${id}-js`).textContent = String(await pending);
