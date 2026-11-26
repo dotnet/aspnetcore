@@ -1,1 +1,2 @@
 #nullable enable
+Microsoft.AspNetCore.Components.RenderTree.Renderer.ValidatePendingSections(System.Func<Microsoft.AspNetCore.Components.Rendering.ComponentState!, bool>! shouldValidate) -> void

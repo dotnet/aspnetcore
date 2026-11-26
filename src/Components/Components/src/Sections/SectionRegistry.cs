@@ -107,7 +107,7 @@ internal sealed partial class SectionRegistry(
     internal void ScheduleValidation(SectionOutlet subscriber)
         => (_pendingValidations ??= new()).Add(subscriber);
 
-    internal SectionOutlet? TakePendingValidation()
+    internal SectionOutlet? TakePendingValidation(Func<SectionOutlet, bool>? shouldValidate = null)
     {
         if (_pendingValidations is null)
         {
@@ -116,8 +116,11 @@ internal sealed partial class SectionRegistry(
 
         foreach (var subscriber in _pendingValidations)
         {
-            _pendingValidations.Remove(subscriber);
-            return subscriber;
+            if (shouldValidate is null || shouldValidate(subscriber))
+            {
+                _pendingValidations.Remove(subscriber);
+                return subscriber;
+            }
         }
 
         return null;

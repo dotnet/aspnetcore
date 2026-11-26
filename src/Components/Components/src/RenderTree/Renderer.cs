@@ -342,7 +342,16 @@ public abstract partial class Renderer : IDisposable, IAsyncDisposable
             _rootComponentsLatestParameters[componentId] = initialParameters.Clone();
         }
 
-        componentState.SetDirectParameters(initialParameters);
+        try
+        {
+            componentState.SetDirectParameters(initialParameters);
+        }
+        catch
+        {
+            // An initial render can redirect before entering the quiescence loop.
+            _sectionRegistry?.InvalidatePendingValidations();
+            throw;
+        }
 
         await WaitForQuiescence();
         Debug.Assert(_pendingTasks == null);
@@ -416,23 +425,28 @@ public abstract partial class Renderer : IDisposable, IAsyncDisposable
 
         async Task ProcessAsynchronousWork()
         {
-            // Child components SetParametersAsync are stored in the queue of pending tasks,
-            // which might trigger further renders.
-            while (_pendingTasks?.Count > 0)
+            do
             {
-                // Create a Task that represents the remaining ongoing work for the rendering process
-                var pendingWork = Task.WhenAll(_pendingTasks);
+                // Child components SetParametersAsync are stored in the queue of pending tasks,
+                // which might trigger further renders.
+                while (_pendingTasks?.Count > 0)
+                {
+                    // Create a Task that represents the remaining ongoing work for the rendering process
+                    var pendingWork = Task.WhenAll(_pendingTasks);
 
-                // Clear all pending work.
-                _pendingTasks.Clear();
+                    // Clear all pending work.
+                    _pendingTasks.Clear();
 
-                // new work might be added before we check again as a result of waiting for all
-                // the child components to finish executing SetParametersAsync
-                await pendingWork;
+                    // new work might be added before we check again as a result of waiting for all
+                    // the child components to finish executing SetParametersAsync
+                    await pendingWork;
+                }
+
+                // Async initialization can replace a temporary provider after the first synchronous pass.
+                // Validation can also start asynchronous error-boundary fallback rendering.
+                ValidatePendingSections();
             }
-
-            // Async initialization can replace a temporary provider after the first synchronous pass.
-            ValidatePendingSections();
+            while (_pendingTasks?.Count > 0);
         }
     }
 
@@ -1060,11 +1074,31 @@ public abstract partial class Renderer : IDisposable, IAsyncDisposable
         batch.Add(GetErrorHandledTask(task, state));
     }
 
-    private void ValidatePendingSections()
+    /// <summary>
+    /// Validates pending section content for components whose output is ready to be sent.
+    /// </summary>
+    /// <param name="shouldValidate">Selects the section outlets whose rendering work has settled.</param>
+    protected void ValidatePendingSections(Func<ComponentState, bool> shouldValidate)
+    {
+        Dispatcher.AssertAccess();
+        try
+        {
+            ValidatePendingSectionsCore(outlet => shouldValidate(_componentStateByComponent[outlet]));
+        }
+        catch
+        {
+            _sectionRegistry?.InvalidatePendingValidations();
+            throw;
+        }
+    }
+
+    private void ValidatePendingSections() => ValidatePendingSectionsCore(null);
+
+    private void ValidatePendingSectionsCore(Func<SectionOutlet, bool>? shouldValidate)
     {
         while (true)
         {
-            var sectionOutlet = _sectionRegistry?.TakePendingValidation();
+            var sectionOutlet = _sectionRegistry?.TakePendingValidation(shouldValidate);
             if (sectionOutlet is null)
             {
                 break;
