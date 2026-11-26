@@ -651,8 +651,9 @@ internal sealed class OpenApiDocumentService(
         return parameter.Source == BindingSource.Path || parameter.IsRequired || hasRequiredAttribute;
     }
 
-    private static bool IsRequiredFormProperty(ApiParameterDescription description)
+    private static bool IsRequiredFormProperty(ApiParameterDescription description, out string name)
     {
+        name = description.Name;
         var metadata = description.ModelMetadata;
         var parameter = description.ParameterDescriptor;
         // ApiExplorer flattens nested properties, but their binding and validation requirements
@@ -670,6 +671,9 @@ internal sealed class OpenApiDocumentService(
         // constructor parameters. In particular, inferred [Required] respects parameter defaults.
         metadata = containerMetadata?.BoundConstructor?.BoundConstructorParameters?.FirstOrDefault(
             candidate => candidate.ParameterName == metadata.PropertyName && candidate.ModelType == metadata.ModelType) ?? metadata;
+
+        name = ModelNames.CreatePropertyModelName(parameter.BindingInfo?.BinderModelName,
+            string.IsNullOrEmpty(metadata.BinderModelName) ? metadata.Name : metadata.BinderModelName);
 
         // Only promote requirements for fields MVC can bind. Validation of an unbindable
         // property's initialized value does not imply that a client must supply that field.
@@ -690,6 +694,8 @@ internal sealed class OpenApiDocumentService(
         // value type already has a valid default; [BindRequired] still requires binding it.
         var bindingRequired = metadata.IsBindingRequired;
 
+        // Project [Required] as a schema convention: metadata cannot tell whether an initializer
+        // supplies a valid value when the field is omitted.
         // Validation filters can depend on the bound model and its parent. Without those values,
         // a validation requirement is conditional, even if RequiredAttribute is in the metadata.
         return bindingRequired || (containerMetadata?.ValidateChildren != false &&
@@ -902,12 +908,12 @@ internal sealed class OpenApiDocumentService(
                             ApplyDescriptionToSchema(propSchema, parameterDescription);
                         }
 
-                        if (IsRequiredFormProperty(description))
+                        if (IsRequiredFormProperty(description, out var propertyName))
                         {
                             propertySchema.Required ??= new HashSet<string>();
-                            propertySchema.Required.Add(description.Name);
+                            propertySchema.Required.Add(propertyName);
                         }
-                        propertySchema.Properties[description.Name] = propSchema;
+                        propertySchema.Properties[propertyName] = propSchema;
                     }
                     schema.AllOf ??= [];
                     schema.AllOf.Add(propertySchema);
@@ -925,12 +931,12 @@ internal sealed class OpenApiDocumentService(
                         }
 
                         schema.Properties ??= new Dictionary<string, IOpenApiSchema>();
-                        if (IsRequiredFormProperty(description))
+                        if (IsRequiredFormProperty(description, out var propertyName))
                         {
                             schema.Required ??= new HashSet<string>();
-                            schema.Required.Add(description.Name);
+                            schema.Required.Add(propertyName);
                         }
-                        schema.Properties[description.Name] = propSchema;
+                        schema.Properties[propertyName] = propSchema;
                     }
                 }
             }

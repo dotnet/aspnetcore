@@ -1129,6 +1129,68 @@ public partial class OpenApiDocumentServiceTests : OpenApiDocumentServiceTestBas
     }
 #nullable restore
 
+    [Theory]
+    [InlineData(nameof(ActionWithAliasedRecord), "File,display_name", "display_name")]
+    [InlineData(nameof(ActionWithOptionalAliasedRecord), "File,display_name", "")]
+    [InlineData(nameof(ActionWithPrefixedAliasedRecord), "form.File,form.display_name", "form.display_name")]
+    [InlineData(nameof(ActionWithDottedAliasedRecord), "File,display.name", "display.name")]
+    public async Task GetOpenApiRequestBody_UsesConstructorFormAlias_MvcAction(string actionName, string properties, string required)
+    {
+        foreach (var withAdditionalParameter in new[] { false, true })
+        {
+            var action = CreateActionDescriptor(actionName);
+            if (!withAdditionalParameter)
+            {
+                action.Parameters = action.Parameters.Take(1).ToArray();
+            }
+            await VerifyOpenApiDocument(action, document =>
+            {
+                var operation = Assert.Single(document.Paths.Values).Operations[HttpMethod.Post];
+                foreach (var contentType in new[] { "application/x-www-form-urlencoded", "multipart/form-data" })
+                {
+                    var schema = operation.RequestBody.Content[contentType].Schema;
+                    var modelSchema = withAdditionalParameter ? Assert.Single(schema.AllOf, item => item.Properties.ContainsKey(properties.Split(',')[0])) : schema;
+                    Assert.Equal(properties.Split(','), modelSchema.Properties.Keys.Order(StringComparer.Ordinal));
+                    Assert.Equal(required.Length == 0 ? Array.Empty<string>() : required.Split(','),
+                        (modelSchema.Required ?? new HashSet<string>()).Order(StringComparer.Ordinal));
+                }
+            });
+        }
+    }
+
+    [Consumes("application/x-www-form-urlencoded", "multipart/form-data")]
+    [HttpPost("/record-alias")]
+    private void ActionWithAliasedRecord([FromForm] AliasedRecord model, [FromForm] string additional) { }
+
+    [Consumes("application/x-www-form-urlencoded", "multipart/form-data")]
+    [HttpPost("/record-optional-alias")]
+    private void ActionWithOptionalAliasedRecord([FromForm] OptionalAliasedRecord model, [FromForm] string additional) { }
+
+    [Consumes("application/x-www-form-urlencoded", "multipart/form-data")]
+    [HttpPost("/record-prefixed-alias")]
+    private void ActionWithPrefixedAliasedRecord([FromForm(Name = "form")] AliasedRecord model, [FromForm] string additional) { }
+
+    [Consumes("application/x-www-form-urlencoded", "multipart/form-data")]
+    [HttpPost("/record-dotted-alias")]
+    private void ActionWithDottedAliasedRecord([FromForm] DottedAliasedRecord model, [FromForm] string additional) { }
+
+#nullable enable
+    private record AliasedRecord([FromForm(Name = "display_name"), BindRequired] string Name)
+    {
+        public IFormFile? File { get; init; }
+    }
+
+    private record OptionalAliasedRecord([FromForm(Name = "display_name")] string? Name)
+    {
+        public IFormFile? File { get; init; }
+    }
+
+    private record DottedAliasedRecord([FromForm(Name = "display.name"), BindRequired] string Name)
+    {
+        public IFormFile? File { get; init; }
+    }
+#nullable restore
+
     private async Task VerifyEffectiveFormRequirements(string actionName, bool withAdditionalParameter, string expected)
     {
         var action = CreateActionDescriptor(actionName);
