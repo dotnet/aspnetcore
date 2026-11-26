@@ -7,6 +7,7 @@ using Microsoft.AspNetCore.Components.Web;
 using Microsoft.AspNetCore.StaticWebAssets;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.FileProviders;
+using static Microsoft.AspNetCore.Internal.LinkerFlags;
 
 namespace Microsoft.AspNetCore.Components.WebView;
 
@@ -88,7 +89,7 @@ public abstract class WebViewManager : IAsyncDisposable
     /// <param name="componentType">The type of the root component. This must implement <see cref="IComponent"/>.</param>
     /// <param name="selector">The CSS selector describing where in the page the component should be placed.</param>
     /// <param name="parameters">Parameters for the component.</param>
-    public Task AddRootComponentAsync(Type componentType, string selector, ParameterView parameters)
+    public Task AddRootComponentAsync([DynamicallyAccessedMembers(Component)] Type componentType, string selector, ParameterView parameters)
     {
         var rootComponent = new RootComponent { ComponentType = componentType, Parameters = parameters };
         if (!_rootComponentsBySelector.TryAdd(selector, rootComponent))
@@ -247,6 +248,7 @@ public abstract class WebViewManager : IAsyncDisposable
 
     private sealed class RootComponent
     {
+        [DynamicallyAccessedMembers(Component)]
         public Type ComponentType { get; init; }
         public ParameterView Parameters { get; init; }
         public int? ComponentId { get; set; }
