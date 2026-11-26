@@ -16,8 +16,11 @@ namespace Microsoft.AspNetCore.Http.RequestDelegateGenerator.StaticRouteHandlerM
 
 internal class Endpoint
 {
+    private readonly IAssemblySymbol _systemObjectAssembly;
+
     public Endpoint(IInvocationOperation operation, WellKnownTypes wellKnownTypes, SemanticModel semanticModel)
     {
+        _systemObjectAssembly = wellKnownTypes.Get(SpecialType.System_Object).ContainingAssembly;
         Operation = operation;
         Location = GetLocation(operation);
 #pragma warning disable RSEXPERIMENTAL002 // Experimental interceptable location API
@@ -29,6 +32,17 @@ internal class Endpoint
         if (!operation.TryGetRouteHandlerMethod(semanticModel, needsAccurateSignature: true, out var method))
         {
             Diagnostics.Add(Diagnostic.Create(DiagnosticDescriptors.UnableToResolveMethod, Operation.Syntax.GetLocation()));
+            return;
+        }
+
+        Response = new EndpointResponse(method, wellKnownTypes);
+        Response.EmitRequiredDiagnostics(Diagnostics, Operation.Syntax.GetLocation());
+        foreach (var parameter in method.Parameters)
+        {
+            parameter.EmitRequiredDiagnostics(Diagnostics, Operation.Syntax.GetLocation());
+        }
+        if (Diagnostics.Count > 0)
+        {
             return;
         }
 
@@ -47,9 +61,11 @@ internal class Endpoint
             return;
         }
 
-        Response = new EndpointResponse(method, wellKnownTypes);
-        Response.EmitRequiredDiagnostics(Diagnostics, Operation.Syntax.GetLocation());
         IsAwaitable = Response?.IsAwaitable == true;
+        IsAwaitableReturnPossiblyNull = IsAwaitable &&
+            (Response!.WrappedResponseType.NullableAnnotation == NullableAnnotation.Annotated ||
+                HasMaybeNullReturn(invokeMethod) ||
+                HasMaybeNullReturn(method));
 
         EmitterContext.HasResponseMetadata = Response is { } response && !(response.IsIResult || response.HasNoResponse);
 
@@ -70,7 +86,6 @@ internal class Endpoint
         for (var i = 0; i < method.Parameters.Length; i++)
         {
             var parameterSymbol = method.Parameters[i];
-            parameterSymbol.EmitRequiredDiagnostics(Diagnostics, Operation.Syntax.GetLocation());
             if (Diagnostics.Count > 0)
             {
                 continue;
@@ -114,13 +129,15 @@ internal class Endpoint
 
     public string HttpMethod { get; }
     public bool IsAwaitable { get; set; }
+    public bool IsAwaitableReturnPossiblyNull { get; }
     public bool NeedsParameterArray { get; }
     public string? RoutePattern { get; }
     public EmitterContext EmitterContext { get; }
     public EndpointResponse? Response { get; }
     public INamedTypeSymbol? HandlerDelegateType { get; }
     public bool UsesDeclaredDelegateType => HandlerDelegateType is { CanBeReferencedByName: true } delegateType &&
-        delegateType is not { Name: "Func" or "Action", ContainingType: null, ContainingNamespace: { Name: "System", ContainingNamespace.IsGlobalNamespace: true } };
+        (delegateType is not { Name: "Func" or "Action", ContainingType: null, ContainingNamespace: { Name: "System", ContainingNamespace.IsGlobalNamespace: true } } ||
+            !SymbolEqualityComparer.Default.Equals(delegateType.ContainingAssembly, _systemObjectAssembly));
     public EndpointParameter[] Parameters { get; } = Array.Empty<EndpointParameter>();
     public List<Diagnostic> Diagnostics { get; } = new List<Diagnostic>();
 
@@ -201,6 +218,22 @@ internal class Endpoint
             named.TypeArguments.All(IsTypeAvailableInGeneratedCode),
         _ => true,
     };
+
+    private static bool HasMaybeNullReturn(IMethodSymbol method) =>
+        method.GetReturnTypeAttributes().Any(attribute =>
+            attribute.AttributeClass is
+            {
+                Name: "MaybeNullAttribute",
+                ContainingNamespace:
+                {
+                    Name: "CodeAnalysis",
+                    ContainingNamespace:
+                    {
+                        Name: "Diagnostics",
+                        ContainingNamespace: { Name: "System", ContainingNamespace.IsGlobalNamespace: true }
+                    }
+                }
+            });
 
     private static (string, int, int) GetLocation(IInvocationOperation operation)
     {

@@ -321,6 +321,36 @@ internal delegate {{returnType.Replace("Task<", "System.Threading.Tasks.Task<")}
     }
 
     [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task MapGet_DelegateCast_MaybeNullTaskReturn(bool hasFilter)
+    {
+        var filter = hasFilter ? ".AddEndpointFilter((context, next) => next(context))" : "";
+        var (result, compilation) = await RunDelegateCastGeneratorAsync($$"""
+app.MapGet("/", (MaybeNullTaskHandler)Handler){{filter}};
+static Task<string> Handler() => null!;
+""", additionalSource: """
+#nullable enable
+[return: System.Diagnostics.CodeAnalysis.MaybeNull]
+internal delegate System.Threading.Tasks.Task<string> MaybeNullTaskHandler();
+""", nullableEnabled: true);
+        Assert.Empty(result.Diagnostics);
+        var endpoint = GetEndpointFromCompilation(compilation);
+
+        var httpContext = CreateHttpContext();
+        if (hasFilter)
+        {
+            await endpoint.RequestDelegate(httpContext);
+            await VerifyResponseBodyAsync(httpContext, "");
+        }
+        else
+        {
+            var exception = await Assert.ThrowsAsync<InvalidOperationException>(() => endpoint.RequestDelegate(httpContext));
+            Assert.Equal("The Task returned by the Delegate must not be null.", exception.Message);
+        }
+    }
+
+    [Theory]
     [InlineData("List<string>", "List<string?>", false)]
     [InlineData("List<string>", "List<string?>", true)]
     [InlineData("List<string?>", "List<string>", false)]
@@ -445,6 +475,35 @@ internal static class ReassignedDelegateCastHandlers
         await VerifyResponseBodyAsync(httpContext, "replacement 5");
     }
 
+    [Fact]
+    public async Task MapGet_DelegateCast_ReadonlyTypedDelegateFieldReassignedInStaticConstructorFallsBack()
+    {
+        var (result, compilation) = await RunDelegateCastGeneratorAsync("""
+app.MapGet("/", ReassignedTypedDelegateCastHandlers.Handler);
+""", additionalSource: """
+internal static class ReassignedTypedDelegateCastHandlers
+{
+    internal static readonly SizeHandler Handler = Initial;
+
+    static ReassignedTypedDelegateCastHandlers()
+    {
+        Handler = Replacement;
+    }
+
+    private static string Initial(int size) => $"initial {size}";
+    private static string Replacement(int count) => $"replacement {count}";
+}
+""");
+        var endpoint = GetEndpointFromCompilation(compilation, expectGeneratedCodeOverride: false);
+        var diagnostic = Assert.Single(result.Diagnostics);
+        Assert.Equal(DiagnosticDescriptors.UnableToResolveMethod.Id, diagnostic.Id);
+
+        var httpContext = CreateHttpContext();
+        httpContext.Request.QueryString = new QueryString("?count=5");
+        await endpoint.RequestDelegate(httpContext);
+        await VerifyResponseBodyAsync(httpContext, "replacement 5");
+    }
+
     [Theory]
     [InlineData("assignment")]
     [InlineData("deconstruction")]
@@ -530,6 +589,26 @@ namespace System
         httpContext.Request.QueryString = new QueryString("?size=5");
         await endpoint.RequestDelegate(httpContext);
         await VerifyResponseBodyAsync(httpContext, isAction ? "" : "size 5", expectedStatusCode: isAction ? 202 : 200);
+    }
+
+    [Fact]
+    public async Task MapGet_DelegateCast_UserDefinedSystemFunc()
+    {
+        var (result, compilation) = await RunDelegateCastGeneratorAsync("""
+app.MapGet("/", (global::System.Func)DelegateCastHandlers.Size);
+""", additionalSource: """
+namespace System
+{
+    internal delegate string Func(int size);
+}
+""");
+        Assert.Empty(result.Diagnostics);
+        var endpoint = GetEndpointFromCompilation(compilation);
+
+        var httpContext = CreateHttpContext();
+        httpContext.Request.QueryString = new QueryString("?size=5");
+        await endpoint.RequestDelegate(httpContext);
+        await VerifyResponseBodyAsync(httpContext, "size 5");
     }
 
     private static async Task<(GeneratorRunResult Result, Compilation Compilation)> RunDelegateCastGeneratorAsync(string source, bool includeInaccessibleHandler = false, string additionalSource = "", bool nullableEnabled = false)
