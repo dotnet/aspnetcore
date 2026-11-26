@@ -392,6 +392,30 @@ internal delegate string ByRefHandler({{modifier}} int size);
         Assert.Equal(DiagnosticDescriptors.UnableToResolveMethod.Id, diagnostic.Id);
     }
 
+    [Theory]
+    [InlineData("Delegate")]
+    [InlineData("Func<object>")]
+    public async Task MapGet_DelegateCast_ReadonlyFieldWithInitializerOnly(string fieldType)
+    {
+        var (result, compilation) = await RunDelegateCastGeneratorAsync("""
+app.MapGet("/", InitializerOnlyDelegateCastHandlers.Handler);
+""", additionalSource: $$"""
+internal static class InitializerOnlyDelegateCastHandlers
+{
+    internal static readonly {{fieldType}} Handler = (Func<string>)Page;
+
+    private static string Page() => "ok";
+}
+""", nullableEnabled: true);
+        Assert.Empty(result.Diagnostics);
+        var endpoint = GetEndpointFromCompilation(compilation);
+
+        var httpContext = CreateHttpContext();
+        await endpoint.RequestDelegate(httpContext);
+        await VerifyResponseBodyAsync(httpContext, "ok");
+        Assert.Equal("text/plain; charset=utf-8", httpContext.Response.ContentType);
+    }
+
     [Fact]
     public async Task MapGet_DelegateCast_ReadonlyDelegateFieldReassignedInStaticConstructorFallsBack()
     {
@@ -419,6 +443,59 @@ internal static class ReassignedDelegateCastHandlers
         httpContext.Request.QueryString = new QueryString("?size=5");
         await endpoint.RequestDelegate(httpContext);
         await VerifyResponseBodyAsync(httpContext, "replacement 5");
+    }
+
+    [Theory]
+    [InlineData("assignment")]
+    [InlineData("deconstruction")]
+    [InlineData("ref")]
+    [InlineData("out")]
+    [InlineData("init")]
+    public async Task MapGet_DelegateCast_ReadonlyDelegateFieldReassignedInInstanceConstructorFallsBack(string writeKind)
+    {
+        var assignment = writeKind switch
+        {
+            "assignment" => "Handler = (Func<object>)Replacement;",
+            "deconstruction" => "(Handler, _) = ((Delegate)(Func<object>)Replacement, 0);",
+            "init" => "",
+            _ => $"Replace({writeKind} Handler);",
+        };
+        var handlerExpression = writeKind == "init"
+            ? "new ReassignedInstanceDelegateCastHandlers { Reset = true }.Handler"
+            : "new ReassignedInstanceDelegateCastHandlers().Handler";
+        var helper = writeKind switch
+        {
+            "ref" or "out" => $"private static void Replace({writeKind} Delegate handler) => handler = (Func<object>)Replacement;",
+            "init" => "internal bool Reset { init { Handler = (Func<object>)Replacement; } }",
+            _ => "",
+        };
+        var (result, compilation) = await RunDelegateCastGeneratorAsync($$"""
+app.MapGet("/", {{handlerExpression}});
+""", additionalSource: $$"""
+internal partial class ReassignedInstanceDelegateCastHandlers
+{
+    internal readonly Delegate Handler = (Func<string>)Initial;
+    private static string Initial() => "initial";
+    private static string Replacement() => "replacement";
+}
+
+internal partial class ReassignedInstanceDelegateCastHandlers
+{
+    internal ReassignedInstanceDelegateCastHandlers()
+    {
+        {{assignment}}
+    }
+
+    {{helper}}
+}
+""");
+        var diagnostic = Assert.Single(result.Diagnostics);
+        Assert.Equal(DiagnosticDescriptors.UnableToResolveMethod.Id, diagnostic.Id);
+        var endpoint = GetEndpointFromCompilation(compilation, expectGeneratedCodeOverride: false);
+
+        var httpContext = CreateHttpContext();
+        await endpoint.RequestDelegate(httpContext);
+        await VerifyResponseBodyAsync(httpContext, "replacement");
     }
 
     [Theory]

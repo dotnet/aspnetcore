@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Diagnostics.CodeAnalysis;
+using System.Linq;
 using Microsoft.AspNetCore.App.Analyzers.Infrastructure;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
@@ -95,7 +96,9 @@ internal static class InvocationOperationExtensions
         IArgumentOperation argument => ResolveMethodFromOperation(argument.Value, semanticModel, needsAccurateSignature),
         IConversionOperation conv => ResolveMethodFromOperation(conv.Operand, semanticModel, needsAccurateSignature),
         IDelegateCreationOperation del => ResolveMethodFromOperation(del.Target, semanticModel, needsAccurateSignature),
-        IFieldReferenceOperation { Field.IsReadOnly: true } f when ResolveDeclarationOperation(f.Field, semanticModel) is IOperation op =>
+        IFieldReferenceOperation { Field.IsReadOnly: true } f when
+            ResolveDeclarationOperation(f.Field, semanticModel) is IOperation op &&
+            HasOnlyInitializerWrite(f.Field, semanticModel) =>
             ResolveMethodFromOperation(op, semanticModel, needsAccurateSignature),
         IAnonymousFunctionOperation anon => anon.Symbol,
         ILocalFunctionOperation local => local.Symbol,
@@ -109,6 +112,11 @@ internal static class InvocationOperationExtensions
         IArgumentOperation argument => ResolveDelegateTypeFromOperation(argument.Value, semanticModel),
         IConversionOperation conversion => ResolveDelegateTypeFromOperation(conversion.Operand, semanticModel),
         IDelegateCreationOperation { Type: INamedTypeSymbol delegateType } => delegateType,
+        IFieldReferenceOperation { Field.IsReadOnly: true } field when
+            ResolveDeclarationOperation(field.Field, semanticModel) is IOperation initializer &&
+            HasOnlyInitializerWrite(field.Field, semanticModel) =>
+            ResolveDelegateTypeFromOperation(initializer, semanticModel) ??
+            (field.Type is INamedTypeSymbol { TypeKind: TypeKind.Delegate } fieldType ? fieldType : null),
         IFieldReferenceOperation { Field.IsReadOnly: true } field =>
             field.Type is INamedTypeSymbol { TypeKind: TypeKind.Delegate } fieldType ? fieldType : null,
         IParenthesizedOperation parenthesized => ResolveDelegateTypeFromOperation(parenthesized.Operand, semanticModel),
@@ -130,6 +138,59 @@ internal static class InvocationOperationExtensions
         }
 
         return (type as INamedTypeSymbol)?.DelegateInvokeMethod;
+    }
+
+    private static bool HasOnlyInitializerWrite(IFieldSymbol field, SemanticModel semanticModel)
+    {
+        // Struct instance fields can be overwritten by assigning to `this` outside of constructors.
+        if (!field.IsStatic && field.ContainingType.IsValueType)
+        {
+            return false;
+        }
+
+        // Readonly fields can also be assigned or passed by reference in their declaring type's constructors
+        // and, for instance fields, in init accessors.
+        var writers = field.ContainingType.GetMembers().OfType<IMethodSymbol>().Where(method =>
+            method.IsStatic == field.IsStatic &&
+            (method.MethodKind is MethodKind.Constructor or MethodKind.StaticConstructor || method.IsInitOnly));
+        foreach (var writer in writers)
+        {
+            if (!writer.IsImplicitlyDeclared && writer.DeclaringSyntaxReferences.Length == 0)
+            {
+                return false;
+            }
+
+            foreach (var syntaxReference in writer.DeclaringSyntaxReferences)
+            {
+                var syntax = syntaxReference.GetSyntax();
+                var writerSemanticModel = semanticModel.Compilation.GetSemanticModel(syntax.SyntaxTree);
+                foreach (var node in syntax.DescendantNodes())
+                {
+                    var target = node switch
+                    {
+                        AssignmentExpressionSyntax assignment => assignment.Left,
+                        RefExpressionSyntax reference => reference.Expression,
+                        ArgumentSyntax { RefKindKeyword.RawKind: not 0 } argument => argument.Expression,
+                        _ => null,
+                    };
+                    if (target is null)
+                    {
+                        continue;
+                    }
+
+                    foreach (var identifier in target.DescendantNodesAndSelf().OfType<IdentifierNameSyntax>())
+                    {
+                        if (identifier.Identifier.ValueText == field.Name &&
+                            SymbolEqualityComparer.Default.Equals(writerSemanticModel.GetSymbolInfo(identifier).Symbol, field))
+                        {
+                            return false;
+                        }
+                    }
+                }
+            }
+        }
+
+        return true;
     }
 
     private static IOperation? ResolveDeclarationOperation(ISymbol symbol, SemanticModel? semanticModel)
