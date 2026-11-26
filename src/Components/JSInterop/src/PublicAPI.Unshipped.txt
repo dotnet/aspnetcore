@@ -9,3 +9,11 @@ static Microsoft.JSInterop.GeneratedInteropPrototype.ConfigureRuntime.get -> Sys
 static Microsoft.JSInterop.GeneratedInteropPrototype.ConfigureRuntime.set -> void
 static Microsoft.JSInterop.GeneratedInteropPrototype.Metadata<T>(Microsoft.JSInterop.JSRuntime! runtime) -> System.Text.Json.Serialization.Metadata.JsonTypeInfo<T>!
 static Microsoft.JSInterop.GeneratedInteropPrototype.RegisterReferenceConverter<T>(Microsoft.JSInterop.JSRuntime! runtime, System.Text.Json.JsonSerializerOptions! options) -> void
+static Microsoft.JSInterop.GeneratedInteropPrototype.CompleteAsync(System.Threading.Tasks.Task! task) -> System.Threading.Tasks.ValueTask<string?>
+static Microsoft.JSInterop.GeneratedInteropPrototype.CompleteAsync(System.Threading.Tasks.ValueTask task) -> System.Threading.Tasks.ValueTask<string?>
+static Microsoft.JSInterop.GeneratedInteropPrototype.GeneratedOnly.get -> bool
+static Microsoft.JSInterop.GeneratedInteropPrototype.ReadArgument<T>(Microsoft.JSInterop.JSRuntime! runtime, System.Text.Json.JsonElement value, string! methodIdentifier, int index) -> T?
+static Microsoft.JSInterop.GeneratedInteropPrototype.SerializeResult<T>(Microsoft.JSInterop.JSRuntime! runtime, T value) -> System.Threading.Tasks.ValueTask<string?>
+static Microsoft.JSInterop.GeneratedInteropPrototype.SerializeResultAsync<T>(Microsoft.JSInterop.JSRuntime! runtime, System.Threading.Tasks.Task<T>! task) -> System.Threading.Tasks.ValueTask<string?>
+static Microsoft.JSInterop.GeneratedInteropPrototype.SerializeResultAsync<T>(Microsoft.JSInterop.JSRuntime! runtime, System.Threading.Tasks.ValueTask<T> task) -> System.Threading.Tasks.ValueTask<string?>
+static Microsoft.JSInterop.GeneratedInteropPrototype.Shared.get -> Microsoft.JSInterop.GeneratedInteropPrototype!

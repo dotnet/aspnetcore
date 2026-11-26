@@ -40,9 +40,10 @@ To build the JavaScript code, execute the following commands in a command shell:
 
 ## WIP: generated-only Native AOT experiment
 
-`GeneratedInteropPrototype` is an experimental registration surface, not a finished source
-generator or an approved API. Reflection-based dispatch remains the default. To select the
-prototype exclusively, add this runtime feature switch to the consuming application's project:
+`GeneratedInteropPrototype` and the `Microsoft.JSInterop.SourceGenerators` generator are an
+experimental registration surface, not an approved API. Reflection-based dispatch remains the
+default. To select generated dispatch exclusively, add this runtime feature switch to the consuming
+application's project:
 
 ```xml
 <ItemGroup>
@@ -50,42 +51,51 @@ prototype exclusively, add this runtime feature switch to the consuming applicat
 </ItemGroup>
 ```
 
-Before creating any `JSRuntime`, set `GeneratedInteropPrototype.ConfigureRuntime` to install
-application JSON metadata and register handwritten, strongly typed delegates. For example:
+### Generated registrations
+
+The generator (`src/Components/JSInterop/gen`) finds every `[JSInvokable]` method in the compilation
+and emits a module initializer that registers a strongly typed invoker for each identifier in
+`GeneratedInteropPrototype.Shared`. Each invoker reads all arguments with the runtime-bound JSON
+metadata before calling the method, rejects synchronous calls to asynchronous methods, and serializes
+results the way reflection dispatch does. The module initializer returns immediately unless the
+feature switch is enabled, so trimming removes the registrations when the switch is off.
+
+Microsoft.AspNetCore.Components.Web runs the generator, so framework callbacks such as
+`WebRendererInteropMethods.DispatchEventAsync` are registered by the assembly that owns them. The
+generator is not packaged yet; an application opts in with an analyzer reference to the generator
+project. Unsupported methods are skipped with warnings `JSI0001`–`JSI0006` (non-public, generic,
+inaccessible containing type, static method on a non-public type, unsupported signature, duplicate
+identifier).
+
+Application payload types still need JSON metadata. Before creating any `JSRuntime`, set
+`GeneratedInteropPrototype.ConfigureRuntime` to add the application's source-generated
+`JsonSerializerContext`:
 
 ```csharp
 GeneratedInteropPrototype.ConfigureRuntime = (runtime, options) =>
-{
     options.TypeInfoResolverChain.Add(AppJsonContext.Default);
-    runtime.GeneratedInterop.RegisterStatic("MyApp", "Double", 1, (r, _, args) =>
-    {
-        var value = args[0].Deserialize(GeneratedInteropPrototype.Metadata<int>(r));
-        return ValueTask.FromResult<string?>(JsonSerializer.Serialize(
-            value * 2, GeneratedInteropPrototype.Metadata<int>(r)));
-    });
-};
 ```
 
-`AppJsonContext` is the application's source-generated `JsonSerializerContext`. Register every
-application payload type, including value types. Use the runtime-bound `Metadata<T>` for both
-arguments and results so byte arrays and object/stream references retain their runtime converters.
-For each application `DotNetObjectReference<T>`, call `RegisterReferenceConverter<T>` during
-configuration to root a closed converter without runtime generic construction.
+Handwritten registrations through `RegisterStatic` and `RegisterInstance<T>` on
+`JSRuntime.GeneratedInterop` (per runtime) or `GeneratedInteropPrototype.Shared` remain available;
+per-runtime registrations take precedence. Instance lookup walks the target's base types.
+Unregistered methods and missing JSON metadata fail explicitly; there is no reflection fallback when
+the switch is enabled.
 
-Configure registrations once before dispatch begins. The process-wide mutable startup hook and
-the registry shape are scaffolding for this experiment, not a proposed production initialization
-model. Register asynchronous delegates with `isAsync: true`, deserialize all arguments before
-their first await, and serialize results after awaiting `Task<T>` or `ValueTask<T>`. These delegate
-contracts still require generator enforcement. Exact runtime types are used for instance lookup.
-Unregistered methods and missing JSON metadata fail explicitly; there is no reflection fallback
-when the switch is enabled.
+### Known gaps
 
-**Known blocker:** generated-only mode does not register framework-owned callbacks such as
-`WebRendererInteropMethods.DispatchEventAsync`. Blazor button clicks therefore fail in this mode.
-Framework registrations must be supplied by the owning assembly, not by application code reaching
-into private framework types. Component constructor preservation and remaining non-JSInterop
-trimming/AOT warnings are also unresolved. Existing instance-method rooting annotations remain.
-This experiment does not establish support for complete Native AOT Blazor applications.
+* The process-wide mutable startup hook and the registry shape are scaffolding, not a proposed
+  production initialization model. The API proposal is still to be written.
+* Module initializers run when their module loads. NativeAOT runs them at startup; on CoreCLR an
+  assembly's registrations are not available until that assembly has been loaded.
+* Generic methods and methods on generic types, such as Components.Platform's `JSCallback<T>`, are
+  not supported. Microsoft.JSInterop.WebAssembly does not run the generator yet.
+* `InputFile`'s `BrowserFile[]` payload has no framework JSON metadata in strict-JSON applications.
+* A base-type registration also dispatches to an override that is not itself `[JSInvokable]`;
+  reflection dispatch does not.
+* Existing instance-method rooting annotations remain, and four IL2072 suppressions in Components
+  still need a real fix. This experiment does not establish support for complete Native AOT Blazor
+  applications.
 
 The WebView IPC envelope uses a separate source-generated context for its fixed transport types;
 application payloads have already passed through the runtime's converters before this layer.
