@@ -203,6 +203,7 @@ public class RazorComponentEndpointInvokerTest
                         .Services.AddAntiforgery()
                         .AddSingleton<IConfiguration>(new ConfigurationBuilder().Build())
                         .AddSingleton<IWebHostEnvironment>(new TestWebHostEnvironment())
+                        .AddSingleton<IHostEnvironment>(sp => sp.GetRequiredService<IWebHostEnvironment>())
                         .BuildServiceProvider();
 
         var invoker = new RazorComponentEndpointInvoker(
