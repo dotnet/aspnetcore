@@ -121,16 +121,14 @@ internal sealed class ResponseCachingKeyProvider : IResponseCachingKeyProvider
                         .Append(header)
                         .Append(KeyNameValueDelimiter);
 
-                    var headerValuesArray = headerValues.ToArray();
-
-                    for (var j = 0; j < headerValuesArray.Length; j++)
+                    for (var j = 0; j < headerValues.Count; j++)
                     {
                         if (j > 0)
                         {
                             builder.Append(KeySubDelimiter);
                         }
 
-                        AppendValue(builder, headerValuesArray[j]);
+                        AppendValue(builder, headerValues[j]);
                     }
                 }
             }
@@ -157,16 +155,16 @@ internal sealed class ResponseCachingKeyProvider : IResponseCachingKeyProvider
                             .AppendUpperInvariant(queryArray[i].Key)
                             .Append(KeyNameValueDelimiter);
 
-                        var queryValueArray = queryArray[i].Value.ToArray();
+                        var queryValues = queryArray[i].Value;
 
-                        for (var j = 0; j < queryValueArray.Length; j++)
+                        for (var j = 0; j < queryValues.Count; j++)
                         {
                             if (j > 0)
                             {
                                 builder.Append(KeySubDelimiter);
                             }
 
-                            AppendValue(builder, queryValueArray[j]);
+                            AppendValue(builder, queryValues[j]);
                         }
                     }
                 }
@@ -180,16 +178,14 @@ internal sealed class ResponseCachingKeyProvider : IResponseCachingKeyProvider
                             .Append(queryKey)
                             .Append(KeyNameValueDelimiter);
 
-                        var queryValueArray = queryKeyValues.ToArray();
-
-                        for (var j = 0; j < queryValueArray.Length; j++)
+                        for (var j = 0; j < queryKeyValues.Count; j++)
                         {
                             if (j > 0)
                             {
                                 builder.Append(KeySubDelimiter);
                             }
 
-                            AppendValue(builder, queryValueArray[j]);
+                            AppendValue(builder, queryKeyValues[j]);
                         }
                     }
                 }
