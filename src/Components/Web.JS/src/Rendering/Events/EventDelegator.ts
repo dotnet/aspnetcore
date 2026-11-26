@@ -264,11 +264,13 @@ export class EventDelegator {
   }
 
   // Registered once and never removed, so flushing doesn't depend on which handlers exist elsewhere on the page.
+  // Navigation interception already listens to click, so in practice this doesn't add a click listener.
   private addFlushTriggerListeners(): void {
     if (!this.flushTriggerListenersAdded) {
       this.flushTriggerListenersAdded = true;
       this.eventInfoStore.addGlobalListener('blur');
       this.eventInfoStore.addGlobalListener('keydown');
+      this.eventInfoStore.addGlobalListener('click');
     }
   }
 
@@ -282,8 +284,12 @@ export class EventDelegator {
       return;
     }
 
-    if (this.flushTriggerListenersAdded && this.renderBatchDepth === 0 && isFlushTriggerEvent(evt)) {
-      this.flushPendingEventsOnPath(evt);
+    if (this.flushTriggerListenersAdded && this.renderBatchDepth === 0) {
+      if (isFlushTriggerEvent(evt)) {
+        this.flushPendingEventsOnPath(evt.composedPath(), evt.type);
+      } else if (evt.type === 'click') {
+        this.flushPendingEventsBeforeClickOutsideFocusedElement(evt);
+      }
     }
 
     // Always dispatch to any listeners for the original underlying browser event name
@@ -484,18 +490,30 @@ export class EventDelegator {
     }
   }
 
-  private flushPendingEventsOnPath(triggerEvent: Event): void {
-    for (const target of triggerEvent.composedPath()) {
+  private flushPendingEventsOnPath(path: Iterable<EventTarget>, triggerEventType: string): void {
+    for (const target of path) {
       const infos = target instanceof Element ? this.getEventHandlerInfosForElement(target, false) : null;
       if (infos) {
         for (const state of infos.enumerateRateLimitStates()) {
           // A pending event of the trigger's own type continues its own debounce or throttle window.
-          if (state.pendingSnapshot && getBrowserEventName(state.eventName) !== triggerEvent.type) {
+          if (state.pendingSnapshot && getBrowserEventName(state.eventName) !== triggerEventType) {
             this.clearRateLimitTimer(state);
             this.dispatchPendingSnapshot(state);
           }
         }
       }
+    }
+  }
+
+  // This trigger exists for assistive technologies. Screen readers, voice control, and switch access can activate
+  // an element that can't take focus, such as a clickable suggestion, without moving focus away from the element
+  // the user typed in. No blur is raised then, so a click outside the focused element dispatches the pending events
+  // of the focused element and its ancestors, as the blur would have done.
+  // Clicks from scripts and on controls that keep focus by cancelling mousedown are covered the same way.
+  private flushPendingEventsBeforeClickOutsideFocusedElement(click: Event): void {
+    const focusedElement = getFocusedElement();
+    if (focusedElement && click.composedPath().indexOf(focusedElement) === -1) {
+      this.flushPendingEventsOnPath(composedSelfAndAncestors(focusedElement), click.type);
     }
   }
 
@@ -814,6 +832,23 @@ function toLookup(items: string[]): { [key: string]: boolean } {
     result[value] = true;
   });
   return result;
+}
+
+// Event handlers also work inside open shadow trees, so focus is followed into them,
+// and ancestors are walked through slots and shadow hosts in the same order as an event's composed path.
+function getFocusedElement(): Element | null {
+  let focusedElement = document.activeElement;
+  while (focusedElement?.shadowRoot?.activeElement) {
+    focusedElement = focusedElement.shadowRoot.activeElement;
+  }
+  return focusedElement;
+}
+
+function* composedSelfAndAncestors(element: Element): IterableIterator<Node> {
+  for (let node: Node | null = element; node;) {
+    yield node;
+    node = node instanceof ShadowRoot ? node.host : ((node instanceof Element && node.assignedSlot) || node.parentNode);
+  }
 }
 
 function eventIsDisabledOnElement(element: Element, rawBrowserEventName: string): boolean {

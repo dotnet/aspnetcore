@@ -224,6 +224,19 @@ public class EventFlagsTest : ServerTestBase<ToggleExecutionModeServerFixture<Pr
     }
 
     [Fact]
+    public void OnInput_WithDebounce_ClickOutsideFocusedInputDeliversPendingInputWithoutBlur()
+    {
+        var input = Browser.Exists(By.Id("typeahead-input"));
+        input.SendKeys("app");
+
+        // The suggestion cancels mousedown, so the input keeps focus and no blur is raised.
+        // Assistive technologies click elements that can't take focus the same way.
+        Browser.Exists(By.Id("typeahead-suggestion-keeping-focus")).Click();
+        Browser.Equal("[app]", () => Browser.Exists(By.Id("typeahead-query-on-focus-keeping-click")).Text);
+        Assert.Equal("typeahead-input", Browser.SwitchTo().ActiveElement().GetDomProperty("id"));
+    }
+
+    [Fact]
     public void OnChange_WithThrottle_DeliversLatestSelection()
     {
         var select = Browser.Exists(By.Id("throttled-select"));

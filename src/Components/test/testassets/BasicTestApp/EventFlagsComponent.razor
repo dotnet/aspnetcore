@@ -132,6 +132,14 @@ else
         </div>
         <span id="typeahead-query-on-hover">@typeaheadQueryOnHover</span>
         <span id="typeahead-query-on-click">@typeaheadQueryOnClick</span>
+        @* Cancelling mousedown keeps focus in the input, like assistive technologies that click elements that can't take focus. *@
+        <div id="typeahead-suggestion-keeping-focus"
+             style="padding: 10px; border: 1px solid gray;"
+             @onmousedown:preventDefault
+             @onclick="OnFocusKeepingSuggestionClick">
+            Suggestion that keeps focus in the input
+        </div>
+        <span id="typeahead-query-on-focus-keeping-click">@typeaheadQueryOnFocusKeepingClick</span>
     </div>
 
     <div id="throttle-select-scenario">
@@ -191,6 +199,7 @@ else
     private string typeaheadQuery = string.Empty;
     private string typeaheadQueryOnHover = "(not hovered)";
     private string typeaheadQueryOnClick = "(not clicked)";
+    private string typeaheadQueryOnFocusKeepingClick = "(not clicked)";
 
     private int throttleSelectInterval = 1000;
     private string selectedOption = "1";
@@ -280,6 +289,11 @@ else
     private void OnSuggestionClick()
     {
         typeaheadQueryOnClick = $"[{typeaheadQuery}]";
+    }
+
+    private void OnFocusKeepingSuggestionClick()
+    {
+        typeaheadQueryOnFocusKeepingClick = $"[{typeaheadQuery}]";
     }
 
     private void OnRemovableKeyDown(KeyboardEventArgs e)

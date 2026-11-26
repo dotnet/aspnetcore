@@ -239,7 +239,7 @@ describe('EventDelegator debounce and throttle', () => {
     delegator.removeListenersForElement(input);
   });
 
-  test('leaving an element or pressing Enter in it dispatches its pending events, while presses, clicks and other keys do not', () => {
+  test('leaving an element or pressing Enter in it dispatches its pending events, while presses and other keys do not', () => {
     const delegator = new EventDelegator(WebRendererId.Server);
     const input = document.createElement('input');
     const button = document.createElement('button');
@@ -305,6 +305,86 @@ describe('EventDelegator debounce and throttle', () => {
     expect(dispatchedCalls[0].eventArgs).toEqual({ value: 'typed' });
 
     delegator.removeListenersForElement(input);
+  });
+
+  test('a click outside the focused element dispatches the pending events of that element and its ancestors, because assistive technologies can click without moving focus', () => {
+    const delegator = new EventDelegator(WebRendererId.Server);
+    const field = document.createElement('div');
+    const input = document.createElement('input');
+    const suggestion = document.createElement('div');
+    const canvas = document.createElement('div');
+    field.appendChild(input);
+    container.appendChild(field);
+    container.appendChild(suggestion);
+    container.appendChild(canvas);
+
+    delegator.setListener(input, 'input', 20, 1);
+    delegator.setDebounce(input, 'input', 500);
+    delegator.setListener(field, 'input', 21, 1);
+    delegator.setDebounce(field, 'input', 500);
+    delegator.setListener(suggestion, 'click', 22, 1);
+    delegator.setListener(canvas, 'mousemove', 23, 1);
+    delegator.setThrottle(canvas, 'mousemove', 500);
+    const dispatchedIds = () => dispatchedCalls.map(c => c.eventDescriptor.eventHandlerId);
+
+    canvas.dispatchEvent(new MouseEvent('mousemove', { bubbles: true, clientX: 1 }));
+    canvas.dispatchEvent(new MouseEvent('mousemove', { bubbles: true, clientX: 2 }));
+    input.focus();
+    input.value = 'a';
+    input.dispatchEvent(new Event('input', { bubbles: true }));
+
+    // A click inside the focused element, such as moving the caret, continues typing
+    input.dispatchEvent(new MouseEvent('click', { bubbles: true }));
+    expect(dispatchedIds()).toEqual([23]);
+
+    // Activating an element that can't take focus leaves focus in the input, so no blur is raised.
+    // Pending events of elements outside the focused element's ancestors aren't affected.
+    for (const type of ['mousedown', 'mouseup', 'click']) {
+      suggestion.dispatchEvent(new MouseEvent(type, { bubbles: true }));
+    }
+    expect(document.activeElement).toBe(input);
+    expect(dispatchedIds()).toEqual([23, 20, 21, 22]);
+    expect(dispatchedCalls[1].eventArgs).toEqual({ value: 'a' });
+
+    jest.advanceTimersByTime(600);
+    expect(dispatchedIds()).toEqual([23, 20, 21, 22, 23]);
+    expect(dispatchedCalls[4].eventArgs.clientX).toBe(2);
+
+    delegator.removeListenersForElement(input);
+    delegator.removeListenersForElement(field);
+    delegator.removeListenersForElement(suggestion);
+    delegator.removeListenersForElement(canvas);
+  });
+
+  test('a click outside the focused element follows focus into open shadow trees', () => {
+    const delegator = new EventDelegator(WebRendererId.Server);
+    const host = document.createElement('div');
+    container.appendChild(host);
+    const shadowRoot = host.attachShadow({ mode: 'open' });
+    const input = document.createElement('input');
+    const suggestion = document.createElement('div');
+    shadowRoot.appendChild(input);
+    shadowRoot.appendChild(suggestion);
+
+    delegator.setListener(input, 'input', 30, 1);
+    delegator.setDebounce(input, 'input', 500);
+    delegator.setListener(host, 'input', 31, 1);
+    delegator.setDebounce(host, 'input', 500);
+    delegator.setListener(suggestion, 'click', 32, 1);
+
+    input.focus();
+    input.value = 'a';
+    input.dispatchEvent(new Event('input', { bubbles: true, composed: true }));
+
+    input.dispatchEvent(new MouseEvent('click', { bubbles: true, composed: true }));
+    expect(dispatchedCalls.length).toBe(0);
+
+    suggestion.dispatchEvent(new MouseEvent('click', { bubbles: true, composed: true }));
+    expect(dispatchedCalls.map(c => c.eventDescriptor.eventHandlerId)).toEqual([30, 31, 32]);
+
+    delegator.removeListenersForElement(input);
+    delegator.removeListenersForElement(host);
+    delegator.removeListenersForElement(suggestion);
   });
 
   test('flushes pending debounced input on blur even when blur has no .NET handler', () => {
