@@ -1,6 +1,7 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Security.Authentication.ExtendedProtection;
 using System.Security.Cryptography.X509Certificates;
 using Microsoft.AspNetCore.Http.Features;
 using Microsoft.Extensions.Logging;
@@ -13,11 +14,13 @@ internal sealed class ForwardedTlsConnectionFeature : ITlsConnectionFeature
     private StringValues _header;
     private X509Certificate2? _certificate;
     private readonly ILogger _logger;
+    private readonly ITlsConnectionFeature? _originalFeature;
 
-    public ForwardedTlsConnectionFeature(ILogger logger, StringValues header)
+    public ForwardedTlsConnectionFeature(ILogger logger, StringValues header, ITlsConnectionFeature? originalFeature)
     {
         _logger = logger;
         _header = header;
+        _originalFeature = originalFeature;
     }
 
     public X509Certificate2? ClientCertificate
@@ -48,5 +51,17 @@ internal sealed class ForwardedTlsConnectionFeature : ITlsConnectionFeature
     public Task<X509Certificate2?> GetClientCertificateAsync(CancellationToken cancellationToken)
     {
         return Task.FromResult(ClientCertificate);
+    }
+
+    // Only the client certificate source changes; the channel binding still belongs to the underlying connection.
+    public bool TryGetChannelBindingBytes(ChannelBindingKind kind, out ReadOnlyMemory<byte> channelBindingToken)
+    {
+        if (_originalFeature is not null)
+        {
+            return _originalFeature.TryGetChannelBindingBytes(kind, out channelBindingToken);
+        }
+
+        channelBindingToken = default;
+        return false;
     }
 }
