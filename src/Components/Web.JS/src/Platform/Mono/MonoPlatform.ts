@@ -148,7 +148,6 @@ async function createRuntimeInstance(options: Partial<WebAssemblyStartOptions>, 
   dotnet = module.dotnet;
   const config: LoaderConfig = {
     maxParallelDownloads: 1000000, // disable throttling parallel downloads
-    enableDownloadRetry: false, // disable retry downloads
   };
 
   const moduleConfig: DotnetModuleConfig = {
