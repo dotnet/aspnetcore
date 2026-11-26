@@ -111,15 +111,17 @@ public class SystemTextJsonOutputFormatter : TextOutputFormatter
             {
                 if (jsonTypeInfo is not null)
                 {
-                    await JsonSerializer.SerializeAsync(transcodingStream, context.Object, jsonTypeInfo);
+                    await JsonSerializer.SerializeAsync(transcodingStream, context.Object, jsonTypeInfo, httpContext.RequestAborted);
                 }
                 else
                 {
-                    await JsonSerializer.SerializeAsync(transcodingStream, context.Object, SerializerOptions);
+                    await JsonSerializer.SerializeAsync(transcodingStream, context.Object, SerializerOptions, httpContext.RequestAborted);
                 }
 
-                await transcodingStream.FlushAsync();
+                await transcodingStream.FlushAsync(httpContext.RequestAborted);
             }
+            catch (OperationCanceledException) when (context.HttpContext.RequestAborted.IsCancellationRequested)
+            { }
             catch (Exception ex)
             {
                 // TranscodingStream may write to the inner stream as part of it's disposal.
