@@ -5,10 +5,10 @@ import { readFileSync } from 'node:fs';
 import { pathToFileURL } from 'node:url';
 
 const reviewCases = {
-  'case-01': { section: 'DISCARDED', confidence: 'discarded' },
+  'case-01': { section: 'DISCARDED' },
   'case-02': { section: 'NEW_FINDINGS', confidence: 'verified' },
-  'case-03': { section: 'DISCARDED', confidence: 'discarded' },
-  'case-04': { section: 'DISCARDED', confidence: 'discarded' },
+  'case-03': { section: 'DISCARDED' },
+  'case-04': { section: 'DISCARDED' },
   'case-05': { section: 'EXISTING_FEEDBACK_COVERAGE', thread: 'discussion_r4487936812' },
   'case-06': { section: 'UNRESOLVED', confidence: 'unresolved' },
 };
@@ -102,7 +102,7 @@ function isNegativeC1Line(line)
     .trim()
     .replace(/^(?:[-*+]|\d+[.)])\s+/, '')
     .trim();
-  const explicitAbsence = /^(?:none(?:\s+(?:applicable|covered|found|reported|identified))?[.!]?\s*$|n\/a[.!]?\s*$|no(?:\s+(?:findings|items|candidates|entries|unresolved|discarded|existing\s+feedback)[.!]?\s*$|\s+C1[.!]?\s*$|[.!]?\s*$))/i;
+  const explicitAbsence = /^(?:none(?:\s+(?:applicable|covered|found|reported|identified))?[.!]?\s*$|n\/a[.!]?\s*$|no(?:\s+(?:(?:new\s+)?findings|items|(?:(?:unresolved|discarded)\s+)?candidates|entries|unresolved|discarded|existing\s+feedback)[.!]?\s*$|\s+C1[.!]?\s*$|[.!]?\s*$))/i;
   if (!clean || explicitAbsence.test(clean))
   {
     return true;
@@ -147,7 +147,7 @@ function gradeReview(name, output)
       section = heading;
       sections.set(section, '');
     }
-    else if ((!/^\s/.test(line) && topLevelFields.includes(fieldName)) || (/^#{1,6}\s+/.test(line.trim()) && !/\bC1\b/.test(heading)))
+    else if (!/^\s/.test(line) && topLevelFields.includes(fieldName))
     {
       section = undefined;
     }
@@ -165,24 +165,29 @@ function gradeReview(name, output)
     return false;
   }
   const hasCandidate = key => hasPositiveC1(sections.get(key));
+  const isAbsent = key => sections.get(key).split(/\r?\n/).every(isNegativeC1Line);
   if (!hasCandidate(expected.section))
   {
     return false;
   }
   if (expected.thread)
   {
-    return !hasCandidate('NEW_FINDINGS') &&
-      !hasCandidate('DISCARDED') &&
+    return isAbsent('NEW_FINDINGS') &&
+      isAbsent('DISCARDED') &&
       hasCandidate('UNRESOLVED') &&
       sections.get(expected.section).includes(expected.thread) &&
       sections.get('UNRESOLVED').includes(expected.thread) &&
       statusLine === 'STATUS: NO_FINDINGS';
   }
-  if (expected.section !== 'UNRESOLVED' && hasCandidate('UNRESOLVED') ||
-      expected.section !== 'DISCARDED' && hasCandidate('DISCARDED') ||
-      hasCandidate('EXISTING_FEEDBACK_COVERAGE'))
+  if (expected.section !== 'UNRESOLVED' && !isAbsent('UNRESOLVED') ||
+      expected.section !== 'DISCARDED' && !isAbsent('DISCARDED') ||
+      !isAbsent('EXISTING_FEEDBACK_COVERAGE'))
   {
     return false;
+  }
+  if (expected.section === 'DISCARDED')
+  {
+    return isAbsent('NEW_FINDINGS') && statusLine === 'STATUS: NO_FINDINGS';
   }
   if (!hasCandidate('NEW_FINDINGS') || statusLine !== 'STATUS: FINDINGS')
   {

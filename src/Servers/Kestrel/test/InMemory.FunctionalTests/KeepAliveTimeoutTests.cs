@@ -87,6 +87,38 @@ public class KeepAliveTimeoutTests : LoggedTest
     }
 
     [Fact]
+    public async Task ConnectionKeptAliveWhenKeepAliveTimeoutIsInfinite()
+    {
+        var testMeterFactory = new TestMeterFactory();
+        using var connectionDuration = new MetricCollector<double>(testMeterFactory, "Microsoft.AspNetCore.Server.Kestrel", "kestrel.connection.duration");
+
+        var testContext = new TestServiceContext(LoggerFactory, metrics: new KestrelMetrics(testMeterFactory));
+
+        await using (var server = CreateServer(testContext, keepAliveTimeout: Timeout.InfiniteTimeSpan))
+        {
+            using (var connection = server.CreateConnection())
+            {
+                await connection.TransportConnection.WaitForReadTask;
+
+                for (var totalDelay = TimeSpan.Zero; totalDelay < _longDelay; totalDelay += _shortDelay)
+                {
+                    testContext.FakeTimeProvider.Advance(_shortDelay);
+                    testContext.ConnectionManager.OnHeartbeat();
+                }
+
+                await connection.Send(
+                    "GET / HTTP/1.1",
+                    "Host:",
+                    "",
+                    "");
+                await ReceiveResponse(connection, testContext);
+            }
+        }
+
+        Assert.Collection(connectionDuration.GetMeasurementSnapshot(), m => MetricsAssert.NoError(m.Tags));
+    }
+
+    [Fact]
     public async Task ConnectionNotTimedOutWhileRequestBeingSent()
     {
         var testMeterFactory = new TestMeterFactory();
@@ -244,12 +276,12 @@ public class KeepAliveTimeoutTests : LoggedTest
         Assert.Collection(connectionDuration.GetMeasurementSnapshot(), m => MetricsAssert.NoError(m.Tags));
     }
 
-    private TestServer CreateServer(TestServiceContext context, CancellationToken longRunningCt = default, CancellationToken upgradeCt = default)
+    private TestServer CreateServer(TestServiceContext context, CancellationToken longRunningCt = default, CancellationToken upgradeCt = default, TimeSpan? keepAliveTimeout = null)
     {
         // Ensure request headers timeout is started as soon as the tests send requests.
         context.Scheduler = PipeScheduler.Inline;
         context.ServerOptions.AddServerHeader = false;
-        context.ServerOptions.Limits.KeepAliveTimeout = _keepAliveTimeout;
+        context.ServerOptions.Limits.KeepAliveTimeout = keepAliveTimeout ?? _keepAliveTimeout;
         context.ServerOptions.Limits.MinRequestBodyDataRate = null;
 
         return new TestServer(httpContext => App(httpContext, longRunningCt, upgradeCt), context);

@@ -81,6 +81,31 @@ app.MapGet("/", handler);
     }
 
     [Fact]
+    public async Task MapAction_QueryParam_SharedDelegateSignature_PreservesDefaultValue()
+    {
+        // Regression test for https://github.com/dotnet/aspnetcore/issues/69675.
+        // Two endpoints that share the same delegate signature (int) => string but differ
+        // only in the default value of their parameter must each get their own interceptor.
+        // Otherwise, the second endpoint reuses the first endpoint's delegate type and default.
+        var source = """
+app.MapGet("/page-1", (int page = 1) => $"page {page}");
+app.MapGet("/page-2", (int page = 2) => $"page {page}");
+""";
+        var (_, compilation) = await RunGeneratorAsync(source);
+        var endpoints = GetEndpointsFromCompilation(compilation);
+
+        Assert.Equal(2, endpoints.Length);
+
+        var httpContextA = CreateHttpContext();
+        await endpoints[0].RequestDelegate(httpContextA);
+        await VerifyResponseBodyAsync(httpContextA, "page 1");
+
+        var httpContextB = CreateHttpContext();
+        await endpoints[1].RequestDelegate(httpContextB);
+        await VerifyResponseBodyAsync(httpContextB, "page 2");
+    }
+
+    [Fact]
     public async Task MapAction_SingleNullableStringParam_WithEmptyQueryStringValueProvided_StringReturn()
     {
         var (results, compilation) = await RunGeneratorAsync("""
