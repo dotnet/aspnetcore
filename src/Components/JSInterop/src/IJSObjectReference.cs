@@ -16,6 +16,7 @@ public interface IJSObjectReference : IAsyncDisposable
     /// <para>
     /// <see cref="JSRuntime"/> will apply timeouts to this operation based on the value configured in <see cref="JSRuntime.DefaultAsyncTimeout"/>. To dispatch a call with a different, or no timeout,
     /// consider using <see cref="InvokeAsync{TValue}(string, CancellationToken, object[])" />.
+    /// An operation canceled by the default timeout throws a <see cref="JSException"/>.
     /// </para>
     /// </summary>
     /// <typeparam name="TValue">The JSON-serializable return type.</typeparam>

@@ -70,6 +70,26 @@ public class ScreenOrientationTest
     }
 
     [Fact]
+    public async Task Orientation_PassesThroughAcquisitionTimeoutAndReacquires()
+    {
+        var jsRuntime = new SerializingJSRuntime
+        {
+            Timeout = TimeSpan.FromMilliseconds(100),
+            TimeoutNextAcquisition = true,
+            TypeResult = "\"portrait-secondary\"",
+        };
+        await using var provider = CreateServiceProvider(jsRuntime);
+        var orientation = provider.GetRequiredService<IBrowserPlatform>().Window.Screen.Orientation;
+
+        var exception = await Assert.ThrowsAsync<JSException>(() => orientation.GetTypeAsync().AsTask());
+
+        Assert.IsType<TaskCanceledException>(exception.InnerException);
+        Assert.Contains("screen.orientation", exception.Message);
+        Assert.Equal(OrientationType.PortraitSecondary, await orientation.GetTypeAsync());
+        Assert.Equal(2, jsRuntime.ArgumentsSentTo("screen.orientation").Length);
+    }
+
+    [Fact]
     public async Task Orientation_ThrowsNotSupportedExceptionWhenTheBrowserHasNoScreenOrientation()
     {
         // JS interop throws this for a missing screen.orientation, such as in an older browser.
@@ -439,6 +459,10 @@ public class ScreenOrientationTest
     {
         private readonly List<(string Identifier, string? ArgsJson)> _calls = [];
 
+        public TimeSpan Timeout { set => DefaultAsyncTimeout = value; }
+
+        public bool TimeoutNextAcquisition { get; set; }
+
         public string TypeResult { get; init; } = "null";
 
         public string[] ArgumentsSentTo(string identifier)
@@ -447,6 +471,12 @@ public class ScreenOrientationTest
         protected override void BeginInvokeJS(in JSInvocationInfo invocationInfo)
         {
             _calls.Add((invocationInfo.Identifier, invocationInfo.ArgsJson));
+
+            if (invocationInfo.Identifier == "screen.orientation" && TimeoutNextAcquisition)
+            {
+                TimeoutNextAcquisition = false;
+                return;
+            }
 
             var result = invocationInfo.Identifier switch
             {

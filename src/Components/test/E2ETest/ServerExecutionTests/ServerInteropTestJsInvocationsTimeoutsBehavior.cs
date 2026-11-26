@@ -4,7 +4,10 @@
 using BasicTestApp;
 using Microsoft.AspNetCore.Components.E2ETest.Infrastructure;
 using Microsoft.AspNetCore.Components.E2ETest.Infrastructure.ServerFixtures;
+using Microsoft.AspNetCore.Components.Server;
 using Microsoft.AspNetCore.E2ETesting;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Options;
 using OpenQA.Selenium;
 using TestServer;
 using Xunit.Abstractions;
@@ -19,12 +22,45 @@ public class ServerInteropTestJsInvocationsTimeoutsBehavior : ServerTestBase<Bas
         ITestOutputHelper output)
         : base(browserFixture, serverFixture, output)
     {
+        serverFixture.UpdateHostServices = services =>
+        {
+            var options = services.GetRequiredService<IOptions<CircuitOptions>>().Value;
+            options.JSInteropDefaultCallTimeout = TimeSpan.FromSeconds(5);
+            options.DetailedErrors = true;
+        };
     }
 
     protected override void InitializeAsyncCore()
     {
         Navigate(ServerPathBase);
         Browser.MountTestComponent<LongRunningInterop>();
+    }
+
+    [Theory]
+    [InlineData(true)]
+    [InlineData(false)]
+    public void InteropTimeoutIsReportedAsUnhandledException(bool useDefaultTimeout)
+    {
+        Browser.Exists(By.Id(useDefaultTimeout ? "default-timeout" : "explicit-timeout")).Click();
+
+        Browser.True(() => (bool)((IJavaScriptExecutor)Browser).ExecuteScript("return window.neverCompletingInteropStarted === true;"));
+        Browser.Equal("block", () => Browser.Exists(By.Id("blazor-error-ui")).GetCssValue("display"));
+        Browser.True(() => Browser.Manage().Logs.GetLog(LogType.Browser).Any(entry =>
+            entry.Message.Contains("JSException: The JS interop call 'neverCompletingInterop' timed out after")));
+    }
+
+    [Fact]
+    public void ExplicitCancellationDoesNotReportUnhandledException()
+    {
+        Browser.Exists(By.Id("uncaught-cancellation")).Click();
+        Browser.True(() => (bool)((IJavaScriptExecutor)Browser).ExecuteScript("return window.neverCompletingInteropStarted === true;"));
+        Browser.Exists(By.Id("observe-cancellation")).Click();
+        Browser.Exists(By.Id("task-was-cancelled"));
+
+        Browser.Exists(By.Id("circuit-functional")).Click();
+
+        Browser.Exists(By.Id("done-circuit-functional"));
+        Browser.Equal("none", () => Browser.Exists(By.Id("blazor-error-ui")).GetCssValue("display"));
     }
 
     [Fact]

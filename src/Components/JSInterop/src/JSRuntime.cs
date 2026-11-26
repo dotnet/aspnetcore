@@ -64,6 +64,7 @@ public abstract partial class JSRuntime : IJSRuntime, IDisposable
 
     /// <summary>
     /// Gets or sets the default timeout for asynchronous JavaScript calls.
+    /// Calls that exceed this timeout throw a <see cref="JSException"/>.
     /// </summary>
     protected TimeSpan? DefaultAsyncTimeout { get; set; }
 
@@ -72,6 +73,7 @@ public abstract partial class JSRuntime : IJSRuntime, IDisposable
     /// <para>
     /// <see cref="JSRuntime"/> will apply timeouts to this operation based on the value configured in <see cref="DefaultAsyncTimeout"/>. To dispatch a call with a different, or no timeout,
     /// consider using <see cref="InvokeAsync{TValue}(string, CancellationToken, object[])" />.
+    /// An operation canceled by the default timeout throws a <see cref="JSException"/>.
     /// </para>
     /// </summary>
     /// <typeparam name="TValue">The JSON-serializable return type.</typeparam>
@@ -121,11 +123,21 @@ public abstract partial class JSRuntime : IJSRuntime, IDisposable
 
     internal async ValueTask<TValue> InvokeAsync<[DynamicallyAccessedMembers(JsonSerialized)] TValue>(long targetInstanceId, string identifier, JSCallType callType, object?[]? args)
     {
-        if (DefaultAsyncTimeout.HasValue)
+        var timeout = DefaultAsyncTimeout;
+        if (timeout.HasValue)
         {
-            using var cts = new CancellationTokenSource(DefaultAsyncTimeout.Value);
-            // We need to await here due to the using
-            return await InvokeAsync<TValue>(targetInstanceId, identifier, callType, cts.Token, args);
+            using var cts = new CancellationTokenSource(timeout.Value);
+            try
+            {
+                // We need to await here due to the using
+                return await InvokeAsync<TValue>(targetInstanceId, identifier, callType, cts.Token, args);
+            }
+            catch (OperationCanceledException ex) when (cts.IsCancellationRequested && ex.CancellationToken == cts.Token)
+            {
+                throw new JSException(
+                    $"The JS interop call '{identifier}' timed out after {timeout.Value.TotalMilliseconds}ms. " +
+                    $"The timeout is controlled by {nameof(DefaultAsyncTimeout)}.", ex);
+            }
         }
 
         return await InvokeAsync<TValue>(targetInstanceId, identifier, callType, CancellationToken.None, args);

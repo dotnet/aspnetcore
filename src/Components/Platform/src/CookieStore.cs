@@ -262,7 +262,7 @@ public sealed class CookieStore : IInternalAsyncDisposal
         {
             reference = await _jsRuntime.GetValueAsync<IJSObjectReference?>("cookieStore").ConfigureAwait(false);
         }
-        catch (JSException ex)
+        catch (JSException ex) when (ex.InnerException is not OperationCanceledException)
         {
             // Interop throws for a missing window.cookieStore, such as on an insecure page or in an older browser.
             throw new NotSupportedException(NotAvailableMessage, ex);

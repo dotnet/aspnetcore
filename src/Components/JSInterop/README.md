@@ -23,6 +23,32 @@ The JavaScript-side counterpart runs within a standard web browser environment, 
 
 Since `Microsoft.JSInterop.JS` is platform-independent, runtime environments such as Blazor Server or Blazor WebAssembly must initialize it by registering environment-specific callbacks that know how to dispatch invocations across their own communication channels.
 
+## Timeout behavior and compatibility
+
+This change proposes a **behavioral breaking change** to timeouts owned by `JSRuntime` or the timeout extension methods. Public signatures and timeout durations are unchanged, but exception handling and task completion behavior change:
+
+| Timeout source | Previous behavior | Proposed behavior |
+| --- | --- | --- |
+| `JSRuntime.DefaultAsyncTimeout`, when configured and no cancellation token is supplied | Canceled task; awaiting throws `TaskCanceledException` | Faulted task; awaiting throws a descriptive `JSException` with the original cancellation exception as its `InnerException` |
+| An explicit `TimeSpan` timeout | Canceled task; awaiting throws `TaskCanceledException` if the timer remains active | Faulted task; awaiting throws a descriptive `JSException` with the original cancellation exception as its `InnerException` |
+| A caller-supplied `CancellationToken`, including one scheduled with `CancelAfter` | Cancellation | Unchanged: cancellation, not a timeout `JSException` |
+
+The explicit-timeout change covers all ten `TimeSpan` overloads: `InvokeAsync<TValue>`, `InvokeVoidAsync`, `InvokeConstructorAsync`, `GetValueAsync<TValue>`, and `SetValueAsync<TValue>` on both `IJSRuntime` and `IJSObjectReference`. Applying the same classification to both default and explicit timeouts is intentional; it is broader than changing only the default timeout. `Timeout.InfiniteTimeSpan` does not expire. Supplying a cancellation token overrides the runtime's default timeout, even when the caller uses that token to implement a timeout.
+
+There is also a timer-lifetime correction: the constructor, property-get, and property-set `TimeSpan` overloads now retain their timeout sources until the asynchronous operation completes. Previously, those sources were disposed when the pending operation was returned, so their timeouts might never fire. Calls that previously remained pending can therefore now time out. This is a separate observable change from the exception type.
+
+### Application migration
+
+- Code that catches `OperationCanceledException` or `TaskCanceledException` for default or `TimeSpan` timeouts must now handle `JSException`. A timeout fault retains an `OperationCanceledException` as its inner exception, allowing it to be distinguished from a JavaScript error without inspecting message text.
+- Code that inspects task status must account for timeout tasks being faulted rather than canceled.
+- `ComponentBase` ignores ordinary cancellation, but does not ignore timeout faults. An unhandled timeout from a component lifecycle method or event handler now reaches the renderer's error handling and can terminate an Interactive Server circuit. Handle recoverable timeouts in the component or with an error boundary.
+- Caller-token cancellation remains unchanged and can still be ignored by `ComponentBase`. This change does not alter `ComponentBase` or treat every `OperationCanceledException` as an error. Applications that need to retain cancellation behavior can use the cancellation-token overloads, with a caller-owned timeout source if needed.
+- Browser-platform acquisition must preserve timeout faults instead of reporting that the browser API is unavailable. Ordinary missing-property JavaScript errors continue to be translated to `NotSupportedException` by the Cookie Store and Screen Orientation wrappers.
+
+### Compatibility review status
+
+Maintainer acceptance of **this patch's full scope**, including the ten explicit-timeout overloads and timer-lifetime correction, is still required. The discussion and approval on [dotnet/aspnetcore#67013](https://github.com/dotnet/aspnetcore/pull/67013) acknowledge a related behavioral break but do not approve this implementation. This document records the proposed changes and migration path; it is not a compatibility approval. Release documentation must reflect the accepted scope before this behavior ships.
+
 ## Development Setup
 
 ### Build and test
