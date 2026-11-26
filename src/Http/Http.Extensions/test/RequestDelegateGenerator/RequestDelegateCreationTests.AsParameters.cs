@@ -376,6 +376,8 @@ app.MapGet("/", TestAction);
     [Fact]
     public async Task RequestDelegatePopulatesFromParameterListUsingMostDerivedHiddenAndOverriddenProperties()
     {
+        const string derivedHiddenValueName = "derivedHiddenValue";
+
         var source = """
 void TestAction(HttpContext context, [AsParameters] ParameterListWithHiddenProperties args)
 {
@@ -390,7 +392,7 @@ app.MapGet("/", TestAction);
         httpContext.Request.Query = new QueryCollection(new Dictionary<string, StringValues>()
         {
             [nameof(ParameterListWithHiddenProperties.HiddenValue)] = "1",
-            ["derivedHiddenValue"] = "2",
+            [derivedHiddenValueName] = "2",
             [nameof(ParameterListWithHiddenProperties.OverriddenValue)] = "3",
         });
 
@@ -411,6 +413,9 @@ app.MapGet("/", TestAction);
     [Fact]
     public async Task RequestDelegatePopulatesFromParameterListAndSkipInheritedReadOnlyProperties()
     {
+        const int queryParamValue = 42;
+        var expectedInput = new ParameterListWithInheritedReadOnlyProperties() { Value = queryParamValue };
+
         var source = """
 void TestAction(HttpContext context, [AsParameters] ParameterListWithInheritedReadOnlyProperties args)
 {
@@ -424,23 +429,25 @@ app.MapGet("/", TestAction);
         var httpContext = CreateHttpContext();
         httpContext.Request.Query = new QueryCollection(new Dictionary<string, StringValues>()
         {
-            [nameof(ParameterListWithInheritedReadOnlyProperties.Value)] = "42",
-            [nameof(ParameterListWithInheritedReadOnlyProperties.ReadOnlyValue)] = "42",
-            [nameof(ParameterListWithInheritedReadOnlyProperties.PrivateSetValue)] = "42",
-            [nameof(ParameterListWithInheritedReadOnlyProperties.ProtectedSetValue)] = "42",
-            [nameof(ParameterListWithInheritedReadOnlyProperties.ProtectedInternalSetValue)] = "42",
-            [nameof(ParameterListWithInheritedReadOnlyProperties.OverriddenGetterValue)] = "42",
+            [nameof(ParameterListWithInheritedReadOnlyProperties.Value)] = queryParamValue.ToString(NumberFormatInfo.InvariantInfo),
+            [nameof(ParameterListWithInheritedReadOnlyProperties.ReadOnlyValue)] = queryParamValue.ToString(NumberFormatInfo.InvariantInfo),
+            [nameof(ParameterListWithInheritedReadOnlyProperties.PrivateSetValue)] = queryParamValue.ToString(NumberFormatInfo.InvariantInfo),
+            [nameof(ParameterListWithInheritedReadOnlyProperties.ProtectedSetValue)] = queryParamValue.ToString(NumberFormatInfo.InvariantInfo),
+            [nameof(ParameterListWithInheritedReadOnlyProperties.ProtectedInternalSetValue)] = queryParamValue.ToString(NumberFormatInfo.InvariantInfo),
+            [nameof(ParameterListWithInheritedReadOnlyProperties.PrivateProtectedSetValue)] = queryParamValue.ToString(NumberFormatInfo.InvariantInfo),
+            [nameof(ParameterListWithInheritedReadOnlyProperties.OverriddenGetterValue)] = queryParamValue.ToString(NumberFormatInfo.InvariantInfo),
         });
 
         await endpoint.RequestDelegate(httpContext);
 
         var input = Assert.IsType<ParameterListWithInheritedReadOnlyProperties>(httpContext.Items["input"]);
-        Assert.Equal(42, input.Value);
-        Assert.Equal(1, input.ReadOnlyValue);
-        Assert.Equal(2, input.PrivateSetValue);
-        Assert.Equal(3, input.ProtectedSetValue);
-        Assert.Equal(4, input.ProtectedInternalSetValue);
-        Assert.Equal(5, input.OverriddenGetterValue);
+        Assert.Equal(expectedInput.Value, input.Value);
+        Assert.Equal(expectedInput.ReadOnlyValue, input.ReadOnlyValue);
+        Assert.Equal(expectedInput.PrivateSetValue, input.PrivateSetValue);
+        Assert.Equal(expectedInput.ProtectedSetValue, input.ProtectedSetValue);
+        Assert.Equal(expectedInput.ProtectedInternalSetValue, input.ProtectedInternalSetValue);
+        Assert.Equal(expectedInput.PrivateProtectedSetValue, input.PrivateProtectedSetValue);
+        Assert.Equal(expectedInput.OverriddenGetterValue, input.OverriddenGetterValue);
     }
 
     [Fact]
@@ -471,8 +478,36 @@ app.MapGet("/", TestAction);
     }
 
     [Fact]
+    public async Task RequestDelegatePopulatesFromParameterListWithInheritedRequiredProperty()
+    {
+        var source = """
+void TestAction(HttpContext context, [AsParameters] ParameterListWithInheritedRequiredProperty args)
+{
+    context.Items.Add("input", args);
+}
+app.MapGet("/", TestAction);
+""";
+        var (_, compilation) = await RunGeneratorAsync(source);
+        var endpoint = GetEndpointFromCompilation(compilation);
+
+        var httpContext = CreateHttpContext();
+        httpContext.Request.Query = new QueryCollection(new Dictionary<string, StringValues>()
+        {
+            [nameof(ParameterListWithInheritedRequiredProperty.RequiredValue)] = "1",
+            [nameof(ParameterListWithInheritedRequiredProperty.Value)] = "2",
+        });
+
+        await endpoint.RequestDelegate(httpContext);
+
+        var input = Assert.IsType<ParameterListWithInheritedRequiredProperty>(httpContext.Items["input"]);
+        Assert.Equal(1, input.RequiredValue);
+        Assert.Equal(2, input.Value);
+    }
+
+    [Fact]
     public async Task RequestDelegatePopulatesFromParameterListWithInheritedBindingAttributes()
     {
+        const string customQueryName = "customQuery";
         const string customHeaderName = "X-Custom-Header";
 
         var source = """
@@ -488,7 +523,7 @@ app.MapGet("/", TestAction);
         var httpContext = CreateHttpContext();
         httpContext.Request.Query = new QueryCollection(new Dictionary<string, StringValues>()
         {
-            ["customQuery"] = "1",
+            [customQueryName] = "1",
             [nameof(ParameterListWithInheritedBindingAttributes.QueryValue)] = "10",
             [nameof(ParameterListWithInheritedBindingAttributes.Value)] = "3",
         });

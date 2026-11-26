@@ -117,39 +117,44 @@ app.MapGet("/", TestAction);
     [Fact]
     public async Task RequestDelegatePopulatesFromParameterListWithInheritedPropertiesDeclaredInSource()
     {
-        // The generator cannot see private members of types from a metadata reference, so the
-        // base types are declared in source to cover non-public setters, statics and indexers.
+        // A metadata reference hides private and internal members from the generator, so these types are declared
+        // in source. Static properties and indexers are tested only here, because RequestDelegateFactory fails on them.
         var project = CreateProject();
         var source = GetMapActionString("""
-app.MapGet("/", (HttpContext context, [AsParameters] SourceDerivedParameterList args) =>
+void TestAction(HttpContext context, [AsParameters] SourceDerivedParameterList args)
 {
-    context.Items.Add("input", $"{args.GrandparentValue},{args.Hidden},{args.Value},{args.PrivateSetValue},{args.ProtectedSetValue},{args.PrivateProtectedSetValue},{args.InternalSetValue},{args.ProtectedInternalSetValue},{args.OverriddenGetterValue},{SourceBaseParameterList.StaticValue}");
-});
+    context.Items.Add("Hidden", args.Hidden);
+    context.Items.Add("PrivateStaticHidden", args.PrivateStaticHidden);
+    context.Items.Add("DerivedHidden", args.DerivedHidden);
+    context.Items.Add("PrivateSetValue", args.PrivateSetValue);
+    context.Items.Add("InternalSetValue", args.InternalSetValue);
+    context.Items.Add("RequiredValue", args.RequiredValue);
+    context.Items.Add("StaticValue", SourceBaseParameterList.StaticValue);
+}
+app.MapGet("/", TestAction);
 """);
         var types = """
-public class SourceGrandparentParameterList
+internal class SourceGrandparentParameterList
 {
-    public int GrandparentValue { get; set; }
     public int Hidden { get; set; }
 }
 
-public class SourceBaseParameterList : SourceGrandparentParameterList
+internal class SourceBaseParameterList : SourceGrandparentParameterList
 {
     public static int StaticValue { get; set; }
     private new int Hidden { get; set; }
+    public int PrivateStaticHidden { get; set; }
+    public int DerivedHidden { get; set; } = 70;
     public int PrivateSetValue { get; private set; } = 20;
-    public int ProtectedSetValue { get; protected set; } = 30;
-    public int PrivateProtectedSetValue { get; private protected set; } = 40;
     public int InternalSetValue { get; internal set; } = 50;
-    public int ProtectedInternalSetValue { get; protected internal set; } = 60;
-    public virtual int OverriddenGetterValue { get; set; } = 6;
+    public required int RequiredValue { get; internal set; }
     public string this[string key] { get => key; set { } }
-    public int Value { get; set; }
 }
 
-public class SourceDerivedParameterList : SourceBaseParameterList
+internal class SourceDerivedParameterList : SourceBaseParameterList
 {
-    public override int OverriddenGetterValue => base.OverriddenGetterValue;
+    private static new int PrivateStaticHidden => 0;
+    private new int DerivedHidden { get; set; }
 }
 """;
         project = project.AddDocument("TestMapActions.cs", SourceText.From(source, Encoding.UTF8)).Project;
@@ -169,22 +174,27 @@ public class SourceDerivedParameterList : SourceBaseParameterList
         var httpContext = CreateHttpContext();
         httpContext.Request.Query = new QueryCollection(new Dictionary<string, StringValues>()
         {
-            ["GrandparentValue"] = "1",
             ["Hidden"] = "2",
-            ["Value"] = "3",
+            ["PrivateStaticHidden"] = "3",
+            ["DerivedHidden"] = "9",
             ["PrivateSetValue"] = "9",
-            ["ProtectedSetValue"] = "9",
-            ["PrivateProtectedSetValue"] = "9",
             ["InternalSetValue"] = "9",
-            ["ProtectedInternalSetValue"] = "9",
-            ["OverriddenGetterValue"] = "9",
+            ["RequiredValue"] = "4",
             ["StaticValue"] = "9",
         });
 
         await endpoint.RequestDelegate(httpContext);
 
-        // Only properties with a public setter are bound, as in RequestDelegateFactory. The grandparent
-        // Hidden property is bound because the private Hidden property of the base type does not hide it.
-        Assert.Equal("1,2,3,20,30,40,50,60,6,0", httpContext.Items["input"]);
+        // A private property of a base type, or a private static property, does not hide an inherited property.
+        Assert.Equal(2, httpContext.Items["Hidden"]);
+        Assert.Equal(3, httpContext.Items["PrivateStaticHidden"]);
+        // A private instance property of the type itself hides the inherited property, as in Type.GetProperties().
+        Assert.Equal(70, httpContext.Items["DerivedHidden"]);
+        // Like RequestDelegateFactory, only properties with a public setter are bound.
+        Assert.Equal(20, httpContext.Items["PrivateSetValue"]);
+        Assert.Equal(50, httpContext.Items["InternalSetValue"]);
+        Assert.Equal(0, httpContext.Items["StaticValue"]);
+        // The object initializer must set a required property, so it is bound although its setter is internal.
+        Assert.Equal(4, httpContext.Items["RequiredValue"]);
     }
 }

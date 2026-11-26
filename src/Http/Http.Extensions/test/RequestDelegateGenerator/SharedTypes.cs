@@ -889,7 +889,8 @@ public class ParameterListReadOnlyPropertiesBase
         PrivateSetValue = 2;
         ProtectedSetValue = 3;
         ProtectedInternalSetValue = 4;
-        OverriddenGetterValue = 5;
+        PrivateProtectedSetValue = 5;
+        OverriddenGetterValue = 6;
     }
 
     public int ReadOnlyValue { get; }
@@ -900,6 +901,8 @@ public class ParameterListReadOnlyPropertiesBase
 
     public int ProtectedInternalSetValue { get; protected internal set; }
 
+    public int PrivateProtectedSetValue { get; private protected set; }
+
     public virtual int OverriddenGetterValue { get; set; }
 }
 
@@ -908,6 +911,16 @@ public class ParameterListWithInheritedReadOnlyProperties : ParameterListReadOnl
     public int Value { get; set; }
 
     public override int OverriddenGetterValue => base.OverriddenGetterValue;
+}
+
+public class ParameterListRequiredPropertyBase
+{
+    public required int RequiredValue { get; set; }
+}
+
+public class ParameterListWithInheritedRequiredProperty : ParameterListRequiredPropertyBase
+{
+    public int Value { get; set; }
 }
 
 public class ParameterListCaseVariantBase

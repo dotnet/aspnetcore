@@ -477,9 +477,11 @@ internal class EndpointParameter
         var numOfConstructors = constructors.Count();
         // When leveraging parameterless constructors, we want to ensure we only emit for writable
         // properties. We do not have this constraint if we are leveraging a parameterized constructor.
-        var properties = GetPublicProperties(type);
-        // Like RequestDelegateFactory, only assign properties that have a public setter.
-        var writableProperties = properties.Where(property => property.SetMethod is { DeclaredAccessibility: Accessibility.Public });
+        // Like RequestDelegateFactory, a property is writable when it has a public setter. A required
+        // property is also assigned, because the object initializer must set it.
+        var properties = GetPublicInstanceProperties(type).ToImmutableArray();
+        var writableProperties = properties.Where(property => property.SetMethod is { DeclaredAccessibility: Accessibility.Public }
+            || property is { IsRequired: true, SetMethod: not null });
 
         if (numOfConstructors == 1)
         {
@@ -536,29 +538,32 @@ internal class EndpointParameter
         return false;
     }
 
-    // Matches the Type.GetProperties() call in RequestDelegateFactory: public instance properties declared on the type
-    // or inherited from a base type. When a more derived type overrides or hides a property, the most derived one wins.
-    // Static properties and indexers cannot be set in an object initializer, so they are not returned.
-    private static IEnumerable<IPropertySymbol> GetPublicProperties(INamedTypeSymbol type)
+    // Mirrors Type.GetProperties() as RequestDelegateFactory and ParameterBindingMethodCache.FindConstructor use it:
+    // public properties declared on the type or inherited from a base type, where the most derived declaration of a
+    // name wins. Static properties and indexers are left out, because an object initializer cannot set them and
+    // RequestDelegateFactory cannot bind them either.
+    private static IEnumerable<IPropertySymbol> GetPublicInstanceProperties(INamedTypeSymbol type)
     {
         var seenPropertyNames = new HashSet<string>(StringComparer.Ordinal);
         foreach (var currentType in type.GetThisAndBaseTypes())
         {
-            if (currentType.SpecialType == SpecialType.System_Object)
-            {
-                break;
-            }
-
             var isBaseType = !SymbolEqualityComparer.Default.Equals(currentType, type);
             foreach (var property in currentType.GetMembers().OfType<IPropertySymbol>())
             {
-                // A private property of a base type is not visible to derived types, so it does not hide anything.
-                if (isBaseType && property.DeclaredAccessibility == Accessibility.Private)
+                // As in Type.GetProperties(), a private property hides an inherited one only when the type itself
+                // declares it as an instance property.
+                if (property.DeclaredAccessibility == Accessibility.Private && (isBaseType || property.IsStatic))
                 {
                     continue;
                 }
 
-                if (seenPropertyNames.Add(property.Name) && property is { DeclaredAccessibility: Accessibility.Public, IsStatic: false, IsIndexer: false })
+                // The most derived declaration of a name wins, even when it cannot be bound itself.
+                if (!seenPropertyNames.Add(property.Name))
+                {
+                    continue;
+                }
+
+                if (property is { DeclaredAccessibility: Accessibility.Public, IsStatic: false, IsIndexer: false })
                 {
                     yield return property;
                 }
