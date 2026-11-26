@@ -38,6 +38,58 @@ To build the JavaScript code, execute the following commands in a command shell:
 
  * `npm run build --workspace @microsoft/dotnet-js-interop`
 
+## WIP: generated-only Native AOT experiment
+
+`GeneratedInteropPrototype` is an experimental registration surface, not a finished source
+generator or an approved API. Reflection-based dispatch remains the default. To select the
+prototype exclusively, add this runtime feature switch to the consuming application's project:
+
+```xml
+<ItemGroup>
+  <RuntimeHostConfigurationOption Include="Microsoft.JSInterop.GeneratedOnly" Value="true" Trim="true" />
+</ItemGroup>
+```
+
+Before creating any `JSRuntime`, set `GeneratedInteropPrototype.ConfigureRuntime` to install
+application JSON metadata and register handwritten, strongly typed delegates. For example:
+
+```csharp
+GeneratedInteropPrototype.ConfigureRuntime = (runtime, options) =>
+{
+    options.TypeInfoResolverChain.Add(AppJsonContext.Default);
+    runtime.GeneratedInterop.RegisterStatic("MyApp", "Double", 1, (r, _, args) =>
+    {
+        var value = args[0].Deserialize(GeneratedInteropPrototype.Metadata<int>(r));
+        return ValueTask.FromResult<string?>(JsonSerializer.Serialize(
+            value * 2, GeneratedInteropPrototype.Metadata<int>(r)));
+    });
+};
+```
+
+`AppJsonContext` is the application's source-generated `JsonSerializerContext`. Register every
+application payload type, including value types. Use the runtime-bound `Metadata<T>` for both
+arguments and results so byte arrays and object/stream references retain their runtime converters.
+For each application `DotNetObjectReference<T>`, call `RegisterReferenceConverter<T>` during
+configuration to root a closed converter without runtime generic construction.
+
+Configure registrations once before dispatch begins. The process-wide mutable startup hook and
+the registry shape are scaffolding for this experiment, not a proposed production initialization
+model. Register asynchronous delegates with `isAsync: true`, deserialize all arguments before
+their first await, and serialize results after awaiting `Task<T>` or `ValueTask<T>`. These delegate
+contracts still require generator enforcement. Exact runtime types are used for instance lookup.
+Unregistered methods and missing JSON metadata fail explicitly; there is no reflection fallback
+when the switch is enabled.
+
+**Known blocker:** generated-only mode does not register framework-owned callbacks such as
+`WebRendererInteropMethods.DispatchEventAsync`. Blazor button clicks therefore fail in this mode.
+Framework registrations must be supplied by the owning assembly, not by application code reaching
+into private framework types. Component constructor preservation and remaining non-JSInterop
+trimming/AOT warnings are also unresolved. Existing instance-method rooting annotations remain.
+This experiment does not establish support for complete Native AOT Blazor applications.
+
+The WebView IPC envelope uses a separate source-generated context for its fixed transport types;
+application payloads have already passed through the runtime's converters before this layer.
+
 ## More Information
 
 For more information, see the [ASP.NET Core README](../../../README.md).

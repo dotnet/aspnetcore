@@ -1,1 +1,11 @@
 #nullable enable
+Microsoft.JSInterop.GeneratedInteropPrototype
+Microsoft.JSInterop.GeneratedInteropPrototype.GeneratedInteropPrototype() -> void
+Microsoft.JSInterop.GeneratedInteropPrototype.Invoker
+Microsoft.JSInterop.GeneratedInteropPrototype.RegisterInstance<T>(string! method, int arity, Microsoft.JSInterop.GeneratedInteropPrototype.Invoker! invoke, bool isAsync = false) -> void
+Microsoft.JSInterop.GeneratedInteropPrototype.RegisterStatic(string! assembly, string! method, int arity, Microsoft.JSInterop.GeneratedInteropPrototype.Invoker! invoke, bool isAsync = false) -> void
+Microsoft.JSInterop.JSRuntime.GeneratedInterop.get -> Microsoft.JSInterop.GeneratedInteropPrototype!
+static Microsoft.JSInterop.GeneratedInteropPrototype.ConfigureRuntime.get -> System.Action<Microsoft.JSInterop.JSRuntime!, System.Text.Json.JsonSerializerOptions!>?
+static Microsoft.JSInterop.GeneratedInteropPrototype.ConfigureRuntime.set -> void
+static Microsoft.JSInterop.GeneratedInteropPrototype.Metadata<T>(Microsoft.JSInterop.JSRuntime! runtime) -> System.Text.Json.Serialization.Metadata.JsonTypeInfo<T>!
+static Microsoft.JSInterop.GeneratedInteropPrototype.RegisterReferenceConverter<T>(Microsoft.JSInterop.JSRuntime! runtime, System.Text.Json.JsonSerializerOptions! options) -> void
