@@ -8,6 +8,7 @@ using Microsoft.AspNetCore.DataProtection;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
+using Microsoft.Extensions.Time.Testing;
 using Moq;
 
 namespace Microsoft.AspNetCore.Identity.Test;
@@ -117,7 +118,55 @@ public class IdentityOptionsTest
         Assert.NotSame(twoFactor.Events, passkey.Events);
         Assert.NotSame(twoFactor.TicketDataFormat, passkey.TicketDataFormat);
     }
+    [Fact]
+    public async Task PasskeyCookieConfigurationAfterIdentityOverridesInheritedLifetime()
+    {
+        var timeProvider = new FakeTimeProvider();
+        var services = new ServiceCollection();
+        services.AddLogging();
+        services.AddSingleton<TimeProvider>(timeProvider);
+        services.AddIdentityApiEndpoints<PocoUser>();
+        services.AddSingleton(Mock.Of<IUserStore<PocoUser>>());
+        var passkeyHandler = new Mock<IPasskeyHandler<PocoUser>>();
+        passkeyHandler.Setup(handler => handler.MakeRequestOptionsAsync(null, It.IsAny<HttpContext>()))
+            .ReturnsAsync(new PasskeyRequestOptionsResult
+            {
+                RequestOptionsJson = "{}",
+                AssertionState = "assertion-state",
+            });
+        services.AddSingleton(passkeyHandler.Object);
+        services.Configure<CookieAuthenticationOptions>(IdentityConstants.PasskeyScheme, options =>
+        {
+            options.ExpireTimeSpan = TimeSpan.FromMinutes(15);
+            options.SlidingExpiration = false;
+        });
+        using var provider = services.BuildServiceProvider();
+        using var scope = provider.CreateScope();
+        var context = new DefaultHttpContext { RequestServices = scope.ServiceProvider };
+        var signIn = scope.ServiceProvider.GetRequiredService<SignInManager<PocoUser>>();
+        signIn.Context = context;
+        Assert.Equal("{}", await signIn.MakePasskeyRequestOptionsAsync(null));
+        var cookie = context.Response.Headers.SetCookie.ToString().Split(';')[0];
+        Assert.StartsWith(IdentityConstants.PasskeyScheme + "=", cookie);
+        var options = provider.GetRequiredService<IOptionsMonitor<CookieAuthenticationOptions>>();
+        Assert.Equal(TimeSpan.FromMinutes(5), options.Get(IdentityConstants.TwoFactorUserIdScheme).ExpireTimeSpan);
 
+        timeProvider.Advance(TimeSpan.FromMinutes(6));
+        using var nextScope = provider.CreateScope();
+        var nextContext = new DefaultHttpContext { RequestServices = nextScope.ServiceProvider };
+        nextContext.Request.Headers.Cookie = cookie;
+        var result = await nextContext.AuthenticateAsync(IdentityConstants.PasskeyScheme);
+        Assert.True(result.Succeeded);
+        Assert.Equal("assertion-state", result.Properties.Items["PasskeyState"]);
+        Assert.Equal(TimeSpan.FromMinutes(15), result.Properties.ExpiresUtc - result.Properties.IssuedUtc);
+        timeProvider.Advance(TimeSpan.FromMinutes(10));
+        using var expiredScope = provider.CreateScope();
+        var expiredContext = new DefaultHttpContext { RequestServices = expiredScope.ServiceProvider };
+        expiredContext.Request.Headers.Cookie = cookie;
+        var expiredResult = await expiredContext.AuthenticateAsync(IdentityConstants.PasskeyScheme);
+        Assert.False(expiredResult.Succeeded);
+        Assert.NotNull(expiredResult.Failure);
+    }
     [Theory]
     [InlineData("/app-a")]
     [InlineData("/app-b")]
