@@ -165,6 +165,10 @@ jobs:
   steps:
   - checkout: self
     fetchDepth: 1
+    fetchTags: false
+    fetchFilter: blob:none
+    # Cone-mode sparse checkout also includes all root-level files (e.g. global.json and NuGet.config).
+    sparseCheckoutDirectories: eng .config
 
   - ${{ if and(eq(parameters.useEntraAuthentication, true), eq(parameters.azureSubscription, '')) }}:
     - pwsh: throw "azureSubscription must be set when useEntraAuthentication is true."

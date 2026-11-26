@@ -1,8 +1,9 @@
 ---
+runs-on: ubuntu-26.04
 if: ${{ github.event_name == 'workflow_dispatch' || !github.event.repository.fork }}
 
 # Evidence collection can exceed ubuntu-slim's 15-minute job limit.
-runs-on-slim: ubuntu-latest
+runs-on-slim: ubuntu-26.04
 
 on:
   schedule:
@@ -2118,6 +2119,7 @@ safe-outputs:
   # Fail closed on detected/undetermined threats: a blocked or failed detection job
   # (rather than a mere warning) prevents any PR/issue/comment safe output from running.
   threat-detection:
+    runs-on: ubuntu-26.04
     continue-on-error: false
 
 tools:
