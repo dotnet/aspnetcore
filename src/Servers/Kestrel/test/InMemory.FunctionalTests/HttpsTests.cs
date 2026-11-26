@@ -705,7 +705,7 @@ public class HttpsTests : LoggedTest
 
         var tlsOptions = await BindHttp3WithTlsCallbackAsync(context =>
         {
-            context.Connection.Features.Set<IHttpProtocolsFeature>(
+            context.Connection.Features.Set<HttpProtocolsFeature>(
                 new HttpProtocolsFeature(HttpProtocols.Http1));
 
             return ValueTask.FromResult(callbackOptions);

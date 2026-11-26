@@ -703,7 +703,7 @@ public class Http3TlsTests : LoggedTest
 
         var port = host.GetPort();
 
-        using (var h3Client = CreateHttp3Client("h3host"))
+        using (var h3Client = CreateClient("h3host"))
         {
             var request = new HttpRequestMessage(HttpMethod.Get, $"https://127.0.0.1:{port}/")
             {
@@ -718,7 +718,7 @@ public class Http3TlsTests : LoggedTest
             Assert.Equal("Hello from h3host", await response.Content.ReadAsStringAsync());
         }
 
-        using (var http1Client = CreateHttp3Client("http1host"))
+        using (var http1Client = CreateClient("http1host"))
         {
             var request = new HttpRequestMessage(HttpMethod.Get, $"https://127.0.0.1:{port}/")
             {
@@ -735,7 +735,7 @@ public class Http3TlsTests : LoggedTest
 
         await host.StopAsync().DefaultTimeout();
 
-        static HttpMessageInvoker CreateHttp3Client(string targetHost)
+        static HttpMessageInvoker CreateClient(string targetHost)
         {
             var handler = new SocketsHttpHandler
             {
