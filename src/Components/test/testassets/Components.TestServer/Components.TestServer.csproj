@@ -88,6 +88,8 @@
     <ProjectReference Include="$(RepoRoot)src\Components\test\testassets\BasicTestApp\BasicTestApp.csproj" />
     <ProjectReference Include="$(RepoRoot)src\Components\test\testassets\Components.WasmMinimal\Components.WasmMinimal.csproj" />
     <ProjectReference Include="$(RepoRoot)src\Components\test\testassets\Components.WasmRemoteAuthentication\Components.WasmRemoteAuthentication.csproj" />
+    <ProjectReference Include="$(RepoRoot)src\Components\test\testassets\Components.WasmRemoteAuthenticationTokenStorage\Components.WasmRemoteAuthenticationTokenStorage.csproj" />
+    <ProjectReference Include="$(RepoRoot)src\Components\test\testassets\Components.WasmRemoteAuthenticationSessionStorage\Components.WasmRemoteAuthenticationSessionStorage.csproj" />
   </ItemGroup>
 
   <ItemGroup>

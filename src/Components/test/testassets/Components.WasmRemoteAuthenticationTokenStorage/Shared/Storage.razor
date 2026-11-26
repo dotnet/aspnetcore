@@ -1,0 +1,15 @@
+﻿@* Licensed to the .NET Foundation under one or more agreements. *@
+@* The .NET Foundation licenses this file to you under the MIT license. *@
+
+@using Microsoft.AspNetCore.Components.WebAssembly.Authentication
+@using Microsoft.Extensions.Options
+
+@inject IOptionsSnapshot<RemoteAuthenticationOptions<OidcProviderOptions>> Options
+
+<p>
+    Token Storage Type: <strong id="token-storage-type">@TokenStorageDisplay</strong>
+</p>
+
+@code {
+    private string TokenStorageDisplay => Options.Value.ProviderOptions.TokenStorage.ToString();
+}
