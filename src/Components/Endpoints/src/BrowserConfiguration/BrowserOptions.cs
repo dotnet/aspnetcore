@@ -46,9 +46,13 @@ public sealed class BrowserOptions
 
         if (!context.Items.TryGetValue(Key, out var result))
         {
-            // Seed from endpoint metadata if available
-            var metadataOptions = context.GetEndpoint()?.Metadata.GetMetadata<BrowserOptions>();
-            var options = metadataOptions ?? new BrowserOptions();
+            // Seed a request-local copy from endpoint metadata, which is shared across requests
+            var options = new BrowserOptions();
+            if (context.GetEndpoint()?.Metadata.GetMetadata<BrowserOptions>() is { } metadataOptions)
+            {
+                ConfigureBrowser.MergeInto(options, metadataOptions);
+            }
+
             context.Items[Key] = options;
             return options;
         }

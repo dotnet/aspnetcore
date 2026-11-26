@@ -18,5 +18,6 @@ Its complete implementation is in ConversationEngineTests.cs.source.
 
 Existing feedback
 Thread feedback-17, on the newly added inner catch in ConversationEngine.cs:
-"We should avoid using an empty handler. Why is it needed?"
+"This empty handler swallows any exception thrown by the diagnostic sink, so the
+caller never observes a sink failure. Should sink failures propagate instead?"
 No reply or resolution is available.

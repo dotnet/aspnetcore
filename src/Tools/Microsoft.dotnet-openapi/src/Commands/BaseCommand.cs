@@ -225,17 +225,27 @@ internal abstract class BaseCommand : CommandLineApplication
             WorkingDirectory = projectFile.Directory.FullName,
             RedirectStandardError = true,
             RedirectStandardOutput = true,
+            InheritedHandles = [],
         };
 
-        using var process = Process.Start(startInfo);
-
         var timeout = 20;
-        if (!process.WaitForExit(timeout * 1000))
+        using CancellationTokenSource timeoutSource = new(TimeSpan.FromSeconds(timeout));
+        ProcessTextOutput processOutput;
+        try
+        {
+            processOutput = await Process.RunAndCaptureTextAsync(startInfo, timeoutSource.Token);
+        }
+        catch (OperationCanceledException) when (timeoutSource.IsCancellationRequested)
         {
             throw new ArgumentException($"Adding package `{packageId}` to `{projectFile.Directory}` took longer than {timeout} seconds.");
         }
 
-        if (process.ExitCode != 0)
+        if (processOutput.ExitStatus.Canceled)
+        {
+            throw new ArgumentException($"Adding package `{packageId}` to `{projectFile.Directory}` took longer than {timeout} seconds.");
+        }
+
+        if (processOutput.ExitStatus.ExitCode != 0)
         {
             using var csprojStream = projectFile.OpenRead();
             using var csprojReader = new StreamReader(csprojStream);
@@ -243,12 +253,12 @@ internal abstract class BaseCommand : CommandLineApplication
             // We suspect that sometimes dotnet add package is giving a non-zero exit code when it has actually succeeded.
             if (!csprojContent.Contains($"<PackageReference Include=\"{packageId}\" Version=\"{packageVersion}\""))
             {
-                var output = await process.StandardOutput.ReadToEndAsync();
-                var error = await process.StandardError.ReadToEndAsync();
+                var output = processOutput.StandardOutput;
+                var error = processOutput.StandardError;
                 await Out.WriteAsync(output);
                 await Error.WriteAsync(error);
 
-                throw new ArgumentException($"Adding package `{packageId}` to `{projectFile.Directory}` returned ExitCode `{process.ExitCode}` and gave error `{error}` and output `{output}`");
+                throw new ArgumentException($"Adding package `{packageId}` to `{projectFile.Directory}` returned ExitCode `{processOutput.ExitStatus.ExitCode}` and gave error `{error}` and output `{output}`");
             }
         }
     }

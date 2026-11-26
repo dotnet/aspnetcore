@@ -9,15 +9,17 @@ internal sealed class WorkDispatcher<TKey, TValue> where TKey : notnull
 {
     private readonly ConcurrentDictionary<TKey, Task<TValue?>> _workers = new();
 
-    public async Task<TValue?> ScheduleAsync(TKey key, Func<TKey, Task<TValue?>> valueFactory)
+    public async Task<TValue?> ScheduleAsync(TKey key, Func<TKey, Task<TValue?>> valueFactory, CancellationToken cancellationToken)
     {
         ArgumentNullException.ThrowIfNull(key);
 
         while (true)
         {
+            cancellationToken.ThrowIfCancellationRequested();
+
             if (_workers.TryGetValue(key, out var task))
             {
-                return await task;
+                return await task.WaitAsync(cancellationToken);
             }
 
             // This is the task that we'll return to all waiters. We'll complete it when the factory is complete
@@ -48,15 +50,17 @@ internal sealed class WorkDispatcher<TKey, TValue> where TKey : notnull
         }
     }
 
-    public async Task<TValue?> ScheduleAsync<TState>(TKey key, TState state, Func<TKey, TState, Task<TValue?>> valueFactory)
+    public async Task<TValue?> ScheduleAsync<TState>(TKey key, TState state, Func<TKey, TState, Task<TValue?>> valueFactory, CancellationToken cancellationToken)
     {
         ArgumentNullException.ThrowIfNull(key);
 
         while (true)
         {
+            cancellationToken.ThrowIfCancellationRequested();
+
             if (_workers.TryGetValue(key, out var task))
             {
-                return await task;
+                return await task.WaitAsync(cancellationToken);
             }
 
             // This is the task that we'll return to all waiters. We'll complete it when the factory is complete

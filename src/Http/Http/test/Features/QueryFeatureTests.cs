@@ -21,6 +21,55 @@ public class QueryFeatureTests
         Assert.Equal("bar", queryCollection["foo"]);
     }
 
+    [Fact]
+    public void QueryDecodesLongNamesAndValues()
+    {
+        // Encoded name and value longer than 256 characters with mixed escapes.
+        var encodedName = string.Concat(Enumerable.Repeat("n%C3%A9+", 50));
+        var encodedValue = string.Concat(Enumerable.Repeat("a%2Bb+c%26", 40));
+        var expectedName = string.Concat(Enumerable.Repeat("n\u00e9 ", 50));
+        var expectedValue = string.Concat(Enumerable.Repeat("a+b c&", 40));
+
+        var features = new FeatureCollection();
+        features[typeof(IHttpRequestFeature)] = new HttpRequestFeature { QueryString = $"?{encodedName}={encodedValue}&short=x%20y" };
+
+        var queryCollection = new QueryFeature(features).Query;
+
+        Assert.Equal(2, queryCollection.Count);
+        Assert.Equal(expectedValue, queryCollection[expectedName]);
+        Assert.Equal("x y", queryCollection["short"]);
+    }
+
+    [Theory]
+    [InlineData(4, "%20", " ")]
+    [InlineData(4, "+", " ")]
+    [InlineData(4, "+%20", "  ")]
+    [InlineData(256, "%20", " ")]
+    [InlineData(256, "+", " ")]
+    [InlineData(256, "+%20", "  ")]
+    [InlineData(257, "%20", " ")]
+    [InlineData(257, "+", " ")]
+    [InlineData(257, "+%20", "  ")]
+    [InlineData(1000, "%20", " ")]
+    [InlineData(1000, "+", " ")]
+    [InlineData(1000, "+%20", "  ")]
+    public void QueryDecodesNamesAndValuesOfVaryingLength(int encodedLength, string suffix, string decodedSuffix)
+    {
+        // Covers '%'-only, '+'-only and mixed inputs for short and long names/values, including lengths around 256.
+        var encoded = new string('x', encodedLength - suffix.Length) + suffix;
+        var expected = new string('x', encodedLength - suffix.Length) + decodedSuffix;
+        Assert.Equal(encodedLength, encoded.Length);
+
+        var features = new FeatureCollection();
+        features[typeof(IHttpRequestFeature)] = new HttpRequestFeature { QueryString = $"?{encoded}={encoded}&a+b=c%2Bd" };
+
+        var queryCollection = new QueryFeature(features).Query;
+
+        Assert.Equal(2, queryCollection.Count);
+        Assert.Equal(expected, queryCollection[expected]);
+        Assert.Equal("c+d", queryCollection["a b"]);
+    }
+
     [Theory]
     [InlineData("?key1=value1&key2=value2")]
     [InlineData("key1=value1&key2=value2")]

@@ -1,5 +1,5 @@
-# gh-aw-metadata: {"schema_version":"v4","frontmatter_hash":"a87f808e6c335fe17485e49a9a46a5854912cc59d2372b4851aa5e076dcb5b64","body_hash":"04b808f2cd0d4ae1f431a885e216c767ed6734c961973d9e2c2ae858199c2c8c","compiler_version":"v0.92.0","strict":true,"agent_id":"copilot","agent_model":"gpt-5.6-sol","engine_versions":{"copilot":"1.0.80"}}
-# gh-aw-manifest: {"version":1,"secrets":["COPILOT_PAT_0","COPILOT_PAT_1","COPILOT_PAT_2","COPILOT_PAT_3","COPILOT_PAT_4","COPILOT_PAT_5","COPILOT_PAT_6","COPILOT_PAT_7","COPILOT_PAT_8","COPILOT_PAT_9","GH_AW_GITHUB_MCP_SERVER_TOKEN","GH_AW_GITHUB_TOKEN","GITHUB_TOKEN"],"actions":[{"repo":"actions/checkout","sha":"3d3c42e5aac5ba805825da76410c181273ba90b1","version":"v7.0.1"},{"repo":"actions/download-artifact","sha":"9000827ccba6bdab643e8b6fd33ac0654aef8333","version":"v8.0.2"},{"repo":"actions/github-script","sha":"3a2844b7e9c422d3c10d287c895573f7108da1b3","version":"v9.0.0"},{"repo":"actions/setup-dotnet","sha":"a98b56852c35b8e3190ac28c8c2271da59106c68","version":"v6.0.0"},{"repo":"actions/setup-node","sha":"949feb2413d6458794dcd2491c4babbbce0c15c1","version":"v7.1.0"},{"repo":"actions/upload-artifact","sha":"cf430e030ddbb5b0abf93d22962f4752f3646cd9","version":"v7.0.2"},{"repo":"github/gh-aw-actions/setup","sha":"458b269006dcf88e3b5496b6fbecabe4b9a0f954","version":"v0.92.0"}],"skills":[".github/skills/review-pull-request"],"containers":[{"image":"ghcr.io/github/gh-aw-firewall/agent:0.28.57","digest":"sha256:a9861b2fad1d29c586bbbf98840a61056e30e2720d8d9ec2c0def9049566bd8a","pinned_image":"ghcr.io/github/gh-aw-firewall/agent:0.28.57@sha256:a9861b2fad1d29c586bbbf98840a61056e30e2720d8d9ec2c0def9049566bd8a"},{"image":"ghcr.io/github/gh-aw-firewall/api-proxy:0.28.57","digest":"sha256:f2925ff32dc972a5d8b90a7785b6ca68052efd2575fe896556ac457e22e86dcc","pinned_image":"ghcr.io/github/gh-aw-firewall/api-proxy:0.28.57@sha256:f2925ff32dc972a5d8b90a7785b6ca68052efd2575fe896556ac457e22e86dcc"},{"image":"ghcr.io/github/gh-aw-firewall/squid:0.28.57","digest":"sha256:be808c16b535ebabd070eebe086fe6bffd5bb86b2e5fe8e5cdad30068eb9c0ac","pinned_image":"ghcr.io/github/gh-aw-firewall/squid:0.28.57@sha256:be808c16b535ebabd070eebe086fe6bffd5bb86b2e5fe8e5cdad30068eb9c0ac"},{"image":"ghcr.io/github/gh-aw-mcpg:v0.4.31","digest":"sha256:dbec0f2ddef6adf83b7764019323096e3e5cc0f3886255f6320555b7fe2a7caf","pinned_image":"ghcr.io/github/gh-aw-mcpg:v0.4.31@sha256:dbec0f2ddef6adf83b7764019323096e3e5cc0f3886255f6320555b7fe2a7caf"},{"image":"ghcr.io/github/gh-aw-node","digest":"sha256:0daa8971fa4732b647150cb6524a6b0804b68d5d24f6f58b5dd1af23bd63fb23","pinned_image":"ghcr.io/github/gh-aw-node@sha256:0daa8971fa4732b647150cb6524a6b0804b68d5d24f6f58b5dd1af23bd63fb23"}],"mcp_servers":[{"name":"safeoutputs","tools":["add_comment","create_pull_request_review_comment","missing_data","missing_tool","noop","report_incomplete","submit_pull_request_review"]}],"threat_detection":{"mode":"enabled"}}
+# gh-aw-metadata: {"schema_version":"v4","frontmatter_hash":"bb4049513eeaa77ee837dc983304a1bfa46c7964d45a307e4561da74eb1a30a4","body_hash":"8eb7cca1ac66d1a0c4dd0cb3b04b29d1a06b0b623844e8294423b24b8f948e3d","compiler_version":"v0.92.0","strict":true,"agent_id":"copilot","agent_model":"gpt-6.2-sol","engine_versions":{"copilot":"1.0.103"},"agent_image_runner":"ubuntu-26.04"}
+# gh-aw-manifest: {"version":1,"secrets":["COPILOT_PAT_0","COPILOT_PAT_1","COPILOT_PAT_2","COPILOT_PAT_3","COPILOT_PAT_4","COPILOT_PAT_5","COPILOT_PAT_6","COPILOT_PAT_7","COPILOT_PAT_8","COPILOT_PAT_9","GH_AW_GITHUB_MCP_SERVER_TOKEN","GH_AW_GITHUB_TOKEN","GITHUB_TOKEN"],"actions":[{"repo":"actions/checkout","sha":"3d3c42e5aac5ba805825da76410c181273ba90b1","version":"v7.0.1"},{"repo":"actions/download-artifact","sha":"9000827ccba6bdab643e8b6fd33ac0654aef8333","version":"v8.0.2"},{"repo":"actions/github-script","sha":"3a2844b7e9c422d3c10d287c895573f7108da1b3","version":"v9.0.0"},{"repo":"actions/setup-dotnet","sha":"0f4a354dd5547a28c70b7853dbd95d5b67886e73","version":"v6.1.0"},{"repo":"actions/setup-node","sha":"949feb2413d6458794dcd2491c4babbbce0c15c1","version":"v7.1.0"},{"repo":"actions/upload-artifact","sha":"cf430e030ddbb5b0abf93d22962f4752f3646cd9","version":"v7.0.2"},{"repo":"github/gh-aw-actions/setup","sha":"458b269006dcf88e3b5496b6fbecabe4b9a0f954","version":"v0.92.0"}],"skills":[".github/skills/code-review"],"containers":[{"image":"ghcr.io/github/gh-aw-firewall/agent:0.28.57","digest":"sha256:a9861b2fad1d29c586bbbf98840a61056e30e2720d8d9ec2c0def9049566bd8a","pinned_image":"ghcr.io/github/gh-aw-firewall/agent:0.28.57@sha256:a9861b2fad1d29c586bbbf98840a61056e30e2720d8d9ec2c0def9049566bd8a"},{"image":"ghcr.io/github/gh-aw-firewall/api-proxy:0.28.57","digest":"sha256:f2925ff32dc972a5d8b90a7785b6ca68052efd2575fe896556ac457e22e86dcc","pinned_image":"ghcr.io/github/gh-aw-firewall/api-proxy:0.28.57@sha256:f2925ff32dc972a5d8b90a7785b6ca68052efd2575fe896556ac457e22e86dcc"},{"image":"ghcr.io/github/gh-aw-firewall/squid:0.28.57","digest":"sha256:be808c16b535ebabd070eebe086fe6bffd5bb86b2e5fe8e5cdad30068eb9c0ac","pinned_image":"ghcr.io/github/gh-aw-firewall/squid:0.28.57@sha256:be808c16b535ebabd070eebe086fe6bffd5bb86b2e5fe8e5cdad30068eb9c0ac"},{"image":"ghcr.io/github/gh-aw-mcpg:v0.4.31","digest":"sha256:dbec0f2ddef6adf83b7764019323096e3e5cc0f3886255f6320555b7fe2a7caf","pinned_image":"ghcr.io/github/gh-aw-mcpg:v0.4.31@sha256:dbec0f2ddef6adf83b7764019323096e3e5cc0f3886255f6320555b7fe2a7caf"},{"image":"ghcr.io/github/gh-aw-node","digest":"sha256:0daa8971fa4732b647150cb6524a6b0804b68d5d24f6f58b5dd1af23bd63fb23","pinned_image":"ghcr.io/github/gh-aw-node@sha256:0daa8971fa4732b647150cb6524a6b0804b68d5d24f6f58b5dd1af23bd63fb23"}],"mcp_servers":[{"name":"safeoutputs","tools":["add_comment","create_pull_request_review_comment","missing_data","missing_tool","noop","report_incomplete","submit_pull_request_review"]}],"threat_detection":{"mode":"enabled"}}
 # This file was automatically generated by gh-aw (v0.92.0). DO NOT EDIT. To debug this workflow, load the skill at https://github.com/github/gh-aw/blob/main/debug.md
 #
 #    ___                   _   _
@@ -23,7 +23,7 @@
 #
 # For more information: https://github.github.com/gh-aw/introduction/overview/
 #
-# Maintainer-invoked, source-only pull request review using the repository's review-pull-request skill and a trusted frozen bundle. Validated findings become at most five inline comments and one COMMENT-only review, pinned to the reviewed commit. Findings are posted directly to the pull request; this is advisory, never a merge gate.
+# Maintainer-invoked, source-only pull request review using the repository's code-review skill and a trusted frozen bundle. Validated findings become at most five inline comments and one COMMENT-only review, pinned to the reviewed commit. Findings are posted directly to the pull request; this is advisory, never a merge gate.
 #
 # Resolved workflow manifest:
 #   Imports:
@@ -54,7 +54,7 @@
 #   - actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
 #   - actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
 #   - actions/github-script@3a2844b7e9c422d3c10d287c895573f7108da1b3 # v9.0.0
-#   - actions/setup-dotnet@a98b56852c35b8e3190ac28c8c2271da59106c68 # v6.0.0
+#   - actions/setup-dotnet@0f4a354dd5547a28c70b7853dbd95d5b67886e73 # v6.1.0
 #   - actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
 #   - actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
 #   - github/gh-aw-actions/setup@458b269006dcf88e3b5496b6fbecabe4b9a0f954 # v0.92.0
@@ -147,7 +147,7 @@ jobs:
         env:
           GH_AW_SETUP_WORKFLOW_NAME: "ASP.NET Core Pull Request Review"
           GH_AW_CURRENT_WORKFLOW_REF: ${{ github.repository }}/.github/workflows/pull-request-review.lock.yml@${{ github.ref }}
-          GH_AW_INFO_VERSION: "1.0.80"
+          GH_AW_INFO_VERSION: "1.0.103"
           GH_AW_INFO_AWF_VERSION: "v0.28.57"
           GH_AW_INFO_ENGINE_ID: "copilot"
       - name: Mask OTLP telemetry headers
@@ -157,9 +157,9 @@ jobs:
         env:
           GH_AW_INFO_ENGINE_ID: "copilot"
           GH_AW_INFO_ENGINE_NAME: "GitHub Copilot CLI"
-          GH_AW_INFO_MODEL: "gpt-5.6-sol"
-          GH_AW_INFO_VERSION: "1.0.80"
-          GH_AW_INFO_AGENT_VERSION: "1.0.80"
+          GH_AW_INFO_MODEL: "gpt-6.2-sol"
+          GH_AW_INFO_VERSION: "1.0.103"
+          GH_AW_INFO_AGENT_VERSION: "1.0.103"
           GH_AW_INFO_CLI_VERSION: "v0.92.0"
           GH_AW_INFO_WORKFLOW_NAME: "ASP.NET Core Pull Request Review"
           GH_AW_INFO_EXPERIMENTAL: "false"
@@ -172,8 +172,7 @@ jobs:
           GH_AW_INFO_FIREWALL_TYPE: "squid"
           GH_AW_INFO_AGENT_RUNTIME: ""
           GH_AW_COMPILED_STRICT: "true"
-          GH_AW_INFO_MODEL_COSTS: '{"providers":{"github-copilot":{"models":{"gpt-5.6-sol":{"cost":{"cache_read":"4e-07","cache_write":"5e-06","input":"4e-06","output":"2e-05"}}}}}}'
-          GH_AW_INFO_SKILLS: '[".github/skills/review-pull-request"]'
+          GH_AW_INFO_SKILLS: '[".github/skills/code-review"]'
         uses: actions/github-script@3a2844b7e9c422d3c10d287c895573f7108da1b3 # v9.0.0
         with:
           script: |
@@ -212,7 +211,7 @@ jobs:
           GH_AW_HAS_LABEL_COMMAND: "false"
           GH_AW_GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           GH_AW_MAX_DAILY_AI_CREDITS: ${{ vars.GH_AW_DEFAULT_MAX_DAILY_AI_CREDITS || '5000' }}
-          GH_AW_MAX_AI_CREDITS: "1500"
+          GH_AW_MAX_AI_CREDITS: "150"
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
           script: |
@@ -301,14 +300,14 @@ jobs:
             await main();
       - name: Upgrade gh CLI for frontmatter skills
         run: bash "${RUNNER_TEMP}/gh-aw/actions/ensure_gh_cli_min_version.sh" "2.90.0"
-      - name: "Install frontmatter skill: .github/skills/review-pull-request"
+      - name: "Install frontmatter skill: .github/skills/code-review"
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           GH_AW_INFO_ENGINE_ID: "copilot"
           GH_AW_GH_SKILL_AGENT_NAME: "github-copilot"
           GH_AW_SKILL_DIR: ".github/skills"
           GH_AW_SKILL_INSTALL_INDEX: "1"
-          GH_AW_FRONTMATTER_SKILLS: ".github/skills/review-pull-request"
+          GH_AW_FRONTMATTER_SKILLS: ".github/skills/code-review"
         uses: actions/github-script@3a2844b7e9c422d3c10d287c895573f7108da1b3 # v9.0.0
         with:
           script: |
@@ -475,20 +474,20 @@ jobs:
       - freeze_pr_head
       - pat_pool
     if: needs.activation.outputs.daily_ai_credits_exceeded != 'true'
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-26.04
     environment: copilot-pat-pool
     # Permissions for the agent job (workflow permissions default to none).
     permissions:
       contents: read
       issues: read
       pull-requests: read
-    timeout-minutes: 90
+    timeout-minutes: 60
     env:
       DEFAULT_BRANCH: ${{ github.event.repository.default_branch }}
       GH_AW_ASSETS_ALLOWED_EXTS: ""
       GH_AW_ASSETS_BRANCH: ""
       GH_AW_ASSETS_MAX_SIZE_KB: 0
-      GH_AW_ENGINE_VERSION: "1.0.80"
+      GH_AW_ENGINE_VERSION: "1.0.103"
       GH_AW_MCP_LOG_DIR: /tmp/gh-aw/mcp-logs/safeoutputs
       GH_AW_PR_HEAD_BASE_BRANCH: ""
       GH_AW_PR_HEAD_BASE_PR_NUMBER: ""
@@ -534,7 +533,7 @@ jobs:
         env:
           GH_AW_SETUP_WORKFLOW_NAME: "ASP.NET Core Pull Request Review"
           GH_AW_CURRENT_WORKFLOW_REF: ${{ github.repository }}/.github/workflows/pull-request-review.lock.yml@${{ github.ref }}
-          GH_AW_INFO_VERSION: "1.0.80"
+          GH_AW_INFO_VERSION: "1.0.103"
           GH_AW_INFO_AWF_VERSION: "v0.28.57"
           GH_AW_INFO_ENGINE_ID: "copilot"
       - name: Set runtime paths
@@ -560,6 +559,11 @@ jobs:
           evidence_tmp="/tmp/gh-aw/agent_execution.json.tmp"
           printf '{"version":1,"component":"agent","run_id":%s,"run_attempt":%s,"state":"not_started"}\n' "$GITHUB_RUN_ID" "$GITHUB_RUN_ATTEMPT" > "$evidence_tmp"
           mv "$evidence_tmp" "/tmp/gh-aw/agent_execution.json"
+      - name: Setup Node.js
+        uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version: '24'
+          package-manager-cache: false
       - name: Create gh-aw temp directory
         run: bash "${RUNNER_TEMP}/gh-aw/actions/create_gh_aw_tmp_dir.sh"
       - name: Configure gh CLI for GitHub Enterprise
@@ -572,7 +576,7 @@ jobs:
           name: activation
           path: /tmp/gh-aw
       - name: Install GitHub Copilot CLI
-        run: bash "${RUNNER_TEMP}/gh-aw/actions/install_copilot_cli.sh" 1.0.80
+        run: bash "${RUNNER_TEMP}/gh-aw/actions/install_copilot_cli.sh" 1.0.103
         env:
           GH_HOST: github.com
       - name: Install AWF binary
@@ -600,7 +604,7 @@ jobs:
           REVIEW_REPO: ${{ github.repository }}
         id: prepare_review_bundle
         name: Prepare trusted frozen review bundle
-        run: "set -euo pipefail\n[[ \"${GITHUB_WORKFLOW_SHA:-}\" =~ ^[a-f0-9]{40}$ ]]\nproducer_dir=\"$(mktemp -d \"${RUNNER_TEMP}/review-producer.XXXXXX\")\"\nfor filename in prepare-review.cs Directory.Build.props Directory.Build.targets Directory.Packages.props; do\n  gh api -H 'Accept: application/vnd.github.raw' \\\n    \"repos/$REVIEW_REPO/contents/.github/skills/review-pull-request/scripts/$filename?ref=$GITHUB_WORKFLOW_SHA\" \\\n    > \"$producer_dir/$filename\"\n  test -s \"$producer_dir/$filename\"\ndone\ndotnet run \"$producer_dir/prepare-review.cs\" -- \\\n  --repo \"$REVIEW_REPO\" --pr \"$REVIEW_PR\" --head \"$REVIEW_HEAD\" \\\n  --base-tip \"$REVIEW_BASE\" --merge-base \"$REVIEW_MERGE_BASE\" --base-ref \"$REVIEW_BASE_REF\" \\\n  --guidance \"$REVIEW_REPO@$GITHUB_WORKFLOW_SHA\" --output /tmp/gh-aw/review-bundle\ntest -s /tmp/gh-aw/review-bundle/manifest.json\nexpected_worker_count=\"$(node -e '\n  const manifest = JSON.parse(require(\"fs\").readFileSync(process.argv[1], \"utf8\"));\n  if (manifest.ready !== true) {\n    process.stdout.write(\"0\");\n  } else if (!Array.isArray(manifest.guides) || manifest.guides.length === 0) {\n    throw new Error(\"Ready review manifest has no routed guides.\");\n  } else {\n    process.stdout.write(String(manifest.guides.length));\n  }\n' /tmp/gh-aw/review-bundle/manifest.json)\"\nprintf 'expected_worker_count=%s\\n' \"$expected_worker_count\" >> \"$GITHUB_OUTPUT\"\nsudo chown -R root:root /tmp/gh-aw/review-bundle\nsudo chmod -R a+rX,a-w /tmp/gh-aw/review-bundle"
+        run: "set -euo pipefail\n[[ \"${GITHUB_WORKFLOW_SHA:-}\" =~ ^[a-f0-9]{40}$ ]]\nproducer_dir=\"$(mktemp -d \"${RUNNER_TEMP}/review-producer.XXXXXX\")\"\nfor filename in prepare-review.cs Directory.Build.props Directory.Build.targets Directory.Packages.props; do\n  gh api -H 'Accept: application/vnd.github.raw' \\\n    \"repos/$REVIEW_REPO/contents/.github/skills/review-pull-request/scripts/$filename?ref=$GITHUB_WORKFLOW_SHA\" \\\n    > \"$producer_dir/$filename\"\n  test -s \"$producer_dir/$filename\"\ndone\ndotnet run \"$producer_dir/prepare-review.cs\" -- \\\n  --repo \"$REVIEW_REPO\" --pr \"$REVIEW_PR\" --head \"$REVIEW_HEAD\" \\\n  --base-tip \"$REVIEW_BASE\" --merge-base \"$REVIEW_MERGE_BASE\" --base-ref \"$REVIEW_BASE_REF\" \\\n  --guidance \"$REVIEW_REPO@$GITHUB_WORKFLOW_SHA\" --output /tmp/gh-aw/review-bundle\ntest -s /tmp/gh-aw/review-bundle/manifest.json\nsudo chown -R root:root /tmp/gh-aw/review-bundle\nsudo chmod -R a+rX,a-w /tmp/gh-aw/review-bundle"
 
       - name: Download container images
         run: bash "${RUNNER_TEMP}/gh-aw/actions/download_docker_images.sh" ghcr.io/github/gh-aw-firewall/agent:0.28.57@sha256:a9861b2fad1d29c586bbbf98840a61056e30e2720d8d9ec2c0def9049566bd8a ghcr.io/github/gh-aw-firewall/api-proxy:0.28.57@sha256:f2925ff32dc972a5d8b90a7785b6ca68052efd2575fe896556ac457e22e86dcc ghcr.io/github/gh-aw-firewall/squid:0.28.57@sha256:be808c16b535ebabd070eebe086fe6bffd5bb86b2e5fe8e5cdad30068eb9c0ac ghcr.io/github/gh-aw-mcpg:v0.4.31@sha256:dbec0f2ddef6adf83b7764019323096e3e5cc0f3886255f6320555b7fe2a7caf ghcr.io/github/gh-aw-node@sha256:0daa8971fa4732b647150cb6524a6b0804b68d5d24f6f58b5dd1af23bd63fb23
@@ -964,7 +968,7 @@ jobs:
         id: agentic_execution
         # Copilot CLI tool arguments (sorted):
         # --allow-tool safeoutputs
-        timeout-minutes: 90
+        timeout-minutes: 30
         run: |
           set -o pipefail
           printf '%s' "$(date +%s%3N)" > /tmp/gh-aw/agent_cli_start_ms.txt
@@ -992,7 +996,7 @@ jobs:
           export COPILOT_API_KEY="$COPILOT_DUMMY_BYOK"
           (umask 177 && touch /tmp/gh-aw/agent-stdio.log)
           # shellcheck disable=SC2016
-          printf '%s\n' '{"$schema":"https://github.com/github/gh-aw-firewall/releases/download/v0.28.57/awf-config.schema.json","network":{"allowDomains":["*.githubusercontent.com","api.npms.io","api.snapcraft.io","archive.ubuntu.com","azure.archive.ubuntu.com","bun.sh","cdn.jsdelivr.net","codeload.github.com","crl.geotrust.com","crl.globalsign.com","crl.identrust.com","crl.sectigo.com","crl.thawte.com","crl.usertrust.com","crl.verisign.com","crl3.digicert.com","crl4.digicert.com","crls.ssl.com","deb.nodesource.com","deno.land","docs.github.com","esm.sh","get.pnpm.io","github-cloud.githubusercontent.com","github-cloud.s3.amazonaws.com","github.blog","github.com","github.githubassets.com","googleapis.deno.dev","googlechromelabs.github.io","json-schema.org","json.schemastore.org","jsr.io","keyserver.ubuntu.com","lfs.github.com","nodejs.org","npm.pkg.github.com","npmjs.com","npmjs.org","objects.githubusercontent.com","ocsp.digicert.com","ocsp.geotrust.com","ocsp.globalsign.com","ocsp.identrust.com","ocsp.sectigo.com","ocsp.ssl.com","ocsp.thawte.com","ocsp.usertrust.com","ocsp.verisign.com","packagecloud.io","packages.cloud.google.com","packages.microsoft.com","patch-diff.githubusercontent.com","patchdiff.githubusercontent.com","ppa.launchpad.net","raw.githubusercontent.com","registry.bower.io","registry.npmjs.com","registry.npmjs.org","registry.yarnpkg.com","repo.yarnpkg.com","s.symcb.com","s.symcd.com","security.ubuntu.com","skimdb.npmjs.com","storage.googleapis.com","telemetry.vercel.com","ts-crl.ws.symantec.com","ts-ocsp.ws.symantec.com","www.googleapis.com","www.npmjs.com","www.npmjs.org","yarnpkg.com"],"isolation":true,"topologyAttach":["awmg-mcpg"]},"apiProxy":{"enabled":true,"enableTokenSteering":true,"maxRuns":200,"maxCacheMisses":5,"maxAiCredits":1500,"modelFallback":{"enabled":false},"providers":{"github-copilot":{"models":{"gpt-5.6-sol":{"cost":{"cache_read":"4e-07","cache_write":"5e-06","input":"4e-06","output":"2e-05"}}}}},"models":{"agent":["sonnet-6x","gpt-6","gpt-5.4","gpt-5.5","gpt-5.6","gpt-5.3","gemini-pro","any"],"antigravity":["copilot/antigravity*","google/antigravity*","gemini/antigravity*"],"any":["copilot/*","anthropic/*","openai/*","google/*","gemini/*"],"auto":["copilot/auto","large"],"claude":["agent"],"codex":["agent"],"coding":["copilot/gpt-5*codex*","openai/gpt-5*codex*","gpt-5-codex","kimi"],"computer-use":["copilot/*computer-use*","google/*computer-use*","gemini/*computer-use*","openai/*computer-use*"],"copilot":["agent"],"deep-research":["copilot/deep-research*","copilot/o3-deep-research*","copilot/o4-mini-deep-research*","google/deep-research*","gemini/deep-research*","openai/o3-deep-research*","openai/o4-mini-deep-research*"],"detection":["small"],"evals":["small"],"fable":["copilot/*fable*","anthropic/*fable*"],"gemini":["agent"],"gemini-3-flash":["copilot/gemini-3*flash*","google/gemini-3*flash*","gemini/gemini-3*flash*"],"gemini-3-pro":["copilot/gemini-3*pro*","google/gemini-3*pro*","google/nano-banana*","gemini/gemini-3*pro*"],"gemini-3.1-flash":["copilot/gemini-3.1*flash*","google/gemini-3.1*flash*","gemini/gemini-3.1*flash*"],"gemini-3.1-pro":["copilot/gemini-3.1*pro*","google/gemini-3.1*pro*","gemini/gemini-3.1*pro*"],"gemini-3.5-flash":["copilot/gemini-3.5*flash*","google/gemini-3.5*flash*","gemini/gemini-3.5*flash*"],"gemini-3.6-flash":["copilot/gemini-3.6*flash*","google/gemini-3.6*flash*","gemini/gemini-3.6*flash*"],"gemini-3.7-flash":["copilot/gemini-3.7*flash*","google/gemini-3.7*flash*","gemini/gemini-3.7*flash*"],"gemini-3.8-flash":["copilot/gemini-3.8*flash*","google/gemini-3.8*flash*","gemini/gemini-3.8*flash*"],"gemini-flash":["copilot/gemini-*flash*","google/gemini-*flash*","gemini/gemini-*flash*"],"gemini-flash-lite":["copilot/gemini-*flash*lite*","google/gemini-*flash*lite*","gemini/gemini-*flash*lite*"],"gemini-omni":["copilot/gemini-omni*","google/gemini-omni*","gemini/gemini-omni*"],"gemini-pro":["copilot/gemini-*pro*","google/gemini-*pro*","gemini/gemini-*pro*"],"gemma":["copilot/gemma*","google/gemma*","gemini/gemma*"],"gpt-5":["copilot/gpt-5*","openai/gpt-5*"],"gpt-5-codex":["copilot/gpt-5*codex*","openai/gpt-5*codex*"],"gpt-5-mini":["copilot/gpt-5*mini*","openai/gpt-5*mini*"],"gpt-5-nano":["copilot/gpt-5*nano*","openai/gpt-5*nano*"],"gpt-5-pro":["copilot/gpt-5*pro*","openai/gpt-5*pro*"],"gpt-5.1":["copilot/gpt-5.1*","openai/gpt-5.1*"],"gpt-5.2":["copilot/gpt-5.2*","openai/gpt-5.2*"],"gpt-5.3":["copilot/gpt-5.3*","openai/gpt-5.3*"],"gpt-5.4":["copilot/gpt-5.4*","openai/gpt-5.4*"],"gpt-5.5":["copilot/gpt-5.5*","openai/gpt-5.5*"],"gpt-5.6":["copilot/gpt-5.6*","openai/gpt-5.6*"],"gpt-6":["copilot/gpt-6*","openai/gpt-6*"],"grok":["copilot/*grok*","openai/*grok*"],"haiku":["copilot/*haiku*","anthropic/*haiku*"],"image-generation":["copilot/gpt-image*","openai/gpt-image*","openai/chatgpt-image*","copilot/gemini-*image*","google/gemini-*image*","gemini/gemini-*image*","google/imagen*"],"kimi":["copilot/kimi*","openai/kimi*"],"kiwi":["copilot/kiwi*","openai/kiwi*"],"large":["sonnet","gpt-6","gpt-5-pro","gpt-5","gemini-pro"],"lyria":["google/lyria*","gemini/lyria*","copilot/lyria*"],"mai-code":["copilot/MAI-Code*","copilot/mai-code*","openai/MAI-Code*"],"mai-code-1-flash-picker":["copilot/MAI-Code-1-Flash-picker*","copilot/mai-code-1-flash-picker*","openai/MAI-Code-1-Flash-picker*"],"mini":["haiku","gpt-5-mini","gpt-5-nano","gemini-flash-lite"],"nano-banana":["copilot/nano-banana*","google/nano-banana*","gemini/nano-banana*"],"opus":["copilot/*opus*","anthropic/*opus*"],"opusplan":["opus?effort=high"],"raptor-mini":["copilot/raptor*","openai/raptor*"],"reasoning":["copilot/o1*","copilot/o3*","copilot/o4*","openai/o1*","openai/o3*","openai/o4*"],"robotics":["copilot/*robotics*","google/*robotics*","gemini/*robotics*"],"small":["mini"],"small-agent":["haiku","gpt-5-mini","gemini-flash"],"sonnet":["copilot/*sonnet*","anthropic/*sonnet*"],"sonnet-6x":["copilot/*sonnet-4.5*","copilot/*sonnet-4.6*","copilot/*sonnet-5*","copilot/*sonnet-4-5-*","anthropic/*sonnet-4-5-*","copilot/*sonnet-4-6*","anthropic/*sonnet-4-6*","anthropic/*sonnet-5*"],"summarization":["haiku","gpt-5-mini","gemini-flash-lite","mini"],"veo":["google/veo*","gemini/veo*"],"vision":["copilot/gemini-*image*","google/gemini-*image*","gemini/gemini-*image*","copilot/gemini-*flash*","google/gemini-*flash*","gemini/gemini-*flash*"]}},"container":{"imageTag":"0.28.57,squid=sha256:be808c16b535ebabd070eebe086fe6bffd5bb86b2e5fe8e5cdad30068eb9c0ac,agent=sha256:a9861b2fad1d29c586bbbf98840a61056e30e2720d8d9ec2c0def9049566bd8a,api-proxy=sha256:f2925ff32dc972a5d8b90a7785b6ca68052efd2575fe896556ac457e22e86dcc,cli-proxy=sha256:4584f030659ee51958223a3c6156e8119c6a94affbfcd92ce75f204702c52641","agentTimeout":90},"logging":{"proxyLogsDir":"/tmp/gh-aw/sandbox/firewall/logs","auditDir":"/tmp/gh-aw/sandbox/firewall/audit"}}' > "${RUNNER_TEMP}/gh-aw/awf-config.json"
+          printf '%s\n' '{"$schema":"https://github.com/github/gh-aw-firewall/releases/download/v0.28.57/awf-config.schema.json","network":{"allowDomains":["*.githubusercontent.com","api.npms.io","api.snapcraft.io","archive.ubuntu.com","azure.archive.ubuntu.com","bun.sh","cdn.jsdelivr.net","codeload.github.com","crl.geotrust.com","crl.globalsign.com","crl.identrust.com","crl.sectigo.com","crl.thawte.com","crl.usertrust.com","crl.verisign.com","crl3.digicert.com","crl4.digicert.com","crls.ssl.com","deb.nodesource.com","deno.land","docs.github.com","esm.sh","get.pnpm.io","github-cloud.githubusercontent.com","github-cloud.s3.amazonaws.com","github.blog","github.com","github.githubassets.com","googleapis.deno.dev","googlechromelabs.github.io","json-schema.org","json.schemastore.org","jsr.io","keyserver.ubuntu.com","lfs.github.com","nodejs.org","npm.pkg.github.com","npmjs.com","npmjs.org","objects.githubusercontent.com","ocsp.digicert.com","ocsp.geotrust.com","ocsp.globalsign.com","ocsp.identrust.com","ocsp.sectigo.com","ocsp.ssl.com","ocsp.thawte.com","ocsp.usertrust.com","ocsp.verisign.com","packagecloud.io","packages.cloud.google.com","packages.microsoft.com","patch-diff.githubusercontent.com","patchdiff.githubusercontent.com","ppa.launchpad.net","raw.githubusercontent.com","registry.bower.io","registry.npmjs.com","registry.npmjs.org","registry.yarnpkg.com","repo.yarnpkg.com","s.symcb.com","s.symcd.com","security.ubuntu.com","skimdb.npmjs.com","storage.googleapis.com","telemetry.vercel.com","ts-crl.ws.symantec.com","ts-ocsp.ws.symantec.com","www.googleapis.com","www.npmjs.com","www.npmjs.org","yarnpkg.com"],"isolation":true,"topologyAttach":["awmg-mcpg"]},"apiProxy":{"enabled":true,"enableTokenSteering":true,"maxRuns":100,"maxCacheMisses":5,"maxAiCredits":150,"modelFallback":{"enabled":false},"models":{"agent":["sonnet-6x","gpt-6","gpt-5.4","gpt-5.5","gpt-5.6","gpt-5.3","gemini-pro","any"],"antigravity":["copilot/antigravity*","google/antigravity*","gemini/antigravity*"],"any":["copilot/*","anthropic/*","openai/*","google/*","gemini/*"],"auto":["copilot/auto","large"],"claude":["agent"],"codex":["agent"],"coding":["copilot/gpt-5*codex*","openai/gpt-5*codex*","gpt-5-codex","kimi"],"computer-use":["copilot/*computer-use*","google/*computer-use*","gemini/*computer-use*","openai/*computer-use*"],"copilot":["agent"],"deep-research":["copilot/deep-research*","copilot/o3-deep-research*","copilot/o4-mini-deep-research*","google/deep-research*","gemini/deep-research*","openai/o3-deep-research*","openai/o4-mini-deep-research*"],"detection":["small"],"evals":["small"],"fable":["copilot/*fable*","anthropic/*fable*"],"gemini":["agent"],"gemini-3-flash":["copilot/gemini-3*flash*","google/gemini-3*flash*","gemini/gemini-3*flash*"],"gemini-3-pro":["copilot/gemini-3*pro*","google/gemini-3*pro*","google/nano-banana*","gemini/gemini-3*pro*"],"gemini-3.1-flash":["copilot/gemini-3.1*flash*","google/gemini-3.1*flash*","gemini/gemini-3.1*flash*"],"gemini-3.1-pro":["copilot/gemini-3.1*pro*","google/gemini-3.1*pro*","gemini/gemini-3.1*pro*"],"gemini-3.5-flash":["copilot/gemini-3.5*flash*","google/gemini-3.5*flash*","gemini/gemini-3.5*flash*"],"gemini-3.6-flash":["copilot/gemini-3.6*flash*","google/gemini-3.6*flash*","gemini/gemini-3.6*flash*"],"gemini-3.7-flash":["copilot/gemini-3.7*flash*","google/gemini-3.7*flash*","gemini/gemini-3.7*flash*"],"gemini-3.8-flash":["copilot/gemini-3.8*flash*","google/gemini-3.8*flash*","gemini/gemini-3.8*flash*"],"gemini-flash":["copilot/gemini-*flash*","google/gemini-*flash*","gemini/gemini-*flash*"],"gemini-flash-lite":["copilot/gemini-*flash*lite*","google/gemini-*flash*lite*","gemini/gemini-*flash*lite*"],"gemini-omni":["copilot/gemini-omni*","google/gemini-omni*","gemini/gemini-omni*"],"gemini-pro":["copilot/gemini-*pro*","google/gemini-*pro*","gemini/gemini-*pro*"],"gemma":["copilot/gemma*","google/gemma*","gemini/gemma*"],"gpt-5":["copilot/gpt-5*","openai/gpt-5*"],"gpt-5-codex":["copilot/gpt-5*codex*","openai/gpt-5*codex*"],"gpt-5-mini":["copilot/gpt-5*mini*","openai/gpt-5*mini*"],"gpt-5-nano":["copilot/gpt-5*nano*","openai/gpt-5*nano*"],"gpt-5-pro":["copilot/gpt-5*pro*","openai/gpt-5*pro*"],"gpt-5.1":["copilot/gpt-5.1*","openai/gpt-5.1*"],"gpt-5.2":["copilot/gpt-5.2*","openai/gpt-5.2*"],"gpt-5.3":["copilot/gpt-5.3*","openai/gpt-5.3*"],"gpt-5.4":["copilot/gpt-5.4*","openai/gpt-5.4*"],"gpt-5.5":["copilot/gpt-5.5*","openai/gpt-5.5*"],"gpt-5.6":["copilot/gpt-5.6*","openai/gpt-5.6*"],"gpt-6":["copilot/gpt-6*","openai/gpt-6*"],"grok":["copilot/*grok*","openai/*grok*"],"haiku":["copilot/*haiku*","anthropic/*haiku*"],"image-generation":["copilot/gpt-image*","openai/gpt-image*","openai/chatgpt-image*","copilot/gemini-*image*","google/gemini-*image*","gemini/gemini-*image*","google/imagen*"],"kimi":["copilot/kimi*","openai/kimi*"],"kiwi":["copilot/kiwi*","openai/kiwi*"],"large":["sonnet","gpt-6","gpt-5-pro","gpt-5","gemini-pro"],"lyria":["google/lyria*","gemini/lyria*","copilot/lyria*"],"mai-code":["copilot/MAI-Code*","copilot/mai-code*","openai/MAI-Code*"],"mai-code-1-flash-picker":["copilot/MAI-Code-1-Flash-picker*","copilot/mai-code-1-flash-picker*","openai/MAI-Code-1-Flash-picker*"],"mini":["haiku","gpt-5-mini","gpt-5-nano","gemini-flash-lite"],"nano-banana":["copilot/nano-banana*","google/nano-banana*","gemini/nano-banana*"],"opus":["copilot/*opus*","anthropic/*opus*"],"opusplan":["opus?effort=high"],"raptor-mini":["copilot/raptor*","openai/raptor*"],"reasoning":["copilot/o1*","copilot/o3*","copilot/o4*","openai/o1*","openai/o3*","openai/o4*"],"robotics":["copilot/*robotics*","google/*robotics*","gemini/*robotics*"],"small":["mini"],"small-agent":["haiku","gpt-5-mini","gemini-flash"],"sonnet":["copilot/*sonnet*","anthropic/*sonnet*"],"sonnet-6x":["copilot/*sonnet-4.5*","copilot/*sonnet-4.6*","copilot/*sonnet-5*","copilot/*sonnet-4-5-*","anthropic/*sonnet-4-5-*","copilot/*sonnet-4-6*","anthropic/*sonnet-4-6*","anthropic/*sonnet-5*"],"summarization":["haiku","gpt-5-mini","gemini-flash-lite","mini"],"veo":["google/veo*","gemini/veo*"],"vision":["copilot/gemini-*image*","google/gemini-*image*","gemini/gemini-*image*","copilot/gemini-*flash*","google/gemini-*flash*","gemini/gemini-*flash*"]}},"container":{"imageTag":"0.28.57,squid=sha256:be808c16b535ebabd070eebe086fe6bffd5bb86b2e5fe8e5cdad30068eb9c0ac,agent=sha256:a9861b2fad1d29c586bbbf98840a61056e30e2720d8d9ec2c0def9049566bd8a,api-proxy=sha256:f2925ff32dc972a5d8b90a7785b6ca68052efd2575fe896556ac457e22e86dcc,cli-proxy=sha256:4584f030659ee51958223a3c6156e8119c6a94affbfcd92ce75f204702c52641","agentTimeout":30},"logging":{"proxyLogsDir":"/tmp/gh-aw/sandbox/firewall/logs","auditDir":"/tmp/gh-aw/sandbox/firewall/audit"}}' > "${RUNNER_TEMP}/gh-aw/awf-config.json"
           cp "${RUNNER_TEMP}/gh-aw/awf-config.json" /tmp/gh-aw/awf-config.json
           export GH_AW_MODELS_JSON_PATH="/tmp/gh-aw/models.json"
           GH_AW_DOCKER_HOST=""
@@ -1022,20 +1026,20 @@ jobs:
           GH_AW_AWF_ATTEMPT_LOG_NAME=copilot \
           bash "${RUNNER_TEMP}/gh-aw/actions/run_awf_with_startup_retries.sh" -- \
             awf --config "${RUNNER_TEMP}/gh-aw/awf-config.json" --container-workdir "${GITHUB_WORKSPACE}" --mount "${RUNNER_TEMP}/gh-aw:${RUNNER_TEMP}/gh-aw:ro" --mount "${RUNNER_TEMP}/gh-aw:/host${RUNNER_TEMP}/gh-aw:ro" ${GH_AW_TOOL_CACHE_MOUNT:+--mount "$GH_AW_TOOL_CACHE_MOUNT"} ${GH_AW_DOCKER_HOST:+--docker-host "$GH_AW_DOCKER_HOST"} --env-all --exclude-env ACTIONS_ID_TOKEN_REQUEST_TOKEN --exclude-env ACTIONS_ID_TOKEN_REQUEST_URL --exclude-env COPILOT_GITHUB_TOKEN --exclude-env GH_AW_OTLP_ALL_HEADERS --exclude-env GH_AW_OTLP_ENDPOINTS --exclude-env MCP_GATEWAY_AGENT_ID --exclude-env OTEL_EXPORTER_OTLP_ENDPOINT --exclude-env OTEL_EXPORTER_OTLP_HEADERS --mount /tmp/gh-aw:/tmp/gh-aw:rw --log-level info --session-state-dir /tmp/gh-aw/sandbox/agent/session-state --skip-pull \
-            -- /bin/bash -c 'set +o histexpand; export PATH="${RUNNER_TEMP}/gh-aw/mcp-cli/bin:$PATH" && : "${RUNNER_TOOL_CACHE:?RUNNER_TOOL_CACHE must be set}"; GH_AW_TOOL_CACHE="$RUNNER_TOOL_CACHE"; GH_AW_TOOL_BINS="$(find "$GH_AW_TOOL_CACHE" -maxdepth 5 -type d -name bin 2>/dev/null | tr "\n" ":")"; GH_AW_TOOL_BINS="${GH_AW_TOOL_BINS%:}"; export PATH="$PATH${GH_AW_TOOL_BINS:+:}$GH_AW_TOOL_BINS"; [ -n "$GOROOT" ] && export PATH="$GOROOT/bin:$PATH" || true; [ -n "$ERLANG_HOME" ] && export PATH="$ERLANG_HOME/bin:$PATH" || true && GH_AW_NODE_EXEC="${GH_AW_NODE_BIN:-}"; if [ -z "$GH_AW_NODE_EXEC" ] || [ ! -x "$GH_AW_NODE_EXEC" ]; then GH_AW_NODE_EXEC="$(command -v node 2>/dev/null || true)"; fi; if [ -z "$GH_AW_NODE_EXEC" ]; then echo "node runtime missing on this runner — check runtimes.node in workflow YAML" >&2; exit 127; fi; GH_AW_NPM_GLOBAL_ROOT="$(npm root -g 2>/dev/null || true)"; if [ -n "$GH_AW_NPM_GLOBAL_ROOT" ]; then export NODE_PATH="${GH_AW_NPM_GLOBAL_ROOT}${NODE_PATH:+:${NODE_PATH}}"; fi; "$GH_AW_NODE_EXEC" "${RUNNER_TEMP}/gh-aw/actions/copilot_harness.cjs" "${RUNNER_TEMP}/gh-aw/bin/copilot" --add-dir /tmp/gh-aw/ --log-level all --log-dir /tmp/gh-aw/sandbox/agent/logs/ --disable-builtin-mcps --no-ask-user --allow-tool safeoutputs --deny-tool workflow --add-dir "${GITHUB_WORKSPACE}" --prompt-file /tmp/gh-aw/aw-prompts/prompt.txt'
+            -- /bin/bash -c 'set +o histexpand; export PATH="${RUNNER_TEMP}/gh-aw/mcp-cli/bin:$PATH" && : "${RUNNER_TOOL_CACHE:?RUNNER_TOOL_CACHE must be set}"; GH_AW_TOOL_CACHE="$RUNNER_TOOL_CACHE"; GH_AW_TOOL_BINS="$(find "$GH_AW_TOOL_CACHE" -maxdepth 5 -type d -name bin 2>/dev/null | tr "\n" ":")"; GH_AW_TOOL_BINS="${GH_AW_TOOL_BINS%:}"; export PATH="$PATH${GH_AW_TOOL_BINS:+:}$GH_AW_TOOL_BINS"; [ -n "$GOROOT" ] && export PATH="$GOROOT/bin:$PATH" || true; [ -n "$ERLANG_HOME" ] && export PATH="$ERLANG_HOME/bin:$PATH" || true && GH_AW_NODE_EXEC="${GH_AW_NODE_BIN:-}"; if [ -z "$GH_AW_NODE_EXEC" ] || [ ! -x "$GH_AW_NODE_EXEC" ]; then GH_AW_NODE_EXEC="$(command -v node 2>/dev/null || true)"; fi; if [ -z "$GH_AW_NODE_EXEC" ]; then echo "node runtime missing on this runner — check runtimes.node in workflow YAML" >&2; exit 127; fi; GH_AW_NPM_GLOBAL_ROOT="$(npm root -g 2>/dev/null || true)"; if [ -n "$GH_AW_NPM_GLOBAL_ROOT" ]; then export NODE_PATH="${GH_AW_NPM_GLOBAL_ROOT}${NODE_PATH:+:${NODE_PATH}}"; fi; "$GH_AW_NODE_EXEC" "${RUNNER_TEMP}/gh-aw/actions/copilot_harness.cjs" "${RUNNER_TEMP}/gh-aw/bin/copilot" --add-dir /tmp/gh-aw/ --log-level all --log-dir /tmp/gh-aw/sandbox/agent/logs/ --disable-builtin-mcps --no-ask-user --allow-tool safeoutputs --deny-tool workflow --available-tools=view,glob,rg,skill,safeoutputs-add_comment,safeoutputs-create_pull_request_review_comment,safeoutputs-missing_data,safeoutputs-missing_tool,safeoutputs-noop,safeoutputs-report_incomplete,safeoutputs-submit_pull_request_review --add-dir "${GITHUB_WORKSPACE}" --prompt-file /tmp/gh-aw/aw-prompts/prompt.txt'
         env:
           AWF_REFLECT_ENABLED: 1
           COPILOT_AGENT_RUNNER_TYPE: STANDALONE
           COPILOT_DUMMY_BYOK: dummy-byok-key-for-offline-mode
           COPILOT_GITHUB_TOKEN: ${{ case(needs.pat_pool.outputs.pat_number == '0', secrets.COPILOT_PAT_0, needs.pat_pool.outputs.pat_number == '1', secrets.COPILOT_PAT_1, needs.pat_pool.outputs.pat_number == '2', secrets.COPILOT_PAT_2, needs.pat_pool.outputs.pat_number == '3', secrets.COPILOT_PAT_3, needs.pat_pool.outputs.pat_number == '4', secrets.COPILOT_PAT_4, needs.pat_pool.outputs.pat_number == '5', secrets.COPILOT_PAT_5, needs.pat_pool.outputs.pat_number == '6', secrets.COPILOT_PAT_6, needs.pat_pool.outputs.pat_number == '7', secrets.COPILOT_PAT_7, needs.pat_pool.outputs.pat_number == '8', secrets.COPILOT_PAT_8, needs.pat_pool.outputs.pat_number == '9', secrets.COPILOT_PAT_9, 'NO COPILOT PAT AVAILABLE') }}
-          COPILOT_MODEL: gpt-5.6-sol
+          COPILOT_MODEL: gpt-6.2-sol
           GH_AW_LLM_PROVIDER: github
-          GH_AW_MAX_TURNS: 200
+          GH_AW_MAX_TURNS: 100
           GH_AW_PHASE: agent
           GH_AW_PROMPT: /tmp/gh-aw/aw-prompts/prompt.txt
           GH_AW_SAFE_OUTPUTS: ${{ steps.set-runtime-paths.outputs.GH_AW_SAFE_OUTPUTS }}
           GH_AW_STARTUP_TIMEOUT: 120
-          GH_AW_TIMEOUT_MINUTES: 90
+          GH_AW_TIMEOUT_MINUTES: 30
           GH_AW_TOOL_TIMEOUT: 120
           GH_AW_VERSION: v0.92.0
           GITHUB_API_URL: ${{ github.api_url }}
@@ -1059,7 +1063,7 @@ jobs:
         continue-on-error: true
         env:
           GH_AW_AGENTIC_EXECUTION_OUTCOME: ${{ steps.agentic_execution.outcome }}
-          GH_AW_ENGINE_STEP_TIMEOUT_MINUTES: 90
+          GH_AW_ENGINE_STEP_TIMEOUT_MINUTES: 30
         uses: actions/github-script@3a2844b7e9c422d3c10d287c895573f7108da1b3 # v9.0.0
         with:
           script: |
@@ -1208,11 +1212,9 @@ jobs:
           if [ ! -f /tmp/gh-aw/agent_output.json ]; then
             echo '{"items":[]}' > /tmp/gh-aw/agent_output.json
           fi
-      - env:
-          REVIEW_EXPECTED_WORKER_COUNT: ${{ steps.prepare_review_bundle.outputs.expected_worker_count }}
-        if: always()
-        name: Verify restricted review workers
-        run: "set -euo pipefail\nnode - <<'NODE'\nconst fs = require('fs');\n\nconst sessionPath = process.env.REVIEW_WORKER_SESSION_PATH || '/tmp/gh-aw/agent-session.jsonl';\nconst expectedAgentName = 'review-guide-worker';\nconst verifierAgentName = 'review-candidate-verifier';\nconst allowedTools = new Set(['glob', 'grep', 'read_file', 'rg', 'search', 'skill', 'view']);\nconst verifierAllowedTools = new Set(['glob', 'grep', 'read_file', 'rg', 'search', 'view']);\nconst expectedWorkerCountValue = process.env.REVIEW_EXPECTED_WORKER_COUNT;\n\nif (!fs.existsSync(sessionPath)) {\n  throw new Error(`Copilot session transcript is missing: ${sessionPath}`);\n}\nif (!/^(0|[1-9][0-9]*)$/.test(expectedWorkerCountValue ?? '')) {\n  throw new Error(`Trusted worker count is invalid: ${expectedWorkerCountValue ?? '<missing>'}`);\n}\n\nconst events = fs.readFileSync(sessionPath, 'utf8')\n  .split(/\\r?\\n/)\n  .filter(Boolean)\n  .map((line, index) => {\n    try {\n      return JSON.parse(line);\n    } catch (error) {\n      throw new Error(`Invalid Copilot session event at line ${index + 1}: ${error.message}`);\n    }\n  });\n\nconst violations = [];\nconst expectedWorkerCount = Number(expectedWorkerCountValue);\nconst toolInput = event => event.data?.arguments ?? event.data?.input;\nconst resultContent = event => event.data?.result?.content ?? event.result?.content;\nconst eventAliases = event =>\n  [event.agentId, event.data?.agentId, event.data?.toolCallId]\n    .filter(value => typeof value === 'string' && value.length > 0);\nconst isTopLevelToolStart = event =>\n  event.type === 'tool.execution_start' &&\n  !event.agentId &&\n  !event.data?.parentToolCallId;\nconst hasValidStoppedOutput = () => {\n  const safeOutputStarts = events.filter(event =>\n    event.type === 'tool.execution_start' && !event.agentId &&\n    !event.data?.parentToolCallId &&\n    typeof event.data?.toolName === 'string' &&\n    event.data.toolName.startsWith('safeoutputs-'));\n  if (safeOutputStarts.length !== 2) {\n    return false;\n  }\n  const safeOutputCallIds = safeOutputStarts.map(event => event.data?.toolCallId);\n  if (safeOutputCallIds.some(toolCallId =>\n      typeof toolCallId !== 'string' || toolCallId.length === 0) ||\n      new Set(safeOutputCallIds).size !== safeOutputCallIds.length) {\n    return false;\n  }\n  const matchingCompletions = events.filter(event =>\n    event.type === 'tool.execution_complete' && !event.agentId &&\n    !event.data?.parentToolCallId &&\n    safeOutputCallIds.includes(event.data?.toolCallId));\n  if (matchingCompletions.length !== safeOutputCallIds.length ||\n      new Set(matchingCompletions.map(event => event.data.toolCallId)).size !==\n        safeOutputCallIds.length ||\n      matchingCompletions.some(event => event.data?.success !== true)) {\n    return false;\n  }\n  const statusComments = safeOutputStarts.filter(event =>\n    event.data.toolName === 'safeoutputs-add_comment');\n  const incompleteCalls = safeOutputStarts.filter(event =>\n    [\n      'safeoutputs-report_incomplete',\n      'safeoutputs-missing_data',\n      'safeoutputs-missing_tool',\n    ].includes(event.data.toolName));\n  const incompleteReason = incompleteCalls.length === 1 &&\n    typeof incompleteCalls[0].data?.arguments?.reason === 'string'\n    ? incompleteCalls[0].data.arguments.reason\n    : null;\n  if (incompleteReason === null || incompleteReason.length < 1 ||\n      incompleteReason.length > 240 || /[\\r\\n]/.test(incompleteReason)) {\n    return false;\n  }\n  const statusBody = statusComments.length === 1 &&\n    typeof statusComments[0].data?.arguments?.body === 'string'\n    ? statusComments[0].data.arguments.body\n    : null;\n  return ['BLOCKED', 'INCOMPLETE'].some(status =>\n    statusBody ===\n      `Review not published (${status}): ${incompleteReason}\\n\\nNo partial findings were published.`);\n};\nconst validStoppedOutput = hasValidStoppedOutput();\nconst workers = new Map();\nconst verifiers = new Map();\nconst workerAliases = new Map();\nconst taskStartsById = new Map();\nconst verifierTaskStartsById = new Map();\nconst taskStartsByName = new Map();\n\nconst registerAlias = (worker, alias) => {\n  if (typeof alias !== 'string' || alias.length === 0) {\n    return;\n  }\n  const existingWorker = workerAliases.get(alias);\n  if (existingWorker && existingWorker !== worker) {\n    violations.push(`Worker alias '${alias}' identifies more than one task.`);\n    return;\n  }\n  worker.aliases.add(alias);\n  workerAliases.set(alias, worker);\n};\n\nconst resolveWorker = aliases => {\n  const matches = new Set(\n    aliases.map(alias => workerAliases.get(alias)).filter(Boolean));\n  return matches.size === 1 ? [...matches][0] : null;\n};\n\nevents.forEach((event, index) => {\n  if (!isTopLevelToolStart(event) || event.data?.toolName !== 'task') {\n    return;\n  }\n\n  const input = toolInput(event);\n  const toolCallId = event.data?.toolCallId;\n  const name = input?.name;\n  const isVerifierTask = input?.agent_type === verifierAgentName;\n  if (!input || typeof input !== 'object' ||\n      typeof toolCallId !== 'string' || toolCallId.length === 0 ||\n      (input.agent_type !== expectedAgentName && !isVerifierTask) ||\n      typeof name !== 'string' || name.length === 0 ||\n      input.mode !== 'background') {\n    violations.push(\n      `Invalid top-level review worker task '${name ?? '<unknown>'}'.`);\n    return;\n  }\n\n  const taskStart = { index, isVerifier: isVerifierTask, name, toolCallId };\n  if (taskStartsById.has(toolCallId) || verifierTaskStartsById.has(toolCallId)) {\n    violations.push(`Review worker task ID '${toolCallId}' is not unique.`);\n  } else if (isVerifierTask) {\n    verifierTaskStartsById.set(toolCallId, taskStart);\n  } else {\n    taskStartsById.set(toolCallId, taskStart);\n  }\n  if (taskStartsByName.has(name)) {\n    violations.push(`Review worker task name '${name}' is not unique.`);\n  } else {\n    taskStartsByName.set(name, taskStart);\n  }\n});\n\nif (taskStartsById.size > expectedWorkerCount) {\n  violations.push(\n    `Expected at most ${expectedWorkerCount} review worker task start(s), but recorded ${taskStartsById.size}.`);\n}\nif (verifierTaskStartsById.size > 1) {\n  violations.push(\n    `Expected at most 1 '${verifierAgentName}' task start, but recorded ${verifierTaskStartsById.size}.`);\n}\n\nevents.forEach((event, index) => {\n  if (event.type !== 'subagent.started') {\n    return;\n  }\n\n  const agentName = event.data?.agentName;\n  const isVerifier = agentName === verifierAgentName;\n  if (agentName !== expectedAgentName && !isVerifier) {\n    violations.push(`Unexpected subagent '${agentName ?? '<unknown>'}' (${event.agentId}).`);\n  }\n  if (typeof event.agentId !== 'string' || event.agentId.length === 0 ||\n      typeof event.data?.toolCallId !== 'string' ||\n      event.data.toolCallId.length === 0) {\n    violations.push('A subagent started without its required agent and tool call IDs.');\n    return;\n  }\n\n  const taskStarts = isVerifier ? verifierTaskStartsById : taskStartsById;\n  const matchingTasks = new Set(\n    eventAliases(event).map(alias => taskStarts.get(alias)).filter(Boolean));\n  if (matchingTasks.size !== 1) {\n    violations.push(\n      `Subagent '${event.agentId}' started as an unregistered worker.`);\n    return;\n  }\n\n  const taskStart = [...matchingTasks][0];\n  if (index <= taskStart.index) {\n    violations.push(\n      `Subagent '${event.agentId}' started before its task call.`);\n    return;\n  }\n  const targetMap = isVerifier ? verifiers : workers;\n  let worker = targetMap.get(event.agentId);\n  if (!worker) {\n    worker = {\n      aliases: new Set(),\n      collections: [],\n      completedIndices: [],\n      isVerifier,\n      latestClarificationIndex: -1,\n      name: taskStart.name,\n      reads: [],\n      startedIndex: index,\n      taskStart,\n    };\n    targetMap.set(event.agentId, worker);\n  } else if (worker.taskStart !== taskStart) {\n    violations.push(`Worker agent ID '${event.agentId}' identifies more than one task.`);\n    return;\n  }\n\n  for (const alias of [...eventAliases(event), taskStart.name]) {\n    registerAlias(worker, alias);\n  }\n});\n\nevents.forEach((event, index) => {\n  if (event.type !== 'subagent.completed' || event.data?.cancelled === true) {\n    return;\n  }\n\n  const worker = typeof event.agentId === 'string'\n    ? resolveWorker([event.agentId])\n    : null;\n  if (worker && index > worker.startedIndex) {\n    worker.completedIndices.push(index);\n  }\n});\n\nconst missingWorkersAllowed = validStoppedOutput && workers.size < expectedWorkerCount;\nif (workers.size !== expectedWorkerCount && !missingWorkersAllowed) {\n  violations.push(\n    `Expected ${expectedWorkerCount} per-guide review worker(s), but recorded ${workers.size}.`);\n}\nif (verifiers.size > 1) {\n  violations.push(\n    `Expected at most 1 '${verifierAgentName}' subagent, but recorded ${verifiers.size}.`);\n}\n\nfor (const event of events) {\n  if (isTopLevelToolStart(event) && event.data?.toolName === 'write_agent') {\n    const input = toolInput(event);\n    const targetIds = typeof input?.agent_id === 'string'\n      ? [input.agent_id]\n      : Array.isArray(input?.agent_ids)\n        ? input.agent_ids\n        : [];\n    if (targetIds.some(target =>\n        typeof target === 'string' && resolveWorker([target])?.isVerifier)) {\n      violations.push(`write_agent must not target '${verifierAgentName}'.`);\n    }\n    continue;\n  }\n  if (event.type !== 'tool.execution_start') {\n    continue;\n  }\n\n  if (!event.agentId && !event.data?.parentToolCallId) {\n    continue;\n  }\n  if (!event.agentId) {\n    if (event.data?.parentToolCallId) {\n      violations.push(`Subagent tool '${event.data?.toolName ?? '<unknown>'}' is missing an agent ID.`);\n    }\n    continue;\n  }\n\n  const worker = resolveWorker([event.agentId]);\n  const toolName = event.data?.toolName;\n  if (!worker) {\n    violations.push(`Tool '${toolName ?? '<unknown>'}' was used by an unregistered subagent (${event.agentId}).`);\n  } else if (worker.isVerifier && !verifierAllowedTools.has(toolName)) {\n    violations.push(`Subagent '${verifierAgentName}' used disallowed tool '${toolName ?? '<unknown>'}'.`);\n  } else if (!worker.isVerifier && !allowedTools.has(toolName)) {\n    violations.push(`Subagent '${expectedAgentName}' used disallowed tool '${toolName ?? '<unknown>'}'.`);\n  }\n}\n\nif (!validStoppedOutput) {\n  const firstPublicationIndex = events.findIndex(event =>\n    isTopLevelToolStart(event) &&\n    typeof event.data?.toolName === 'string' &&\n    event.data.toolName.startsWith('safeoutputs-'));\n  if (expectedWorkerCount === 0) {\n    violations.push(\n      'A review with no expected workers must publish a valid status-only stopped result.');\n  }\n  if (firstPublicationIndex < 0) {\n    violations.push('No native safe-output publication call was recorded; CLI publication is not supported by this adapter.');\n  }\n\n  const successfulCompletion = (event, startIndex) => {\n    const toolCallId = event.data?.toolCallId;\n    const completions = events\n      .map((candidate, index) => ({ event: candidate, index }))\n      .filter(({ event: candidate }) =>\n        candidate.type === 'tool.execution_complete' &&\n        !candidate.agentId &&\n        !candidate.data?.parentToolCallId &&\n        candidate.data?.toolCallId === toolCallId);\n    if (typeof toolCallId !== 'string' || toolCallId.length === 0 ||\n        completions.length !== 1 ||\n        completions[0].index <= startIndex ||\n        completions[0].event.data?.success !== true) {\n      return null;\n    }\n    return completions[0];\n  };\n\n  events.forEach((event, startIndex) => {\n    if (isTopLevelToolStart(event) &&\n        event.data?.toolName === 'write_agent') {\n      const input = toolInput(event);\n      const targetIds = typeof input?.agent_id === 'string' &&\n        input.agent_ids === undefined && input.scope === undefined\n        ? [input.agent_id]\n        : Array.isArray(input?.agent_ids) &&\n          input.agent_id === undefined && input.scope === undefined\n          ? input.agent_ids\n          : [];\n      const targets = targetIds.map(target =>\n        typeof target === 'string' ? resolveWorker([target]) : null);\n      if (targets.length === 0 || targets.some(worker => !worker)) {\n        violations.push(\n          'write_agent must use explicit known worker targets (agent_id or agent_ids).');\n        return;\n      }\n      if (targets.some(worker => worker.isVerifier)) {\n        violations.push(\n          `write_agent must not target '${verifierAgentName}'.`);\n        return;\n      }\n\n      const completion = successfulCompletion(event, startIndex);\n      if (!completion) {\n        violations.push('write_agent did not complete successfully.');\n        return;\n      }\n      if (firstPublicationIndex >= 0 && completion.index >= firstPublicationIndex) {\n        violations.push('write_agent did not complete before publication.');\n      }\n      for (const worker of new Set(targets)) {\n        if (startIndex <= worker.startedIndex) {\n          violations.push(\n            `write_agent for '${worker.name}' started before the worker started.`);\n        }\n        worker.latestClarificationIndex = Math.max(\n          worker.latestClarificationIndex, completion.index);\n      }\n      return;\n    }\n\n    if (!isTopLevelToolStart(event) ||\n        event.data?.toolName !== 'read_agent') {\n      return;\n    }\n\n    const input = toolInput(event);\n    const target = input?.agent_id;\n    const worker = typeof target === 'string'\n      ? resolveWorker([target])\n      : null;\n    if (!worker) {\n      violations.push(\n        `read_agent targeted unknown worker '${target ?? '<missing>'}'.`);\n      return;\n    }\n    const isRuntimeIdleRead =\n      input.wait === undefined &&\n      input.since_turn === 0 &&\n      /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(\n        event.data?.toolCallId ?? '') &&\n      worker.completedIndices.some(completedIndex =>\n        completedIndex > Math.max(worker.startedIndex, worker.latestClarificationIndex) &&\n        completedIndex < startIndex);\n    if (input.wait !== true && !isRuntimeIdleRead) {\n      violations.push(\n        `read_agent for '${worker.name}' must use wait: true.`);\n    }\n    const sinceTurn = input.since_turn;\n    if (sinceTurn !== undefined &&\n        (!Number.isInteger(sinceTurn) || sinceTurn < 0)) {\n      violations.push(\n        `read_agent for '${worker.name}' has an invalid since_turn.`);\n    }\n    const isInitialCollection = sinceTurn === undefined || sinceTurn === 0;\n\n    const completion = successfulCompletion(event, startIndex);\n    if (!completion) {\n      violations.push(\n        `read_agent for '${worker.name}' did not complete successfully.`);\n      return;\n    }\n\n    if (completion.index <= worker.startedIndex) {\n      violations.push(\n        `read_agent for '${worker.name}' completed before the worker started.`);\n    }\n    if (firstPublicationIndex >= 0 && completion.index >= firstPublicationIndex) {\n      violations.push(\n        `read_agent for '${worker.name}' did not complete before publication.`);\n    }\n\n    const content = resultContent(completion.event);\n    if (typeof content === 'string' && content.trim().length > 0) {\n      worker.reads.push({ startIndex, completionIndex: completion.index });\n    }\n    if (\n      isInitialCollection &&\n      typeof content === 'string' &&\n      content.trim().length > 0 &&\n      (worker.isVerifier\n        ? /\"?decision\"?\\s*:\\s*\"?(?:KEEP|DOWNGRADE|DROP)\\b/.test(content)\n        : /^[ \\t]*PATH:[ \\t]*per-guide-worker[ \\t]*$/m.test(content))) {\n      worker.collections.push(completion);\n    }\n  });\n\n  for (const worker of workers.values()) {\n    if (worker.collections.length === 0) {\n      violations.push(\n        `Review worker '${worker.name}' was not collected before publication with since_turn absent or 0 and PATH: per-guide-worker.`);\n    }\n    if (worker.latestClarificationIndex >= 0 &&\n        !worker.reads.some(read => read.startIndex > worker.latestClarificationIndex)) {\n      violations.push(\n        `Review worker '${worker.name}' received a write_agent follow-up that was not collected before publication.`);\n    }\n  }\n\n  const reviewComments = events.filter(event =>\n    isTopLevelToolStart(event) &&\n    event.data?.toolName === 'safeoutputs-create_pull_request_review_comment');\n  const reviewSubmissions = events.filter(event =>\n    isTopLevelToolStart(event) &&\n    event.data?.toolName === 'safeoutputs-submit_pull_request_review');\n  const hasFindingsPublication =\n    reviewComments.length > 0 || reviewSubmissions.length > 0;\n  const isDiscardedOnlyFindingsPublication =\n    reviewComments.length > 0 &&\n    reviewComments.every(event => {\n      const body = toolInput(event)?.body;\n      return typeof body === 'string' &&\n        /(?:^|\\n)\\s*(?:[-*]\\s+|\\d+\\.\\s+|#+\\s+|\\*\\*)?\\[DISCARDED\\]\\s+\\S/.test(body) &&\n        (/\\bconfidence\\s*:\\s*`?discarded`?\\b/i.test(body) ||\n          /\\bWhy discarded\\s*:/i.test(body));\n    });\n  if (hasFindingsPublication && !isDiscardedOnlyFindingsPublication && verifiers.size !== 1) {\n    violations.push(\n      `Findings publication requires 1 '${verifierAgentName}' subagent unless every inline comment is a pre-verification [DISCARDED] candidate, but recorded ${verifiers.size}.`);\n  }\n\n  const latestWorkerPreVerifierIndex = Math.max(\n    -1,\n    ...[...workers.values()].map(worker => {\n      const initialIndex = worker.collections[0]?.index ?? Number.POSITIVE_INFINITY;\n      if (worker.latestClarificationIndex < 0) {\n        return initialIndex;\n      }\n      const followUpIndex = worker.reads.find(\n        read => read.startIndex > worker.latestClarificationIndex)?.completionIndex ??\n        Number.POSITIVE_INFINITY;\n      return Math.max(initialIndex, followUpIndex);\n    }));\n  for (const verifier of verifiers.values()) {\n    if (verifier.taskStart.index <= latestWorkerPreVerifierIndex ||\n        verifier.startedIndex <= latestWorkerPreVerifierIndex) {\n      violations.push(\n        `Candidate verifier '${verifier.name}' started before every review worker was collected.`);\n    }\n    if (verifier.collections.length === 0) {\n      violations.push(\n        `Candidate verifier '${verifier.name}' was not collected before publication with since_turn absent or 0.`);\n    }\n  }\n  if (verifierTaskStartsById.size !== verifiers.size) {\n    violations.push(\n      `Expected ${verifierTaskStartsById.size} started '${verifierAgentName}' subagent(s), but recorded ${verifiers.size}.`);\n  }\n}\n\nif (violations.length > 0) {\n  throw new Error(`Restricted review worker verification failed:\\n- ${violations.join('\\n- ')}`);\n}\n\nconsole.log(\n  `Verified ${workers.size} restricted review worker(s)` +\n  `${missingWorkersAllowed ? ' with a status-only stopped result' : ''}.`);\nNODE"
+      - if: always()
+        name: Verify single review transcript
+        run: "set -euo pipefail\nnode - <<'NODE'\nconst fs = require('fs');\n\nconst sessionPath = process.env.REVIEW_WORKER_SESSION_PATH || '/tmp/gh-aw/agent-session.jsonl';\nconst events = fs.readFileSync(sessionPath, 'utf8').trim().split(/\\r?\\n/).map(line => JSON.parse(line));\nconst expectedToolCount = 11;\nconst readTools = new Set(['view', 'glob', 'rg']);\nconst publicationTools = new Set([\n  'safeoutputs-create_pull_request_review_comment', 'safeoutputs-submit_pull_request_review',\n  'safeoutputs-noop', 'safeoutputs-add_comment', 'safeoutputs-report_incomplete', 'safeoutputs-missing_data',\n  'safeoutputs-missing_tool',\n]);\nconst starts = events.filter(event => event.type === 'tool.execution_start');\nconst violations = [];\nconst offeredToolCounts = events.filter(event => event.type === 'session.usage_record')\n  .map(event => event.data?.usage?.availableToolCount);\nif (offeredToolCounts.length === 0 || offeredToolCounts.some(count => count !== expectedToolCount)) {\n  violations.push(`Expected ${expectedToolCount} offered tools in every usage record; observed ` +\n    `${offeredToolCounts.map(count => JSON.stringify(count) ?? 'missing').join(', ') || 'no usage records'}.`);\n}\n\nif (events.some(event => event.type?.startsWith('subagent.') ||\n    ((event.type === 'tool.execution_start' || event.type === 'tool.execution_complete') &&\n     (event.agentId || event.data?.agentId || event.data?.parentToolCallId)))) {\n  violations.push('The review must not start or use subagents.');\n}\n\nfor (const { data } of starts) {\n  const tool = data?.toolName;\n  if (!readTools.has(tool) && tool !== 'skill' && !publicationTools.has(tool)) {\n    violations.push(`Unexpected review tool '${tool ?? '<missing>'}'.`);\n  }\n}\n\nconst skillStarts = starts.filter(event => event.data?.toolName === 'skill');\nconst skill = skillStarts[0];\nconst skillId = skill?.data?.toolCallId;\nconst skillResults = typeof skillId === 'string' && skillId.length > 0\n  ? events.filter(event => event.type === 'tool.execution_complete' && event.data?.toolCallId === skillId)\n  : [];\nif (skillStarts.length !== 1 || skill.data.arguments?.skill !== 'code-review' ||\n    skillResults.length !== 1 || skillResults[0].data.success !== true ||\n    events.indexOf(skillResults[0]) <= events.indexOf(skill) ||\n    starts.some(event => publicationTools.has(event.data?.toolName) &&\n      events.indexOf(event) < events.indexOf(skillResults[0]))) {\n  violations.push('The review must successfully invoke the code-review skill exactly once before any safe-output call.');\n}\n\nif (!starts.some(event => publicationTools.has(event.data?.toolName) &&\n    event.data.toolName !== 'safeoutputs-missing_tool')) {\n  violations.push('No native safe-output publication call was recorded.');\n}\n\nif (violations.length) {\n  throw new Error(`Single-review transcript verification failed:\\n- ${violations.join('\\n- ')}`);\n}\nNODE"
 
       # Small dedicated copy of the agent output so safe-output processing
       # survives a failed or timed-out upload of the larger agent artifact
@@ -1322,7 +1324,7 @@ jobs:
         env:
           GH_AW_SETUP_WORKFLOW_NAME: "ASP.NET Core Pull Request Review"
           GH_AW_CURRENT_WORKFLOW_REF: ${{ github.repository }}/.github/workflows/pull-request-review.lock.yml@${{ github.ref }}
-          GH_AW_INFO_VERSION: "1.0.80"
+          GH_AW_INFO_VERSION: "1.0.103"
           GH_AW_INFO_AWF_VERSION: "v0.28.57"
           GH_AW_INFO_ENGINE_ID: "copilot"
       - name: Download agent output artifact
@@ -1374,8 +1376,8 @@ jobs:
           GH_AW_WORKFLOW_NAME: "ASP.NET Core Pull Request Review"
           GH_AW_WORKFLOW_SOURCE_URL: "${{ github.server_url }}/${{ github.repository }}/blob/${{ github.ref_name }}/.github/workflows/pull-request-review.md"
           GH_AW_ENGINE_ID: "copilot"
-          GH_AW_ENGINE_VERSION: "1.0.80"
-          GH_AW_ENGINE_MODEL: "gpt-5.6-sol"
+          GH_AW_ENGINE_VERSION: "1.0.103"
+          GH_AW_ENGINE_MODEL: "gpt-6.2-sol"
           GH_AW_RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
           GH_AW_AGENT_CONCLUSION: ${{ needs.agent.result }}
           GH_AW_NOOP_REPORT_AS_ISSUE: "false"
@@ -1421,8 +1423,8 @@ jobs:
           GH_AW_WORKFLOW_NAME: "ASP.NET Core Pull Request Review"
           GH_AW_WORKFLOW_SOURCE_URL: "${{ github.server_url }}/${{ github.repository }}/blob/${{ github.ref_name }}/.github/workflows/pull-request-review.md"
           GH_AW_ENGINE_ID: "copilot"
-          GH_AW_ENGINE_VERSION: "1.0.80"
-          GH_AW_ENGINE_MODEL: "gpt-5.6-sol"
+          GH_AW_ENGINE_VERSION: "1.0.103"
+          GH_AW_ENGINE_MODEL: "gpt-6.2-sol"
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
           script: |
@@ -1442,8 +1444,8 @@ jobs:
           GH_AW_WORKFLOW_NAME: "ASP.NET Core Pull Request Review"
           GH_AW_WORKFLOW_SOURCE_URL: "${{ github.server_url }}/${{ github.repository }}/blob/${{ github.ref_name }}/.github/workflows/pull-request-review.md"
           GH_AW_ENGINE_ID: "copilot"
-          GH_AW_ENGINE_VERSION: "1.0.80"
-          GH_AW_ENGINE_MODEL: "gpt-5.6-sol"
+          GH_AW_ENGINE_VERSION: "1.0.103"
+          GH_AW_ENGINE_MODEL: "gpt-6.2-sol"
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
           script: |
@@ -1471,7 +1473,7 @@ jobs:
           GH_AW_AIC: ${{ needs.agent.outputs.aic }}
           GH_AW_THREAT_DETECTION_AIC: ${{ needs.detection.outputs.aic }}
           GH_AW_DETECTION_JOB_RESULT: ${{ needs.detection.result }}
-          GH_AW_MAX_AI_CREDITS: "1500"
+          GH_AW_MAX_AI_CREDITS: "150"
           GH_AW_DEFAULT_CHECKOUT_USES_TRIGGER_REF: "false"
           GH_AW_INFERENCE_ACCESS_ERROR: ${{ needs.agent.outputs.inference_access_error }}
           GH_AW_MCP_POLICY_ERROR: ${{ needs.agent.outputs.mcp_policy_error }}
@@ -1501,7 +1503,7 @@ jobs:
           GH_AW_FAILURE_REPORT_AS_ISSUE: "false"
           GH_AW_MISSING_TOOL_REPORT_AS_FAILURE: "true"
           GH_AW_MISSING_DATA_REPORT_AS_FAILURE: "true"
-          GH_AW_TIMEOUT_MINUTES: "90"
+          GH_AW_TIMEOUT_MINUTES: "30"
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
           script: |
@@ -1613,7 +1615,7 @@ jobs:
       - agent
       - pat_pool
     if: always() && needs.agent.result != 'skipped'
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-26.04
     environment: copilot-pat-pool
     # Permissions for the detection job (workflow permissions default to none).
     permissions:
@@ -1638,7 +1640,7 @@ jobs:
         env:
           GH_AW_SETUP_WORKFLOW_NAME: "ASP.NET Core Pull Request Review"
           GH_AW_CURRENT_WORKFLOW_REF: ${{ github.repository }}/.github/workflows/pull-request-review.lock.yml@${{ github.ref }}
-          GH_AW_INFO_VERSION: "1.0.80"
+          GH_AW_INFO_VERSION: "1.0.103"
           GH_AW_INFO_AWF_VERSION: "v0.28.57"
           GH_AW_INFO_ENGINE_ID: "copilot"
       - name: Download activation artifact
@@ -1713,7 +1715,7 @@ jobs:
         uses: actions/github-script@3a2844b7e9c422d3c10d287c895573f7108da1b3 # v9.0.0
         env:
           WORKFLOW_NAME: "ASP.NET Core Pull Request Review"
-          WORKFLOW_DESCRIPTION: "Maintainer-invoked, source-only pull request review using the repository's review-pull-request skill and a trusted frozen bundle. Validated findings become at most five inline comments and one COMMENT-only review, pinned to the reviewed commit. Findings are posted directly to the pull request; this is advisory, never a merge gate."
+          WORKFLOW_DESCRIPTION: "Maintainer-invoked, source-only pull request review using the repository's code-review skill and a trusted frozen bundle. Validated findings become at most five inline comments and one COMMENT-only review, pinned to the reviewed commit. Findings are posted directly to the pull request; this is advisory, never a merge gate."
           HAS_PATCH: ${{ needs.agent.outputs.has_patch }}
           GH_AW_DETECTION_CONTINUE_ON_ERROR: "false"
           GH_AW_DETECTION_SKIP_PROMPT_SUMMARY: "true"
@@ -1738,7 +1740,7 @@ jobs:
           node-version: '24'
           package-manager-cache: false
       - name: Install GitHub Copilot CLI
-        run: bash "${RUNNER_TEMP}/gh-aw/actions/install_copilot_cli.sh" 1.0.80
+        run: bash "${RUNNER_TEMP}/gh-aw/actions/install_copilot_cli.sh" 1.0.103
         env:
           GH_HOST: github.com
       - name: Install threat-detect binary
@@ -1756,7 +1758,7 @@ jobs:
           COPILOT_AGENT_RUNNER_TYPE: STANDALONE
           COPILOT_DUMMY_BYOK: dummy-byok-key-for-offline-mode
           COPILOT_GITHUB_TOKEN: ${{ case(needs.pat_pool.outputs.pat_number == '0', secrets.COPILOT_PAT_0, needs.pat_pool.outputs.pat_number == '1', secrets.COPILOT_PAT_1, needs.pat_pool.outputs.pat_number == '2', secrets.COPILOT_PAT_2, needs.pat_pool.outputs.pat_number == '3', secrets.COPILOT_PAT_3, needs.pat_pool.outputs.pat_number == '4', secrets.COPILOT_PAT_4, needs.pat_pool.outputs.pat_number == '5', secrets.COPILOT_PAT_5, needs.pat_pool.outputs.pat_number == '6', secrets.COPILOT_PAT_6, needs.pat_pool.outputs.pat_number == '7', secrets.COPILOT_PAT_7, needs.pat_pool.outputs.pat_number == '8', secrets.COPILOT_PAT_8, needs.pat_pool.outputs.pat_number == '9', secrets.COPILOT_PAT_9, 'NO COPILOT PAT AVAILABLE') }}
-          COPILOT_MODEL: gpt-5.6-sol
+          COPILOT_MODEL: gpt-6.2-sol
           GH_AW_HARNESS_MAX_RETRIES: 0
           GH_AW_LLM_PROVIDER: github
           GH_AW_MAX_TURNS: ${{ vars.GH_AW_DEFAULT_MAX_TURNS || '' }}
@@ -1780,7 +1782,7 @@ jobs:
           RUNNER_TEMP: ${{ runner.temp }}
           TRACEPARENT: ${{ env.GITHUB_AW_OTEL_TRACE_ID != '' && env.GITHUB_AW_OTEL_PARENT_SPAN_ID != '' && format('00-{0}-{1}-01', env.GITHUB_AW_OTEL_TRACE_ID, env.GITHUB_AW_OTEL_PARENT_SPAN_ID) || '' }}
           WORKFLOW_NAME: "ASP.NET Core Pull Request Review"
-          WORKFLOW_DESCRIPTION: "Maintainer-invoked, source-only pull request review using the repository's review-pull-request skill and a trusted frozen bundle. Validated findings become at most five inline comments and one COMMENT-only review, pinned to the reviewed commit. Findings are posted directly to the pull request; this is advisory, never a merge gate."
+          WORKFLOW_DESCRIPTION: "Maintainer-invoked, source-only pull request review using the repository's code-review skill and a trusted frozen bundle. Validated findings become at most five inline comments and one COMMENT-only review, pinned to the reviewed commit. Findings are posted directly to the pull request; this is advisory, never a merge gate."
           HAS_PATCH: ${{ needs.agent.outputs.has_patch }}
           GH_AW_DETECTION_CONTINUE_ON_ERROR: "false"
         run: |
@@ -1806,7 +1808,7 @@ jobs:
 
           (umask 177 && touch /tmp/gh-aw/threat-detection/detection.log)
           # shellcheck disable=SC2016
-          printf '%s\n' '{"$schema":"https://github.com/github/gh-aw-firewall/releases/download/v0.28.57/awf-config.schema.json","apiProxy":{"enabled":true,"enableTokenSteering":true,"maxRuns":500,"maxCacheMisses":5,"maxAiCredits":200,"providers":{"github-copilot":{"models":{"gpt-5.6-sol":{"cost":{"cache_read":"4e-07","cache_write":"5e-06","input":"4e-06","output":"2e-05"}}}}},"models":{"agent":["sonnet-6x","gpt-6","gpt-5.4","gpt-5.5","gpt-5.6","gpt-5.3","gemini-pro","any"],"antigravity":["copilot/antigravity*","google/antigravity*","gemini/antigravity*"],"any":["copilot/*","anthropic/*","openai/*","google/*","gemini/*"],"auto":["copilot/auto","large"],"claude":["agent"],"codex":["agent"],"coding":["copilot/gpt-5*codex*","openai/gpt-5*codex*","gpt-5-codex","kimi"],"computer-use":["copilot/*computer-use*","google/*computer-use*","gemini/*computer-use*","openai/*computer-use*"],"copilot":["agent"],"deep-research":["copilot/deep-research*","copilot/o3-deep-research*","copilot/o4-mini-deep-research*","google/deep-research*","gemini/deep-research*","openai/o3-deep-research*","openai/o4-mini-deep-research*"],"detection":["small"],"evals":["small"],"fable":["copilot/*fable*","anthropic/*fable*"],"gemini":["agent"],"gemini-3-flash":["copilot/gemini-3*flash*","google/gemini-3*flash*","gemini/gemini-3*flash*"],"gemini-3-pro":["copilot/gemini-3*pro*","google/gemini-3*pro*","google/nano-banana*","gemini/gemini-3*pro*"],"gemini-3.1-flash":["copilot/gemini-3.1*flash*","google/gemini-3.1*flash*","gemini/gemini-3.1*flash*"],"gemini-3.1-pro":["copilot/gemini-3.1*pro*","google/gemini-3.1*pro*","gemini/gemini-3.1*pro*"],"gemini-3.5-flash":["copilot/gemini-3.5*flash*","google/gemini-3.5*flash*","gemini/gemini-3.5*flash*"],"gemini-3.6-flash":["copilot/gemini-3.6*flash*","google/gemini-3.6*flash*","gemini/gemini-3.6*flash*"],"gemini-3.7-flash":["copilot/gemini-3.7*flash*","google/gemini-3.7*flash*","gemini/gemini-3.7*flash*"],"gemini-3.8-flash":["copilot/gemini-3.8*flash*","google/gemini-3.8*flash*","gemini/gemini-3.8*flash*"],"gemini-flash":["copilot/gemini-*flash*","google/gemini-*flash*","gemini/gemini-*flash*"],"gemini-flash-lite":["copilot/gemini-*flash*lite*","google/gemini-*flash*lite*","gemini/gemini-*flash*lite*"],"gemini-omni":["copilot/gemini-omni*","google/gemini-omni*","gemini/gemini-omni*"],"gemini-pro":["copilot/gemini-*pro*","google/gemini-*pro*","gemini/gemini-*pro*"],"gemma":["copilot/gemma*","google/gemma*","gemini/gemma*"],"gpt-5":["copilot/gpt-5*","openai/gpt-5*"],"gpt-5-codex":["copilot/gpt-5*codex*","openai/gpt-5*codex*"],"gpt-5-mini":["copilot/gpt-5*mini*","openai/gpt-5*mini*"],"gpt-5-nano":["copilot/gpt-5*nano*","openai/gpt-5*nano*"],"gpt-5-pro":["copilot/gpt-5*pro*","openai/gpt-5*pro*"],"gpt-5.1":["copilot/gpt-5.1*","openai/gpt-5.1*"],"gpt-5.2":["copilot/gpt-5.2*","openai/gpt-5.2*"],"gpt-5.3":["copilot/gpt-5.3*","openai/gpt-5.3*"],"gpt-5.4":["copilot/gpt-5.4*","openai/gpt-5.4*"],"gpt-5.5":["copilot/gpt-5.5*","openai/gpt-5.5*"],"gpt-5.6":["copilot/gpt-5.6*","openai/gpt-5.6*"],"gpt-6":["copilot/gpt-6*","openai/gpt-6*"],"grok":["copilot/*grok*","openai/*grok*"],"haiku":["copilot/*haiku*","anthropic/*haiku*"],"image-generation":["copilot/gpt-image*","openai/gpt-image*","openai/chatgpt-image*","copilot/gemini-*image*","google/gemini-*image*","gemini/gemini-*image*","google/imagen*"],"kimi":["copilot/kimi*","openai/kimi*"],"kiwi":["copilot/kiwi*","openai/kiwi*"],"large":["sonnet","gpt-6","gpt-5-pro","gpt-5","gemini-pro"],"lyria":["google/lyria*","gemini/lyria*","copilot/lyria*"],"mai-code":["copilot/MAI-Code*","copilot/mai-code*","openai/MAI-Code*"],"mai-code-1-flash-picker":["copilot/MAI-Code-1-Flash-picker*","copilot/mai-code-1-flash-picker*","openai/MAI-Code-1-Flash-picker*"],"mini":["haiku","gpt-5-mini","gpt-5-nano","gemini-flash-lite"],"nano-banana":["copilot/nano-banana*","google/nano-banana*","gemini/nano-banana*"],"opus":["copilot/*opus*","anthropic/*opus*"],"opusplan":["opus?effort=high"],"raptor-mini":["copilot/raptor*","openai/raptor*"],"reasoning":["copilot/o1*","copilot/o3*","copilot/o4*","openai/o1*","openai/o3*","openai/o4*"],"robotics":["copilot/*robotics*","google/*robotics*","gemini/*robotics*"],"small":["mini"],"small-agent":["haiku","gpt-5-mini","gemini-flash"],"sonnet":["copilot/*sonnet*","anthropic/*sonnet*"],"sonnet-6x":["copilot/*sonnet-4.5*","copilot/*sonnet-4.6*","copilot/*sonnet-5*","copilot/*sonnet-4-5-*","anthropic/*sonnet-4-5-*","copilot/*sonnet-4-6*","anthropic/*sonnet-4-6*","anthropic/*sonnet-5*"],"summarization":["haiku","gpt-5-mini","gemini-flash-lite","mini"],"veo":["google/veo*","gemini/veo*"],"vision":["copilot/gemini-*image*","google/gemini-*image*","gemini/gemini-*image*","copilot/gemini-*flash*","google/gemini-*flash*","gemini/gemini-*flash*"]}},"container":{"imageTag":"0.28.57,squid=sha256:be808c16b535ebabd070eebe086fe6bffd5bb86b2e5fe8e5cdad30068eb9c0ac,agent=sha256:a9861b2fad1d29c586bbbf98840a61056e30e2720d8d9ec2c0def9049566bd8a,api-proxy=sha256:f2925ff32dc972a5d8b90a7785b6ca68052efd2575fe896556ac457e22e86dcc,cli-proxy=sha256:4584f030659ee51958223a3c6156e8119c6a94affbfcd92ce75f204702c52641","agentTimeout":10},"logging":{"proxyLogsDir":"/tmp/gh-aw/sandbox/firewall/logs","auditDir":"/tmp/gh-aw/sandbox/firewall/audit"}}' > "${RUNNER_TEMP}/gh-aw/awf-config.json"
+          printf '%s\n' '{"$schema":"https://github.com/github/gh-aw-firewall/releases/download/v0.28.57/awf-config.schema.json","apiProxy":{"enabled":true,"enableTokenSteering":true,"maxRuns":500,"maxCacheMisses":5,"maxAiCredits":200,"models":{"agent":["sonnet-6x","gpt-6","gpt-5.4","gpt-5.5","gpt-5.6","gpt-5.3","gemini-pro","any"],"antigravity":["copilot/antigravity*","google/antigravity*","gemini/antigravity*"],"any":["copilot/*","anthropic/*","openai/*","google/*","gemini/*"],"auto":["copilot/auto","large"],"claude":["agent"],"codex":["agent"],"coding":["copilot/gpt-5*codex*","openai/gpt-5*codex*","gpt-5-codex","kimi"],"computer-use":["copilot/*computer-use*","google/*computer-use*","gemini/*computer-use*","openai/*computer-use*"],"copilot":["agent"],"deep-research":["copilot/deep-research*","copilot/o3-deep-research*","copilot/o4-mini-deep-research*","google/deep-research*","gemini/deep-research*","openai/o3-deep-research*","openai/o4-mini-deep-research*"],"detection":["small"],"evals":["small"],"fable":["copilot/*fable*","anthropic/*fable*"],"gemini":["agent"],"gemini-3-flash":["copilot/gemini-3*flash*","google/gemini-3*flash*","gemini/gemini-3*flash*"],"gemini-3-pro":["copilot/gemini-3*pro*","google/gemini-3*pro*","google/nano-banana*","gemini/gemini-3*pro*"],"gemini-3.1-flash":["copilot/gemini-3.1*flash*","google/gemini-3.1*flash*","gemini/gemini-3.1*flash*"],"gemini-3.1-pro":["copilot/gemini-3.1*pro*","google/gemini-3.1*pro*","gemini/gemini-3.1*pro*"],"gemini-3.5-flash":["copilot/gemini-3.5*flash*","google/gemini-3.5*flash*","gemini/gemini-3.5*flash*"],"gemini-3.6-flash":["copilot/gemini-3.6*flash*","google/gemini-3.6*flash*","gemini/gemini-3.6*flash*"],"gemini-3.7-flash":["copilot/gemini-3.7*flash*","google/gemini-3.7*flash*","gemini/gemini-3.7*flash*"],"gemini-3.8-flash":["copilot/gemini-3.8*flash*","google/gemini-3.8*flash*","gemini/gemini-3.8*flash*"],"gemini-flash":["copilot/gemini-*flash*","google/gemini-*flash*","gemini/gemini-*flash*"],"gemini-flash-lite":["copilot/gemini-*flash*lite*","google/gemini-*flash*lite*","gemini/gemini-*flash*lite*"],"gemini-omni":["copilot/gemini-omni*","google/gemini-omni*","gemini/gemini-omni*"],"gemini-pro":["copilot/gemini-*pro*","google/gemini-*pro*","gemini/gemini-*pro*"],"gemma":["copilot/gemma*","google/gemma*","gemini/gemma*"],"gpt-5":["copilot/gpt-5*","openai/gpt-5*"],"gpt-5-codex":["copilot/gpt-5*codex*","openai/gpt-5*codex*"],"gpt-5-mini":["copilot/gpt-5*mini*","openai/gpt-5*mini*"],"gpt-5-nano":["copilot/gpt-5*nano*","openai/gpt-5*nano*"],"gpt-5-pro":["copilot/gpt-5*pro*","openai/gpt-5*pro*"],"gpt-5.1":["copilot/gpt-5.1*","openai/gpt-5.1*"],"gpt-5.2":["copilot/gpt-5.2*","openai/gpt-5.2*"],"gpt-5.3":["copilot/gpt-5.3*","openai/gpt-5.3*"],"gpt-5.4":["copilot/gpt-5.4*","openai/gpt-5.4*"],"gpt-5.5":["copilot/gpt-5.5*","openai/gpt-5.5*"],"gpt-5.6":["copilot/gpt-5.6*","openai/gpt-5.6*"],"gpt-6":["copilot/gpt-6*","openai/gpt-6*"],"grok":["copilot/*grok*","openai/*grok*"],"haiku":["copilot/*haiku*","anthropic/*haiku*"],"image-generation":["copilot/gpt-image*","openai/gpt-image*","openai/chatgpt-image*","copilot/gemini-*image*","google/gemini-*image*","gemini/gemini-*image*","google/imagen*"],"kimi":["copilot/kimi*","openai/kimi*"],"kiwi":["copilot/kiwi*","openai/kiwi*"],"large":["sonnet","gpt-6","gpt-5-pro","gpt-5","gemini-pro"],"lyria":["google/lyria*","gemini/lyria*","copilot/lyria*"],"mai-code":["copilot/MAI-Code*","copilot/mai-code*","openai/MAI-Code*"],"mai-code-1-flash-picker":["copilot/MAI-Code-1-Flash-picker*","copilot/mai-code-1-flash-picker*","openai/MAI-Code-1-Flash-picker*"],"mini":["haiku","gpt-5-mini","gpt-5-nano","gemini-flash-lite"],"nano-banana":["copilot/nano-banana*","google/nano-banana*","gemini/nano-banana*"],"opus":["copilot/*opus*","anthropic/*opus*"],"opusplan":["opus?effort=high"],"raptor-mini":["copilot/raptor*","openai/raptor*"],"reasoning":["copilot/o1*","copilot/o3*","copilot/o4*","openai/o1*","openai/o3*","openai/o4*"],"robotics":["copilot/*robotics*","google/*robotics*","gemini/*robotics*"],"small":["mini"],"small-agent":["haiku","gpt-5-mini","gemini-flash"],"sonnet":["copilot/*sonnet*","anthropic/*sonnet*"],"sonnet-6x":["copilot/*sonnet-4.5*","copilot/*sonnet-4.6*","copilot/*sonnet-5*","copilot/*sonnet-4-5-*","anthropic/*sonnet-4-5-*","copilot/*sonnet-4-6*","anthropic/*sonnet-4-6*","anthropic/*sonnet-5*"],"summarization":["haiku","gpt-5-mini","gemini-flash-lite","mini"],"veo":["google/veo*","gemini/veo*"],"vision":["copilot/gemini-*image*","google/gemini-*image*","gemini/gemini-*image*","copilot/gemini-*flash*","google/gemini-*flash*","gemini/gemini-*flash*"]}},"container":{"imageTag":"0.28.57,squid=sha256:be808c16b535ebabd070eebe086fe6bffd5bb86b2e5fe8e5cdad30068eb9c0ac,agent=sha256:a9861b2fad1d29c586bbbf98840a61056e30e2720d8d9ec2c0def9049566bd8a,api-proxy=sha256:f2925ff32dc972a5d8b90a7785b6ca68052efd2575fe896556ac457e22e86dcc,cli-proxy=sha256:4584f030659ee51958223a3c6156e8119c6a94affbfcd92ce75f204702c52641","agentTimeout":10},"logging":{"proxyLogsDir":"/tmp/gh-aw/sandbox/firewall/logs","auditDir":"/tmp/gh-aw/sandbox/firewall/audit"}}' > "${RUNNER_TEMP}/gh-aw/awf-config.json"
           cp "${RUNNER_TEMP}/gh-aw/awf-config.json" /tmp/gh-aw/awf-config.json
           export GH_AW_MODELS_JSON_PATH="/tmp/gh-aw/models.json"
           GH_AW_DOCKER_HOST=""
@@ -2065,7 +2067,7 @@ jobs:
         env:
           GH_AW_SETUP_WORKFLOW_NAME: "ASP.NET Core Pull Request Review"
           GH_AW_CURRENT_WORKFLOW_REF: ${{ github.repository }}/.github/workflows/pull-request-review.lock.yml@${{ github.ref }}
-          GH_AW_INFO_VERSION: "1.0.80"
+          GH_AW_INFO_VERSION: "1.0.103"
           GH_AW_INFO_AWF_VERSION: "v0.28.57"
           GH_AW_INFO_ENGINE_ID: "copilot"
       - name: Check command position
@@ -2124,8 +2126,8 @@ jobs:
       GH_AW_DETECTION_CONCLUSION: ${{ needs.detection.outputs.detection_conclusion }}
       GH_AW_DETECTION_REASON: ${{ needs.detection.outputs.detection_reason }}
       GH_AW_ENGINE_ID: "copilot"
-      GH_AW_ENGINE_MODEL: "gpt-5.6-sol"
-      GH_AW_ENGINE_VERSION: "1.0.80"
+      GH_AW_ENGINE_MODEL: "gpt-6.2-sol"
+      GH_AW_ENGINE_VERSION: "1.0.103"
       GH_AW_RUNTIME_FEATURES: ${{ vars.GH_AW_RUNTIME_FEATURES }}
       GH_AW_SAFE_OUTPUT_MESSAGES: "{\"activationComments\":\"false\"}"
       GH_AW_THREAT_DETECTION_AIC: ${{ needs.detection.outputs.aic }}
@@ -2160,7 +2162,7 @@ jobs:
         env:
           GH_AW_SETUP_WORKFLOW_NAME: "ASP.NET Core Pull Request Review"
           GH_AW_CURRENT_WORKFLOW_REF: ${{ github.repository }}/.github/workflows/pull-request-review.lock.yml@${{ github.ref }}
-          GH_AW_INFO_VERSION: "1.0.80"
+          GH_AW_INFO_VERSION: "1.0.103"
           GH_AW_INFO_AWF_VERSION: "v0.28.57"
           GH_AW_INFO_ENGINE_ID: "copilot"
       - name: Reject a moved pull request inside safe outputs
@@ -2214,6 +2216,210 @@ jobs:
           GH_HOST="${GITHUB_SERVER_URL#https://}"
           GH_HOST="${GH_HOST#http://}"
           echo "GH_HOST=${GH_HOST}" >> "$GITHUB_ENV"
+      - name: Reject incomplete or partial publication sets
+        uses: actions/github-script@3a2844b7e9c422d3c10d287c895573f7108da1b3 # v9.0.0
+        env:
+          GH_AW_AGENT_OUTPUT: ${{ steps.setup-agent-output-env.outputs.GH_AW_AGENT_OUTPUT }}
+        with:
+          script: |
+            const fs = require('fs');
+            const filename = process.env.GH_AW_AGENT_OUTPUT;
+            let output;
+            try {
+              output = JSON.parse(fs.readFileSync(filename, 'utf8'));
+            } catch {
+              core.setFailed('The agent output is not valid JSON.');
+              return;
+            }
+            const isObject = value => value !== null && typeof value === 'object' && !Array.isArray(value);
+            if (!isObject(output)) {
+              core.setFailed('The agent output root must be an object.');
+              return;
+            }
+            if (!Array.isArray(output.items)) {
+              core.setFailed('The agent output has no complete items list.');
+              return;
+            }
+            if (Object.hasOwn(output, 'errors')) {
+              if (!Array.isArray(output.errors) || !output.errors.every(error => typeof error === 'string')) {
+                core.setFailed('The agent output errors field is malformed.');
+                return;
+              }
+              if (output.errors.length > 0) {
+                core.setFailed('The agent output contains collection errors.');
+                return;
+              }
+            }
+            if (!output.items.every(item => isObject(item) && typeof item.type === 'string')) {
+              core.setFailed('Every agent output item must be an object with a string type.');
+              return;
+            }
+            const supported = new Set([
+              'add_comment',
+              'create_pull_request_review_comment',
+              'missing_data',
+              'missing_tool',
+              'noop',
+              'report_incomplete',
+              'submit_pull_request_review',
+            ]);
+            if (output.items.some(item => !supported.has(item.type))) {
+              core.setFailed('The agent output contains an unsupported item type.');
+              return;
+            }
+            const isDiscardedInline = body => {
+              let fence;
+              let paragraph = false;
+              const containers = [];
+              const thematicBreak = /^ {0,3}(?:(?:\* *){3,}|(?:- *){3,}|(?:_ *){3,})$/;
+              const listMarker = /^( {0,3})([-+*]|\d{1,9}[.)])( +|$)/;
+              const lines = body.split(/\r?\n/).map(rawLine => {
+                let tabExpansion = 0;
+                let line = rawLine.replace(/\t/g, (_, index) => {
+                  const width = 4 - (index + tabExpansion) % 4;
+                  tabExpansion += width - 1;
+                  return ' '.repeat(width);
+                });
+                let matched = 0;
+                for (; matched < containers.length; matched++) {
+                  const container = containers[matched];
+                  if (container.quote) {
+                    const marker = line.match(/^ {0,3}> ?/);
+                    if (!marker) {
+                      break;
+                    }
+                    line = line.slice(marker[0].length);
+                  } else if (line.trim().length === 0) {
+                    line = '';
+                  } else if (line.startsWith(' '.repeat(container.indent))) {
+                    line = line.slice(container.indent);
+                  } else {
+                    break;
+                  }
+                }
+                if (matched < containers.length) {
+                  const sibling = line.match(listMarker);
+                  const sameList = sibling && containers[matched].marker === sibling[2].replace(/^\d+/, '');
+                  const interruptsParagraph = sibling && line.slice(sibling[0].length).trim().length > 0 &&
+                    (!/^\d/.test(sibling[2]) || Number.parseInt(sibling[2], 10) === 1);
+                  const delimiter = line.match(/^ {0,3}(`{3,}|~{3,})/);
+                  const startsFence = delimiter && (delimiter[1][0] !== '`' ||
+                    !line.slice(delimiter[0].length).includes('`'));
+                  const lazyContinuation = !containers.slice(matched).some(container => container.quote) &&
+                    !fence && paragraph && line.trim().length > 0 &&
+                    !sameList && !interruptsParagraph && !startsFence && !thematicBreak.test(line) &&
+                    !/^ {0,3}(?:>|#{1,6}(?: |$)|(?:=+|-+) *$)/.test(line);
+                  if (!lazyContinuation) {
+                    if (sameList) {
+                      // A sibling item has its own paragraph, even when its number is not one.
+                      paragraph = false;
+                    }
+                    containers.length = matched;
+                    fence = undefined;
+                  }
+                }
+                if (!fence) {
+                  // Fence indentation is relative to each CommonMark container's content.
+                  while (true) {
+                    const quote = line.match(/^ {0,3}> ?/);
+                    if (quote) {
+                      containers.push({ quote: true });
+                      line = line.slice(quote[0].length);
+                      paragraph = false;
+                      continue;
+                    }
+                    const list = line.match(listMarker);
+                    const interruptsParagraph = list && line.slice(list[0].length).trim().length > 0 &&
+                      (!/^\d/.test(list[2]) || Number.parseInt(list[2], 10) === 1);
+                    if (!list || thematicBreak.test(line) || (paragraph && !interruptsParagraph)) {
+                      break;
+                    }
+                    const padding = list[3].length >= 1 && list[3].length <= 4 ? list[3].length : 1;
+                    const indent = list[1].length + list[2].length + padding;
+                    containers.push({ indent, marker: list[2].replace(/^\d+/, '') });
+                    line = line.slice(indent);
+                    paragraph = false;
+                  }
+                }
+                if (!fence && !paragraph && /^ {4}/.test(line)) {
+                  return '';
+                }
+                const delimiter = line.match(/^ {0,3}(`{3,}|~{3,})/);
+                if (fence) {
+                  if (delimiter && delimiter[1][0] === fence[0] &&
+                      delimiter[1].length >= fence.length &&
+                      /^[ \t]*$/.test(line.slice(delimiter[0].length))) {
+                    fence = undefined;
+                  }
+                  paragraph = false;
+                  return '';
+                }
+                if (delimiter && (delimiter[1][0] !== '`' ||
+                    !line.slice(delimiter[0].length).includes('`'))) {
+                  fence = delimiter[1];
+                  paragraph = false;
+                  return '';
+                }
+                const endsParagraph = thematicBreak.test(line) || /^ {0,3}#{1,6}(?: |$)/.test(line) ||
+                  (paragraph && /^ {0,3}(?:=+|-+) *$/.test(line));
+                paragraph = line.trim().length > 0 && (paragraph || !/^ {4}/.test(line)) && !endsParagraph;
+                return containers.some(container => container.quote) ? '' : line;
+              }).map(line => line.replace(/[*_]/g, '')
+                .replace(/^[ \t]*(?:(?:[-+]|[0-9]+[.)]|#{1,6})[ \t]+)+/, '').trim())
+                .filter(line => line.length > 0);
+              return /^(?:\[P[0-3]\][ \t]*)?\[DISCARDED\]/i.test(lines[0] ?? '') ||
+                lines.some(line => /^Why[ \t]+discarded[ \t]*:/i.test(line)) ||
+                lines.some(line => /^Confidence[ \t]*:[ \t]*`?discarded`?[ \t]*$/i.test(line));
+            };
+            const count = type => output.items.filter(item => item.type === type).length;
+            const comments = count('create_pull_request_review_comment');
+            const reviews = count('submit_pull_request_review');
+            const noop = count('noop');
+            const statusComments = output.items.filter(item => item.type === 'add_comment');
+            const publicationItems = output.items.filter(item => item.type !== 'missing_tool');
+            const stoppedItems = publicationItems.some(item =>
+              ['report_incomplete', 'missing_data'].includes(item.type))
+              ? publicationItems
+              : output.items;
+            const incompleteItems = stoppedItems.filter(item =>
+              ['report_incomplete', 'missing_data', 'missing_tool'].includes(item.type));
+            const incompleteReason = incompleteItems.length === 1 &&
+              typeof incompleteItems[0].reason === 'string'
+              ? incompleteItems[0].reason
+              : null;
+            const reasonIsValid = incompleteReason !== null && incompleteReason.length >= 1 &&
+              incompleteReason.length <= 240 && !/[\r\n]/.test(incompleteReason);
+            const expectedStatusBodies = reasonIsValid
+              ? ['BLOCKED', 'INCOMPLETE'].map(status =>
+                  `Review not published (${status}): ${incompleteReason}\n\nNo partial findings were published.`)
+              : [];
+            const findings = comments >= 1 && comments <= 5 && reviews === 1 &&
+              publicationItems.length === comments + 1;
+            const clean = noop === 1 && publicationItems.length === 1;
+            const stopped = incompleteItems.length === 1 && statusComments.length === 1 &&
+              stoppedItems.length === 2 && typeof statusComments[0].body === 'string' &&
+              expectedStatusBodies.includes(statusComments[0].body);
+            if (!findings && !clean && !stopped) {
+              core.setFailed('Incomplete or partial review output cannot be published.');
+              return;
+            }
+            const discarded = output.items.filter(item =>
+              item.type === 'create_pull_request_review_comment' &&
+              typeof item.body === 'string' &&
+              isDiscardedInline(item.body));
+            if (discarded.length > 0) {
+              output.items = output.items.filter(item => !discarded.includes(item));
+              const remaining = comments - discarded.length;
+              if (remaining === 0) {
+                output.items = [{
+                  type: 'noop',
+                  message: 'STATUS: NO_FINDINGS\nAll inline candidates were discarded; see the original agent output for details.',
+                }];
+              }
+              fs.writeFileSync(filename, JSON.stringify(output));
+              core.notice(`Removed ${discarded.length} discarded inline candidate(s); ${remaining} inline finding(s) remain. ` +
+                'The original agent artifact retains the discarded candidates.');
+            }
       - name: Process Safe Outputs
         id: process_safe_outputs
         uses: actions/github-script@3a2844b7e9c422d3c10d287c895573f7108da1b3 # v9.0.0
@@ -2268,88 +2474,6 @@ jobs:
           GH_HOST="${GITHUB_SERVER_URL#https://}"
           GH_HOST="${GH_HOST#http://}"
           echo "GH_HOST=${GH_HOST}" >> "$GITHUB_ENV"
-      - name: Download review output for publication preflight
-        uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
-        with:
-          merge-multiple: true
-          path: ${{ runner.temp }}/review-publication-gate
-          pattern: "{agent,agent-output-fallback}"
-      - name: Reject incomplete or partial publication sets
-        uses: actions/github-script@3a2844b7e9c422d3c10d287c895573f7108da1b3 # v9.0.0
-        with:
-          script: |
-            const fs = require('fs');
-            const path = require('path');
-            const filename = path.join(process.env.RUNNER_TEMP, 'review-publication-gate', 'agent_output.json');
-            let output;
-            try {
-              output = JSON.parse(fs.readFileSync(filename, 'utf8'));
-            } catch {
-              core.setFailed('The agent output is not valid JSON.');
-              return;
-            }
-            const isObject = value => value !== null && typeof value === 'object' && !Array.isArray(value);
-            if (!isObject(output)) {
-              core.setFailed('The agent output root must be an object.');
-              return;
-            }
-            if (!Array.isArray(output.items)) {
-              core.setFailed('The agent output has no complete items list.');
-              return;
-            }
-            if (Object.hasOwn(output, 'errors')) {
-              if (!Array.isArray(output.errors) || !output.errors.every(error => typeof error === 'string')) {
-                core.setFailed('The agent output errors field is malformed.');
-                return;
-              }
-              if (output.errors.length > 0) {
-                core.setFailed('The agent output contains collection errors.');
-                return;
-              }
-            }
-            if (!output.items.every(item => isObject(item) && typeof item.type === 'string')) {
-              core.setFailed('Every agent output item must be an object with a string type.');
-              return;
-            }
-            const supported = new Set([
-              'add_comment',
-              'create_pull_request_review_comment',
-              'missing_data',
-              'missing_tool',
-              'noop',
-              'report_incomplete',
-              'submit_pull_request_review',
-            ]);
-            if (output.items.some(item => !supported.has(item.type))) {
-              core.setFailed('The agent output contains an unsupported item type.');
-              return;
-            }
-            const count = type => output.items.filter(item => item.type === type).length;
-            const comments = count('create_pull_request_review_comment');
-            const reviews = count('submit_pull_request_review');
-            const noop = count('noop');
-            const statusComments = output.items.filter(item => item.type === 'add_comment');
-            const incompleteItems = output.items.filter(item =>
-              ['report_incomplete', 'missing_data', 'missing_tool'].includes(item.type));
-            const incompleteReason = incompleteItems.length === 1 &&
-              typeof incompleteItems[0].reason === 'string'
-              ? incompleteItems[0].reason
-              : null;
-            const reasonIsValid = incompleteReason !== null && incompleteReason.length >= 1 &&
-              incompleteReason.length <= 240 && !/[\r\n]/.test(incompleteReason);
-            const expectedStatusBodies = reasonIsValid
-              ? ['BLOCKED', 'INCOMPLETE'].map(status =>
-                  `Review not published (${status}): ${incompleteReason}\n\nNo partial findings were published.`)
-              : [];
-            const findings = comments >= 1 && comments <= 5 && reviews === 1 &&
-              output.items.length === comments + 1;
-            const clean = noop === 1 && output.items.length === 1;
-            const stopped = incompleteItems.length === 1 && statusComments.length === 1 &&
-              output.items.length === 2 && typeof statusComments[0].body === 'string' &&
-              expectedStatusBodies.includes(statusComments[0].body);
-            if (!findings && !clean && !stopped) {
-              core.setFailed('Incomplete or partial review output cannot be published.');
-            }
       - name: Reject a moved pull request before safe outputs
         uses: actions/github-script@3a2844b7e9c422d3c10d287c895573f7108da1b3 # v9.0.0
         env:
