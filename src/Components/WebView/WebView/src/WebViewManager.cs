@@ -297,6 +297,8 @@ public abstract class WebViewManager : IAsyncDisposable
             return fileProvider;
         }
 
+        [UnconditionalSuppressMessage("SingleFile", "IL3000:Assembly.Location",
+            Justification = "The code handles an empty Assembly.Location by skipping the development-time static web assets manifest, which is not published with single-file or native AOT apps.")]
         private static string? ResolveRelativeToAssembly()
         {
             var assembly = Assembly.GetEntryAssembly();
