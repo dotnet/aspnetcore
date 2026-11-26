@@ -297,19 +297,15 @@ public abstract class WebViewManager : IAsyncDisposable
             return fileProvider;
         }
 
-        [UnconditionalSuppressMessage("SingleFile", "IL3000:Assembly.Location",
-            Justification = "The code handles an empty Assembly.Location by skipping the development-time static web assets manifest, which is not published with single-file or native AOT apps.")]
         private static string? ResolveRelativeToAssembly()
         {
-            var assembly = Assembly.GetEntryAssembly();
-            if (string.IsNullOrEmpty(assembly?.Location))
+            var assemblyName = Assembly.GetEntryAssembly()?.GetName().Name;
+            if (string.IsNullOrEmpty(assemblyName))
             {
                 return null;
             }
 
-            var name = Path.GetFileNameWithoutExtension(assembly.Location);
-
-            return Path.Combine(Path.GetDirectoryName(assembly.Location)!, $"{name}.staticwebassets.runtime.json");
+            return Path.Combine(AppContext.BaseDirectory, $"{assemblyName}.staticwebassets.runtime.json");
         }
     }
 }
