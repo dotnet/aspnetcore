@@ -426,63 +426,58 @@ public class VirtualizationTest : ServerTestBase<ToggleExecutionModeServerFixtur
     }
 
     [Fact]
-    public void VariableHeightTable_FractionalRowHeights_KeepViewportFilled()
+    public void FractionalRowHeights_DeepWheelScrollRendersRowAtViewportCenter()
     {
-        Browser.MountTestComponent<VirtualizationFractionalHeightTable>();
+        Browser.MountTestComponent<VirtualizationComponent>();
+        Browser.Exists(By.Id("show-fractional-table")).Click();
+        var container = Browser.Exists(By.Id("fractional-rows-container"));
+        var finishLoadingButton = Browser.Exists(By.Id("finish-loading-fractional"));
         var js = (IJavaScriptExecutor)Browser;
+        finishLoadingButton.Click();
+        Browser.Exists(By.CssSelector("#fractional-rows-container .item[data-index='0']"));
+        LoadUntilNoPlaceholders();
+        WaitForRenderToSettle(container, js);
 
-        Browser.True(
-            () => Browser.FindElements(By.CssSelector("#fractional-height-table-container [id^='fractional-row-']")).Count > 0,
-            TimeSpan.FromSeconds(10), "Expected the initial provider load to render rows");
+        // Move a few rows down so the spacer before the rendered rows has a non-integer height.
+        ScrollContainerWithWheelTo(js, container, 200);
+        LoadUntilNoPlaceholders();
+        WaitForRenderToSettle(container, js);
+        var spacerBefore = container.FindElement(By.CssSelector("tbody > tr[data-blazor-virtualize-reserved-height]"));
+        Browser.True(() => (bool)js.ExecuteScript(
+            "const s = arguments[0]; return s.offsetHeight > 0 && s.getBoundingClientRect().height !== s.offsetHeight;",
+            spacerBefore));
 
-        Browser.Exists(By.Id("gate-fractional-load")).Click();
+        ScrollContainerWithWheelTo(js, container, 1_000_000);
+        Browser.True(() => GetElementCount(container, ".placeholder") > 0);
+        LoadUntilNoPlaceholders();
+        WaitForRenderToSettle(container, js);
+        LoadUntilNoPlaceholders();
 
-        // Match the report's scroll cadence while the provider is still pending.
-        js.ExecuteAsyncScript(@"
-            var container = document.getElementById('fractional-height-table-container');
-            var done = arguments[arguments.length - 1];
-            var steps = 0;
-            function step() {
-                container.scrollTop += 120;
-                if (++steps < 25) {
-                    setTimeout(step, 60);
-                } else {
-                    done();
-                }
-            }
-            step();
-        ");
+        // The scaled spacer measurements place rendered rows at the wrong distance without the fix,
+        // so the row under the viewport center is many rows away from the one at that scroll offset.
+        var scrollTop = (double)GetScrollTop(js, container);
+        var centerIndex = GetCenterRowIndex(js, container);
+        var expectedCenterIndex = (long)((scrollTop + container.Size.Height / 2) / 20.453125);
+        Assert.True(scrollTop > 900_000, $"Expected a deep scroll position, got scrollTop={scrollTop}.");
+        Assert.True(Math.Abs(centerIndex - expectedCenterIndex) <= 2,
+            $"Row {centerIndex} is at the viewport center but row {expectedCenterIndex} is expected at scrollTop={scrollTop}.");
 
-        Browser.True(
-            () => Browser.FindElements(By.XPath("//td[text()='Loading…']")).Count > 0,
-            TimeSpan.FromSeconds(10), "Expected the gated provider to show placeholders after scrolling");
-        Assert.Empty(Browser.FindElements(By.CssSelector("#fractional-height-table-container [id^='fractional-row-']")));
-
-        Browser.Exists(By.Id("release-fractional-load")).Click();
-
-        Browser.True(
-            () => Browser.FindElements(By.CssSelector("#fractional-height-table-container [id^='fractional-row-']")).Count > 0,
-            TimeSpan.FromSeconds(10), "Expected real rows after releasing the provider");
-
-        Browser.True(() =>
+        void LoadUntilNoPlaceholders() => Browser.True(() =>
         {
-            var filled = js.ExecuteScript(@"
-                var container = document.getElementById('fractional-height-table-container');
-                var containerRect = container.getBoundingClientRect();
-                var rows = container.querySelectorAll('[id^=""fractional-row-""]');
-                var visibleHeight = 0;
-                for (var i = 0; i < rows.length; i++) {
-                    var rect = rows[i].getBoundingClientRect();
-                    var top = Math.max(rect.top, containerRect.top);
-                    var bottom = Math.min(rect.bottom, containerRect.bottom);
-                    if (bottom > top) {
-                        visibleHeight += bottom - top;
-                    }
-                }
-                return visibleHeight >= containerRect.height * 0.5;
-            ");
-            return filled is bool isFilled && isFilled;
-        }, TimeSpan.FromSeconds(10), "Fractional-height table should fill at least half of the viewport after scrolling");
+            if (GetElementCount(container, ".placeholder") > 0)
+            {
+                finishLoadingButton.Click();
+                return false;
+            }
+
+            return true;
+        });
+
+        static long GetCenterRowIndex(IJavaScriptExecutor js, IWebElement container) => (long)js.ExecuteScript("""
+            const rect = arguments[0].getBoundingClientRect();
+            const row = document.elementFromPoint(rect.left + 5, rect.top + rect.height / 2)?.closest('.item');
+            return row ? Number(row.dataset.index) : -1;
+            """, container);
     }
 
     [Theory]
