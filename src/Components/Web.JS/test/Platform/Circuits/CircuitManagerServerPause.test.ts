@@ -218,7 +218,7 @@ describe('CircuitManager pause deferral', () => {
       expect(fetch).toHaveBeenCalledTimes(1);
     });
 
-    test.each(['connection', 'server'])('disposal drains a resume awaiting the %s before final teardown', async boundary => {
+    test.each(['connection', 'server'])('disposal cleans up a resume awaiting the %s', async boundary => {
       const { onConnectionUp } = configureHandler('custom');
       await circuit.start();
       expect(await circuit.pauseCircuit()).toBe(true);
@@ -249,7 +249,7 @@ describe('CircuitManager pause deferral', () => {
       const resumed = await resuming;
       await disposal;
 
-      expect(connection.stop).toHaveBeenCalledTimes(1);
+      expect(connection.stop).toHaveBeenCalledTimes(boundary === 'connection' ? 2 : 1);
       expect(resumedConnection.stop).toHaveBeenCalledTimes(1);
       expect(fetch).toHaveBeenCalledTimes(1);
       const body = jest.mocked(fetch).mock.calls[0][1]?.body;
@@ -262,6 +262,71 @@ describe('CircuitManager pause deferral', () => {
       if (boundary === 'connection') {
         expect(resumedConnection.invoke).not.toHaveBeenCalled();
       }
+    });
+
+    test.each(['success', 'failure'])('replacement startup does not wait for retired resume startup ending in %s', async outcome => {
+      configureHandler('custom');
+      await circuit.start();
+      expect(await circuit.pauseCircuit()).toBe(true);
+      const resumedConnection = configureResumeConnection();
+      const entered = Promise.withResolvers<void>();
+      const release = Promise.withResolvers<void>();
+      jest.mocked(resumedConnection.start).mockImplementation(async () => {
+        entered.resolve();
+        await release.promise;
+        if (outcome === 'failure') {
+          throw new Error('Retired startup failed');
+        }
+      });
+      let retiredConnectionClosed: ((error?: Error) => void) | undefined;
+      jest.spyOn(resumedConnection, 'onclose').mockImplementation(callback => { retiredConnectionClosed = callback; });
+      const resuming = Promise.allSettled([circuit.resume()]);
+      await entered.promise;
+      jest.mocked(resumedConnection.stop).mockImplementation(async () => {
+        await release.promise;
+        retiredConnectionClosed?.();
+      });
+
+      jest.mocked(HubConnectionBuilder.prototype.build).mockRestore();
+      const replacementConnection = new HubConnectionBuilder().withUrl('http://localhost/_blazor').build();
+      jest.spyOn(replacementConnection, 'state', 'get').mockReturnValue(HubConnectionState.Connected);
+      jest.spyOn(replacementConnection, 'start').mockResolvedValue();
+      jest.spyOn(replacementConnection, 'stop').mockResolvedValue();
+      jest.spyOn(replacementConnection, 'invoke').mockResolvedValue('replacement-circuit');
+      jest.spyOn(replacementConnection, 'send').mockResolvedValue();
+      jest.spyOn(HubConnectionBuilder.prototype, 'build').mockReturnValue(replacementConnection);
+      const onCircuitOpened = jest.fn();
+      options.circuitHandlers.push({ onCircuitOpened });
+      const disposal = circuit.dispose();
+      const replacement = new CircuitManager(componentManager, '', options, logger, new JSEventRegistry());
+      const startingReplacement = disposal.then(() => replacement.start());
+      let deadline: ReturnType<typeof setTimeout> | undefined;
+      const timedOut = new Promise<never>((_, reject) => {
+        deadline = setTimeout(() => reject(new Error('Replacement blocked by retired resume startup')), 1000);
+      });
+
+      try {
+        expect(await Promise.race([startingReplacement, timedOut])).toBe(true);
+        expect(await resuming).toEqual([{ status: 'fulfilled', value: false }]);
+        await replacement.updateRootComponents('[]', '');
+        expect(replacementConnection.send).toHaveBeenCalledWith('UpdateRootComponents', '[]', '');
+        expect(onCircuitOpened).toHaveBeenCalledTimes(1);
+        expect(resumedConnection.invoke).not.toHaveBeenCalled();
+        expect(resumedConnection.stop).toHaveBeenCalledTimes(1);
+        jest.mocked(rendererInterop.detachWebRendererInterop).mockClear();
+      } finally {
+        clearTimeout(deadline);
+        release.resolve();
+        await resuming;
+        await startingReplacement;
+        await Promise.allSettled(jest.mocked(resumedConnection.stop).mock.results.map(result => result.value));
+        await replacement.dispose();
+      }
+
+      expect(resumedConnection.invoke).not.toHaveBeenCalled();
+      expect(rendererInterop.detachWebRendererInterop).not.toHaveBeenCalled();
+      expect(onCircuitOpened).toHaveBeenCalledTimes(1);
+      expect(componentManager.onComponentReload).not.toHaveBeenCalled();
     });
 
     test('a resume awaiting disconnection does not reopen a disposing circuit', async () => {

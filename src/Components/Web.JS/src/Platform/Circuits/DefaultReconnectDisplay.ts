@@ -38,6 +38,8 @@ export class DefaultReconnectDisplay implements ReconnectDisplay {
 
   retryWhenDocumentBecomesVisible: () => void;
 
+  private displayVersion = 0;
+
   constructor(dialogId: string, private readonly document: Document, private readonly logger: Logger) {
     this.style = this.document.createElement('style');
     this.style.innerHTML = DefaultReconnectDisplay.Css;
@@ -125,6 +127,7 @@ export class DefaultReconnectDisplay implements ReconnectDisplay {
   }
 
   hide(): void {
+    this.displayVersion++;
     this.host.style.display = 'none';
     this.overlay.classList.remove(DefaultReconnectDisplay.ReconnectVisibleClassName);
   }
@@ -174,16 +177,20 @@ export class DefaultReconnectDisplay implements ReconnectDisplay {
   }
 
   private async resume() {
+    const displayVersion = this.displayVersion;
     try {
       // reconnect will asynchronously return:
       // - true to mean success
       // - false to mean we reached the server, but it rejected the connection (e.g., unknown circuit ID)
       // - exception to mean we didn't reach the server (this can be sync or async)
       const successful = await Blazor.resumeCircuit!();
-      if (!successful) {
+      if (!successful && displayVersion === this.displayVersion) {
         this.rejected();
       }
     } catch (err: unknown) {
+      if (displayVersion !== this.displayVersion) {
+        return;
+      }
       // We got an exception, server is currently unavailable
       this.logger.log(LogLevel.Error, err as Error);
       this.failed();

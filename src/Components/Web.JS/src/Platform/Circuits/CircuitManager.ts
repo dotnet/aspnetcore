@@ -66,6 +66,8 @@ export class CircuitManager implements DotNet.DotNetCallDispatcher {
 
   private _activePauseDeferral?: AbortController;
 
+  private _resumeConnectionAbortController?: AbortController;
+
   public constructor(
     componentManager: RootComponentManager<ServerComponentDescriptor>,
     appState: string,
@@ -133,7 +135,7 @@ export class CircuitManager implements DotNet.DotNetCallDispatcher {
     return true;
   }
 
-  private async startConnection(): Promise<HubConnection> {
+  private async startConnection(signal?: AbortSignal): Promise<HubConnection> {
     const hubProtocol = new MessagePackHubProtocol();
     (hubProtocol as unknown as { name: string }).name = 'blazorpack';
 
@@ -207,6 +209,10 @@ export class CircuitManager implements DotNet.DotNetCallDispatcher {
     });
     connection.on('JS.EndLocationChanging', Blazor._internal.navigationManager.endLocationChanging);
     connection.onclose(error => {
+      if (signal?.aborted) {
+        return;
+      }
+
       if (isRendererAttached(WebRendererId.Server)) {
         this._interopMethodsForReconnection = detachWebRendererInterop(WebRendererId.Server);
       }
@@ -230,10 +236,29 @@ export class CircuitManager implements DotNet.DotNetCallDispatcher {
       showErrorNotification();
     });
 
+    if (signal?.aborted) {
+      return connection;
+    }
+
+    const aborted = signal && new Promise<void>(resolve => {
+      signal.addEventListener('abort', () => {
+        // SignalR stop can wait for application token acquisition, so retirement must not await it.
+        connection.stop().catch(error => this._logger.log(LogLevel.Debug, `Failed to stop the retired resume connection: ${error}`));
+        resolve();
+      }, { once: true });
+    });
+
     try {
-      await connection.start();
+      const starting = connection.start();
+      await (aborted ? Promise.race([starting, aborted]) : starting);
+      if (signal?.aborted) {
+        return connection;
+      }
       this.handleConnectionUp();
     } catch (ex: any) {
+      if (signal?.aborted) {
+        return connection;
+      }
       this.unhandledError(ex as Error);
 
       if (this._circuitId || ex.errorType === 'FailedToNegotiateWithServerError') {
@@ -472,7 +497,16 @@ export class CircuitManager implements DotNet.DotNetCallDispatcher {
     try {
       if (this._connection!.state !== HubConnectionState.Connected) {
         this._logger.log(LogLevel.Trace, 'Reestablishing SignalR connection...');
-        this._connection = await this.startConnection();
+        const controller = new AbortController();
+        this._resumeConnectionAbortController = controller;
+        try {
+          const connection = await this.startConnection(controller.signal);
+          if (!controller.signal.aborted) {
+            this._connection = connection;
+          }
+        } finally {
+          this._resumeConnectionAbortController = undefined;
+        }
       }
 
       if (this.isDisposedOrDisposing()) {
@@ -675,6 +709,8 @@ export class CircuitManager implements DotNet.DotNetCallDispatcher {
   }
 
   private async disposeCore(): Promise<void> {
+    this._resumeConnectionAbortController?.abort();
+
     // Retire automatic pause before awaiting startup, which can overlap a replacement circuit.
     Blazor._internal.circuitEvents?.dispatchEvent(new Event('disposed'));
 
