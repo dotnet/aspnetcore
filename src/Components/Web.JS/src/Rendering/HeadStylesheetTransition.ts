@@ -4,7 +4,14 @@
 let removed: { link: HTMLLinkElement; id: string }[] | undefined;
 let inserted: HTMLLinkElement[] | undefined;
 let batchActive = false;
-const pending = new Map<HTMLLinkElement, { previous: HTMLLinkElement; finish: () => void }>();
+type PendingTransition = {
+  previous: HTMLLinkElement;
+  finish: () => void;
+  media?: string;
+  mediaQueryList?: MediaQueryList;
+  mediaQueryListener?: () => void;
+};
+const pending = new Map<HTMLLinkElement, PendingTransition>();
 
 export function beginHeadStylesheetTransition(): void {
   batchActive = true;
@@ -41,46 +48,87 @@ export function endHeadStylesheetTransition(): void {
 
     for (const item of outgoing) {
       const { link, id } = item;
-      const transition = pending.get(link);
-      const previous = transition?.previous ?? link;
+      const previousTransition = pending.get(link);
+      const previous = previousTransition?.previous ?? link;
       const replacement = id ? incoming?.find(candidate => candidate.id === id) : undefined;
 
-      if (transition) {
+      if (previousTransition) {
         pending.delete(link);
-        transition.finish();
+        previousTransition.finish();
         link.remove();
       }
 
-      if (!replacement || replacement.disabled || !matchesCurrentMedia(replacement) || !previous.sheet || replacement.sheet || pending.has(replacement)) {
+      if (!replacement || replacement.disabled || !hasStylesheetHref(replacement) || !matchesCurrentMedia(replacement) || !previous.sheet || replacement.sheet || pending.has(replacement)) {
         previous.remove();
         continue;
       }
 
-      const finish = () => {
-        clearTimeout(timeout);
-        replacement.removeEventListener('load', finish);
-        replacement.removeEventListener('error', finish);
-        if (pending.delete(replacement)) {
-          previous.remove();
-        }
+      let timeout: ReturnType<typeof setTimeout>;
+      const transition: PendingTransition = {
+        previous,
+        finish: () => {
+          clearTimeout(timeout);
+          replacement.removeEventListener('load', transition.finish);
+          replacement.removeEventListener('error', transition.finish);
+          if (transition.mediaQueryList && transition.mediaQueryListener) {
+            transition.mediaQueryList.removeEventListener('change', transition.mediaQueryListener);
+          }
+          if (pending.delete(replacement)) {
+            previous.remove();
+          }
+        },
       };
-      const timeout = setTimeout(finish, 30_000);
-      pending.set(replacement, { previous, finish });
-      replacement.addEventListener('load', finish);
-      replacement.addEventListener('error', finish);
+      timeout = setTimeout(transition.finish, 30_000);
+      pending.set(replacement, transition);
+      replacement.addEventListener('load', transition.finish);
+      replacement.addEventListener('error', transition.finish);
+      updateMediaQueryListener(replacement, transition);
     }
   }
 
   for (const [replacement, transition] of pending) {
-    if (replacement.disabled || !isHeadStylesheet(replacement) || !matchesCurrentMedia(replacement)) {
+    if (!hasStylesheetHref(replacement) || replacement.disabled || !isHeadStylesheet(replacement) || !matchesCurrentMedia(replacement)) {
       transition.finish();
+    } else {
+      updateMediaQueryListener(replacement, transition);
     }
   }
+}
+
+function hasStylesheetHref(link: HTMLLinkElement): boolean {
+  const href = link.getAttribute('href');
+  return href !== null && href.trim().length > 0;
 }
 
 function matchesCurrentMedia(link: HTMLLinkElement): boolean {
   const media = link.media.trim();
   return media.length === 0 || window.matchMedia(media).matches;
+}
+
+function updateMediaQueryListener(link: HTMLLinkElement, transition: PendingTransition): void {
+  const media = link.media.trim();
+  if (transition.media === media) {
+    return;
+  }
+
+  if (transition.mediaQueryList && transition.mediaQueryListener) {
+    transition.mediaQueryList.removeEventListener('change', transition.mediaQueryListener);
+    transition.mediaQueryList = undefined;
+    transition.mediaQueryListener = undefined;
+  }
+
+  transition.media = media;
+  if (media.length > 0) {
+    const mediaQueryList = window.matchMedia(media);
+    const listener = () => {
+      if (!mediaQueryList.matches) {
+        transition.finish();
+      }
+    };
+    transition.mediaQueryList = mediaQueryList;
+    transition.mediaQueryListener = listener;
+    mediaQueryList.addEventListener('change', listener);
+  }
 }
 
 function isHeadStylesheet(node: Node): node is HTMLLinkElement {

@@ -295,6 +295,81 @@ public class HeadModificationTest : ServerTestBase<HeadModificationTest.HeadModi
     }
 
     [Fact]
+    public void ReplacingWithStylesheetWithoutHrefRemovesPreviousStylesheet()
+    {
+        Browser.MountTestComponent<HeadStylesheetSwapPendingReplacement>();
+        var target = Browser.Exists(By.Id("swap-target"));
+        Browser.Equal("rgba(0, 0, 255, 1)", () => target.GetCssValue("background-color"));
+
+        Browser.Exists(By.Id("replace-without-href")).Click();
+
+        Browser.True(() => Browser.Exists(By.Id("pending-swap-stylesheet")).GetDomAttribute("href") is null);
+        Browser.Equal("rgba(255, 0, 0, 1)", () => target.GetCssValue("background-color"));
+        Browser.Equal(0, () => Browser.FindElements(By.CssSelector("head link[href='head-swap-initial.css']")).Count);
+    }
+
+    [Fact]
+    public async Task ClearingPendingHeadStylesheetHrefRemovesPreviousStylesheet()
+    {
+        Browser.MountTestComponent<HeadStylesheetSwapPendingReplacement>();
+        var target = Browser.Exists(By.Id("swap-target"));
+        Browser.Equal("rgba(0, 0, 255, 1)", () => target.GetCssValue("background-color"));
+
+        StylesheetRequestGate request = null;
+        try
+        {
+            Browser.Exists(By.Id("replace-stylesheet")).Click();
+            var replacement = Browser.Exists(By.CssSelector("link#pending-swap-stylesheet[href*='head-swap-replacement/']"));
+            request = _serverFixture.GetRequest(GetRequestId(replacement));
+            await request.Requested.Task.WaitAsync(TimeSpan.FromSeconds(15));
+            Browser.Equal("rgba(0, 0, 255, 1)", () => target.GetCssValue("background-color"));
+
+            Browser.Exists(By.Id("clear-replacement-href")).Click();
+
+            Browser.True(() => Browser.Exists(By.Id("pending-swap-stylesheet")).GetDomAttribute("href") is null);
+            Browser.Equal("rgba(255, 0, 0, 1)", () => target.GetCssValue("background-color"));
+            Browser.Equal(0, () => Browser.FindElements(By.CssSelector("head link[href='head-swap-initial.css']")).Count);
+        }
+        finally
+        {
+            request?.Release.TrySetResult();
+        }
+    }
+
+    [Fact]
+    public async Task MediaQueryChangeRemovesPreviousStylesheetWithoutRender()
+    {
+        Browser.SetWindowSize(1200, 900);
+        Browser.MountTestComponent<HeadStylesheetSwapPendingReplacement>();
+        var target = Browser.Exists(By.Id("swap-target"));
+        Browser.Equal("rgba(0, 0, 255, 1)", () => target.GetCssValue("background-color"));
+
+        StylesheetRequestGate request = null;
+        try
+        {
+            Browser.Exists(By.Id("replace-with-responsive-stylesheet")).Click();
+            var replacement = Browser.Exists(By.CssSelector("link#pending-swap-stylesheet[href*='head-swap-replacement/']"));
+            request = _serverFixture.GetRequest(GetRequestId(replacement));
+            await request.Requested.Task.WaitAsync(TimeSpan.FromSeconds(15));
+            Browser.Equal("rgba(0, 0, 255, 1)", () => target.GetCssValue("background-color"));
+
+            Browser.Exists(By.Id("change-replacement-media-query")).Click();
+            Browser.SetWindowSize(800, 900);
+            Browser.Equal("rgba(0, 0, 255, 1)", () => target.GetCssValue("background-color"));
+
+            Browser.SetWindowSize(500, 900);
+
+            Browser.Equal("rgba(255, 0, 0, 1)", () => target.GetCssValue("background-color"));
+            Browser.Equal(0, () => Browser.FindElements(By.CssSelector("head link[href='head-swap-initial.css']")).Count);
+        }
+        finally
+        {
+            request?.Release.TrySetResult();
+            Browser.SetWindowSize(1280, 1024);
+        }
+    }
+
+    [Fact]
     public async Task RemovingPendingHeadStylesheetRemovesBothStylesheets()
     {
         Browser.MountTestComponent<HeadStylesheetSwapPendingReplacement>();
