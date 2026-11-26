@@ -12,6 +12,7 @@ import {
 } from '../src/Rendering/WebRendererInteropMethods';
 import { WebRendererId } from '../src/Rendering/WebRendererId';
 import { tryApplySpecialProperty } from '../src/Rendering/DomSpecialPropertyUtil';
+import { registerCustomEventType } from '../src/Rendering/Events/EventTypes';
 
 interface DispatchedCall {
   eventDescriptor: EventDescriptor;
@@ -87,7 +88,7 @@ describe('EventDelegator debounce and throttle', () => {
     container.appendChild(button);
 
     delegator.setListener(button, 'click', 2, 10);
-    delegator.setThrottle(button, 'click', 500, false);
+    delegator.setThrottle(button, 'click', 500);
 
     button.dispatchEvent(new MouseEvent('click', { bubbles: true, clientX: 10 }));
     expect(dispatchedCalls.length).toBe(1);
@@ -115,7 +116,7 @@ describe('EventDelegator debounce and throttle', () => {
     container.appendChild(div);
 
     delegator.setListener(div, 'mousemove', 3, 10);
-    delegator.setThrottle(div, 'mousemove', 200, true);
+    delegator.setThrottle(div, 'mousemove', 200);
 
     div.dispatchEvent(new MouseEvent('mousemove', { bubbles: true, clientX: 1 }));
     expect(dispatchedCalls.length).toBe(1);
@@ -133,6 +134,32 @@ describe('EventDelegator debounce and throttle', () => {
     expect(dispatchedCalls[1].eventArgs.clientX).toBe(3);
 
     delegator.removeListenersForElement(div);
+  });
+
+  test('custom events throttle as continuous only when registered so or when aliasing a continuous browser event', () => {
+    registerCustomEventType('testcontinuousevent', { continuous: true });
+    registerCustomEventType('testdiscreteevent', {});
+    registerCustomEventType('testscrollalias', { browserEventName: 'scroll' });
+
+    const delegator = new EventDelegator(WebRendererId.Server);
+    const element = document.createElement('div');
+    container.appendChild(element);
+
+    for (const [eventName, eventHandlerId] of [['testcontinuousevent', 110], ['testdiscreteevent', 111], ['testscrollalias', 112]] as const) {
+      delegator.setListener(element, eventName, eventHandlerId, 1);
+      delegator.setThrottle(element, eventName, 200);
+    }
+
+    for (const browserEventName of ['testcontinuousevent', 'testdiscreteevent', 'scroll']) {
+      element.dispatchEvent(new Event(browserEventName, { bubbles: true }));
+      element.dispatchEvent(new Event(browserEventName, { bubbles: true }));
+    }
+    expect(dispatchedCalls.map(c => c.eventDescriptor.eventHandlerId)).toEqual([110, 111, 112]);
+
+    jest.advanceTimersByTime(200);
+    expect(dispatchedCalls.map(c => c.eventDescriptor.eventHandlerId)).toEqual([110, 111, 112, 110, 112]);
+
+    delegator.removeListenersForElement(element);
   });
 
   test('flushes pending debounced input before dispatching un-delayed submit or click event', () => {
@@ -270,6 +297,44 @@ describe('EventDelegator debounce and throttle', () => {
     expect(dispatchedCalls.length).toBe(1);
   });
 
+  test('disabling or switching rate limiting dispatches the pending event instead of dropping it', () => {
+    const delegator = new EventDelegator(WebRendererId.Server);
+    const input = document.createElement('input');
+    container.appendChild(input);
+
+    delegator.setListener(input, 'input', 60, 1);
+    delegator.setDebounce(input, 'input', 300);
+
+    input.value = 'typed before disable';
+    input.dispatchEvent(new Event('input', { bubbles: true }));
+    delegator.setDebounce(input, 'input', 0);
+
+    expect(dispatchedCalls.length).toBe(1);
+    expect(dispatchedCalls[0].eventArgs).toEqual({ value: 'typed before disable' });
+
+    delegator.setDebounce(input, 'input', 300);
+    input.value = 'typed before switch';
+    input.dispatchEvent(new Event('input', { bubbles: true }));
+    delegator.setThrottle(input, 'input', 300);
+
+    expect(dispatchedCalls.length).toBe(2);
+    expect(dispatchedCalls[1].eventArgs).toEqual({ value: 'typed before switch' });
+
+    input.value = 'leading';
+    input.dispatchEvent(new Event('input', { bubbles: true }));
+    input.value = 'trailing before disable';
+    input.dispatchEvent(new Event('input', { bubbles: true }));
+    delegator.setThrottle(input, 'input', 0);
+
+    expect(dispatchedCalls.length).toBe(4);
+    expect(dispatchedCalls[3].eventArgs).toEqual({ value: 'trailing before disable' });
+
+    jest.advanceTimersByTime(300);
+    expect(dispatchedCalls.length).toBe(4);
+
+    delegator.removeListenersForElement(input);
+  });
+
   test('typing with onkeydown and onkeyup handlers does not prematurely flush oninput:debounce, but Enter key does flush before onkeydown', () => {
     const delegator = new EventDelegator(WebRendererId.Server);
     const input = document.createElement('input');
@@ -321,7 +386,7 @@ describe('EventDelegator debounce and throttle', () => {
     delegator.removeListenersForElement(input);
   });
 
-  test('parent and child bubbling input handlers do not prematurely flush each other, while sibling input does flush', () => {
+  test('parent and child bubbling input handlers do not prematurely flush each other, while moving focus to a sibling input does flush', () => {
     const delegator = new EventDelegator(WebRendererId.Server);
     const parentDiv = document.createElement('div');
     const childInput = document.createElement('input');
@@ -350,7 +415,8 @@ describe('EventDelegator debounce and throttle', () => {
     expect(dispatchedCalls.filter(c => c.eventDescriptor.eventHandlerId === 70).length).toBe(2);
     expect(dispatchedCalls.filter(c => c.eventDescriptor.eventHandlerId === 71).length).toBe(0);
 
-    // Now typing in siblingInput (outside parentDiv's path) flushes parentDiv's pending input before siblingInput's input
+    // Moving focus to the sibling blurs the child, which flushes parentDiv's pending input before the sibling's input
+    childInput.dispatchEvent(new FocusEvent('blur', { bubbles: false }));
     siblingInput.value = 'other';
     siblingInput.dispatchEvent(new Event('input', { bubbles: true }));
 
@@ -362,6 +428,76 @@ describe('EventDelegator debounce and throttle', () => {
     delegator.removeListenersForElement(childInput);
     delegator.removeListenersForElement(parentDiv);
     delegator.removeListenersForElement(siblingInput);
+  });
+
+  test('only acting events flush pending input: hover and presses inside the input do not, pressing another element does', () => {
+    const delegator = new EventDelegator(WebRendererId.Server);
+    const input = document.createElement('input');
+    const suggestion = document.createElement('li');
+    container.appendChild(input);
+    container.appendChild(suggestion);
+
+    delegator.setListener(input, 'input', 90, 1);
+    delegator.setDebounce(input, 'input', 500);
+    delegator.setListener(input, 'mousedown', 91, 1);
+    delegator.setListener(suggestion, 'mouseover', 92, 1);
+    delegator.setListener(suggestion, 'mousedown', 93, 1);
+
+    input.value = 'app';
+    input.dispatchEvent(new Event('input', { bubbles: true }));
+
+    // Hovering a suggestion and clicking inside the input to move the caret keep the input pending
+    suggestion.dispatchEvent(new MouseEvent('mouseover', { bubbles: true }));
+    input.dispatchEvent(new MouseEvent('mousedown', { bubbles: true }));
+    expect(dispatchedCalls.map(c => c.eventDescriptor.eventHandlerId)).toEqual([92, 91]);
+
+    // Pressing a suggestion delivers the typed text before the suggestion's handler runs
+    suggestion.dispatchEvent(new MouseEvent('mousedown', { bubbles: true }));
+    expect(dispatchedCalls.map(c => c.eventDescriptor.eventHandlerId)).toEqual([92, 91, 90, 93]);
+    expect(dispatchedCalls[2].eventArgs).toEqual({ value: 'app' });
+
+    jest.advanceTimersByTime(600);
+    expect(dispatchedCalls.length).toBe(4);
+
+    delegator.removeListenersForElement(input);
+    delegator.removeListenersForElement(suggestion);
+  });
+
+  test('keys that are part of an IME composition do not commit pending input, and keys in another element flush it', () => {
+    const delegator = new EventDelegator(WebRendererId.Server);
+    const input = document.createElement('input');
+    const other = document.createElement('input');
+    container.appendChild(input);
+    container.appendChild(other);
+
+    delegator.setListener(input, 'input', 100, 1);
+    delegator.setDebounce(input, 'input', 500);
+    delegator.setListener(input, 'keydown', 101, 1);
+    delegator.setListener(other, 'keydown', 102, 1);
+
+    input.value = 'nihon';
+    input.dispatchEvent(new Event('input', { bubbles: true }));
+
+    // Enter while composing selects an IME candidate. Browsers also report keyCode 229 for keys the IME handles.
+    input.dispatchEvent(new KeyboardEvent('keydown', { bubbles: true, key: 'Enter', isComposing: true }));
+    input.dispatchEvent(new KeyboardEvent('keydown', { bubbles: true, key: 'Process', keyCode: 229 }));
+    expect(dispatchedCalls.filter(c => c.eventDescriptor.eventHandlerId === 100).length).toBe(0);
+
+    // Enter after the composition ends commits the pending input before the keydown handler runs
+    input.value = '日本';
+    input.dispatchEvent(new Event('input', { bubbles: true }));
+    input.dispatchEvent(new KeyboardEvent('keydown', { bubbles: true, key: 'Enter' }));
+    expect(dispatchedCalls.slice(-2).map(c => c.eventDescriptor.eventHandlerId)).toEqual([100, 101]);
+    expect(dispatchedCalls[dispatchedCalls.length - 2].eventArgs).toEqual({ value: '日本' });
+
+    // An ordinary key in another element flushes the input that is still pending
+    input.value = '日本語';
+    input.dispatchEvent(new Event('input', { bubbles: true }));
+    other.dispatchEvent(new KeyboardEvent('keydown', { bubbles: true, key: 'a' }));
+    expect(dispatchedCalls.slice(-2).map(c => c.eventDescriptor.eventHandlerId)).toEqual([100, 102]);
+
+    delegator.removeListenersForElement(input);
+    delegator.removeListenersForElement(other);
   });
 
   test('clicking a link flushes pending debounced input before notifyAfterClick navigation interception runs', () => {
@@ -461,7 +597,7 @@ describe('EventDelegator debounce and throttle', () => {
     container.appendChild(input);
 
     delegator.setListener(input, 'keydown', 100, 1);
-    delegator.setThrottle(input, 'keydown', 500, false);
+    delegator.setThrottle(input, 'keydown', 500);
 
     // First keydown dispatches immediately
     input.dispatchEvent(new KeyboardEvent('keydown', { bubbles: true, key: 'a' }));

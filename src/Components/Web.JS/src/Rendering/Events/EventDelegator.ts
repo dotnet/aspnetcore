@@ -3,7 +3,7 @@
 
 import { EventFieldInfo } from './EventFieldInfo';
 import {
-  eventNameAliasRegisteredCallbacks, getBrowserEventName, getEventNameAliases, getEventTypeOptions,
+  eventNameAliasRegisteredCallbacks, getBrowserEventName, getEventNameAliases, getEventTypeOptions, isContinuousEvent,
 } from './EventTypes';
 import { isRendererAttached, dispatchEvent } from '../WebRendererInteropMethods';
 import {
@@ -83,20 +83,37 @@ const nonFlushingContinuousEvents = toLookup([
   'wheel',
 ]);
 
-const typingStreamEvents = toLookup([
-  'input',
-  'keydown',
-  'keypress',
-  'keyup',
-  'select',
-  'selectionchange',
+// Before one of these events is processed, pending delayed events are dispatched,
+// so .NET observes what the user did before they acted on it.
+// Other events, such as hover, focus, or load, never flush pending events.
+// Presses on the element that produced a pending event, such as clicking to move the caret,
+// continue the same interaction and do not flush that event.
+const pointerFlushTriggerEvents = toLookup([
+  'auxclick',
+  'click',
+  'contextmenu',
+  'dblclick',
+  'mousedown',
+  'pointerdown',
+  'touchstart',
 ]);
 
-function isCommitOrNavigationKey(event: Event): boolean {
-  if (event instanceof KeyboardEvent) {
-    return event.key === 'Enter' || event.key === 'Tab' || event.key === 'Escape';
-  }
-  return false;
+// These events commit or act on the current state, including the element's own pending events.
+const commitFlushTriggerEvents = toLookup([
+  'change',
+  'drop',
+  'reset',
+  'submit',
+]);
+
+function isCommitOrNavigationKey(event: KeyboardEvent): boolean {
+  return event.key === 'Enter' || event.key === 'Tab' || event.key === 'Escape';
+}
+
+// Keys pressed while an IME composes text (for example, Enter selecting a Japanese candidate) belong to the IME.
+// Browsers report keyCode 229 for such keys, including the key that starts a composition.
+function isImeCompositionKeyEvent(event: KeyboardEvent): boolean {
+  return event.isComposing || event.keyCode === 229;
 }
 
 // Responsible for adding/removing the eventInfo on an expando property on DOM elements, and
@@ -166,22 +183,35 @@ export class EventDelegator {
         this.eventInfoStore.remove(handlerInfo.eventHandlerId);
       }
 
-      for (const eventName of infosForElement.enumerateDebounceEventNames()) {
-        this.setDebounce(element, eventName, 0);
-      }
-
-      for (const eventName of infosForElement.enumerateThrottleEventNames()) {
-        this.setThrottle(element, eventName, 0, false);
-      }
-
       for (const state of infosForElement.enumerateRateLimitStates()) {
         this.clearRateLimitTimer(state);
         state.pendingSnapshot = null;
         this.pendingRateLimitedStates.delete(state);
       }
 
+      for (const eventName of infosForElement.enumerateDebounceEventNames()) {
+        this.setDebounce(element, eventName, 0);
+      }
+
+      for (const eventName of infosForElement.enumerateThrottleEventNames()) {
+        this.setThrottle(element, eventName, 0);
+      }
+
       clearDispatchedUserInputTracking(element);
       delete element[this.eventsCollectionKey];
+    }
+  }
+
+  public hasPendingRateLimitedEvents(): boolean {
+    return this.pendingRateLimitedStates.size > 0;
+  }
+
+  public cancelPendingRateLimitedEvents(element: Element): void {
+    const infosForElement = this.getEventHandlerInfosForElement(element, false);
+    if (infosForElement) {
+      for (const state of infosForElement.enumerateRateLimitStates()) {
+        this.cancelRateLimitState(infosForElement, state.eventName);
+      }
     }
   }
 
@@ -226,8 +256,8 @@ export class EventDelegator {
     const previousDuration = infoForElement.debounce(eventName);
     const normalizedDuration = durationMs > 0 ? durationMs : 0;
 
-    if (normalizedDuration > 0 && (infoForElement.throttle(eventName)?.interval ?? 0) > 0) {
-      this.setThrottle(element, eventName, 0, false);
+    if (normalizedDuration > 0 && infoForElement.throttle(eventName) > 0) {
+      this.setThrottle(element, eventName, 0);
     }
 
     infoForElement.debounce(eventName, normalizedDuration);
@@ -239,7 +269,7 @@ export class EventDelegator {
         this.eventInfoStore.addGlobalListener('change');
       }
     } else if (previousDuration > 0 && normalizedDuration === 0) {
-      this.cancelRateLimitState(infoForElement, eventName);
+      this.flushRateLimitState(infoForElement, eventName);
       this.eventInfoStore.decrementCountByEventName(getBrowserEventName(eventName));
       if (eventName === 'input') {
         this.eventInfoStore.decrementCountByEventName('blur');
@@ -248,43 +278,36 @@ export class EventDelegator {
     }
   }
 
-  public setThrottle(element: Element, eventName: string, durationMs: number, trailing = false): void {
+  public setThrottle(element: Element, eventName: string, durationMs: number): void {
     const infoForElement = this.getEventHandlerInfosForElement(element, true)!;
-    const previousConfig = infoForElement.throttle(eventName);
-    const previousDuration = previousConfig ? previousConfig.interval : 0;
-    const previousTrailing = previousConfig ? previousConfig.trailing : false;
+    const previousDuration = infoForElement.throttle(eventName);
     const normalizedDuration = durationMs > 0 ? durationMs : 0;
 
     if (normalizedDuration > 0 && infoForElement.debounce(eventName) > 0) {
       this.setDebounce(element, eventName, 0);
     }
 
-    infoForElement.throttle(eventName, normalizedDuration, trailing);
+    infoForElement.throttle(eventName, normalizedDuration);
 
-    const previouslyNeededFlushListeners = previousDuration > 0 && previousTrailing && eventName === 'input';
-    const nowNeedsFlushListeners = normalizedDuration > 0 && trailing && eventName === 'input';
-    const previouslyNeededKeyUpListener = previousDuration > 0 && (eventName === 'keydown' || eventName === 'keypress');
-    const nowNeedsKeyUpListener = normalizedDuration > 0 && (eventName === 'keydown' || eventName === 'keypress');
+    const isKeyRepeatEvent = eventName === 'keydown' || eventName === 'keypress';
 
     if (previousDuration === 0 && normalizedDuration > 0) {
       this.eventInfoStore.addGlobalListener(eventName);
+      if (eventName === 'input') {
+        this.eventInfoStore.addGlobalListener('blur');
+        this.eventInfoStore.addGlobalListener('change');
+      } else if (isKeyRepeatEvent) {
+        this.eventInfoStore.addGlobalListener('keyup');
+      }
     } else if (previousDuration > 0 && normalizedDuration === 0) {
-      this.cancelRateLimitState(infoForElement, eventName);
+      this.flushRateLimitState(infoForElement, eventName);
       this.eventInfoStore.decrementCountByEventName(getBrowserEventName(eventName));
-    }
-
-    if (!previouslyNeededFlushListeners && nowNeedsFlushListeners) {
-      this.eventInfoStore.addGlobalListener('blur');
-      this.eventInfoStore.addGlobalListener('change');
-    } else if (previouslyNeededFlushListeners && !nowNeedsFlushListeners) {
-      this.eventInfoStore.decrementCountByEventName('blur');
-      this.eventInfoStore.decrementCountByEventName('change');
-    }
-
-    if (!previouslyNeededKeyUpListener && nowNeedsKeyUpListener) {
-      this.eventInfoStore.addGlobalListener('keyup');
-    } else if (previouslyNeededKeyUpListener && !nowNeedsKeyUpListener) {
-      this.eventInfoStore.decrementCountByEventName('keyup');
+      if (eventName === 'input') {
+        this.eventInfoStore.decrementCountByEventName('blur');
+        this.eventInfoStore.decrementCountByEventName('change');
+      } else if (isKeyRepeatEvent) {
+        this.eventInfoStore.decrementCountByEventName('keyup');
+      }
     }
   }
 
@@ -298,12 +321,12 @@ export class EventDelegator {
       return;
     }
 
-    if (evt.type === 'blur' || evt.type === 'change') {
-      this.flushPendingRateLimitedEventsOnPath(evt);
-    } else if (evt.type === 'keyup') {
+    if (this.pendingRateLimitedStates.size > 0) {
+      this.flushPendingRateLimitedEventsBefore(evt);
+    }
+
+    if (evt.type === 'keyup') {
       this.resetKeyThrottleCooldownsOnPath(evt);
-    } else if (evt.type === 'click' || evt.type === 'submit') {
-      this.flushAllPendingRateLimitedEvents(evt, evt.type);
     }
 
     // Always dispatch to any listeners for the original underlying browser event name
@@ -360,16 +383,13 @@ export class EventDelegator {
 
           const eventFieldInfo = EventFieldInfo.fromEvent(handlerInfo.renderingComponentId, browserEvent);
           const debounceMs = handlerInfos.debounce(eventName);
-          const throttleConfig = handlerInfos.throttle(eventName);
+          const throttleMs = handlerInfos.throttle(eventName);
 
           if (debounceMs > 0) {
             this.scheduleDebouncedEvent(candidateElement, handlerInfos, eventName, debounceMs, eventFieldInfo, eventArgs, browserEvent);
-          } else if (throttleConfig && throttleConfig.interval > 0) {
-            this.scheduleThrottledEvent(candidateElement, handlerInfos, eventName, throttleConfig, eventFieldInfo, eventArgs, browserEvent);
+          } else if (throttleMs > 0) {
+            this.scheduleThrottledEvent(candidateElement, handlerInfos, eventName, throttleMs, eventFieldInfo, eventArgs, browserEvent);
           } else {
-            if (!Object.prototype.hasOwnProperty.call(nonFlushingContinuousEvents, browserEvent.type)) {
-              this.flushAllPendingRateLimitedEvents(browserEvent, eventName);
-            }
             dispatchEvent(this.browserRendererId, {
               eventHandlerId: handlerInfo.eventHandlerId,
               eventName: eventName,
@@ -409,6 +429,7 @@ export class EventDelegator {
       eventFieldInfo,
       eventArgs,
       sourceEvent,
+      sourceTarget: sourceEvent.composedPath()[0] ?? null,
     };
     this.pendingRateLimitedStates.add(state);
 
@@ -426,7 +447,7 @@ export class EventDelegator {
     element: Element,
     handlerInfos: EventHandlerInfosForElement,
     eventName: string,
-    throttleConfig: ThrottleConfig,
+    throttleMs: number,
     eventFieldInfo: EventFieldInfo | null,
     eventArgs: unknown,
     sourceEvent: Event
@@ -434,10 +455,6 @@ export class EventDelegator {
     const state = handlerInfos.getOrCreateRateLimitState(element, eventName);
 
     if (!state.inThrottleCooldown) {
-      if (!Object.prototype.hasOwnProperty.call(nonFlushingContinuousEvents, sourceEvent.type)) {
-        this.flushAllPendingRateLimitedEvents(sourceEvent, eventName);
-      }
-
       const handlerInfo = handlerInfos.getHandler(eventName);
       if (handlerInfo && isRendererAttached(this.browserRendererId)) {
         const onCompleted = (eventName === 'input' && eventFieldInfo)
@@ -453,12 +470,13 @@ export class EventDelegator {
       state.inThrottleCooldown = true;
       state.timerId = setTimeout(() => {
         this.onThrottleCooldownElapsed(state);
-      }, throttleConfig.interval);
-    } else if (throttleConfig.trailing) {
+      }, throttleMs);
+    } else if (isContinuousEvent(eventName)) {
       state.pendingSnapshot = {
         eventFieldInfo,
         eventArgs,
         sourceEvent,
+        sourceTarget: sourceEvent.composedPath()[0] ?? null,
       };
       this.pendingRateLimitedStates.add(state);
 
@@ -473,12 +491,12 @@ export class EventDelegator {
 
     if (state.pendingSnapshot) {
       this.dispatchPendingSnapshot(state);
-      const currentThrottleConfig = state.handlerInfos.throttle(state.eventName);
-      if (currentThrottleConfig && currentThrottleConfig.interval > 0) {
+      const currentThrottleMs = state.handlerInfos.throttle(state.eventName);
+      if (currentThrottleMs > 0) {
         state.inThrottleCooldown = true;
         state.timerId = setTimeout(() => {
           this.onThrottleCooldownElapsed(state);
-        }, currentThrottleConfig.interval);
+        }, currentThrottleMs);
       } else {
         state.inThrottleCooldown = false;
       }
@@ -518,19 +536,29 @@ export class EventDelegator {
     }
   }
 
-  private flushAllPendingRateLimitedEvents(currentBrowserEvent?: Event, triggeringEventName?: string): void {
-    if (this.pendingRateLimitedStates.size === 0) {
-      return;
+  private flushPendingRateLimitedEventsBefore(evt: Event): void {
+    if (evt.type === 'blur') {
+      // Leaving an element commits what was typed in it. Blur does not bubble, so only its path is flushed.
+      this.flushPendingRateLimitedEventsOnPath(evt);
+    } else if (Object.prototype.hasOwnProperty.call(commitFlushTriggerEvents, evt.type)) {
+      this.flushAllPendingRateLimitedEvents(evt, /* includeSameTarget */ true);
+    } else if (Object.prototype.hasOwnProperty.call(pointerFlushTriggerEvents, evt.type)) {
+      this.flushAllPendingRateLimitedEvents(evt, /* includeSameTarget */ false);
+    } else if (evt.type === 'keydown' && evt instanceof KeyboardEvent && !isImeCompositionKeyEvent(evt)) {
+      // Typing in the element continues the interaction. Enter, Tab and Escape commit it.
+      // Keys pressed in other elements always flush.
+      this.flushAllPendingRateLimitedEvents(evt, /* includeSameTarget */ isCommitOrNavigationKey(evt));
     }
+  }
 
-    const eventPath = currentBrowserEvent ? currentBrowserEvent.composedPath() : [];
-    const isTypingEvent = triggeringEventName !== undefined
-      && Object.prototype.hasOwnProperty.call(typingStreamEvents, triggeringEventName)
-      && (triggeringEventName !== 'keydown' || !currentBrowserEvent || !isCommitOrNavigationKey(currentBrowserEvent));
+  private flushAllPendingRateLimitedEvents(triggerEvent: Event, includeSameTarget: boolean): void {
+    const eventPath = triggerEvent.composedPath();
+    const triggerTarget = eventPath[0] ?? null;
 
     const statesToFlush = Array.from(this.pendingRateLimitedStates);
     for (const state of statesToFlush) {
-      if (!state.pendingSnapshot || state.pendingSnapshot.sourceEvent === currentBrowserEvent) {
+      const snapshot = state.pendingSnapshot;
+      if (!snapshot || snapshot.sourceEvent === triggerEvent) {
         continue;
       }
 
@@ -540,17 +568,13 @@ export class EventDelegator {
         continue;
       }
 
-      const isOnSameEventPath = eventPath.indexOf(state.element) !== -1;
-
-      if (isOnSameEventPath && state.eventName === triggeringEventName) {
-        // An ancestor or descendant on the same composedPath for the same event name
-        // is part of the current bubbling pass and should not flush itself.
+      if (getBrowserEventName(state.eventName) === triggerEvent.type && eventPath.indexOf(state.element) !== -1) {
+        // A repeat of the same event on the same path, such as a second click on a debounced button,
+        // continues that event's own debounce or throttle window.
         continue;
       }
 
-      if (isOnSameEventPath && isTypingEvent && Object.prototype.hasOwnProperty.call(typingStreamEvents, state.eventName)) {
-        // Ordinary typing events (keydown, keypress, input, keyup, select) on the same element/path
-        // must not flush pending debounced/throttled input or key handlers on that path.
+      if (!includeSameTarget && isSameOrDescendant(triggerTarget, snapshot.sourceTarget)) {
         continue;
       }
 
@@ -593,6 +617,16 @@ export class EventDelegator {
     const state = infos.getRateLimitState(eventName);
     if (state && state.inThrottleCooldown && !state.pendingSnapshot) {
       this.clearRateLimitTimer(state);
+    }
+  }
+
+  // Used when rate limiting is turned off or switched to another mode while the handler stays attached.
+  // The user already produced the pending event, so it is dispatched instead of being dropped.
+  private flushRateLimitState(infos: EventHandlerInfosForElement, eventName: string): void {
+    const state = infos.getRateLimitState(eventName);
+    if (state) {
+      this.clearRateLimitTimer(state);
+      this.dispatchPendingSnapshot(state);
     }
   }
 
@@ -753,7 +787,7 @@ class EventHandlerInfosForElement {
 
   private debounceIntervals: { [eventName: string]: number } | null = null;
 
-  private throttleConfigs: { [eventName: string]: ThrottleConfig } | null = null;
+  private throttleIntervals: { [eventName: string]: number } | null = null;
 
   private rateLimitStates: { [eventName: string]: EventRateLimitState } | null = null;
 
@@ -786,9 +820,9 @@ class EventHandlerInfosForElement {
   }
 
   public *enumerateThrottleEventNames() : IterableIterator<string> {
-    if (this.throttleConfigs) {
-      for (const eventName in this.throttleConfigs) {
-        if (Object.prototype.hasOwnProperty.call(this.throttleConfigs, eventName) && this.throttleConfigs[eventName].interval > 0) {
+    if (this.throttleIntervals) {
+      for (const eventName in this.throttleIntervals) {
+        if (Object.prototype.hasOwnProperty.call(this.throttleIntervals, eventName) && this.throttleIntervals[eventName] > 0) {
           yield eventName;
         }
       }
@@ -834,13 +868,13 @@ class EventHandlerInfosForElement {
     return (this.debounceIntervals && this.debounceIntervals[eventName]) || 0;
   }
 
-  public throttle(eventName: string, setValue?: number, trailing = false): ThrottleConfig | null {
+  public throttle(eventName: string, setValue?: number): number {
     if (setValue !== undefined) {
-      this.throttleConfigs = this.throttleConfigs || {};
-      this.throttleConfigs[eventName] = { interval: setValue, trailing };
+      this.throttleIntervals = this.throttleIntervals || {};
+      this.throttleIntervals[eventName] = setValue;
     }
 
-    return (this.throttleConfigs && this.throttleConfigs[eventName]) || null;
+    return (this.throttleIntervals && this.throttleIntervals[eventName]) || 0;
   }
 
   public getRateLimitState(eventName: string): EventRateLimitState | null {
@@ -865,15 +899,12 @@ class EventHandlerInfosForElement {
   }
 }
 
-interface ThrottleConfig {
-  interval: number;
-  trailing: boolean;
-}
-
 interface PendingEventSnapshot {
   eventFieldInfo: EventFieldInfo | null;
   eventArgs: unknown;
   sourceEvent: Event;
+  // Captured during dispatch, because browsers clear the target of events from shadow trees afterward.
+  sourceTarget: EventTarget | null;
 }
 
 interface EventRateLimitState {
@@ -908,6 +939,14 @@ function toLookup(items: string[]): { [key: string]: boolean } {
     result[value] = true;
   });
   return result;
+}
+
+function isSameOrDescendant(target: EventTarget | null, ancestor: EventTarget | null): boolean {
+  if (!target || !ancestor) {
+    return false;
+  }
+
+  return target === ancestor || (ancestor instanceof Node && target instanceof Node && ancestor.contains(target));
 }
 
 function eventIsDisabledOnElement(element: Element, rawBrowserEventName: string): boolean {

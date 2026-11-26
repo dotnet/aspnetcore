@@ -71,22 +71,19 @@ public static class WebRenderTreeBuilderExtensions
     /// Appends a frame representing an instruction to throttle the specified event by the
     /// given interval in milliseconds.
     /// </summary>
+    /// <remarks>
+    /// For events whose latest value matters, such as <c>onscroll</c> or <c>oninput</c>, the latest occurrence during
+    /// the interval is dispatched when the interval ends. Occurrences of other events during the interval are dropped.
+    /// </remarks>
     /// <param name="builder">The <see cref="RenderTreeBuilder"/>.</param>
     /// <param name="sequence">An integer that represents the position of the instruction in the source code.</param>
     /// <param name="eventName">The name of the event to be affected.</param>
     /// <param name="value">The throttle interval in milliseconds, or a value less than or equal to zero to disable throttling.</param>
-    /// <param name="throttleMode">The throttling mode to apply when the interval is positive.</param>
-    public static void AddEventThrottleAttribute(this RenderTreeBuilder builder, int sequence, string eventName, int value, EventThrottleMode throttleMode = EventThrottleMode.Leading)
+    public static void AddEventThrottleAttribute(this RenderTreeBuilder builder, int sequence, string eventName, int value)
     {
-        string? attributeValue = null;
-        if (value > 0)
-        {
-            var intervalText = value.ToString(CultureInfo.InvariantCulture);
-            attributeValue = throttleMode == EventThrottleMode.LeadingAndTrailing
-                ? $"{intervalText}:trailing"
-                : intervalText;
-        }
-
-        builder.AddAttribute(sequence, $"__internal_throttle_{eventName}", attributeValue);
+        builder.AddAttribute(
+            sequence,
+            $"__internal_throttle_{eventName}",
+            value > 0 ? value.ToString(CultureInfo.InvariantCulture) : null);
     }
 }

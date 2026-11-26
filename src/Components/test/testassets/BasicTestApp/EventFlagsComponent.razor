@@ -96,7 +96,7 @@ else
         <h3>Scenario 6: onscroll:throttle (continuous)</h3>
         <div id="throttled-scroll-area"
              @onscroll="OnThrottledScroll"
-             __internal_throttle_onscroll="@($"{throttleScrollInterval.ToString(CultureInfo.InvariantCulture)}:trailing")"
+             __internal_throttle_onscroll="@(throttleScrollInterval.ToString(CultureInfo.InvariantCulture))"
              style="width: 300px; height: 100px; overflow-y: scroll; border: 1px solid gray;">
             <div style="height: 600px;">Scroll content</div>
         </div>
@@ -117,6 +117,23 @@ else
         <span id="combo-keydown-count">@comboKeyDownCount</span>
         <span id="combo-keyup-count">@comboKeyUpCount</span>
         <span id="combo-enter-committed">@comboCommittedOnEnter</span>
+    </div>
+
+    <div id="typeahead-scenario">
+        <h3>Scenario 8: oninput:debounce with a suggestion that reacts to hover and mousedown</h3>
+        @* The long interval keeps the typed text pending for the whole test, so only flushing can deliver it. *@
+        <input id="typeahead-input"
+               @bind="typeaheadQuery"
+               @bind:event="oninput"
+               __internal_debounce_oninput="@(typeaheadDebounceInterval.ToString(CultureInfo.InvariantCulture))" />
+        <div id="typeahead-suggestion"
+             style="padding: 10px; border: 1px solid gray;"
+             @onmouseover="OnSuggestionHover"
+             @onmousedown="OnSuggestionMouseDown">
+            Suggestion
+        </div>
+        <span id="typeahead-query-on-hover">@typeaheadQueryOnHover</span>
+        <span id="typeahead-query-on-mousedown">@typeaheadQueryOnMouseDown</span>
     </div>
 </div>
 
@@ -144,6 +161,11 @@ else
     private int comboKeyDownCount;
     private int comboKeyUpCount;
     private string comboCommittedOnEnter = string.Empty;
+
+    private int typeaheadDebounceInterval = 30000;
+    private string typeaheadQuery = string.Empty;
+    private string typeaheadQueryOnHover = "(not hovered)";
+    private string typeaheadQueryOnMouseDown = "(not pressed)";
 
     private string eventLog = string.Empty;
 
@@ -222,5 +244,15 @@ else
     private void OnComboKeyUp(KeyboardEventArgs e)
     {
         comboKeyUpCount++;
+    }
+
+    private void OnSuggestionHover()
+    {
+        typeaheadQueryOnHover = $"[{typeaheadQuery}]";
+    }
+
+    private void OnSuggestionMouseDown()
+    {
+        typeaheadQueryOnMouseDown = $"[{typeaheadQuery}]";
     }
 }

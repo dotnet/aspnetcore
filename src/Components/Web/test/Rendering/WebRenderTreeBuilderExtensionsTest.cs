@@ -42,7 +42,7 @@ public class WebRenderTreeBuilderExtensionsTest
     }
 
     [Fact]
-    public void AddEventThrottleAttribute_LeadingMode_AppendsIntervalFrame()
+    public void AddEventThrottleAttribute_PositiveValue_AppendsInternalAttributeFrame()
     {
         var builder = new RenderTreeBuilder();
 
@@ -57,22 +57,6 @@ public class WebRenderTreeBuilderExtensionsTest
             frame => AssertFrame.Attribute(frame, "__internal_throttle_onclick", "500", 1));
     }
 
-    [Fact]
-    public void AddEventThrottleAttribute_LeadingAndTrailingMode_AppendsTrailingIntervalFrame()
-    {
-        var builder = new RenderTreeBuilder();
-
-        builder.OpenElement(0, "div");
-        builder.AddEventThrottleAttribute(1, "onscroll", 100, EventThrottleMode.LeadingAndTrailing);
-        builder.CloseElement();
-
-        var frames = builder.GetFrames();
-        Assert.Collection(
-            frames.AsEnumerable(),
-            frame => AssertFrame.Element(frame, "div", 2, 0),
-            frame => AssertFrame.Attribute(frame, "__internal_throttle_onscroll", "100:trailing", 1));
-    }
-
     [Theory]
     [InlineData(0)]
     [InlineData(-50)]
@@ -81,7 +65,7 @@ public class WebRenderTreeBuilderExtensionsTest
         var builder = new RenderTreeBuilder();
 
         builder.OpenElement(0, "div");
-        builder.AddEventThrottleAttribute(1, "onscroll", value, EventThrottleMode.LeadingAndTrailing);
+        builder.AddEventThrottleAttribute(1, "onscroll", value);
         builder.CloseElement();
 
         var frames = builder.GetFrames();

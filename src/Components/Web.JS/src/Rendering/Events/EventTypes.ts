@@ -4,11 +4,34 @@
 export interface EventTypeOptions {
   browserEventName?: string;
   createEventArgs?: (event: Event) => unknown;
+  continuous?: boolean;
 }
 
 const eventTypeRegistry: Map<string, EventTypeOptions> = new Map();
 const browserEventNamesToAliases: Map<string, string[]> = new Map();
 const createBlankEventArgsOptions: EventTypeOptions = { createEventArgs: () => ({}) };
+
+// The final occurrence of these events matters, because it carries the latest value or position.
+// Throttling therefore dispatches the latest occurrence from each cooldown when the cooldown ends.
+// Other events are discrete actions, so occurrences during a cooldown are dropped.
+const continuousBuiltInEventNames = new Set([
+  'drag',
+  'dragover',
+  'input',
+  'mousemove',
+  'mousewheel',
+  'pointermove',
+  'progress',
+  'ratechange',
+  'scroll',
+  'seeking',
+  'select',
+  'selectionchange',
+  'timeupdate',
+  'touchmove',
+  'volumechange',
+  'wheel',
+]);
 
 export const eventNameAliasRegisteredCallbacks: ((aliasEventName: string, browserEventName) => void)[] = [];
 
@@ -59,6 +82,16 @@ export function getEventNameAliases(eventName: string): string[] | undefined {
 export function getBrowserEventName(possibleAliasEventName: string): string {
   const eventOptions = eventTypeRegistry.get(possibleAliasEventName);
   return eventOptions?.browserEventName || possibleAliasEventName;
+}
+
+// A custom event that aliases a browser event uses that event's classification unless it specifies its own.
+export function isContinuousEvent(eventName: string): boolean {
+  const eventOptions = eventTypeRegistry.get(eventName);
+  if (eventOptions?.continuous !== undefined) {
+    return eventOptions.continuous;
+  }
+
+  return continuousBuiltInEventNames.has(eventOptions?.browserEventName || eventName);
 }
 
 function registerBuiltInEventType(eventNames: string[], options: EventTypeOptions) {

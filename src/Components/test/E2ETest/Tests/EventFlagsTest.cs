@@ -221,4 +221,19 @@ public class EventFlagsTest : ServerTestBase<ToggleExecutionModeServerFixture<Pr
         Browser.Equal("abc-enter", () => Browser.Exists(By.Id("combo-enter-committed")).Text);
         Browser.Equal("2", () => Browser.Exists(By.Id("combo-input-count")).Text);
     }
+
+    [Fact]
+    public void OnInput_WithDebounce_HoverDoesNotFlush_ButMouseDownOnSuggestionDoes()
+    {
+        var input = Browser.Exists(By.Id("typeahead-input"));
+        var suggestion = Browser.Exists(By.Id("typeahead-suggestion"));
+        input.SendKeys("app");
+
+        new Actions(Browser).MoveToElement(suggestion).Perform();
+        Browser.Equal("[]", () => Browser.Exists(By.Id("typeahead-query-on-hover")).Text);
+
+        new Actions(Browser).ClickAndHold(suggestion).Release().Perform();
+        Browser.Equal("[app]", () => Browser.Exists(By.Id("typeahead-query-on-mousedown")).Text);
+        Assert.Equal("[]", Browser.Exists(By.Id("typeahead-query-on-hover")).Text);
+    }
 }
