@@ -64,4 +64,17 @@ internal static class WebDriverExtensions
 
         throw new Exception($"Failed to get position for element '{elementId}' after {retryCount} retries. Debug log: {log}");
     }
+
+    internal static bool IsStale(this IWebElement element)
+    {
+        try
+        {
+            _ = element.Enabled;
+            return false;
+        }
+        catch (StaleElementReferenceException)
+        {
+            return true;
+        }
+    }
 }
