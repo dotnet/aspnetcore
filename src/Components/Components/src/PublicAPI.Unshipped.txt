@@ -1,1 +1,2 @@
 #nullable enable
+virtual Microsoft.AspNetCore.Components.RenderTree.Renderer.OnErrorBoundaryHandled(System.Exception! exception) -> void

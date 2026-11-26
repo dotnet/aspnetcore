@@ -44,6 +44,7 @@ internal partial class EndpointHtmlRenderer : StaticHtmlRenderer, IComponentPrer
     private HttpContext _httpContext = default!; // Always set at the start of an inbound call
     private ResourceAssetCollection? _resourceCollection;
     private bool _rendererIsStopped;
+    private bool _hasHandledError;
     private readonly ILogger _logger;
 
     // The underlying Renderer always tracks the pending tasks representing *full* quiescence, i.e.,
@@ -67,6 +68,8 @@ internal partial class EndpointHtmlRenderer : StaticHtmlRenderer, IComponentPrer
 
     internal ArrayRange<RenderTreeFrame> GetRenderTreeFrames(int componentId)
         => GetCurrentRenderTreeFrames(componentId);
+
+    internal bool HasHandledError => _hasHandledError;
 
     internal void SetHttpContext(HttpContext httpContext)
     {
@@ -172,6 +175,11 @@ internal partial class EndpointHtmlRenderer : StaticHtmlRenderer, IComponentPrer
 
     protected override ComponentState CreateComponentState(int componentId, IComponent component, ComponentState? parentComponentState)
         => new EndpointComponentState(this, componentId, component, parentComponentState);
+
+    protected override void OnErrorBoundaryHandled(Exception exception)
+    {
+        _hasHandledError = true;
+    }
 
     /// <inheritdoc/>
     protected override ResourceAssetCollection Assets =>
