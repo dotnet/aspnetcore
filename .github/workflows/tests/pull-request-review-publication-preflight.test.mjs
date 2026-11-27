@@ -10,12 +10,13 @@ const stepName = 'Reject incomplete or partial publication sets';
 
 const source = fs.readFileSync(workflowSource, 'utf8');
 assert.match(source, /`path` set to `"single-reviewer"` and arrays `newFindings`,\s+`existingFeedbackCoverage`, `unresolved`, and `discarded`/);
-assert.match(source, /one `create_pull_request_review_comment` per `newFindings` entry in order,\s+anchoring it at `path` and `line`/);
-assert.match(source, /`confidence` \(`verified`, `question`, or `unresolved`\), `claim`, and `body`/);
+assert.match(source, /one `create_pull_request_review_comment` per `newFindings` entry that is\s+not `summaryOnly`, in order, anchoring it at `path` and `line`/);
+assert.match(source, /`confidence` \(`verified`, `question`, or `unresolved`\),\s+`claim`, and `body`/);
 assert.match(source, /anchoring it at `path` and `line` and including `severity`, `claim`, and `body`\.\s+Keep confidence labels in the structured result only; omit them from inline comments and review text\./);
 assert.match(source, /`NO_FINDINGS`: invoke `noop` exactly once/);
 assert.match(source, /`BLOCKED` or `INCOMPLETE`: use the incomplete-publication path/);
-assert.match(source, /create-pull-request-review-comment:\s+max: 5\s+side: RIGHT/);
+assert.match(source, /create-pull-request-review-comment:\s+max: 20\s+side: RIGHT/);
+assert.match(source, /safe-outputs:[\s\S]*?\n  footer: false\r?\n/);
 
 function extractScript(filename) {
   const lines = fs.readFileSync(filename, 'utf8').split(/\r?\n/);
@@ -73,7 +74,8 @@ function execute(script, input) {
 }
 
 const comment = () => ({ type: 'create_pull_request_review_comment' });
-const review = () => ({ type: 'submit_pull_request_review' });
+const review = (body = 'Review summary.') => ({ type: 'submit_pull_request_review', body });
+const summary = '## Findings without an inline comment\n\n- [P2] `src/example.cs`: Retain the removed check.';
 const missingTool = { type: 'missing_tool', reason: 'A separate tool is unavailable.' };
 const rawJson = value => ({ rawJson: value });
 const stopped = (type, reason = 'The review could not complete.', status = 'INCOMPLETE') => ({
@@ -86,8 +88,8 @@ const stopped = (type, reason = 'The review could not complete.', status = 'INCO
   ],
   errors: [],
 });
-const findings = count => ({
-  items: [...Array.from({ length: count }, comment), review()],
+const findings = (count, body) => ({
+  items: [...Array.from({ length: count }, comment), review(body)],
   errors: [],
 });
 const findingWithBody = body => ({
@@ -272,8 +274,11 @@ const historicalMixed = {
 
 const cases = [
   ['one finding', findings(1), true],
-  ['five findings', findings(5), true],
-  ...bodyCases.map(([name, input, retained]) => [name, input, true, retained ? [] : [0]]),
+  ['20 inline findings', findings(20), true],
+  ['20 inline findings plus summary overflow', findings(20, summary), true],
+  ['summary-only finding', findings(0, `Review summary.\r\n\r\n${summary.replaceAll('\n', '\r\n')}\r\n\r\n`), true],
+  ['summary-only with a following section', findings(0, `${summary}\n\n### Limitations\nNo tests run.`), true],
+  ...bodyCases.map(([name, input, retained]) => [name, input, true, retained ? [] : [0], !retained]),
   ['mixed valid quoted findings', {
     items: [
       { ...comment(), body: 'The parser rejects `[DISCARDED]` in valid claims.\nConfidence: verified' },
@@ -299,7 +304,21 @@ const cases = [
       { ...review(), body: 'STATUS: FINDINGS\n<details><summary>DISCARDED</summary>\nBoth are old.\n</details>' },
     ],
     errors: [],
-  }, true, [0, 1]],
+  }, true, [0, 1], true],
+  ['all discarded inline candidates keep valid summary findings', {
+    items: [
+      { ...comment(), body: '[DISCARDED] Old behavior.' },
+      review(`${summary}\n\n<details><summary>DISCARDED</summary>\nOld behavior.\n</details>`),
+    ],
+    errors: [],
+  }, true, [0]],
+  ['all discarded inline candidates do not erase malformed summary findings', {
+    items: [
+      { ...comment(), body: '[DISCARDED] Old behavior.' },
+      review('## Findings without an inline comment\n\nMissing severity and path.'),
+    ],
+    errors: [],
+  }, false],
   ['discarded audit summary with real finding', {
     items: [
       { ...comment(), body: 'Real regression.\nConfidence: verified' },
@@ -348,8 +367,18 @@ const cases = [
     errors: [],
   }, false],
   ['comment only', { items: [comment()], errors: [] }, false],
-  ['review only', { items: [review()], errors: [] }, false],
-  ['too many findings', findings(6), false],
+  ['zero inline items with no summary findings', findings(0), false],
+  ['zero inline items with a blank summary section', findings(0,
+    '## Findings without an inline comment\n\n<details><summary>DISCARDED</summary>\nOld behavior.\n</details>'), false],
+  ['zero inline items with malformed summary findings', findings(0,
+    '## Findings without an inline comment\n\n- [P2] `src/example.cs`:'), false],
+  ['discarded details do not count as summary findings', findings(0,
+    `<details><summary>DISCARDED</summary>\n\n${summary}\n\n</details>`), false],
+  ['fenced example does not count as summary findings', findings(0, `\`\`\`markdown\n${summary}\n\`\`\``), false],
+  ['discarded summary claim is not a finding', findings(0, summary.replace('Retain', '[DISCARDED] Retain')), false],
+  ['21 inline calls', findings(21, summary), false],
+  ['review body at the size limit', findings(1, 'x'.repeat(65536)), true],
+  ['review body over the size limit', findings(1, 'x'.repeat(65537)), false],
   ['signal only', { items: [{ type: 'report_incomplete', reason: 'Reason' }], errors: [] }, false],
   ['status only', {
     items: [{
@@ -438,7 +467,7 @@ const cases = [
 const mismatches = [];
 for (const filename of [workflowSource, workflowLock]) {
   const script = extractScript(filename);
-  for (const [name, input, accepted, dropped = []] of cases) {
+  for (const [name, input, accepted, dropped = [], becomesNoop = false] of cases) {
     const result = execute(script, input);
     if (result.error !== undefined) {
       mismatches.push(`${path.basename(filename)} ${name} threw instead of failing through core.setFailed: ${result.error}`);
@@ -448,7 +477,7 @@ for (const filename of [workflowSource, workflowLock]) {
     } else if (accepted) {
       try {
         const remaining = input.items.filter((_, index) => !dropped.includes(index));
-        if (dropped.length > 0 && !remaining.some(item => item.type === 'create_pull_request_review_comment')) {
+        if (becomesNoop) {
           assert.equal(result.output.items.length, 1);
           assert.equal(result.output.items[0].type, 'noop');
           assert.match(result.output.items[0].message, /^STATUS: NO_FINDINGS\b/);
@@ -482,5 +511,9 @@ assert.ok(downloadIndex >= 0 && downloadIndex < preflightIndex && preflightIndex
 assert.equal(compiledSafeOutputs.split(
   'GH_AW_AGENT_OUTPUT: ${{ steps.setup-agent-output-env.outputs.GH_AW_AGENT_OUTPUT }}').length - 1, 2,
   'Preflight and the publisher must consume the same agent output file.');
+const handlerConfig = JSON.parse(JSON.parse(
+  compiledSafeOutputs.match(/GH_AW_SAFE_OUTPUTS_HANDLER_CONFIG: ("[^\r\n]+")/)?.[1]));
+assert.equal(handlerConfig.submit_pull_request_review.footer, 'none');
+assert.equal(handlerConfig.add_comment.footer, false);
 
 console.log(`Validated ${cases.length} publication preflight cases against source and compiled lock.`);

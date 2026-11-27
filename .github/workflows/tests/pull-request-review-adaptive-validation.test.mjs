@@ -14,7 +14,7 @@ const workflowTests = fs.readFileSync(
 const retargetDiagnostic =
   'The PR head moved, the base branch changed, or the PR closed after review; safe outputs are blocked.';
 
-assert.match(workflowSource, /bash:\s*false/);
+assert.match(workflowSource, /bash:\s*true/);
 assert.match(workflowSource, /edit:\s*false/);
 assert.doesNotMatch(workflowSource, /memory:\s*8g/);
 assert.match(workflowSource, /  roles: \[admin, maintainer, write\]/);
@@ -25,16 +25,18 @@ assert.doesNotMatch(workflowSource, /DOTNET_CLI_TELEMETRY_OPTOUT/);
 assert.match(workflowSource, /This adapter supports publication only through the native safe-output functions/);
 assert.match(workflowSource, /Do not publish through the `safeoutputs` CLI or any shell command/);
 assert.match(workflowSource, /If a required native safe-output function is unavailable, do not fall back to CLI or shell publication/);
-assert.match(workflowSource, /id: prepare_review_bundle/);
+assert.match(workflowSource, /checkout:\r?\n  fetch-depth: 0/);
+assert.match(workflowSource, /toolsets: \[pull_requests, repos\]\s+min-integrity: none/);
+assert.match(workflowSource, /name: Check the checkout matches the frozen pins\s+id: check_frozen_pins\s+env:[\s\S]*?REVIEW_HEAD:[^\n]+\s+REVIEW_MERGE_BASE:[^\n]+\s+REVIEW_BASE:/);
+assert.match(workflowSource, /name: Verify single review transcript\s+if: \$\{\{ always\(\) && steps\.check_frozen_pins\.outcome == 'success' \}\}/);
+assert.match(workflowSource, /`summaryOnly` for any uncertain anchor/);
 assert.doesNotMatch(workflowSource, /\/tmp\/gh-aw\/review-worktree/);
-assert.match(workflowSource, /chmod -R a\+rX,a-w \/tmp\/gh-aw\/review-bundle/);
-assert.match(workflowSource, /Perform source-only analysis of/);
-assert.match(workflowSource, /Do not execute target code\./);
+assert.doesNotMatch(workflowSource, /prepare-review\.cs|actions\/setup-dotnet/);
 assert.doesNotMatch(workflowSource, /review_execution|review-execution|execution\.json/);
 assert.equal(workflowSource.split(retargetDiagnostic).length - 1, 2);
 assert.doesNotMatch(workflowSource, /The PR head moved or closed after review; safe outputs are blocked\./);
 
-assert.doesNotMatch(workflowLock, /--allow-tool shell/);
+assert.match(workflowLock, /--allow-tool shell/);
 assert.doesNotMatch(workflowLock, /--allow-tool write/);
 assert.doesNotMatch(workflowLock, /--memory-limit 8g/);
 assert.match(workflowLock, /GH_AW_TOOL_TIMEOUT: "?120"?/);
@@ -57,29 +59,37 @@ assert.match(workflowSource, /skills:\r?\n  - \.github\/skills\/code-review/);
 assert.match(workflowSource, /skill\(skill="code-review"\)/);
 assert.doesNotMatch(workflowSource, /## agent:|expected_worker_count|review-guide-worker|review-candidate-verifier/);
 
-const engineAllowlist = workflowSource.match(/^    - --available-tools=([\w,-]+)\r?$/m)?.[1];
-assert.ok(engineAllowlist);
-const gateTools = ['readTools', 'publicationTools'].flatMap(name => {
-  const list = sourceCheck.match(new RegExp(`const ${name} = new Set\\(\\[([^\\]]+)\\]\\)`))?.[1];
-  assert.ok(list, `The transcript gate must declare ${name}.`);
-  return [...list.matchAll(/'([\w-]+)'/g)].map(match => match[1]);
-});
-const skillTool = sourceCheck.match(/!readTools\.has\(tool\) && tool !== '([\w-]+)' && !publicationTools\.has\(tool\)/)?.[1];
-assert.ok(skillTool);
-assert.deepEqual(engineAllowlist.split(',').sort(), [...gateTools, skillTool].sort());
+assert.doesNotMatch(workflowSource, /--available-tools/);
 const runtimeCommand = workflowLock.split(/\r?\n/).find(line => line.includes('copilot_harness.cjs'));
 assert.ok(runtimeCommand);
-assert.deepEqual([...runtimeCommand.matchAll(/--available-tools=([\w,-]+)/g)].map(match => match[1]), [engineAllowlist]);
+assert.doesNotMatch(runtimeCommand, /--available-tools/);
 assert.deepEqual([...runtimeCommand.matchAll(/--deny-tool[= ](\w+)/g)].map(match => match[1]), ['workflow']);
 assert.match(runtimeCommand, /--allow-tool safeoutputs\b/);
+const checkoutOrder = [
+  'name: Checkout PR branch',
+  'name: Restore agent config folders from base branch',
+  'name: Check the checkout matches the frozen pins',
+  'name: Clean credentials',
+  runtimeCommand,
+].map(step => workflowLock.indexOf(step));
+assert.ok(checkoutOrder.every((index, previous) => index >= 0 &&
+  (previous === 0 || index > checkoutOrder[previous - 1])), 'The pin check must run after PR checkout and before execution.');
 
-const usage = availableToolCount => ({ type: 'session.usage_record', data: { usage: { availableToolCount } } });
 const start = (toolName, toolCallId, args = {}) => ({
   type: 'tool.execution_start',
   data: { toolName, toolCallId, arguments: args },
 });
-const skill = start('skill', '1', { skill: 'code-review' });
-const loaded = { type: 'tool.execution_complete', data: { toolCallId: '1', success: true } };
+// In the hosted transcript, parentId links neighboring events even for main-agent calls.
+const skill = { ...start('skill', '1', { skill: 'code-review' }), id: 'skill-start', parentId: 'assistant-message' };
+const loaded = {
+  type: 'tool.execution_complete',
+  parentId: 'skill-start',
+  data: { toolCallId: '1', toolName: 'skill', success: true },
+};
+const childSkill = { ...skill, id: 'child-skill-start', agentId: 'child',
+  data: { ...skill.data, toolCallId: 'child-skill', parentToolCallId: 'task' } };
+const childLoaded = { ...loaded, parentId: childSkill.id, agentId: 'child',
+  data: { ...loaded.data, toolCallId: childSkill.data.toolCallId, parentToolCallId: 'task' } };
 const view = start('view', '2');
 const glob = start('glob', '3');
 const rg = start('rg', '4');
@@ -89,20 +99,17 @@ const review = start('safeoutputs-submit_pull_request_review', '7');
 const status = start('safeoutputs-add_comment', '8');
 const incomplete = start('safeoutputs-report_incomplete', '9');
 const cases = [
-  ['source-only findings', [skill, loaded, view, glob, rg, comment, review], null],
+  ['findings', [skill, loaded, view, glob, rg, comment, review], null],
+  ['summary-only publication', [skill, loaded, review], null],
   ['clean result', [skill, loaded, view, noop], null],
   ['stopped result', [skill, loaded, status, incomplete], null],
-  ['multiple matching offered counts', [skill, loaded, noop], null, [usage(11), usage(11)]],
-  ['no usage records', [skill, loaded, noop], /observed no usage records/, []],
-  ['missing offered count', [skill, loaded, noop], /observed missing/, [usage(undefined)]],
-  ['count must be numeric', [skill, loaded, noop], /observed "11"/, [usage('11')]],
-  ['too few offered tools', [skill, loaded, noop], /observed 10/, [usage(10)]],
-  ['too many offered tools in a later record', [skill, loaded, noop], /observed 11, 12/, [usage(11), usage(12)]],
-  ['subagent start', [skill, loaded, { type: 'subagent.started' }, noop], /must not start or use subagents/],
-  ['nested read', [skill, loaded, { ...view, data: { ...view.data, parentToolCallId: 'child' } }, noop],
-    /must not start or use subagents/],
-  ['child completion', [skill, loaded, { type: 'tool.execution_complete', agentId: 'child' }, noop],
-    /must not start or use subagents/],
+  ['shell and GitHub tools', [skill, loaded, start('bash', '10'), start('github-pull_request_read', '11'), noop], null],
+  ['child tool calls do not invalidate main skill', [skill, loaded, childSkill, childLoaded, noop], null],
+  ['child skill cannot replace main skill', [childSkill, childLoaded, noop],
+    /must successfully invoke the code-review skill/],
+  ['child completion cannot complete main skill', [skill,
+    { ...loaded, data: { ...loaded.data, parentToolCallId: 'child' } }, noop],
+    /must successfully invoke the code-review skill/],
   ['no skill', [view, noop], /must successfully invoke the code-review skill/],
   ['different skill', [start('skill', '1', { skill: 'different' }), loaded, noop],
     /must successfully invoke the code-review skill/],
@@ -113,18 +120,14 @@ const cases = [
   ['missing-tool call before skill completion', [skill, start('safeoutputs-missing_tool', '10'), loaded, noop],
     /before any safe-output call/],
   ['skill completion before start', [loaded, skill, noop], /must successfully invoke the code-review skill/],
-  ['repeated skill', [skill, loaded, start('skill', '10', { skill: 'code-review' }), noop],
-    /must successfully invoke the code-review skill/],
+  ['repeated skill', [skill, loaded, start('skill', '10', { skill: 'code-review' }), noop], null],
+  ['additional skill', [start('skill', '10', { skill: 'different' }), skill, loaded, noop], null],
   ['failed skill', [skill, { ...loaded, data: { ...loaded.data, success: false } }, noop],
     /must successfully invoke the code-review skill/],
   ['duplicated skill completion', [skill, loaded, loaded, noop], /must successfully invoke the code-review skill/],
   ['no native publication', [skill, loaded, view], /No native safe-output publication call/],
   ['only missing-tool', [skill, loaded, start('safeoutputs-missing_tool', '10')],
     /No native safe-output publication call/],
-  ...['bash', 'shell', 'powershell', 'create', 'edit', 'write', 'task', 'read_agent',
-    'web_fetch', 'safeoutputs-add_labels'].map(tool => [
-    `${tool} denied`, [skill, loaded, start(tool, '10'), noop], /Unexpected review tool/,
-  ]),
 ];
 
 const temp = fs.mkdtempSync(path.join(os.tmpdir(), 'single-review-transcript-'));
@@ -139,8 +142,8 @@ try {
   assert.notEqual(execute().status, 0, 'Missing transcript must fail closed.');
   fs.writeFileSync(session, '{malformed}\n');
   assert.notEqual(execute().status, 0, 'Malformed transcript must fail closed.');
-  for (const [name, events, error, usageRecords = [usage(11)]] of cases) {
-    fs.writeFileSync(session, [...events, ...usageRecords].map(event => JSON.stringify(event)).join('\r\n') + '\r\n');
+  for (const [name, events, error] of cases) {
+    fs.writeFileSync(session, events.map(event => JSON.stringify(event)).join('\r\n') + '\r\n');
     const result = execute();
     assert.equal(result.error, undefined, name);
     if (error) {
