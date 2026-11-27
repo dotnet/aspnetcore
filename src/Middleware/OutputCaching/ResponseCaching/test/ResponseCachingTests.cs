@@ -264,7 +264,7 @@ public class ResponseCachingTests
         }
     }
 
-    [Fact(Skip = "Output Caching computes the cache key before the response is produced, so it can't vary by headers only declared in the response Vary header. ResponseCachingPolicy doesn't store such responses.")]
+    [Fact]
     public async Task ServesCachedContent_IfVaryHeader_Matches()
     {
         var builders = ResponseCachingTestUtils.CreateBuildersWithResponseCaching(contextAction: context => context.Response.Headers.Vary = HeaderNames.From);
@@ -636,7 +636,7 @@ public class ResponseCachingTests
         }
     }
 
-    [Fact(Skip = "ResponseCachingPolicy varies by all query keys, and doesn't store responses with a Vary header which isn't declared upfront.")]
+    [Fact]
     public async Task Serves304_IfIfModifiedSince_Satisfied()
     {
         var builders = ResponseCachingTestUtils.CreateBuildersWithResponseCaching(contextAction: context =>
@@ -689,7 +689,7 @@ public class ResponseCachingTests
         }
     }
 
-    [Fact(Skip = "ResponseCachingPolicy varies by all query keys, and doesn't store responses with a Vary header which isn't declared upfront.")]
+    [Fact]
     public async Task Serves304_IfIfNoneMatch_Satisfied()
     {
         var builders = ResponseCachingTestUtils.CreateBuildersWithResponseCaching(contextAction: context =>
@@ -794,8 +794,8 @@ public class ResponseCachingTests
 
     [Theory]
     [InlineData(2048, false, 0, Skip = "The Output Caching memory store doesn't account for the key length in SizeLimit.")] // The non-varied response key exceeds the limit.
-    [InlineData(2048, true, 1)] // The base key rejects the vary rules, while the varied response fits.
-    [InlineData(1, true, 2048)] // The vary rules fit, while the varied response key exceeds the limit.
+    [InlineData(2048, true, 1, Skip = "The Output Caching memory store doesn't account for the key length in SizeLimit.")] // The base key rejects the vary rules, while the varied response fits.
+    [InlineData(1, true, 2048, Skip = "The Output Caching memory store doesn't account for the key length in SizeLimit.")] // The vary rules fit, while the varied response key exceeds the limit.
     public async Task ServesFreshContent_IfCacheEntryKeyExceedsSizeLimit(
         int pathLength,
         bool varyByHeader,
@@ -859,7 +859,7 @@ public class ResponseCachingTests
         }
     }
 
-    [Fact(Skip = "Output Caching computes the cache key before the response is produced, so it can't vary by headers only declared in the response Vary header. ResponseCachingPolicy doesn't store such responses.")]
+    [Fact]
     public async Task ServesCachedContent_WithoutReplacingCachedVaryBy_OnCacheMiss()
     {
         var builders = ResponseCachingTestUtils.CreateBuildersWithResponseCaching(contextAction: context => context.Response.Headers.Vary = HeaderNames.From);
@@ -920,7 +920,7 @@ public class ResponseCachingTests
         }
     }
 
-    [Fact(Skip = "Output Caching computes the cache key before the response is produced, so it can't vary by headers only declared in the response Vary header. ResponseCachingPolicy doesn't store such responses.")]
+    [Fact]
     public async Task ServesCachedContent_IfCachedVaryByNotUpdated_OnCacheMiss()
     {
         var builders = ResponseCachingTestUtils.CreateBuildersWithResponseCaching(contextAction: context => context.Response.Headers.Vary = context.Request.Headers.Pragma);

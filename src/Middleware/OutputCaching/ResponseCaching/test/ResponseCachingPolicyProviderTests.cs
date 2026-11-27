@@ -749,12 +749,11 @@ public class ResponseCachingPolicyProviderTests
     }
 
     [Theory]
-    [InlineData("From", "From", true)]
-    [InlineData("from", "From", true)]
-    [InlineData("From, Accept-Language", "From", false)]
-    [InlineData("From", null, false)]
+    [InlineData("From", null, true)]
+    [InlineData("From, Accept-Language", "From", true)]
+    [InlineData("*", null, false)]
     [InlineData("*", "From", false)]
-    public async Task ResponseWithVaryHeader_IsStoredOnlyIfDeclared(string vary, string declaredHeader, bool isStored)
+    public async Task ResponseWithVaryHeader_IsStoredUnlessVaryByStar(string vary, string declaredHeader, bool isStored)
     {
         var context = CreateCacheableResponseContext(DateTimeOffset.UtcNow, new CacheControlHeaderValue { Public = true, MaxAge = TimeSpan.FromSeconds(10) });
         context.HttpContext.Response.Headers.Vary = vary;

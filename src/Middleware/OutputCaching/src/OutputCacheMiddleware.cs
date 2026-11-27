@@ -25,7 +25,8 @@ internal sealed class OutputCacheMiddleware
     private readonly IOutputCacheStore _store;
     private readonly IOutputCacheKeyProvider _keyProvider;
     private readonly IOutputCachePolicyProvider _policyProvider;
-    private readonly IOutputCacheEntryStrategy _entryStrategy;
+    private readonly IOutputCacheEntryStrategy _defaultEntryStrategy;
+    private readonly IOutputCacheEntryStrategy _responseCachingEntryStrategy;
     private readonly WorkDispatcher<string, OutputCacheEntry?> _requestDispatcher;
 
     /// <summary>
@@ -76,7 +77,8 @@ internal sealed class OutputCacheMiddleware
         _store = cache;
         _policyProvider = policyProvider;
         _keyProvider = keyProvider;
-        _entryStrategy = new DefaultOutputCacheEntryStrategy(_store, _logger);
+        _defaultEntryStrategy = new DefaultOutputCacheEntryStrategy(_store, _logger);
+        _responseCachingEntryStrategy = new ResponseCachingOutputCacheEntryStrategy(_store, _logger);
         _requestDispatcher = new();
     }
 
@@ -140,7 +142,9 @@ internal sealed class OutputCacheMiddleware
 
                     var executed = false;
 
-                    if (context.AllowLocking && !string.IsNullOrEmpty(context.CacheKey))
+                    // Response Caching doesn't lock. The cache key doesn't contain the headers and query keys selected by the response,
+                    // so requests sharing it may expect different responses.
+                    if (context.AllowLocking && !context.VaryByResponse && !string.IsNullOrEmpty(context.CacheKey))
                     {
                         var cacheEntry = await _requestDispatcher.ScheduleAsync(context.CacheKey, key => ExecuteResponseAsync(), httpContext.RequestAborted);
 
@@ -345,7 +349,7 @@ internal sealed class OutputCacheMiddleware
         OutputCacheEntry? cacheEntry;
         try
         {
-            cacheEntry = await _entryStrategy.GetAsync(cacheContext, cacheContext.HttpContext.RequestAborted);
+            cacheEntry = await GetEntryStrategy(cacheContext).GetAsync(cacheContext, cacheContext.HttpContext.RequestAborted);
         }
         catch (OperationCanceledException)
         {
@@ -377,6 +381,9 @@ internal sealed class OutputCacheMiddleware
         _logger.NoResponseServed();
         return false;
     }
+
+    private IOutputCacheEntryStrategy GetEntryStrategy(OutputCacheContext context)
+        => context.VaryByResponse ? _responseCachingEntryStrategy : _defaultEntryStrategy;
 
     internal void CreateCacheKey(OutputCacheContext context)
     {
@@ -451,7 +458,7 @@ internal sealed class OutputCacheMiddleware
                     // ServeResponseAsync policies run after the response headers were finalized and may have updated the expiration.
                     context.CachedResponseValidFor = context.ResponseExpirationTimeSpan ?? _options.DefaultExpirationTimeSpan;
 
-                    await _entryStrategy.StoreAsync(context, context.HttpContext.RequestAborted);
+                    await GetEntryStrategy(context).StoreAsync(context, context.HttpContext.RequestAborted);
 
                     return true;
                 }

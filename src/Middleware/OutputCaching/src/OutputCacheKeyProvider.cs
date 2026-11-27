@@ -13,12 +13,12 @@ namespace Microsoft.AspNetCore.OutputCaching;
 internal sealed class OutputCacheKeyProvider : IOutputCacheKeyProvider
 {
     // Use the record separator for delimiting components of the cache key to avoid possible collisions
-    private const char KeyDelimiter = '\x1e';
+    internal const char KeyDelimiter = '\x1e';
     // Use the unit separator for delimiting subcomponents of the cache key to avoid possible collisions
-    private const char KeySubDelimiter = '\x1f';
+    internal const char KeySubDelimiter = '\x1f';
     // Use the group separator for delimiting a name from its value and representing empty values to avoid possible collisions.
     // A literal '=' cannot be used because it can legitimately appear in decoded header/query names and values.
-    private const char KeyNameValueDelimiter = '\x1d';
+    internal const char KeyNameValueDelimiter = '\x1d';
 
     private readonly ObjectPool<StringBuilder> _builderPool;
     private readonly OutputCacheOptions _options;
