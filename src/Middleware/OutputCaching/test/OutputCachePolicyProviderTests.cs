@@ -107,6 +107,22 @@ public class OutputCachePolicyProviderTests
     }
 
     [Fact]
+    public async Task UseResponseCachingSemantics_ReplacesDefaultPolicy()
+    {
+        // Response Caching only checks the Authorization header, unlike the default policy which also rejects authenticated users.
+        var context = TestUtils.CreateTestContext();
+        context.HttpContext.Request.Method = HttpMethods.Get;
+        context.HttpContext.User = new ClaimsPrincipal(new ClaimsIdentity(authenticationType: "custom"));
+
+        var policy = new OutputCachePolicyBuilder().UseResponseCachingSemantics().Build();
+
+        await policy.CacheRequestAsync(context, default);
+
+        Assert.True(context.AllowCacheStorage);
+        Assert.True(context.AllowCacheLookup);
+    }
+
+    [Fact]
     public async Task AttemptOutputCaching_AuthenticatedByNonPrimaryIdentity_NotAllowed()
     {
         var sink = new TestSink();

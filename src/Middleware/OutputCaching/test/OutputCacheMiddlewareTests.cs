@@ -1581,7 +1581,7 @@ public abstract class OutputCacheMiddlewareTests
         var memoryStream2 = new MemoryStream();
 
         var options = new OutputCacheOptions();
-        options.AddBasePolicy(build => build.AddPolicy(ResponseCachingPolicy.Instance).SetLocking(true), excludeDefaultPolicy: true);
+        options.AddBasePolicy(build => build.UseResponseCachingSemantics().SetLocking(true));
 
         var middleware = TestUtils.CreateTestMiddleware(options: options, next: async c =>
         {
