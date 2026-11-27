@@ -298,11 +298,21 @@ public abstract class WebViewManager : IAsyncDisposable
             return fileProvider;
         }
 
+        /// <summary>
+        /// Resolves the path of the entry assembly's static web assets runtime manifest.
+        /// </summary>
+        /// <remarks>
+        /// When dynamic code is supported, the manifest is resolved next to the entry assembly's
+        /// <see cref="Assembly.Location"/>. This returns <see langword="null"/> for single-file apps, where Location is empty.
+        /// Native AOT apps have no assembly Location, so the manifest is instead resolved relative to
+        /// <see cref="AppContext.BaseDirectory"/>. This is a slight behavior change for Native AOT, which previously
+        /// always skipped the manifest.
+        /// </remarks>
         private static string? ResolveRelativeToAssembly()
         {
+            var assembly = Assembly.GetEntryAssembly();
             if (RuntimeFeature.IsDynamicCodeSupported)
             {
-                var assembly = Assembly.GetEntryAssembly();
                 if (string.IsNullOrEmpty(assembly?.Location))
                 {
                     return null;
@@ -313,7 +323,7 @@ public abstract class WebViewManager : IAsyncDisposable
                 return Path.Combine(Path.GetDirectoryName(assembly.Location)!, $"{name}.staticwebassets.runtime.json");
             }
 
-            var assemblyName = Assembly.GetEntryAssembly()?.GetName().Name;
+            var assemblyName = assembly?.GetName().Name;
             if (string.IsNullOrEmpty(assemblyName))
             {
                 return null;
