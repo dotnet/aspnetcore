@@ -110,12 +110,46 @@ interface ObservedAbortSignal {
   abortAcknowledgment?: Promise<void>;
   collected: boolean;
   released: boolean;
+  // Weak, so that the held value does not reach the signal through the notifier.
+  notifier?: WeakRef<AbortNotifier>;
 }
 
 const abortSignalFinalizer = new FinalizationRegistry<ObservedAbortSignal>(observed => {
   observed.collected = true;
+  // WebKit keeps a dependent signal with a listener alive after its source is collected.
+  observed.notifier?.deref()?.detach();
   observed.dispatcher.deref()?.releaseAbortSignalWhenUnused(observed);
 });
+
+// One listener on the caller's signal and on a private dependent signal. Only the private signal's event notifies .NET:
+// a listener on the caller's signal can stop its event, but the DOM aborts dependents apart from that dispatch.
+// Listening on the caller's signal keeps it alive while it can abort, as the DOM keeps a signal without a controller
+// (AbortSignal.timeout(), AbortSignal.any()) only while it has listeners, and it keeps the private signal as long.
+class AbortNotifier implements EventListenerObject {
+  private readonly _signal: WeakRef<AbortSignal>;
+
+  constructor(signal: AbortSignal, private readonly _privateSignal: AbortSignal, private readonly _observed: ObservedAbortSignal) {
+    this._signal = new WeakRef(signal);
+  }
+
+  handleEvent(event: Event): void {
+    if (event.target !== this._privateSignal) {
+      return;
+    }
+
+    this.detach();
+    const observed = this._observed;
+    // Deferred so that an abort raised while arguments are serialized does not start a nested call.
+    observed.abortAcknowledgment = Promise.resolve()
+      .then(() => observed.dispatcher.deref()?.invokeDotNetStaticMethodAsync<void>('Microsoft.JSInterop', '__AbortSignalAborted', observed.id))
+      .catch(error => console.error(error));
+  }
+
+  detach(): void {
+    this._privateSignal.removeEventListener('abort', this);
+    this._signal.deref()?.removeEventListener('abort', this);
+  }
+}
 
 // The AbortSignals of the call or result being serialized; undefined while serializing anything else.
 let currentAbortSignals: Set<ObservedAbortSignal> | undefined;
@@ -515,8 +549,9 @@ class CallDispatcher implements ICallDispatcher {
     let observed = this._abortSignals.get(signal);
     if (!observed) {
       observed = { dispatcher: new WeakRef(this), id: this._nextAbortSignalId++, pendingCalls: 0, collected: false, released: false };
-      this._abortSignals.set(signal, observed);
+      // Stored only once observed: a later call must not send an id whose abort nobody watches.
       this.observeAbortSignal(signal, observed);
+      this._abortSignals.set(signal, observed);
     }
 
     currentAbortSignals.add(observed);
@@ -542,15 +577,11 @@ class CallDispatcher implements ICallDispatcher {
 
   private observeAbortSignal(signal: AbortSignal, observed: ObservedAbortSignal): void {
     if (!signal.aborted) {
-      // Does not capture this, as the signal keeps its listener alive.
-      const onAbort = (event: Event) => {
-        event.target!.removeEventListener('abort', onAbort);
-        // Deferred so that an abort raised while arguments are serialized does not start a nested call.
-        observed.abortAcknowledgment = Promise.resolve()
-          .then(() => observed.dispatcher.deref()?.invokeDotNetStaticMethodAsync<void>('Microsoft.JSInterop', '__AbortSignalAborted', observed.id))
-          .catch(error => console.error(error));
-      };
-      signal.addEventListener('abort', onAbort);
+      const privateSignal = AbortSignal.any([signal]);
+      const notifier = new AbortNotifier(signal, privateSignal, observed);
+      privateSignal.addEventListener('abort', notifier);
+      signal.addEventListener('abort', notifier);
+      observed.notifier = new WeakRef(notifier);
     }
 
     abortSignalFinalizer.register(signal, observed);
