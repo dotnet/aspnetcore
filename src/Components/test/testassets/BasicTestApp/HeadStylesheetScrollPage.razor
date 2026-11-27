@@ -1,0 +1,17 @@
+@page "/head-stylesheet-scroll/{Page}"
+
+<HeadContent>
+    @if (Page == "outgoing")
+    {
+        <link rel="stylesheet" href="head-scroll-smooth.css" />
+    }
+</HeadContent>
+
+<div style="height: 4000px">
+    <p id="head-scroll-page">@Page</p>
+    <a id="head-scroll-navigate" href="head-stylesheet-scroll/incoming" style="position: fixed; top: 0; right: 0">Navigate</a>
+</div>
+
+@code {
+    [Parameter] public string Page { get; set; }
+}

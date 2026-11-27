@@ -395,6 +395,40 @@ public class HeadModificationTest : ServerTestBase<HeadModificationTest.HeadModi
     }
 
     [Fact]
+    public async Task ReplacingInactiveHeadStylesheetDoesNotReactivateItOnResize()
+    {
+        StylesheetRequestGate request = null;
+        try
+        {
+            Browser.SetWindowSize(1200, 900);
+            Browser.MountTestComponent<HeadStylesheetSwapPendingReplacement>();
+            var target = Browser.Exists(By.Id("swap-target"));
+            Browser.Equal("rgba(0, 0, 255, 1)", () => target.GetCssValue("background-color"));
+
+            Browser.Exists(By.Id("change-initial-media-query")).Click();
+            Browser.Equal("(min-width: 900px)", () => Browser.Exists(By.Id("pending-swap-stylesheet")).GetDomAttribute("media"));
+            Browser.SetWindowSize(500, 900);
+            Browser.Equal("rgba(255, 0, 0, 1)", () => target.GetCssValue("background-color"));
+
+            Browser.Exists(By.Id("replace-stylesheet")).Click();
+            var replacement = Browser.Exists(By.CssSelector("link#pending-swap-stylesheet[href*='head-swap-replacement/']"));
+            request = _serverFixture.GetRequest(GetRequestId(replacement));
+            await request.Requested.Task.WaitAsync(TimeSpan.FromSeconds(15));
+            Browser.Equal("screen", () => replacement.GetDomAttribute("media"));
+
+            Browser.SetWindowSize(1200, 900);
+            Browser.True(() => (bool)((IJavaScriptExecutor)Browser).ExecuteScript("return window.matchMedia('(min-width: 900px)').matches;"));
+            Browser.Equal("rgba(255, 0, 0, 1)", () => target.GetCssValue("background-color"));
+            Browser.Equal(0, () => Browser.FindElements(By.CssSelector("head link[href='head-swap-initial.css']")).Count);
+        }
+        finally
+        {
+            request?.Release.TrySetResult();
+            Browser.SetWindowSize(1280, 1024);
+        }
+    }
+
+    [Fact]
     public async Task RemovingPendingHeadStylesheetRemovesBothStylesheets()
     {
         Browser.MountTestComponent<HeadStylesheetSwapPendingReplacement>();
@@ -514,6 +548,45 @@ public class HeadModificationTest : ServerTestBase<HeadModificationTest.HeadModi
     {
         var href = link.GetDomAttribute("href")!;
         return href[(href.LastIndexOf('/') + 1)..^4];
+    }
+
+    [Fact]
+    public void NavigationRemovesUnmatchedStylesheetBeforeResettingScroll()
+    {
+        var js = (IJavaScriptExecutor)Browser;
+        js.ExecuteScript("history.replaceState(null, '', 'head-stylesheet-scroll/outgoing');");
+        Browser.MountTestComponent<HeadStylesheetScrollRouter>();
+        Browser.Equal("outgoing", () => Browser.Exists(By.Id("head-scroll-page")).Text);
+        Browser.Equal("smooth", () => Browser.FindElement(By.TagName("html")).GetCssValue("scroll-behavior"));
+        js.ExecuteScript("window.scrollTo({ top: 500, behavior: 'instant' });");
+        Browser.Equal(500L, () => (long)js.ExecuteScript("return window.scrollY;"));
+
+        // WebDriver cannot observe the synchronous reset before a smooth scroll finishes.
+        // Forward to the native operation and capture both its CSS input and immediate effect.
+        js.ExecuteScript("""
+            window.__headScrollOriginal = window.scrollTo;
+            window.__headScrollReset = null;
+            window.scrollTo = function (x, y) {
+              const behavior = getComputedStyle(document.documentElement).scrollBehavior;
+              window.__headScrollOriginal.apply(window, arguments);
+              if (x === 0 && y === 0) {
+                window.__headScrollReset = { behavior, top: window.scrollY };
+              }
+            };
+            """);
+        try
+        {
+            Browser.Exists(By.Id("head-scroll-navigate")).Click();
+            Browser.Equal("incoming", () => Browser.Exists(By.Id("head-scroll-page")).Text);
+            Browser.True(() => (bool)js.ExecuteScript("return window.__headScrollReset !== null;"));
+            Assert.True((bool)js.ExecuteScript("return window.__headScrollReset.top === 0 && window.__headScrollReset.behavior === 'auto';"),
+                (string)js.ExecuteScript("return JSON.stringify(window.__headScrollReset);"));
+            Browser.Equal(0L, () => (long)js.ExecuteScript("return window.scrollY;"));
+        }
+        finally
+        {
+            js.ExecuteScript("window.scrollTo = window.__headScrollOriginal; delete window.__headScrollOriginal; delete window.__headScrollReset;");
+        }
     }
 
     [Fact]

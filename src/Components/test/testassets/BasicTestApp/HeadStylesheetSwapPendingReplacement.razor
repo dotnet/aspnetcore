@@ -5,6 +5,7 @@
     }
 </HeadContent>
 
+<button id="change-initial-media-query" @onclick="() => initialResponsiveMedia = true">Make initial stylesheet responsive</button>
 <button id="replace-stylesheet" @onclick="() => replacement = true">Replace stylesheet</button>
 <button id="replace-without-href" @onclick="ReplaceWithoutHref">Replace without href</button>
 <button id="replace-with-print-stylesheet" @onclick="ReplaceWithPrintStylesheet">Replace with print stylesheet</button>
@@ -25,6 +26,7 @@
     private bool alternateRel;
     private bool printMedia;
     private bool responsiveMedia;
+    private bool initialResponsiveMedia;
     private bool updatedResponsiveMedia;
     private bool missingHref;
     private bool removed;
@@ -33,7 +35,9 @@
         ? $"head-swap-replacement/{requestId}.css"
         : "head-swap-initial.css";
 
-    private string StylesheetMedia => updatedResponsiveMedia
+    private string StylesheetMedia => !replacement && initialResponsiveMedia
+        ? "(min-width: 900px)"
+        : updatedResponsiveMedia
         ? "(min-width: 600px)"
         : responsiveMedia
         ? "(min-width: 900px)"

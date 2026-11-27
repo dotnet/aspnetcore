@@ -58,7 +58,7 @@ export function endHeadStylesheetTransition(): void {
         link.remove();
       }
 
-      if (!replacement || replacement.disabled || !hasStylesheetHref(replacement) || !matchesCurrentMedia(replacement) || !previous.sheet || replacement.sheet || pending.has(replacement)) {
+      if (!replacement || replacement.disabled || !hasStylesheetHref(replacement) || !matchesCurrentMedia(replacement) || !matchesCurrentMedia(previous) || !previous.sheet || replacement.sheet || pending.has(replacement)) {
         previous.remove();
         continue;
       }
