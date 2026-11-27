@@ -5,6 +5,7 @@ using System.Diagnostics;
 using System.Globalization;
 using BasicTestApp;
 using BasicTestApp.Reconnection;
+using BasicTestApp.RouterTest;
 using Microsoft.AspNetCore.Components.E2ETest.Infrastructure;
 using Microsoft.AspNetCore.Components.E2ETest.Infrastructure.ServerFixtures;
 using Microsoft.AspNetCore.E2ETesting;
@@ -130,5 +131,50 @@ public class ServerReconnectionTest : ServerTestBase<BasicTestAppServerSiteFixtu
         Browser.Exists(By.Id("cause-error")).Click();
         Browser.True(() => Browser.Manage().Logs.GetLog(LogType.Browser)
             .Any(l => l.Level == LogLevel.Info && l.Message.Contains("Connection disconnected.")));
+    }
+
+    [Fact]
+    public void RapidBackFollowedByInternalNavigationPreservesGuardedBackHistory()
+    {
+        var startup = _serverFixture.Host.Services.GetRequiredService<DelayedWebSocketServerStartup>();
+        var app = Browser.MountTestComponent<NavigationManagerComponent>();
+        var initialUri = Browser.Url;
+        Browser.Equal(initialUri, () => app.FindElement(By.Id("test-info")).Text);
+
+        app.FindElement(By.Id("internal-link-navigation")).Click();
+        Browser.Equal("1", () => app.FindElement(By.Id("location-changed-count")).Text);
+
+        app.FindElement(By.Id("increment-link-navigation-index")).Click();
+        Browser.Equal("/some-path-1", () => app.FindElement(By.Id("internal-link-navigation")).Text);
+
+        try
+        {
+            // Gate server acknowledgements so Back's OnLocationChanged remains unacknowledged when the internal link is clicked.
+            startup.PauseIncomingMessages();
+            Browser.Navigate().Back();
+            Browser.Equal(initialUri, () => Browser.Url);
+
+            app.FindElement(By.Id("internal-link-navigation")).Click();
+        }
+        finally
+        {
+            startup.ResumeIncomingMessages();
+        }
+
+        var expectedAfterInternalNav = $"{_serverFixture.RootUri}subdir/some-path-1";
+        Browser.Equal(expectedAfterInternalNav, () => app.FindElement(By.Id("test-info")).Text);
+        Browser.Equal(expectedAfterInternalNav, () => Browser.Url);
+
+        app.FindElement(By.Id("add-navigation-lock")).Click();
+        Browser.FindElement(By.CssSelector("#navigation-lock-0 > input.block-internal-navigation")).Click();
+        Browser.Equal("true", () => Browser.FindElement(By.CssSelector("#navigation-lock-0 > input.navigation-lock-ready")).GetDomProperty("value"));
+
+        Browser.Navigate().Back();
+        Browser.Exists(By.CssSelector("#navigation-lock-0 > div.blocking-controls"));
+        Browser.Equal(expectedAfterInternalNav, () => Browser.Url);
+
+        Browser.FindElement(By.CssSelector("#navigation-lock-0 > div.blocking-controls > button.navigation-continue")).Click();
+        Browser.Equal(initialUri, () => app.FindElement(By.Id("test-info")).Text);
+        Browser.Equal(initialUri, () => Browser.Url);
     }
 }

@@ -19,7 +19,7 @@ import { MessageAckMonitor } from './MessageAckMonitor';
 import { Blazor } from '../../GlobalExports';
 import { showErrorNotification } from '../../BootErrors';
 import { attachWebRendererInterop, detachWebRendererInterop, isRendererAttached } from '../../Rendering/WebRendererInteropMethods';
-import { sendJSDataStream } from './CircuitStreamingInterop';
+import { rejectPendingJSDataStreamAcks, sendJSDataStream } from './CircuitStreamingInterop';
 
 export class CircuitManager implements DotNet.DotNetCallDispatcher {
 
@@ -156,6 +156,7 @@ export class CircuitManager implements DotNet.DotNetCallDispatcher {
       connectionClosed = true;
 
       messageAckMonitor.dispose();
+      rejectPendingJSDataStreamAcks(connection, error ?? new Error('Connection closed.'));
       if (isRendererAttached(WebRendererId.Server)) {
         this._interopMethodsForReconnection = detachWebRendererInterop(WebRendererId.Server);
       }
@@ -561,12 +562,13 @@ export class CircuitManager implements DotNet.DotNetCallDispatcher {
   }
 
   private sendMonitoredMessage(method: string, ...args: unknown[]): void {
-    if (this._connection?.state !== HubConnectionState.Connected) {
+    const connection = this._connection;
+    if (connection?.state !== HubConnectionState.Connected) {
       return;
     }
 
     this._messageAckMonitor!.send(method, ...args).catch(error => {
-      if (this._connection?.state === HubConnectionState.Connected) {
+      if (this._connection === connection && connection.state === HubConnectionState.Connected) {
         this._logger.log(LogLevel.Error, error);
       }
     });

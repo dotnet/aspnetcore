@@ -24,7 +24,7 @@ internal partial class RemoteJSRuntime : JSRuntime
     private int _byteArraysToBeRevivedTotalBytes;
 
     internal int RemoteJSDataStreamNextInstanceId;
-    internal readonly Dictionary<long, RemoteJSDataStream> RemoteJSDataStreamInstances = new();
+    internal readonly ConcurrentDictionary<long, RemoteJSDataStream> RemoteJSDataStreamInstances = new();
 
     public ElementReferenceContext ElementReferenceContext { get; }
 

@@ -2,17 +2,16 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 import { afterEach, describe, expect, jest, test } from '@jest/globals';
-import { HubConnection, HubConnectionBuilder, HubConnectionState, LogLevel } from '@microsoft/signalr';
+import { HubConnectionBuilder, HubConnectionState, LogLevel } from '@microsoft/signalr';
 import { CircuitManager } from '../../../src/Platform/Circuits/CircuitManager';
 import { ReconnectionHandler, resolveOptions } from '../../../src/Platform/Circuits/CircuitStartOptions';
 import { ConsoleLogger } from '../../../src/Platform/Logging/Loggers';
-import { attachWebRendererInterop, detachWebRendererInterop, isRendererAttached } from '../../../src/Rendering/WebRendererInteropMethods';
-import { WebRendererId } from '../../../src/Rendering/WebRendererId';
 import { JSEventRegistry } from '../../../src/Services/JSEventRegistry';
-import { internalFunctions as navigationManagerFunctions, navigateTo } from '../../../src/Services/NavigationManager';
+
+const originalBuild = HubConnectionBuilder.prototype.build;
 
 function createConnectionWithMockedTransport() {
-  const connection = new HubConnectionBuilder().withUrl('http://localhost/_blazor').build();
+  const connection = originalBuild.call(new HubConnectionBuilder().withUrl('http://localhost/_blazor'));
   let closeCallback: ((error?: Error) => void) | undefined;
   let state = HubConnectionState.Connected;
 
@@ -31,7 +30,7 @@ function createConnectionWithMockedTransport() {
   };
 }
 
-function createCircuit(reconnectionHandler?: ReconnectionHandler) {
+function createCircuit(reconnectionHandler?: ReconnectionHandler, logger?: ConsoleLogger) {
   return new CircuitManager(
     {
       initialComponents: [],
@@ -39,15 +38,12 @@ function createCircuit(reconnectionHandler?: ReconnectionHandler) {
     },
     '',
     resolveOptions({ reconnectionHandler }),
-    new ConsoleLogger(LogLevel.None),
+    logger ?? new ConsoleLogger(LogLevel.None),
     new JSEventRegistry());
 }
 
 describe('CircuitManager navigation acknowledgement', () => {
   afterEach(() => {
-    if (isRendererAttached(WebRendererId.Server)) {
-      detachWebRendererInterop(WebRendererId.Server);
-    }
     jest.clearAllTimers();
     jest.useRealTimers();
     jest.restoreAllMocks();
@@ -116,67 +112,45 @@ describe('CircuitManager navigation acknowledgement', () => {
     expect(onConnectionDown).toHaveBeenCalledTimes(1);
   });
 
-  test('rapid Back followed by internal navigation preserves history index when OnLocationChanged ack is pending', async () => {
+  test('suppresses stale invocation cancellation error logs after connection replacement', async () => {
     jest.useFakeTimers();
-    const { connection } = createConnectionWithMockedTransport();
-    const invoke = jest.spyOn(connection, 'invoke').mockResolvedValue('test-circuit');
-    const circuit = createCircuit({ onConnectionDown: jest.fn(), onConnectionUp: jest.fn() });
+    const first = createConnectionWithMockedTransport();
+    const firstInvoke = jest.spyOn(first.connection, 'invoke').mockResolvedValue('test-circuit');
+    jest.spyOn(first.connection, 'stop').mockImplementation(() => {
+      first.setState(HubConnectionState.Disconnecting);
+      return new Promise<void>(() => { /* stalled DELETE */ });
+    });
+
+    const logger = new ConsoleLogger(LogLevel.Error);
+    const logSpy = jest.spyOn(logger, 'log').mockImplementation(() => { /* suppress console output */ });
+    const circuit = createCircuit({ onConnectionDown: jest.fn(), onConnectionUp: jest.fn() }, logger);
     await circuit.start();
 
-    attachWebRendererInterop(WebRendererId.Server, {} as never);
-    navigationManagerFunctions.enableNavigationInterception(WebRendererId.Server);
-    navigationManagerFunctions.listenForNavigationEvents(
-      WebRendererId.Server,
-      (uri, state, intercepted) => circuit.sendLocationChanged(uri, state, intercepted),
-      (callId, uri, state, intercepted) => circuit.sendLocationChanging(callId, uri, state, intercepted),
-    );
+    const firstPendingAck = Promise.withResolvers<void>();
+    firstInvoke.mockClear().mockReturnValue(firstPendingAck.promise);
+    await circuit.sendLocationChanged('/next', undefined, true);
 
-    const pendingAcks: Array<ReturnType<typeof Promise.withResolvers<void>>> = [];
-    invoke.mockClear().mockImplementation(() => {
-      const deferred = Promise.withResolvers<void>();
-      pendingAcks.push(deferred);
-      return deferred.promise;
-    });
+    jest.advanceTimersByTime(2000);
 
-    const initialIndex = (history.state as { _index?: number } | null)?._index ?? 0;
-    navigateTo('/page-1', false);
+    // Replace the connection via reconnect before the old Long Polling cleanup finishes.
+    const second = createConnectionWithMockedTransport();
+    const secondInvoke = jest.spyOn(second.connection, 'invoke').mockResolvedValue(true);
+    await expect(circuit.reconnect()).resolves.toBe(true);
+    logSpy.mockClear();
+
+    // When the old connection finally closes and rejects its pending invocation, no error is logged.
+    first.setState(HubConnectionState.Disconnected);
+    firstPendingAck.reject(new Error('Invocation canceled due to the underlying connection being closed.'));
     await Promise.resolve();
-    expect((history.state as { _index?: number })._index).toBe(initialIndex + 1);
-
-    // Simulate browser Back to initialIndex while OnLocationChanged remains pending.
-    history.replaceState({ _index: initialIndex }, '', '/');
-    window.dispatchEvent(new PopStateEvent('popstate', { state: { _index: initialIndex } }));
     await Promise.resolve();
+    expect(logSpy).not.toHaveBeenCalled();
 
-    // Immediately navigate internally to /page-2 before the Back acknowledgement completes.
-    navigateTo('/page-2', false);
+    // A server completion error on the current active connection is still logged at Error level.
+    const hubError = new Error('Hub filter threw on active connection.');
+    secondInvoke.mockClear().mockReturnValue(Promise.reject(hubError));
+    await circuit.sendLocationChanged('/active', undefined, true);
     await Promise.resolve();
-    expect((history.state as { _index?: number })._index).toBe(initialIndex + 1);
-
-    // Settle pending acknowledgements and ensure currentHistoryIndex stays at initialIndex + 1.
-    for (const ack of pendingAcks) {
-      ack.resolve();
-    }
     await Promise.resolve();
-
-    // Guarded Back to initialIndex should compute delta = -1 (and revert with +1), not -2.
-    navigationManagerFunctions.setHasLocationChangingListeners(WebRendererId.Server, true);
-    const historyGoSpy = jest.spyOn(history, 'go').mockImplementation((delta?: number) => {
-      if (delta === -1) {
-        history.replaceState({ _index: initialIndex }, '', '/');
-      } else if (delta === 1) {
-        history.replaceState({ _index: initialIndex + 1 }, '', '/page-2');
-      }
-      window.dispatchEvent(new PopStateEvent('popstate', { state: history.state }));
-    });
-
-    history.replaceState({ _index: initialIndex }, '', '/');
-    window.dispatchEvent(new PopStateEvent('popstate', { state: { _index: initialIndex } }));
-    await Promise.resolve();
-
-    expect(historyGoSpy).toHaveBeenCalledWith(1);
-    expect(historyGoSpy).not.toHaveBeenCalledWith(2);
-    navigationManagerFunctions.endLocationChanging(1, false);
-    await Promise.resolve();
+    expect(logSpy).toHaveBeenCalledWith(LogLevel.Error, hubError);
   });
 });
