@@ -16,9 +16,12 @@
             Id="server"
             CaptureLateReference="CaptureLateReference"
             ThrowOnDispose="FailServerDisposal" />
-        <TestContentPackage.ElementReferenceDisposal
-            @rendermode="@(new InteractiveWebAssemblyRenderMode(prerender: Prerender))"
-            Id="webassembly" />
+        @if (!TestLongPolling)
+        {
+            <TestContentPackage.ElementReferenceDisposal
+                @rendermode="@(new InteractiveWebAssemblyRenderMode(prerender: Prerender))"
+                Id="webassembly" />
+        }
     }
 
     @if (FailServerDisposal)
@@ -63,4 +66,7 @@
 
     [SupplyParameterFromQuery]
     public bool ShowAutoComponent { get; set; }
+
+    [SupplyParameterFromQuery]
+    public bool TestLongPolling { get; set; }
 }

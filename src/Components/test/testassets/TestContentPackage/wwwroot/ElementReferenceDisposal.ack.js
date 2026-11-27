@@ -3,6 +3,9 @@ let renderBatchGate;
 window.elementReferenceDisposalTest = {
   acknowledgedRemovals: 0,
   acknowledgedServerRemovals: 0,
+  failedDisposalAcknowledgements: 0,
+  successfulDisposalAcknowledgements: 0,
+  serverConnections: 0,
   circuitDisposals: 0,
   captures: new Map(),
   heldRenderBatches: 0,
@@ -15,8 +18,13 @@ window.elementReferenceDisposalTest = {
     renderBatchGate = undefined;
   },
   configureSignalR(builder) {
+    if (new URLSearchParams(location.search).get('testLongPolling') === 'true') {
+      builder.withUrl('_blazor', 4); // HttpTransportType.LongPolling
+    }
+
     const build = builder.build.bind(builder);
     builder.build = () => {
+      this.serverConnections++;
       const connection = build();
       const serverRemovalBatches = new Set();
       const send = connection.send.bind(connection);
@@ -61,7 +69,21 @@ window.elementReferenceDisposalTest = {
 
 const originalFetch = window.fetch;
 window.fetch = async (...args) => {
+  const test = window.elementReferenceDisposalTest;
+  const options = args[1];
+  const isDisposalAcknowledgement = options?.method === 'POST'
+    && options.body instanceof ArrayBuffer
+    && new TextDecoder().decode(options.body).includes('OnRootComponentDisposalCompleted');
+  if (isDisposalAcknowledgement && test.failNextDisposalAcknowledgement) {
+    test.failNextDisposalAcknowledgement = false;
+    test.failedDisposalAcknowledgements++;
+    return new Response(null, { status: 503 });
+  }
+
   const response = await originalFetch(...args);
+  if (isDisposalAcknowledgement && response.ok) {
+    test.successfulDisposalAcknowledgements++;
+  }
   if (args[0] === '_blazor/disconnect' && args[1]?.method === 'POST' && response.ok) {
     window.elementReferenceDisposalTest.circuitDisposals++;
   }

@@ -83,6 +83,40 @@ public class EnhancedNavigationTest : ServerTestBase<BasicTestAppServerSiteFixtu
     }
 
     [Fact]
+    public void RetriesDisposalAcknowledgementAfterLongPollingPostFails()
+    {
+        Navigate($"{ServerPathBase}/nav/other");
+        Browser.ExecuteJavaScript("sessionStorage.setItem('keep-circuit-alive', 'true');");
+
+        try
+        {
+            Navigate($"{ServerPathBase}/nav/element-reference-disposal?testLongPolling=true");
+            Browser.Equal("True", () => Browser.Exists(By.Id("element-reference-disposal-initialized-server")).Text);
+            Browser.Click(By.Id("element-reference-disposal-navigation"));
+            Browser.Equal("Other", () => Browser.Exists(By.TagName("h1")).Text);
+            Browser.True(() => Browser.ExecuteJavaScript<long>("return window.elementReferenceDisposalTest.acknowledgedServerRemovals") > 0);
+            foreach (var id in new[] { "server", "server-child" })
+            {
+                Browser.Equal("true", () => Browser.ExecuteJavaScript<string>(
+                    $"return sessionStorage.getItem('element-reference-disposal-pending-{id}')"));
+            }
+
+            Browser.ExecuteJavaScript(
+                "window.elementReferenceDisposalTest.failNextDisposalAcknowledgement = true;" +
+                "import('./_content/TestContentPackage/ElementReferenceDisposal.razor.js').then(module => module.releaseAllDisposals());");
+            Browser.Equal(1L, () => Browser.ExecuteJavaScript<long>("return window.elementReferenceDisposalTest.failedDisposalAcknowledgements"));
+            Browser.Equal(1L, () => Browser.ExecuteJavaScript<long>("return window.elementReferenceDisposalTest.successfulDisposalAcknowledgements"));
+            Assert.Equal(1L, Browser.ExecuteJavaScript<long>("return window.elementReferenceDisposalTest.serverConnections"));
+        }
+        finally
+        {
+            Browser.ExecuteJavaScript(
+                "sessionStorage.removeItem('keep-circuit-alive');" +
+                "import('./_content/TestContentPackage/ElementReferenceDisposal.razor.js').then(module => module.releaseAllDisposals());");
+        }
+    }
+
+    [Fact]
     public void AutoRenderModeIgnoresRemovedServerRootWhileItDisposes()
     {
         Navigate($"{ServerPathBase}/nav/element-reference-disposal?testAutoRenderMode=true");

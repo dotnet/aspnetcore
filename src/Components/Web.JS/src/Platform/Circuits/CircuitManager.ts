@@ -200,10 +200,18 @@ export class CircuitManager implements DotNet.DotNetCallDispatcher {
 
     connection.on('JS.EndDisposeRootComponent', async (ssrComponentId: number) => {
       Blazor._internal.endDisposeRootComponent!(ssrComponentId);
-      try {
-        await connection.send('OnRootComponentDisposalCompleted', ssrComponentId);
-      } catch (error) {
-        this._logger.log(LogLevel.Debug, `Failed to acknowledge disposal of root component '${ssrComponentId}': ${error}`);
+      let retryDelayMs = 250;
+      while (connection.state === HubConnectionState.Connected && !this._disposed && !this._renderingFailed) {
+        try {
+          await connection.send('OnRootComponentDisposalCompleted', ssrComponentId);
+          return;
+        } catch (error) {
+          this._logger.log(LogLevel.Debug, `Failed to acknowledge disposal of root component '${ssrComponentId}': ${error}`);
+        }
+
+        // A send can fail without closing the connection. Closed connections rely on server replay.
+        await new Promise<void>(resolve => { setTimeout(resolve, retryDelayMs); });
+        retryDelayMs = Math.min(retryDelayMs * 2, 5000);
       }
     });
 
