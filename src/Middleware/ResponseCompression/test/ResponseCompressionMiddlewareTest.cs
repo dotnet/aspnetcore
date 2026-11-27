@@ -307,6 +307,44 @@ public class ResponseCompressionMiddlewareTest
         }
     }
 
+    [Theory]
+    [InlineData(new[] { "TEXT/*" }, null, "text/plain2; charset=utf-8", true)]
+    [InlineData(new[] { "TEXT/*" }, null, "text/plain2 ; charset=utf-8", true)]
+    [InlineData(new[] { "TEXT/plain2" }, null, "text/plain2 ; charset=utf-8", true)]
+    [InlineData(new[] { "*/*" }, new[] { "TEXT/*" }, "text/plain2 ; charset=utf-8", false)]
+    [InlineData(new[] { "*/*" }, new[] { "text/PLAIN2" }, "text/plain2; charset=utf-8", false)]
+    [InlineData(null, null, "text/plain2 ; charset=utf-8", false)]
+    [InlineData(null, null, "noslash; charset=utf-8", false)]
+    [InlineData(new[] { "text/plain/*" }, null, "text/plain; charset=utf-8", false)]
+    [InlineData(new[] { "*/*" }, new[] { "text/plain/*" }, "text/plain; charset=utf-8", true)]
+    public async Task MimeTypes_WithParameters_MatchOnMediaType(
+        string[] mimeTypes,
+        string[] excludedMimeTypes,
+        string contentType,
+        bool compress)
+    {
+        var (response, logMessages) = await InvokeMiddleware(uncompressedBodyLength: 100, requestAcceptEncodings: new[] { "gzip" }, contentType,
+            configure: options =>
+            {
+                options.MimeTypes = mimeTypes;
+                options.ExcludedMimeTypes = excludedMimeTypes;
+            });
+
+        if (compress)
+        {
+            await CheckResponseCompressed(response, "gzip");
+            AssertCompressedWithLog(logMessages, "gzip");
+        }
+        else
+        {
+            CheckResponseNotCompressed(response, expectedBodyLength: 100, sendVaryHeader: false);
+            Assert.Equal(2, logMessages.Count);
+            AssertLog(logMessages.First(), LogLevel.Trace, "This request accepts compression.");
+            var mediaType = contentType.Substring(0, contentType.IndexOf(';')).Trim();
+            AssertLog(logMessages.Skip(1).First(), LogLevel.Debug, $"Response compression is not enabled for the Content-Type '{mediaType}'.");
+        }
+    }
+
     [Fact]
     public async Task NoIncludedMimeTypes_UseDefaults()
     {

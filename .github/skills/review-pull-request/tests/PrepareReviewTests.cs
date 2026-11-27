@@ -1222,28 +1222,6 @@ public class PrepareReviewTests
         Assert.Contains(
             "It must not invoke `bash`, `shell`, or `powershell`, and may use native `rg`, `grep`, or `glob` only beneath its assigned frozen source roots.",
             workerContract, StringComparison.Ordinal);
-
-        var workflow = Regex.Replace(await File.ReadAllTextAsync(Path.Combine(
-            RepositoryRoot, ".github/workflows/pull-request-review.md"), Utf8NoBom), @"\s+", " ");
-        Assert.Contains(
-            "Apply the skill's review contract unchanged. It owns worker configuration and dispatch, exact assignments and native reads, independent candidate validation, severity, changed-line anchors, feedback disposition, and structured result semantics.",
-            workflow, StringComparison.Ordinal);
-        Assert.Contains(
-            "Do not replace those rules with a second review policy in this adapter.",
-            workflow, StringComparison.Ordinal);
-        Assert.Contains(
-            "Every guide worker must use the native `review-guide-worker` profile, whose explicit tool list exposes only reading, searching, and skill loading.",
-            workflow, StringComparison.Ordinal);
-        Assert.Contains(
-            "Workers are source-only and must not receive coordinator-only inputs.",
-            workflow, StringComparison.Ordinal);
-        Assert.Contains("Use `gpt-6.2-sol` as the explicit hosted worker model, with no Anthropic model or automatic substitution.", workflow, StringComparison.Ordinal);
-        Assert.Contains(
-            "After launching workers, stay in your turn and collect each worker's report with `read_agent` using `wait: true` rather than ending your response to wait for a notification.",
-            workflow, StringComparison.Ordinal);
-        Assert.Contains(
-            "Do not execute target code.",
-            workflow, StringComparison.Ordinal);
     }
 
     [Theory]

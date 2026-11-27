@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 import { synchronizeDomContent } from '../Rendering/DomMerging/DomSync';
+import { synchronizeAttributes } from '../Rendering/DomMerging/AttributeSync';
 import { attachProgrammaticEnhancedNavigationHandler, handleClickForNavigationInterception, hasInteractiveRouter, isForSamePath, isWithinBaseUriSpace, notifyEnhancedNavigationListeners, performScrollToElementOnTheSamePage, isSamePageWithHash, recordLocationChange } from './NavigationUtils';
 import { scheduleScrollReset, ScrollResetSchedule } from '../Rendering/Renderer';
 import { WebRendererId } from '../Rendering/WebRendererId';
@@ -47,6 +48,7 @@ let currentContentUrl = location.href;
 export interface NavigationEnhancementCallbacks {
   enhancedNavigationStarted: () => void;
   beforeDomUpdate: (source: Node) => void;
+  isDomPreservationDisabled: () => boolean;
   documentUpdated: () => void;
   enhancedNavigationCompleted: () => void;
 }
@@ -65,7 +67,11 @@ export function attachProgressivelyEnhancedNavigationListener(callbacks: Navigat
   document.addEventListener('submit', onDocumentSubmit);
   window.addEventListener('popstate', onPopState);
 
-  attachProgrammaticEnhancedNavigationHandler(performProgrammaticEnhancedNavigation);
+  updateProgrammaticEnhancedNavigationHandler();
+}
+
+export function updateProgrammaticEnhancedNavigationHandler() {
+  attachProgrammaticEnhancedNavigationHandler(navigationEnhancementCallbacks.isDomPreservationDisabled() ? undefined : performProgrammaticEnhancedNavigation);
 }
 
 export function detachProgressivelyEnhancedNavigationListener() {
@@ -91,7 +97,7 @@ function performProgrammaticEnhancedNavigation(absoluteInternalHref: string, rep
 }
 
 function onDocumentClick(event: MouseEvent) {
-  if (hasInteractiveRouter()) {
+  if (hasInteractiveRouter() || navigationEnhancementCallbacks.isDomPreservationDisabled()) {
     return;
   }
 
@@ -129,12 +135,19 @@ function onPopState(state: PopStateEvent) {
     return;
   }
 
+  if (navigationEnhancementCallbacks.isDomPreservationDisabled()) {
+    if (!hasNeverStartedAnyEnhancedPageLoad()) {
+      location.reload();
+    }
+    return;
+  }
+
   // load the new page
   performEnhancedPageLoad(location.href, /* interceptedLink */ false);
 }
 
 function onDocumentSubmit(event: SubmitEvent) {
-  if (hasInteractiveRouter() || event.defaultPrevented) {
+  if (hasInteractiveRouter() || event.defaultPrevented || navigationEnhancementCallbacks.isDomPreservationDisabled()) {
     return;
   }
 
@@ -349,7 +362,18 @@ export async function performEnhancedPageLoad(internalDestinationHref: string, i
         // For HTML responses, regardless of the status code, display it
         const parsedHtml = new DOMParser().parseFromString(initialContent, 'text/html');
         navigationEnhancementCallbacks.beforeDomUpdate(parsedHtml);
-        synchronizeDomContent(document, parsedHtml);
+        if (navigationEnhancementCallbacks.isDomPreservationDisabled()) {
+          if (isGetRequest) {
+            retryEnhancedNavAsFullPageLoad(internalDestinationHref, /* warn */ false);
+            return;
+          }
+
+          synchronizeAttributes(document.documentElement, parsedHtml.documentElement);
+          synchronizeDomContent(document.documentElement, parsedHtml.documentElement, /* preserveExisting */ false);
+          replaceDocumentLevelComments(parsedHtml);
+        } else {
+          synchronizeDomContent(document, parsedHtml);
+        }
         navigationEnhancementCallbacks.documentUpdated();
       } else if (responseContentType?.startsWith('text/') && initialContent) {
         // For any other text-based content, we'll just display it, because that's what
@@ -498,10 +522,27 @@ function enhancedNavigationIsEnabledForForm(form: HTMLFormElement): boolean {
     && attributeValue === '' || attributeValue?.toLowerCase() === 'true';
 }
 
-function retryEnhancedNavAsFullPageLoad(internalDestinationHref: string) {
+function retryEnhancedNavAsFullPageLoad(internalDestinationHref: string, warn = true) {
   // The ? trick here is the same workaround as described in #10839, and without it, the user
   // would not be able to use the back button afterwards.
-  console.warn(`Enhanced navigation failed for destination ${internalDestinationHref}. Falling back to full page load.`);
+  if (warn) {
+    console.warn(`Enhanced navigation failed for destination ${internalDestinationHref}. Falling back to full page load.`);
+  }
   history.replaceState(null, '', internalDestinationHref + '?');
   location.replace(internalDestinationHref);
+}
+
+// Comments after </html>, such as persisted component state, are children of the document rather than <html>.
+function replaceDocumentLevelComments(newDocument: Document) {
+  for (const node of Array.from(document.childNodes)) {
+    if (node.nodeType === Node.COMMENT_NODE) {
+      document.removeChild(node);
+    }
+  }
+
+  for (const node of Array.from(newDocument.childNodes)) {
+    if (node.nodeType === Node.COMMENT_NODE) {
+      document.appendChild(document.importNode(node, true));
+    }
+  }
 }

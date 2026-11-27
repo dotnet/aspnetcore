@@ -57,7 +57,6 @@ public class BlazorWebJsInitializersTest : ServerTestBase<BasicTestAppServerSite
 
     [Theory]
     [MemberData(nameof(InitializerTestData))]
-    [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/69449")]
     public void InitializersRunsClassicInitializersWhenEnabled(bool streaming, bool webassembly, bool server, string[] expectedInvokedCallbacks)
     {
         List<string> expectedCallbacks = ["classic-before-start", "classic-after-started", ..expectedInvokedCallbacks];

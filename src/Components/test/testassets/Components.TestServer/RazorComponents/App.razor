@@ -301,7 +301,7 @@
 
             Blazor.start({
                 ssr: {
-                    disableDomPreservation: suppressEnhancedNavigation,
+                    disableDomPreservation: suppressEnhancedNavigation ? true : undefined,
 
                     // We use a short timeout so tests don't take too long, except for tests that
                     // need the circuit to survive navigating through pages with no interactive

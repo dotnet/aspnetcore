@@ -32,7 +32,7 @@ export function registerAllComponentDescriptors(root: Node) {
 
 export { preprocessAndSynchronizeDomContent as synchronizeDomContent };
 
-function preprocessAndSynchronizeDomContent(destination: CommentBoundedRange | Node, newContent: Node) {
+function preprocessAndSynchronizeDomContent(destination: CommentBoundedRange | Node, newContent: Node, preserveExisting = true) {
   // Strip any WebAssembly metadata comments from the new content before building
   // the logical tree, so they don't end up as orphaned nodes in the logical children array
   discoverWebAssemblyOptions(newContent);
@@ -47,10 +47,10 @@ function preprocessAndSynchronizeDomContent(destination: CommentBoundedRange | N
   upgradeComponentCommentsToLogicalRootComments(newContent);
 
   // Then, synchronize the preprocessed DOM content
-  synchronizeDomContentCore(destination, newContent);
+  synchronizeDomContentCore(destination, newContent, preserveExisting);
 }
 
-function synchronizeDomContentCore(destination: CommentBoundedRange | Node, newContent: Node) {
+function synchronizeDomContentCore(destination: CommentBoundedRange | Node, newContent: Node, preserveExisting = true) {
   // Determine the destination's parent node, i.e., the node containing the children
   // we intend to synchronize. This might sometimes be a logical parent.
   let destinationParent: Node;
@@ -88,11 +88,12 @@ function synchronizeDomContentCore(destination: CommentBoundedRange | Node, newC
   }
 
   // Run the diff
-  const editScript = computeEditScript(
-    originalNodesForDiff,
-    newNodesForDiff,
-    domNodeComparer
-  );
+  const editScript = preserveExisting
+    ? computeEditScript(originalNodesForDiff, newNodesForDiff, domNodeComparer)
+    : {
+      skipCount: 0,
+      edits: [...Array<Operation>(originalNodesForDiff.length).fill(Operation.Delete), ...Array<Operation>(newNodesForDiff.length).fill(Operation.Insert)],
+    };
 
   let destinationWalker: EditWalker;
   let sourceWalker: EditWalker;

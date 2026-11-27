@@ -21,6 +21,7 @@ public class BrowserConfigurationTest(
     protected override void InitializeAsyncCore()
     {
         _serverFixture.AdditionalArguments.Add("--BrowserConfigurationEnvironmentName=BrowserConfigurationTestEnvironment");
+        _serverFixture.AdditionalArguments.Add("--BrowserConfigurationApplicationCulture=en-CA");
         base.InitializeAsyncCore();
     }
 
@@ -36,6 +37,7 @@ public class BrowserConfigurationTest(
         Browser.Equal("test-value-from-server", () => Browser.Exists(By.Id("my-test-var")).Text);
         Browser.Equal("another-test-value", () => Browser.Exists(By.Id("another-test-var")).Text);
         Browser.Equal("BrowserConfigurationTestEnvironment", () => Browser.Exists(By.Id("environment-name")).Text);
+        Browser.Equal("en-CA", () => Browser.Exists(By.Id("application-culture")).Text);
     }
 
     [Fact]
@@ -61,5 +63,15 @@ public class BrowserConfigurationTest(
         Browser.Equal("test-value-from-server", () => Browser.Exists(By.Id("my-test-var")).Text);
         Browser.Equal("another-test-value", () => Browser.Exists(By.Id("another-test-var")).Text);
         Browser.Equal("BrowserConfigurationTestEnvironment", () => Browser.Exists(By.Id("environment-name")).Text);
+        Browser.Equal("en-CA", () => Browser.Exists(By.Id("application-culture")).Text);
+    }
+
+    [Fact]
+    public void JavaScriptApplicationCultureOverridesBrowserConfiguration()
+    {
+        Navigate($"{ServerPathBase}/browser-configuration-env-vars?application-culture=fr-CA");
+
+        Browser.Equal("webassembly", () => Browser.Exists(By.Id("execution-mode")).Text);
+        Browser.Equal("fr-CA", () => Browser.Exists(By.Id("application-culture")).Text);
     }
 }

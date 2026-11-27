@@ -10,7 +10,7 @@ Microsoft.AspNetCore.Authentication.JwtBearer is a middleware component designed
 * Supports JSON Web Token (JWT) authentication.
 * Enables secure authentication for APIs and web services.
 * Flexible configuration options for token validation parameters.
-* Works with .NET Core 3.0 and newer, as well as .NET Standard 2.1.
+* Each version targets the matching .NET version (for example, 10.0.x targets `net10.0`).
 
 ## How to Use
 
@@ -53,7 +53,7 @@ The main types provided by this library are:
 * `JwtBearerDefaults`: Contains default values for JWT Bearer authentication.
 * `JwtBearerEvents`: Events used to handle JWT Bearer authentication events.
 * `JwtBearerHandler`: Handles JWT Bearer authentication requests.
-* `wtBearerOptions`: Options for configuring JWT Bearer authentication.
+* `JwtBearerOptions`: Options for configuring JWT Bearer authentication.
 
 ## Additional Documentation
 
