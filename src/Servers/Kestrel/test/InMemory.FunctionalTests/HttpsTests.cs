@@ -722,6 +722,27 @@ public class HttpsTests : LoggedTest
     }
 
     [Fact]
+    public async Task Http3_TlsHandshakeCallbackOptions_Http3NotAllowedByFeature_NoApplicationProtocols_Http3Denied()
+    {
+        var callbackOptions = new SslServerAuthenticationOptions { ServerCertificate = _x509Certificate2 };
+
+        var tlsOptions = await BindHttp3WithTlsCallbackAsync(context =>
+        {
+            context.Connection.Features.Set<HttpProtocolsFeature>(
+                new HttpProtocolsFeature(HttpProtocols.Http1));
+
+            return ValueTask.FromResult(callbackOptions);
+        });
+
+        var result = await tlsOptions.OnConnection(new TlsConnectionCallbackContext(), CancellationToken.None);
+
+        Assert.NotSame(callbackOptions, result);
+        Assert.NotNull(result.ApplicationProtocols);
+        Assert.DoesNotContain(SslApplicationProtocol.Http3, result.ApplicationProtocols);
+        Assert.Null(callbackOptions.ApplicationProtocols);
+    }
+
+    [Fact]
     public async Task PopulateMultiplexedTransportFeatures_SniProtocols_OnlyEnablesHttp3WhenAllowed()
     {
         var features = new FeatureCollection();
@@ -789,7 +810,6 @@ public class HttpsTests : LoggedTest
         });
 
         Assert.NotNull(legacyOptions.ApplicationProtocols);
-        Assert.DoesNotContain(SslApplicationProtocol.Http3, legacyOptions.ApplicationProtocols);
         Assert.Equal([SslApplicationProtocol.Http11], legacyOptions.ApplicationProtocols);
     }
 

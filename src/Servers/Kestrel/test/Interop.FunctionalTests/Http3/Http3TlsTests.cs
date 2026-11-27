@@ -367,7 +367,6 @@ public class Http3TlsTests : LoggedTest
         var request = new HttpRequestMessage(HttpMethod.Get, $"https://127.0.0.1:{host.GetPort()}/");
         request.Version = HttpVersion.Version30;
         request.VersionPolicy = HttpVersionPolicy.RequestVersionExact;
-        request.Headers.Host = "testhost";
 
         var response = await client.SendAsync(request, CancellationToken.None).DefaultTimeout();
         response.EnsureSuccessStatusCode();
@@ -656,10 +655,11 @@ public class Http3TlsTests : LoggedTest
                 Headers = { Host = "http1host" },
             };
 
-            await Assert.ThrowsAnyAsync<HttpRequestException>(async () =>
+            var ex = await Assert.ThrowsAnyAsync<HttpRequestException>(async () =>
             {
                 await http1Client.SendAsync(request, CancellationToken.None).DefaultTimeout();
             });
+            Assert.IsType<QuicException>(ex.InnerException);
         }
 
         await host.StopAsync().DefaultTimeout();

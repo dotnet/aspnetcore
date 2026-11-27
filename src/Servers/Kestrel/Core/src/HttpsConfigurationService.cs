@@ -188,7 +188,14 @@ internal sealed class HttpsConfigurationService : IHttpsConfigurationService
     {
         if ((allowedProtocols & HttpProtocols.Http3) == 0)
         {
-            return sslOptions;
+            if (sslOptions.ApplicationProtocols is { } protocols && !protocols.Contains(SslApplicationProtocol.Http3))
+            {
+                return sslOptions;
+            }
+
+            var denied = SniOptionsSelector.CloneSslOptions(sslOptions);
+            denied.ApplicationProtocols = [SslApplicationProtocol.Http11];
+            return denied;
         }
 
         if (sslOptions.ApplicationProtocols is null || sslOptions.ApplicationProtocols.Contains(SslApplicationProtocol.Http3))
