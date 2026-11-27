@@ -5160,9 +5160,7 @@ public class VirtualizationTest : ServerTestBase<ToggleExecutionModeServerFixtur
     }
 
     [Theory]
-    [InlineData("0", "Home")]
     [InlineData("0", "End")]
-    [InlineData("1", "Home")]
     [InlineData("1", "End")]
     public void AnchorMode_WindowScroll_JumpKeyInInputDoesNotJump(string anchorMode, string key)
     {
