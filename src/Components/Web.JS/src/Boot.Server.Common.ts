@@ -43,6 +43,7 @@ export function startServer(components: RootComponentManager<ServerComponentDesc
 async function startServerCore(components: RootComponentManager<ServerComponentDescriptor>, jsEventRegistry: JSEventRegistry) {
   options = resolveOptions(await circuitOptionsPromise);
   const jsInitializer = await fetchAndInvokeInitializers(options);
+  options = resolveOptions(options);
 
   appState = discoverServerPersistedState(document) || '';
   logger = new ConsoleLogger(options.logLevel);
