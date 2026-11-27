@@ -362,48 +362,58 @@ public static class DotNetDispatcher
     /// </exception>
     public static void EndInvokeJS(JSRuntime jsRuntime, [StringSyntax(StringSyntaxAttribute.Json)] string arguments)
     {
-        var utf8JsonBytes = Encoding.UTF8.GetBytes(arguments);
-
-        // The payload that we're trying to parse is of the format
-        // [ taskId: long, success: boolean, value: string? | object ]
-        // where value is the .NET type T originally specified on InvokeAsync<T> or the error string if success is false.
-        // We parse the first two arguments and call in to JSRuntimeBase to deserialize the actual value.
-
-        var reader = new Utf8JsonReader(utf8JsonBytes);
-
-        if (!reader.Read() || reader.TokenType != JsonTokenType.StartArray)
-        {
-            throw new JsonException("Invalid JSON");
-        }
-
-        reader.Read();
-        var taskId = reader.GetInt64();
-
-        reader.Read();
-        var success = reader.GetBoolean();
-
-        // JS holds the AbortSignals of a successful result until .NET has processed it, whether the value is read,
-        // ignored, or fails to deserialize. JS writes each one as an object with this key.
-        var carriesAbortSignals = success && arguments.Contains("\"__abortSignal\"", StringComparison.Ordinal);
+        var count = Encoding.UTF8.GetByteCount(arguments);
+        var buffer = ArrayPool<byte>.Shared.Rent(count);
         try
         {
-            reader.Read();
-            if (!jsRuntime.EndInvokeJS(taskId, success, ref reader))
-            {
-                return;
-            }
+            var receivedBytes = Encoding.UTF8.GetBytes(arguments, buffer);
+            Debug.Assert(count == receivedBytes);
 
-            if (!reader.Read() || reader.TokenType != JsonTokenType.EndArray)
+            // The payload that we're trying to parse is of the format
+            // [ taskId: long, success: boolean, value: string? | object ]
+            // where value is the .NET type T originally specified on InvokeAsync<T> or the error string if success is false.
+            // We parse the first two arguments and call in to JSRuntimeBase to deserialize the actual value.
+
+            var reader = new Utf8JsonReader(buffer.AsSpan(0, count));
+
+            if (!reader.Read() || reader.TokenType != JsonTokenType.StartArray)
             {
                 throw new JsonException("Invalid JSON");
+            }
+
+            reader.Read();
+            var taskId = reader.GetInt64();
+
+            reader.Read();
+            var success = reader.GetBoolean();
+
+            // JS holds the AbortSignals of a successful result until .NET has processed it, whether the value is read,
+            // ignored, or fails to deserialize. JS writes each one as an object with this key.
+            var carriesAbortSignals = success && arguments.Contains("\"__abortSignal\"", StringComparison.Ordinal);
+            try
+            {
+                reader.Read();
+                if (!jsRuntime.EndInvokeJS(taskId, success, ref reader))
+                {
+                    return;
+                }
+
+                if (!reader.Read() || reader.TokenType != JsonTokenType.EndArray)
+                {
+                    throw new JsonException("Invalid JSON");
+                }
+            }
+            finally
+            {
+                if (carriesAbortSignals)
+                {
+                    jsRuntime.SendAbortSignalResultRead(taskId);
+                }
             }
         }
         finally
         {
-            if (carriesAbortSignals)
-            {
-                jsRuntime.SendAbortSignalResultRead(taskId);
-            }
+            ArrayPool<byte>.Shared.Return(buffer);
         }
     }
 
