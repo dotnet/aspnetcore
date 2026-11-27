@@ -21,7 +21,7 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits;
 internal partial class CircuitHost : IAsyncDisposable
 #pragma warning restore CA1852 // Seal internal types
 {
-    private const int MaxPendingRootComponentUpdates = 10;
+    private const int MaxRootComponentUpdates = 10;
     private readonly AsyncServiceScope _scope;
     private readonly CircuitOptions _options;
     private readonly RemoteNavigationManager _navigationManager;
@@ -30,6 +30,7 @@ internal partial class CircuitHost : IAsyncDisposable
     private readonly CircuitActivitySource _circuitActivitySource;
     private readonly object _rootComponentUpdateLock = new();
     private readonly CancellationTokenSource _rootComponentUpdateCancellation = new();
+    private readonly SemaphoreSlim _rootComponentUpdateSlots = new(MaxRootComponentUpdates);
     private Func<Func<Task>, Task> _dispatchInboundActivity;
     private CircuitHandler[] _circuitHandlers;
     private bool _initialized;
@@ -37,8 +38,6 @@ internal partial class CircuitHost : IAsyncDisposable
     private bool _onConnectionUpFired;
     private bool _onConnectionDownFired;
     private bool _disposed;
-    private bool _rootComponentUpdateQueueOverflowed;
-    private int _pendingRootComponentUpdates;
     private Task<bool> _rootComponentOperationsTask = Task.FromResult(true);
     private long _startTime;
     private ResumedPersistedCircuitState _persistedCircuitState;
@@ -787,44 +786,77 @@ internal partial class CircuitHost : IAsyncDisposable
     {
         Log.UpdateRootComponentsStarted(_logger);
 
-        var reportQueueOverflow = false;
+        return UpdateRootComponentsWithAdmissionAsync(operationBatch, store, isRestore, cancellation);
+    }
+
+    internal async Task AcceptRootComponents(
+        RootComponentOperationBatch operationBatch,
+        IClearableStore store,
+        bool isRestore,
+        CancellationToken cancellation)
+    {
+        if (!await WaitForRootComponentUpdateSlotAsync())
+        {
+            store?.Clear();
+            return;
+        }
+
+        _ = StartRootComponentsUpdate(operationBatch, store, isRestore, cancellation);
+    }
+
+    private async Task UpdateRootComponentsWithAdmissionAsync(
+        RootComponentOperationBatch operationBatch,
+        IClearableStore store,
+        bool isRestore,
+        CancellationToken cancellation)
+    {
+        if (!await WaitForRootComponentUpdateSlotAsync())
+        {
+            store?.Clear();
+            return;
+        }
+
+        await StartRootComponentsUpdate(operationBatch, store, isRestore, cancellation);
+    }
+
+    private async Task<bool> WaitForRootComponentUpdateSlotAsync()
+    {
+        try
+        {
+            await _rootComponentUpdateSlots.WaitAsync(_rootComponentUpdateCancellation.Token);
+            return true;
+        }
+        catch (OperationCanceledException)
+        {
+            return false;
+        }
+    }
+
+    private Task StartRootComponentsUpdate(
+        RootComponentOperationBatch operationBatch,
+        IClearableStore store,
+        bool isRestore,
+        CancellationToken cancellation)
+    {
         lock (_rootComponentUpdateLock)
         {
-            if (!_rootComponentUpdateCancellation.IsCancellationRequested && !_rootComponentUpdateQueueOverflowed)
+            if (!_rootComponentUpdateCancellation.IsCancellationRequested)
             {
-                if (_pendingRootComponentUpdates >= MaxPendingRootComponentUpdates)
-                {
-                    _rootComponentUpdateQueueOverflowed = true;
-                    reportQueueOverflow = true;
-                }
-                else
-                {
-                    _pendingRootComponentUpdates++;
-                    var previousOperations = _rootComponentOperationsTask;
-                    var operationsApplied = new TaskCompletionSource<bool>(TaskCreationOptions.RunContinuationsAsynchronously);
-                    _rootComponentOperationsTask = operationsApplied.Task;
-                    return UpdateRootComponentsCore(
-                        previousOperations,
-                        operationsApplied,
-                        operationBatch,
-                        store,
-                        isRestore,
-                        cancellation);
-                }
+                var previousOperations = _rootComponentOperationsTask;
+                var operationsApplied = new TaskCompletionSource<bool>(TaskCreationOptions.RunContinuationsAsynchronously);
+                _rootComponentOperationsTask = operationsApplied.Task;
+                return UpdateRootComponentsCore(
+                    previousOperations,
+                    operationsApplied,
+                    operationBatch,
+                    store,
+                    isRestore,
+                    cancellation);
             }
         }
 
         store?.Clear();
-        return reportQueueOverflow ? ReportRootComponentUpdateQueueOverflowAsync() : Task.CompletedTask;
-    }
-
-    private Task ReportRootComponentUpdateQueueOverflowAsync()
-    {
-        var exception = new InvalidOperationException("The maximum number of pending root component updates has been exceeded.");
-        Log.RootComponentUpdateQueueOverflow(_logger, CircuitId, MaxPendingRootComponentUpdates, exception);
-        _ = TryNotifyClientErrorAsync(Client, GetClientErrorMessage(exception), exception);
-        UnhandledException?.Invoke(this, new UnhandledExceptionEventArgs(exception, isTerminating: false));
-
+    _rootComponentUpdateSlots.Release();
         return Task.CompletedTask;
     }
 
@@ -834,7 +866,6 @@ internal partial class CircuitHost : IAsyncDisposable
         {
             if (!operationsApplied.Task.IsCompleted)
             {
-                _pendingRootComponentUpdates--;
                 operationsApplied.SetResult(succeeded);
             }
         }
@@ -891,6 +922,7 @@ internal partial class CircuitHost : IAsyncDisposable
         finally
         {
             CompleteRootComponentOperations(operationsApplied, succeeded: false);
+            _rootComponentUpdateSlots.Release();
         }
     }
 
@@ -1019,7 +1051,7 @@ internal partial class CircuitHost : IAsyncDisposable
         webRootComponentManager.SetCurrentUpdateTask(postStateTask);
 
         var pendingTasks = shouldWaitForQuiescence
-            ? new Task[operations.Length]
+            ? new List<Task>()
             : null;
 
         // The inbound activity pipeline needs to be awaited because it populates
@@ -1039,7 +1071,7 @@ internal partial class CircuitHost : IAsyncDisposable
                             operation.Descriptor.Parameters,
                             onComponentInitializationFailed);
 
-                        pendingTasks?[i] = task;
+                        pendingTasks?.Add(task);
                         break;
                     case RootComponentOperationType.Update:
                         // We don't need to await component updates as any unhandled exception will be reported and terminate the circuit.
@@ -1060,7 +1092,7 @@ internal partial class CircuitHost : IAsyncDisposable
 
         CompleteRootComponentOperations(operationsApplied, succeeded: true);
 
-        if (pendingTasks != null)
+        if (pendingTasks is not null)
         {
             await Task.WhenAll(pendingTasks);
         }
@@ -1244,9 +1276,6 @@ internal partial class CircuitHost : IAsyncDisposable
 
         [LoggerMessage(117, LogLevel.Error, "Root component initialization failed.", EventName = nameof(RootComponentInitializationFailed))]
         public static partial void RootComponentInitializationFailed(ILogger logger, Exception exception);
-
-        [LoggerMessage(118, LogLevel.Error, "Circuit '{CircuitId}' exceeded the limit of {MaxPendingRootComponentUpdates} pending root component updates.", EventName = nameof(RootComponentUpdateQueueOverflow))]
-        public static partial void RootComponentUpdateQueueOverflow(ILogger logger, CircuitId circuitId, int maxPendingRootComponentUpdates, Exception exception);
 
         [LoggerMessage(200, LogLevel.Debug, "Failed to parse the event data when trying to dispatch an event.", EventName = "DispatchEventFailedToParseEventData")]
         public static partial void DispatchEventFailedToParseEventData(ILogger logger, Exception ex);
