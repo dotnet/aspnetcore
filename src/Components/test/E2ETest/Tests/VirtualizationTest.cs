@@ -550,58 +550,43 @@ public class VirtualizationTest : ServerTestBase<ToggleExecutionModeServerFixtur
     }
 
     [Fact]
-    public void FractionalRowHeights_DeepWheelScrollRendersRowAtViewportCenter()
+    public void FractionalRowHeights_WheelScrollWhileLoading_DoesNotLeaveViewportBlank()
     {
         Browser.MountTestComponent<VirtualizationComponent>();
         Browser.Exists(By.Id("show-fractional-table")).Click();
         var container = Browser.Exists(By.Id("fractional-rows-container"));
-        var finishLoadingButton = Browser.Exists(By.Id("finish-loading-fractional"));
         var js = (IJavaScriptExecutor)Browser;
-        finishLoadingButton.Click();
         Browser.Exists(By.CssSelector("#fractional-rows-container .item[data-index='0']"));
-        LoadUntilNoPlaceholders();
         WaitForRenderToSettle(container, js);
+        Browser.True(() => (bool)js.ExecuteScript("""
+            const row = arguments[0].querySelector('.item');
+            return row && row.getBoundingClientRect().height !== row.offsetHeight;
+            """, container));
 
-        // Move a few rows down so the spacer before the rendered rows has a non-integer height.
-        ScrollContainerWithWheelTo(js, container, 200);
-        LoadUntilNoPlaceholders();
-        WaitForRenderToSettle(container, js);
-        var spacerBefore = container.FindElement(By.CssSelector("tbody > tr[data-blazor-virtualize-reserved-height]"));
-        Browser.True(() => (bool)js.ExecuteScript(
-            "const s = arguments[0]; return s.offsetHeight > 0 && s.getBoundingClientRect().height !== s.offsetHeight;",
-            spacerBefore));
-
-        ScrollContainerWithWheelTo(js, container, 1_000_000);
-        Browser.True(() => GetElementCount(container, ".placeholder") > 0);
-        LoadUntilNoPlaceholders();
-        WaitForRenderToSettle(container, js);
-        LoadUntilNoPlaceholders();
-
-        // The scaled spacer measurements place rendered rows at the wrong distance without the fix,
-        // so the row under the viewport center is many rows away from the one at that scroll offset.
-        var scrollTop = (double)GetScrollTop(js, container);
-        var centerIndex = GetCenterRowIndex(js, container);
-        var expectedCenterIndex = (long)((scrollTop + container.Size.Height / 2) / 20.453125);
-        Assert.True(scrollTop > 900_000, $"Expected a deep scroll position, got scrollTop={scrollTop}.");
-        Assert.True(Math.Abs(centerIndex - expectedCenterIndex) <= 2,
-            $"Row {centerIndex} is at the viewport center but row {expectedCenterIndex} is expected at scrollTop={scrollTop}.");
-
-        void LoadUntilNoPlaceholders() => Browser.True(() =>
+        Browser.Exists(By.Id("pause-fractional-loads")).Click();
+        Browser.Equal("Paused", () => Browser.Exists(By.Id("fractional-load-status")).Text);
+        for (long scrollTop = 120; scrollTop <= 720; scrollTop += 120)
         {
-            if (GetElementCount(container, ".placeholder") > 0)
-            {
-                finishLoadingButton.Click();
-                return false;
-            }
+            ScrollContainerWithWheelTo(js, container, (int)scrollTop);
+            Browser.Equal(scrollTop, () => GetScrollTop(js, container));
+        }
 
-            return true;
-        });
+        Browser.True(() => GetElementCount(container, ".placeholder") > 0
+            && GetElementCount(container, "[data-blazor-virtualize-loading]") > 0);
 
-        static long GetCenterRowIndex(IJavaScriptExecutor js, IWebElement container) => (long)js.ExecuteScript("""
-            const rect = arguments[0].getBoundingClientRect();
-            const row = document.elementFromPoint(rect.left + 5, rect.top + rect.height / 2)?.closest('.item');
-            return row ? Number(row.dataset.index) : -1;
-            """, container);
+        for (long scrollTop = 840; scrollTop <= 3000; scrollTop += 120)
+        {
+            ScrollContainerWithWheelTo(js, container, (int)scrollTop);
+            Browser.Equal(scrollTop, () => GetScrollTop(js, container));
+        }
+
+        Browser.True(() => GetElementCount(container, ".placeholder") > 0
+            && GetElementCount(container, ".item") == 0
+            && GetElementCount(container, "[data-blazor-virtualize-loading]") > 0);
+        Browser.Exists(By.Id("release-fractional-loads")).Click();
+        Browser.Equal("Running", () => Browser.Exists(By.Id("fractional-load-status")).Text);
+        Browser.Equal(0, () => GetElementCount(container, "[data-blazor-virtualize-loading]"));
+        WaitForRenderToSettle(container, js);
     }
 
     [Theory]
