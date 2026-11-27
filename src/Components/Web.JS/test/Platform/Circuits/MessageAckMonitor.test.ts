@@ -2,7 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 import { afterEach, beforeEach, describe, expect, jest, test } from '@jest/globals';
-import { HubConnection, HubConnectionBuilder, HubConnectionState, LogLevel } from '@microsoft/signalr';
+import { HttpError, HubConnection, HubConnectionBuilder, HubConnectionState, LogLevel, TimeoutError } from '@microsoft/signalr';
 import { MessageAckMonitor } from '../../../src/Platform/Circuits/MessageAckMonitor';
 import { ConsoleLogger } from '../../../src/Platform/Logging/Loggers';
 
@@ -78,21 +78,77 @@ describe('MessageAckMonitor', () => {
     expect(logger.log).not.toHaveBeenCalled();
   });
 
-  test('a rejected monitored invocation stops the connection once and cancels its deadline', async () => {
-    const error = new Error('The invocation failed.');
+  test('a server error completion cancels its deadline without stopping the connection', async () => {
+    const error = new Error('An unexpected error occurred invoking hub method.');
     const acknowledgement = Promise.reject(error);
     jest.spyOn(connection, 'invoke').mockReturnValue(acknowledgement);
-    const monitor = new MessageAckMonitor(connection, 2000, logger);
+    const onFailure = jest.fn();
+    const monitor = new MessageAckMonitor(connection, 2000, logger, onFailure);
+
+    const sending = monitor.send('OnLocationChanged', '/next', undefined, true);
+
+    expect(sending).toBe(acknowledgement);
+    await expect(sending).rejects.toBe(error);
+    expect(connection.stop).not.toHaveBeenCalled();
+    expect(onFailure).not.toHaveBeenCalled();
+    expect(logger.log).not.toHaveBeenCalled();
+    expect(jest.getTimerCount()).toBe(0);
+    jest.advanceTimersByTime(2000);
+    expect(connection.stop).not.toHaveBeenCalled();
+    expect(onFailure).not.toHaveBeenCalled();
+  });
+
+  test.each([
+    new HttpError('Bad Gateway', 502),
+    new TimeoutError('Request timed out.'),
+    new TypeError('Failed to fetch'),
+  ])('a transport delivery failure (%p) stops the connection once and notifies failure immediately', async (error) => {
+    const acknowledgement = Promise.reject(error);
+    jest.spyOn(connection, 'invoke').mockReturnValue(acknowledgement);
+    const onFailure = jest.fn();
+    const monitor = new MessageAckMonitor(connection, 2000, logger, onFailure);
 
     const sending = monitor.send('OnLocationChanged', '/next', undefined, true);
 
     expect(sending).toBe(acknowledgement);
     await expect(sending).rejects.toBe(error);
     expect(connection.stop).toHaveBeenCalledTimes(1);
+    expect(onFailure).toHaveBeenCalledTimes(1);
+    expect(onFailure).toHaveBeenCalledWith(error);
     expect(logger.log).toHaveBeenCalledWith(LogLevel.Warning, error);
     expect(jest.getTimerCount()).toBe(0);
     jest.advanceTimersByTime(2000);
     expect(connection.stop).toHaveBeenCalledTimes(1);
+    expect(onFailure).toHaveBeenCalledTimes(1);
+  });
+
+  test('a HubConnection._sendWithProtocol failure stops the connection even for a generic Error', async () => {
+    const transportError = new Error('Custom transport send failed.');
+    (connection as unknown as { _sendWithProtocol: () => Promise<void> })._sendWithProtocol = jest.fn(() => Promise.reject(transportError));
+    const onFailure = jest.fn();
+    const monitor = new MessageAckMonitor(connection, 2000, logger, onFailure);
+
+    const sending = monitor.send('BeginInvokeDotNetFromJS');
+
+    await expect(sending).rejects.toBe(transportError);
+    expect(connection.stop).toHaveBeenCalledTimes(1);
+    expect(onFailure).toHaveBeenCalledTimes(1);
+    expect(onFailure).toHaveBeenCalledWith(transportError);
+    expect(jest.getTimerCount()).toBe(0);
+  });
+
+  test('timeout invokes onFailure immediately even when connection.stop remains pending', () => {
+    jest.spyOn(connection, 'invoke').mockReturnValue(new Promise<void>(() => { /* pending */ }));
+    jest.spyOn(connection, 'stop').mockReturnValue(new Promise<void>(() => { /* stalled DELETE */ }));
+    const onFailure = jest.fn();
+    const monitor = new MessageAckMonitor(connection, 2000, logger, onFailure);
+
+    monitor.send('BeginInvokeDotNetFromJS');
+
+    jest.advanceTimersByTime(2000);
+    expect(connection.stop).toHaveBeenCalledTimes(1);
+    expect(onFailure).toHaveBeenCalledTimes(1);
+    expect(logger.log).toHaveBeenCalledTimes(1);
   });
 
   test('a later acknowledgement does not extend an earlier message deadline', async () => {

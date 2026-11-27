@@ -17,9 +17,8 @@ export interface CircuitStartOptions {
   configureSignalR: (builder: HubConnectionBuilder) => void;
   logLevel: LogLevel;
   /**
-   * Maximum time to wait for a monitored hub method to complete, in milliseconds.
-   * This does not await asynchronous application work. Defaults to 2000; zero disables monitoring.
-   * High latency or synchronous server work can exceed this deadline even on a live connection.
+   * Maximum time to wait for a monitored hub invocation to be acknowledged by the server, in milliseconds.
+   * Defaults to 2000; zero disables monitoring.
    */
   messageAckTimeoutMilliseconds: number;
   reconnectionOptions: ReconnectionOptions;
@@ -28,11 +27,16 @@ export interface CircuitStartOptions {
   circuitHandlers: CircuitHandler[];
 }
 
-export function resolveOptions(userOptions?: Partial<CircuitStartOptions>): CircuitStartOptions {
-  const result = { ...defaultOptions, ...userOptions };
-  if (!Number.isInteger(result.messageAckTimeoutMilliseconds) || result.messageAckTimeoutMilliseconds < 0 || result.messageAckTimeoutMilliseconds > 2147483647) {
+export function validateCircuitOptions(options: Partial<CircuitStartOptions>): void {
+  const timeout = options.messageAckTimeoutMilliseconds;
+  if (typeof timeout !== 'number' || !Number.isInteger(timeout) || timeout < 0 || timeout > 2147483647) {
     throw new Error('messageAckTimeoutMilliseconds must be an integer between 0 and 2147483647.');
   }
+}
+
+export function resolveOptions(userOptions?: Partial<CircuitStartOptions>): CircuitStartOptions {
+  const result = { ...defaultOptions, ...userOptions };
+  validateCircuitOptions(result);
   // The spread operator can't be used for a deep merge, so do the same for subproperties
   if (userOptions && userOptions.reconnectionOptions) {
     result.reconnectionOptions = { ...defaultOptions.reconnectionOptions, ...userOptions.reconnectionOptions };

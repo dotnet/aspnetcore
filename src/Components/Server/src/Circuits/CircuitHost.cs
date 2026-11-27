@@ -27,6 +27,8 @@ internal partial class CircuitHost : IAsyncDisposable
     private readonly ILogger _logger;
     private readonly CircuitMetrics _circuitMetrics;
     private readonly CircuitActivitySource _circuitActivitySource;
+    private readonly object _inboundWorkLock = new();
+    private Task _inboundWorkQueue = Task.CompletedTask;
     private Func<Func<Task>, Task> _dispatchInboundActivity;
     private CircuitHandler[] _circuitHandlers;
     private bool _initialized;
@@ -660,6 +662,42 @@ internal partial class CircuitHost : IAsyncDisposable
         // Note that while the rendering is async, we cannot await it here. The Task returned by ProcessBufferedRenderBatches relies on
         // OnRenderCompletedAsync to be invoked to complete, and SignalR does not allow concurrent hub method invocations.
         _ = Renderer.Dispatcher.InvokeAsync(Renderer.ProcessBufferedRenderBatches);
+    }
+
+    // Internal for testing.
+    internal void EnqueueInboundCall(Func<Task> work)
+    {
+        lock (_inboundWorkLock)
+        {
+            if (_disposed)
+            {
+                return;
+            }
+
+            _inboundWorkQueue = DispatchInboundCallAsync(_inboundWorkQueue, work);
+        }
+
+        async Task DispatchInboundCallAsync(Task antecedent, Func<Task> work)
+        {
+            await antecedent.ConfigureAwait(ConfigureAwaitOptions.SuppressThrowing | ConfigureAwaitOptions.ForceYielding);
+            if (_disposed)
+            {
+                return;
+            }
+
+            _ = ObserveDisposedAsync(this, work());
+        }
+
+        static async Task ObserveDisposedAsync(CircuitHost host, Task task)
+        {
+            try
+            {
+                await task.ConfigureAwait(false);
+            }
+            catch (ObjectDisposedException) when (host._disposed)
+            {
+            }
+        }
     }
 
     // Internal for testing.

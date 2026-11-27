@@ -53,6 +53,46 @@ test('server startup rejects when beforeWebStart supplies an invalid acknowledge
   await expect(startCircuit()).rejects.toThrow(invalidTimeoutError);
 });
 
+test('server startup preserves reconnectionOptions without maxRetries when beforeServerStart updates options', async () => {
+  const { setCircuitOptions, startServer } = await import('../src/Boot.Server.Common');
+  const { JSInitializer } = await import('../src/JSInitializers/JSInitializers');
+  const { resolveOptions } = await import('../src/Platform/Circuits/CircuitStartOptions');
+  const { CircuitManager } = await import('../src/Platform/Circuits/CircuitManager');
+  const { JSEventRegistry } = await import('../src/Services/JSEventRegistry');
+
+  let capturedOptions: CircuitStartOptions | undefined;
+  jest.spyOn(CircuitManager.prototype, 'start').mockImplementation(function(this: { _options: CircuitStartOptions }) {
+    capturedOptions = this._options;
+    return Promise.resolve(false);
+  });
+
+  const circuitOptions = resolveOptions();
+  const options: Partial<WebStartOptions> = { circuit: circuitOptions };
+  const initializer = new JSInitializer(false);
+  const assets = [
+    {
+      moduleExports: {
+        beforeServerStart: (serverOptions: Partial<CircuitStartOptions>) => {
+          serverOptions.messageAckTimeoutMilliseconds = 1500;
+          serverOptions.reconnectionOptions = {
+            retryIntervalMilliseconds: () => 500,
+            dialogId: 'custom-reconnect-modal',
+          };
+        },
+      },
+    },
+  ];
+  await initializer.importInitializersAsync(assets, [options]);
+  setCircuitOptions(Promise.resolve(circuitOptions));
+
+  await startServer(createRootComponentManager(), new JSEventRegistry());
+
+  expect(capturedOptions).toBeDefined();
+  expect(capturedOptions?.messageAckTimeoutMilliseconds).toBe(1500);
+  expect(capturedOptions?.reconnectionOptions.maxRetries).toBeUndefined();
+  expect(capturedOptions?.reconnectionOptions.dialogId).toBe('custom-reconnect-modal');
+});
+
 test('server startup rejects when beforeServerStart supplies an invalid acknowledgement timeout in web mode', async () => {
   const { setCircuitOptions, startCircuit, startServer } = await import('../src/Boot.Server.Common');
   const { JSInitializer } = await import('../src/JSInitializers/JSInitializers');
@@ -78,6 +118,46 @@ test('server startup rejects when beforeServerStart supplies an invalid acknowle
 
   await expect(starting).rejects.toThrow(invalidTimeoutError);
   await expect(startCircuit()).rejects.toThrow(invalidTimeoutError);
+});
+
+test('server startup preserves reconnectionOptions without maxRetries when beforeServerStart updates options', async () => {
+  const { setCircuitOptions, startServer } = await import('../src/Boot.Server.Common');
+  const { JSInitializer } = await import('../src/JSInitializers/JSInitializers');
+  const { resolveOptions } = await import('../src/Platform/Circuits/CircuitStartOptions');
+  const { CircuitManager } = await import('../src/Platform/Circuits/CircuitManager');
+  const { JSEventRegistry } = await import('../src/Services/JSEventRegistry');
+
+  let capturedOptions: CircuitStartOptions | undefined;
+  jest.spyOn(CircuitManager.prototype, 'start').mockImplementation(function(this: { _options: CircuitStartOptions }) {
+    capturedOptions = this._options;
+    return Promise.resolve(false);
+  });
+
+  const circuitOptions = resolveOptions();
+  const options: Partial<WebStartOptions> = { circuit: circuitOptions };
+  const initializer = new JSInitializer(false);
+  const assets = [
+    {
+      moduleExports: {
+        beforeServerStart: (serverOptions: Partial<CircuitStartOptions>) => {
+          serverOptions.messageAckTimeoutMilliseconds = 1500;
+          serverOptions.reconnectionOptions = {
+            retryIntervalMilliseconds: () => 500,
+            dialogId: 'custom-reconnect-modal',
+          };
+        },
+      },
+    },
+  ];
+  await initializer.importInitializersAsync(assets, [options]);
+  setCircuitOptions(Promise.resolve(circuitOptions));
+
+  await startServer(createRootComponentManager(), new JSEventRegistry());
+
+  expect(capturedOptions).toBeDefined();
+  expect(capturedOptions?.messageAckTimeoutMilliseconds).toBe(1500);
+  expect(capturedOptions?.reconnectionOptions.maxRetries).toBeUndefined();
+  expect(capturedOptions?.reconnectionOptions.dialogId).toBe('custom-reconnect-modal');
 });
 
 test.each(['beforeServerStart', 'beforeStart'])('server startup rejects when standalone %s supplies an invalid acknowledgement timeout', async (hookName) => {
@@ -110,4 +190,44 @@ test.each(['beforeServerStart', 'beforeStart'])('server startup rejects when sta
 
   await expect(starting).rejects.toThrow(invalidTimeoutError);
   await expect(startCircuit()).rejects.toThrow(invalidTimeoutError);
+});
+
+test('server startup preserves reconnectionOptions without maxRetries when beforeServerStart updates options', async () => {
+  const { setCircuitOptions, startServer } = await import('../src/Boot.Server.Common');
+  const { JSInitializer } = await import('../src/JSInitializers/JSInitializers');
+  const { resolveOptions } = await import('../src/Platform/Circuits/CircuitStartOptions');
+  const { CircuitManager } = await import('../src/Platform/Circuits/CircuitManager');
+  const { JSEventRegistry } = await import('../src/Services/JSEventRegistry');
+
+  let capturedOptions: CircuitStartOptions | undefined;
+  jest.spyOn(CircuitManager.prototype, 'start').mockImplementation(function(this: { _options: CircuitStartOptions }) {
+    capturedOptions = this._options;
+    return Promise.resolve(false);
+  });
+
+  const circuitOptions = resolveOptions();
+  const options: Partial<WebStartOptions> = { circuit: circuitOptions };
+  const initializer = new JSInitializer(false);
+  const assets = [
+    {
+      moduleExports: {
+        beforeServerStart: (serverOptions: Partial<CircuitStartOptions>) => {
+          serverOptions.messageAckTimeoutMilliseconds = 1500;
+          serverOptions.reconnectionOptions = {
+            retryIntervalMilliseconds: () => 500,
+            dialogId: 'custom-reconnect-modal',
+          };
+        },
+      },
+    },
+  ];
+  await initializer.importInitializersAsync(assets, [options]);
+  setCircuitOptions(Promise.resolve(circuitOptions));
+
+  await startServer(createRootComponentManager(), new JSEventRegistry());
+
+  expect(capturedOptions).toBeDefined();
+  expect(capturedOptions?.messageAckTimeoutMilliseconds).toBe(1500);
+  expect(capturedOptions?.reconnectionOptions.maxRetries).toBeUndefined();
+  expect(capturedOptions?.reconnectionOptions.dialogId).toBe('custom-reconnect-modal');
 });

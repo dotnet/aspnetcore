@@ -254,6 +254,8 @@ async function onBrowserInitiatedPopState(state: PopStateEvent) {
     await navigateHistoryWithoutPopStateCallback(delta);
   }
 
+  currentHistoryIndex = history.state?._index ?? 0;
+
   // We don't know if popstate was triggered for a navigation that can be handled by the client-side router,
   // so we treat it as a intercepted link to be safe.
   await notifyLocationChanged(/* interceptedLink */ true);

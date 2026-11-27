@@ -489,7 +489,7 @@ internal sealed partial class ComponentHub : Hub
             return;
         }
 
-        _ = circuitHost.BeginInvokeDotNetFromJS(callId, assemblyName, methodIdentifier, dotNetObjectId, argsJson);
+        circuitHost.EnqueueInboundCall(() => circuitHost.BeginInvokeDotNetFromJS(callId, assemblyName, methodIdentifier, dotNetObjectId, argsJson));
     }
 
     public async ValueTask EndInvokeJSFromDotNet(long asyncHandle, bool succeeded, string arguments)
@@ -500,7 +500,7 @@ internal sealed partial class ComponentHub : Hub
             return;
         }
 
-        _ = circuitHost.EndInvokeJSFromDotNet(asyncHandle, succeeded, arguments);
+        circuitHost.EnqueueInboundCall(() => circuitHost.EndInvokeJSFromDotNet(asyncHandle, succeeded, arguments));
     }
 
     public async ValueTask ReceiveByteArray(int id, byte[] data)
@@ -511,7 +511,7 @@ internal sealed partial class ComponentHub : Hub
             return;
         }
 
-        _ = circuitHost.ReceiveByteArray(id, data);
+        circuitHost.EnqueueInboundCall(() => circuitHost.ReceiveByteArray(id, data));
     }
 
     public async ValueTask<bool> ReceiveJSDataChunk(long streamId, long chunkId, byte[] chunk, string error)
@@ -585,7 +585,7 @@ internal sealed partial class ComponentHub : Hub
             return;
         }
 
-        _ = circuitHost.OnLocationChangedAsync(uri, state, intercepted);
+        circuitHost.EnqueueInboundCall(() => circuitHost.OnLocationChangedAsync(uri, state, intercepted));
     }
 
     public async ValueTask OnLocationChanging(int callId, string uri, string? state, bool intercepted)
@@ -596,7 +596,7 @@ internal sealed partial class ComponentHub : Hub
             return;
         }
 
-        _ = circuitHost.OnLocationChangingAsync(callId, uri, state, intercepted);
+        circuitHost.EnqueueInboundCall(() => circuitHost.OnLocationChangingAsync(callId, uri, state, intercepted));
     }
 
     // We store the CircuitHost through a *handle* here because Context.Items is tied to the lifetime
