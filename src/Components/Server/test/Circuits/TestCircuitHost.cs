@@ -28,11 +28,13 @@ internal class TestCircuitHost : CircuitHost
         RemoteRenderer remoteRenderer = null,
         IReadOnlyList<ComponentDescriptor> descriptors = null,
         CircuitHandler[] handlers = null,
-        CircuitClientProxy clientProxy = null)
+        CircuitClientProxy clientProxy = null,
+        RemoteJSRuntime jsRuntime = null,
+        RemoteNavigationManager navigationManager = null)
     {
         clientProxy = clientProxy ?? new CircuitClientProxy(Mock.Of<ISingleClientProxy>(), Guid.NewGuid().ToString());
-        var jsRuntime = new RemoteJSRuntime(Options.Create(new CircuitOptions()), Options.Create(new HubOptions<ComponentHub>()), Mock.Of<ILogger<RemoteJSRuntime>>());
-        var navigationManager = new RemoteNavigationManager(Mock.Of<ILogger<RemoteNavigationManager>>());
+        jsRuntime ??= new RemoteJSRuntime(Options.Create(new CircuitOptions()), Options.Create(new HubOptions<ComponentHub>()), Mock.Of<ILogger<RemoteJSRuntime>>());
+        navigationManager ??= new RemoteNavigationManager(Mock.Of<ILogger<RemoteNavigationManager>>());
         var componentsActivitySource = new ComponentsActivitySource();
         var circuitActivitySource = new CircuitActivitySource();
         var persistenceManager = new ComponentStatePersistenceManager(

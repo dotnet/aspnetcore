@@ -8,9 +8,12 @@ using System.Text.Json;
 using Microsoft.AspNetCore.Components.Endpoints;
 using Microsoft.AspNetCore.Components.Rendering;
 using Microsoft.AspNetCore.DataProtection;
+using Microsoft.AspNetCore.InternalTesting;
 using Microsoft.AspNetCore.SignalR;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
+using Microsoft.Extensions.Logging.Testing;
 using Microsoft.Extensions.Options;
 using Microsoft.JSInterop;
 using Moq;
@@ -154,6 +157,64 @@ public class CircuitHostTest
         {
             Assert.Same(componentException, eventArgs.ExceptionObject);
         });
+    }
+
+    [Fact]
+    public async Task DisposeAsync_StopsPendingNavigationWhenInteropTimesOut()
+    {
+        var sink = new TestSink();
+        var navigationLogged = new TaskCompletionSource<WriteContext>(TaskCreationOptions.RunContinuationsAsynchronously);
+        sink.MessageLogged += context =>
+        {
+            if (context.EventId.Name is "NavigationStoppedSessionEnded" or "NavigationFailed")
+            {
+                navigationLogged.TrySetResult(context);
+            }
+        };
+        var invocationSent = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+        var (host, navigationManager) = CreateNavigationCircuit(sink, invocationSent);
+        await using var circuitHost = host;
+        var unhandledExceptions = new List<Exception>();
+        navigationManager.UnhandledException += (_, exception) => unhandledExceptions.Add(exception);
+
+        await circuitHost.Renderer.Dispatcher.InvokeAsync(() => navigationManager.NavigateTo("/external", forceLoad: true));
+        await invocationSent.Task.DefaultTimeout();
+        await circuitHost.DisposeAsync();
+
+        Assert.True(circuitHost.JSRuntime.IsPermanentlyDisconnected);
+        Assert.Null(circuitHost.Handle.CircuitHost);
+        Assert.False(navigationLogged.Task.IsCompleted);
+
+        var log = await navigationLogged.Task.DefaultTimeout(TimeSpan.FromSeconds(30));
+        // Failure logging precedes UnhandledException, so wait for navigation's continuation to finish.
+        await circuitHost.Renderer.Dispatcher.InvokeAsync(() => { });
+
+        Assert.Equal("NavigationStoppedSessionEnded", log.EventId.Name);
+        Assert.Equal(LogLevel.Debug, log.LogLevel);
+        Assert.DoesNotContain(sink.Writes, context => context.EventId.Name == "NavigationFailed");
+        Assert.Empty(unhandledExceptions);
+    }
+
+    [Fact]
+    public async Task NavigationTimeout_ReportsUnhandledExceptionWhileCircuitIsActive()
+    {
+        var sink = new TestSink();
+        var invocationSent = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+        var (host, navigationManager) = CreateNavigationCircuit(sink, invocationSent);
+        await using var circuitHost = host;
+        var unhandledException = new TaskCompletionSource<Exception>(TaskCreationOptions.RunContinuationsAsynchronously);
+        navigationManager.UnhandledException += (_, exception) => unhandledException.TrySetResult(exception);
+
+        await circuitHost.Renderer.Dispatcher.InvokeAsync(() => navigationManager.NavigateTo("/external", forceLoad: true));
+        await invocationSent.Task.DefaultTimeout();
+        var exception = Assert.IsType<JSException>(await unhandledException.Task.DefaultTimeout(TimeSpan.FromSeconds(30)));
+
+        Assert.False(circuitHost.JSRuntime.IsPermanentlyDisconnected);
+        Assert.IsType<TaskCanceledException>(exception.InnerException);
+        var log = Assert.Single(sink.Writes, context => context.EventId.Name == "NavigationFailed");
+        Assert.Equal(LogLevel.Error, log.LogLevel);
+        Assert.Same(exception, log.Exception);
+        Assert.DoesNotContain(sink.Writes, context => context.EventId.Name == "NavigationStoppedSessionEnded");
     }
 
     [Fact]
@@ -1380,6 +1441,27 @@ public class CircuitHostTest
     private ServerComponentDeserializer CreateDeserializer()
     {
         return new ServerComponentDeserializer(_ephemeralDataProtectionProvider, NullLogger<ServerComponentDeserializer>.Instance, new RootTypeCache(), new ComponentParameterDeserializer(NullLogger<ComponentParameterDeserializer>.Instance, new ComponentParametersTypeCache()));
+    }
+
+    private static (CircuitHost Host, RemoteNavigationManager NavigationManager) CreateNavigationCircuit(TestSink sink, TaskCompletionSource invocationSent)
+    {
+        var options = Options.Create(new CircuitOptions { JSInteropDefaultCallTimeout = TimeSpan.FromSeconds(5) });
+        var jsRuntime = new RemoteJSRuntime(options, Options.Create(new HubOptions<ComponentHub>()), NullLogger<RemoteJSRuntime>.Instance);
+        var client = new Mock<ISingleClientProxy>();
+        client.Setup(proxy => proxy.SendCoreAsync("JS.BeginInvokeJS", It.IsAny<object[]>(), It.IsAny<CancellationToken>()))
+            .Callback<string, object[], CancellationToken>((_, args, _) =>
+            {
+                Assert.Equal("Blazor._internal.navigationManager.navigateTo", args[1]);
+                invocationSent.TrySetResult();
+            })
+            .Returns(Task.CompletedTask);
+        var clientProxy = new CircuitClientProxy(client.Object, "connection");
+        jsRuntime.Initialize(clientProxy);
+        var navigationManager = new RemoteNavigationManager(new TestLoggerFactory(sink, enabled: true).CreateLogger<RemoteNavigationManager>());
+        navigationManager.Initialize("http://localhost/", "http://localhost/");
+        navigationManager.AttachJsRuntime(jsRuntime);
+
+        return (TestCircuitHost.Create(clientProxy: clientProxy, jsRuntime: jsRuntime, navigationManager: navigationManager), navigationManager);
     }
 
     private static TestRemoteRenderer GetRemoteRenderer()
