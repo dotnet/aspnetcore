@@ -56,7 +56,7 @@ internal class Endpoint
             method.Parameters.Where((parameter, index) =>
                 parameter.RefKind != RefKind.None ||
                 parameter.RefKind != invokeMethod.Parameters[index].RefKind ||
-                !AreHandlerTypesCompatible(parameter.Type, invokeMethod.Parameters[index].Type, ignoreTopLevelNullability: true)).Any())
+                !AreHandlerTypesCompatible(parameter.Type, invokeMethod.Parameters[index].Type, ignoreTopLevelNullability: true, ignoreAllNullability: !UsesDeclaredDelegateType)).Any())
         {
             Diagnostics.Add(Diagnostic.Create(DiagnosticDescriptors.UnableToResolveMethod, Operation.Syntax.GetLocation()));
             return;

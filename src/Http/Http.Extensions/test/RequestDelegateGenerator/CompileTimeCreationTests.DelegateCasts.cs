@@ -809,16 +809,8 @@ internal delegate System.Threading.Tasks.Task MaybeNullPlainTaskHandler();
         var endpoint = GetEndpointFromCompilation(compilation);
 
         var httpContext = CreateHttpContext();
-        if (hasFilter)
-        {
-            await endpoint.RequestDelegate(httpContext);
-            await VerifyResponseBodyAsync(httpContext, "");
-        }
-        else
-        {
-            var exception = await Assert.ThrowsAsync<InvalidOperationException>(() => endpoint.RequestDelegate(httpContext));
-            Assert.Equal("The Task returned by the Delegate must not be null.", exception.Message);
-        }
+        var exception = await Assert.ThrowsAsync<InvalidOperationException>(() => endpoint.RequestDelegate(httpContext));
+        Assert.Equal("The Task returned by the Delegate must not be null.", exception.Message);
     }
 
     [Theory]
@@ -938,6 +930,76 @@ app.MapGet("/", {{handler}});
         context.Request.QueryString = new QueryString("?size=5");
         await endpoint.RequestDelegate(context);
         await VerifyResponseBodyAsync(context, "size 5");
+    }
+
+    [Fact]
+    public async Task MapGet_DelegateCast_ReadonlyFieldReplacedViaOutSuppressionFallsBack()
+    {
+        var (result, compilation) = await RunDelegateCastGeneratorAsync("""
+app.MapGet("/", new OutSuppressionFieldHolder().Handler);
+""", additionalSource: """
+#nullable enable
+internal sealed class OutSuppressionFieldHolder
+{
+    internal readonly SizeHandler Handler = Initial;
+
+    internal OutSuppressionFieldHolder()
+    {
+        Replace(out Handler!);
+    }
+
+    private static void Replace(out SizeHandler? handler) => handler = Replacement;
+    private static string Initial(int size) => $"initial {size}";
+    private static string Replacement(int count) => $"replacement {count}";
+}
+""", nullableEnabled: true);
+        Assert.Equal(DiagnosticDescriptors.UnableToResolveMethod.Id, Assert.Single(result.Diagnostics).Id);
+        var endpoint = GetEndpointFromCompilation(compilation, expectGeneratedCodeOverride: false);
+        var httpContext = CreateHttpContext();
+        httpContext.Request.QueryString = new QueryString("?count=5");
+        await endpoint.RequestDelegate(httpContext);
+        await VerifyResponseBodyAsync(httpContext, "replacement 5");
+    }
+
+    [Fact]
+    public async Task MapGet_DelegateCast_InferredFuncParameterVarianceRemainsGenerated()
+    {
+        var (result, compilation) = await RunDelegateCastGeneratorAsync("""
+app.MapGet("/", (Func<IEnumerable<string>, string>)Get);
+static string Get([FromServices] IEnumerable<string?> values) => string.Join(",", values);
+""", nullableEnabled: true);
+        Assert.Empty(result.Diagnostics);
+        var endpoint = GetEndpointFromCompilation(compilation);
+        var httpContext = CreateHttpContext(CreateServiceProvider(services =>
+            services.AddSingleton<IEnumerable<string>>(new string[] { "a", null, "b" })));
+        await endpoint.RequestDelegate(httpContext);
+        await VerifyResponseBodyAsync(httpContext, "a,,b");
+    }
+
+    [Fact]
+    public async Task MapGet_DelegateCast_UserDefinedConversionFallsBack()
+    {
+        var (result, compilation) = await RunDelegateCastGeneratorAsync("""
+app.MapGet("/", (Func<string>)(HandlerWrapper)(SizeHandler)DelegateCastHandlers.Size);
+""", additionalSource: """
+internal readonly struct HandlerWrapper
+{
+    private readonly System.Func<string> _func;
+
+    private HandlerWrapper(SizeHandler handler)
+    {
+        _func = () => handler(5);
+    }
+
+    public static implicit operator HandlerWrapper(SizeHandler handler) => new(handler);
+    public static implicit operator System.Func<string>(HandlerWrapper wrapper) => wrapper._func;
+}
+""");
+        Assert.Equal(DiagnosticDescriptors.UnableToResolveMethod.Id, Assert.Single(result.Diagnostics).Id);
+        var endpoint = GetEndpointFromCompilation(compilation, expectGeneratedCodeOverride: false);
+        var httpContext = CreateHttpContext();
+        await endpoint.RequestDelegate(httpContext);
+        await VerifyResponseBodyAsync(httpContext, "size 5");
     }
 
     private static async Task<(GeneratorRunResult Result, Compilation Compilation)> RunDelegateCastGeneratorAsync(string source, bool includeInaccessibleHandler = false, string additionalSource = "", bool nullableEnabled = false, MetadataReference aliasReference = null)

@@ -95,7 +95,7 @@ internal static class InvocationOperationExtensions
     private static IMethodSymbol? ResolveMethodFromOperation(IOperation operation, SemanticModel semanticModel, bool needsAccurateSignature) => operation switch
     {
         IArgumentOperation argument => ResolveMethodFromOperation(argument.Value, semanticModel, needsAccurateSignature),
-        IConversionOperation conv => ResolveMethodFromOperation(conv.Operand, semanticModel, needsAccurateSignature),
+        IConversionOperation conv when !conv.Conversion.IsUserDefined => ResolveMethodFromOperation(conv.Operand, semanticModel, needsAccurateSignature),
         IDelegateCreationOperation del => ResolveMethodFromOperation(del.Target, semanticModel, needsAccurateSignature),
         IFieldReferenceOperation { Field.IsReadOnly: true } f when
             ResolveDeclarationOperation(f.Field, semanticModel) is IOperation op &&
@@ -111,7 +111,7 @@ internal static class InvocationOperationExtensions
     private static INamedTypeSymbol? ResolveDelegateTypeFromOperation(IOperation operation, SemanticModel semanticModel) => operation switch
     {
         IArgumentOperation argument => ResolveDelegateTypeFromOperation(argument.Value, semanticModel),
-        IConversionOperation conversion => ResolveDelegateTypeFromOperation(conversion.Operand, semanticModel),
+        IConversionOperation conversion when !conversion.Conversion.IsUserDefined => ResolveDelegateTypeFromOperation(conversion.Operand, semanticModel),
         IDelegateCreationOperation { Type: INamedTypeSymbol delegateType } => delegateType,
         IFieldReferenceOperation { Field.IsReadOnly: true } field when
             ResolveDeclarationOperation(field.Field, semanticModel) is IOperation initializer &&
@@ -188,6 +188,8 @@ internal static class InvocationOperationExtensions
     private static bool IsWritableFieldTarget(ExpressionSyntax target, IFieldSymbol field, SemanticModel semanticModel) => target switch
     {
         ParenthesizedExpressionSyntax parenthesized => IsWritableFieldTarget(parenthesized.Expression, field, semanticModel),
+        PostfixUnaryExpressionSyntax postfix when postfix.IsKind(SyntaxKind.SuppressNullableWarningExpression) =>
+            IsWritableFieldTarget(postfix.Operand, field, semanticModel),
         TupleExpressionSyntax tuple => tuple.Arguments.Any(argument => IsWritableFieldTarget(argument.Expression, field, semanticModel)),
         ThisExpressionSyntax thisExpression => !field.IsStatic &&
             field.ContainingType.IsValueType &&

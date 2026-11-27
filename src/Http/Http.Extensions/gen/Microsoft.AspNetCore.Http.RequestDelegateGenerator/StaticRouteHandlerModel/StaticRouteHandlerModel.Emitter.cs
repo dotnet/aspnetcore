@@ -433,7 +433,7 @@ internal static class StaticRouteHandlerModelEmitter
                     codeWriter.WriteLine($"var task = handler({endpoint.EmitFilteredArgumentList()});");
                     codeWriter.WriteLine("if (task == null)");
                     codeWriter.StartBlock();
-                    codeWriter.WriteLine("return (object?)Results.Empty;");
+                    codeWriter.WriteLine("""throw new InvalidOperationException("The Task returned by the Delegate must not be null.");""");
                     codeWriter.EndBlock();
                     codeWriter.WriteLine("await task;");
                 }
