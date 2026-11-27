@@ -581,7 +581,7 @@ jobs:
         run: bash "${RUNNER_TEMP}/gh-aw/actions/check_otlp_default_credentials.sh"
       - name: Generate GitHub App token for checkout (0)
         id: checkout-app-token-0
-        uses: actions/create-github-app-token@64ab729a6294000f5aa4a4bc0b73d1f32bc45510 # v3.3.0
+        uses: actions/create-github-app-token@f418cff399f7aef4c2f0ad47e25ca7a6abbdd6fc # v3.4.0
         with:
           client-id: ${{ secrets.ASPNETCORE_DOCS_BOT_CLIENT_ID }}
           private-key: ${{ secrets.ASPNETCORE_DOCS_BOT_PRIVATE_KEY }}
@@ -688,7 +688,7 @@ jobs:
           path: /tmp/gh-aw/pr-docs-check
       - id: docs-bot-token
         name: Mint ASP.NET Core docs bot token
-        uses: actions/create-github-app-token@64ab729a6294000f5aa4a4bc0b73d1f32bc45510 # v3.3.0
+        uses: actions/create-github-app-token@f418cff399f7aef4c2f0ad47e25ca7a6abbdd6fc # v3.4.0
         with:
           client-id: ${{ secrets.ASPNETCORE_DOCS_BOT_CLIENT_ID }}
           owner: dotnet
@@ -1549,7 +1549,7 @@ jobs:
           GH_AW_SETUP_AW_CONTEXT: ${{ inputs.aw_context }}
       - name: Generate GitHub App token
         id: safe-outputs-app-token
-        uses: actions/create-github-app-token@64ab729a6294000f5aa4a4bc0b73d1f32bc45510 # v3.3.0
+        uses: actions/create-github-app-token@f418cff399f7aef4c2f0ad47e25ca7a6abbdd6fc # v3.4.0
         with:
           client-id: ${{ secrets.ASPNETCORE_DOCS_BOT_CLIENT_ID }}
           private-key: ${{ secrets.ASPNETCORE_DOCS_BOT_PRIVATE_KEY }}
@@ -2185,7 +2185,7 @@ jobs:
           sparse-checkout-cone-mode: false
       - name: Mint ASP.NET Core docs bot token
         id: docs-bot-token
-        uses: actions/create-github-app-token@64ab729a6294000f5aa4a4bc0b73d1f32bc45510 # v3.3.0
+        uses: actions/create-github-app-token@f418cff399f7aef4c2f0ad47e25ca7a6abbdd6fc # v3.4.0
         with:
           client-id: ${{ secrets.ASPNETCORE_DOCS_BOT_CLIENT_ID }}
           owner: dotnet
@@ -2294,7 +2294,7 @@ jobs:
           path: ${{ runner.temp }}/pr-docs-check-workspace
       - name: Mint ASP.NET Core docs bot token
         id: docs-bot-token
-        uses: actions/create-github-app-token@64ab729a6294000f5aa4a4bc0b73d1f32bc45510 # v3.3.0
+        uses: actions/create-github-app-token@f418cff399f7aef4c2f0ad47e25ca7a6abbdd6fc # v3.4.0
         env:
           GH_AW_AGENT_OUTPUT: ${{ runner.temp }}/gh-aw/safe-jobs/agent_output.json
           GH_AW_JOB_CHECK_RUN_ID: ${{ job.check_run_id }}
@@ -2754,7 +2754,7 @@ jobs:
           path: /tmp/gh-aw/
       - name: Generate GitHub App token
         id: safe-outputs-app-token
-        uses: actions/create-github-app-token@64ab729a6294000f5aa4a4bc0b73d1f32bc45510 # v3.3.0
+        uses: actions/create-github-app-token@f418cff399f7aef4c2f0ad47e25ca7a6abbdd6fc # v3.4.0
         with:
           client-id: ${{ secrets.ASPNETCORE_DOCS_BOT_CLIENT_ID }}
           private-key: ${{ secrets.ASPNETCORE_DOCS_BOT_PRIVATE_KEY }}
@@ -2768,7 +2768,7 @@ jobs:
           permission-pull-requests: write
       - name: Generate GitHub App head token
         id: safe-outputs-head-app-token
-        uses: actions/create-github-app-token@64ab729a6294000f5aa4a4bc0b73d1f32bc45510 # v3.3.0
+        uses: actions/create-github-app-token@f418cff399f7aef4c2f0ad47e25ca7a6abbdd6fc # v3.4.0
         with:
           client-id: ${{ secrets.ASPNETCORE_DOCS_BOT_CLIENT_ID }}
           private-key: ${{ secrets.ASPNETCORE_DOCS_BOT_PRIVATE_KEY }}
@@ -2780,7 +2780,7 @@ jobs:
       - name: Generate GitHub App token for checkout (0)
         if: (!cancelled()) && needs.agent.result != 'skipped' && contains(needs.agent.outputs.output_types, 'create_pull_request') || (!cancelled()) && needs.agent.result != 'skipped' && contains(needs.agent.outputs.output_types, 'push_to_pull_request_branch')
         id: checkout-app-token-0
-        uses: actions/create-github-app-token@64ab729a6294000f5aa4a4bc0b73d1f32bc45510 # v3.3.0
+        uses: actions/create-github-app-token@f418cff399f7aef4c2f0ad47e25ca7a6abbdd6fc # v3.4.0
         with:
           client-id: ${{ secrets.ASPNETCORE_DOCS_BOT_CLIENT_ID }}
           private-key: ${{ secrets.ASPNETCORE_DOCS_BOT_PRIVATE_KEY }}
