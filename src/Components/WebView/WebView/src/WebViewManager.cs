@@ -311,25 +311,33 @@ public abstract class WebViewManager : IAsyncDisposable
         private static string? ResolveRelativeToAssembly()
         {
             var assembly = Assembly.GetEntryAssembly();
-            if (RuntimeFeature.IsDynamicCodeSupported)
-            {
-                if (string.IsNullOrEmpty(assembly?.Location))
-                {
-                    return null;
-                }
-
-                var name = Path.GetFileNameWithoutExtension(assembly.Location);
-
-                return Path.Combine(Path.GetDirectoryName(assembly.Location)!, $"{name}.staticwebassets.runtime.json");
-            }
-
-            var assemblyName = assembly?.GetName().Name;
-            if (string.IsNullOrEmpty(assemblyName))
+            if (assembly is null)
             {
                 return null;
             }
 
-            return Path.Combine(AppContext.BaseDirectory, $"{assemblyName}.staticwebassets.runtime.json");
+            var (directory, name) = GetDirectoryAndName(assembly);
+            if (string.IsNullOrEmpty(directory) || string.IsNullOrEmpty(name))
+            {
+                return null;
+            }
+
+            return Path.Combine(directory, $"{name}.staticwebassets.runtime.json");
+        }
+
+        private static (string? Directory, string? Name) GetDirectoryAndName(Assembly assembly)
+        {
+            if (RuntimeFeature.IsDynamicCodeSupported)
+            {
+                if (string.IsNullOrEmpty(assembly.Location))
+                {
+                    return (null, null);
+                }
+
+                return (Path.GetDirectoryName(assembly.Location), Path.GetFileNameWithoutExtension(assembly.Location));
+            }
+
+            return (AppContext.BaseDirectory, assembly.GetName().Name);
         }
     }
 }
