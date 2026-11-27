@@ -273,6 +273,22 @@ public class RazorComponentEndpointsStartup<TRootComponent>
                 .AddInteractiveWebAssemblyRenderMode(options => options.PathPrefix = "/WasmMinimal")
                 .WithBrowserOptions(config =>
                 {
+                    config.LogLevel = Configuration.GetValue<Microsoft.Extensions.Logging.LogLevel?>("BrowserConfigurationLogLevel");
+                    config.StaticServer.PreserveDom = Configuration.GetValue<bool?>("BrowserConfigurationPreserveDom");
+                    if (Configuration.GetValue<double?>("BrowserConfigurationCircuitInactivityTimeoutMs") is { } inactivityTimeout)
+                    {
+                        config.StaticServer.CircuitInactivityTimeout = TimeSpan.FromMilliseconds(inactivityTimeout);
+                    }
+                    config.InteractiveServer.ReconnectionMaxRetries = Configuration.GetValue<int?>("BrowserConfigurationReconnectionMaxRetries");
+                    if (Configuration.GetValue<double?>("BrowserConfigurationReconnectionRetryIntervalMs") is { } retryInterval)
+                    {
+                        config.InteractiveServer.ReconnectionRetryInterval = TimeSpan.FromMilliseconds(retryInterval);
+                    }
+                    config.InteractiveWebAssembly.ApplicationCulture = Configuration["BrowserConfigurationApplicationCulture"];
+                    if (config.InteractiveWebAssembly.ApplicationCulture is not null)
+                    {
+                        config.InteractiveWebAssembly.EnvironmentVariables["BROWSER_CONFIGURATION_USE_APPLICATION_CULTURE"] = "true";
+                    }
                     config.InteractiveWebAssembly.EnvironmentVariables["MY_TEST_VAR"] = "test-value-from-server";
                     config.InteractiveWebAssembly.EnvironmentVariables["ANOTHER_TEST_VAR"] = "another-test-value";
                     if (string.Equals(Environment.GetEnvironmentVariable("ASPNETCORE_E2E_OUT_OF_PROCESS_RENDERER"), "true", StringComparison.OrdinalIgnoreCase)
