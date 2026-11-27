@@ -4,6 +4,8 @@
     <TargetFramework>$(DefaultNetCoreTargetFramework)</TargetFramework>
     <Nullable>enable</Nullable>
     <IncludeComponentsWebAssets>false</IncludeComponentsWebAssets>
+    <!-- GeneratedJSInterop is experimental. -->
+    <NoWarn>$(NoWarn);ASP0041</NoWarn>
   </PropertyGroup>
 
   <ItemGroup>

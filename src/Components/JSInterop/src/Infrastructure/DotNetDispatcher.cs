@@ -45,7 +45,7 @@ public static class DotNetDispatcher
     [UnconditionalSuppressMessage("Trimming", "IL2026", Justification = "We expect application code is configured to ensure return types of JSInvokable methods are retained.")]
     public static string? Invoke(JSRuntime jsRuntime, in DotNetInvocationInfo invocationInfo, [StringSyntax(StringSyntaxAttribute.Json)] string argsJson)
     {
-        if (GeneratedInteropPrototype.GeneratedOnly)
+        if (GeneratedJSInterop.GeneratedOnly)
         {
             var invocation = jsRuntime.GeneratedInterop.Invoke(jsRuntime, invocationInfo, argsJson, synchronous: true);
             if (!invocation.IsCompleted)
@@ -86,7 +86,7 @@ public static class DotNetDispatcher
     [UnconditionalSuppressMessage("Trimming", "IL2026", Justification = "We expect application code is configured to ensure return types of JSInvokable methods are retained.")]
     public static void BeginInvokeDotNet(JSRuntime jsRuntime, DotNetInvocationInfo invocationInfo, [StringSyntax(StringSyntaxAttribute.Json)] string argsJson)
     {
-        if (GeneratedInteropPrototype.GeneratedOnly)
+        if (GeneratedJSInterop.GeneratedOnly)
         {
             _ = jsRuntime.GeneratedInterop.BeginInvoke(jsRuntime, invocationInfo, argsJson);
             return;

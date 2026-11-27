@@ -60,12 +60,12 @@ public sealed class JSInvokableGenerator : IIncrementalGenerator
 
         var target = context.CompilationProvider.Select(static (compilation, _) =>
         {
-            var prototype = compilation.GetTypeByMetadataName("Microsoft.JSInterop.GeneratedInteropPrototype");
-            var supported = prototype is not null
+            var interop = compilation.GetTypeByMetadataName("Microsoft.JSInterop.Infrastructure.GeneratedJSInterop");
+            var supported = interop is not null
                 && compilation.GetTypeByMetadataName("System.Runtime.CompilerServices.ModuleInitializerAttribute") is not null
-                && compilation.GetTypeByMetadataName("Microsoft.JSInterop.GeneratedInteropPrototype+IInstanceRegistrationProvider") is not null
-                && prototype.GetMembers("Shared").Any(m => m.DeclaredAccessibility == Accessibility.Public)
-                && prototype.GetMembers("RegisterNonInvokableInstance").Any(m => m.DeclaredAccessibility == Accessibility.Public);
+                && compilation.GetTypeByMetadataName("Microsoft.JSInterop.Infrastructure.GeneratedJSInterop+IInstanceRegistrationProvider") is not null
+                && interop.GetMembers("Shared").Any(m => m.DeclaredAccessibility == Accessibility.Public)
+                && interop.GetMembers("RegisterNonInvokableInstance").Any(m => m.DeclaredAccessibility == Accessibility.Public);
             return (compilation.AssemblyName ?? string.Empty, supported);
         });
 

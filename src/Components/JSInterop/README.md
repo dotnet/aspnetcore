@@ -40,8 +40,10 @@ To build the JavaScript code, execute the following commands in a command shell:
 
 ## WIP: generated-only Native AOT experiment
 
-`GeneratedInteropPrototype` and the `Microsoft.JSInterop.SourceGenerators` generator are an
-experimental registration surface, not an approved API. Reflection-based dispatch remains the
+`Microsoft.JSInterop.Infrastructure.GeneratedJSInterop` and the `Microsoft.JSInterop.SourceGenerators`
+generator are an experimental registration surface, not an approved API. `GeneratedJSInterop` is
+marked `[Experimental("ASP0041")]`; generated code suppresses the diagnostic, and members that only
+generated code calls are hidden from IntelliSense. Reflection-based dispatch remains the
 default. Generated-only dispatch is selected at build time with one MSBuild property in the consuming
 application's project, which also needs the generator analyzer and
 `src/Components/JSInterop/gen/Microsoft.JSInterop.SourceGenerators.targets` while the generator is
@@ -65,7 +67,7 @@ so they fail explicitly in generated-only mode.
 
 The generator (`src/Components/JSInterop/gen`) finds every `[JSInvokable]` method in the compilation
 and emits a module initializer that registers a strongly typed invoker for each identifier in
-`GeneratedInteropPrototype.Shared`. Each invoker reads all arguments with the runtime-bound JSON
+`GeneratedJSInterop.Shared`. Each invoker reads all arguments with the runtime-bound JSON
 metadata before calling the method, rejects synchronous calls to asynchronous methods, and serializes
 results the way reflection dispatch does. The module initializer returns immediately unless the
 feature switch is enabled, so trimming removes the registrations when the switch is off.
@@ -79,7 +81,7 @@ registrations are gated by the runtime feature switch and trimmed when it is off
 
 Instance methods on generic types (for example `Box<T>`) and on private or protected nested types are
 registered lazily from the target instance through a generated implementation of
-`GeneratedInteropPrototype.IInstanceRegistrationProvider`. The type and all its containing types
+`GeneratedJSInterop.IInstanceRegistrationProvider`. The type and all its containing types
 must be declared `partial`. No static constructor is added, existing static constructors are
 untouched, and the generator no longer changes `beforefieldinit`.
 
@@ -122,23 +124,22 @@ Unsupported methods are skipped with these warnings:
 `JSI0008` (static-constructor conflict) is retired by the lazy-host prototype; types with existing
 static constructors are now supported.
 
-Application payload types still need JSON metadata. Before creating any `JSRuntime`, set
-`GeneratedInteropPrototype.ConfigureRuntime` to add the application's source-generated
-`JsonSerializerContext`:
+Application payload types still need JSON metadata, and each type passed as a
+`DotNetObjectReference<T>` needs a closed converter. Applications and libraries register both at
+startup; generated-only runtimes consult them after the built-in metadata:
 
 ```csharp
-GeneratedInteropPrototype.ConfigureRuntime = (runtime, options) =>
-    options.TypeInfoResolverChain.Add(AppJsonContext.Default);
+#pragma warning disable ASP0041
+GeneratedJSInterop.AddTypeInfoResolver(AppJsonContext.Default);
+GeneratedJSInterop.RegisterReferenceConverter<Counter>();
+#pragma warning restore ASP0041
 ```
 
-Libraries contribute metadata for their own payloads with
-`GeneratedInteropPrototype.AddTypeInfoResolver`, which generated-only runtimes consult after the
-built-in metadata. Components.Web uses it for `InputFile`'s `BrowserFile[]` payload. Add resolvers
-before a runtime first serializes the affected types.
+Registrations may happen after a runtime is created, but before that runtime first serializes the
+affected types. Components.Web uses `AddTypeInfoResolver` for `InputFile`'s `BrowserFile[]` payload.
 
 Handwritten registrations through `RegisterStatic` and `RegisterInstance<T>` on
-`JSRuntime.GeneratedInterop` (per runtime) or `GeneratedInteropPrototype.Shared` remain available;
-per-runtime registrations take precedence. Instance lookup walks the target's base types.
+`GeneratedJSInterop.Shared` remain available. Instance lookup walks the target's base types.
 Unregistered methods and missing JSON metadata fail explicitly; there is no reflection fallback when
 the switch is enabled.
 

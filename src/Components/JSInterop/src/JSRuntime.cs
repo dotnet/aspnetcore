@@ -26,11 +26,9 @@ public abstract partial class JSRuntime : IJSRuntime, IDisposable
 
     internal readonly ArrayBuilder<byte[]> ByteArraysToBeRevived = new();
 
-    /// <summary>
-    /// Gets the experimental registrations used when the Microsoft.JSInterop.GeneratedOnly
-    /// application switch is enabled. Reflection dispatch remains the default.
-    /// </summary>
-    public GeneratedInteropPrototype GeneratedInterop { get; } = new();
+    // Per-runtime registrations used when the Microsoft.JSInterop.GeneratedOnly application switch
+    // is enabled. They take precedence over GeneratedJSInterop.Shared. Reflection dispatch remains the default.
+    internal GeneratedJSInterop GeneratedInterop { get; } = new();
 
     /// <summary>
     /// Initializes a new instance of <see cref="JSRuntime"/>.
@@ -52,12 +50,11 @@ public abstract partial class JSRuntime : IJSRuntime, IDisposable
                 }
         };
         JsonSerializerOptions.TypeInfoResolverChain.Add(JSInteropJsonTypeInfoResolver.Instance);
-        if (GeneratedInteropPrototype.GeneratedOnly)
+        if (GeneratedJSInterop.GeneratedOnly)
         {
             JsonSerializerOptions.TypeInfoResolverChain.Add(GeneratedInteropJsonContext.Default);
-            JsonSerializerOptions.TypeInfoResolverChain.Add(GeneratedInteropPrototype.SharedTypeInfoResolver);
+            JsonSerializerOptions.TypeInfoResolverChain.Add(GeneratedJSInterop.SharedTypeInfoResolver);
         }
-        GeneratedInteropPrototype.ConfigureRuntime?.Invoke(this, JsonSerializerOptions);
 
         if (JsonSerializer.IsReflectionEnabledByDefault)
         {
@@ -174,8 +171,8 @@ public abstract partial class JSRuntime : IJSRuntime, IDisposable
             }
 
             var argsJson = args is not null && args.Length != 0
-                ? GeneratedInteropPrototype.GeneratedOnly
-                    ? JsonSerializer.Serialize(args, GeneratedInteropPrototype.Metadata<object?[]>(this))
+                ? GeneratedJSInterop.GeneratedOnly
+                    ? JsonSerializer.Serialize(args, GeneratedJSInterop.Metadata<object?[]>(this))
                     : JsonSerializer.Serialize(args, JsonSerializerOptions)
                 : "[]";
             var resultType = JSCallResultTypeHelper.FromGeneric<TValue>();

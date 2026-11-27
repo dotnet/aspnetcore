@@ -86,7 +86,7 @@ public class JSInvokableGeneratorTests
         AssertNoCompilationErrors(run.OutputCompilation);
         var source = GetGeneratedSource(run.Result);
         Assert.Contains("[global::System.Runtime.CompilerServices.ModuleInitializer]", source);
-        Assert.Contains("if (!global::Microsoft.JSInterop.GeneratedInteropPrototype.GeneratedOnly)", source);
+        Assert.Contains("if (!global::Microsoft.JSInterop.Infrastructure.GeneratedJSInterop.GeneratedOnly)", source);
         Assert.Contains("RegisterStatic(\"TestAssembly\", \"first\", 1", source);
         Assert.Contains("RegisterStatic(\"TestAssembly\", \"second\", 1", source);
         Assert.Contains("RegisterInstance<global::TestApp.InternalInstance>(\"Increment\", 1", source);

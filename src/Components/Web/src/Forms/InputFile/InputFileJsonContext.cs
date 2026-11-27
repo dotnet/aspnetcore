@@ -3,7 +3,7 @@
 
 using System.Runtime.CompilerServices;
 using System.Text.Json.Serialization;
-using Microsoft.JSInterop;
+using Microsoft.JSInterop.Infrastructure;
 
 namespace Microsoft.AspNetCore.Components.Forms;
 
@@ -18,9 +18,11 @@ internal sealed partial class InputFileJsonContext : JsonSerializerContext
     internal static void Register()
     {
         // Trimming removes the registration when generated-only dispatch is disabled.
-        if (GeneratedInteropPrototype.GeneratedOnly)
+#pragma warning disable ASP0041 // GeneratedJSInterop is experimental
+        if (GeneratedJSInterop.GeneratedOnly)
         {
-            GeneratedInteropPrototype.AddTypeInfoResolver(Default);
+            GeneratedJSInterop.AddTypeInfoResolver(Default);
         }
+#pragma warning restore ASP0041
     }
 }

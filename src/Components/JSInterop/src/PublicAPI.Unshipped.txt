@@ -1,23 +1,18 @@
 #nullable enable
-Microsoft.JSInterop.GeneratedInteropPrototype
-Microsoft.JSInterop.GeneratedInteropPrototype.GeneratedInteropPrototype() -> void
-Microsoft.JSInterop.GeneratedInteropPrototype.Invoker
-Microsoft.JSInterop.GeneratedInteropPrototype.IInstanceRegistrationProvider
-Microsoft.JSInterop.GeneratedInteropPrototype.IInstanceRegistrationProvider.RegisterInstanceCallbacks(Microsoft.JSInterop.GeneratedInteropPrototype! registrations) -> void
-Microsoft.JSInterop.GeneratedInteropPrototype.RegisterNonInvokableInstance<T>(string! method) -> void
-Microsoft.JSInterop.GeneratedInteropPrototype.RegisterInstance<T>(string! method, int arity, Microsoft.JSInterop.GeneratedInteropPrototype.Invoker! invoke, bool isAsync = false) -> void
-Microsoft.JSInterop.GeneratedInteropPrototype.RegisterStatic(string! assembly, string! method, int arity, Microsoft.JSInterop.GeneratedInteropPrototype.Invoker! invoke, bool isAsync = false) -> void
-Microsoft.JSInterop.JSRuntime.GeneratedInterop.get -> Microsoft.JSInterop.GeneratedInteropPrototype!
-static Microsoft.JSInterop.GeneratedInteropPrototype.ConfigureRuntime.get -> System.Action<Microsoft.JSInterop.JSRuntime!, System.Text.Json.JsonSerializerOptions!>?
-static Microsoft.JSInterop.GeneratedInteropPrototype.ConfigureRuntime.set -> void
-static Microsoft.JSInterop.GeneratedInteropPrototype.AddTypeInfoResolver(System.Text.Json.Serialization.Metadata.IJsonTypeInfoResolver! resolver) -> void
-static Microsoft.JSInterop.GeneratedInteropPrototype.Metadata<T>(Microsoft.JSInterop.JSRuntime! runtime) -> System.Text.Json.Serialization.Metadata.JsonTypeInfo<T>!
-static Microsoft.JSInterop.GeneratedInteropPrototype.RegisterReferenceConverter<T>(Microsoft.JSInterop.JSRuntime! runtime, System.Text.Json.JsonSerializerOptions! options) -> void
-static Microsoft.JSInterop.GeneratedInteropPrototype.CompleteAsync(System.Threading.Tasks.Task! task) -> System.Threading.Tasks.ValueTask<string?>
-static Microsoft.JSInterop.GeneratedInteropPrototype.CompleteAsync(System.Threading.Tasks.ValueTask task) -> System.Threading.Tasks.ValueTask<string?>
-static Microsoft.JSInterop.GeneratedInteropPrototype.GeneratedOnly.get -> bool
-static Microsoft.JSInterop.GeneratedInteropPrototype.ReadArgument<T>(Microsoft.JSInterop.JSRuntime! runtime, System.Text.Json.JsonElement value, string! methodIdentifier, int index) -> T?
-static Microsoft.JSInterop.GeneratedInteropPrototype.SerializeResult<T>(Microsoft.JSInterop.JSRuntime! runtime, T value) -> System.Threading.Tasks.ValueTask<string?>
-static Microsoft.JSInterop.GeneratedInteropPrototype.SerializeResultAsync<T>(Microsoft.JSInterop.JSRuntime! runtime, System.Threading.Tasks.Task<T>! task) -> System.Threading.Tasks.ValueTask<string?>
-static Microsoft.JSInterop.GeneratedInteropPrototype.SerializeResultAsync<T>(Microsoft.JSInterop.JSRuntime! runtime, System.Threading.Tasks.ValueTask<T> task) -> System.Threading.Tasks.ValueTask<string?>
-static Microsoft.JSInterop.GeneratedInteropPrototype.Shared.get -> Microsoft.JSInterop.GeneratedInteropPrototype!
+Microsoft.JSInterop.Infrastructure.GeneratedJSInterop
+Microsoft.JSInterop.Infrastructure.GeneratedJSInterop.Invoker
+Microsoft.JSInterop.Infrastructure.GeneratedJSInterop.IInstanceRegistrationProvider
+Microsoft.JSInterop.Infrastructure.GeneratedJSInterop.IInstanceRegistrationProvider.RegisterInstanceCallbacks(Microsoft.JSInterop.Infrastructure.GeneratedJSInterop! registrations) -> void
+Microsoft.JSInterop.Infrastructure.GeneratedJSInterop.RegisterNonInvokableInstance<T>(string! method) -> void
+Microsoft.JSInterop.Infrastructure.GeneratedJSInterop.RegisterInstance<T>(string! method, int arity, Microsoft.JSInterop.Infrastructure.GeneratedJSInterop.Invoker! invoke, bool isAsync = false) -> void
+Microsoft.JSInterop.Infrastructure.GeneratedJSInterop.RegisterStatic(string! assembly, string! method, int arity, Microsoft.JSInterop.Infrastructure.GeneratedJSInterop.Invoker! invoke, bool isAsync = false) -> void
+static Microsoft.JSInterop.Infrastructure.GeneratedJSInterop.AddTypeInfoResolver(System.Text.Json.Serialization.Metadata.IJsonTypeInfoResolver! resolver) -> void
+static Microsoft.JSInterop.Infrastructure.GeneratedJSInterop.RegisterReferenceConverter<T>() -> void
+static Microsoft.JSInterop.Infrastructure.GeneratedJSInterop.CompleteAsync(System.Threading.Tasks.Task! task) -> System.Threading.Tasks.ValueTask<string?>
+static Microsoft.JSInterop.Infrastructure.GeneratedJSInterop.CompleteAsync(System.Threading.Tasks.ValueTask task) -> System.Threading.Tasks.ValueTask<string?>
+static Microsoft.JSInterop.Infrastructure.GeneratedJSInterop.GeneratedOnly.get -> bool
+static Microsoft.JSInterop.Infrastructure.GeneratedJSInterop.ReadArgument<T>(Microsoft.JSInterop.JSRuntime! runtime, System.Text.Json.JsonElement value, string! methodIdentifier, int index) -> T?
+static Microsoft.JSInterop.Infrastructure.GeneratedJSInterop.SerializeResult<T>(Microsoft.JSInterop.JSRuntime! runtime, T value) -> System.Threading.Tasks.ValueTask<string?>
+static Microsoft.JSInterop.Infrastructure.GeneratedJSInterop.SerializeResultAsync<T>(Microsoft.JSInterop.JSRuntime! runtime, System.Threading.Tasks.Task<T>! task) -> System.Threading.Tasks.ValueTask<string?>
+static Microsoft.JSInterop.Infrastructure.GeneratedJSInterop.SerializeResultAsync<T>(Microsoft.JSInterop.JSRuntime! runtime, System.Threading.Tasks.ValueTask<T> task) -> System.Threading.Tasks.ValueTask<string?>
+static Microsoft.JSInterop.Infrastructure.GeneratedJSInterop.Shared.get -> Microsoft.JSInterop.Infrastructure.GeneratedJSInterop!
