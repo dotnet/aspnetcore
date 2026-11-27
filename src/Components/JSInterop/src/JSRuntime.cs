@@ -55,6 +55,7 @@ public abstract partial class JSRuntime : IJSRuntime, IDisposable
         if (GeneratedInteropPrototype.GeneratedOnly)
         {
             JsonSerializerOptions.TypeInfoResolverChain.Add(GeneratedInteropJsonContext.Default);
+            JsonSerializerOptions.TypeInfoResolverChain.Add(GeneratedInteropPrototype.SharedTypeInfoResolver);
         }
         GeneratedInteropPrototype.ConfigureRuntime?.Invoke(this, JsonSerializerOptions);
 

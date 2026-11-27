@@ -136,6 +136,34 @@ public class GeneratedInteropPrototypeTests
         Assert.Null(await GeneratedInteropPrototype.CompleteAsync(ValueTask.CompletedTask));
     }
 
+    [Fact]
+    public async Task NonInvokableOverrideMarkerMatchesReflectionFailure()
+    {
+        var runtime = CreateRuntime();
+        runtime.GeneratedInterop.RegisterInstance<HidingBaseProbe>("Run", 0, (_, _, _) => ValueTask.FromResult<string?>("base"));
+        runtime.GeneratedInterop.RegisterNonInvokableInstance<HidingDerivedProbe>("Run");
+        using var baseReference = DotNetObjectReference.Create(new HidingBaseProbe());
+        using var derivedReference = DotNetObjectReference.Create(new HidingDerivedProbe());
+
+        Assert.Equal("base", await runtime.GeneratedInterop.Invoke(runtime, new(null, "Run", runtime.TrackObjectReference(baseReference), "1"), "[]", synchronous: true));
+        var hidden = Assert.Throws<ArgumentException>(() => runtime.GeneratedInterop.Invoke(runtime, new(null, "Run", runtime.TrackObjectReference(derivedReference), "2"), "[]", synchronous: true));
+        Assert.Equal("The type 'HidingDerivedProbe' does not contain a public invokable method with [JSInvokableAttribute(\"Run\")].", hidden.Message);
+        Assert.Throws<InvalidOperationException>(() => runtime.GeneratedInterop.RegisterNonInvokableInstance<HidingDerivedProbe>("Run"));
+    }
+
+    [Fact]
+    public void SharedTypeInfoResolverHonorsResolversAddedAfterRuntimeCreation()
+    {
+        var runtime = new RecordingRuntime();
+        runtime.JsonSerializerOptions.TypeInfoResolverChain.Clear();
+        runtime.JsonSerializerOptions.TypeInfoResolverChain.Add(GeneratedInteropPrototype.SharedTypeInfoResolver);
+        runtime.JsonSerializerOptions.MakeReadOnly();
+
+        GeneratedInteropPrototype.AddTypeInfoResolver(GeneratedInteropLateJsonContext.Default);
+
+        Assert.Equal("""{"late":1}""", JsonSerializer.Serialize(new GeneratedInteropLateValue(1), GeneratedInteropPrototype.Metadata<GeneratedInteropLateValue>(runtime)));
+    }
+
     private static RecordingRuntime CreateRuntime()
     {
         var runtime = new RecordingRuntime();
@@ -172,6 +200,10 @@ public class GeneratedInteropPrototypeTests
     private class SharedBaseProbe;
 
     private sealed class SharedDerivedProbe : SharedBaseProbe;
+
+    private class HidingBaseProbe;
+
+    private sealed class HidingDerivedProbe : HidingBaseProbe;
 }
 
 internal class GeneratedInteropBase
@@ -191,3 +223,9 @@ internal readonly record struct GeneratedInteropValue(int Number);
 [JsonSerializable(typeof(GeneratedInteropBase))]
 [JsonSerializable(typeof(GeneratedInteropDerived))]
 internal partial class GeneratedInteropTestJsonContext : JsonSerializerContext;
+
+internal readonly record struct GeneratedInteropLateValue(int Late);
+
+[JsonSourceGenerationOptions(PropertyNamingPolicy = JsonKnownNamingPolicy.CamelCase)]
+[JsonSerializable(typeof(GeneratedInteropLateValue))]
+internal partial class GeneratedInteropLateJsonContext : JsonSerializerContext;

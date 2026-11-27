@@ -22,6 +22,7 @@ public sealed class GeneratedInteropPrototype
 
     private readonly ConcurrentDictionary<(string Assembly, string Method), Registration> _statics = new();
     private readonly ConcurrentDictionary<(Type Type, string Method), Registration> _instances = new();
+    private static IJsonTypeInfoResolver[] s_typeInfoResolvers = [];
 
     /// <summary>
     /// Invokes a registered callback and returns its serialized result. All arguments must be
@@ -92,6 +93,43 @@ public sealed class GeneratedInteropPrototype
             throw new InvalidOperationException($"The type '{typeof(T).Name}' already has a registration for '{method}'.");
         }
     }
+
+    /// <summary>
+    /// Records that <typeparamref name="T"/> overrides a JS-invokable base method without declaring
+    /// <paramref name="method"/> itself. Like reflection dispatch, calls to that identifier on an
+    /// instance of <typeparamref name="T"/> then fail instead of reaching the override through the
+    /// base registration.
+    /// </summary>
+    /// <typeparam name="T">The type declaring the override.</typeparam>
+    /// <param name="method">The base JavaScript invocation identifier that the override hides.</param>
+    public void RegisterNonInvokableInstance<T>(string method) where T : class
+    {
+        ArgumentException.ThrowIfNullOrEmpty(method);
+        if (!_instances.TryAdd((typeof(T), method), default))
+        {
+            throw new InvalidOperationException($"The type '{typeof(T).Name}' already has a registration for '{method}'.");
+        }
+    }
+
+    /// <summary>
+    /// Adds JSON metadata, typically for an assembly's internal callback payloads, that every runtime
+    /// consults in generated-only mode. Resolvers may be added after a runtime is created, but before
+    /// the runtime first resolves the types they provide.
+    /// </summary>
+    /// <param name="resolver">The source-generated metadata resolver.</param>
+    public static void AddTypeInfoResolver(IJsonTypeInfoResolver resolver)
+    {
+        ArgumentNullException.ThrowIfNull(resolver);
+        IJsonTypeInfoResolver[] current, updated;
+        do
+        {
+            current = Volatile.Read(ref s_typeInfoResolvers);
+            updated = [.. current, resolver];
+        }
+        while (Interlocked.CompareExchange(ref s_typeInfoResolvers, updated, current) != current);
+    }
+
+    internal static IJsonTypeInfoResolver SharedTypeInfoResolver { get; } = new SharedResolver();
 
     /// <summary>
     /// Registers a closed reference converter without constructing a generic converter at runtime.
@@ -256,6 +294,12 @@ public sealed class GeneratedInteropPrototype
                 {
                     throw new ArgumentException($"No generated instance registration for '{info.MethodIdentifier}'.");
                 }
+
+                if (entry.Invoke is null)
+                {
+                    // Matches reflection dispatch, which only sees the override's own attributes.
+                    throw new ArgumentException($"The type '{target.GetType().Name}' does not contain a public invokable method with [{nameof(JSInvokableAttribute)}(\"{info.MethodIdentifier}\")].");
+                }
             }
             else if (!_statics.TryGetValue((info.AssemblyName!, info.MethodIdentifier), out entry) &&
                 !Shared._statics.TryGetValue((info.AssemblyName!, info.MethodIdentifier), out entry))
@@ -285,7 +329,7 @@ public sealed class GeneratedInteropPrototype
                 }
             }
 
-            return entry.Invoke(runtime, target, args);
+            return entry.Invoke!(runtime, target, args);
         }
         finally
         {
@@ -345,7 +389,24 @@ public sealed class GeneratedInteropPrototype
         }
     }
 
-    private readonly record struct Registration(int Arity, bool Async, Invoker Invoke);
+    // A null Invoke marks an override that hides a base registration.
+    private readonly record struct Registration(int Arity, bool Async, Invoker? Invoke);
+
+    private sealed class SharedResolver : IJsonTypeInfoResolver
+    {
+        public JsonTypeInfo? GetTypeInfo(Type type, JsonSerializerOptions options)
+        {
+            foreach (var resolver in Volatile.Read(ref s_typeInfoResolvers))
+            {
+                if (resolver.GetTypeInfo(type, options) is { } typeInfo)
+                {
+                    return typeInfo;
+                }
+            }
+
+            return null;
+        }
+    }
 }
 
 [JsonSourceGenerationOptions(PropertyNamingPolicy = JsonKnownNamingPolicy.CamelCase, PropertyNameCaseInsensitive = true)]
