@@ -95,15 +95,24 @@ public class IdentityOptionsTest
             services.AddIdentity<PocoUser, PocoRole>();
         }
         var sessionStore = new TestTicketStore();
+        var cookieManager = new ChunkingCookieManager { ChunkSize = 2048 };
+        var timeProvider = new FakeTimeProvider();
         services.PostConfigure<CookieAuthenticationOptions>(IdentityConstants.TwoFactorUserIdScheme, options =>
         {
             options.Cookie.Name = "custom-two-factor";
             options.Cookie.Path = "/identity";
             options.Cookie.Domain = "example.com";
+            options.Cookie.HttpOnly = false;
+            options.Cookie.SameSite = SameSiteMode.Strict;
+            options.Cookie.SecurePolicy = CookieSecurePolicy.Always;
+            options.Cookie.IsEssential = false;
+            options.Cookie.MaxAge = TimeSpan.FromMinutes(10);
             options.Cookie.Extensions.Add("custom=value");
             options.ExpireTimeSpan = TimeSpan.FromMinutes(30);
             options.SlidingExpiration = false;
+            options.TimeProvider = timeProvider;
             options.SessionStore = sessionStore;
+            options.CookieManager = cookieManager;
         });
         using var provider = services.BuildServiceProvider();
         var schemes = provider.GetRequiredService<Microsoft.AspNetCore.Authentication.IAuthenticationSchemeProvider>();
@@ -114,11 +123,18 @@ public class IdentityOptionsTest
         Assert.Equal("custom-two-factor.Passkey", passkey.Cookie.Name);
         Assert.Equal("/identity", passkey.Cookie.Path);
         Assert.Equal("example.com", passkey.Cookie.Domain);
+        Assert.False(passkey.Cookie.HttpOnly);
+        Assert.Equal(SameSiteMode.Strict, passkey.Cookie.SameSite);
+        Assert.Equal(CookieSecurePolicy.Always, passkey.Cookie.SecurePolicy);
+        Assert.False(passkey.Cookie.IsEssential);
+        Assert.Equal(TimeSpan.FromMinutes(10), passkey.Cookie.MaxAge);
         Assert.Equal(twoFactor.Cookie.Extensions, passkey.Cookie.Extensions);
         Assert.NotSame(twoFactor.Cookie, passkey.Cookie);
         Assert.Equal(TimeSpan.FromMinutes(30), passkey.ExpireTimeSpan);
         Assert.False(passkey.SlidingExpiration);
+        Assert.Same(timeProvider, passkey.TimeProvider);
         Assert.Same(sessionStore, passkey.SessionStore);
+        Assert.Same(cookieManager, passkey.CookieManager);
         Assert.NotSame(twoFactor.Events, passkey.Events);
         Assert.NotSame(twoFactor.TicketDataFormat, passkey.TicketDataFormat);
     }
@@ -346,6 +362,82 @@ public class IdentityOptionsTest
         replayContext.Request.Headers.Cookie = cookie;
         var replayAuth = await replayContext.AuthenticateAsync(IdentityConstants.PasskeyScheme);
         Assert.False(replayAuth.Succeeded);
+    }
+
+    [Theory]
+    [InlineData(false, false)]
+    [InlineData(false, true)]
+    [InlineData(true, false)]
+    [InlineData(true, true)]
+    public async Task PasskeyCookieUsesConfiguredCookieManager(bool configurePasskeyManager, bool configureBeforeRegistration)
+    {
+        var twoFactorManager = new ChunkingCookieManager { ChunkSize = 1500 };
+        var passkeyManager = new ChunkingCookieManager { ChunkSize = 900 };
+        var expectedManager = configurePasskeyManager ? passkeyManager : twoFactorManager;
+        var assertionState = new string('a', 2000);
+        var passkey = new UserPasskeyInfo(
+            credentialId: [1, 2, 3], publicKey: [4, 5, 6], createdAt: DateTimeOffset.UtcNow,
+            signCount: 0, transports: [], isUserVerified: true, isBackupEligible: true,
+            isBackedUp: true, attestationObject: [7, 8, 9], clientDataJson: [10, 11, 12]);
+        var services = new ServiceCollection();
+        services.AddLogging();
+        services.AddIdentityCore<PocoUser>().AddSignInManager();
+        services.AddSingleton(Mock.Of<IUserStore<PocoUser>>());
+        var passkeyHandler = new Mock<IPasskeyHandler<PocoUser>>();
+        passkeyHandler.Setup(handler => handler.MakeRequestOptionsAsync(null, It.IsAny<HttpContext>()))
+            .ReturnsAsync(new PasskeyRequestOptionsResult
+            {
+                RequestOptionsJson = "{}",
+                AssertionState = assertionState,
+            });
+        passkeyHandler.Setup(handler => handler.PerformAssertionAsync(
+                It.Is<PasskeyAssertionContext>(context => context.AssertionState == assertionState)))
+            .ReturnsAsync(PasskeyAssertionResult.Success(passkey, new PocoUser { UserName = "hao" }))
+            .Verifiable();
+        services.AddSingleton(passkeyHandler.Object);
+        if (configurePasskeyManager && configureBeforeRegistration)
+        {
+            services.Configure<CookieAuthenticationOptions>(IdentityConstants.PasskeyScheme,
+                options => options.CookieManager = passkeyManager);
+        }
+        services.AddAuthentication().AddTwoFactorUserIdCookie()
+            .Configure(options => options.CookieManager = twoFactorManager);
+        if (configurePasskeyManager && !configureBeforeRegistration)
+        {
+            services.Configure<CookieAuthenticationOptions>(IdentityConstants.PasskeyScheme,
+                options => options.CookieManager = passkeyManager);
+        }
+
+        using var provider = services.BuildServiceProvider();
+        var monitor = provider.GetRequiredService<IOptionsMonitor<CookieAuthenticationOptions>>();
+        Assert.Same(expectedManager, monitor.Get(IdentityConstants.PasskeyScheme).CookieManager);
+
+        using var firstScope = provider.CreateScope();
+        var context = new DefaultHttpContext { RequestServices = firstScope.ServiceProvider };
+        var signIn = firstScope.ServiceProvider.GetRequiredService<SignInManager<PocoUser>>();
+        signIn.Context = context;
+
+        Assert.Equal("{}", await signIn.MakePasskeyRequestOptionsAsync(null));
+        var setCookies = context.Response.Headers.SetCookie.ToArray();
+        Assert.True(setCookies.Length > 2);
+        Assert.Contains(setCookies, header => header.StartsWith(IdentityConstants.PasskeyScheme + "=chunks-", StringComparison.Ordinal));
+        Assert.All(setCookies, header => Assert.True(header.Length <= expectedManager.ChunkSize));
+        var cookieHeader = string.Join("; ", setCookies.Select(header => header.Split(';')[0]));
+
+        using var secondScope = provider.CreateScope();
+        var nextContext = new DefaultHttpContext { RequestServices = secondScope.ServiceProvider };
+        nextContext.Request.Headers.Cookie = cookieHeader;
+        var nextSignIn = secondScope.ServiceProvider.GetRequiredService<SignInManager<PocoUser>>();
+        nextSignIn.Context = nextContext;
+
+        var assertionResult = await nextSignIn.PerformPasskeyAssertionAsync("{}");
+        Assert.True(assertionResult.Succeeded);
+        Assert.Same(passkey, assertionResult.Passkey);
+        passkeyHandler.Verify();
+        var deleteCookies = nextContext.Response.Headers.SetCookie.ToArray();
+        Assert.Equal(setCookies.Length, deleteCookies.Length);
+        Assert.Contains(deleteCookies, header => header.StartsWith(IdentityConstants.PasskeyScheme + "=;", StringComparison.Ordinal));
+        Assert.Contains(deleteCookies, header => header.StartsWith(IdentityConstants.PasskeyScheme + "C1=;", StringComparison.Ordinal));
     }
 
     private sealed class TestTicketStore : ITicketStore
