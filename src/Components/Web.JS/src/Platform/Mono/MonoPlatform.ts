@@ -255,7 +255,7 @@ async function createRuntimeInstance(options: Partial<WebAssemblyStartOptions>, 
   // Preserve the order of callbacks registered before startup and by initializers.
   dotnet.withConfigLoaded(async (loadedConfig: LoaderConfig) => {
     await captureConfigLoadedCallbacks(async () => {
-      for (const callback of configLoadedCallbacks) {
+      for (const callback of [...configLoadedCallbacks]) {
         await callback(loadedConfig);
       }
     });
