@@ -790,24 +790,22 @@ public class HttpsTests : LoggedTest
         var tlsCallback = features.Get<TlsConnectionCallbackOptions>();
         Assert.NotNull(tlsCallback);
 
-        var h3Options = await tlsCallback.OnConnection(new TlsHandshakeCallbackContext
+        var h3Options = await tlsCallback.OnConnection(new TlsConnectionCallbackContext
         {
             ClientHelloInfo = new SslClientHelloInfo("h3.example.com", SslProtocols.None),
             Connection = new DefaultConnectionContext(),
-            CancellationToken = CancellationToken.None
-        });
+        }, CancellationToken.None);
 
         Assert.NotNull(h3Options.ApplicationProtocols);
         Assert.Collection(h3Options.ApplicationProtocols,
             protocol => Assert.Equal(SslApplicationProtocol.Http3, protocol));
 
         var legacyConnection = new DefaultConnectionContext();
-        var legacyOptions = await tlsCallback.OnConnection(new TlsHandshakeCallbackContext
+        var legacyOptions = await tlsCallback.OnConnection(new TlsConnectionCallbackContext
         {
             ClientHelloInfo = new SslClientHelloInfo("legacy.example.org", SslProtocols.None),
             Connection = legacyConnection,
-            CancellationToken = CancellationToken.None
-        });
+        }, CancellationToken.None);
 
         Assert.NotNull(legacyOptions.ApplicationProtocols);
         Assert.Equal([SslApplicationProtocol.Http11], legacyOptions.ApplicationProtocols);
