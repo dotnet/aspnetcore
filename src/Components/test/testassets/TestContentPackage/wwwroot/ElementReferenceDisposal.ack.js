@@ -3,6 +3,7 @@ let renderBatchGate;
 window.elementReferenceDisposalTest = {
   acknowledgedRemovals: 0,
   acknowledgedServerRemovals: 0,
+  serverPersistedStateUpdates: 0,
   appliedServerRootRemovals: 0,
   failedDisposalAcknowledgements: 0,
   successfulDisposalAcknowledgements: 0,
@@ -33,6 +34,9 @@ window.elementReferenceDisposalTest = {
       const send = connection.send.bind(connection);
       connection.send = (method, ...args) => {
         if (method === 'UpdateRootComponents') {
+          if (args[1]) {
+            this.serverPersistedStateUpdates++;
+          }
           const batch = JSON.parse(args[0]);
           if (batch.operations.some(operation => operation.type === 'remove')) {
             serverRemovalBatches.add(batch.batchId);

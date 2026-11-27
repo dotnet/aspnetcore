@@ -35,7 +35,7 @@
     {
         @if (ShowAutoComponent)
         {
-            <TestContentPackage.UnionParameterCounter @rendermode="@(new InteractiveAutoRenderMode())" />
+            <TestContentPackage.PersistStateComponent @rendermode="@(new InteractiveAutoRenderMode())" KeyName="auto-disposal-state" />
         }
         else
         {

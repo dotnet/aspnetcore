@@ -283,7 +283,7 @@ export class WebRootComponentManager implements DescriptorHandler, RootComponent
       // This must happen after determining the pending operation, because a component
       // that is being activated for the first time only gets assigned a renderer ID
       // as part of computing its 'add' operation.
-      if (discoverNewState && component.assignedRendererId !== undefined) {
+      if (discoverNewState && component.assignedRendererId !== undefined && isDescriptorInDocument(component.descriptor)) {
         rendererIds.add(component.assignedRendererId);
       }
 

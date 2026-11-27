@@ -142,10 +142,12 @@ public class EnhancedNavigationTest : ServerTestBase<BasicTestAppServerSiteFixtu
             Browser.True(() => Browser.ExecuteJavaScript<bool>(
                 "const test = window.elementReferenceDisposalTest; return test.referenceIsMissing(test.captures.get('webassembly'));"));
 
+            var serverStateUpdates = Browser.ExecuteJavaScript<long>("return window.elementReferenceDisposalTest.serverPersistedStateUpdates");
             Browser.Click(By.Id("show-auto-component"));
-            Browser.Equal("True", () => Browser.Exists(By.Id("is-interactive-union")).Text);
+            Browser.Equal("WebAssembly", () => Browser.Exists(By.Id("render-mode-auto-disposal-state")).Text);
             Assert.Equal(originalDocument, Browser.FindElement(By.TagName("html")));
-            Assert.Equal("WebAssembly", Browser.Exists(By.Id("render-mode-union")).Text);
+            Assert.Equal("restored", Browser.Exists(By.Id("auto-disposal-state")).Text);
+            Assert.Equal(serverStateUpdates, Browser.ExecuteJavaScript<long>("return window.elementReferenceDisposalTest.serverPersistedStateUpdates"));
             Assert.False(Browser.ExecuteJavaScript<bool>(
                 "const test = window.elementReferenceDisposalTest; return test.referenceIsMissing(test.captures.get('server'));"));
         }
