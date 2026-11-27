@@ -278,6 +278,16 @@ const cases = [
   ['20 inline findings plus summary overflow', findings(20, summary), true],
   ['summary-only finding', findings(0, `Review summary.\r\n\r\n${summary.replaceAll('\n', '\r\n')}\r\n\r\n`), true],
   ['summary-only with a following section', findings(0, `${summary}\n\n### Limitations\nNo tests run.`), true],
+  ...Array.from({ length: 6 }, (_, index) => {
+    const body = summary.replace('## Findings', `   ${'#'.repeat(index + 1)} Findings`);
+    return [`indented summary heading at level ${index + 1}`, findings(0, body), true];
+  }),
+  ['summary ignores introduction, continuation, and trailing prose', findings(0,
+    summary.replace('\n', '\n\nIntroductory text.\n') + '\n  Wrapped continuation.\n\nTrailing paragraph.'), true],
+  ['mixed review removes a discarded summary bullet', findings(1,
+    `${summary}\n- [P3] \`src/old.cs\`: [DISCARDED] Old behavior.`), true, [], false, summary],
+  ['summary-only review retains valid findings and drops discarded bullets', findings(0,
+    `${summary}\n- [P3] \`src/old.cs\`: [DISCARDED] Old behavior.`), true, [], false, summary],
   ...bodyCases.map(([name, input, retained]) => [name, input, true, retained ? [] : [0], !retained]),
   ['mixed valid quoted findings', {
     items: [
@@ -312,13 +322,13 @@ const cases = [
     ],
     errors: [],
   }, true, [0]],
-  ['all discarded inline candidates do not erase malformed summary findings', {
+  ['all discarded inline candidates with no well-formed summary finding become a noop', {
     items: [
       { ...comment(), body: '[DISCARDED] Old behavior.' },
       review('## Findings without an inline comment\n\nMissing severity and path.'),
     ],
     errors: [],
-  }, false],
+  }, true, [0], true],
   ['discarded audit summary with real finding', {
     items: [
       { ...comment(), body: 'Real regression.\nConfidence: verified' },
@@ -467,7 +477,7 @@ const cases = [
 const mismatches = [];
 for (const filename of [workflowSource, workflowLock]) {
   const script = extractScript(filename);
-  for (const [name, input, accepted, dropped = [], becomesNoop = false] of cases) {
+  for (const [name, input, accepted, dropped = [], becomesNoop = false, cleanedSummary] of cases) {
     const result = execute(script, input);
     if (result.error !== undefined) {
       mismatches.push(`${path.basename(filename)} ${name} threw instead of failing through core.setFailed: ${result.error}`);
@@ -483,9 +493,11 @@ for (const filename of [workflowSource, workflowLock]) {
           assert.match(result.output.items[0].message, /^STATUS: NO_FINDINGS\b/);
           assert.deepEqual(result.output, { ...input, items: result.output.items });
         } else {
-          assert.deepEqual(result.output, { ...input, items: remaining });
+          const items = cleanedSummary === undefined ? remaining : remaining.map(item =>
+            item.type === 'submit_pull_request_review' ? { ...item, body: cleanedSummary } : item);
+          assert.deepEqual(result.output, { ...input, items });
         }
-        assert.equal(result.notices.length, dropped.length > 0 ? 1 : 0);
+        assert.equal(result.notices.length, dropped.length > 0 || cleanedSummary !== undefined ? 1 : 0);
       } catch (error) {
         mismatches.push(`${path.basename(filename)} ${name} published the wrong items: ${error.message}`);
       }

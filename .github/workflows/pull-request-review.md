@@ -32,7 +32,7 @@ concurrency:
   job-discriminator: ${{ github.event.issue.number || github.run_id }}
 
 timeout-minutes: 60
-max-ai-credits: 80
+max-ai-credits: 150
 
 checkout:
   fetch-depth: 0
@@ -104,6 +104,10 @@ post-steps:
         violations.push('The main agent must successfully invoke the code-review skill before any safe-output call.');
       }
 
+      if (starts.some(event => publicationTools.has(event.data?.toolName) && !isMainAgent(event))) {
+        violations.push('Only the main agent may call safe-output tools.');
+      }
+
       if (!starts.some(event => publicationTools.has(event.data?.toolName) &&
           event.data.toolName !== 'safeoutputs-missing_tool')) {
         violations.push('No native safe-output publication call was recorded.');
@@ -142,7 +146,7 @@ safe-outputs:
   threat-detection:
     runs-on: ubuntu-26.04
     model: gpt-6.2-sol
-    max-ai-credits: 15
+    max-ai-credits: 200
     max-turns: 20
     engine-timeout: 10m
     retries: 0
@@ -357,13 +361,13 @@ safe-outputs:
               isDiscardedInline(item.body));
             const remaining = comments - discarded.length;
             let hasSummary = false;
-            if (review && remaining === 0) {
-              const rows = [];
+            let discardedSummary = 0;
+            if (review) {
               let inSummary = false;
-              let headings = 0;
               let details = 0;
               let fence;
-              for (const line of review.body.trim().split(/\r?\n/)) {
+              const lines = review.body.split('\n').filter(rawLine => {
+                const line = rawLine.trimEnd();
                 if (!details) {
                   const marker = /^ {0,3}(`{3,}|~{3,})(.*)$/.exec(line);
                   if (fence) {
@@ -371,14 +375,11 @@ safe-outputs:
                         marker[2].trim() === '') {
                       fence = undefined;
                     }
-                    continue;
+                    return true;
                   }
                   if (marker) {
-                    if (inSummary) {
-                      rows.push(line);
-                    }
                     fence = marker[1];
-                    continue;
+                    return true;
                   }
                 }
                 if (details || /^[ \t]*<details\b/i.test(line)) {
@@ -386,25 +387,32 @@ safe-outputs:
                   for (const tag of line.matchAll(/<\/?details\b[^>]*>/gi)) {
                     details = Math.max(0, details + (tag[0].startsWith('</') ? -1 : 1));
                   }
-                  continue;
+                  return true;
                 }
-                if (/^#{1,6} /.test(line)) {
-                  inSummary = line.trimEnd() === '## Findings without an inline comment';
-                  headings += Number(inSummary);
-                } else if (inSummary && line.trim() !== '') {
-                  rows.push(line);
+                const heading = /^ {0,3}#{1,6}(?:[ \t]+(.*))?$/.exec(line);
+                if (heading) {
+                  inSummary = heading[1]?.replace(/[ \t]+#+$/, '') === 'Findings without an inline comment';
+                } else if (inSummary) {
+                  const finding = /^ {0,3}- \[P[0-3]\] `[^`\r\n]+`: (\S.*)$/.exec(line);
+                  if (finding) {
+                    if (isDiscardedInline(finding[1])) {
+                      discardedSummary++;
+                      return false;
+                    }
+                    hasSummary = true;
+                  }
                 }
-              }
-              hasSummary = headings === 1 && rows.length > 0 && rows.every(row => {
-                const match = /^- \[P[0-3]\] `[^`\r\n]+`: (\S.*)$/.exec(row);
-                return match && !isDiscardedInline(match[1]);
+                return true;
               });
-              if (!hasSummary && (discarded.length === 0 || rows.length > 0)) {
+              if (remaining === 0 && !hasSummary && discarded.length === 0) {
                 core.setFailed('A review without inline comments must include findings in the summary.');
                 return;
               }
+              if (discardedSummary > 0) {
+                review.body = lines.join('\n');
+              }
             }
-            if (discarded.length > 0) {
+            if (discarded.length > 0 || discardedSummary > 0) {
               output.items = remaining > 0 || hasSummary
                 ? output.items.filter(item => !discarded.includes(item))
                 : [{
@@ -412,7 +420,8 @@ safe-outputs:
                     message: 'STATUS: NO_FINDINGS\nAll inline candidates were discarded; see the original agent output for details.',
                   }];
               fs.writeFileSync(filename, JSON.stringify(output));
-              core.notice(`Removed ${discarded.length} discarded inline candidate(s); ${remaining} inline finding(s) remain. ` +
+              core.notice(`Removed ${discarded.length} discarded inline candidate(s) and ${discardedSummary} discarded summary candidate(s); ` +
+                `${remaining} inline finding(s) remain. ` +
                 'The original agent artifact retains the discarded candidates.');
             }
 
