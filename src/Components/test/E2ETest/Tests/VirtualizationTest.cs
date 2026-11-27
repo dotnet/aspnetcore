@@ -550,6 +550,53 @@ public class VirtualizationTest : ServerTestBase<ToggleExecutionModeServerFixtur
     }
 
     [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public void FilterGrowth_BackToTopShowsFirstRows(bool useTable)
+    {
+        if (useTable)
+        {
+            Browser.MountTestComponent<VirtualizationFilterGrowthTable>();
+        }
+        else
+        {
+            Browser.MountTestComponent<VirtualizationFilterGrowth>();
+        }
+        var js = (IJavaScriptExecutor)Browser;
+
+        Browser.True(() => Browser.Exists(By.Id("filter-row-0")).Displayed, TimeSpan.FromSeconds(10));
+
+        var input = Browser.Exists(By.Id("filter-input"));
+        input.SendKeys("fizz");
+        Browser.Contains("334 rows", () => Browser.Exists(By.Id("visible-count")).Text);
+
+        ScrollContainerWithWheelTo(js, Browser.Exists(By.Id("filter-list")), 3000);
+        Browser.True(
+            () => (long)js.ExecuteScript("return Math.round(document.getElementById('filter-list').scrollTop)") >= 2900,
+            TimeSpan.FromSeconds(10));
+
+        // Wait for the observer/.NET round trip to render the scrolled window,
+        // not just for the assigned scrollTop value.
+        Browser.True(
+            () => (bool)js.ExecuteScript(
+                "return !document.getElementById('filter-row-0') && Array.from(document.querySelectorAll('[id^=\"filter-row-\"]')).some(el => parseInt(el.id.split('-').pop()) > 50);"),
+            TimeSpan.FromSeconds(10),
+            "The filtered window should render around row 300 before the list grows");
+
+        // Clearing the filter grows the list. Regardless of the growth handling, a
+        // scripted scroll back to the top must move the rendered window with it.
+        Browser.Exists(By.Id("clear-filter")).Click();
+        Browser.Contains("1000 rows", () => Browser.Exists(By.Id("visible-count")).Text);
+
+        Browser.Exists(By.Id("back-to-top")).Click();
+
+        Browser.True(
+            () => Browser.FindElements(By.Id("filter-row-0")).Any(element => element.Displayed),
+            TimeSpan.FromSeconds(10),
+            "Back to top should render the first rows instead of leaving the viewport blank");
+    }
+
+    [Theory]
     [InlineData(true)]
     [InlineData(false)]
     public void CanLimitMaxItemsRendered(bool useAppContext)
@@ -3676,6 +3723,12 @@ public class VirtualizationTest : ServerTestBase<ToggleExecutionModeServerFixtur
             relTopBefore,
             "None mode at bottom: same item should stay at same position after small append",
             driftTolerance: 2);
+
+        js.ExecuteScript("arguments[0].scrollTop = 0;", container);
+        Browser.True(
+            () => container.FindElements(By.CssSelector(".item[data-index='0']")).Any(item => item.Displayed),
+            TimeSpan.FromSeconds(10),
+            "Scripted scroll after append should render the first item");
     }
 
     private void ScrollNearTopAndWaitForRender(IWebElement container, IJavaScriptExecutor js)

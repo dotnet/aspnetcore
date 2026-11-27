@@ -260,6 +260,14 @@ function init(dotNetHelper: DotNet.DotNetObject, spacerBefore: HTMLElement, spac
     ignoreNextScroll(): void {
       this._ignoreNextScroll = true;
     },
+    scrollBy(delta: number): void {
+      const previousScrollTop = scrollElement.scrollTop;
+      scrollElement.scrollTop += delta;
+      // A clamped scroll produces no event to consume the ignore flag.
+      if (scrollElement.scrollTop !== previousScrollTop) {
+        this.ignoreNextScroll();
+      }
+    },
     consumeIgnoreScroll(): boolean {
       if (!this._ignoreNextScroll) {
         return false;
@@ -516,8 +524,7 @@ function init(dotNetHelper: DotNet.DotNetObject, spacerBefore: HTMLElement, spac
         const containerTop = scrollContainer ? scrollContainer.getBoundingClientRect().top : 0;
         const delta = (el.getBoundingClientRect().top - containerTop) - scrollCorrectionOffset;
         if (Math.abs(delta) > 1) {
-          scrollElement.scrollTop += delta;
-          scrollActivity.ignoreNextScroll();
+          scrollActivity.scrollBy(delta);
         }
       }
     }
@@ -565,20 +572,16 @@ function init(dotNetHelper: DotNet.DotNetObject, spacerBefore: HTMLElement, spac
     }
     const delta = newOffset - snapshot.anchorOffset;
 
-    // Save anchor for drift correction.
-    scrollActivity.source = ScrollSource.RestoreSnapshot;
-    scrollActivity.ignoreNextScroll();
-    if (Math.abs(delta) > 1) {
-      scrollCorrectionItemIndex = snapshot.anchorItemIndex;
-      pendingScrollCorrection = true;
-    }
-
     // End mode: only carry the at-bottom state forward if the viewport is actually at the bottom right now.
     // Don't rely on the cached wasAtBottomLastRender — it may be stale if the user scrolled away.
     const preserveWasAtBottom = anchorModeIs.end && isViewportAtBottom();
 
+    // Keep observer callbacks classified as a restore until a subsequent scroll.
+    scrollActivity.source = ScrollSource.RestoreSnapshot;
     if (Math.abs(delta) > 1) {
-      scrollElement.scrollTop += delta;
+      scrollCorrectionItemIndex = snapshot.anchorItemIndex;
+      pendingScrollCorrection = true;
+      scrollActivity.scrollBy(delta);
     }
 
     // Save anchor offset AFTER scrollTop adjustment for drift correction.
@@ -718,9 +721,7 @@ function init(dotNetHelper: DotNet.DotNetObject, spacerBefore: HTMLElement, spac
       return;
     }
 
-    const selfScrollInProgress = scrollActivity.source === ScrollSource.AlignToItem
-      || scrollActivity.source === ScrollSource.RestoreSnapshot;
-    if (selfScrollInProgress) {
+    if (scrollActivity.source === ScrollSource.AlignToItem) {
       return;
     }
     scrollActivity.source = ScrollSource.UserScroll;

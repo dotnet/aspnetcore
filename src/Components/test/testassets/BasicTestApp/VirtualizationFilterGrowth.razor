@@ -1,0 +1,28 @@
+@using Microsoft.AspNetCore.Components.Web.Virtualization
+
+<p>
+    <label>Filter <input id="filter-input" @bind="filter" @bind:event="oninput" /></label>
+    <button id="clear-filter" @onclick="() => filter = string.Empty">Clear filter</button>
+    <button id="back-to-top" onclick="document.getElementById('filter-list').scrollTop = 0">Back to top</button>
+    <span id="visible-count">@Visible.Count rows</span>
+</p>
+
+<div id="filter-list" style="height: 400px; overflow-y: auto; border: 1px solid #999;">
+    <Virtualize Items="@Visible" Context="row" ItemSize="30">
+        <div id="filter-row-@row.Id" class="filter-row" style="height: 30px; box-sizing: border-box; border-bottom: 1px solid #eee;">@row.Name</div>
+    </Virtualize>
+</div>
+
+@code {
+    private static readonly List<Row> All = Enumerable.Range(0, 1000)
+        .Select(i => new Row(i, $"Row {i:D4}{(i % 3 == 0 ? " fizz" : "")}"))
+        .ToList();
+
+    private string filter = string.Empty;
+
+    private List<Row> Visible => string.IsNullOrEmpty(filter)
+        ? All
+        : All.Where(r => r.Name.Contains(filter, StringComparison.OrdinalIgnoreCase)).ToList();
+
+    private sealed record Row(int Id, string Name);
+}
