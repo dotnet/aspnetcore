@@ -97,8 +97,8 @@ public static class IdentityCookieAuthenticationBuilderExtensions
     /// <returns>The <see cref="OptionsBuilder{TOptions}"/> which can be used to configure the cookie authentication.</returns>
     /// <remarks>
     /// This also registers the separate <c>Identity.Passkey</c> cookie used by passkey ceremonies.
-    /// The passkey cookie inherits the two-factor cookie's data protection provider unless explicitly
-    /// configured, but uses its own ticket data format with the passkey scheme's purpose.
+    /// The passkey cookie inherits the two-factor cookie's data protection provider and session store unless
+    /// explicitly configured, but uses its own ticket data format with the passkey scheme's purpose.
     /// Register direct <c>Identity.Passkey</c> cookie configuration after this method or the Identity
     /// registration that calls it so it takes precedence over the inherited two-factor settings.
     /// Applications that manually register <see cref="IdentityConstants.TwoFactorUserIdScheme"/> with
@@ -155,8 +155,9 @@ public static class IdentityCookieAuthenticationBuilderExtensions
                         .Get(IdentityConstants.TwoFactorUserIdScheme);
                     options.ExpireTimeSpan = twoFactor.ExpireTimeSpan;
                     options.SlidingExpiration = twoFactor.SlidingExpiration;
-                    options.TimeProvider = twoFactor.TimeProvider;
+                    options.TimeProvider ??= twoFactor.TimeProvider;
                     options.DataProtectionProvider ??= twoFactor.DataProtectionProvider;
+                    options.SessionStore ??= twoFactor.SessionStore;
                     // Preserve the default builder so an unset Path uses the request path base.
                     options.Cookie.Name = twoFactor.Cookie.Name == IdentityConstants.TwoFactorUserIdScheme
                         ? IdentityConstants.PasskeyScheme

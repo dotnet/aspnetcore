@@ -1,0 +1,110 @@
+diff --git a/src/Identity/Core/src/IdentityApiEndpointRouteBuilderExtensions.cs b/src/Identity/Core/src/IdentityApiEndpointRouteBuilderExtensions.cs
+index 82f424fef5e5..16b35f060733 100644
+--- a/src/Identity/Core/src/IdentityApiEndpointRouteBuilderExtensions.cs
++++ b/src/Identity/Core/src/IdentityApiEndpointRouteBuilderExtensions.cs
+@@ -46,7 +46,8 @@ public static class IdentityApiEndpointRouteBuilderExtensions
+     /// but its name, events, and ticket format are independent. A customized two-factor cookie name receives a
+     /// <c>.Passkey</c> suffix for the passkey cookie. Custom cookie-builder behavior and subsequent reloads of only
+     /// the two-factor options are not inherited; configure the <c>Identity.Passkey</c> named cookie options directly
+-    /// when these are required.
++    /// when these are required. Register direct passkey cookie configuration after <c>AddIdentityApiEndpoints</c>
++    /// or any other Identity cookie registration so it takes precedence over the inherited settings.
+     /// In-flight ceremonies using the older shared two-factor cookie cannot continue across this change.
+     /// During a rolling deployment, drain older instances or keep each ceremony on the version that started it;
+     /// otherwise clients must restart the ceremony.
+diff --git a/src/Identity/Core/src/IdentityCookiesBuilderExtensions.cs b/src/Identity/Core/src/IdentityCookiesBuilderExtensions.cs
+index cf948ff98dfa..df60cd13a572 100644
+--- a/src/Identity/Core/src/IdentityCookiesBuilderExtensions.cs
++++ b/src/Identity/Core/src/IdentityCookiesBuilderExtensions.cs
+@@ -99,6 +99,8 @@ public static OptionsBuilder<CookieAuthenticationOptions> AddTwoFactorRememberMe
+     /// This also registers the separate <c>Identity.Passkey</c> cookie used by passkey ceremonies.
+     /// The passkey cookie inherits the two-factor cookie's data protection provider unless explicitly
+     /// configured, but uses its own ticket data format with the passkey scheme's purpose.
++    /// Register direct <c>Identity.Passkey</c> cookie configuration after this method or the Identity
++    /// registration that calls it so it takes precedence over the inherited two-factor settings.
+     /// Applications that manually register <see cref="IdentityConstants.TwoFactorUserIdScheme"/> with
+     /// <c>AddCookie</c> and use passkeys should replace that registration with this method and reapply
+     /// their two-factor cookie settings using the returned options builder.
+diff --git a/src/Identity/test/Identity.Test/IdentityOptionsTest.cs b/src/Identity/test/Identity.Test/IdentityOptionsTest.cs
+index 19d73dd17069..79a200e22000 100644
+--- a/src/Identity/test/Identity.Test/IdentityOptionsTest.cs
++++ b/src/Identity/test/Identity.Test/IdentityOptionsTest.cs
+@@ -8,6 +8,7 @@
+ using Microsoft.AspNetCore.Http;
+ using Microsoft.Extensions.DependencyInjection;
+ using Microsoft.Extensions.Options;
++using Microsoft.Extensions.Time.Testing;
+ using Moq;
+ 
+ namespace Microsoft.AspNetCore.Identity.Test;
+@@ -118,6 +119,58 @@ public async Task PasskeyCookieInheritsTwoFactorConfiguration(int registration)
+         Assert.NotSame(twoFactor.TicketDataFormat, passkey.TicketDataFormat);
+     }
+ 
++    [Fact]
++    public async Task PasskeyCookieConfigurationAfterIdentityOverridesInheritedLifetime()
++    {
++        var timeProvider = new FakeTimeProvider();
++        var services = new ServiceCollection();
++        services.AddLogging();
++        services.AddSingleton<TimeProvider>(timeProvider);
++        services.AddIdentityApiEndpoints<PocoUser>();
++        services.AddSingleton(Mock.Of<IUserStore<PocoUser>>());
++        var passkeyHandler = new Mock<IPasskeyHandler<PocoUser>>();
++        passkeyHandler.Setup(handler => handler.MakeRequestOptionsAsync(null, It.IsAny<HttpContext>()))
++            .ReturnsAsync(new PasskeyRequestOptionsResult
++            {
++                RequestOptionsJson = "{}",
++                AssertionState = "assertion-state",
++            });
++        services.AddSingleton(passkeyHandler.Object);
++        services.Configure<CookieAuthenticationOptions>(IdentityConstants.PasskeyScheme, options =>
++        {
++            options.ExpireTimeSpan = TimeSpan.FromMinutes(15);
++            options.SlidingExpiration = false;
++        });
++        using var provider = services.BuildServiceProvider();
++        using var scope = provider.CreateScope();
++        var context = new DefaultHttpContext { RequestServices = scope.ServiceProvider };
++        var signIn = scope.ServiceProvider.GetRequiredService<SignInManager<PocoUser>>();
++        signIn.Context = context;
++
++        Assert.Equal("{}", await signIn.MakePasskeyRequestOptionsAsync(null));
++        var cookie = context.Response.Headers.SetCookie.ToString().Split(';')[0];
++        Assert.StartsWith(IdentityConstants.PasskeyScheme + "=", cookie);
++        var options = provider.GetRequiredService<IOptionsMonitor<CookieAuthenticationOptions>>();
++        Assert.Equal(TimeSpan.FromMinutes(5), options.Get(IdentityConstants.TwoFactorUserIdScheme).ExpireTimeSpan);
++
++        timeProvider.Advance(TimeSpan.FromMinutes(6));
++        using var nextScope = provider.CreateScope();
++        var nextContext = new DefaultHttpContext { RequestServices = nextScope.ServiceProvider };
++        nextContext.Request.Headers.Cookie = cookie;
++        var result = await nextContext.AuthenticateAsync(IdentityConstants.PasskeyScheme);
++        Assert.True(result.Succeeded);
++        Assert.Equal("assertion-state", result.Properties.Items["PasskeyState"]);
++        Assert.Equal(TimeSpan.FromMinutes(15), result.Properties.ExpiresUtc - result.Properties.IssuedUtc);
++
++        timeProvider.Advance(TimeSpan.FromMinutes(10));
++        using var expiredScope = provider.CreateScope();
++        var expiredContext = new DefaultHttpContext { RequestServices = expiredScope.ServiceProvider };
++        expiredContext.Request.Headers.Cookie = cookie;
++        var expiredResult = await expiredContext.AuthenticateAsync(IdentityConstants.PasskeyScheme);
++        Assert.False(expiredResult.Succeeded);
++        Assert.NotNull(expiredResult.Failure);
++    }
++
+     [Theory]
+     [InlineData("/app-a")]
+     [InlineData("/app-b")]
+diff --git a/src/Identity/test/Identity.Test/Microsoft.AspNetCore.Identity.Test.csproj b/src/Identity/test/Identity.Test/Microsoft.AspNetCore.Identity.Test.csproj
+index 2f61469600b1..5e38dd8f769f 100644
+--- a/src/Identity/test/Identity.Test/Microsoft.AspNetCore.Identity.Test.csproj
++++ b/src/Identity/test/Identity.Test/Microsoft.AspNetCore.Identity.Test.csproj
+@@ -25,6 +25,7 @@
+     <ProjectReference Include="$(RepoRoot)src\Identity\Core\src\Microsoft.AspNetCore.Identity.csproj" />
+     <ProjectReference Include="$(RepoRoot)src\Identity\Specification.Tests\src\Microsoft.AspNetCore.Identity.Specification.Tests.csproj" />
+     <ProjectReference Include="$(RepoRoot)src\Identity\UI\src\Microsoft.AspNetCore.Identity.UI.csproj" />
++    <ProjectReference Include="$(RepoRoot)src\Security\Authentication\BearerToken\src\Microsoft.AspNetCore.Authentication.BearerToken.csproj" />
+     <ProjectReference Include="$(RepoRoot)src\Security\Authentication\Cookies\src\Microsoft.AspNetCore.Authentication.Cookies.csproj" />
+     <ProjectReference Include="$(RepoRoot)src\Security\Authentication\Core\src\Microsoft.AspNetCore.Authentication.csproj" />
+   </ItemGroup>

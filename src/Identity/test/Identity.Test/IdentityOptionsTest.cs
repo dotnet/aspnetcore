@@ -1,6 +1,7 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Collections.Concurrent;
 using System.Security.Claims;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.Cookies;
@@ -93,6 +94,7 @@ public class IdentityOptionsTest
         {
             services.AddIdentity<PocoUser, PocoRole>();
         }
+        var sessionStore = new TestTicketStore();
         services.PostConfigure<CookieAuthenticationOptions>(IdentityConstants.TwoFactorUserIdScheme, options =>
         {
             options.Cookie.Name = "custom-two-factor";
@@ -101,6 +103,7 @@ public class IdentityOptionsTest
             options.Cookie.Extensions.Add("custom=value");
             options.ExpireTimeSpan = TimeSpan.FromMinutes(30);
             options.SlidingExpiration = false;
+            options.SessionStore = sessionStore;
         });
         using var provider = services.BuildServiceProvider();
         var schemes = provider.GetRequiredService<Microsoft.AspNetCore.Authentication.IAuthenticationSchemeProvider>();
@@ -115,9 +118,11 @@ public class IdentityOptionsTest
         Assert.NotSame(twoFactor.Cookie, passkey.Cookie);
         Assert.Equal(TimeSpan.FromMinutes(30), passkey.ExpireTimeSpan);
         Assert.False(passkey.SlidingExpiration);
+        Assert.Same(sessionStore, passkey.SessionStore);
         Assert.NotSame(twoFactor.Events, passkey.Events);
         Assert.NotSame(twoFactor.TicketDataFormat, passkey.TicketDataFormat);
     }
+
     [Fact]
     public async Task PasskeyCookieConfigurationAfterIdentityOverridesInheritedLifetime()
     {
@@ -167,6 +172,7 @@ public class IdentityOptionsTest
         Assert.False(expiredResult.Succeeded);
         Assert.NotNull(expiredResult.Failure);
     }
+
     [Theory]
     [InlineData("/app-a")]
     [InlineData("/app-b")]
@@ -252,6 +258,135 @@ public class IdentityOptionsTest
             "Microsoft.AspNetCore.Authentication.Cookies.CookieAuthenticationMiddleware", IdentityConstants.PasskeyScheme, "v2"));
         Assert.Equal("assertion-state", passkeyFormat.Unprotect(cookieValue).Properties.Items["PasskeyState"]);
         Assert.Null(twoFactor.TicketDataFormat.Unprotect(cookieValue));
+    }
+
+    [Theory]
+    [InlineData(false, false)]
+    [InlineData(false, true)]
+    [InlineData(true, false)]
+    [InlineData(true, true)]
+    public async Task PasskeyCookieUsesConfiguredSessionStore(bool configurePasskeyStore, bool configureBeforeRegistration)
+    {
+        var twoFactorStore = new TestTicketStore();
+        var passkeyStore = new TestTicketStore();
+        var expectedStore = configurePasskeyStore ? passkeyStore : twoFactorStore;
+        var otherStore = configurePasskeyStore ? twoFactorStore : passkeyStore;
+        var largeAssertionState = new string('a', 8192);
+        var passkey = new UserPasskeyInfo(
+            credentialId: [1, 2, 3], publicKey: [4, 5, 6], createdAt: DateTimeOffset.UtcNow,
+            signCount: 0, transports: [], isUserVerified: true, isBackupEligible: true,
+            isBackedUp: true, attestationObject: [7, 8, 9], clientDataJson: [10, 11, 12]);
+        var services = new ServiceCollection();
+        services.AddLogging();
+        services.AddIdentityCore<PocoUser>().AddSignInManager();
+        services.AddSingleton(Mock.Of<IUserStore<PocoUser>>());
+        var passkeyHandler = new Mock<IPasskeyHandler<PocoUser>>();
+        passkeyHandler.Setup(handler => handler.MakeRequestOptionsAsync(null, It.IsAny<HttpContext>()))
+            .ReturnsAsync(new PasskeyRequestOptionsResult
+            {
+                RequestOptionsJson = "{}",
+                AssertionState = largeAssertionState,
+            });
+        passkeyHandler.Setup(handler => handler.PerformAssertionAsync(
+                It.Is<PasskeyAssertionContext>(context => context.AssertionState == largeAssertionState)))
+            .ReturnsAsync(PasskeyAssertionResult.Success(passkey, new PocoUser { UserName = "hao" }))
+            .Verifiable();
+        services.AddSingleton(passkeyHandler.Object);
+        if (configurePasskeyStore && configureBeforeRegistration)
+        {
+            services.Configure<CookieAuthenticationOptions>(IdentityConstants.PasskeyScheme,
+                options => options.SessionStore = passkeyStore);
+        }
+        services.AddAuthentication().AddTwoFactorUserIdCookie()
+            .Configure(options => options.SessionStore = twoFactorStore);
+        if (configurePasskeyStore && !configureBeforeRegistration)
+        {
+            services.Configure<CookieAuthenticationOptions>(IdentityConstants.PasskeyScheme,
+                options => options.SessionStore = passkeyStore);
+        }
+
+        using var provider = services.BuildServiceProvider();
+        var monitor = provider.GetRequiredService<IOptionsMonitor<CookieAuthenticationOptions>>();
+        Assert.Same(expectedStore, monitor.Get(IdentityConstants.PasskeyScheme).SessionStore);
+
+        using var firstScope = provider.CreateScope();
+        var context = new DefaultHttpContext { RequestServices = firstScope.ServiceProvider };
+        var signIn = firstScope.ServiceProvider.GetRequiredService<SignInManager<PocoUser>>();
+        signIn.Context = context;
+
+        Assert.Equal("{}", await signIn.MakePasskeyRequestOptionsAsync(null));
+        var setCookies = context.Response.Headers.SetCookie.ToArray();
+        var setCookie = Assert.Single(setCookies);
+        var cookie = setCookie.Split(';')[0];
+        Assert.StartsWith(IdentityConstants.PasskeyScheme + "=", cookie);
+        Assert.True(cookie.Length < 1024);
+        Assert.Equal(1, expectedStore.StoreCount);
+        Assert.Equal(1, expectedStore.Count);
+        Assert.Equal(0, otherStore.StoreCount);
+
+        using var secondScope = provider.CreateScope();
+        var nextContext = new DefaultHttpContext { RequestServices = secondScope.ServiceProvider };
+        nextContext.Request.Headers.Cookie = cookie;
+        var nextSignIn = secondScope.ServiceProvider.GetRequiredService<SignInManager<PocoUser>>();
+        nextSignIn.Context = nextContext;
+
+        var assertionResult = await nextSignIn.PerformPasskeyAssertionAsync("{}");
+        Assert.True(assertionResult.Succeeded);
+        Assert.Same(passkey, assertionResult.Passkey);
+        passkeyHandler.Verify();
+        Assert.Equal(1, expectedStore.RetrieveCount);
+        Assert.Equal(1, expectedStore.RemoveCount);
+        Assert.Equal(0, expectedStore.Count);
+        Assert.Equal(0, otherStore.RetrieveCount);
+        Assert.Equal(0, otherStore.RemoveCount);
+        Assert.Contains(nextContext.Response.Headers.SetCookie, header => header.StartsWith(IdentityConstants.PasskeyScheme + "=;", StringComparison.Ordinal));
+
+        using var replayScope = provider.CreateScope();
+        var replayContext = new DefaultHttpContext { RequestServices = replayScope.ServiceProvider };
+        replayContext.Request.Headers.Cookie = cookie;
+        var replayAuth = await replayContext.AuthenticateAsync(IdentityConstants.PasskeyScheme);
+        Assert.False(replayAuth.Succeeded);
+    }
+
+    private sealed class TestTicketStore : ITicketStore
+    {
+        private readonly ConcurrentDictionary<string, AuthenticationTicket> _tickets = new();
+        private int _storeCount;
+        private int _retrieveCount;
+        private int _removeCount;
+
+        public int Count => _tickets.Count;
+        public int StoreCount => Volatile.Read(ref _storeCount);
+        public int RetrieveCount => Volatile.Read(ref _retrieveCount);
+        public int RemoveCount => Volatile.Read(ref _removeCount);
+
+        public Task<string> StoreAsync(AuthenticationTicket ticket)
+        {
+            Interlocked.Increment(ref _storeCount);
+            var key = Guid.NewGuid().ToString("N");
+            _tickets[key] = ticket;
+            return Task.FromResult(key);
+        }
+
+        public Task RenewAsync(string key, AuthenticationTicket ticket)
+        {
+            _tickets[key] = ticket;
+            return Task.CompletedTask;
+        }
+
+        public Task<AuthenticationTicket> RetrieveAsync(string key)
+        {
+            Interlocked.Increment(ref _retrieveCount);
+            _tickets.TryGetValue(key, out var ticket);
+            return Task.FromResult(ticket);
+        }
+
+        public Task RemoveAsync(string key)
+        {
+            Interlocked.Increment(ref _removeCount);
+            _tickets.TryRemove(key, out _);
+            return Task.CompletedTask;
+        }
     }
 
     [Fact]

@@ -516,7 +516,7 @@ public class FunctionalTest : LoggedTest
                         }
                         break;
                     case "pending":
-                         await context.Response.WriteAsync((await signIn.GetTwoFactorAuthenticationUserAsync())?.UserName ?? "");
+                        await context.Response.WriteAsync((await signIn.GetTwoFactorAuthenticationUserAsync())?.UserName ?? "");
                         break;
                     case "consume":
                         if (attestation)

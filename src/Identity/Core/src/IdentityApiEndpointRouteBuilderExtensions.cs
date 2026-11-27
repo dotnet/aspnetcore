@@ -40,10 +40,11 @@ public static class IdentityApiEndpointRouteBuilderExtensions
     /// Call <see cref="EndpointRouteBuilderExtensions.MapGroup(IEndpointRouteBuilder, string)"/> to add a prefix to all the endpoints.
     /// </param>
     /// <remarks>
-     /// The passkey endpoints use a separate <c>Identity.Passkey</c> cookie to store state between
-     /// the options and completion requests. This scheme is registered by <c>AddIdentityApiEndpoints</c>.
-    /// Its lifetime and cookie attributes inherit the two-factor user ID cookie configuration at options creation time,
-    /// but its name, events, and ticket format are independent. A customized two-factor cookie name receives a
+    /// The passkey endpoints use a separate <c>Identity.Passkey</c> cookie to store state between
+    /// the options and completion requests. This scheme is registered by <c>AddIdentityApiEndpoints</c>.
+    /// Its lifetime, cookie attributes, data protection provider, and session store inherit the two-factor
+    /// user ID cookie configuration at options creation time (unless explicitly configured on <c>Identity.Passkey</c>),
+    /// while its name, events, and ticket format are independent. A customized two-factor cookie name receives a
     /// <c>.Passkey</c> suffix for the passkey cookie. Custom cookie-builder behavior and subsequent reloads of only
     /// the two-factor options are not inherited; configure the <c>Identity.Passkey</c> named cookie options directly
     /// when these are required. Register direct passkey cookie configuration after <c>AddIdentityApiEndpoints</c>
