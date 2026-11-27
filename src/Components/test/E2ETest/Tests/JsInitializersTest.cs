@@ -87,6 +87,7 @@ public class JsInitializersTest : ServerTestBase<ToggleExecutionModeServerFixtur
         {
             Browser.MountTestComponent<ConfigureRuntime>();
             Browser.Equal("initializer", () => Browser.Exists(By.Id("environment")).Text);
+            Assert.Equal(1L, ((IJavaScriptExecutor)Browser).ExecuteScript("return window.configureRuntimeCalls"));
         }
     }
 

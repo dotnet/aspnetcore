@@ -218,7 +218,7 @@ async function createRuntimeInstance(options: Partial<WebAssemblyStartOptions>, 
 
     jsInitializer = await fetchAndInvokeInitializers(options, loadedConfig);
 
-    if (options.loadBootResource && options.loadBootResource !== initialLoadBootResource) {
+    if (options.loadBootResource !== initialLoadBootResource) {
       dotnet.withResourceLoader(options.loadBootResource);
     }
 

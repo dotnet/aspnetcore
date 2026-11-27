@@ -13,7 +13,21 @@ export async function beforeStart(options) {
             await Promise.resolve();
             options.environment = 'InitializerTest';
             options.applicationCulture = 'fr-FR';
-            options.configureRuntime = dotnet => dotnet.withEnvironmentVariable('CONFIGURE_RUNTIME', 'initializer');
+            const configureRuntime = options.configureRuntime;
+            options.configureRuntime = dotnet => {
+                configureRuntime?.(dotnet);
+                dotnet.withConfigLoaded(async config => {
+                    if (config.environmentVariables.CONFIGURE_RUNTIME !== 'original') {
+                        throw new Error('The original configuration callback must run first.');
+                    }
+                    await new Promise(resolve => requestAnimationFrame(resolve));
+                    config.environmentVariables.CONFIGURE_RUNTIME = 'initializer';
+                }).withConfigLoaded(config => {
+                    if (config.environmentVariables.CONFIGURE_RUNTIME !== 'initializer') {
+                        throw new Error('The asynchronous configuration callback must complete first.');
+                    }
+                });
+            };
             options.loadBootResource = function (type, name, defaultUri, integrity) {
                 resourceRequests.push([type, name, defaultUri, integrity]);
                 const uri = new URL(defaultUri, document.baseURI);
