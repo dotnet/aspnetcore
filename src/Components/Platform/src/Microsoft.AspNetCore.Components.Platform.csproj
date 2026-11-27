@@ -24,6 +24,13 @@
                       ReferenceOutputAssembly="false" />
   </ItemGroup>
 
+  <PropertyGroup>
+    <!-- Framework assemblies always emit registrations; the runtime feature switch selects them. -->
+    <JSInteropGenerateInvokers>true</JSInteropGenerateInvokers>
+  </PropertyGroup>
+
+  <Import Project="$(RepoRoot)src\Components\JSInterop\gen\Microsoft.JSInterop.SourceGenerators.targets" />
+
   <ItemGroup>
     <Compile Include="$(SharedSourceRoot)LinkerFlags.cs" LinkBase="Shared" />
     <InternalsVisibleTo Include="Microsoft.AspNetCore.Components.Platform.Tests" />

@@ -9,6 +9,7 @@ using System.Runtime.Loader;
 using System.Text.Json;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
+using Microsoft.CodeAnalysis.Diagnostics;
 using Microsoft.JSInterop.Infrastructure;
 
 namespace Microsoft.JSInterop.SourceGenerators.Tests;
@@ -175,6 +176,31 @@ public class JSInvokableGeneratorTests
 
         Assert.Contains(run.GeneratorDiagnostics, diagnostic => diagnostic.Id == diagnosticId);
         Assert.DoesNotContain(run.Result.GeneratedTrees, tree => tree.GetText().ToString().Contains("Register"));
+        AssertNoCompilationErrors(run.OutputCompilation);
+    }
+
+    [Theory]
+    [InlineData(null)]
+    [InlineData("false")]
+    public void GeneratorWithoutBuildTimeOptIn_EmitsNothing(string? generateInvokers)
+    {
+        var source = """
+            using Microsoft.JSInterop;
+
+            public class C { [JSInvokable] public static int M() => 1; }
+            public class B { [JSInvokable] public virtual void V() { } }
+            public class D<T> : B { public override void V() { } }
+            public partial class Box<T> { [JSInvokable] public T Swap(T value) => value; }
+            public class Unsupported { [JSInvokable] public static void G<T>() { } }
+            """;
+
+        var enabledRun = RunGenerator(source);
+        var run = RunGenerator(source, generateInvokers: generateInvokers);
+
+        Assert.NotEmpty(enabledRun.Result.GeneratedTrees);
+        Assert.NotEmpty(enabledRun.GeneratorDiagnostics);
+        Assert.Empty(run.Result.GeneratedTrees);
+        Assert.Empty(run.GeneratorDiagnostics);
         AssertNoCompilationErrors(run.OutputCompilation);
     }
 
@@ -482,7 +508,7 @@ public class JSInvokableGeneratorTests
         return AssemblyLoadContext.Default.LoadFromStream(stream);
     }
 
-    private static GeneratorRun RunGenerator(string source, string assemblyName = "TestAssembly", IEnumerable<MetadataReference>? references = null)
+    private static GeneratorRun RunGenerator(string source, string assemblyName = "TestAssembly", IEnumerable<MetadataReference>? references = null, string? generateInvokers = "true")
     {
         var parseOptions = CSharpParseOptions.Default.WithLanguageVersion(LanguageVersion.CSharp13);
         var compilation = CSharpCompilation.Create(
@@ -491,7 +517,10 @@ public class JSInvokableGeneratorTests
             references ?? GetMetadataReferences(),
             new CSharpCompilationOptions(OutputKind.DynamicallyLinkedLibrary)
                 .WithNullableContextOptions(NullableContextOptions.Enable));
-        GeneratorDriver driver = CSharpGeneratorDriver.Create([new JSInvokableGenerator().AsSourceGenerator()], parseOptions: parseOptions);
+        GeneratorDriver driver = CSharpGeneratorDriver.Create(
+            [new JSInvokableGenerator().AsSourceGenerator()],
+            parseOptions: parseOptions,
+            optionsProvider: new BuildPropertyOptionsProvider(generateInvokers));
         driver = driver.RunGeneratorsAndUpdateCompilation(compilation, out var outputCompilation, out var generatorDiagnostics);
 
         return new GeneratorRun(driver.GetRunResult(), outputCompilation, generatorDiagnostics);
@@ -514,6 +543,29 @@ public class JSInvokableGeneratorTests
 
     private static string GetGeneratedSource(GeneratorDriverRunResult result)
         => Assert.Single(result.GeneratedTrees, tree => tree.FilePath.EndsWith("JSInvokableRegistrations.g.cs", StringComparison.Ordinal)).GetText().ToString();
+
+    private sealed class BuildPropertyOptionsProvider(string? generateInvokers) : AnalyzerConfigOptionsProvider
+    {
+        private readonly Options _options = new(generateInvokers);
+
+        public override AnalyzerConfigOptions GlobalOptions => _options;
+
+        public override AnalyzerConfigOptions GetOptions(SyntaxTree tree) => _options;
+
+        public override AnalyzerConfigOptions GetOptions(AdditionalText textFile) => _options;
+
+        private sealed class Options(string? generateInvokers) : AnalyzerConfigOptions
+        {
+            // NotNullWhen is ambiguous: the generator's polyfill is visible to this test assembly.
+#pragma warning disable CS8765
+            public override bool TryGetValue(string key, out string? value)
+#pragma warning restore CS8765
+            {
+                value = key == JSInvokableGenerator.EnabledProperty ? generateInvokers : null;
+                return value is not null;
+            }
+        }
+    }
 
     private sealed record GeneratorRun(GeneratorDriverRunResult Result, Compilation OutputCompilation, ImmutableArray<Diagnostic> GeneratorDiagnostics);
 

@@ -42,14 +42,24 @@ To build the JavaScript code, execute the following commands in a command shell:
 
 `GeneratedInteropPrototype` and the `Microsoft.JSInterop.SourceGenerators` generator are an
 experimental registration surface, not an approved API. Reflection-based dispatch remains the
-default. To select generated dispatch exclusively, add this runtime feature switch to the consuming
-application's project:
+default. Generated-only dispatch is selected at build time with one MSBuild property in the consuming
+application's project, which also needs the generator analyzer and
+`src/Components/JSInterop/gen/Microsoft.JSInterop.SourceGenerators.targets` while the generator is
+not packaged:
 
 ```xml
-<ItemGroup>
-  <RuntimeHostConfigurationOption Include="Microsoft.JSInterop.GeneratedOnly" Value="true" Trim="true" />
-</ItemGroup>
+<PropertyGroup>
+  <JSInteropGeneratedOnly>true</JSInteropGeneratedOnly>
+</PropertyGroup>
 ```
+
+The property runs the generator for that project and sets the `Microsoft.JSInterop.GeneratedOnly`
+runtime feature switch (`RuntimeHostConfigurationOption`, `Trim="true"`). Without it, the targets
+remove the generator from the compilation, so it does not scan the project or report diagnostics,
+and the generator itself emits nothing unless `JSInteropGenerateInvokers` is `true`. A library can
+set `JSInteropGenerateInvokers` to emit registrations without setting the runtime switch. Setting the
+runtime switch without the property leaves the application's own `[JSInvokable]` methods unregistered,
+so they fail explicitly in generated-only mode.
 
 ### Generated registrations
 
@@ -63,8 +73,9 @@ feature switch is enabled, so trimming removes the registrations when the switch
 Microsoft.AspNetCore.Components.Web, Microsoft.AspNetCore.Components.WebAssembly and
 Microsoft.AspNetCore.Components.Platform run the generator, so framework callbacks such as
 `WebRendererInteropMethods.DispatchEventAsync`, WebAssembly navigation callbacks and Platform's
-`JSCallback<T>` are registered by the assemblies that own them. The generator is not packaged yet; an
-application opts in with an analyzer reference to the generator project.
+`JSCallback<T>` are registered by the assemblies that own them. Those assemblies are compiled once for
+every application, so they set `JSInteropGenerateInvokers` and always contain registrations; the
+registrations are gated by the runtime feature switch and trimmed when it is off.
 
 Instance methods on generic types (for example `Box<T>`) and on private or protected nested types are
 registered lazily from the target instance through a generated implementation of

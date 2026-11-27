@@ -17,9 +17,17 @@ namespace Microsoft.JSInterop.SourceGenerators;
 [Generator]
 public sealed class JSInvokableGenerator : IIncrementalGenerator
 {
+    internal const string EnabledProperty = "build_property.JSInteropGenerateInvokers";
+
     /// <inheritdoc />
     public void Initialize(IncrementalGeneratorInitializationContext context)
     {
+        // Generated-only dispatch is selected at build time. Without the property the generator emits
+        // no registrations and no diagnostics; MSBuild also detaches it so the scan does not run.
+        var enabled = context.AnalyzerConfigOptionsProvider.Select(static (options, _) =>
+            options.GlobalOptions.TryGetValue(EnabledProperty, out var value)
+            && string.Equals(value, "true", System.StringComparison.OrdinalIgnoreCase));
+
         var parseResults = context.SyntaxProvider.ForAttributeWithMetadataName(
             "Microsoft.JSInterop.JSInvokableAttribute",
             predicate: static (node, _) => node is MethodDeclarationSyntax,
@@ -33,8 +41,14 @@ public sealed class JSInvokableGenerator : IIncrementalGenerator
         var results = parseResults.Collect().Combine(overrideResults.Collect())
             .Select(static (input, _) => input.Left.AddRange(input.Right));
 
-        context.RegisterSourceOutput(results, static (spc, all) =>
+        context.RegisterSourceOutput(results.Combine(enabled), static (spc, input) =>
         {
+            var (all, isEnabled) = input;
+            if (!isEnabled)
+            {
+                return;
+            }
+
             foreach (var result in all)
             {
                 foreach (var diagnostic in result.Diagnostics)
@@ -57,10 +71,10 @@ public sealed class JSInvokableGenerator : IIncrementalGenerator
 
         var methods = results.Select(static (all, _) => new EquatableArray<JSInvokableMethod>([.. all.SelectMany(r => r.Methods)]));
 
-        context.RegisterSourceOutput(methods.Combine(target), static (spc, input) =>
+        context.RegisterSourceOutput(methods.Combine(target).Combine(enabled), static (spc, input) =>
         {
-            var (allMethods, (assemblyName, supported)) = input;
-            if (!supported || allMethods.Length == 0)
+            var ((allMethods, (assemblyName, supported)), isEnabled) = input;
+            if (!isEnabled || !supported || allMethods.Length == 0)
             {
                 return;
             }

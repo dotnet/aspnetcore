@@ -27,6 +27,13 @@
                       ReferenceOutputAssembly="false" />
   </ItemGroup>
 
+  <PropertyGroup>
+    <!-- Framework assemblies always emit registrations; the runtime feature switch selects them. -->
+    <JSInteropGenerateInvokers>true</JSInteropGenerateInvokers>
+  </PropertyGroup>
+
+  <Import Project="$(RepoRoot)src\Components\JSInterop\gen\Microsoft.JSInterop.SourceGenerators.targets" />
+
   <!-- Components.TestServer publishes multiple referenced WebAssembly apps that all traverse this
        project. Skip the redundant traversal on that publish path to avoid concurrent compression. -->
   <PropertyGroup Condition="'$(_SkipReferencedProjectPublishAssets)' == 'true'">
