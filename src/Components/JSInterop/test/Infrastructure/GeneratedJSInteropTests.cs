@@ -6,7 +6,7 @@ using System.Text.Json.Serialization;
 
 namespace Microsoft.JSInterop.Infrastructure;
 
-public class GeneratedInteropPrototypeTests
+public class GeneratedJSInteropTests
 {
     [Fact]
     public async Task InvokesRegisteredCallbacksWithApplicationValueTypeMetadata()
@@ -14,9 +14,9 @@ public class GeneratedInteropPrototypeTests
         var runtime = CreateRuntime();
         runtime.GeneratedInterop.RegisterStatic("App", "Double", 1, (r, _, args) =>
         {
-            var value = args[0].Deserialize(GeneratedInteropPrototype.Metadata<GeneratedInteropValue>(r));
+            var value = args[0].Deserialize(GeneratedJSInterop.Metadata<GeneratedInteropValue>(r));
             return ValueTask.FromResult<string?>(JsonSerializer.Serialize(
-                new GeneratedInteropValue(value.Number * 2), GeneratedInteropPrototype.Metadata<GeneratedInteropValue>(r)));
+                new GeneratedInteropValue(value.Number * 2), GeneratedJSInterop.Metadata<GeneratedInteropValue>(r)));
         });
 
         var result = await runtime.GeneratedInterop.Invoke(runtime, new("App", "Double", 0, "1"), """[{"number":21}]""", synchronous: true);
@@ -24,7 +24,7 @@ public class GeneratedInteropPrototypeTests
         Assert.Equal("""{"number":42}""", result);
         Assert.Throws<ArgumentException>(() => runtime.GeneratedInterop.Invoke(runtime, new("App", "Missing", 0, "2"), "[]", synchronous: true));
         Assert.Throws<ArgumentException>(() => runtime.GeneratedInterop.Invoke(runtime, new("App", "Double", 0, "3"), "[]", synchronous: true));
-        Assert.Throws<NotSupportedException>(() => GeneratedInteropPrototype.Metadata<UnregisteredPayload>(runtime));
+        Assert.Throws<NotSupportedException>(() => GeneratedJSInterop.Metadata<UnregisteredPayload>(runtime));
     }
 
     [Fact]
@@ -38,7 +38,7 @@ public class GeneratedInteropPrototypeTests
         var gates = new Queue<Task>([firstGate.Task, secondGate.Task]);
         runtime.GeneratedInterop.RegisterInstance<InstanceProbe>("BytesLater", 1, (r, target, args) =>
         {
-            var bytes = args[0].Deserialize(GeneratedInteropPrototype.Metadata<byte[]>(r))!;
+            var bytes = args[0].Deserialize(GeneratedJSInterop.Metadata<byte[]>(r))!;
             return SerializeAfterAsync(((InstanceProbe)target!).BytesLater(bytes, gates.Dequeue()));
         }, isAsync: true);
 
@@ -59,7 +59,7 @@ public class GeneratedInteropPrototypeTests
         Assert.Throws<ArgumentException>(() => runtime.GetObjectReference(id));
 
         async ValueTask<string?> SerializeAfterAsync(ValueTask<int> result)
-            => JsonSerializer.Serialize(await result, GeneratedInteropPrototype.Metadata<int>(runtime));
+            => JsonSerializer.Serialize(await result, GeneratedJSInterop.Metadata<int>(runtime));
     }
 
     [Fact]
@@ -105,8 +105,8 @@ public class GeneratedInteropPrototypeTests
     {
         var runtime = CreateRuntime();
         var assembly = Guid.NewGuid().ToString();
-        GeneratedInteropPrototype.Shared.RegisterStatic(assembly, "Shared", 0, (_, _, _) => ValueTask.FromResult<string?>("1"));
-        GeneratedInteropPrototype.Shared.RegisterInstance<SharedBaseProbe>("Base", 0, (_, target, _) => ValueTask.FromResult<string?>(target!.GetType().Name));
+        GeneratedJSInterop.Shared.RegisterStatic(assembly, "Shared", 0, (_, _, _) => ValueTask.FromResult<string?>("1"));
+        GeneratedJSInterop.Shared.RegisterInstance<SharedBaseProbe>("Base", 0, (_, target, _) => ValueTask.FromResult<string?>(target!.GetType().Name));
         runtime.GeneratedInterop.RegisterStatic(assembly, "Shared", 0, (_, _, _) => ValueTask.FromResult<string?>("2"));
         using var reference = DotNetObjectReference.Create(new SharedDerivedProbe());
         var id = runtime.TrackObjectReference(reference);
@@ -114,7 +114,7 @@ public class GeneratedInteropPrototypeTests
         Assert.Equal("2", await runtime.GeneratedInterop.Invoke(runtime, new(assembly, "Shared", 0, "1"), "[]", synchronous: true));
         Assert.Equal("1", await CreateRuntime().GeneratedInterop.Invoke(runtime, new(assembly, "Shared", 0, "2"), "[]", synchronous: true));
         Assert.Equal(nameof(SharedDerivedProbe), await runtime.GeneratedInterop.Invoke(runtime, new(null, "Base", id, "3"), "[]", synchronous: true));
-        Assert.Throws<InvalidOperationException>(() => GeneratedInteropPrototype.Shared.RegisterStatic(assembly, "Shared", 0, (_, _, _) => default));
+        Assert.Throws<InvalidOperationException>(() => GeneratedJSInterop.Shared.RegisterStatic(assembly, "Shared", 0, (_, _, _) => default));
     }
 
     [Fact]
@@ -123,17 +123,47 @@ public class GeneratedInteropPrototypeTests
         var runtime = CreateRuntime();
         using var reference = JsonDocument.Parse("""{"__dotNetObject":1}""");
 
-        var misuse = Assert.Throws<InvalidOperationException>(() => GeneratedInteropPrototype.ReadArgument<GeneratedInteropValue>(runtime, reference.RootElement, "Call", 1));
+        var misuse = Assert.Throws<InvalidOperationException>(() => GeneratedJSInterop.ReadArgument<GeneratedInteropValue>(runtime, reference.RootElement, "Call", 1));
         Assert.Equal("In call to 'Call', parameter of type 'GeneratedInteropValue' at index 2 must be declared as type 'DotNetObjectRef<GeneratedInteropValue>' to receive the incoming value.", misuse.Message);
-        Assert.Equal("""{"derived":2,"base":1}""", await GeneratedInteropPrototype.SerializeResult<GeneratedInteropBase>(runtime, new GeneratedInteropDerived { Base = 1, Derived = 2 }));
-        Assert.Null(await GeneratedInteropPrototype.SerializeResult<GeneratedInteropBase?>(runtime, null));
+        Assert.Equal("""{"derived":2,"base":1}""", await GeneratedJSInterop.SerializeResult<GeneratedInteropBase>(runtime, new GeneratedInteropDerived { Base = 1, Derived = 2 }));
+        Assert.Null(await GeneratedJSInterop.SerializeResult<GeneratedInteropBase?>(runtime, null));
 
         var fault = new InvalidOperationException("inner");
-        var faulted = await Assert.ThrowsAsync<InvalidOperationException>(async () => await GeneratedInteropPrototype.SerializeResultAsync(runtime, Task.FromException<int>(new AggregateException(fault))));
+        var faulted = await Assert.ThrowsAsync<InvalidOperationException>(async () => await GeneratedJSInterop.SerializeResultAsync(runtime, Task.FromException<int>(new AggregateException(fault))));
         Assert.Same(fault, faulted);
-        await Assert.ThrowsAsync<TaskCanceledException>(async () => await GeneratedInteropPrototype.CompleteAsync(Task.FromCanceled(new CancellationToken(canceled: true))));
-        Assert.Equal("42", await GeneratedInteropPrototype.SerializeResultAsync(runtime, ValueTask.FromResult(42)));
-        Assert.Null(await GeneratedInteropPrototype.CompleteAsync(ValueTask.CompletedTask));
+        await Assert.ThrowsAsync<TaskCanceledException>(async () => await GeneratedJSInterop.CompleteAsync(Task.FromCanceled(new CancellationToken(canceled: true))));
+        Assert.Equal("42", await GeneratedJSInterop.SerializeResultAsync(runtime, ValueTask.FromResult(42)));
+        Assert.Null(await GeneratedJSInterop.CompleteAsync(ValueTask.CompletedTask));
+    }
+
+    [Fact]
+    public void SharedTypeInfoResolverHonorsResolversAddedAfterRuntimeCreation()
+    {
+        var runtime = new RecordingRuntime();
+        runtime.JsonSerializerOptions.TypeInfoResolverChain.Clear();
+        runtime.JsonSerializerOptions.TypeInfoResolverChain.Add(GeneratedJSInterop.SharedTypeInfoResolver);
+        runtime.JsonSerializerOptions.MakeReadOnly();
+
+        GeneratedJSInterop.AddTypeInfoResolver(GeneratedInteropLateJsonContext.Default);
+
+        Assert.Equal("""{"late":1}""", JsonSerializer.Serialize(new GeneratedInteropLateValue(1), GeneratedJSInterop.Metadata<GeneratedInteropLateValue>(runtime)));
+    }
+
+    [Fact]
+    public void ReferenceConvertersRegisteredAfterRuntimeCreationBindToEachRuntime()
+    {
+        var runtime = CreateRuntime();
+        var otherRuntime = CreateRuntime();
+        Assert.Null(GeneratedJSInterop.CreateReferenceConverter(typeof(LateReferenceProbe), runtime));
+
+        GeneratedJSInterop.RegisterReferenceConverter<LateReferenceProbe>();
+
+        var converter = Assert.IsType<DotNetObjectReferenceJsonConverter<LateReferenceProbe>>(
+            GeneratedJSInterop.CreateReferenceConverter(typeof(LateReferenceProbe), runtime));
+        Assert.Same(runtime, converter.JSRuntime);
+        var otherConverter = Assert.IsType<DotNetObjectReferenceJsonConverter<LateReferenceProbe>>(
+            GeneratedJSInterop.CreateReferenceConverter(typeof(LateReferenceProbe), otherRuntime));
+        Assert.Same(otherRuntime, otherConverter.JSRuntime);
     }
 
     private static RecordingRuntime CreateRuntime()
@@ -172,6 +202,8 @@ public class GeneratedInteropPrototypeTests
     private class SharedBaseProbe;
 
     private sealed class SharedDerivedProbe : SharedBaseProbe;
+
+    private sealed class LateReferenceProbe;
 }
 
 internal class GeneratedInteropBase
@@ -191,3 +223,9 @@ internal readonly record struct GeneratedInteropValue(int Number);
 [JsonSerializable(typeof(GeneratedInteropBase))]
 [JsonSerializable(typeof(GeneratedInteropDerived))]
 internal partial class GeneratedInteropTestJsonContext : JsonSerializerContext;
+
+internal readonly record struct GeneratedInteropLateValue(int Late);
+
+[JsonSourceGenerationOptions(PropertyNamingPolicy = JsonKnownNamingPolicy.CamelCase)]
+[JsonSerializable(typeof(GeneratedInteropLateValue))]
+internal partial class GeneratedInteropLateJsonContext : JsonSerializerContext;

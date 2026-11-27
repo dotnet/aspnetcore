@@ -2,7 +2,7 @@
 
 ## Analyzer Warnings
 
-### ASP (`ASP0000-ASP0040`)
+### ASP (`ASP0000-ASP0041`)
 
 | Diagnostic ID     | Description |
 | :---------------- | :---------- |
@@ -45,6 +45,7 @@
 |  __`ASP0038`__ | \[ValidatableType] should not be used without a call to 'AddValidation' |
 |  __`ASP0039`__ | Experimental warning for well-known passkey endpoints APIs |
 |  __`ASP0040`__ | Experimental warning for Components.Platform browser API members that have not met the package's stability criteria |
+|  __`ASP0041`__ | Experimental warning for the JSInterop generated-only dispatch APIs used by source-generated `[JSInvokable]` code |
 
 ### API (`API1000-API1003`)
 

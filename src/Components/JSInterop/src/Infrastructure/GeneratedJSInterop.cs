@@ -2,26 +2,36 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Collections.Concurrent;
+using System.ComponentModel;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Runtime.ExceptionServices;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 using System.Text.Json.Serialization.Metadata;
-using Microsoft.JSInterop.Infrastructure;
 
-namespace Microsoft.JSInterop;
+namespace Microsoft.JSInterop.Infrastructure;
 
 /// <summary>
-/// Experimental registrations used by generated JS-invokable dispatch code.
-/// This prototype is not a complete Native AOT implementation.
+/// Experimental registrations and helpers used by generated JS-invokable dispatch code when the
+/// <c>Microsoft.JSInterop.GeneratedOnly</c> application switch is enabled.
+/// This type is not intended to be used directly by application code, except for registering
+/// metadata with <see cref="AddTypeInfoResolver(IJsonTypeInfoResolver)"/> and
+/// <see cref="RegisterReferenceConverter{T}"/>.
 /// </summary>
-public sealed class GeneratedInteropPrototype
+[Experimental("ASP0041", UrlFormat = "https://aka.ms/aspnet/analyzer/{0}")]
+public sealed class GeneratedJSInterop
 {
     private const string DotNetObjectRefKey = "__dotNetObject";
 
     private readonly ConcurrentDictionary<(string Assembly, string Method), Registration> _statics = new();
     private readonly ConcurrentDictionary<(Type Type, string Method), Registration> _instances = new();
+    private static IJsonTypeInfoResolver[] s_typeInfoResolvers = [];
+    private static readonly ConcurrentDictionary<Type, Func<JSRuntime, JsonConverter>> s_referenceConverters = new();
+
+    internal GeneratedJSInterop()
+    {
+    }
 
     /// <summary>
     /// Invokes a registered callback and returns its serialized result. All arguments must be
@@ -31,25 +41,21 @@ public sealed class GeneratedInteropPrototype
     /// <param name="target">The instance, or <see langword="null"/> for a static callback.</param>
     /// <param name="args">The arguments to deserialize before awaiting.</param>
     /// <returns>The serialized result.</returns>
+    [EditorBrowsable(EditorBrowsableState.Never)]
     public delegate ValueTask<string?> Invoker(JSRuntime runtime, object? target, JsonElement[] args);
 
     /// <summary>
     /// Gets the process-wide registrations populated by generated module initializers.
-    /// Registrations on <see cref="JSRuntime.GeneratedInterop"/> take precedence.
     /// </summary>
-    public static GeneratedInteropPrototype Shared { get; } = new();
-
-    /// <summary>
-    /// Gets or sets the experimental startup hook for configuring runtimes before JSON options
-    /// become read-only. Configure this hook before creating runtimes, not during dispatch.
-    /// </summary>
-    public static Action<JSRuntime, JsonSerializerOptions>? ConfigureRuntime { get; set; }
+    [EditorBrowsable(EditorBrowsableState.Never)]
+    public static GeneratedJSInterop Shared { get; } = new();
 
     /// <summary>
     /// Gets whether the <c>Microsoft.JSInterop.GeneratedOnly</c> application switch selects
     /// generated dispatch. Generated registration code checks this so that trimming can remove
     /// it when the switch is disabled.
     /// </summary>
+    [EditorBrowsable(EditorBrowsableState.Never)]
     [FeatureSwitchDefinition("Microsoft.JSInterop.GeneratedOnly")]
     public static bool GeneratedOnly => AppContext.TryGetSwitch("Microsoft.JSInterop.GeneratedOnly", out var enabled) && enabled;
 
@@ -61,6 +67,7 @@ public sealed class GeneratedInteropPrototype
     /// <param name="arity">The expected argument count.</param>
     /// <param name="invoke">The generated or handwritten strongly typed invocation delegate.</param>
     /// <param name="isAsync">Whether the delegate requires asynchronous invocation.</param>
+    [EditorBrowsable(EditorBrowsableState.Never)]
     public void RegisterStatic(string assembly, string method, int arity, Invoker invoke, bool isAsync = false)
     {
         ArgumentException.ThrowIfNullOrEmpty(assembly);
@@ -82,6 +89,7 @@ public sealed class GeneratedInteropPrototype
     /// <param name="arity">The expected argument count.</param>
     /// <param name="invoke">The generated or handwritten strongly typed invocation delegate.</param>
     /// <param name="isAsync">Whether the delegate requires asynchronous invocation.</param>
+    [EditorBrowsable(EditorBrowsableState.Never)]
     public void RegisterInstance<T>(string method, int arity, Invoker invoke, bool isAsync = false) where T : class
     {
         ArgumentException.ThrowIfNullOrEmpty(method);
@@ -94,18 +102,37 @@ public sealed class GeneratedInteropPrototype
     }
 
     /// <summary>
-    /// Registers a closed reference converter without constructing a generic converter at runtime.
+    /// Adds JSON metadata, typically for an assembly's internal callback payloads, that every runtime
+    /// consults in generated-only mode. Resolvers may be added after a runtime is created, but before
+    /// the runtime first resolves the types they provide.
+    /// </summary>
+    /// <param name="resolver">The source-generated metadata resolver.</param>
+    public static void AddTypeInfoResolver(IJsonTypeInfoResolver resolver)
+    {
+        ArgumentNullException.ThrowIfNull(resolver);
+        IJsonTypeInfoResolver[] current, updated;
+        do
+        {
+            current = Volatile.Read(ref s_typeInfoResolvers);
+            updated = [.. current, resolver];
+        }
+        while (Interlocked.CompareExchange(ref s_typeInfoResolvers, updated, current) != current);
+    }
+
+    internal static IJsonTypeInfoResolver SharedTypeInfoResolver { get; } = new SharedResolver();
+
+    /// <summary>
+    /// Registers a closed <see cref="DotNetObjectReference{TValue}"/> converter for <typeparamref name="T"/>,
+    /// so that runtimes don't construct a generic converter type at runtime. Like
+    /// <see cref="AddTypeInfoResolver(IJsonTypeInfoResolver)"/>, this may be called after a runtime
+    /// is created, but before the runtime first serializes references to <typeparamref name="T"/>.
     /// </summary>
     /// <typeparam name="T">The referenced type.</typeparam>
-    /// <param name="runtime">The runtime owning the references.</param>
-    /// <param name="options">The runtime's mutable serialization options.</param>
-    public static void RegisterReferenceConverter<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicMethods)] T>(
-        JSRuntime runtime, JsonSerializerOptions options) where T : class
-    {
-        ArgumentNullException.ThrowIfNull(runtime);
-        ArgumentNullException.ThrowIfNull(options);
-        options.Converters.Insert(0, new DotNetObjectReferenceJsonConverter<T>(runtime));
-    }
+    public static void RegisterReferenceConverter<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicMethods)] T>() where T : class
+        => s_referenceConverters.TryAdd(typeof(T), static runtime => new DotNetObjectReferenceJsonConverter<T>(runtime));
+
+    internal static JsonConverter? CreateReferenceConverter(Type referencedType, JSRuntime runtime)
+        => s_referenceConverters.TryGetValue(referencedType, out var create) ? create(runtime) : null;
 
     /// <summary>
     /// Gets metadata bound to the runtime's converters. Missing application metadata fails explicitly.
@@ -113,7 +140,7 @@ public sealed class GeneratedInteropPrototype
     /// <typeparam name="T">The serialized type.</typeparam>
     /// <param name="runtime">The runtime owning the serialization options.</param>
     /// <returns>The runtime-bound metadata.</returns>
-    public static JsonTypeInfo<T> Metadata<T>(JSRuntime runtime)
+    internal static JsonTypeInfo<T> Metadata<T>(JSRuntime runtime)
     {
         ArgumentNullException.ThrowIfNull(runtime);
 
@@ -131,6 +158,7 @@ public sealed class GeneratedInteropPrototype
     /// <param name="methodIdentifier">The invoked identifier, used in error messages.</param>
     /// <param name="index">The zero-based parameter index.</param>
     /// <returns>The deserialized argument.</returns>
+    [EditorBrowsable(EditorBrowsableState.Never)]
     public static T? ReadArgument<T>(JSRuntime runtime, JsonElement value, string methodIdentifier, int index)
     {
         if (value.ValueKind == JsonValueKind.Object && !IsDotNetObjectReference(typeof(T)))
@@ -157,6 +185,7 @@ public sealed class GeneratedInteropPrototype
     /// <param name="runtime">The runtime owning converters and references.</param>
     /// <param name="value">The result.</param>
     /// <returns>The serialized result, or <see langword="null"/> for a null value.</returns>
+    [EditorBrowsable(EditorBrowsableState.Never)]
     public static ValueTask<string?> SerializeResult<T>(JSRuntime runtime, T value)
         => ValueTask.FromResult<string?>(Serialize(runtime, value));
 
@@ -167,6 +196,7 @@ public sealed class GeneratedInteropPrototype
     /// <param name="runtime">The runtime owning converters and references.</param>
     /// <param name="task">The pending result.</param>
     /// <returns>The serialized result.</returns>
+    [EditorBrowsable(EditorBrowsableState.Never)]
     public static async ValueTask<string?> SerializeResultAsync<T>(JSRuntime runtime, Task<T> task)
     {
         await ((Task)task).ConfigureAwait(ConfigureAwaitOptions.SuppressThrowing);
@@ -181,6 +211,7 @@ public sealed class GeneratedInteropPrototype
     /// <param name="runtime">The runtime owning converters and references.</param>
     /// <param name="task">The pending result.</param>
     /// <returns>The serialized result.</returns>
+    [EditorBrowsable(EditorBrowsableState.Never)]
     public static ValueTask<string?> SerializeResultAsync<T>(JSRuntime runtime, ValueTask<T> task)
         => SerializeResultAsync(runtime, task.AsTask());
 
@@ -189,6 +220,7 @@ public sealed class GeneratedInteropPrototype
     /// </summary>
     /// <param name="task">The pending operation.</param>
     /// <returns><see langword="null"/>, which asynchronous dispatch reports as a JSON null.</returns>
+    [EditorBrowsable(EditorBrowsableState.Never)]
     public static async ValueTask<string?> CompleteAsync(Task task)
     {
         await task.ConfigureAwait(ConfigureAwaitOptions.SuppressThrowing);
@@ -201,6 +233,7 @@ public sealed class GeneratedInteropPrototype
     /// </summary>
     /// <param name="task">The pending operation.</param>
     /// <returns><see langword="null"/>, which asynchronous dispatch reports as a JSON null.</returns>
+    [EditorBrowsable(EditorBrowsableState.Never)]
     public static ValueTask<string?> CompleteAsync(ValueTask task)
         => CompleteAsync(task.AsTask());
 
@@ -346,6 +379,22 @@ public sealed class GeneratedInteropPrototype
     }
 
     private readonly record struct Registration(int Arity, bool Async, Invoker Invoke);
+
+    private sealed class SharedResolver : IJsonTypeInfoResolver
+    {
+        public JsonTypeInfo? GetTypeInfo(Type type, JsonSerializerOptions options)
+        {
+            foreach (var resolver in Volatile.Read(ref s_typeInfoResolvers))
+            {
+                if (resolver.GetTypeInfo(type, options) is { } typeInfo)
+                {
+                    return typeInfo;
+                }
+            }
+
+            return null;
+        }
+    }
 }
 
 [JsonSourceGenerationOptions(PropertyNamingPolicy = JsonKnownNamingPolicy.CamelCase, PropertyNameCaseInsensitive = true)]

@@ -40,8 +40,9 @@ To build the JavaScript code, execute the following commands in a command shell:
 
 ## WIP: generated-only Native AOT experiment
 
-`GeneratedInteropPrototype` is an experimental registration surface, not an approved API.
-Reflection-based dispatch remains the
+`Microsoft.JSInterop.Infrastructure.GeneratedJSInterop` is an experimental registration surface, not an
+approved API. It is marked `[Experimental("ASP0041")]`, and members that only generated or handwritten
+registration code calls are hidden from IntelliSense. Reflection-based dispatch remains the
 default. To select generated dispatch exclusively, add this runtime feature switch to the consuming
 application's project:
 
@@ -58,18 +59,22 @@ and the Components.Web analyzer integration are developed in a separate stacked 
 PR. Without that layer, generated-only mode requires handwritten registrations, including
 renderer-owned callbacks; ordinary Blazor button clicks are not supported by this layer alone.
 
-Application payload types still need JSON metadata. Before creating any `JSRuntime`, set
-`GeneratedInteropPrototype.ConfigureRuntime` to add the application's source-generated
-`JsonSerializerContext`:
+Application payload types still need JSON metadata, and each type passed as a
+`DotNetObjectReference<T>` needs a closed converter. Applications and libraries register both at
+startup; generated-only runtimes consult them after the built-in metadata:
 
 ```csharp
-GeneratedInteropPrototype.ConfigureRuntime = (runtime, options) =>
-    options.TypeInfoResolverChain.Add(AppJsonContext.Default);
+#pragma warning disable ASP0041
+GeneratedJSInterop.AddTypeInfoResolver(AppJsonContext.Default);
+GeneratedJSInterop.RegisterReferenceConverter<Counter>();
+#pragma warning restore ASP0041
 ```
 
+Registrations may happen after a runtime is created, but before that runtime first serializes the
+affected types.
+
 Handwritten registrations through `RegisterStatic` and `RegisterInstance<T>` on
-`JSRuntime.GeneratedInterop` (per runtime) or `GeneratedInteropPrototype.Shared` remain available;
-per-runtime registrations take precedence. Instance lookup walks the target's base types.
+`GeneratedJSInterop.Shared` remain available. Instance lookup walks the target's base types.
 Unregistered methods and missing JSON metadata fail explicitly; there is no reflection fallback when
 the switch is enabled.
 
