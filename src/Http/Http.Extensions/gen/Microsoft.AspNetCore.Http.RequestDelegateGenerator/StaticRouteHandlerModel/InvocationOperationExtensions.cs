@@ -5,6 +5,7 @@ using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using Microsoft.AspNetCore.App.Analyzers.Infrastructure;
 using Microsoft.CodeAnalysis;
+using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.CodeAnalysis.Operations;
 
@@ -142,8 +143,8 @@ internal static class InvocationOperationExtensions
 
     private static bool HasOnlyInitializerWrite(IFieldSymbol field, SemanticModel semanticModel)
     {
-        // Struct instance fields can be overwritten by assigning to `this` outside of constructors.
-        if (!field.IsStatic && field.ContainingType.IsValueType)
+        // Mutable struct instance fields can be overwritten by assigning to `this` outside of constructors.
+        if (!field.IsStatic && field.ContainingType.IsValueType && !field.ContainingType.IsReadOnly)
         {
             return false;
         }
@@ -170,21 +171,12 @@ internal static class InvocationOperationExtensions
                     {
                         AssignmentExpressionSyntax assignment => assignment.Left,
                         RefExpressionSyntax reference => reference.Expression,
-                        ArgumentSyntax { RefKindKeyword.RawKind: not 0 } argument => argument.Expression,
+                        ArgumentSyntax argument when argument.RefKindKeyword.IsKind(SyntaxKind.RefKeyword) || argument.RefKindKeyword.IsKind(SyntaxKind.OutKeyword) => argument.Expression,
                         _ => null,
                     };
-                    if (target is null)
+                    if (target is not null && IsWritableFieldTarget(target, field, writerSemanticModel))
                     {
-                        continue;
-                    }
-
-                    foreach (var identifier in target.DescendantNodesAndSelf().OfType<IdentifierNameSyntax>())
-                    {
-                        if (identifier.Identifier.ValueText == field.Name &&
-                            SymbolEqualityComparer.Default.Equals(writerSemanticModel.GetSymbolInfo(identifier).Symbol, field))
-                        {
-                            return false;
-                        }
+                        return false;
                     }
                 }
             }
@@ -192,6 +184,21 @@ internal static class InvocationOperationExtensions
 
         return true;
     }
+
+    private static bool IsWritableFieldTarget(ExpressionSyntax target, IFieldSymbol field, SemanticModel semanticModel) => target switch
+    {
+        ParenthesizedExpressionSyntax parenthesized => IsWritableFieldTarget(parenthesized.Expression, field, semanticModel),
+        TupleExpressionSyntax tuple => tuple.Arguments.Any(argument => IsWritableFieldTarget(argument.Expression, field, semanticModel)),
+        ThisExpressionSyntax thisExpression => !field.IsStatic &&
+            field.ContainingType.IsValueType &&
+            SymbolEqualityComparer.Default.Equals(semanticModel.GetTypeInfo(thisExpression).Type?.OriginalDefinition, field.ContainingType.OriginalDefinition),
+        IdentifierNameSyntax identifier => identifier.Identifier.ValueText == field.Name &&
+            SymbolEqualityComparer.Default.Equals(semanticModel.GetSymbolInfo(identifier).Symbol?.OriginalDefinition, field.OriginalDefinition),
+        MemberAccessExpressionSyntax { Name: IdentifierNameSyntax identifier } memberAccess =>
+            identifier.Identifier.ValueText == field.Name &&
+            SymbolEqualityComparer.Default.Equals(semanticModel.GetSymbolInfo(memberAccess).Symbol?.OriginalDefinition, field.OriginalDefinition),
+        _ => false,
+    };
 
     private static IOperation? ResolveDeclarationOperation(ISymbol symbol, SemanticModel? semanticModel)
     {

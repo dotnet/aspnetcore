@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Collections.Immutable;
 using System.Linq;
 using Microsoft.AspNetCore.Analyzers.Infrastructure;
 using Microsoft.AspNetCore.App.Analyzers.Infrastructure;
@@ -48,9 +49,9 @@ internal class Endpoint
 
         HandlerDelegateType = operation.GetRouteHandlerDelegateType(semanticModel);
         if (HandlerDelegateType is not { DelegateInvokeMethod: { } invokeMethod } ||
-            !IsTypeAvailableInGeneratedCode(HandlerDelegateType) ||
+            !IsTypeAvailableInGeneratedCode(HandlerDelegateType, semanticModel.Compilation) ||
             (HandlerDelegateType.CanBeReferencedByName && !semanticModel.Compilation.IsSymbolAccessibleWithin(HandlerDelegateType, semanticModel.Compilation.Assembly)) ||
-            !AreHandlerTypesCompatible(invokeMethod.ReturnType, method.ReturnType) ||
+            !AreHandlerTypesCompatible(invokeMethod.ReturnType, method.ReturnType, ignoreAllNullability: !UsesDeclaredDelegateType) ||
             invokeMethod.Parameters.Length != method.Parameters.Length ||
             method.Parameters.Where((parameter, index) =>
                 parameter.RefKind != RefKind.None ||
@@ -62,10 +63,13 @@ internal class Endpoint
         }
 
         IsAwaitable = Response?.IsAwaitable == true;
-        IsAwaitableReturnPossiblyNull = IsAwaitable &&
-            (Response!.WrappedResponseType.NullableAnnotation == NullableAnnotation.Annotated ||
+        IsAwaitableReturnPossiblyNull = Response is { IsAwaitable: true, WrappedResponseType.IsReferenceType: true } &&
+            (Response.WrappedResponseType.NullableAnnotation == NullableAnnotation.Annotated ||
                 HasMaybeNullReturn(invokeMethod) ||
                 HasMaybeNullReturn(method));
+        IsStringReturnPossiblyNull = Response?.ResponseType?.SpecialType == SpecialType.System_String &&
+            (Response.ResponseType.NullableAnnotation == NullableAnnotation.Annotated ||
+                (!Response.IsAwaitable && UsesDeclaredDelegateType && HasMaybeNullReturn(invokeMethod)));
 
         EmitterContext.HasResponseMetadata = Response is { } response && !(response.IsIResult || response.HasNoResponse);
 
@@ -130,6 +134,7 @@ internal class Endpoint
     public string HttpMethod { get; }
     public bool IsAwaitable { get; set; }
     public bool IsAwaitableReturnPossiblyNull { get; }
+    public bool IsStringReturnPossiblyNull { get; }
     public bool NeedsParameterArray { get; }
     public string? RoutePattern { get; }
     public EmitterContext EmitterContext { get; }
@@ -155,7 +160,9 @@ internal class Endpoint
 
     public static bool SignatureEquals(Endpoint a, Endpoint b)
     {
-        if (!SymbolEqualityComparer.Default.Equals(a.HandlerDelegateType, b.HandlerDelegateType) ||
+        if (!SymbolEqualityComparer.IncludeNullability.Equals(a.HandlerDelegateType, b.HandlerDelegateType) ||
+            a.IsAwaitableReturnPossiblyNull != b.IsAwaitableReturnPossiblyNull ||
+            a.IsStringReturnPossiblyNull != b.IsStringReturnPossiblyNull ||
             !string.Equals(a.Response?.WrappedResponseTypeDisplayName, b.Response?.WrappedResponseTypeDisplayName, StringComparison.Ordinal) ||
             !a.HttpMethod.Equals(b.HttpMethod, StringComparison.Ordinal) ||
             a.Parameters.Length != b.Parameters.Length)
@@ -177,7 +184,9 @@ internal class Endpoint
     public static int GetSignatureHashCode(Endpoint endpoint)
     {
         var hashCode = new HashCode();
-        hashCode.Add(endpoint.HandlerDelegateType, SymbolEqualityComparer.Default);
+        hashCode.Add(endpoint.HandlerDelegateType, SymbolEqualityComparer.IncludeNullability);
+        hashCode.Add(endpoint.IsAwaitableReturnPossiblyNull);
+        hashCode.Add(endpoint.IsStringReturnPossiblyNull);
         hashCode.Add(endpoint.Response?.WrappedResponseTypeDisplayName);
         hashCode.Add(endpoint.HttpMethod);
 
@@ -189,8 +198,13 @@ internal class Endpoint
         return hashCode.ToHashCode();
     }
 
-    private static bool AreHandlerTypesCompatible(ITypeSymbol type, ITypeSymbol otherType, bool ignoreTopLevelNullability = false)
+    private static bool AreHandlerTypesCompatible(ITypeSymbol type, ITypeSymbol otherType, bool ignoreTopLevelNullability = false, bool ignoreAllNullability = false)
     {
+        if (ignoreAllNullability)
+        {
+            return SymbolEqualityComparer.Default.Equals(type, otherType);
+        }
+
         // Treat oblivious and nonnullable annotations alike, but preserve explicit nested nullable annotations.
         if (!SymbolEqualityComparer.Default.Equals(type, otherType) ||
             (!ignoreTopLevelNullability &&
@@ -209,21 +223,34 @@ internal class Endpoint
         };
     }
 
-    private static bool IsTypeAvailableInGeneratedCode(ITypeSymbol type) => type switch
+    private static bool IsTypeAvailableInGeneratedCode(ITypeSymbol type, Compilation compilation) => type switch
     {
         ITypeParameterSymbol => false,
-        IArrayTypeSymbol array => IsTypeAvailableInGeneratedCode(array.ElementType),
+        IArrayTypeSymbol array => IsTypeAvailableInGeneratedCode(array.ElementType, compilation),
         INamedTypeSymbol named => !named.IsFileLocal &&
-            (named.ContainingType is null || IsTypeAvailableInGeneratedCode(named.ContainingType)) &&
-            named.TypeArguments.All(IsTypeAvailableInGeneratedCode),
+            !IsFromAliasOnlyReference(named.ContainingAssembly, compilation) &&
+            (named.ContainingType is null || IsTypeAvailableInGeneratedCode(named.ContainingType, compilation)) &&
+            named.TypeArguments.All(t => IsTypeAvailableInGeneratedCode(t, compilation)),
         _ => true,
     };
 
-    private static bool HasMaybeNullReturn(IMethodSymbol method) =>
-        method.GetReturnTypeAttributes().Any(attribute =>
+    private static bool IsFromAliasOnlyReference(IAssemblySymbol? assembly, Compilation compilation) =>
+        assembly is not null &&
+        !SymbolEqualityComparer.Default.Equals(assembly, compilation.Assembly) &&
+        compilation.GetMetadataReference(assembly) is { Properties.Aliases: { IsDefaultOrEmpty: false } aliases } &&
+        !aliases.Contains("global", StringComparer.Ordinal);
+
+    internal static bool HasMaybeNullReturn(IMethodSymbol method) =>
+        HasCodeAnalysisAttribute(method.GetReturnTypeAttributes(), "MaybeNullAttribute");
+
+    internal static bool HasDisallowNullParameter(IParameterSymbol parameter) =>
+        HasCodeAnalysisAttribute(parameter.GetAttributes(), "DisallowNullAttribute");
+
+    private static bool HasCodeAnalysisAttribute(ImmutableArray<AttributeData> attributes, string attributeName) =>
+        attributes.Any(attribute =>
             attribute.AttributeClass is
             {
-                Name: "MaybeNullAttribute",
+                Name: var name,
                 ContainingNamespace:
                 {
                     Name: "CodeAnalysis",
@@ -233,7 +260,7 @@ internal class Endpoint
                         ContainingNamespace: { Name: "System", ContainingNamespace.IsGlobalNamespace: true }
                     }
                 }
-            });
+            } && name == attributeName);
 
     private static (string, int, int) GetLocation(IInvocationOperation operation)
     {

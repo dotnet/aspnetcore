@@ -120,7 +120,7 @@ internal static class StaticRouteHandlerModelEmitter
 
         if (!endpoint.Response.HasNoResponse)
         {
-            endpoint.Response.EmitResponseWritingCall(codeWriter, endpoint.IsAwaitable);
+            endpoint.Response.EmitResponseWritingCall(codeWriter, endpoint.IsAwaitable, endpoint.IsStringReturnPossiblyNull);
         }
         else if (!endpoint.IsAwaitable)
         {
@@ -147,7 +147,7 @@ internal static class StaticRouteHandlerModelEmitter
         }
     }
 
-    private static void EmitResponseWritingCall(this EndpointResponse endpointResponse, CodeWriter codeWriter, bool isAwaitable)
+    private static void EmitResponseWritingCall(this EndpointResponse endpointResponse, CodeWriter codeWriter, bool isAwaitable, bool isStringReturnPossiblyNull = false)
     {
         var returnOrAwait = isAwaitable ? "await" : "return";
 
@@ -161,7 +161,8 @@ internal static class StaticRouteHandlerModelEmitter
         }
         else if (endpointResponse.ResponseType?.SpecialType == SpecialType.System_String)
         {
-            codeWriter.WriteLine($"{returnOrAwait} httpContext.Response.WriteAsync(result);");
+            var resultArgument = isStringReturnPossiblyNull ? "result!" : "result";
+            codeWriter.WriteLine($"{returnOrAwait} httpContext.Response.WriteAsync({resultArgument});");
         }
         else if (endpointResponse.ResponseType?.SpecialType == SpecialType.System_Object)
         {
@@ -425,12 +426,28 @@ internal static class StaticRouteHandlerModelEmitter
     {
         if (endpoint.Response?.HasNoResponse == true)
         {
-            codeWriter.WriteLine(endpoint.Response?.IsAwaitable == true
-                ? $"await handler({endpoint.EmitFilteredArgumentList()});"
-                : $"handler({endpoint.EmitFilteredArgumentList()});");
-            codeWriter.WriteLine(endpoint.Response?.IsAwaitable == true
-                ? "return (object?)Results.Empty;"
-                : "return ValueTask.FromResult<object?>(Results.Empty);");
+            if (endpoint.Response.IsAwaitable)
+            {
+                if (endpoint.IsAwaitableReturnPossiblyNull)
+                {
+                    codeWriter.WriteLine($"var task = handler({endpoint.EmitFilteredArgumentList()});");
+                    codeWriter.WriteLine("if (task == null)");
+                    codeWriter.StartBlock();
+                    codeWriter.WriteLine("return (object?)Results.Empty;");
+                    codeWriter.EndBlock();
+                    codeWriter.WriteLine("await task;");
+                }
+                else
+                {
+                    codeWriter.WriteLine($"await handler({endpoint.EmitFilteredArgumentList()});");
+                }
+                codeWriter.WriteLine("return (object?)Results.Empty;");
+            }
+            else
+            {
+                codeWriter.WriteLine($"handler({endpoint.EmitFilteredArgumentList()});");
+                codeWriter.WriteLine("return ValueTask.FromResult<object?>(Results.Empty);");
+            }
         }
         else if (endpoint.Response?.IsAwaitable == true)
         {
