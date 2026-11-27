@@ -45,9 +45,11 @@ public static class IdentityApiEndpointRouteBuilderExtensions
     /// Its lifetime, cookie attributes, data protection provider, session store, and cookie manager inherit
     /// the two-factor user ID cookie configuration at options creation time (unless explicitly configured on
     /// <c>Identity.Passkey</c>), while its name, events, and ticket format are independent. A customized two-factor cookie name receives a
-    /// <c>.Passkey</c> suffix for the passkey cookie. Custom cookie-builder behavior and subsequent reloads of only
+    /// <c>.Passkey</c> suffix for the passkey cookie. Custom cookie-builder behavior, scheme forwarding
+    /// (<c>ForwardDefaultSelector</c> and <c>Forward*</c> properties), and subsequent reloads of only
     /// the two-factor options are not inherited; configure the <c>Identity.Passkey</c> named cookie options directly
-    /// when these are required. Register direct passkey cookie configuration after <c>AddIdentityApiEndpoints</c>
+    /// when these are required (for example, forwarding to separate per-tenant passkey target schemes instead
+    /// of two-factor targets). Register direct passkey cookie configuration after <c>AddIdentityApiEndpoints</c>
     /// or any other Identity cookie registration so it takes precedence over the inherited settings.
     /// In-flight ceremonies using the older shared two-factor cookie cannot continue across this change.
     /// During a rolling deployment, drain older instances or keep each ceremony on the version that started it;

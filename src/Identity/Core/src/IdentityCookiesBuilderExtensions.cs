@@ -100,6 +100,12 @@ public static class IdentityCookieAuthenticationBuilderExtensions
     /// The passkey cookie inherits the two-factor cookie's data protection provider, session store,
     /// and cookie manager unless explicitly configured, but uses its own ticket data format with the
     /// passkey scheme's purpose.
+    /// Scheme forwarding settings (<see cref="AuthenticationSchemeOptions.ForwardDefaultSelector"/>,
+    /// <see cref="AuthenticationSchemeOptions.ForwardDefault"/>, and operation-specific <c>Forward*</c>
+    /// properties) are not inherited so passkey state is not forwarded into two-factor target schemes.
+    /// Applications that use scheme forwarding on <see cref="IdentityConstants.TwoFactorUserIdScheme"/>
+    /// (for example, per-tenant cookie handlers) must register separate passkey target schemes and
+    /// configure forwarding on <c>Identity.Passkey</c>.
     /// Register direct <c>Identity.Passkey</c> cookie configuration after this method or the Identity
     /// registration that calls it so it takes precedence over the inherited two-factor settings.
     /// Applications that manually register <see cref="IdentityConstants.TwoFactorUserIdScheme"/> with

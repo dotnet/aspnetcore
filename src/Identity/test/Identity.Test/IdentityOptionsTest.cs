@@ -554,4 +554,145 @@ public class IdentityOptionsTest
         Assert.Equal("d", options.Get(IdentityConstants.TwoFactorUserIdScheme).Cookie.Name);
         Assert.Equal("e", options.Get(IdentityConstants.PasskeyScheme).Cookie.Name);
     }
+
+    [Fact]
+    public async Task PasskeyCookieSupportsPerTenantSchemeForwardingWithoutSharingTwoFactorTargets()
+    {
+        var passkey = new UserPasskeyInfo(
+            credentialId: [1, 2, 3], publicKey: [4, 5, 6], createdAt: DateTimeOffset.UtcNow,
+            signCount: 0, transports: [], isUserVerified: true, isBackupEligible: true,
+            isBackedUp: true, attestationObject: [7, 8, 9], clientDataJson: [10, 11, 12]);
+        var services = new ServiceCollection();
+        services.AddLogging();
+        services.AddIdentityCore<PocoUser>().AddSignInManager();
+        services.AddSingleton(Mock.Of<IUserStore<PocoUser>>());
+        var passkeyHandler = new Mock<IPasskeyHandler<PocoUser>>();
+        passkeyHandler.Setup(handler => handler.MakeRequestOptionsAsync(null, It.IsAny<HttpContext>()))
+            .Returns((PocoUser _, HttpContext httpContext) => Task.FromResult(new PasskeyRequestOptionsResult
+            {
+                RequestOptionsJson = httpContext.Request.Path.StartsWithSegments("/tenant-b") ? "{\"tenant\":\"b\"}" : "{\"tenant\":\"a\"}",
+                AssertionState = httpContext.Request.Path.StartsWithSegments("/tenant-b") ? "state-b" : "state-a",
+            }));
+        passkeyHandler.Setup(handler => handler.PerformAssertionAsync(It.IsAny<PasskeyAssertionContext>()))
+            .Returns((PasskeyAssertionContext context) =>
+            {
+                var expectedState = context.HttpContext.Request.Path.StartsWithSegments("/tenant-b") ? "state-b" : "state-a";
+                Assert.Equal(expectedState, context.AssertionState);
+                return Task.FromResult(PasskeyAssertionResult.Success(passkey, new PocoUser { UserName = expectedState }));
+            });
+        services.AddSingleton(passkeyHandler.Object);
+
+        var authBuilder = services.AddAuthentication();
+        authBuilder.AddCookie("TenantA.TwoFactor", o =>
+        {
+            o.Cookie.Name = "TenantA.TwoFactor";
+            o.Cookie.Path = "/tenant-a";
+        });
+        authBuilder.AddCookie("TenantB.TwoFactor", o =>
+        {
+            o.Cookie.Name = "TenantB.TwoFactor";
+            o.Cookie.Path = "/tenant-b";
+        });
+        authBuilder.AddCookie("TenantA.Passkey", o =>
+        {
+            o.Cookie.Name = "TenantA.Passkey";
+            o.Cookie.Path = "/tenant-a";
+        });
+        authBuilder.AddCookie("TenantB.Passkey", o =>
+        {
+            o.Cookie.Name = "TenantB.Passkey";
+            o.Cookie.Path = "/tenant-b";
+        });
+        authBuilder.AddTwoFactorUserIdCookie()
+            .Configure(options =>
+            {
+                options.ForwardDefault = "TenantA.TwoFactor";
+                options.ForwardAuthenticate = "TenantA.TwoFactor";
+                options.ForwardChallenge = "TenantA.TwoFactor";
+                options.ForwardForbid = "TenantA.TwoFactor";
+                options.ForwardSignIn = "TenantA.TwoFactor";
+                options.ForwardSignOut = "TenantA.TwoFactor";
+                options.ForwardDefaultSelector = ctx => ctx.Request.Path.StartsWithSegments("/tenant-b")
+                    ? "TenantB.TwoFactor"
+                    : "TenantA.TwoFactor";
+            });
+
+        using (var unforwardedProvider = services.BuildServiceProvider())
+        {
+            var unforwardedPasskey = unforwardedProvider.GetRequiredService<IOptionsMonitor<CookieAuthenticationOptions>>()
+                .Get(IdentityConstants.PasskeyScheme);
+            Assert.Null(unforwardedPasskey.ForwardDefault);
+            Assert.Null(unforwardedPasskey.ForwardAuthenticate);
+            Assert.Null(unforwardedPasskey.ForwardChallenge);
+            Assert.Null(unforwardedPasskey.ForwardForbid);
+            Assert.Null(unforwardedPasskey.ForwardSignIn);
+            Assert.Null(unforwardedPasskey.ForwardSignOut);
+            Assert.Null(unforwardedPasskey.ForwardDefaultSelector);
+        }
+
+        services.Configure<CookieAuthenticationOptions>(IdentityConstants.PasskeyScheme, options =>
+        {
+            options.ForwardDefaultSelector = ctx => ctx.Request.Path.StartsWithSegments("/tenant-b")
+                ? "TenantB.Passkey"
+                : "TenantA.Passkey";
+        });
+
+        using var provider = services.BuildServiceProvider();
+
+        using var tenantAStartScope = provider.CreateScope();
+        var tenantAStartContext = new DefaultHttpContext { RequestServices = tenantAStartScope.ServiceProvider };
+        tenantAStartContext.Request.Path = "/tenant-a/passkey";
+        var tenantASignIn = tenantAStartScope.ServiceProvider.GetRequiredService<SignInManager<PocoUser>>();
+        tenantASignIn.Context = tenantAStartContext;
+        Assert.Equal("{\"tenant\":\"a\"}", await tenantASignIn.MakePasskeyRequestOptionsAsync(null));
+        var tenantAPasskeySetCookie = Assert.Single(tenantAStartContext.Response.Headers.SetCookie);
+        Assert.StartsWith("TenantA.Passkey=", tenantAPasskeySetCookie);
+        Assert.Contains("path=/tenant-a", tenantAPasskeySetCookie, StringComparison.OrdinalIgnoreCase);
+
+        await tenantAStartContext.SignInAsync(
+            IdentityConstants.TwoFactorUserIdScheme,
+            new ClaimsPrincipal(new ClaimsIdentity([new Claim(ClaimTypes.Name, "tenant-a-user")], IdentityConstants.TwoFactorUserIdScheme)));
+        var tenantATwoFactorSetCookie = Assert.Single(tenantAStartContext.Response.Headers.SetCookie,
+            header => header.StartsWith("TenantA.TwoFactor=", StringComparison.Ordinal));
+        var tenantAPasskeyCookie = tenantAPasskeySetCookie.Split(';')[0];
+        var tenantATwoFactorCookie = tenantATwoFactorSetCookie.Split(';')[0];
+
+        using var tenantBStartScope = provider.CreateScope();
+        var tenantBStartContext = new DefaultHttpContext { RequestServices = tenantBStartScope.ServiceProvider };
+        tenantBStartContext.Request.Path = "/tenant-b/passkey";
+        var tenantBSignIn = tenantBStartScope.ServiceProvider.GetRequiredService<SignInManager<PocoUser>>();
+        tenantBSignIn.Context = tenantBStartContext;
+        Assert.Equal("{\"tenant\":\"b\"}", await tenantBSignIn.MakePasskeyRequestOptionsAsync(null));
+        var tenantBPasskeySetCookie = Assert.Single(tenantBStartContext.Response.Headers.SetCookie);
+        Assert.StartsWith("TenantB.Passkey=", tenantBPasskeySetCookie);
+        Assert.Contains("path=/tenant-b", tenantBPasskeySetCookie, StringComparison.OrdinalIgnoreCase);
+        var tenantBPasskeyCookie = tenantBPasskeySetCookie.Split(';')[0];
+
+        using var tenantACompleteScope = provider.CreateScope();
+        var tenantACompleteContext = new DefaultHttpContext { RequestServices = tenantACompleteScope.ServiceProvider };
+        tenantACompleteContext.Request.Path = "/tenant-a/passkey";
+        tenantACompleteContext.Request.Headers.Cookie = $"{tenantAPasskeyCookie}; {tenantATwoFactorCookie}";
+        var tenantACompleteSignIn = tenantACompleteScope.ServiceProvider.GetRequiredService<SignInManager<PocoUser>>();
+        tenantACompleteSignIn.Context = tenantACompleteContext;
+        var tenantAResult = await tenantACompleteSignIn.PerformPasskeyAssertionAsync("{}");
+        Assert.True(tenantAResult.Succeeded);
+        Assert.Equal("state-a", tenantAResult.User.UserName);
+        Assert.Contains(tenantACompleteContext.Response.Headers.SetCookie,
+            header => header.StartsWith("TenantA.Passkey=;", StringComparison.Ordinal));
+        var tenantATwoFactorAuth = await tenantACompleteContext.AuthenticateAsync(IdentityConstants.TwoFactorUserIdScheme);
+        Assert.True(tenantATwoFactorAuth.Succeeded);
+        Assert.Equal("tenant-a-user", tenantATwoFactorAuth.Principal.Identity.Name);
+
+        using var tenantBCompleteScope = provider.CreateScope();
+        var tenantBCompleteContext = new DefaultHttpContext { RequestServices = tenantBCompleteScope.ServiceProvider };
+        tenantBCompleteContext.Request.Path = "/tenant-b/passkey";
+        tenantBCompleteContext.Request.Headers.Cookie = tenantBPasskeyCookie;
+        var tenantBCompleteSignIn = tenantBCompleteScope.ServiceProvider.GetRequiredService<SignInManager<PocoUser>>();
+        tenantBCompleteSignIn.Context = tenantBCompleteContext;
+        var tenantBResult = await tenantBCompleteSignIn.PerformPasskeyAssertionAsync("{}");
+        Assert.True(tenantBResult.Succeeded);
+        Assert.Equal("state-b", tenantBResult.User.UserName);
+        Assert.Contains(tenantBCompleteContext.Response.Headers.SetCookie,
+            header => header.StartsWith("TenantB.Passkey=;", StringComparison.Ordinal));
+    }
 }
