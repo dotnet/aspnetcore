@@ -22,7 +22,13 @@ internal sealed record JSInvokableMethod(
     EquatableArray<string> ParameterTypes,
     ReturnKind ReturnKind,
     string? ResultType,
-    LocationInfo? Location);
+    LocationInfo? Location,
+    HostInfo? Host = null,
+    bool IsHidden = false);
+
+// A partial containing type that registers its invokers from a generated static constructor. Generated
+// code inside the type can name its type parameters and reach non-accessible nested types.
+internal sealed record HostInfo(string? Namespace, EquatableArray<string> Declarations, string ConstructorName, string HintName);
 
 internal sealed record DiagnosticInfo(string DescriptorId, LocationInfo? Location, EquatableArray<string> MessageArgs)
 {

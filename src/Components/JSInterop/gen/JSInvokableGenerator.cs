@@ -5,6 +5,7 @@ using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Linq;
 using Microsoft.CodeAnalysis;
+using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 
 namespace Microsoft.JSInterop.SourceGenerators;
@@ -24,11 +25,22 @@ public sealed class JSInvokableGenerator : IIncrementalGenerator
             predicate: static (node, _) => node is MethodDeclarationSyntax,
             transform: static (ctx, ct) => JSInvokableParser.Parse(ctx, ct));
 
-        context.RegisterSourceOutput(parseResults, static (spc, result) =>
+        // Overrides that do not redeclare an inherited identifier hide it from reflection dispatch.
+        var overrideResults = context.SyntaxProvider.CreateSyntaxProvider(
+            predicate: static (node, _) => node is MethodDeclarationSyntax declaration && declaration.Modifiers.Any(SyntaxKind.OverrideKeyword),
+            transform: static (ctx, ct) => JSInvokableParser.ParseOverride(ctx, ct));
+
+        var results = parseResults.Collect().Combine(overrideResults.Collect())
+            .Select(static (input, _) => input.Left.AddRange(input.Right));
+
+        context.RegisterSourceOutput(results, static (spc, all) =>
         {
-            foreach (var diagnostic in result.Diagnostics)
+            foreach (var result in all)
             {
-                spc.ReportDiagnostic(diagnostic.ToDiagnostic());
+                foreach (var diagnostic in result.Diagnostics)
+                {
+                    spc.ReportDiagnostic(diagnostic.ToDiagnostic());
+                }
             }
         });
 
@@ -37,24 +49,31 @@ public sealed class JSInvokableGenerator : IIncrementalGenerator
             var prototype = compilation.GetTypeByMetadataName("Microsoft.JSInterop.GeneratedInteropPrototype");
             var supported = prototype is not null
                 && compilation.GetTypeByMetadataName("System.Runtime.CompilerServices.ModuleInitializerAttribute") is not null
-                && prototype.GetMembers("Shared").Any(m => m.DeclaredAccessibility == Accessibility.Public);
+                && prototype.GetMembers("Shared").Any(m => m.DeclaredAccessibility == Accessibility.Public)
+                && prototype.GetMembers("RegisterNonInvokableInstance").Any(m => m.DeclaredAccessibility == Accessibility.Public);
             return (compilation.AssemblyName ?? string.Empty, supported);
         });
 
-        var methods = parseResults.SelectMany(static (result, _) => result.Methods).Collect();
+        var methods = results.Select(static (all, _) => new EquatableArray<JSInvokableMethod>([.. all.SelectMany(r => r.Methods)]));
 
         context.RegisterSourceOutput(methods.Combine(target), static (spc, input) =>
         {
             var (allMethods, (assemblyName, supported)) = input;
-            if (!supported || allMethods.IsEmpty)
+            if (!supported || allMethods.Length == 0)
             {
                 return;
             }
 
-            var valid = RemoveDuplicates(spc, allMethods);
-            if (!valid.IsEmpty)
+            var valid = RemoveDuplicates(spc, allMethods.Items);
+            var registrations = valid.Where(m => m.Host is null).ToImmutableArray();
+            if (!registrations.IsEmpty)
             {
-                spc.AddSource(JSInvokableEmitter.HintName, JSInvokableEmitter.Emit(assemblyName, valid));
+                spc.AddSource(JSInvokableEmitter.HintName, JSInvokableEmitter.Emit(assemblyName, registrations));
+            }
+
+            foreach (var hosted in valid.Where(m => m.Host is not null).GroupBy(m => m.Host!))
+            {
+                spc.AddSource(hosted.Key.HintName, JSInvokableEmitter.EmitHost(hosted.Key, [.. hosted]));
             }
         });
     }
@@ -63,16 +82,17 @@ public sealed class JSInvokableGenerator : IIncrementalGenerator
     {
         // Static identifiers are scoped to the assembly and instance identifiers to the declaring type.
         // Registering none of the duplicates keeps module initialization from throwing.
+        var invokable = methods.Where(m => !m.IsHidden).ToImmutableArray();
         var duplicates = new HashSet<(bool, string, string)>(
-            methods
-                .GroupBy(m => (m.IsStatic, m.IsStatic ? string.Empty : m.ContainingType, m.Identifier))
+            invokable
+                .GroupBy(Key)
                 .Where(g => g.Count() > 1)
                 .Select(g => g.Key));
 
         var builder = ImmutableArray.CreateBuilder<JSInvokableMethod>();
-        foreach (var method in methods)
+        foreach (var method in invokable)
         {
-            if (duplicates.Contains((method.IsStatic, method.IsStatic ? string.Empty : method.ContainingType, method.Identifier)))
+            if (duplicates.Contains(Key(method)))
             {
                 context.ReportDiagnostic(Diagnostic.Create(
                     DiagnosticDescriptors.DuplicateIdentifier,
@@ -85,6 +105,20 @@ public sealed class JSInvokableGenerator : IIncrementalGenerator
             }
         }
 
+        // A hidden identifier is only recorded when the type does not invoke it through another method;
+        // several overrides can hide the same identifier.
+        var registered = new HashSet<(bool, string, string)>(invokable.Select(Key));
+        foreach (var hidden in methods.Where(m => m.IsHidden))
+        {
+            if (registered.Add(Key(hidden)))
+            {
+                builder.Add(hidden);
+            }
+        }
+
         return builder.ToImmutable();
+
+        static (bool, string, string) Key(JSInvokableMethod m)
+            => (m.IsStatic, m.IsStatic ? string.Empty : m.ContainingType, m.Identifier);
     }
 }

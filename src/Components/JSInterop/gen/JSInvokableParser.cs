@@ -5,6 +5,8 @@ using System.Collections.Immutable;
 using System.Linq;
 using System.Threading;
 using Microsoft.CodeAnalysis;
+using Microsoft.CodeAnalysis.CSharp;
+using Microsoft.CodeAnalysis.CSharp.Syntax;
 
 namespace Microsoft.JSInterop.SourceGenerators;
 
@@ -14,6 +16,8 @@ internal static class JSInvokableParser
         .WithMiscellaneousOptions(
             SymbolDisplayMiscellaneousOptions.EscapeKeywordIdentifiers |
             SymbolDisplayMiscellaneousOptions.UseSpecialTypes);
+
+    private const string JSInvokableAttributeName = "Microsoft.JSInterop.JSInvokableAttribute";
 
     public static ParseResult Parse(GeneratorAttributeSyntaxContext context, CancellationToken cancellationToken)
     {
@@ -25,7 +29,16 @@ internal static class JSInvokableParser
 
         if (Validate(method) is { } failure)
         {
-            return new(default, new([new DiagnosticInfo(failure.Id, location, new([displayName, .. failure.Args]))]));
+            return Failure(failure, location, displayName);
+        }
+
+        HostInfo? host = null;
+        if (!method.IsStatic && RequiresHost(method.ContainingType))
+        {
+            if (CreateHost(method.ContainingType, out host) is { } hostFailure)
+            {
+                return Failure(hostFailure, location, displayName);
+            }
         }
 
         var compilation = context.SemanticModel.Compilation;
@@ -39,12 +52,7 @@ internal static class JSInvokableParser
         foreach (var attribute in context.Attributes)
         {
             // [JSInvokable] allows multiple identifiers; each one is registered independently.
-            string? identifier = method.Name;
-            if (attribute.ConstructorArguments.Length == 1)
-            {
-                identifier = attribute.ConstructorArguments[0].Value as string;
-            }
-
+            var identifier = GetIdentifier(method, attribute);
             if (string.IsNullOrEmpty(identifier))
             {
                 diagnostics.Add(new(DiagnosticDescriptors.UnsupportedSignature.Id, location, new([displayName, "the identifier must not be null or empty"])));
@@ -59,11 +67,76 @@ internal static class JSInvokableParser
                 parameterTypes,
                 returnKind,
                 resultType,
-                location));
+                location,
+                host));
         }
 
         return new(new(methods.ToImmutable()), new(diagnostics.ToImmutable()));
     }
+
+    /// <summary>
+    /// Reflection dispatch only sees the attributes declared on the most derived override, so an
+    /// override that does not redeclare a base identifier hides it. Records those identifiers so that
+    /// generated dispatch does not reach the override through the base type's registration.
+    /// </summary>
+    public static ParseResult ParseOverride(GeneratorSyntaxContext context, CancellationToken cancellationToken)
+    {
+        cancellationToken.ThrowIfCancellationRequested();
+
+        if (context.SemanticModel.GetDeclaredSymbol(context.Node, cancellationToken) is not IMethodSymbol { IsStatic: false, IsGenericMethod: false } method
+            || method.ContainingType.TypeKind != TypeKind.Class)
+        {
+            return new(default, default);
+        }
+
+        var own = method.GetAttributes()
+            .Where(IsJSInvokable)
+            .Select(a => GetIdentifier(method, a))
+            .ToImmutableHashSet();
+        var hidden = ImmutableArray.CreateBuilder<string>();
+        for (var overridden = method.OverriddenMethod; overridden is not null; overridden = overridden.OverriddenMethod)
+        {
+            foreach (var attribute in overridden.GetAttributes().Where(IsJSInvokable))
+            {
+                if (GetIdentifier(overridden, attribute) is { Length: > 0 } identifier && !own.Contains(identifier) && !hidden.Contains(identifier))
+                {
+                    hidden.Add(identifier);
+                }
+            }
+        }
+
+        if (hidden.Count == 0)
+        {
+            return new(default, default);
+        }
+
+        var location = LocationInfo.From(method.Locations.FirstOrDefault());
+        var displayName = method.ContainingType.Name + "." + method.Name;
+        if (ValidateContainingTypes(method.ContainingType) is { } failure)
+        {
+            return Failure(failure, location, displayName);
+        }
+
+        HostInfo? host = null;
+        if (RequiresHost(method.ContainingType) && CreateHost(method.ContainingType, out host) is { } hostFailure)
+        {
+            return Failure(hostFailure, location, displayName);
+        }
+
+        var containingType = method.ContainingType.ToDisplayString(TypeFormat);
+        return new(
+            new([.. hidden.Select(identifier => new JSInvokableMethod(identifier, false, containingType, method.Name, default, ReturnKind.Void, null, location, host, IsHidden: true))]),
+            default);
+    }
+
+    private static ParseResult Failure((string Id, string[] Args) failure, LocationInfo? location, string displayName)
+        => new(default, new([new DiagnosticInfo(failure.Id, location, new([displayName, .. failure.Args]))]));
+
+    private static bool IsJSInvokable(AttributeData attribute)
+        => attribute.AttributeClass?.ToDisplayString() == JSInvokableAttributeName;
+
+    private static string? GetIdentifier(IMethodSymbol method, AttributeData attribute)
+        => attribute.ConstructorArguments.Length == 1 ? attribute.ConstructorArguments[0].Value as string : method.Name;
 
     private static (string Id, string[] Args)? Validate(IMethodSymbol method)
     {
@@ -77,41 +150,24 @@ internal static class JSInvokableParser
             return (DiagnosticDescriptors.NotPublic.Id, []);
         }
 
-        for (var type = method.ContainingType; type is not null; type = type.ContainingType)
-        {
-            if (type.IsGenericType)
-            {
-                return (DiagnosticDescriptors.Generic.Id, []);
-            }
-        }
-
+        // Reflection dispatch skips methods with unbound generic parameters, and only scans exported
+        // (therefore non-generic) types for static methods.
         if (method.IsGenericMethod)
         {
-            return (DiagnosticDescriptors.Generic.Id, []);
+            return (DiagnosticDescriptors.Generic.Id, ["generic methods are never invoked"]);
         }
 
-        var publiclyVisible = true;
-        for (var type = method.ContainingType; type is not null; type = type.ContainingType)
+        if (method.IsStatic && IsInGenericType(method.ContainingType))
         {
-            if (type.IsFileLocal)
-            {
-                return (DiagnosticDescriptors.InaccessibleType.Id, []);
-            }
-
-            switch (type.DeclaredAccessibility)
-            {
-                case Accessibility.Public:
-                    break;
-                case Accessibility.Internal:
-                case Accessibility.ProtectedOrInternal:
-                    publiclyVisible = false;
-                    break;
-                default:
-                    return (DiagnosticDescriptors.InaccessibleType.Id, []);
-            }
+            return (DiagnosticDescriptors.Generic.Id, ["static methods declared in generic types are never invoked"]);
         }
 
-        if (method.IsStatic && !publiclyVisible)
+        if (ValidateContainingTypes(method.ContainingType) is { } containingTypeFailure)
+        {
+            return containingTypeFailure;
+        }
+
+        if (method.IsStatic && !IsPubliclyVisible(method.ContainingType))
         {
             // Reflection dispatch only discovers static methods on exported types.
             return (DiagnosticDescriptors.StaticOnNonPublicType.Id, []);
@@ -141,6 +197,116 @@ internal static class JSInvokableParser
         }
 
         return null;
+    }
+
+    private static (string Id, string[] Args)? ValidateContainingTypes(INamedTypeSymbol containingType)
+    {
+        for (var type = containingType; type is not null; type = type.ContainingType)
+        {
+            if (type.IsFileLocal)
+            {
+                return (DiagnosticDescriptors.InaccessibleType.Id, []);
+            }
+        }
+
+        return null;
+    }
+
+    private static bool IsInGenericType(INamedTypeSymbol containingType)
+    {
+        for (var type = containingType; type is not null; type = type.ContainingType)
+        {
+            if (type.IsGenericType)
+            {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    private static bool IsPubliclyVisible(INamedTypeSymbol containingType)
+    {
+        for (var type = containingType; type is not null; type = type.ContainingType)
+        {
+            if (type.DeclaredAccessibility != Accessibility.Public)
+            {
+                return false;
+            }
+        }
+
+        return true;
+    }
+
+    // Generated module initializers cannot name type parameters or types that are not accessible to
+    // the rest of the assembly.
+    private static bool RequiresHost(INamedTypeSymbol containingType)
+    {
+        for (var type = containingType; type is not null; type = type.ContainingType)
+        {
+            if (type.IsGenericType || type.DeclaredAccessibility is not (Accessibility.Public or Accessibility.Internal or Accessibility.ProtectedOrInternal))
+            {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    private static (string Id, string[] Args)? CreateHost(INamedTypeSymbol containingType, out HostInfo? host)
+    {
+        host = null;
+        var typeName = containingType.ToDisplayString(TypeFormat);
+        var declarations = ImmutableArray.CreateBuilder<string>();
+        for (var type = containingType; type is not null; type = type.ContainingType)
+        {
+            var isPartial = type.DeclaringSyntaxReferences.Length > 0 && type.DeclaringSyntaxReferences.All(reference =>
+                reference.GetSyntax() is TypeDeclarationSyntax declaration && declaration.Modifiers.Any(SyntaxKind.PartialKeyword));
+            if (!isPartial)
+            {
+                return (DiagnosticDescriptors.PartialTypeRequired.Id, [typeName]);
+            }
+
+            declarations.Insert(0, GetPartialDeclaration(type));
+        }
+
+        if (containingType.StaticConstructors.Any(constructor => !constructor.IsImplicitlyDeclared))
+        {
+            return (DiagnosticDescriptors.StaticConstructorConflict.Id, [typeName]);
+        }
+
+        var ns = containingType.ContainingNamespace is { IsGlobalNamespace: false } containingNamespace
+            ? containingNamespace.ToDisplayString()
+            : null;
+        var hintName = new string([.. containingType.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat)
+            .Replace("global::", string.Empty)
+            .Select(c => char.IsLetterOrDigit(c) || c == '.' ? c : '_')]);
+        host = new HostInfo(ns, new(declarations.ToImmutable()), SyntaxFactsEscape(containingType.Name), hintName + ".JSInvokable.g.cs");
+        return null;
+    }
+
+    private static string GetPartialDeclaration(INamedTypeSymbol type)
+    {
+        var keyword = type.TypeKind switch
+        {
+            TypeKind.Interface => "partial interface",
+            // 'partial' must immediately precede the type keyword: 'ref partial struct'.
+            TypeKind.Struct => (type.IsRefLikeType ? "ref partial " : "partial ") + (type.IsRecord ? "record struct" : "struct"),
+            _ => type.IsRecord ? "partial record" : "partial class",
+        };
+
+        var name = SyntaxFactsEscape(type.Name);
+        if (type.TypeParameters.Length > 0)
+        {
+            name += "<" + string.Join(", ", type.TypeParameters.Select(p => p.Variance switch
+            {
+                VarianceKind.In => "in ",
+                VarianceKind.Out => "out ",
+                _ => string.Empty,
+            } + SyntaxFactsEscape(p.Name))) + ">";
+        }
+
+        return keyword + " " + name;
     }
 
     private static bool IsUnsupportedType(ITypeSymbol type)
