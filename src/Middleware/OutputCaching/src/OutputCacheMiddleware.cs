@@ -25,7 +25,7 @@ internal sealed class OutputCacheMiddleware
     private readonly IOutputCacheStore _store;
     private readonly IOutputCacheKeyProvider _keyProvider;
     private readonly IOutputCachePolicyProvider _policyProvider;
-    private readonly WorkDispatcher<string, OutputCacheEntry?> _outputCacheEntryDispatcher;
+    private readonly IOutputCacheEntryStrategy _entryStrategy;
     private readonly WorkDispatcher<string, OutputCacheEntry?> _requestDispatcher;
 
     /// <summary>
@@ -76,7 +76,7 @@ internal sealed class OutputCacheMiddleware
         _store = cache;
         _policyProvider = policyProvider;
         _keyProvider = keyProvider;
-        _outputCacheEntryDispatcher = new();
+        _entryStrategy = new DefaultOutputCacheEntryStrategy(_store, _logger);
         _requestDispatcher = new();
     }
 
@@ -273,12 +273,13 @@ internal sealed class OutputCacheMiddleware
         var cacheEntryAge = context.ResponseTime.Value - context.CachedResponse.Created;
         context.CachedEntryAge = cacheEntryAge > TimeSpan.Zero ? cacheEntryAge : TimeSpan.Zero;
 
+        // Policies can mark the entry as stale in ServeFromCacheAsync.
+        context.IsCacheEntryFresh = true;
+
         foreach (var policy in policies)
         {
             await policy.ServeFromCacheAsync(context, context.HttpContext.RequestAborted);
         }
-
-        context.IsCacheEntryFresh = true;
 
         var cachedResponse = context.CachedResponse;
         if (context.IsCacheEntryFresh)
@@ -341,13 +342,10 @@ internal sealed class OutputCacheMiddleware
             return false;
         }
 
-        // Locking cache lookups by default
-        // TODO: should it be part of the cache implementations or can we assume all caches would benefit from it?
-        // It makes sense for caches that use IO (disk, network) or need to deserialize the state but could also be a global option
         OutputCacheEntry? cacheEntry;
         try
         {
-            cacheEntry = await _outputCacheEntryDispatcher.ScheduleAsync(cacheContext.CacheKey, (Store: _store, CacheContext: cacheContext), static async (key, state) => await OutputCacheEntryFormatter.GetAsync(key, state.Store, state.CacheContext.HttpContext.RequestAborted), cacheContext.HttpContext.RequestAborted);
+            cacheEntry = await _entryStrategy.GetAsync(cacheContext, cacheContext.HttpContext.RequestAborted);
         }
         catch (OperationCanceledException)
         {
@@ -450,8 +448,10 @@ internal sealed class OutputCacheMiddleware
                 {
                     _logger.ResponseCached();
 
-                    await OutputCacheEntryFormatter.StoreAsync(context.CacheKey, context.CachedResponse, context.Tags, context.CachedResponseValidFor,
-                        _store, _logger, context.HttpContext.RequestAborted);
+                    // ServeResponseAsync policies run after the response headers were finalized and may have updated the expiration.
+                    context.CachedResponseValidFor = context.ResponseExpirationTimeSpan ?? _options.DefaultExpirationTimeSpan;
+
+                    await _entryStrategy.StoreAsync(context, context.HttpContext.RequestAborted);
 
                     return true;
                 }
