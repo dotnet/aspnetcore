@@ -255,6 +255,28 @@ public class CorsServiceTests
     }
 
     [Fact]
+    public void ApplyResult_ValuesAddedAfterEvaluation_AreApplied()
+    {
+        var corsService = GetCorsService();
+        var requestContext = GetHttpContext(method: "GET", origin: "http://example.com");
+        var policy = new CorsPolicy();
+        policy.Origins.Add(CorsConstants.AnyOrigin);
+        policy.Methods.Add("GET");
+
+        var result = corsService.EvaluatePolicy(requestContext, policy);
+        Assert.Empty(result.AllowedExposedHeaders);
+        Assert.Same(result.AllowedExposedHeaders, result.AllowedExposedHeaders);
+
+        result.AllowedExposedHeaders.Add("foo");
+        result.AllowedExposedHeaders.Add("bar");
+        var httpContext = new DefaultHttpContext();
+        corsService.ApplyResult(result, httpContext.Response);
+
+        Assert.Equal(new[] { "GET" }, result.AllowedMethods);
+        Assert.Equal("foo,bar", httpContext.Response.Headers[CorsConstants.AccessControlExposeHeaders]);
+    }
+
+    [Fact]
     public void EvaluatePolicy_OneExposedHeaders_HeadersAllowed()
     {
         // Arrange
