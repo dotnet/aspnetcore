@@ -173,6 +173,7 @@ internal partial class EndpointHtmlRenderer
 
     private async Task WaitForResultReady(bool waitForQuiescence, PrerenderedComponentHtmlContent result)
     {
+        NonStreamingPendingTasksCompletion = null;
         if (waitForQuiescence)
         {
             // Full quiescence, i.e., all tasks completed regardless of streaming SSR

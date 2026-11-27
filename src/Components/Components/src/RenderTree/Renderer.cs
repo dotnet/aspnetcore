@@ -1077,13 +1077,31 @@ public abstract partial class Renderer : IDisposable, IAsyncDisposable
     /// <summary>
     /// Validates pending section content for components whose output is ready to be sent.
     /// </summary>
-    /// <param name="shouldValidate">Selects the section outlets whose rendering work has settled.</param>
+    /// <param name="shouldValidate">Selects components whose output is ready, including section outlets and their error boundaries.</param>
     protected void ValidatePendingSections(Func<ComponentState, bool> shouldValidate)
     {
         Dispatcher.AssertAccess();
         try
         {
-            ValidatePendingSectionsCore(outlet => shouldValidate(_componentStateByComponent[outlet]));
+            ValidatePendingSectionsCore(outlet =>
+            {
+                var state = _componentStateByComponent[outlet];
+                if (shouldValidate(state))
+                {
+                    return true;
+                }
+
+                // Recovery replaces the boundary's output, which may have an earlier last write than the outlet.
+                for (var candidate = state.LogicalParentComponentState; candidate is not null; candidate = candidate.LogicalParentComponentState)
+                {
+                    if (candidate.Component is IErrorBoundary)
+                    {
+                        return shouldValidate(candidate);
+                    }
+                }
+
+                return false;
+            });
         }
         catch
         {

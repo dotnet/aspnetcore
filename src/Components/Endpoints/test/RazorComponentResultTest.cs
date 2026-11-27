@@ -438,6 +438,63 @@ public class RazorComponentResultTest
     }
 
     [Fact]
+    public async Task StreamingSectionOutlet_NonStreamingErrorBoundary_RecoversBeforeInitialFlush()
+    {
+        var releaseStreaming = new TaskCompletionSource();
+        var httpContext = GetTestHttpContext();
+        httpContext.SetEndpoint(new Endpoint(_ => Task.CompletedTask, EndpointMetadataCollection.Empty, "mixed-section"));
+        var responseBody = new MemoryStream();
+        httpContext.Response.Body = responseBody;
+        var completion = new RazorComponentResult(typeof(NonStreamingSectionErrorHost), new
+        {
+            ReleaseStreaming = releaseStreaming.Task,
+            StreamingOutlet = true,
+        }).ExecuteAsync(httpContext);
+        try
+        {
+            await WaitForContentWrittenAsync(responseBody);
+            Assert.False(completion.IsCompleted);
+            Assert.Contains("Boundary fallback", GetStringContent(responseBody));
+            Assert.DoesNotContain("Mismatched content", GetStringContent(responseBody));
+        }
+        finally
+        {
+            releaseStreaming.SetResult();
+            await completion;
+        }
+    }
+
+    [Fact]
+    public async Task FirstFlushSectionValidation_DoesNotFaultSameScopeErrorResult()
+    {
+        var releaseStreaming = new TaskCompletionSource();
+        var httpContext = GetTestHttpContext();
+        httpContext.SetEndpoint(new Endpoint(_ => Task.CompletedTask, EndpointMetadataCollection.Empty, "first-flush-error"));
+        var responseBody = new MemoryStream();
+        httpContext.Response.Body = responseBody;
+        try
+        {
+            var exception = await Assert.ThrowsAsync<InvalidOperationException>(() =>
+                new RazorComponentResult(typeof(FirstFlushSectionErrorHost), new
+                {
+                    ReleaseStreaming = releaseStreaming.Task,
+                }).ExecuteAsync(httpContext));
+            Assert.Contains("section-one", exception.Message);
+            Assert.Equal(0, responseBody.Length);
+
+            releaseStreaming.TrySetResult();
+            httpContext.Response.Clear();
+            httpContext.Features.Set<IExceptionHandlerFeature>(new ExceptionHandlerFeature { Error = exception });
+            await new RazorComponentResult(typeof(PlainErrorEndpoint)).ExecuteAsync(httpContext);
+            Assert.Equal("Error endpoint rendered", GetStringContent(responseBody));
+        }
+        finally
+        {
+            releaseStreaming.TrySetResult();
+        }
+    }
+
+    [Fact]
     public async Task SectionValidation_HandledRedirectDoesNotFaultNextRoot()
     {
         var httpContext = GetTestHttpContext();
@@ -707,6 +764,7 @@ public class RazorComponentResultTest
         [Parameter] public Task ReleaseFallback { get; set; }
         [Parameter] public TaskCompletionSource FallbackStarted { get; set; }
         [Parameter] public Task ReleaseStreaming { get; set; }
+        [Parameter] public bool StreamingOutlet { get; set; }
 
         protected override void BuildRenderTree(RenderTreeBuilder builder)
         {
@@ -727,10 +785,18 @@ public class RazorComponentResultTest
             }));
             builder.AddComponentParameter(2, nameof(ErrorBoundary.ChildContent), (RenderFragment)(child =>
             {
-                child.OpenComponent<SectionOutlet>(0);
-                child.AddComponentParameter(1, nameof(SectionOutlet.SectionName), "initial-section");
-                child.AddComponentRenderMode(RenderMode.InteractiveServer);
-                child.CloseComponent();
+                if (StreamingOutlet)
+                {
+                    child.OpenComponent<StreamingInitialSectionOutlet>(0);
+                    child.CloseComponent();
+                }
+                else
+                {
+                    child.OpenComponent<SectionOutlet>(1);
+                    child.AddComponentParameter(2, nameof(SectionOutlet.SectionName), "initial-section");
+                    child.AddComponentRenderMode(RenderMode.InteractiveServer);
+                    child.CloseComponent();
+                }
             }));
             builder.CloseComponent();
             builder.OpenComponent<SectionContent>(3);
@@ -748,6 +814,32 @@ public class RazorComponentResultTest
 
     [StreamRendering]
     private sealed class StreamingInitialSectionErrorHost : NonStreamingSectionErrorHost;
+
+    [StreamRendering]
+    private sealed class StreamingInitialSectionOutlet : ComponentBase
+    {
+        protected override void BuildRenderTree(RenderTreeBuilder builder)
+        {
+            builder.OpenComponent<SectionOutlet>(0);
+            builder.AddComponentParameter(1, nameof(SectionOutlet.SectionName), "initial-section");
+            builder.AddComponentRenderMode(RenderMode.InteractiveServer);
+            builder.CloseComponent();
+        }
+    }
+
+    private sealed class FirstFlushSectionErrorHost : ComponentBase
+    {
+        [Parameter] public Task ReleaseStreaming { get; set; }
+
+        protected override void BuildRenderTree(RenderTreeBuilder builder)
+        {
+            builder.OpenComponent<UnrelatedStreamingSectionSibling>(0);
+            builder.AddComponentParameter(1, nameof(UnrelatedStreamingSectionSibling.Release), ReleaseStreaming);
+            builder.CloseComponent();
+            builder.OpenComponent<MultiplePendingSectionValidationHost>(2);
+            builder.CloseComponent();
+        }
+    }
 
     private sealed class AsyncSectionFallback : ComponentBase
     {
