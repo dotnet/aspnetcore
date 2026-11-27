@@ -22,6 +22,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Internal;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging.Abstractions;
 using Moq;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests;
@@ -770,7 +771,7 @@ public class HttpsTests : LoggedTest
 
         var h3Options = await tlsCallback.OnConnection(new TlsHandshakeCallbackContext
         {
-            ClientHelloInfo = new SslClientHelloInfo { ServerName = "h3.example.com" },
+            ClientHelloInfo = new SslClientHelloInfo("h3.example.com", SslProtocols.None),
             Connection = new DefaultConnectionContext(),
             CancellationToken = CancellationToken.None
         });
@@ -782,7 +783,7 @@ public class HttpsTests : LoggedTest
         var legacyConnection = new DefaultConnectionContext();
         var legacyOptions = await tlsCallback.OnConnection(new TlsHandshakeCallbackContext
         {
-            ClientHelloInfo = new SslClientHelloInfo { ServerName = "legacy.example.org" },
+            ClientHelloInfo = new SslClientHelloInfo("legacy.example.org", SslProtocols.None),
             Connection = legacyConnection,
             CancellationToken = CancellationToken.None
         });
