@@ -21,6 +21,8 @@ using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Internal;
+using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging.Testing;
 using Moq;
 
 namespace Microsoft.AspNetCore.Components.Endpoints;
@@ -359,7 +361,36 @@ public class RazorComponentResultTest
     }
 
     [Fact]
-    public async Task SectionValidation_AwaitsAsyncErrorFallback()
+    public async Task StreamingBuiltInSection_LogsMismatchBeforeProviderReplacement()
+    {
+        var release = new TaskCompletionSource();
+        var httpContext = GetTestHttpContext();
+        httpContext.SetEndpoint(new Endpoint(_ => Task.CompletedTask, EndpointMetadataCollection.Empty, "streaming-title"));
+        var sink = new TestSink();
+        using var loggerProvider = new TestLoggerProvider(sink);
+        httpContext.RequestServices.GetRequiredService<ILoggerFactory>().AddProvider(loggerProvider);
+        var responseBody = new MemoryStream();
+        httpContext.Response.Body = responseBody;
+        var completion = new RazorComponentResult(typeof(StreamingTitleReplacement), new { Release = release.Task }).ExecuteAsync(httpContext);
+        try
+        {
+            await WaitForContentWrittenAsync(responseBody);
+            Assert.Contains("<title>Interactive title</title>", GetStringContent(responseBody));
+            var warning = Assert.Single(sink.Writes, write => write.EventId.Name == "SectionRenderModeMismatch");
+            Assert.Equal(LogLevel.Warning, warning.LogLevel);
+        }
+        finally
+        {
+            release.SetResult();
+            await completion.WaitAsync(TimeSpan.FromSeconds(10));
+        }
+        Assert.Contains("<title>Static title</title>", GetStringContent(responseBody));
+    }
+
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task SectionValidation_AwaitsAsyncErrorFallback(bool preventStreaming)
     {
         var releaseFallback = new TaskCompletionSource();
         var fallbackStarted = new TaskCompletionSource();
@@ -370,11 +401,11 @@ public class RazorComponentResultTest
         {
             ReleaseFallback = releaseFallback.Task,
             FallbackStarted = fallbackStarted,
-        }) { PreventStreamingRendering = true };
+        }) { PreventStreamingRendering = preventStreaming };
         var completion = result.ExecuteAsync(httpContext);
         try
         {
-            await fallbackStarted.Task;
+            Assert.Same(fallbackStarted.Task, await Task.WhenAny(fallbackStarted.Task, completion).WaitAsync(TimeSpan.FromSeconds(10)));
             Assert.False(completion.IsCompleted);
         }
         finally
@@ -384,6 +415,8 @@ public class RazorComponentResultTest
         await completion;
         Assert.Contains("Fallback loaded", GetStringContent(responseBody));
         Assert.DoesNotContain("Fallback loading", GetStringContent(responseBody));
+        Assert.Contains("Compatible fallback section", GetStringContent(responseBody));
+        Assert.DoesNotContain("Temporary fallback section", GetStringContent(responseBody));
     }
 
     [Fact]
@@ -491,6 +524,50 @@ public class RazorComponentResultTest
         finally
         {
             releaseStreaming.TrySetResult();
+        }
+    }
+
+    [Fact]
+    public async Task FirstFlushSectionValidation_LateInitializerDoesNotFaultPendingErrorResult()
+    {
+        var releaseStreaming = new TaskCompletionSource();
+        var lateInitialized = new TaskCompletionSource();
+        var releaseError = new TaskCompletionSource();
+        var errorStarted = new TaskCompletionSource();
+        var httpContext = GetTestHttpContext();
+        httpContext.SetEndpoint(new Endpoint(_ => Task.CompletedTask, EndpointMetadataCollection.Empty, "late-section-error"));
+        var responseBody = new MemoryStream();
+        httpContext.Response.Body = responseBody;
+        try
+        {
+            var exception = await Assert.ThrowsAsync<InvalidOperationException>(() =>
+                new RazorComponentResult(typeof(LateFirstFlushSectionErrorHost), new
+                {
+                    ReleaseStreaming = releaseStreaming.Task,
+                    Initialized = lateInitialized,
+                }).ExecuteAsync(httpContext));
+            Assert.Contains("section-one", exception.Message);
+            httpContext.Response.Clear();
+            httpContext.Features.Set<IExceptionHandlerFeature>(new ExceptionHandlerFeature { Error = exception });
+            var completion = new RazorComponentResult(typeof(AsyncErrorEndpoint), new
+            {
+                Release = releaseError.Task,
+                Started = errorStarted,
+            }).ExecuteAsync(httpContext);
+            Assert.Same(errorStarted.Task, await Task.WhenAny(errorStarted.Task, completion).WaitAsync(TimeSpan.FromSeconds(10)));
+            var renderer = httpContext.RequestServices.GetRequiredService<EndpointHtmlRenderer>();
+            await renderer.Dispatcher.InvokeAsync(() => releaseStreaming.SetResult());
+            await lateInitialized.Task.WaitAsync(TimeSpan.FromSeconds(10));
+            await renderer.Dispatcher.InvokeAsync(() => { });
+            Assert.False(completion.IsCompleted);
+            releaseError.SetResult();
+            await completion.WaitAsync(TimeSpan.FromSeconds(10));
+            Assert.Equal("Error endpoint rendered", GetStringContent(responseBody));
+        }
+        finally
+        {
+            releaseStreaming.TrySetResult();
+            releaseError.TrySetResult();
         }
     }
 
@@ -652,6 +729,7 @@ public class RazorComponentResultTest
             x => x.EnvironmentName == (environmentName ?? Environments.Production));
         var serviceCollection = new ServiceCollection()
             .AddAntiforgery()
+            .AddSingleton(Mock.Of<Microsoft.JSInterop.IJSRuntime>())
             .AddSingleton(new DiagnosticListener("test"))
             .AddSingleton<IWebHostEnvironment>(mockWebHostEnvironment)
             .AddSingleton<IHostEnvironment>(mockWebHostEnvironment)
@@ -759,6 +837,36 @@ public class RazorComponentResultTest
         }
     }
 
+    [StreamRendering]
+    private sealed class StreamingTitleReplacement : ComponentBase
+    {
+        private bool _loaded;
+        [Parameter] public Task Release { get; set; }
+        protected override async Task OnInitializedAsync()
+        {
+            await Release;
+            _loaded = true;
+        }
+        protected override void BuildRenderTree(RenderTreeBuilder builder)
+        {
+            builder.OpenComponent<HeadOutlet>(0);
+            builder.CloseComponent();
+            if (_loaded)
+            {
+                builder.OpenComponent<PageTitle>(1);
+                builder.AddComponentParameter(2, nameof(PageTitle.ChildContent), (RenderFragment)(title => title.AddContent(0, "Static title")));
+                builder.CloseComponent();
+            }
+            else
+            {
+                builder.OpenComponent<PageTitle>(3);
+                builder.AddComponentParameter(4, nameof(PageTitle.ChildContent), (RenderFragment)(title => title.AddContent(0, "Interactive title")));
+                builder.AddComponentRenderMode(RenderMode.InteractiveServer);
+                builder.CloseComponent();
+            }
+        }
+    }
+
     private class NonStreamingSectionErrorHost : ComponentBase
     {
         [Parameter] public Task ReleaseFallback { get; set; }
@@ -841,6 +949,58 @@ public class RazorComponentResultTest
         }
     }
 
+    private sealed class LateFirstFlushSectionErrorHost : ComponentBase
+    {
+        [Parameter] public Task ReleaseStreaming { get; set; }
+        [Parameter] public TaskCompletionSource Initialized { get; set; }
+        protected override void BuildRenderTree(RenderTreeBuilder builder)
+        {
+            builder.OpenComponent<SectionOutlet>(0);
+            builder.AddComponentParameter(1, nameof(SectionOutlet.SectionName), "section-one");
+            builder.AddComponentRenderMode(RenderMode.InteractiveServer);
+            builder.CloseComponent();
+            builder.OpenComponent<LateSectionProvider>(2);
+            builder.AddComponentParameter(3, nameof(LateSectionProvider.Release), ReleaseStreaming);
+            builder.AddComponentParameter(4, nameof(LateSectionProvider.Initialized), Initialized);
+            builder.AddComponentRenderMode(RenderMode.InteractiveWebAssembly);
+            builder.CloseComponent();
+        }
+    }
+
+    [StreamRendering]
+    private sealed class LateSectionProvider : ComponentBase
+    {
+        private bool _loaded;
+        [Parameter] public Task Release { get; set; }
+        [Parameter] public TaskCompletionSource Initialized { get; set; }
+        protected override async Task OnInitializedAsync()
+        {
+            await Release;
+            _loaded = true;
+            Initialized.SetResult();
+        }
+        protected override void BuildRenderTree(RenderTreeBuilder builder)
+        {
+            builder.OpenComponent<SectionContent>(0);
+            builder.AddComponentParameter(1, nameof(SectionContent.SectionName), "section-one");
+            builder.AddComponentParameter(2, nameof(SectionContent.ChildContent), (RenderFragment)(content => content.AddContent(0, _loaded ? "Loaded" : "Loading")));
+            builder.CloseComponent();
+        }
+    }
+
+    private sealed class AsyncErrorEndpoint : ComponentBase
+    {
+        [Parameter] public Task Release { get; set; }
+        [Parameter] public TaskCompletionSource Started { get; set; }
+        protected override async Task OnInitializedAsync()
+        {
+            Started.SetResult();
+            await Release;
+        }
+        protected override void BuildRenderTree(RenderTreeBuilder builder)
+            => builder.AddContent(0, "Error endpoint rendered");
+    }
+
     private sealed class AsyncSectionFallback : ComponentBase
     {
         private bool _loaded;
@@ -849,13 +1009,32 @@ public class RazorComponentResultTest
 
         protected override async Task OnInitializedAsync()
         {
-            Started.SetResult();
+            Started.TrySetResult();
             await Release;
             _loaded = true;
         }
 
         protected override void BuildRenderTree(RenderTreeBuilder builder)
-            => builder.AddContent(0, _loaded ? "Fallback loaded" : "Fallback loading");
+        {
+            builder.AddContent(0, _loaded ? "Fallback loaded" : "Fallback loading");
+            builder.OpenComponent<SectionOutlet>(1);
+            builder.AddComponentParameter(2, nameof(SectionOutlet.SectionName), "fallback-section");
+            builder.AddComponentRenderMode(RenderMode.InteractiveServer);
+            builder.CloseComponent();
+            builder.OpenComponent<SectionContent>(3);
+            builder.AddComponentParameter(4, nameof(SectionContent.SectionName), "fallback-section");
+            builder.AddComponentParameter(5, nameof(SectionContent.IsDefaultContent), true);
+            builder.AddComponentParameter(6, nameof(SectionContent.ChildContent), (RenderFragment)(content => content.AddContent(0, "Temporary fallback section")));
+            builder.CloseComponent();
+            if (_loaded)
+            {
+                builder.OpenComponent<SectionContent>(7);
+                builder.AddComponentParameter(8, nameof(SectionContent.SectionName), "fallback-section");
+                builder.AddComponentParameter(9, nameof(SectionContent.ChildContent), (RenderFragment)(content => content.AddContent(0, "Compatible fallback section")));
+                builder.AddComponentRenderMode(RenderMode.InteractiveServer);
+                builder.CloseComponent();
+            }
+        }
     }
 
     [StreamRendering]

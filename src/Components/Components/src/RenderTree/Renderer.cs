@@ -1093,11 +1093,13 @@ public abstract partial class Renderer : IDisposable, IAsyncDisposable
     protected void ValidatePendingSections(Func<ComponentState, bool> shouldValidate)
     {
         Dispatcher.AssertAccess();
+        ComponentState? validationSource = null;
         try
         {
             ValidatePendingSectionsCore(outlet =>
             {
                 var state = _componentStateByComponent[outlet];
+                validationSource = state;
                 if (shouldValidate(state))
                 {
                     return true;
@@ -1122,6 +1124,16 @@ public abstract partial class Renderer : IDisposable, IAsyncDisposable
             // A same-scope error response must start its own quiescence rather than join that work.
             _pendingTasks = null;
             _ongoingQuiescenceTask = null;
+            if (validationSource is not null)
+            {
+                while (validationSource.ParentComponentState is { } parent)
+                {
+                    validationSource = parent;
+                }
+
+                // Late initialization must not render more sections into a replacement error response.
+                RemoveRootComponent(validationSource.ComponentId);
+            }
             throw;
         }
     }
@@ -1138,6 +1150,7 @@ public abstract partial class Renderer : IDisposable, IAsyncDisposable
                 break;
             }
 
+            var pendingTaskCount = _pendingTasks?.Count ?? 0;
             try
             {
                 sectionOutlet.ValidateContent();
@@ -1151,6 +1164,12 @@ public abstract partial class Renderer : IDisposable, IAsyncDisposable
             {
                 var nextToRender = _batchBuilder.ComponentRenderQueue.Dequeue();
                 RenderInExistingBatch(nextToRender);
+            }
+
+            // Recovery can introduce temporary section providers while its fallback initializes.
+            if ((_pendingTasks?.Count ?? 0) > pendingTaskCount)
+            {
+                break;
             }
         }
     }

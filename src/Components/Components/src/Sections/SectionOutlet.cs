@@ -100,7 +100,14 @@ public sealed class SectionOutlet : IComponent, IDisposable
 
     private void BuildRenderTree(RenderTreeBuilder builder)
     {
-        _registry.ScheduleValidation(this);
+        if (SectionId is BuiltInSectionIdentifier)
+        {
+            ValidateContent();
+        }
+        else
+        {
+            _registry.ScheduleValidation(this);
+        }
         var fragment = _currentContentProvider?.ChildContent ?? _emptyRenderFragment;
 
         builder.OpenComponent<SectionOutletContentRenderer>(0);
