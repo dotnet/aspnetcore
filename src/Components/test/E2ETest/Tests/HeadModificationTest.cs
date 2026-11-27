@@ -420,6 +420,31 @@ public class HeadModificationTest : ServerTestBase<HeadModificationTest.HeadModi
             Browser.True(() => (bool)((IJavaScriptExecutor)Browser).ExecuteScript("return window.matchMedia('(min-width: 900px)').matches;"));
             Browser.Equal("rgba(255, 0, 0, 1)", () => target.GetCssValue("background-color"));
             Browser.Equal(0, () => Browser.FindElements(By.CssSelector("head link[href='head-swap-initial.css']")).Count);
+
+            request.Release.TrySetResult();
+            Navigate(ServerPathBase);
+            Browser.MountTestComponent<HeadStylesheetSwapPendingReplacement>();
+            target = Browser.Exists(By.Id("swap-target"));
+            Browser.Equal("rgba(0, 0, 255, 1)", () => target.GetCssValue("background-color"));
+            Browser.Exists(By.Id("change-initial-media-query")).Click();
+            Browser.Equal("(min-width: 900px)", () => Browser.Exists(By.Id("pending-swap-stylesheet")).GetDomAttribute("media"));
+
+            Browser.Exists(By.Id("replace-stylesheet")).Click();
+            replacement = Browser.Exists(By.CssSelector("link#pending-swap-stylesheet[href*='head-swap-replacement/']"));
+            request = _serverFixture.GetRequest(GetRequestId(replacement));
+            await request.Requested.Task.WaitAsync(TimeSpan.FromSeconds(15));
+            Browser.Equal("screen", () => replacement.GetDomAttribute("media"));
+            Browser.Equal("rgba(0, 0, 255, 1)", () => target.GetCssValue("background-color"));
+            Browser.Equal(1, () => Browser.FindElements(By.CssSelector("head link[href='head-swap-initial.css']")).Count);
+
+            Browser.SetWindowSize(500, 900);
+            Browser.Equal("rgba(255, 0, 0, 1)", () => target.GetCssValue("background-color"));
+            Browser.Equal(0, () => Browser.FindElements(By.CssSelector("head link[href='head-swap-initial.css']")).Count);
+
+            Browser.SetWindowSize(1200, 900);
+            Browser.True(() => (bool)((IJavaScriptExecutor)Browser).ExecuteScript("return window.matchMedia('(min-width: 900px)').matches;"));
+            Browser.Equal("rgba(255, 0, 0, 1)", () => target.GetCssValue("background-color"));
+            Browser.Equal(0, () => Browser.FindElements(By.CssSelector("head link[href='head-swap-initial.css']")).Count);
         }
         finally
         {
@@ -554,7 +579,7 @@ public class HeadModificationTest : ServerTestBase<HeadModificationTest.HeadModi
     public void NavigationRemovesUnmatchedStylesheetBeforeResettingScroll()
     {
         var js = (IJavaScriptExecutor)Browser;
-        js.ExecuteScript("history.replaceState(null, '', 'head-stylesheet-scroll/outgoing');");
+        Browser.Navigate(_serverFixture.RootUri, $"{ServerPathBase}/head-stylesheet-scroll/outgoing");
         Browser.MountTestComponent<HeadStylesheetScrollRouter>();
         Browser.Equal("outgoing", () => Browser.Exists(By.Id("head-scroll-page")).Text);
         Browser.Equal("smooth", () => Browser.FindElement(By.TagName("html")).GetCssValue("scroll-behavior"));

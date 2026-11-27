@@ -4,16 +4,22 @@
 let removed: { link: HTMLLinkElement; id: string }[] | undefined;
 let inserted: HTMLLinkElement[] | undefined;
 let batchActive = false;
+const outerBatches: { removed: typeof removed; inserted: typeof inserted }[] = [];
 type PendingTransition = {
   previous: HTMLLinkElement;
   finish: () => void;
   media?: string;
   mediaQueryList?: MediaQueryList;
   mediaQueryListener?: () => void;
+  previousMediaQueryList?: MediaQueryList;
+  previousMediaQueryListener?: () => void;
 };
 const pending = new Map<HTMLLinkElement, PendingTransition>();
 
 export function beginHeadStylesheetTransition(): void {
+  if (batchActive) {
+    outerBatches.push({ removed, inserted });
+  }
   batchActive = true;
   removed = inserted = undefined;
 }
@@ -39,8 +45,10 @@ export function deferHeadStylesheetRemoval(node: Node): boolean {
 export function endHeadStylesheetTransition(): void {
   const outgoing = removed;
   const insertedStylesheets = inserted;
-  batchActive = false;
-  removed = inserted = undefined;
+  const outerBatch = outerBatches.pop();
+  batchActive = outerBatch !== undefined;
+  removed = outerBatch?.removed;
+  inserted = outerBatch?.inserted;
 
   if (outgoing?.length) {
     const outgoingLinks = outgoing.map(item => item.link);
@@ -73,6 +81,9 @@ export function endHeadStylesheetTransition(): void {
           if (transition.mediaQueryList && transition.mediaQueryListener) {
             transition.mediaQueryList.removeEventListener('change', transition.mediaQueryListener);
           }
+          if (transition.previousMediaQueryList && transition.previousMediaQueryListener) {
+            transition.previousMediaQueryList.removeEventListener('change', transition.previousMediaQueryListener);
+          }
           if (pending.delete(replacement)) {
             previous.remove();
           }
@@ -82,6 +93,18 @@ export function endHeadStylesheetTransition(): void {
       pending.set(replacement, transition);
       replacement.addEventListener('load', transition.finish);
       replacement.addEventListener('error', transition.finish);
+      const previousMedia = previous.media.trim();
+      if (previousMedia.length > 0) {
+        const mediaQueryList = window.matchMedia(previousMedia);
+        const listener = () => {
+          if (!mediaQueryList.matches) {
+            transition.finish();
+          }
+        };
+        transition.previousMediaQueryList = mediaQueryList;
+        transition.previousMediaQueryListener = listener;
+        mediaQueryList.addEventListener('change', listener);
+      }
       updateMediaQueryListener(replacement, transition);
     }
   }
