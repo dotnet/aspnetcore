@@ -20,6 +20,13 @@
     <NoWarn>$(NoWarn);CA1416</NoWarn>
   </PropertyGroup>
 
+  <ItemGroup>
+    <!-- Experimental: registers navigation [JSInvokable] methods for opt-in generated-only dispatch. -->
+    <ProjectReference Include="$(RepoRoot)src\Components\JSInterop\gen\Microsoft.JSInterop.SourceGenerators.csproj"
+                      OutputItemType="Analyzer"
+                      ReferenceOutputAssembly="false" />
+  </ItemGroup>
+
   <!-- Components.TestServer publishes multiple referenced WebAssembly apps that all traverse this
        project. Skip the redundant traversal on that publish path to avoid concurrent compression. -->
   <PropertyGroup Condition="'$(_SkipReferencedProjectPublishAssets)' == 'true'">

@@ -8,9 +8,10 @@ using Microsoft.JSInterop;
 namespace Microsoft.AspNetCore.Components.Platform;
 
 // Objects that the functions created by JSCallbackFactory call. The browser can call such a function
-// before a handler is set or after it is removed, so a missing handler is not an error.
+// before a handler is set or after it is removed, so a missing handler is not an error. The type is
+// partial so that generated-only dispatch can register each closed callback type.
 
-internal sealed class JSCallback<[DynamicallyAccessedMembers(LinkerFlags.JsonSerialized)] T1>
+internal sealed partial class JSCallback<[DynamicallyAccessedMembers(LinkerFlags.JsonSerialized)] T1>
 {
     public Func<T1, Task>? Handler { get; set; }
 

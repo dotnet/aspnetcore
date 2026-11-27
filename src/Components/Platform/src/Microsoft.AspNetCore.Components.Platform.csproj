@@ -18,6 +18,13 @@
   </ItemGroup>
 
   <ItemGroup>
+    <!-- Experimental: registers JSCallback [JSInvokable] methods for opt-in generated-only dispatch. -->
+    <ProjectReference Include="$(RepoRoot)src\Components\JSInterop\gen\Microsoft.JSInterop.SourceGenerators.csproj"
+                      OutputItemType="Analyzer"
+                      ReferenceOutputAssembly="false" />
+  </ItemGroup>
+
+  <ItemGroup>
     <Compile Include="$(SharedSourceRoot)LinkerFlags.cs" LinkBase="Shared" />
     <InternalsVisibleTo Include="Microsoft.AspNetCore.Components.Platform.Tests" />
   </ItemGroup>
