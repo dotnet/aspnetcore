@@ -3,6 +3,7 @@
 
 using System.Diagnostics.CodeAnalysis;
 using System.Reflection;
+using System.Runtime.CompilerServices;
 using Microsoft.AspNetCore.Components.Web;
 using Microsoft.AspNetCore.StaticWebAssets;
 using Microsoft.Extensions.DependencyInjection;
@@ -299,15 +300,26 @@ public abstract class WebViewManager : IAsyncDisposable
 
         private static string? ResolveRelativeToAssembly()
         {
-            var assembly = Assembly.GetEntryAssembly();
-            if (string.IsNullOrEmpty(assembly?.Location))
+            if (RuntimeFeature.IsDynamicCodeSupported)
+            {
+                var assembly = Assembly.GetEntryAssembly();
+                if (string.IsNullOrEmpty(assembly?.Location))
+                {
+                    return null;
+                }
+
+                var name = Path.GetFileNameWithoutExtension(assembly.Location);
+
+                return Path.Combine(Path.GetDirectoryName(assembly.Location)!, $"{name}.staticwebassets.runtime.json");
+            }
+
+            var assemblyName = Assembly.GetEntryAssembly()?.GetName().Name;
+            if (string.IsNullOrEmpty(assemblyName))
             {
                 return null;
             }
 
-            var name = Path.GetFileNameWithoutExtension(assembly.Location);
-
-            return Path.Combine(Path.GetDirectoryName(assembly.Location)!, $"{name}.staticwebassets.runtime.json");
+            return Path.Combine(AppContext.BaseDirectory, $"{assemblyName}.staticwebassets.runtime.json");
         }
     }
 }
