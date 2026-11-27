@@ -96,7 +96,7 @@ internal sealed class OutputCacheMiddleware
         return InvokeAwaited(httpContext, policies);
     }
 
-    private async Task InvokeAwaited(HttpContext httpContext, IReadOnlyList<IOutputCachePolicy> policies)
+    private async Task InvokeAwaited(HttpContext httpContext, IOutputCachePolicy[] policies)
     {
         var context = new OutputCacheContext { HttpContext = httpContext };
 
@@ -142,7 +142,7 @@ internal sealed class OutputCacheMiddleware
 
                     if (context.AllowLocking && !string.IsNullOrEmpty(context.CacheKey))
                     {
-                        var cacheEntry = await _requestDispatcher.ScheduleAsync(context.CacheKey, key => ExecuteResponseAsync());
+                        var cacheEntry = await _requestDispatcher.ScheduleAsync(context.CacheKey, key => ExecuteResponseAsync(), httpContext.RequestAborted);
 
                         // The current request was processed, nothing more to do
                         if (executed)
@@ -220,46 +220,48 @@ internal sealed class OutputCacheMiddleware
         }
     }
 
-    internal bool TryGetRequestPolicies(HttpContext httpContext, out IReadOnlyList<IOutputCachePolicy> policies)
+    internal bool TryGetRequestPolicies(HttpContext httpContext, out IOutputCachePolicy[] policies)
     {
         policies = Array.Empty<IOutputCachePolicy>();
-        List<IOutputCachePolicy>? result = null;
 
         var basePolicies = _policyProvider.GetBasePolicies();
-        if (basePolicies.Count > 0)
-        {
-            result = new();
-            result.AddRange(basePolicies);
-        }
+        var basePoliciesCount = basePolicies.Count;
 
         var metadata = httpContext.GetEndpoint()?.Metadata;
 
         var policy = metadata?.GetMetadata<IOutputCachePolicy>();
 
-        if (policy != null)
-        {
-            result ??= new();
-            result.Add(policy);
-        }
-
         var attribute = metadata?.GetMetadata<OutputCacheAttribute>();
 
-        if (attribute != null)
+        var count = basePoliciesCount + (policy is not null ? 1 : 0) + (attribute is not null ? 1 : 0);
+        if (count == 0)
         {
-            result ??= new();
-            result.Add(attribute.BuildPolicy());
+            return false;
         }
 
-        if (result != null)
+        var result = new IOutputCachePolicy[count];
+        var index = 0;
+
+        for (; index < basePoliciesCount; index++)
         {
-            policies = result;
-            return true;
+            result[index] = basePolicies[index];
         }
 
-        return false;
+        if (policy is not null)
+        {
+            result[index++] = policy;
+        }
+
+        if (attribute is not null)
+        {
+            result[index] = attribute.BuildPolicy();
+        }
+
+        policies = result;
+        return true;
     }
 
-    internal async Task<bool> TryServeCachedResponseAsync(OutputCacheContext context, OutputCacheEntry? cacheEntry, IReadOnlyList<IOutputCachePolicy> policies)
+    internal async Task<bool> TryServeCachedResponseAsync(OutputCacheContext context, OutputCacheEntry? cacheEntry, IOutputCachePolicy[] policies)
     {
         if (cacheEntry == null)
         {
@@ -329,7 +331,7 @@ internal sealed class OutputCacheMiddleware
         return false;
     }
 
-    internal async Task<bool> TryServeFromCacheAsync(OutputCacheContext cacheContext, IReadOnlyList<IOutputCachePolicy> policies)
+    internal async Task<bool> TryServeFromCacheAsync(OutputCacheContext cacheContext, IOutputCachePolicy[] policies)
     {
         CreateCacheKey(cacheContext);
 
@@ -345,10 +347,14 @@ internal sealed class OutputCacheMiddleware
         OutputCacheEntry? cacheEntry;
         try
         {
-            cacheEntry = await _outputCacheEntryDispatcher.ScheduleAsync(cacheContext.CacheKey, (Store: _store, CacheContext: cacheContext), static async (key, state) => await OutputCacheEntryFormatter.GetAsync(key, state.Store, state.CacheContext.HttpContext.RequestAborted));
+            cacheEntry = await _outputCacheEntryDispatcher.ScheduleAsync(cacheContext.CacheKey, (Store: _store, CacheContext: cacheContext), static async (key, state) => await OutputCacheEntryFormatter.GetAsync(key, state.Store, state.CacheContext.HttpContext.RequestAborted), cacheContext.HttpContext.RequestAborted);
         }
         catch (OperationCanceledException)
         {
+            // A shared lookup can be canceled by the request that started it.
+            // Only propagate cancellation if this request was aborted; otherwise treat it as a cache miss.
+            cacheContext.HttpContext.RequestAborted.ThrowIfCancellationRequested();
+
             // don't report as failure
             cacheEntry = null;
         }

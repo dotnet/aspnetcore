@@ -32,15 +32,16 @@ binary judging checks the reasoning separately. These checks do not prove every
 line was read or replace the semantic judge. Five trials per stimulus must all pass.
 Platform-required native skill acquisition is allowed, but does not replace reading
 the staged guidance or authorize coordinator execution.
-The executor and judge models are both pinned to the reviewer skill's supported
-`gpt-5.6-sol`. Because they share a model identity, the judge is not independent-
-model corroboration. Overrides are separate model-compatibility results, not
-evidence that the default reviewer improved.
+The executor and judge models are both pinned to `gpt-5.6-sol`, the previous
+reviewer default, not the current hosted model. The same-model judge does not
+provide independent corroboration. Overrides are separate model-compatibility
+results, not evidence that the default reviewer improved.
 This does not invoke live PR review or measure baseline-versus-skilled improvement.
 Run it explicitly with
 `./eng/skill-evals/run.ps1 Run -Eval eng/skill-evals/review-pull-request/catch-policy.vally.yaml --require-pass`.
 
-The `review-candidate-verifier` component suite checks normalized `decision` and
+The `review-candidate-verifier` component suite also uses `gpt-5.6-sol` as its
+executor and grades responses without a model judge. It checks normalized `decision` and
 applicable `downgradeKind`, `dropBasis`, and `contradictedLink` fields. It tolerates
 irrelevant JSON and citation-format differences. Every case must pass at least
 four of five trials independently. Read receipts remain a separate integrity
@@ -181,6 +182,43 @@ not apply score thresholds. An explicit `--require-pass` preserves Vally's
 nonzero verdict even when the repository checker would not apply a threshold.
 The hosted workflow uses the runner's result-set checks and does not repeat them.
 
+### L3: Code-only PR input replay
+
+This model-free step uses the real review bundle producer to rebuild a review
+bundle offline from frozen commits. From the trusted repository root, activate
+the pinned SDK, fetch the PR head, base tip, merge base, and a trusted guidance
+commit into a local bare repository, and use a new output directory outside the
+repository. For example, in PowerShell:
+
+```powershell
+. .\activate.ps1
+$producer = '.github\skills\review-pull-request\scripts\prepare-review.cs'
+dotnet run $producer -- --code-only --head $head --base-tip $baseTip --merge-base $mergeBase `
+    --base-ref $baseRef --guidance "dotnet/aspnetcore@$guidanceCommit" --objects $bareRepo --output $rebuilt
+```
+
+This step does not use GitHub, run the reviewer, run PR code, or run an evaluation suite.
+It reports `reconstructed` without claiming hosted parity, or `unavailable` when Git objects
+are missing. Offline mode rejects paths that are not valid UTF-8 with an error.
+The offline diff pins Git's patch settings and uses the observed REST conventions
+(C# hunk labels, 12-digit index abbreviations, and binary summaries); these are not a GitHub
+guarantee. `pull.json` has no body and only synthetic metadata (optionally label it with
+`--repo`, `--pr`, and `--title`); `feedback.json` contains empty comment, review, and inline
+lists. The producer runs its bundle validation before writing the ready manifest. Standalone
+`--check` is a live GitHub freshness check, not an offline validator.
+
+The producer trusts `--head`, `--merge-base`, and `--base-tip` as given and does
+not check how they relate. A wrong merge base still produces a ready bundle with
+a wrong diff: a later unrelated commit gives a huge diff, a head equal to the
+merge base gives an empty diff, and a swapped head and merge base give a
+reversed diff. Callers must verify the pins from an independent source, such as
+`git merge-base --all <head> <base-tip>` on a full-history clone or the commits
+GitHub recorded for the review, and must not re-derive them from the pins
+themselves. Take `--base-tip` from the recorded review or GitHub, not from
+current `main`, because it selects the base-side source tree. Use a
+`--guidance` commit that is not newer than the PR; newer guidance can contain
+lessons learned from that same PR, which matters for held-out cases.
+
 ## Hosted entry point
 
 `.github/workflows/skill-evals.yml` runs `Validate` automatically when pull
@@ -279,11 +317,10 @@ uniquely to this workflow.
 
 Hosted `Validate`, `Lint`, and `Run` operations use the toolchain pinned by
 `evaluation-tools/package-lock.json`, including `@microsoft/vally-cli@0.19.0`
-and `@github/copilot@1.0.80`. The manifest also constrains transitive Copilot
-packages to that compatible version so the SDK and native platform package
-retain the same `./sdk` entry point. The workflow installs that lockfile with
-`npm ci` before any Copilot credential enters scope and verifies the Vally,
-Copilot, and Linux x64 platform entry points.
+and `@github/copilot@1.0.103`. The workflow installs that lockfile with `npm ci`
+before any Copilot credential enters scope. It configures the SDK to launch
+the installed Linux x64 Copilot binary over stdio, then checks the runtime
+version and lists its tools without sending a model prompt.
 
 The local runner defaults to the installed pinned toolchain when present.
 Local model-bearing `Run` operations require

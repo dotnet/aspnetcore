@@ -8,6 +8,15 @@ const workflowSource = path.join(repositoryRoot, '.github/workflows/pull-request
 const workflowLock = path.join(repositoryRoot, '.github/workflows/pull-request-review.lock.yml');
 const stepName = 'Reject incomplete or partial publication sets';
 
+const source = fs.readFileSync(workflowSource, 'utf8');
+assert.match(source, /`path` set to `"single-reviewer"` and arrays `newFindings`,\s+`existingFeedbackCoverage`, `unresolved`, and `discarded`/);
+assert.match(source, /one `create_pull_request_review_comment` per `newFindings` entry in order,\s+anchoring it at `path` and `line`/);
+assert.match(source, /`confidence` \(`verified`, `question`, or `unresolved`\), `claim`, and `body`/);
+assert.match(source, /anchoring it at `path` and `line` and including `severity`, `claim`, and `body`\.\s+Keep confidence labels in the structured result only; omit them from inline comments and review text\./);
+assert.match(source, /`NO_FINDINGS`: invoke `noop` exactly once/);
+assert.match(source, /`BLOCKED` or `INCOMPLETE`: use the incomplete-publication path/);
+assert.match(source, /create-pull-request-review-comment:\s+max: 5\s+side: RIGHT/);
+
 function extractScript(filename) {
   const lines = fs.readFileSync(filename, 'utf8').split(/\r?\n/);
   const step = lines.findIndex(line => line.trim() === `- name: ${stepName}`);
@@ -65,6 +74,7 @@ function execute(script, input) {
 
 const comment = () => ({ type: 'create_pull_request_review_comment' });
 const review = () => ({ type: 'submit_pull_request_review' });
+const missingTool = { type: 'missing_tool', reason: 'A separate tool is unavailable.' };
 const rawJson = value => ({ rawJson: value });
 const stopped = (type, reason = 'The review could not complete.', status = 'INCOMPLETE') => ({
   items: [
@@ -299,9 +309,25 @@ const cases = [
   }, true],
   ['clean noop without errors property', { items: [{ type: 'noop' }] }, true],
   ['clean noop with empty errors', { items: [{ type: 'noop' }], errors: [] }, true],
+  ['clean noop with separate missing-tool diagnostic', { items: [{ type: 'noop' }, missingTool] }, true],
+  ['findings with separate missing-tool diagnostic', { items: [...findings(2).items, missingTool] }, true],
   ['report incomplete', stopped('report_incomplete', 'The review could not complete.', 'BLOCKED'), true],
   ['missing data', stopped('missing_data'), true],
-  ['missing tool', stopped('missing_tool'), true],
+  ...['report_incomplete', 'missing_data'].map(type => [
+    `${type} with separate missing-tool diagnostic`,
+    { items: [missingTool, ...stopped(type).items.toReversed()] },
+    true,
+  ]),
+  ['missing tool as the sole matching stop signal', { items: stopped('missing_tool').items.toReversed() }, true],
+  ['mismatched missing tool as sole stop signal', { items: [stopped('missing_tool').items[1], missingTool] }, false],
+  ['missing tool cannot replace an explicit stop with a mismatched reason', {
+    items: [...stopped('missing_tool').items, { type: 'missing_data', reason: 'Different reason.' }],
+  }, false],
+  ['duplicate missing-tool stop signal', { items: [...stopped('missing_tool').items, missingTool] }, false],
+  ['missing-tool diagnostic without publication', { items: [missingTool] }, false],
+  ['clean noop with explicit stop and separate missing-tool diagnostic', {
+    items: [{ type: 'noop' }, { type: 'report_incomplete', reason: 'Reason' }, missingTool],
+  }, false],
   ['empty items without errors property', { items: [] }, false],
   ['empty items with empty errors', { items: [], errors: [] }, false],
   ['collector errors with otherwise valid item',
