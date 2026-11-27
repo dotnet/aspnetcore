@@ -62,7 +62,6 @@ internal partial class RemoteRenderer : WebRenderer
         _serverComponentDeserializer = serverComponentDeserializer;
         _logger = logger;
         _resourceCollection = resourceCollection;
-        _rootComponentJSRuntime = jsRuntime;
 
         ElementReferenceContext = jsRuntime.ElementReferenceContext;
     }

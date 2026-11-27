@@ -4,10 +4,12 @@
 using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using Microsoft.AspNetCore.Components.Rendering;
-using Microsoft.JSInterop;
 using static Microsoft.AspNetCore.Internal.LinkerFlags;
 
 #if COMPONENTS_SERVER
+using System.IO;
+using Microsoft.Extensions.Logging;
+
 namespace Microsoft.AspNetCore.Components.Server.Circuits;
 
 using Renderer = RemoteRenderer;
@@ -16,6 +18,7 @@ internal partial class RemoteRenderer
 #elif COMPONENTS_WEBASSEMBLY
 namespace Microsoft.AspNetCore.Components.WebAssembly.Rendering;
 
+using Microsoft.JSInterop;
 using Renderer = WebAssemblyRenderer;
 
 internal partial class WebAssemblyRenderer
@@ -24,7 +27,12 @@ internal partial class WebAssemblyRenderer
 #endif
 {
     private WebRootComponentManager? _webRootComponentManager;
+#if COMPONENTS_WEBASSEMBLY
     private readonly IJSRuntime _rootComponentJSRuntime;
+#else
+    internal Task AcknowledgeRootComponentDisposalAsync(int ssrComponentId)
+        => Dispatcher.InvokeAsync(() => _webRootComponentManager?.AcknowledgeDisposalNotification(ssrComponentId));
+#endif
 
     public WebRootComponentManager GetOrCreateWebRootComponentManager()
         => _webRootComponentManager ??= new(this);
@@ -174,25 +182,38 @@ internal partial class WebAssemblyRenderer
             {
                 return;
             }
-#endif
             await SendDisposalNotificationAsync(ssrComponentId);
+#else
+            await renderer._rootComponentJSRuntime.InvokeVoidAsync("Blazor._internal.endDisposeRootComponent", ssrComponentId);
+#endif
         }
 
+#if COMPONENTS_SERVER
         private async Task SendDisposalNotificationAsync(int ssrComponentId)
         {
-            await renderer._rootComponentJSRuntime.InvokeVoidAsync("Blazor._internal.endDisposeRootComponent", ssrComponentId);
-#if COMPONENTS_SERVER
-            _pendingDisposalNotifications.Remove(ssrComponentId);
-#endif
+            try
+            {
+                await renderer._client.SendCoreAsync("JS.EndDisposeRootComponent", [ssrComponentId]);
+            }
+            catch (Exception exception) when (exception is IOException or ObjectDisposedException or OperationCanceledException)
+            {
+                // Like render batches, failed writes remain eligible for replay on reconnect.
+                renderer._logger.LogDebug(exception, "Sending disposal notification for SSR root component {SsrComponentId} failed.", ssrComponentId);
+            }
         }
 
-#if COMPONENTS_SERVER
+        internal void AcknowledgeDisposalNotification(int ssrComponentId)
+        {
+            renderer.Dispatcher.AssertAccess();
+            _pendingDisposalNotifications.Remove(ssrComponentId);
+        }
+
         internal void ReplayPendingDisposalNotifications()
         {
             renderer.Dispatcher.AssertAccess();
             if (renderer._client.Connected)
             {
-                // JS interop sends can be lost during disconnect, so retain them until the client acknowledges them.
+                // Retain notifications that may have been lost during disconnect until the client acknowledges them.
                 int[] pendingNotifications = [.. _pendingDisposalNotifications];
                 foreach (var ssrComponentId in pendingNotifications)
                 {

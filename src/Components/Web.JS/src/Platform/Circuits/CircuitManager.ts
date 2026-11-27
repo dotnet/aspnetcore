@@ -198,6 +198,15 @@ export class CircuitManager implements DotNet.DotNetCallDispatcher {
       this._componentManager.onAfterUpdateRootComponents?.(batchId);
     });
 
+    connection.on('JS.EndDisposeRootComponent', async (ssrComponentId: number) => {
+      Blazor._internal.endDisposeRootComponent!(ssrComponentId);
+      try {
+        await connection.send('OnRootComponentDisposalCompleted', ssrComponentId);
+      } catch (error) {
+        this._logger.log(LogLevel.Debug, `Failed to acknowledge disposal of root component '${ssrComponentId}': ${error}`);
+      }
+    });
+
     connection.on('JS.RequestPause', async () => {
       try {
         await this.handleServerInitiatedPause();

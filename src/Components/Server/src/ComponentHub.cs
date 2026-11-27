@@ -577,6 +577,15 @@ internal sealed partial class ComponentHub : Hub
         _ = circuitHost.OnRenderCompletedAsync(renderId, errorMessageOrNull);
     }
 
+    public async ValueTask OnRootComponentDisposalCompleted(int ssrComponentId)
+    {
+        var circuitHost = await GetActiveCircuitAsync();
+        if (circuitHost is not null)
+        {
+            await circuitHost.Renderer.AcknowledgeRootComponentDisposalAsync(ssrComponentId);
+        }
+    }
+
     public async ValueTask OnLocationChanged(string uri, string? state, bool intercepted)
     {
         var circuitHost = await GetActiveCircuitAsync();

@@ -15,7 +15,6 @@ using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Extensions.Options;
 using Microsoft.JSInterop;
-using Microsoft.JSInterop.Infrastructure;
 using Moq;
 
 namespace Microsoft.AspNetCore.Components.Web.Rendering;
@@ -643,7 +642,7 @@ public class RemoteRendererTest
             .AddSingleton(control)
             .BuildServiceProvider();
         var client = new DisposalNotificationClient();
-        var renderer = GetRemoteRenderer(serviceProvider, client.Proxy, client.Runtime);
+        var renderer = GetRemoteRenderer(serviceProvider, client.Proxy);
         var error = new TaskCompletionSource<Exception>(TaskCreationOptions.RunContinuationsAsynchronously);
         renderer.UnhandledException += (_, exception) => error.TrySetResult(exception);
         await renderer.Dispatcher.InvokeAsync(() => renderer.GetOrCreateWebRootComponentManager().AddRootComponentAsync(
@@ -675,8 +674,8 @@ public class RemoteRendererTest
             .AddSingleton(new Mock<IJSRuntime>().Object)
             .AddSingleton(control)
             .BuildServiceProvider();
-        var client = new DisposalNotificationClient { AcknowledgeInvocations = false };
-        var renderer = GetRemoteRenderer(serviceProvider, client.Proxy, client.Runtime);
+        var client = new DisposalNotificationClient();
+        var renderer = GetRemoteRenderer(serviceProvider, client.Proxy);
         await renderer.Dispatcher.InvokeAsync(() => renderer.GetOrCreateWebRootComponentManager().AddRootComponentAsync(
             0, typeof(AsyncDisposalComponent), new ComponentMarkerKey("0", null), WebRootComponentParameters.Empty));
         await renderer.Dispatcher.InvokeAsync(() =>
@@ -686,21 +685,23 @@ public class RemoteRendererTest
             control.RootDisposal.SetResult();
         });
         await renderer.Dispatcher.InvokeAsync(renderer.ProcessBufferedRenderBatches);
-        Assert.Empty(client.InvocationHandles);
+        Assert.Empty(client.Notifications);
 
         client.Proxy.Transfer(client.Client.Object, "reconnected");
         await renderer.Dispatcher.InvokeAsync(renderer.ProcessBufferedRenderBatches);
         Assert.Equal(0, await client.Notification.Task.DefaultTimeout());
-        var originalInvocation = Assert.Single(client.InvocationHandles);
+        Assert.Equal(0, Assert.Single(client.Notifications));
 
+        await renderer.AcknowledgeRootComponentDisposalAsync(1);
         client.Proxy.SetDisconnected();
         client.Proxy.Transfer(client.Client.Object, "reconnected");
-        client.AcknowledgeInvocations = true;
         await renderer.Dispatcher.InvokeAsync(renderer.ProcessBufferedRenderBatches);
-        Assert.Equal(2, client.InvocationHandles.Count);
+        Assert.Equal(new[] { 0, 0 }, client.Notifications);
+
+        await renderer.AcknowledgeRootComponentDisposalAsync(0);
+        await renderer.AcknowledgeRootComponentDisposalAsync(0);
         await renderer.Dispatcher.InvokeAsync(renderer.ProcessBufferedRenderBatches);
-        Assert.Equal(2, client.InvocationHandles.Count);
-        client.Acknowledge(originalInvocation);
+        Assert.Equal(new[] { 0, 0 }, client.Notifications);
     }
 
     private IServiceProvider CreateServiceProvider()
@@ -710,7 +711,7 @@ public class RemoteRendererTest
         return serviceCollection.BuildServiceProvider();
     }
 
-    private TestRemoteRenderer GetRemoteRenderer(IServiceProvider serviceProvider, CircuitClientProxy circuitClient = null, RemoteJSRuntime jsRuntime = null)
+    private TestRemoteRenderer GetRemoteRenderer(IServiceProvider serviceProvider, CircuitClientProxy circuitClient = null)
     {
         var serverComponentDeserializer = new ServerComponentDeserializer(
             _ephemeralDataProtectionProvider,
@@ -732,8 +733,7 @@ public class RemoteRendererTest
             },
             circuitClient ?? new CircuitClientProxy(),
             serverComponentDeserializer,
-            NullLogger.Instance,
-            jsRuntime);
+            NullLogger.Instance);
     }
 
     private static Task<ComponentMarkerKey> AddWebRootComponentAsync(RemoteRenderer renderer, int ssrComponentId, string componentKey = null)
@@ -771,8 +771,8 @@ public class RemoteRendererTest
 
     private class TestRemoteRenderer : RemoteRenderer
     {
-        public TestRemoteRenderer(IServiceProvider serviceProvider, ILoggerFactory loggerFactory, CircuitOptions options, CircuitClientProxy client, IServerComponentDeserializer serverComponentDeserializer, ILogger logger, RemoteJSRuntime jsRuntime = null)
-            : base(serviceProvider, loggerFactory, options, client, serverComponentDeserializer, logger, jsRuntime ?? CreateJSRuntime(options), new CircuitJSComponentInterop(options))
+        public TestRemoteRenderer(IServiceProvider serviceProvider, ILoggerFactory loggerFactory, CircuitOptions options, CircuitClientProxy client, IServerComponentDeserializer serverComponentDeserializer, ILogger logger)
+            : base(serviceProvider, loggerFactory, options, client, serverComponentDeserializer, logger, CreateJSRuntime(options), new CircuitJSComponentInterop(options))
         {
         }
 
@@ -842,33 +842,21 @@ public class RemoteRendererTest
     {
         public Mock<ISingleClientProxy> Client { get; } = new();
         public CircuitClientProxy Proxy { get; }
-        public RemoteJSRuntime Runtime { get; }
         public TaskCompletionSource<int> Notification { get; } = new(TaskCreationOptions.RunContinuationsAsynchronously);
-        public List<long> InvocationHandles { get; } = new();
-        public bool AcknowledgeInvocations { get; set; } = true;
+        public List<int> Notifications { get; } = new();
 
         public DisposalNotificationClient()
         {
             Proxy = new(Client.Object, "initial");
-            Runtime = new(Options.Create(new CircuitOptions()), Options.Create(new HubOptions<ComponentHub>()), NullLogger<RemoteJSRuntime>.Instance);
-            Runtime.Initialize(Proxy);
-            Client.Setup(client => client.SendCoreAsync("JS.BeginInvokeJS", It.IsAny<object[]>(), It.IsAny<CancellationToken>()))
+            Client.Setup(client => client.SendCoreAsync("JS.EndDisposeRootComponent", It.IsAny<object[]>(), It.IsAny<CancellationToken>()))
                 .Callback<string, object[], CancellationToken>((_, args, _) =>
                 {
-                    Assert.Equal("Blazor._internal.endDisposeRootComponent", args[1]);
-                    var invocationHandle = (long)args[0];
-                    InvocationHandles.Add(invocationHandle);
-                    Notification.TrySetResult(JsonSerializer.Deserialize<int[]>((string)args[2])[0]);
-                    if (AcknowledgeInvocations)
-                    {
-                        Acknowledge(invocationHandle);
-                    }
+                    var ssrComponentId = Assert.IsType<int>(Assert.Single(args));
+                    Notifications.Add(ssrComponentId);
+                    Notification.TrySetResult(ssrComponentId);
                 })
                 .Returns(Task.CompletedTask);
         }
-
-        public void Acknowledge(long invocationHandle)
-            => DotNetDispatcher.EndInvokeJS(Runtime, $"[{invocationHandle},true,null]");
     }
 
     private class TestComponent : IComponent, IHandleAfterRender
