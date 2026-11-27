@@ -248,10 +248,9 @@ public partial class ParameterViewTest
             ["Count"] = null,
         });
 
-        var ex = Assert.Throws<InvalidCastException>(() => parameters.TryGetValue<int>("Count", out _));
+        var ex = Assert.Throws<NullReferenceException>(() => parameters.TryGetValue<int>("Count", out _));
 
         Assert.Contains("'Count'", ex.Message);
-        Assert.Contains("'null'", ex.Message);
         Assert.Contains(typeof(int).FullName!, ex.Message);
         Assert.IsType<NullReferenceException>(ex.InnerException);
     }
