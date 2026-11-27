@@ -302,42 +302,26 @@ public abstract class WebViewManager : IAsyncDisposable
         /// Resolves the path of the entry assembly's static web assets runtime manifest.
         /// </summary>
         /// <remarks>
-        /// When dynamic code is supported, the manifest is resolved next to the entry assembly's
-        /// <see cref="Assembly.Location"/>. This returns <see langword="null"/> for single-file apps, where Location is empty.
-        /// Native AOT apps have no assembly Location, so the manifest is instead resolved relative to
-        /// <see cref="AppContext.BaseDirectory"/>. This is a slight behavior change for Native AOT, which previously
-        /// always skipped the manifest.
+        /// Native AOT apps skip the development manifest because it is not copied to publish output.
+        /// Otherwise, the manifest is resolved next to the entry assembly's <see cref="Assembly.Location"/>.
+        /// This returns <see langword="null"/> for single-file apps where Location is empty.
         /// </remarks>
         private static string? ResolveRelativeToAssembly()
         {
+            if (!RuntimeFeature.IsDynamicCodeSupported)
+            {
+                return null;
+            }
+
             var assembly = Assembly.GetEntryAssembly();
-            if (assembly is null)
+            if (string.IsNullOrEmpty(assembly?.Location))
             {
                 return null;
             }
 
-            var (directory, name) = GetDirectoryAndName(assembly);
-            if (string.IsNullOrEmpty(directory) || string.IsNullOrEmpty(name))
-            {
-                return null;
-            }
+            var name = Path.GetFileNameWithoutExtension(assembly.Location);
 
-            return Path.Combine(directory, $"{name}.staticwebassets.runtime.json");
-        }
-
-        private static (string? Directory, string? Name) GetDirectoryAndName(Assembly assembly)
-        {
-            if (RuntimeFeature.IsDynamicCodeSupported)
-            {
-                if (string.IsNullOrEmpty(assembly.Location))
-                {
-                    return (null, null);
-                }
-
-                return (Path.GetDirectoryName(assembly.Location), Path.GetFileNameWithoutExtension(assembly.Location));
-            }
-
-            return (AppContext.BaseDirectory, assembly.GetName().Name);
+            return Path.Combine(Path.GetDirectoryName(assembly.Location)!, $"{name}.staticwebassets.runtime.json");
         }
     }
 }
