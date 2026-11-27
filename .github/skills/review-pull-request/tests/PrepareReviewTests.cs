@@ -236,13 +236,13 @@ public class PrepareReviewTests
         AssertJsonEqual(RequiredTextReference("required/guides/0000/policies/0000.source",
             "## Required clause\n- First line.\n- Second line."), manifest["policies"]![0]!["body"]!);
         AssertJsonEqual(RequiredTextReference("required/coordinator/exclusions/0000-scope.source",
-            "Per-guide workers running PR code or tests, and coordinator validation that requires unavailable external CI, infrastructure, credentials, or services"),
+            "Running PR code, tests, CI, browser workflows, or implementation samples, except an optional minimal test or repro by a native local coordinator without a supplied bundle in a temporary detached worktree"),
             manifest["exclusions"]![0]!["scope"]!);
         Assert.Equal("## Required clause\n- First line.\n- Second line.",
             await fixture.RequiredTextAsync(manifest["policies"]![0]!["body"]!));
-        Assert.Contains("Per-guide workers running PR code",
+        Assert.Contains("Running PR code, tests, CI, browser workflows",
             await fixture.RequiredTextAsync(manifest["exclusions"]![0]!["scope"]!));
-        Assert.Contains("Per-guide workers remain source-only",
+        Assert.Contains("Workers, hosted runs, and supplied-bundle runs remain source-only",
             await fixture.RequiredTextAsync(manifest["exclusions"]![0]!["reason"]!));
         Assert.Contains("Do not review the excluded scope",
             await fixture.RequiredTextAsync(manifest["exclusions"]![1]!["body"]!));
@@ -674,6 +674,12 @@ public class PrepareReviewTests
             Assert.Equal(count, classified.Included.Count + classified.Context.Count + classified.Skipped.Count);
             Assert.All(classified.Context, link => Assert.Equal("context", link.Role));
             Assert.All(classified.Skipped, link => Assert.NotNull(link.Reason));
+            Assert.All(classified.Included, link =>
+            {
+                var target = File.ReadAllText(Path.Combine(RepositoryRoot, link.Path));
+                var resolved = PrepareReviewProgram.ResolvePolicy(target, link.Anchor!, link.Path);
+                Assert.StartsWith("#", resolved, StringComparison.Ordinal);
+            });
         }
         var architecture = PrepareReviewProgram.GuideLinks(
             File.ReadAllText(Path.Combine(RepositoryRoot, "docs/BlazorComponentsGuidance.md")),
@@ -684,8 +690,15 @@ public class PrepareReviewTests
             architecture.Included.Select(link => $"{link.Path}#{link.Anchor}"));
         Assert.Contains("src/Components/AGENTS.md#cross-runtime-design-checkpoint",
             architecture.Included.Select(link => $"{link.Path}#{link.Anchor}"));
+        Assert.Contains("src/Components/AGENTS.md#permanent-regression-test-boundary",
+            architecture.Included.Select(link => $"{link.Path}#{link.Anchor}"));
         Assert.Contains("src/Components/AGENTS.md#creating-e2e-tests",
             architecture.Included.Select(link => $"{link.Path}#{link.Anchor}"));
+        var permanentBoundary = PrepareReviewProgram.ResolvePolicy(
+            File.ReadAllText(Path.Combine(RepositoryRoot, "src/Components/AGENTS.md")),
+            "permanent-regression-test-boundary",
+            "src/Components/AGENTS.md");
+        Assert.Contains("src/Components/test/E2ETest", permanentBoundary, StringComparison.Ordinal);
         var sample = "- Apply [binding](Policy.md#binding).\n" +
             "- Orient with [architecture](../src/Components/ARCHITECTURE.md).\n" +
             "- Read [design](<../src/Components/DESIGN.md> \"Context\").\n" +
@@ -698,10 +711,13 @@ public class PrepareReviewTests
         Assert.Equal(["sample"], links.Skipped.Select(link => link.Anchor));
         var mixed = File.ReadAllLines(Path.Combine(RepositoryRoot, "docs/BlazorComponentsGuidance.md"))
             .Single(line => line.Contains("For Components E2E work", StringComparison.Ordinal));
+        Assert.Contains("src/Components/JSInterop/", mixed, StringComparison.Ordinal);
+        Assert.Contains("src/Components/Web.JS/", mixed, StringComparison.Ordinal);
         var mixedLinks = PrepareReviewProgram.GuideLinks(mixed, "docs/BlazorComponentsGuidance.md");
         Assert.Equal([
             "CONTRIBUTING.md#tests",
             ".github/copilot-instructions.md#running-tests",
+            "src/Components/AGENTS.md#permanent-regression-test-boundary",
             "src/Components/AGENTS.md#creating-e2e-tests",
         ], mixedLinks.Included.Select(link => $"{link.Path}#{link.Anchor}"));
         Assert.Empty(mixedLinks.Skipped);
@@ -709,9 +725,50 @@ public class PrepareReviewTests
             PrepareReviewProgram.GuideLinks("[bad](Policy.md#)", "docs/Guide.md"));
     }
 
+    [Fact]
+    public async Task ProjectsRealBlazorComponentsGuidancePermanentBoundaryPolicyIntoWorkerManifest()
+    {
+        await using var fixture = await Fixture.CreateAsync(components: true);
+        foreach (var relativePath in new[]
+        {
+            "docs/BlazorComponentsGuidance.md",
+            "docs/Trimming.md",
+            "CONTRIBUTING.md",
+            ".github/copilot-instructions.md",
+            "src/Components/AGENTS.md",
+            "src/Components/ARCHITECTURE.md",
+        })
+        {
+            var fullPath = Path.Combine(RepositoryRoot, relativePath.Replace('/', Path.DirectorySeparatorChar));
+            await fixture.WriteGuidanceAsync(relativePath, await File.ReadAllTextAsync(fullPath, Utf8NoBom));
+        }
+
+        var manifest = await fixture.PrepareAsync();
+        Assert.True((await fixture.CheckAsync())["ready"]!.GetValue<bool>());
+
+        var policy = Assert.Single(manifest["policies"]!.AsArray().Select(item => item!.AsObject()),
+            item => item["path"]!.GetValue<string>() == "src/Components/AGENTS.md"
+                && item["anchor"]!.GetValue<string>() == "permanent-regression-test-boundary");
+        Assert.Equal("docs/BlazorComponentsGuidance.md", policy["guide"]!.GetValue<string>());
+        var bodyPath = policy["body"]!["path"]!.GetValue<string>();
+        var bodyText = await fixture.RequiredTextAsync(policy["body"]!);
+        Assert.Contains("### Permanent regression test boundary", bodyText, StringComparison.Ordinal);
+        Assert.Contains("src/Components/test/E2ETest", bodyText, StringComparison.Ordinal);
+
+        var blazorGuide = Assert.Single(manifest["guides"]!.AsArray().Select(item => item!.AsObject()),
+            item => item["path"]!.GetValue<string>() == "docs/BlazorComponentsGuidance.md");
+        var assignedPolicy = Assert.Single(
+            blazorGuide["assignment"]!["files"]!.AsArray().Select(item => item!.AsObject()),
+            file => file["kind"]!.GetValue<string>() == "policy"
+                && file["path"]!.GetValue<string>() == bodyPath);
+        Assert.Equal(policy["body"]!["utf8Bytes"]!.GetValue<int>(), assignedPolicy["utf8Bytes"]!.GetValue<int>());
+        Assert.Equal(policy["body"]!["sha256"]!.GetValue<string>(), assignedPolicy["sha256"]!.GetValue<string>());
+    }
+
     [Theory]
     [InlineData("code-clarity-and-durable-knowledge", "Code Clarity and Durable Knowledge")]
     [InlineData("cross-runtime-design-checkpoint", "Cross-Runtime Design Checkpoint")]
+    [InlineData("permanent-regression-test-boundary", "Permanent regression test boundary")]
     [InlineData("creating-e2e-tests", "Creating E2E Tests")]
     public async Task IncludesPoliciesLinkedByDifferentlyNamedRoutedGuide(string anchor, string heading)
     {
@@ -810,6 +867,142 @@ public class PrepareReviewTests
             Assert.True((await fixture.CheckAsync())["ready"]!.GetValue<bool>());
         }
     }
+
+    [Theory]
+    [InlineData("added", "rest")]
+    [InlineData("modified", "rest")]
+    [InlineData("removed", "rest")]
+    [InlineData("renamed", "rest")]
+    [InlineData("rename-only", "rest")]
+    [InlineData("added", "literal")]
+    [InlineData("modified", "payload")]
+    public async Task PreparesBinaryChangesWithoutChangingTheAuthoritativeDiff(string change, string format)
+    {
+        await using var fixture = await Fixture.CreateAsync();
+        fixture.ConfigureBinaryChange(change, format);
+        var diffText = Utf8NoBom.GetString(fixture.Diff);
+        if (format == "payload")
+        {
+            Assert.Contains("GIT binary patch", diffText);
+        }
+        else if (change != "rename-only")
+        {
+            Assert.Matches(@"(?m)^index [a-f0-9]{12}\.\.[a-f0-9]{12}(?: [0-7]{6})?\nBinary files ", diffText);
+            Assert.DoesNotContain("GIT binary patch", diffText);
+        }
+        if (change is "renamed" or "rename-only")
+        {
+            Assert.Contains("rename from src/Binary.bin\nrename to src/Renamed.bin", diffText);
+        }
+
+        var manifest = await fixture.PrepareAsync();
+
+        var head = fixture.Pull["head"]!["sha"]!.GetValue<string>();
+        Assert.Equal(head, manifest["target"]!["head"]!.GetValue<string>());
+        Assert.Equal(fixture.Git(fixture.Repository, "rev-parse", $"{head}^{{tree}}"),
+            fixture.Git(Path.Combine(fixture.Output, ".objects"), "write-tree"));
+        Assert.Equal(fixture.Diff, await File.ReadAllBytesAsync(Path.Combine(fixture.Output, "diff.patch")));
+        Assert.Equal(Convert.ToHexStringLower(SHA256.HashData(fixture.Diff)),
+            manifest["artifacts"]!["diff.patch"]!.GetValue<string>());
+        Assert.Equal("TEXT_HEAD\r\n", await fixture.SourceAsync(manifest, "head", "src/Control.txt"));
+        if (change != "added")
+        {
+            Assert.Equal(BinaryContents("BEFORE"), await fixture.SourceAsync(manifest, "mergeBase", "src/Binary.bin"));
+        }
+        var headPath = change is "renamed" or "rename-only" ? "src/Renamed.bin" : "src/Binary.bin";
+        if (change == "removed")
+        {
+            Assert.False(File.Exists(Path.Combine(fixture.Output,
+                manifest["sources"]!["head"]!["root"]!.GetValue<string>(), headPath + ".source")));
+        }
+        else
+        {
+            Assert.Equal(BinaryContents(change == "rename-only" ? "BEFORE" : "AFTER"),
+                await fixture.SourceAsync(manifest, "head", headPath));
+        }
+        Assert.True((await fixture.CheckAsync())["ready"]!.GetValue<bool>());
+    }
+
+    [Theory]
+    [InlineData("missing-binary-section", "does not reconstruct the frozen head")]
+    [InlineData("wrong-binary-object", "does not reconstruct the frozen head")]
+    [InlineData("truncated-text-hunk", "corrupt patch")]
+    public async Task RejectsIncompleteOrTamperedRestBinaryDiff(string damage, string diagnostic)
+    {
+        await using var fixture = await Fixture.CreateAsync();
+        fixture.ConfigureBinaryChange("modified", "rest");
+        var diff = Utf8NoBom.GetString(fixture.Diff);
+        switch (damage)
+        {
+            case "missing-binary-section":
+                Assert.StartsWith("diff --git a/src/Binary.bin ", diff);
+                diff = diff[(diff.IndexOf("\ndiff --git ", StringComparison.Ordinal) + 1)..];
+                break;
+            case "wrong-binary-object":
+                var oldId = fixture.Git(fixture.Repository, "rev-parse", $"{fixture.MergeBase}:src/Binary.bin");
+                var newId = fixture.Git(fixture.Repository, "rev-parse",
+                    $"{fixture.Pull["head"]!["sha"]!.GetValue<string>()}:src/Binary.bin");
+                diff = diff.Replace($"..{newId[..12]}", $"..{oldId[..12]}", StringComparison.Ordinal);
+                break;
+            case "truncated-text-hunk":
+                diff = diff[..diff.LastIndexOf("+TEXT_HEAD", StringComparison.Ordinal)];
+                break;
+        }
+        fixture.Diff = Utf8NoBom.GetBytes(diff);
+
+        var exception = await Assert.ThrowsAsync<InvalidOperationException>(fixture.PrepareAsync);
+
+        Assert.Contains(diagnostic, exception.Message);
+        Assert.False(File.Exists(Path.Combine(fixture.Output, "manifest.json")));
+    }
+
+    [Theory]
+    [InlineData(false, "unknown")]
+    [InlineData(true, "ambiguous")]
+    public void RejectsUnknownOrAmbiguousBinaryObjectPrefixes(bool ambiguous, string diagnostic)
+    {
+        var knownIds = new HashSet<string>(StringComparer.Ordinal) { new('b', 40) };
+        if (ambiguous)
+        {
+            knownIds.Add(new('a', 40));
+            knownIds.Add(new string('a', 39) + "b");
+        }
+        var diff = Utf8NoBom.GetBytes(
+            "diff --git a/file.bin b/file.bin\nindex aaaa..bbbb 100644\nBinary files a/file.bin and b/file.bin differ\n");
+
+        var exception = Assert.Throws<InvalidOperationException>(() =>
+            PrepareReviewProgram.ExpandBinaryIndexLines(diff, knownIds));
+
+        Assert.Contains(diagnostic, exception.Message);
+    }
+
+    [Fact]
+    public void BinaryIndexExpansionPreservesOtherBytesAndFullIndexLines()
+    {
+        var oldId = new string('a', 40);
+        var newId = new string('b', 40);
+        var knownIds = new HashSet<string>(StringComparer.Ordinal) { oldId, newId };
+        var text = "diff --git a/text b/text\r\nindex aaaa..bbbb 100644\r\n--- a/text\r\n+++ b/text\r\n" +
+            "@@ -1 +1 @@\r\n-\u00ff\r\n+\u00fe\r\n";
+        var binary = "diff --git a/file.bin b/file.bin\r\nindex aaaa..bbbb\r\n" +
+            "Binary files a/file.bin and b/file.bin differ\r\n";
+        var expected = text + binary.Replace("aaaa..bbbb", $"{oldId}..{newId}", StringComparison.Ordinal);
+        Assert.Equal(Encoding.Latin1.GetBytes(expected), PrepareReviewProgram.ExpandBinaryIndexLines(
+            Encoding.Latin1.GetBytes(text + binary), knownIds));
+
+        foreach (var unchanged in new[]
+        {
+            text,
+            expected,
+            $"diff --git a/file.bin b/file.bin\nindex {oldId}..{newId} 100644\nGIT binary patch\nliteral 1\nA\n",
+        })
+        {
+            var bytes = Encoding.Latin1.GetBytes(unchanged);
+            Assert.Equal(bytes, PrepareReviewProgram.ExpandBinaryIndexLines(bytes, new HashSet<string>()));
+        }
+    }
+
+    private static string BinaryContents(string suffix) => "\0" + new string('b', 2048) + "\n" + suffix + "\n";
 
     [Theory]
     [InlineData(false, "docs/CrossCuttingGuidance.md")]
@@ -1008,14 +1201,17 @@ public class PrepareReviewTests
             "For a native local coordinator shell denial, do not propose `--allow-all-paths`.",
             skill, StringComparison.Ordinal);
         Assert.Contains(
-            "Collect every required guide worker's actual result before running target code or editing the validation workspace.",
+            "Hosted runs and workers must not execute target code, build, test, clone, check out the PR head, modify files, or call a mutating GitHub API.",
             skill, StringComparison.Ordinal);
         Assert.Contains("optional detached-worktree validation described below", skill, StringComparison.Ordinal);
         Assert.Contains(
             "Never run target code in the developer checkout or bundle",
             skill, StringComparison.Ordinal);
         Assert.Contains(
-            "write temporary tests or repros when doing so is the smallest faithful way to decide a material candidate.",
+            "After the `task` calls return, stay in your turn and collect each worker's actual report with `read_agent` using `wait: true`",
+            skill, StringComparison.Ordinal);
+        Assert.Contains(
+            "When packaging each provisional finding for the verifier, preserve the worker's source-backed trigger, mechanism, and material effect without adding or escalating untraced downstream consequences.",
             skill, StringComparison.Ordinal);
         var workerContractStart = skill.IndexOf("PATH: per-guide-worker", StringComparison.Ordinal);
         Assert.True(workerContractStart >= 0);
@@ -1026,28 +1222,6 @@ public class PrepareReviewTests
         Assert.Contains(
             "It must not invoke `bash`, `shell`, or `powershell`, and may use native `rg`, `grep`, or `glob` only beneath its assigned frozen source roots.",
             workerContract, StringComparison.Ordinal);
-
-        var workflow = Regex.Replace(await File.ReadAllTextAsync(Path.Combine(
-            RepositoryRoot, ".github/workflows/pull-request-review.md"), Utf8NoBom), @"\s+", " ");
-        Assert.Contains(
-            "Apply the skill's review contract unchanged. It owns worker configuration and dispatch, exact assignments and native reads, independent candidate validation, severity, changed-line anchors, feedback disposition, and structured result semantics.",
-            workflow, StringComparison.Ordinal);
-        Assert.Contains(
-            "Do not replace those rules with a second review policy in this adapter.",
-            workflow, StringComparison.Ordinal);
-        Assert.Contains(
-            "Every guide worker must use the native `review-guide-worker` profile, whose explicit tool list exposes only reading, searching, and skill loading.",
-            workflow, StringComparison.Ordinal);
-        Assert.Contains(
-            "Workers are source-only and must not receive coordinator-only inputs, the validation worktree, or coordinator execution output.",
-            workflow, StringComparison.Ordinal);
-        Assert.Contains("Use `gpt-5.6-sol` as the explicit hosted worker model, with no Anthropic model or automatic substitution.", workflow, StringComparison.Ordinal);
-        Assert.Contains(
-            "Only after collecting every required guide worker's actual result, the coordinator may use the validation worktree at `/tmp/gh-aw/review-worktree` when it exists.",
-            workflow, StringComparison.Ordinal);
-        Assert.Contains(
-            "Temporary edits are diagnostic only: never commit, push, publish, or include them in a safe output.",
-            workflow, StringComparison.Ordinal);
     }
 
     [Theory]
@@ -1483,6 +1657,19 @@ public class PrepareReviewTests
     }
 
     [Fact]
+    public async Task OfflineExportRejectsANonUtf8Path()
+    {
+        await using var fixture = await Fixture.CreateAsync();
+        var blob = fixture.GitWithInput(fixture.Repository, Utf8NoBom.GetBytes("BODY\n"), "hash-object", "-w", "--stdin");
+        byte[] entry = [.. Encoding.ASCII.GetBytes($"100644 blob {blob}\tcaf"), 0xE9, .. Encoding.ASCII.GetBytes(".cs"), 0];
+        var tree = fixture.GitWithInput(fixture.Repository, entry, "mktree", "-z");
+        var commit = fixture.Git(fixture.Repository, "commit-tree", tree, "-m", "Fixture");
+        var exception = await Assert.ThrowsAsync<InvalidOperationException>(() =>
+            PrepareReviewProgram.ExportTreeAsync(fixture.Repository, commit, Path.Combine(fixture.Root, "non-utf8"), isolated: true));
+        Assert.Contains("not valid UTF-8", exception.Message);
+    }
+
+    [Fact]
     public async Task SupportsAnImmutableRemoteGuidanceSelection()
     {
         await using var fixture = await Fixture.CreateAsync();
@@ -1501,6 +1688,254 @@ public class PrepareReviewTests
             "guidance/docs/CrossCuttingGuidance.md.source"), Utf8NoBom));
         await AssertExecutionExclusionAsync(manifest, fixture);
         Assert.True((await fixture.CheckAsync(options))["ready"]!.GetValue<bool>());
+    }
+
+    [Theory]
+    [InlineData("exact")]
+    [InlineData("exact-hostile-config")]
+    [InlineData("exact-attribute-source")]
+    [InlineData("exact-index-file")]
+    [InlineData("exact-submodule")]
+    [InlineData("exact-rename-multihunk")]
+    [InlineData("exact-binary")]
+    [InlineData("missing-commit")]
+    [InlineData("missing-blob")]
+    [InlineData("missing-blob-alternates")]
+    [InlineData("code-only")]
+    public async Task RebuildsCodeOnlyBundleOrReportsMissingObjects(string evidence)
+    {
+        await using var fixture = await Fixture.CreateAsync();
+        var guidance = fixture.Commit(new Dictionary<string, object>
+        {
+            [".github/skills/review-pull-request/routing.md"] =
+                "| Changed path prefix | Guide |\n| --- | --- |\n| * | docs/CrossCuttingGuidance.md |\n",
+            ["docs/CrossCuttingGuidance.md"] = "# Guide\n## Overarching principles\n- A rule.\n## Topics\n### Topic\n- Another rule.\n",
+            [".github/copilot-instructions.md"] = "# Instructions\n## Security Concerns Are Out of Scope\nDo not review the excluded scope.\n",
+        });
+        fixture.Comments.Add(new JsonObject
+        {
+            ["id"] = 101,
+            ["body"] = "Captured feedback\r\n\u2603",
+            ["created_at"] = "2026-10-25T10:03:04Z",
+            ["updated_at"] = "2026-10-25T10:03:04Z",
+        });
+        if (evidence is "exact" or "exact-hostile-config" or "exact-attribute-source" or "exact-index-file")
+        {
+            const string ChangedPath = "src/Value.cs";
+            const string Prefix = "public class C\n{\n    public int Value()\n    {\n        // one\n        // two\n        // three\n        return ";
+            fixture.BaseTip = fixture.MergeBase = fixture.Commit(new Dictionary<string, object> { [ChangedPath] = Prefix + "1;\n    }\n}\n" });
+            var head = fixture.Commit(new Dictionary<string, object> { [ChangedPath] = Prefix + "2;\n    }\n}\n" }, fixture.MergeBase);
+            fixture.Pull["head"]!["sha"] = head;
+            fixture.Pull["changed_files"] = 1;
+            fixture.Files = new JsonArray(new JsonObject
+            {
+                ["filename"] = ChangedPath,
+                ["status"] = "modified",
+                ["sha"] = Utf8NoBom.GetString(PrepareReviewProgram.Run("git", PrepareReviewProgram.GitArguments(
+                    "--git-dir", fixture.Repository, "rev-parse", $"{head}:{ChangedPath}"))).Trim(),
+                ["additions"] = 1,
+                ["deletions"] = 1,
+                ["changes"] = 2,
+            });
+            await File.WriteAllTextAsync(Path.Combine(fixture.Repository, "info", "attributes"), "*.cs diff=csharp\n", Utf8NoBom);
+            fixture.Diff = PrepareReviewProgram.Run("git", PrepareReviewProgram.GitArguments(
+                "--git-dir", fixture.Repository, "diff", "--abbrev=12", fixture.MergeBase, head));
+            var hunk = Assert.Single(Utf8NoBom.GetString(fixture.Diff).Split('\n'), line => line.StartsWith("@@", StringComparison.Ordinal));
+            Assert.EndsWith("public int Value()", hunk, StringComparison.Ordinal);
+        }
+        else if (evidence == "exact-rename-multihunk")
+        {
+            const string OldPath = "src/Old.cs";
+            const string NewPath = "src/New.cs";
+            var lines = Enumerable.Range(1, 20).Select(number => $"// line {number}").ToArray();
+            fixture.BaseTip = fixture.MergeBase = fixture.Commit(new Dictionary<string, object> { [OldPath] = string.Join('\n', lines) + "\n" });
+            lines[1] = "// changed 2";
+            lines[18] = "// changed 19";
+            var head = fixture.Commit(new Dictionary<string, object> { [NewPath] = string.Join('\n', lines) + "\n" }, fixture.MergeBase);
+            fixture.Pull["head"]!["sha"] = head;
+            fixture.Pull["changed_files"] = 1;
+            fixture.Files = new JsonArray(new JsonObject
+            {
+                ["filename"] = NewPath,
+                ["status"] = "renamed",
+                ["sha"] = Utf8NoBom.GetString(PrepareReviewProgram.Run("git", PrepareReviewProgram.GitArguments(
+                    "--git-dir", fixture.Repository, "rev-parse", $"{head}:{NewPath}"))).Trim(),
+                ["additions"] = 2,
+                ["deletions"] = 2,
+                ["changes"] = 4,
+                ["previous_filename"] = OldPath,
+            });
+            await File.WriteAllTextAsync(Path.Combine(fixture.Repository, "info", "attributes"), "*.cs diff=csharp\n", Utf8NoBom);
+            fixture.Diff = PrepareReviewProgram.Run("git", PrepareReviewProgram.GitArguments(
+                "--git-dir", fixture.Repository, "diff", "--find-renames=50%", "--abbrev=12", fixture.MergeBase, head));
+            var patch = Utf8NoBom.GetString(fixture.Diff);
+            Assert.Contains($"rename from {OldPath}", patch, StringComparison.Ordinal);
+            Assert.Equal(2, patch.Split('\n').Count(line => line.StartsWith("@@", StringComparison.Ordinal)));
+        }
+        else if (evidence == "exact-submodule")
+        {
+            const string Submodule = "external/module";
+            fixture.BaseTip = fixture.MergeBase = fixture.Commit(new Dictionary<string, object>
+            {
+                ["src/Control.txt"] = "TEXT\n",
+                [Submodule] = new FileEntry("160000", "before"),
+            });
+            var head = fixture.Commit(new Dictionary<string, object>
+            {
+                ["src/Control.txt"] = "TEXT\n",
+                [Submodule] = new FileEntry("160000", "after"),
+            }, fixture.MergeBase);
+            fixture.Pull["head"]!["sha"] = head;
+            fixture.Pull["changed_files"] = 1;
+            fixture.Files = new JsonArray(new JsonObject
+            {
+                ["filename"] = Submodule,
+                ["status"] = "modified",
+                ["sha"] = Utf8NoBom.GetString(PrepareReviewProgram.Run("git", PrepareReviewProgram.GitArguments(
+                    "--git-dir", fixture.Repository, "rev-parse", $"{head}:{Submodule}"))).Trim(),
+                ["additions"] = 1,
+                ["deletions"] = 1,
+                ["changes"] = 2,
+            });
+            fixture.Diff = PrepareReviewProgram.Run("git", PrepareReviewProgram.GitArguments(
+                "--git-dir", fixture.Repository, "diff", "--submodule=short", "--abbrev=12", fixture.MergeBase, head));
+            Assert.Contains("Subproject commit", Utf8NoBom.GetString(fixture.Diff), StringComparison.Ordinal);
+        }
+        else if (evidence == "exact-binary")
+        {
+            fixture.ConfigureBinaryChange("modified", "rest");
+            Assert.Contains("Binary files ", Utf8NoBom.GetString(fixture.Diff), StringComparison.Ordinal);
+        }
+        var manifest = await fixture.PrepareAsync(fixture.Options with { GuidanceRoot = null, Guidance = $"reviewer/guidance@{guidance}" });
+        if (evidence == "code-only")
+        {
+            var output = Path.Combine(fixture.Root, "code-only");
+            Assert.Equal(0, await PrepareReviewProgram.RunAsync([
+                "--code-only", "--objects", fixture.Repository, "--output", output,
+                "--head", fixture.Pull["head"]!["sha"]!.GetValue<string>(), "--base-tip", fixture.BaseTip,
+                "--merge-base", fixture.MergeBase, "--base-ref", "main", "--guidance", $"reviewer/guidance@{guidance}",
+                "--title", "Fix caching",
+            ], new(ProducerSourcePath: ProducerSourcePath)));
+            var rebuilt = JsonNode.Parse(await File.ReadAllBytesAsync(Path.Combine(output, "manifest.json")))!;
+            Assert.True(JsonNode.DeepEquals(manifest["sources"], rebuilt["sources"]));
+            Assert.True(JsonNode.DeepEquals(manifest["guidance"], rebuilt["guidance"]));
+            var pull = JsonNode.Parse(await File.ReadAllBytesAsync(Path.Combine(output, "pull.json")))!.AsObject();
+            Assert.True(pull.ContainsKey("body"));
+            Assert.Null(pull["body"]);
+            Assert.Equal("Fix caching", pull["title"]!.GetValue<string>());
+            var feedbackText = await File.ReadAllTextAsync(Path.Combine(output, "feedback.json"));
+            Assert.EndsWith("\n", feedbackText, StringComparison.Ordinal);
+            var feedback = JsonNode.Parse(feedbackText);
+            Assert.True(JsonNode.DeepEquals(JsonNode.Parse("""{"comments":[],"reviews":[],"inline":[]}"""), feedback));
+            Assert.False(Directory.Exists(Path.Combine(output, "required", "pull")));
+            Assert.False(Directory.Exists(Path.Combine(output, "required", "feedback")));
+            return;
+        }
+        var rebuild = new PrepareReviewProgram.Options(null, null, Path.Combine(fixture.Root, "rebuilt"),
+            Head: fixture.Pull["head"]!["sha"]!.GetValue<string>(), Guidance: $"reviewer/guidance@{guidance}",
+            BaseTip: fixture.BaseTip, MergeBase: fixture.MergeBase, BaseRef: "main", ObjectStore: fixture.Repository, CodeOnly: true);
+        string[] hostileVariables = ["GIT_CONFIG_GLOBAL", "GIT_DIFF_OPTS", "GIT_EXTERNAL_DIFF", "GIT_ATTR_SOURCE", "GIT_INDEX_FILE",
+            "GIT_ALTERNATE_OBJECT_DIRECTORIES"];
+        var originalVariables = hostileVariables.ToDictionary(name => name, Environment.GetEnvironmentVariable);
+        if (evidence is "missing-commit" or "missing-blob" or "missing-blob-alternates")
+        {
+            var id = evidence == "missing-commit" ? fixture.Head : fixture.Files[0]!["sha"]!.GetValue<string>();
+            var objectPath = Path.Combine(fixture.Repository, "objects", id[..2], id[2..]);
+            File.SetAttributes(objectPath, FileAttributes.Normal);
+            if (evidence == "missing-blob-alternates")
+            {
+                // An inherited alternate must not supply an object that the donor store lacks.
+                var alternate = Path.Combine(fixture.Root, "alternate-objects");
+                Directory.CreateDirectory(Path.Combine(alternate, id[..2]));
+                File.Copy(objectPath, Path.Combine(alternate, id[..2], id[2..]));
+                Environment.SetEnvironmentVariable("GIT_ALTERNATE_OBJECT_DIRECTORIES", alternate);
+            }
+            File.Delete(objectPath);
+            JsonNode missing;
+            try
+            {
+                missing = await PrepareReviewProgram.RebuildCodeOnlyAsync(rebuild, ProducerSourcePath);
+            }
+            finally
+            {
+                foreach (var (name, value) in originalVariables)
+                {
+                    Environment.SetEnvironmentVariable(name, value);
+                }
+            }
+            Assert.Equal("unavailable", missing["verdict"]!.GetValue<string>());
+            Assert.False(File.Exists(Path.Combine(rebuild.Output, "manifest.json")));
+            return;
+        }
+        var callerIndex = Path.Combine(fixture.Root, "caller.index");
+        if (evidence == "exact-attribute-source")
+        {
+            Environment.SetEnvironmentVariable("GIT_ATTR_SOURCE", fixture.Commit(new Dictionary<string, object> { [".gitattributes"] = "*.cs -diff\n" }));
+        }
+        else if (evidence == "exact-index-file")
+        {
+            Environment.SetEnvironmentVariable("GIT_INDEX_FILE", callerIndex);
+        }
+        else if (evidence == "exact-submodule")
+        {
+            var config = Path.Combine(fixture.Root, "submodule.gitconfig");
+            await File.WriteAllTextAsync(config, "[diff]\n    ignoreSubmodules = all\n", Utf8NoBom);
+            Environment.SetEnvironmentVariable("GIT_CONFIG_GLOBAL", config);
+        }
+        if (evidence == "exact-hostile-config")
+        {
+            var attributes = Path.Combine(fixture.Root, "hostile.gitattributes");
+            await File.WriteAllTextAsync(attributes, "*.cs -diff\n", Utf8NoBom);
+            var template = Path.Combine(fixture.Root, "hostile-template");
+            Directory.CreateDirectory(template);
+            await File.WriteAllTextAsync(Path.Combine(template, "config"), """
+                [diff "csharp"]
+                    xfuncname = "^(never)$"
+                """, Utf8NoBom);
+            var config = Path.Combine(fixture.Root, "hostile.gitconfig");
+            await File.WriteAllTextAsync(config, $"""
+                [diff]
+                    context = 1
+                    interHunkContext = 10
+                    noprefix = true
+                    mnemonicPrefix = true
+                    algorithm = histogram
+                    indentHeuristic = false
+                    renames = false
+                    suppressBlankEmpty = true
+                [diff "csharp"]
+                    xfuncname = "^(never)$"
+                [core]
+                    quotePath = false
+                    attributesFile = {attributes.Replace('\\', '/')}
+                [color]
+                    diff = always
+                [init]
+                    templateDir = {template.Replace('\\', '/')}
+                """, Utf8NoBom);
+            Environment.SetEnvironmentVariable("GIT_CONFIG_GLOBAL", config);
+            Environment.SetEnvironmentVariable("GIT_DIFF_OPTS", "--unified=1");
+            Environment.SetEnvironmentVariable("GIT_EXTERNAL_DIFF", "false");
+        }
+        JsonNode verdict;
+        try
+        {
+            verdict = await PrepareReviewProgram.RebuildCodeOnlyAsync(rebuild, ProducerSourcePath);
+        }
+        finally
+        {
+            foreach (var (name, value) in originalVariables)
+            {
+                Environment.SetEnvironmentVariable(name, value);
+            }
+        }
+        Assert.Equal("reconstructed", verdict["verdict"]!.GetValue<string>());
+        Assert.False(File.Exists(callerIndex));
+        var replayed = JsonNode.Parse(await File.ReadAllBytesAsync(Path.Combine(rebuild.Output, "manifest.json")))!;
+        Assert.Equal(manifest["artifacts"]!["diff.patch"]!.GetValue<string>(), replayed["artifacts"]!["diff.patch"]!.GetValue<string>());
+        Assert.Equal(manifest["artifacts"]!["files.json"]!.GetValue<string>(), replayed["artifacts"]!["files.json"]!.GetValue<string>());
+        Assert.True(JsonNode.DeepEquals(manifest["sources"], replayed["sources"]));
+        Assert.True(JsonNode.DeepEquals(manifest["guidance"], replayed["guidance"]));
     }
 
     [Theory]
@@ -1692,12 +2127,12 @@ public class PrepareReviewTests
 
     private static async Task AssertExecutionExclusionAsync(JsonObject manifest, Fixture fixture)
     {
-        Assert.Equal("Per-guide workers running PR code or tests, and coordinator validation that requires unavailable external CI, infrastructure, credentials, or services",
+        Assert.Equal("Running PR code, tests, CI, browser workflows, or implementation samples, except an optional minimal test or repro by a native local coordinator without a supplied bundle in a temporary detached worktree",
             await fixture.RequiredTextAsync(manifest["exclusions"]![0]!["scope"]!));
-        Assert.Equal("Per-guide workers remain source-only. After collecting every worker result, a hosted coordinator may use a caller-supplied worktree at manifest.target.head " +
-            "to run targeted restore, build, test, browser, or temporary-repro validation under SKILL.md's coordinator rules. Native local validation follows the skill's detached-worktree rules. " +
-            "Never execute target code in the frozen bundle or developer checkout; record exact commands and results, keep temporary edits diagnostic-only, and clean native-local scratch worktrees. " +
-            "If validation is unavailable, record the reason and continue without reporting INCOMPLETE.",
+        Assert.Equal("Workers, hosted runs, and supplied-bundle runs remain source-only; assess changed tests and contracts from source. " +
+            "Only a native local coordinator without a supplied bundle may optionally run a minimal test or repro under SKILL.md's detached-worktree validation rules: " +
+            "use a temporary detached worktree at manifest.target.head, never execute target code in the developer checkout or bundle, record the exact command and result, " +
+            "and remove the temporary worktree and scratch files afterwards. If optional validation is unavailable, record the reason and remain source-only without reporting INCOMPLETE.",
             await fixture.RequiredTextAsync(manifest["exclusions"]![0]!["reason"]!));
     }
 
@@ -1870,6 +2305,61 @@ public class PrepareReviewTests
             return Git(Repository, arguments.ToArray());
         }
 
+        public void ConfigureBinaryChange(string change, string format)
+        {
+            const string oldPath = "src/Binary.bin";
+            var newPath = change is "renamed" or "rename-only" ? "src/Renamed.bin" : oldPath;
+            var originalFiles = new Dictionary<string, object> { ["src/Control.txt"] = "TEXT_BASE\r\n" };
+            if (change != "added")
+            {
+                originalFiles[oldPath] = BinaryContents("BEFORE");
+            }
+            MergeBase = Commit(originalFiles);
+            BaseTip = MergeBase;
+            var headFiles = new Dictionary<string, object>(originalFiles) { ["src/Control.txt"] = "TEXT_HEAD\r\n" };
+            headFiles.Remove(oldPath);
+            if (change != "removed")
+            {
+                headFiles[newPath] = BinaryContents(change == "rename-only" ? "BEFORE" : "AFTER");
+            }
+            Head = Commit(headFiles, MergeBase);
+            Pull["head"]!["sha"] = Head;
+            Pull["changed_files"] = 2;
+            var binaryFile = new JsonObject
+            {
+                ["filename"] = change == "removed" ? oldPath : newPath,
+                ["status"] = change == "rename-only" ? "renamed" : change,
+                ["sha"] = Git(Repository, "rev-parse", $"{(change == "removed" ? MergeBase : Head)}:{newPath}"),
+                ["additions"] = 0,
+                ["deletions"] = 0,
+                ["changes"] = 0,
+            };
+            if (change is "renamed" or "rename-only")
+            {
+                binaryFile["previous_filename"] = oldPath;
+            }
+            Files = new JsonArray(binaryFile, new JsonObject
+            {
+                ["filename"] = "src/Control.txt",
+                ["status"] = "modified",
+                ["sha"] = Git(Repository, "rev-parse", $"{Head}:src/Control.txt"),
+                ["additions"] = 1,
+                ["deletions"] = 1,
+                ["changes"] = 2,
+            });
+            Diff = GitBytes(Repository, ["diff", "--no-ext-diff", "--no-textconv", "-M", "--abbrev=12",
+                .. (format == "payload" ? new[] { "--binary" } : Array.Empty<string>()), MergeBase, Head]);
+            if (format == "literal")
+            {
+                var id = binaryFile["sha"]!.GetValue<string>();
+                Diff = Utf8NoBom.GetBytes(
+                    $"diff --git a/{oldPath} b/{oldPath}\nnew file mode 100644\n" +
+                    $"index 000000000000..{id[..12]}\nBinary files /dev/null and b/{oldPath} differ\n" +
+                    Utf8NoBom.GetString(GitBytes(Repository, "diff", "--no-ext-diff", "--abbrev=12",
+                        MergeBase, Head, "--", "src/Control.txt")));
+            }
+        }
+
         public Task<JsonObject> PrepareAsync() => PrepareAsync(Options);
 
         public Task<JsonObject> PrepareAsync(PrepareReviewProgram.Options options) =>
@@ -2017,7 +2507,7 @@ public class PrepareReviewTests
 
         public byte[] GitBytes(string root, params string[] arguments) => RunGit(root, arguments, null);
 
-        private string GitWithInput(string root, byte[] input, params string[] arguments) =>
+        public string GitWithInput(string root, byte[] input, params string[] arguments) =>
             Utf8NoBom.GetString(RunGit(root, arguments, input)).Trim();
 
         private static byte[] RunGit(string root, IReadOnlyList<string> arguments, byte[]? input)
@@ -2029,7 +2519,7 @@ public class PrepareReviewTests
                 RedirectStandardInput = input is not null,
                 RedirectStandardOutput = true,
                 RedirectStandardError = true,
-                UseShellExecute = false,
+                InheritedHandles = [],
                 CreateNoWindow = true,
             };
             foreach (var pair in Identity) start.Environment[pair.Key] = pair.Value;
@@ -2044,12 +2534,10 @@ public class PrepareReviewTests
                 process.StandardInput.BaseStream.Write(input);
                 process.StandardInput.Close();
             }
-            using var output = new MemoryStream();
-            process.StandardOutput.BaseStream.CopyTo(output);
-            var error = process.StandardError.ReadToEnd();
+            (byte[] output, byte[] error) = process.ReadAllBytes();
             process.WaitForExit();
-            Assert.True(process.ExitCode == 0, error);
-            return output.ToArray();
+            Assert.True(process.ExitCode == 0, process.StandardError.CurrentEncoding.GetString(error));
+            return output;
         }
 
         public ValueTask DisposeAsync()

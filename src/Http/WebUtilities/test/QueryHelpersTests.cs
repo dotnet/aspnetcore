@@ -17,6 +17,49 @@ public class QueryHelperTests
     }
 
     [Fact]
+    public void ParseQueryDecodesLongNamesAndValues()
+    {
+        // Encoded name and value longer than 256 characters with mixed escapes.
+        var encodedName = string.Concat(Enumerable.Repeat("n%C3%A9+", 50));
+        var encodedValue = string.Concat(Enumerable.Repeat("a%2Bb+c%26", 40));
+        var expectedName = string.Concat(Enumerable.Repeat("n\u00e9 ", 50));
+        var expectedValue = string.Concat(Enumerable.Repeat("a+b c&", 40));
+
+        var collection = QueryHelpers.ParseQuery($"?{encodedName}={encodedValue}&short=x%20y");
+
+        Assert.Equal(2, collection.Count);
+        Assert.Equal(expectedValue, collection[expectedName].FirstOrDefault());
+        Assert.Equal("x y", collection["short"].FirstOrDefault());
+    }
+
+    [Theory]
+    [InlineData(4, "%20", " ")]
+    [InlineData(4, "+", " ")]
+    [InlineData(4, "+%20", "  ")]
+    [InlineData(256, "%20", " ")]
+    [InlineData(256, "+", " ")]
+    [InlineData(256, "+%20", "  ")]
+    [InlineData(257, "%20", " ")]
+    [InlineData(257, "+", " ")]
+    [InlineData(257, "+%20", "  ")]
+    [InlineData(1000, "%20", " ")]
+    [InlineData(1000, "+", " ")]
+    [InlineData(1000, "+%20", "  ")]
+    public void ParseQueryDecodesNamesAndValuesOfVaryingLength(int encodedLength, string suffix, string decodedSuffix)
+    {
+        // Covers '%'-only, '+'-only and mixed inputs for short and long names/values, including lengths around 256.
+        var encoded = new string('x', encodedLength - suffix.Length) + suffix;
+        var expected = new string('x', encodedLength - suffix.Length) + decodedSuffix;
+        Assert.Equal(encodedLength, encoded.Length);
+
+        var collection = QueryHelpers.ParseQuery($"?{encoded}={encoded}&a+b=c%2Bd");
+
+        Assert.Equal(2, collection.Count);
+        Assert.Equal(expected, collection[expected].FirstOrDefault());
+        Assert.Equal("c+d", collection["a b"].FirstOrDefault());
+    }
+
+    [Fact]
     public void ParseQueryWithoutQuestionmarkWorks()
     {
         var collection = QueryHelpers.ParseQuery("key1=value1&key2=value2");
@@ -99,6 +142,71 @@ public class QueryHelperTests
     {
         var collection = QueryHelpers.ParseQuery(queryString);
         Assert.Empty(collection);
+    }
+
+    [Theory]
+    [InlineData("", "a", "b")]
+    [InlineData("/path", "", "")]
+    [InlineData("/path?", "na me", "va&lue=")]
+    [InlineData("/path#frag?x=1", "k", "v")]
+    [InlineData("/path?q=1#frag#more", "\u00e9", "\ud83d\ude00/?#")]
+    [InlineData("#", "k", "v")]
+    [InlineData("/path", "k", "LONG")]
+    [InlineData("/path?x=y#a", "LONG", "LONG")]
+    [InlineData("/path", "\ud800", "a\udc00b")]
+    [InlineData("/path", "k", "HEAVY")]
+    [InlineData("/path?k=", "k", "SPLIT")]
+    [InlineData("LONG#frag", "k", "v")]
+    public void AddQueryStringMatchesReferenceImplementation(string uri, string name, string value)
+    {
+        var longValue = string.Concat(Enumerable.Repeat("x y&z/\u00e9", 200));
+        uri = uri.Replace("LONG", longValue);
+        name = name == "LONG" ? longValue : name;
+        value = value switch
+        {
+            "LONG" => longValue,
+            // Every char expands to nine chars, forcing several buffer growths.
+            "HEAVY" => new string('\u4e2d', 300),
+            // Surrogate pairs that straddle the end of the initial 256-char buffer.
+            "SPLIT" => new string('a', 240) + string.Concat(Enumerable.Repeat("\ud83d\ude00", 10)),
+            _ => value,
+        };
+
+        Assert.Equal(ReferenceAddQueryString(uri, [new(name, value)]), QueryHelpers.AddQueryString(uri, name, value));
+
+        var pairs = new List<KeyValuePair<string, string?>>
+        {
+            new(name, value),
+            new("skipped", null),
+            new(value, name),
+            new(longValue, longValue),
+            new("last", ""),
+        };
+        Assert.Equal(ReferenceAddQueryString(uri, pairs), QueryHelpers.AddQueryString(uri, pairs));
+    }
+
+    private static string ReferenceAddQueryString(string uri, IEnumerable<KeyValuePair<string, string?>> queryString)
+    {
+        var anchorIndex = uri.IndexOf('#');
+        var anchorText = anchorIndex == -1 ? "" : uri.Substring(anchorIndex);
+        var baseUri = anchorIndex == -1 ? uri : uri.Substring(0, anchorIndex);
+        var hasQuery = baseUri.Contains('?');
+        var sb = new System.Text.StringBuilder(baseUri);
+        foreach (var parameter in queryString)
+        {
+            if (parameter.Value is null)
+            {
+                continue;
+            }
+
+            sb.Append(hasQuery ? '&' : '?');
+            sb.Append(System.Text.Encodings.Web.UrlEncoder.Default.Encode(parameter.Key));
+            sb.Append('=');
+            sb.Append(System.Text.Encodings.Web.UrlEncoder.Default.Encode(parameter.Value));
+            hasQuery = true;
+        }
+
+        return sb.Append(anchorText).ToString();
     }
 
     [Fact]

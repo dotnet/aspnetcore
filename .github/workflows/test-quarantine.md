@@ -1,8 +1,9 @@
 ---
+runs-on: ubuntu-26.04
 if: ${{ github.event_name == 'workflow_dispatch' || !github.event.repository.fork }}
 
 # Evidence collection can exceed ubuntu-slim's 15-minute job limit.
-runs-on-slim: ubuntu-latest
+runs-on-slim: ubuntu-26.04
 
 on:
   schedule:
@@ -1312,10 +1313,24 @@ on:
             name: receipt["tests"][name].get("quarantine_operating_systems")
             for name in sorted(set(eligible_case_a) | set(eligible_case_b))
         }
+        eligible_case_b_issues = {
+            name: {
+                "issue": receipt["tests"][name].get("case_b_issue"),
+                "verified_issues": receipt["tests"][name].get(
+                    "case_b_verified_issues",
+                    [],
+                ),
+            }
+            for name in eligible_case_b
+        }
         eligible_case_a_json = json.dumps(eligible_case_a, separators=(",", ":"))
         eligible_case_b_json = json.dumps(eligible_case_b, separators=(",", ":"))
         eligible_operating_systems_json = json.dumps(
             eligible_operating_systems,
+            separators=(",", ":"),
+        )
+        eligible_case_b_issues_json = json.dumps(
+            eligible_case_b_issues,
             separators=(",", ":"),
         )
         if len(eligible_case_a_json.encode("utf-8")) > 120000:
@@ -1328,6 +1343,10 @@ on:
             raise SystemExit(
                 "FATAL: eligible_operating_systems exceeds the safe job-output limit"
             )
+        if len(eligible_case_b_issues_json.encode("utf-8")) > 120000:
+            raise SystemExit(
+                "FATAL: eligible_case_b_issues exceeds the safe job-output limit"
+            )
         output = os.environ.get("GITHUB_OUTPUT")
         if not output:
             raise SystemExit("FATAL: GITHUB_OUTPUT is not set")
@@ -1339,6 +1358,9 @@ on:
             stream.write(
                 "eligible_operating_systems="
                 f"{eligible_operating_systems_json}\n"
+            )
+            stream.write(
+                f"eligible_case_b_issues={eligible_case_b_issues_json}\n"
             )
         SCRIPT
 
@@ -1377,6 +1399,7 @@ jobs:
       eligible_test_names: ${{ steps.case_a_eligibility.outputs.eligible_test_names }}
       eligible_case_b_test_names: ${{ steps.case_a_eligibility.outputs.eligible_case_b_test_names }}
       eligible_operating_systems: ${{ steps.case_a_eligibility.outputs.eligible_operating_systems }}
+      eligible_case_b_issues: ${{ steps.case_a_eligibility.outputs.eligible_case_b_issues }}
       unquarantine_eligibility: ${{ steps.unquarantine_eligibility.outputs.unquarantine_eligibility }}
       # part1_data is chunked across fixed outputs to stay under the 131072-byte MAX_ARG_STRLEN
       # per-env-var limit (see write_part1_chunks above); the prompt concatenates them back.
@@ -2096,6 +2119,7 @@ safe-outputs:
   # Fail closed on detected/undetermined threats: a blocked or failed detection job
   # (rather than a mere warning) prevents any PR/issue/comment safe output from running.
   threat-detection:
+    runs-on: ubuntu-26.04
     continue-on-error: false
 
 tools:
@@ -2231,6 +2255,19 @@ unquarantine commit. The exact fully qualified tests eligible for Case B are:
 ${{ needs.pre_activation.outputs.eligible_case_b_test_names }}
 ```
 
+The tracking issue to reuse for each eligible Case B test is:
+
+```json
+${{ needs.pre_activation.outputs.eligible_case_b_issues }}
+```
+
+`issue` is the issue named in the attribute removed by that test's **most
+recent** exact-target unquarantine. Reuse it. `verified_issues` lists every
+verified issue that tracked any earlier method- or data-row-level quarantine
+of the same exact target (class- and assembly-level issues are not included);
+the safe-output validator accepts only `issue` or a number from this list, so
+never use a number outside it.
+
 For Case B, choose only from this list. A merged PR build may still be valid
 Source B evidence, but targeting `main` or starting after an unquarantine is
 not sufficient: the build's source snapshot must contain the unquarantine
@@ -2299,10 +2336,10 @@ All of the following are true:
   ```
   git log refs/remotes/origin/main --first-parent --follow -p -G 'QuarantinedTest' --format="commit %H %ci %s" -- <path/to/TestFile.cs>
   ```
-  The `refs/remotes/origin/main --first-parent` walk makes this the actual main-branch landing commit and timestamp, not an earlier topic-branch commit. The fully qualified ref avoids ambiguity with a local branch named `origin/main`. The `-p` flag prints each commit's patch inline using the file's **historical** path at that commit, so it works correctly across renames — do **not** issue a separate `git show <sha> -- <current path>`, which would return an empty diff for any commit from before a rename. Walk the matching commits from **newest to oldest**, inspecting the inline patch of each, and stop at the most recent commit whose patch **adds or removes the exact `[QuarantinedTest]` method/class/assembly target or `[QuarantinedTestData]` row target** (ignore commits that only touch other targets in the same file). If that commit removed the exact target, Case B applies; if it added the target, the test case is currently/most-recently quarantined and Case B does not apply.
+  The `refs/remotes/origin/main --first-parent` walk makes this the actual main-branch landing commit and timestamp, not an earlier topic-branch commit. The fully qualified ref avoids ambiguity with a local branch named `origin/main`. The `-p` flag prints each commit's patch inline using the file's **historical** path at that commit, so it works correctly across renames — do **not** issue a separate `git show <sha> -- <current path>`, which would return an empty diff for any commit from before a rename. Walk the matching commits from **newest to oldest**, inspecting the inline patch of each, and stop at the most recent commit whose patch **adds or removes the exact `[QuarantinedTest]` method/class/assembly target or `[QuarantinedTestData]` row target** (ignore commits that only touch other targets in the same file). If that commit removed the exact target, Case B applies; if it added the target, the test case is currently/most-recently quarantined and Case B does not apply. A test may have been quarantined and unquarantined **several times**, possibly under different issues (for example an original quarantine, an unquarantine, and later a batch quarantine/unquarantine under a new issue). Always use the **newest** removal on the first-parent walk; never stop at an older, more memorable unquarantine PR such as one titled "Unquarantine <TestName>".
 - It has **at least one distinct-build failure incident remaining after the mandatory evidence cutoff above**. The history-derived cutoff includes the unquarantine landing time and any later relevant fix, and the final cutoff also includes any later trusted prior-attempt decision. Failures from before that cutoff do not count — they are stale evidence from before the test was repaired/unquarantined or before a maintainer rejected an earlier attempt. If no incidents remain, do not re-quarantine and do not evaluate the test under Case A.
 - **Respect any prior-attempt cutoff (see the "Check for recently closed (not merged) PRs" rule).** If a trusted contributor already closed a recent re-quarantine attempt for this same test, only failures whose build `startedUtc` is strictly after that PR's `closed_at` count toward re-quarantining. If no failure post-dates that cutoff, do **not** re-quarantine this run — defer until there is fresh flakiness after the maintainer's decision.
-- **Reuse the original tracking issue — do not create a new one.** Determine the issue **directly from the exact `[QuarantinedTest]` or `[QuarantinedTestData]` line removed by the unquarantine commit's patch**. Its numeric issue URL names the original tracking issue to reuse in Step&nbsp;3.1. Do **not** rely only on issue-title searches. The trusted pre-activation collector confirms that this exact number is an existing issue, not a PR, using the authenticated GitHub API; it sets `case_b_issue_verified` before including the test in the Case B eligible list. This receipt is this run's existence confirmation, including for closed issues. Do not repeat the lookup through integrity-filtered MCP tools or agent HTTP. The safe-output validator requires the verified receipt. If the removed attribute has no valid numeric issue URL or verification fails, the test is not eligible.
+- **Reuse the original tracking issue — do not create a new one.** Use the `issue` value for this exact test from the injected `eligible_case_b_issues` receipt above. It was derived deterministically from the exact `[QuarantinedTest]` or `[QuarantinedTestData]` line removed by the **most recent** unquarantine commit's patch, and it is the tracking issue to reuse in Step&nbsp;3.1. Your own history walk should agree; if it does not, trust the receipt. Any other number must appear in that test's `verified_issues` list (an earlier verified quarantine issue for the same exact target), or the safe-output validator rejects the PR. Do **not** rely only on issue-title searches. The trusted pre-activation collector confirms that this exact number is an existing issue, not a PR, using the authenticated GitHub API; it sets `case_b_issue_verified` before including the test in the Case B eligible list. This receipt is this run's existence confirmation, including for closed issues. Do not repeat the lookup through integrity-filtered MCP tools or agent HTTP. The safe-output validator requires the verified receipt. If the removed attribute has no valid numeric issue URL or verification fails, the test is not eligible.
 
 **Case A identity boundary**
 
@@ -2489,7 +2526,7 @@ Group the unquarantine candidates by their associated GitHub issue number. Extra
 - **`[QuarantinedTest]` and `[QuarantinedTestData]` attributes must reference a GitHub issue URL that *ultimately resolves* to a numeric issue number** (e.g., `https://github.com/dotnet/aspnetcore/issues/12345`). For a newly created issue (Case A) you write the `#{temporary_id}` token while editing; the framework resolves it before the PR is opened. Never write placeholder strings, descriptive text, or any other non-numeric identifier — the only permitted non-numeric value is the required `#{temporary_id}` token.
   - **For a newly created quarantine issue (Case A), you MUST write the `#{temporary_id}` reference — never a literal numeric issue number.** Here `#{temporary_id}` means a literal `#` immediately followed by the **exact** `temporary_id` string you passed to the corresponding `create_quarantine_issue` call (do **not** add any extra `aw_` prefix — the `temporary_id` already includes it). The issue's real number is assigned by the framework *after* the agent finishes, so it is impossible for you to know it while editing code. For example, if you called `create_quarantine_issue(temporary_id: "aw_http2ign", ...)`, write `[QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/#aw_http2ign")]`. The framework resolves `#aw_http2ign` to the real numeric URL before opening the PR, so the final committed code will contain the numeric URL.
   - **The `temporary_id` must be exactly the literal prefix `aw_` followed by a *slug* of 3 to 12 characters from `[A-Za-z0-9_]`** — i.e. it must match `^aw_[A-Za-z0-9_]{3,12}$` (the framework's exact rule is "'aw_' followed by 3 to 12 alphanumeric or underscore characters"). The **3–12 count applies only to the slug portion after `aw_`**, so the full token is 6–15 characters long (e.g. `aw_http2ign` = slug `http2ign`, 8 chars). This limit is enforced by the framework. If you pass a `temporary_id` whose slug is too long or otherwise malformed, the framework **silently discards it, auto-generates a *different* id, and registers your new issue under that auto-generated id** — so the `#{temporary_id}` token you wrote into the code no longer matches any registered id, is treated as a malformed reference, and is **committed verbatim as a broken placeholder**. Keep the slug short and abbreviate. The identical `temporary_id` must be used for the `create_quarantine_issue` call, the `add_comment` `item_number`, the `#{temporary_id}` in the attribute, and the `Associated issue: #{temporary_id}` in the PR body.
-  - **A literal numeric issue URL is allowed ONLY when reusing an already-existing tracking issue (Case B re-quarantine), and only after the trusted pre-activation receipt confirms in this run that the issue exists and is the original tracking issue for this test.** The authoritative way to identify it is the issue number in the `[QuarantinedTest("…/issues/N")]` line removed by the unquarantine commit (see Case B in Step&nbsp;1.2); that issue is correct to reuse whether it is labeled `test-failure`, `Known Build Error`, or otherwise. The reused issue may be **closed** — a prior unquarantine PR (Step 3.2) can auto-close the tracking issue on merge, and re-quarantine still reuses that original issue. Never write a literal number for an issue you created (or will create) in this run.
+  - **A literal numeric issue URL is allowed ONLY when reusing an already-existing tracking issue (Case B re-quarantine), and only after the trusted pre-activation receipt confirms in this run that the issue exists and is the original tracking issue for this test.** The authoritative source is the test's `issue` in the injected `eligible_case_b_issues` receipt, which names the issue in the `[QuarantinedTest("…/issues/N")]` line removed by the **most recent** unquarantine commit (see Case B in Step&nbsp;1.2); a number from that test's `verified_issues` list is also accepted; that issue is correct to reuse whether it is labeled `test-failure`, `Known Build Error`, or otherwise. The reused issue may be **closed** — a prior unquarantine PR (Step 3.2) can auto-close the tracking issue on merge, and re-quarantine still reuses that original issue. Never write a literal number for an issue you created (or will create) in this run.
   - **Never** use placeholder text like `TODO`, `TBD`, or descriptive strings.
 - **Never guess, predict, probe for, or reverse-engineer a GitHub issue number.** Do not try to discover "what number my new issue will get" by listing issues, incrementing the latest issue/PR number, or probing candidate issue numbers via the issue/PR APIs to find an "unused" one. New-issue numbers are assigned asynchronously by the framework and are unknowable while you are editing code — the only correct way to reference a newly created issue is the `#{temporary_id}` token (see above). (Looking up a **known, specific** issue number to confirm the original tracking issue for Case B reuse — identified from the unquarantine commit's removed `[QuarantinedTest]` attribute, whether labeled `test-failure` or `Known Build Error` — is fine — what is forbidden is probing for, or guessing, the number of an issue you are creating in this run.)
   - **Treat any "not found", "filtered", "lower integrity", "not accessible", "integrity policy", or permission-denied response from an issue or PR lookup as access-denied — NOT as evidence that an issue number is free, unused, or available.** Such responses tell you nothing about whether a number is allocated. Never conclude that a probed number is "available", and never write a probed or inferred number into code.
@@ -2631,7 +2668,7 @@ For each quarantine/re-quarantine candidate, in priority order (Case B re-quaran
 Before you call `create_pull_request` for any quarantine or re-quarantine, re-read the exact diff you are about to submit and verify **every** added `[QuarantinedTest(...)]` and `[QuarantinedTestData(...)]` line:
 
 1. If `<ref>` is for an issue you created in this run, it **must** be `#{temporary_id}` — a literal `#` followed by the *exact* `temporary_id` you passed to a `create_quarantine_issue` call in this same run (e.g., `#aw_http2ign`; do not add an extra `aw_` prefix). A bare number here is a bug — fix it before submitting.
-2. If `<ref>` is a literal number, it **must** be the original tracking issue for this test, confirmed in this run by the trusted `case_b_issue_verified` receipt (Case B reuse only; identified from the issue URL removed by the unquarantine commit, and it may be labeled `test-failure` or `Known Build Error`; the issue may be closed). The deterministic eligible Case B list includes only verified issues; use that confirmation without another MCP or agent HTTP lookup. If the receipt does not confirm it, do not submit the PR.
+2. If `<ref>` is a literal number, it **must** be this test's `issue` from the injected `eligible_case_b_issues` receipt, or a number from that test's `verified_issues` list (Case B reuse only; identified from the issue URL removed by the most recent unquarantine commit, and it may be labeled `test-failure` or `Known Build Error`; the issue may be closed). The deterministic eligible Case B list includes only verified issues; use that confirmation without another MCP or agent HTTP lookup. If the receipt does not confirm it, do not submit the PR.
 3. `<ref>` must never be a guessed, probed, or inferred number — for example a number guessed by incrementing the latest issue/PR, probed for to find an "unused" one, or inferred from a "not found"/"filtered"/access-denied lookup response — nor a `TODO`/`TBD`/placeholder. Factual lookups *are* allowed: confirming that a **known, specific** issue exists (Case B reuse — e.g. the issue named in the removed `[QuarantinedTest]` attribute), or discovering the original tracking issue from the unquarantine commit's diff, is fine. What is forbidden is treating any lookup result as license to invent, pick, or guess a number.
 
 If any added attribute fails these checks, **do not create the PR** — correct the reference first, or skip the candidate entirely. It is far better to skip a quarantine than to commit a wrong issue link.

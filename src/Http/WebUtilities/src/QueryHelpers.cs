@@ -1,9 +1,11 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Buffers;
+using System.Diagnostics;
 using System.Linq;
-using System.Text;
 using System.Text.Encodings.Web;
+using Microsoft.AspNetCore.Internal;
 using Microsoft.Extensions.Primitives;
 
 namespace Microsoft.AspNetCore.WebUtilities;
@@ -29,8 +31,29 @@ public static class QueryHelpers
         ArgumentNullException.ThrowIfNull(name);
         ArgumentNullException.ThrowIfNull(value);
 
-        return AddQueryString(
-            uri, new[] { new KeyValuePair<string, string?>(name, value) });
+        var anchorIndex = uri.IndexOf('#');
+        var baseLength = anchorIndex < 0 ? uri.Length : anchorIndex;
+        var separator = uri.AsSpan(0, baseLength).Contains('?') ? "&" : "?";
+
+        Span<char> initialBuffer = stackalloc char[256];
+        var writer = new RefPooledArrayBufferWriter<char>(initialBuffer);
+        try
+        {
+            Append(ref writer, uri.AsSpan(0, baseLength));
+            Append(ref writer, separator);
+            AppendUrlEncoded(ref writer, name);
+            Append(ref writer, "=");
+            AppendUrlEncoded(ref writer, value);
+            Append(ref writer, uri.AsSpan(baseLength));
+            return writer.WrittenSpan.ToString();
+        }
+        finally
+        {
+            // Query values may contain sensitive data. Dispose clears any rented buffer, and only the start of the
+            // stack buffer can have been written to.
+            initialBuffer.Slice(0, Math.Min(writer.WrittenSpan.Length, initialBuffer.Length)).Clear();
+            writer.Dispose();
+        }
     }
 
     /// <summary>
@@ -93,24 +116,66 @@ public static class QueryHelpers
         var queryIndex = uriToBeAppended.IndexOf('?');
         var hasQuery = queryIndex != -1;
 
-        var sb = new StringBuilder();
-        sb.Append(uriToBeAppended);
-        foreach (var parameter in queryString)
+        Span<char> initialBuffer = stackalloc char[256];
+        var writer = new RefPooledArrayBufferWriter<char>(initialBuffer);
+        try
         {
-            if (parameter.Value == null)
+            Append(ref writer, uriToBeAppended);
+            foreach (var parameter in queryString)
             {
-                continue;
+                if (parameter.Value is null)
+                {
+                    continue;
+                }
+
+                Append(ref writer, hasQuery ? "&" : "?");
+                AppendUrlEncoded(ref writer, parameter.Key);
+                Append(ref writer, "=");
+                AppendUrlEncoded(ref writer, parameter.Value);
+                hasQuery = true;
             }
 
-            sb.Append(hasQuery ? '&' : '?');
-            sb.Append(UrlEncoder.Default.Encode(parameter.Key));
-            sb.Append('=');
-            sb.Append(UrlEncoder.Default.Encode(parameter.Value));
-            hasQuery = true;
+            Append(ref writer, anchorText);
+            return writer.WrittenSpan.ToString();
         }
+        finally
+        {
+            // Query values may contain sensitive data. Dispose clears any rented buffer, and only the start of the
+            // stack buffer can have been written to.
+            initialBuffer.Slice(0, Math.Min(writer.WrittenSpan.Length, initialBuffer.Length)).Clear();
+            writer.Dispose();
+        }
+    }
 
-        sb.Append(anchorText);
-        return sb.ToString();
+    private static void Append(ref RefPooledArrayBufferWriter<char> writer, ReadOnlySpan<char> value)
+    {
+        // GetSpan(0) would request a default-sized buffer, so skip empty values.
+        if (!value.IsEmpty)
+        {
+            value.CopyTo(writer.GetSpan(value.Length));
+            writer.Advance(value.Length);
+        }
+    }
+
+    private static void AppendUrlEncoded(ref RefPooledArrayBufferWriter<char> writer, string value)
+    {
+        var source = value.AsSpan();
+        var sizeHint = source.Length;
+        while (!source.IsEmpty)
+        {
+            var destination = writer.GetSpan(sizeHint);
+            var status = UrlEncoder.Default.Encode(source, destination, out var charsConsumed, out var charsWritten, isFinalBlock: true);
+            writer.Advance(charsWritten);
+            if (status != OperationStatus.DestinationTooSmall)
+            {
+                Debug.Assert(status == OperationStatus.Done);
+                return;
+            }
+
+            source = source.Slice(charsConsumed);
+            // Request more than the space that was left so the writer grows.
+            sizeHint = destination.Length - charsWritten + source.Length;
+        }
     }
 
     /// <summary>
@@ -146,7 +211,7 @@ public static class QueryHelpers
 
         foreach (var pair in enumerable)
         {
-            accumulator.Append(pair.DecodeName().ToString(), pair.DecodeValue().ToString());
+            accumulator.Append(QueryStringDecoder.DecodeToString(pair.EncodedName), QueryStringDecoder.DecodeToString(pair.EncodedValue));
         }
 
         if (!accumulator.HasValues)

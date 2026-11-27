@@ -7,13 +7,14 @@ import { WebRendererId } from '../Rendering/WebRendererId';
 import { DescriptorHandler } from '../Rendering/DomMerging/DomSync';
 import { disposeCircuit, hasStartedServer, isCircuitAvailable, startCircuit, startServer, updateServerRootComponents } from '../Boot.Server.Common';
 import { hasLoadedWebAssemblyPlatform, hasStartedLoadingWebAssemblyPlatform, hasStartedWebAssembly, isFirstUpdate, loadWebAssemblyPlatformIfNotStarted, resolveInitialUpdate, setWaitForRootComponents, startWebAssembly, updateWebAssemblyRootComponents, waitForBootConfigLoaded } from '../Boot.WebAssembly.Common';
-import { MonoConfig } from '@microsoft/dotnet-runtime';
+import { LoaderConfig } from '@microsoft/dotnet-runtime';
 import { RootComponentManager } from './RootComponentManager';
 import { getRendererer } from '../Rendering/Renderer';
 import { isPageLoading } from './NavigationEnhancement';
 import { markAsInteractiveRootComponentElement, setClearContentOnRootComponentRerender, setShouldPreserveContentOnInteractiveComponentDisposal } from '../Rendering/BrowserRenderer';
 import { LogicalElement } from '../Rendering/LogicalElements';
 import { JSEventRegistry } from './JSEventRegistry';
+import { SsrStartOptions } from '../Platform/SsrStartOptions';
 
 type RootComponentOperationBatch = {
   batchId: number;
@@ -71,7 +72,7 @@ export class WebRootComponentManager implements DescriptorHandler, RootComponent
   // by WebRootComponentManager are added and removed dynamically.
   public readonly initialComponents: never[] = [];
 
-  public constructor(private readonly _circuitInactivityTimeoutMs: number, private readonly _jsEventRegistry: JSEventRegistry) {
+  public constructor(private readonly _getSsrOptions: () => SsrStartOptions | undefined, private readonly _jsEventRegistry: JSEventRegistry) {
     // After a renderer attaches, we need to activate any components that were
     // previously skipped for interactivity.
     registerRendererAttachedListener(() => {
@@ -233,7 +234,7 @@ export class WebRootComponentManager implements DescriptorHandler, RootComponent
         disposeCircuit();
         this._circuitInactivityTimeoutId = undefined;
       }
-    }, this._circuitInactivityTimeoutMs) as unknown as number;
+    }, this._getSsrOptions()?.circuitInactivityTimeoutMs ?? 2000) as unknown as number;
   }
 
   private rendererHasComponents(rendererId: WebRendererId): boolean {
@@ -527,7 +528,7 @@ function areAnyWebAssemblyResourcesLikelyCached(): boolean {
   return !!window.localStorage.getItem(cacheKey);
 }
 
-function areWebAssemblyResourcesLikelyCached(config: MonoConfig): boolean {
+function areWebAssemblyResourcesLikelyCached(config: LoaderConfig): boolean {
   const hash = getWebAssemblyResourceHash(config);
   if (!hash) {
     return false;
@@ -537,7 +538,7 @@ function areWebAssemblyResourcesLikelyCached(config: MonoConfig): boolean {
   return hash.value === existingHash;
 }
 
-function cacheWebAssemblyResourceHash(config: MonoConfig) {
+function cacheWebAssemblyResourceHash(config: LoaderConfig) {
   const hash = getWebAssemblyResourceHash(config);
   if (hash) {
     window.localStorage.setItem(cacheKey, hash.value);
@@ -545,7 +546,7 @@ function cacheWebAssemblyResourceHash(config: MonoConfig) {
   }
 }
 
-function getWebAssemblyResourceHash(config: MonoConfig): { key: string, value: string } | null {
+function getWebAssemblyResourceHash(config: LoaderConfig): { key: string, value: string } | null {
   const hash = config.resources?.hash;
   const mainAssemblyName = config.mainAssemblyName;
   if (!hash || !mainAssemblyName) {

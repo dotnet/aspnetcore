@@ -699,7 +699,7 @@ public class JsonPatchDocument<TModel> : IJsonPatchDocument, IEndpointParameterM
             case ExpressionType.Call:
                 var methodCallExpression = (MethodCallExpression)expr;
                 listOfSegments.AddRange(GetPathSegments(methodCallExpression.Object));
-                listOfSegments.Add(EvaluateExpression(methodCallExpression.Arguments[0]));
+                listOfSegments.Add(EscapePathSegment(EvaluateExpression(methodCallExpression.Arguments[0])));
                 return listOfSegments;
 
             case ExpressionType.Convert:
@@ -710,7 +710,7 @@ public class JsonPatchDocument<TModel> : IJsonPatchDocument, IEndpointParameterM
                 var memberExpression = expr as MemberExpression;
                 listOfSegments.AddRange(GetPathSegments(memberExpression.Expression));
                 // Get property name, respecting JsonProperty attribute
-                listOfSegments.Add(GetPropertyNameFromMemberExpression(memberExpression));
+                listOfSegments.Add(EscapePathSegment(GetPropertyNameFromMemberExpression(memberExpression)));
                 return listOfSegments;
 
             case ExpressionType.Parameter:
@@ -720,6 +720,11 @@ public class JsonPatchDocument<TModel> : IJsonPatchDocument, IEndpointParameterM
             default:
                 throw new InvalidOperationException(Resources.FormatExpressionTypeNotSupported(expr));
         }
+    }
+
+    private static string EscapePathSegment(string segment)
+    {
+        return segment?.Replace("~", "~0").Replace("/", "~1");
     }
 
     private string GetPropertyNameFromMemberExpression(MemberExpression memberExpression)
