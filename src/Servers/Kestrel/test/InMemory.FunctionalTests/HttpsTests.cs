@@ -1,6 +1,7 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Net;
 using System.Net.Security;
 using System.Security.Authentication;
 using System.Security.Cryptography.X509Certificates;
@@ -11,6 +12,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.Internal;
 using Microsoft.AspNetCore.Server.Kestrel.Core;
+using Microsoft.AspNetCore.Server.Kestrel.Core.Internal;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure;
 using Microsoft.AspNetCore.Server.Kestrel.Https;
 using Microsoft.AspNetCore.Server.Kestrel.Https.Internal;
@@ -716,6 +718,78 @@ public class HttpsTests : LoggedTest
         Assert.Same(callbackOptions, result);
         Assert.Collection(result.ApplicationProtocols,
             p => Assert.Equal(SslApplicationProtocol.Http11, p));
+    }
+
+    [Fact]
+    public async Task PopulateMultiplexedTransportFeatures_SniProtocols_OnlyEnablesHttp3WhenAllowed()
+    {
+        var features = new FeatureCollection();
+        var listenOptions = new ListenOptions(new IPEndPoint(IPAddress.Loopback, 0))
+        {
+            Protocols = HttpProtocols.Http1AndHttp2AndHttp3,
+            HttpsCallbackOptions = new TlsHandshakeCallbackOptions
+            {
+                OnConnection = context =>
+                {
+                    var host = context.ClientHelloInfo.ServerName;
+
+                    if (string.Equals(host, "h3.example.com", StringComparison.OrdinalIgnoreCase))
+                    {
+                        context.Connection.Features.Set<HttpProtocolsFeature>(
+                            new HttpProtocolsFeature(HttpProtocols.Http1AndHttp2AndHttp3));
+
+                        return ValueTask.FromResult(new SslServerAuthenticationOptions
+                        {
+                            ApplicationProtocols = [SslApplicationProtocol.Http2]
+                        });
+                    }
+
+                    if (string.Equals(host, "legacy.example.org", StringComparison.OrdinalIgnoreCase))
+                    {
+                        context.Connection.Features.Set<HttpProtocolsFeature>(
+                            new HttpProtocolsFeature(HttpProtocols.Http1));
+
+                        return ValueTask.FromResult(new SslServerAuthenticationOptions
+                        {
+                            ApplicationProtocols = [SslApplicationProtocol.Http11]
+                        });
+                    }
+
+                    throw new InvalidOperationException($"Unexpected SNI host: {host}");
+                }
+            }
+        };
+
+        HttpsConfigurationService.PopulateMultiplexedTransportFeaturesWorker(
+            features,
+            listenOptions,
+            NullLogger<HttpsConnectionMiddleware>.Instance);
+
+        var tlsCallback = features.Get<TlsConnectionCallbackOptions>();
+        Assert.NotNull(tlsCallback);
+
+        var h3Options = await tlsCallback.OnConnection(new TlsHandshakeCallbackContext
+        {
+            ClientHelloInfo = new SslClientHelloInfo { ServerName = "h3.example.com" },
+            Connection = new DefaultConnectionContext(),
+            CancellationToken = CancellationToken.None
+        });
+
+        Assert.NotNull(h3Options.ApplicationProtocols);
+        Assert.Collection(h3Options.ApplicationProtocols,
+            protocol => Assert.Equal(SslApplicationProtocol.Http3, protocol));
+
+        var legacyConnection = new DefaultConnectionContext();
+        var legacyOptions = await tlsCallback.OnConnection(new TlsHandshakeCallbackContext
+        {
+            ClientHelloInfo = new SslClientHelloInfo { ServerName = "legacy.example.org" },
+            Connection = legacyConnection,
+            CancellationToken = CancellationToken.None
+        });
+
+        Assert.NotNull(legacyOptions.ApplicationProtocols);
+        Assert.DoesNotContain(SslApplicationProtocol.Http3, legacyOptions.ApplicationProtocols);
+        Assert.Equal([SslApplicationProtocol.Http11], legacyOptions.ApplicationProtocols);
     }
 
     [Fact]
