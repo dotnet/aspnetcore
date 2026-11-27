@@ -299,13 +299,15 @@ public abstract class WebViewManager : IAsyncDisposable
 
         private static string? ResolveRelativeToAssembly()
         {
-            var assemblyName = Assembly.GetEntryAssembly()?.GetName().Name;
-            if (string.IsNullOrEmpty(assemblyName))
+            var assembly = Assembly.GetEntryAssembly();
+            if (string.IsNullOrEmpty(assembly?.Location))
             {
                 return null;
             }
 
-            return Path.Combine(AppContext.BaseDirectory, $"{assemblyName}.staticwebassets.runtime.json");
+            var name = Path.GetFileNameWithoutExtension(assembly.Location);
+
+            return Path.Combine(Path.GetDirectoryName(assembly.Location)!, $"{name}.staticwebassets.runtime.json");
         }
     }
 }
