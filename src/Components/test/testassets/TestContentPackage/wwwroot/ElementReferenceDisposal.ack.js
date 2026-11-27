@@ -3,6 +3,7 @@ let renderBatchGate;
 window.elementReferenceDisposalTest = {
   acknowledgedRemovals: 0,
   acknowledgedServerRemovals: 0,
+  appliedServerRootRemovals: 0,
   failedDisposalAcknowledgements: 0,
   successfulDisposalAcknowledgements: 0,
   serverConnections: 0,
@@ -27,6 +28,8 @@ window.elementReferenceDisposalTest = {
       this.serverConnections++;
       const connection = build();
       const serverRemovalBatches = new Set();
+      const serverRootIds = new Set();
+      const serverRootRemovalsByRenderBatch = new Map();
       const send = connection.send.bind(connection);
       connection.send = (method, ...args) => {
         if (method === 'UpdateRootComponents') {
@@ -34,23 +37,36 @@ window.elementReferenceDisposalTest = {
           if (batch.operations.some(operation => operation.type === 'remove')) {
             serverRemovalBatches.add(batch.batchId);
           }
+        } else if (method === 'OnRenderCompleted' && args[1] === null) {
+          for (const id of serverRootRemovalsByRenderBatch.get(args[0]) ?? []) {
+            if (serverRootIds.delete(id)) {
+              this.appliedServerRootRemovals++;
+            }
+          }
+          serverRootRemovalsByRenderBatch.delete(args[0]);
         }
         return send(method, ...args);
       };
       const on = connection.on.bind(connection);
+      on('JS.AttachComponent', componentId => { serverRootIds.add(componentId); });
       on('JS.EndUpdateRootComponents', batchId => {
         if (serverRemovalBatches.delete(batchId)) {
           this.acknowledgedServerRemovals++;
         }
       });
-      connection.on = (method, callback) => on(method, method === 'JS.RenderBatch' ? async (...args) => {
+      connection.on = (method, callback) => on(method, method === 'JS.RenderBatch' ? async (batchId, data) => {
+        const disposedRoots = getDisposedComponentIds(data).filter(id => serverRootIds.has(id));
+        if (disposedRoots.length) {
+          serverRootRemovalsByRenderBatch.set(batchId, disposedRoots);
+        }
+
         if (renderBatchGate) {
           this.heldRenderBatches++;
           await renderBatchGate.promise;
-          await callback(...args);
+          await callback(batchId, data);
           this.completedHeldRenderBatches++;
         } else {
-          await callback(...args);
+          await callback(batchId, data);
         }
       } : callback);
       return connection;
@@ -66,6 +82,14 @@ window.elementReferenceDisposalTest = {
     return [...this.captures.values()].every(id => this.referenceIsMissing(id));
   },
 };
+
+function getDisposedComponentIds(data) {
+  // Match OutOfProcessRenderBatch: the third-to-last int32 points to the count and disposed IDs.
+  const view = new DataView(data.buffer, data.byteOffset, data.byteLength);
+  const offset = view.getInt32(view.byteLength - 12, true);
+  const count = view.getInt32(offset, true);
+  return Array.from({ length: count }, (_, index) => view.getInt32(offset + 4 * (index + 1), true));
+}
 
 const originalFetch = window.fetch;
 window.fetch = async (...args) => {

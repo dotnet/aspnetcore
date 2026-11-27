@@ -48,6 +48,9 @@ public class ElementReferenceDisposalReconnectionTest : ServerTestBase<BasicTest
                 Assert.False(ReferenceIsMissing(id));
             }
 
+            Browser.True(() => Browser.ExecuteJavaScript<long>(
+                "return window.elementReferenceDisposalTest.appliedServerRootRemovals") > 0);
+
             // Use the custom reconnect display so rejection does not reload the document.
             Assert.False((bool)((IJavaScriptExecutor)Browser).ExecuteAsyncScript(
                 "const done = arguments[0];" +
