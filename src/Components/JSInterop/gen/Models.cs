@@ -26,9 +26,11 @@ internal sealed record JSInvokableMethod(
     HostInfo? Host = null,
     bool IsHidden = false);
 
-// A partial containing type that registers its invokers from a generated static constructor. Generated
+// A partial containing type that supplies its invokers through a generated interface bridge. Generated
 // code inside the type can name its type parameters and reach non-accessible nested types.
-internal sealed record HostInfo(string? Namespace, EquatableArray<string> Declarations, string ConstructorName, string HintName);
+internal sealed record HostInfo(string? Namespace, EquatableArray<string> Declarations, string HintName, bool IsSealed, EquatableArray<BaseHostInfo> BaseHosts);
+
+internal sealed record BaseHostInfo(string TypeName, string DefinitionName, bool HasCompiledBridge);
 
 internal sealed record DiagnosticInfo(string DescriptorId, LocationInfo? Location, EquatableArray<string> MessageArgs)
 {

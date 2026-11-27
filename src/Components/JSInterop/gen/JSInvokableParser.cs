@@ -270,18 +270,22 @@ internal static class JSInvokableParser
             declarations.Insert(0, GetPartialDeclaration(type));
         }
 
-        if (containingType.StaticConstructors.Any(constructor => !constructor.IsImplicitlyDeclared))
-        {
-            return (DiagnosticDescriptors.StaticConstructorConflict.Id, [typeName]);
-        }
-
         var ns = containingType.ContainingNamespace is { IsGlobalNamespace: false } containingNamespace
             ? containingNamespace.ToDisplayString()
             : null;
         var hintName = new string([.. containingType.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat)
             .Replace("global::", string.Empty)
             .Select(c => char.IsLetterOrDigit(c) || c == '.' ? c : '_')]);
-        host = new HostInfo(ns, new(declarations.ToImmutable()), SyntaxFactsEscape(containingType.Name), hintName + ".JSInvokable.g.cs");
+        var baseHosts = ImmutableArray.CreateBuilder<BaseHostInfo>();
+        for (var baseType = containingType.BaseType; baseType is not null; baseType = baseType.BaseType)
+        {
+            baseHosts.Add(new(
+                baseType.ToDisplayString(TypeFormat),
+                baseType.OriginalDefinition.ToDisplayString(TypeFormat),
+                baseType.GetMembers("__JSInvokable_Register").Any(m => m.IsStatic && m.DeclaredAccessibility == Accessibility.Protected)));
+        }
+
+        host = new HostInfo(ns, new(declarations.ToImmutable()), hintName + ".JSInvokable.g.cs", containingType.IsSealed, new(baseHosts.ToImmutable()));
         return null;
     }
 

@@ -2,6 +2,8 @@
 Microsoft.JSInterop.GeneratedInteropPrototype
 Microsoft.JSInterop.GeneratedInteropPrototype.GeneratedInteropPrototype() -> void
 Microsoft.JSInterop.GeneratedInteropPrototype.Invoker
+Microsoft.JSInterop.GeneratedInteropPrototype.IInstanceRegistrationProvider
+Microsoft.JSInterop.GeneratedInteropPrototype.IInstanceRegistrationProvider.RegisterInstanceCallbacks(Microsoft.JSInterop.GeneratedInteropPrototype! registrations) -> void
 Microsoft.JSInterop.GeneratedInteropPrototype.RegisterNonInvokableInstance<T>(string! method) -> void
 Microsoft.JSInterop.GeneratedInteropPrototype.RegisterInstance<T>(string! method, int arity, Microsoft.JSInterop.GeneratedInteropPrototype.Invoker! invoke, bool isAsync = false) -> void
 Microsoft.JSInterop.GeneratedInteropPrototype.RegisterStatic(string! assembly, string! method, int arity, Microsoft.JSInterop.GeneratedInteropPrototype.Invoker! invoke, bool isAsync = false) -> void

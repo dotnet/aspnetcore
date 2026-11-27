@@ -67,11 +67,30 @@ Microsoft.AspNetCore.Components.Platform run the generator, so framework callbac
 application opts in with an analyzer reference to the generator project.
 
 Instance methods on generic types (for example `Box<T>`) and on private or protected nested types are
-registered from a generated static constructor, because a module initializer cannot name an open
-generic type or an inaccessible one. The type and all its containing types must be declared
-`partial` and must not declare a static constructor. The generated static constructor also returns
-immediately unless the feature switch is enabled, but its presence removes `beforefieldinit` from
-the type in both modes.
+registered lazily from the target instance through a generated implementation of
+`GeneratedInteropPrototype.IInstanceRegistrationProvider`. The type and all its containing types
+must be declared `partial`. No static constructor is added, existing static constructors are
+untouched, and the generator no longer changes `beforefieldinit`.
+
+The generator applies an assembly-local, non-generic attribute to each partial host. Its static
+`Register<THost>` method owns the identifiers, argument counts and registration logic. The host
+supplies `THost` and its strongly typed invokers through the interface bridge. This is an
+attribute/interface hybrid: the runtime discovers the bridge using an interface test, not by
+reading or instantiating attributes. The attribute application is descriptive metadata, not the
+activation mechanism.
+
+An attribute cannot use a host's type parameters, even when nested inside the generic host.
+Passing closed invokers from inside the host avoids runtime `MakeGenericType`, reflective method
+invocation and inaccessible-type references in the attribute. Generated non-sealed hosts also
+expose a protected static `__JSInvokable_Register` bridge so generated derived hosts can compose
+base registrations, including across assemblies. These bridges and the public provider interface
+are experimental API surface, not an approved contract.
+
+Each runtime's registry caches an isolated registration set per runtime target type, initialized
+once even under concurrent calls. Registration failures surface on invocation as their original
+exceptions and are cached, rather than becoming type-initialization failures. Explicit registrations
+still take precedence at each type in the inheritance walk. Provider callbacks must use their target
+argument instead of capturing the instance that initialized the type's registrations.
 
 When an override does not redeclare `[JSInvokable]`, the generator registers a non-invokable marker
 for the overriding type so that, like reflection, calls on that type fail instead of dispatching to
@@ -88,7 +107,9 @@ Unsupported methods are skipped with these warnings:
 | `JSI0005` | Signature or target is unsupported, such as `ref` parameters, abstract or interface methods, or instance methods on value types. |
 | `JSI0006` | Identifier is duplicated. |
 | `JSI0007` | Generic or inaccessible type, or one of its containing types, is not `partial`. |
-| `JSI0008` | Generic or inaccessible type already declares a static constructor. |
+
+`JSI0008` (static-constructor conflict) is retired by the lazy-host prototype; types with existing
+static constructors are now supported.
 
 Application payload types still need JSON metadata. Before creating any `JSRuntime`, set
 `GeneratedInteropPrototype.ConfigureRuntime` to add the application's source-generated

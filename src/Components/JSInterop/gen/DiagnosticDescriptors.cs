@@ -45,11 +45,6 @@ internal static class DiagnosticDescriptors
         "Containing type must be partial for generated dispatch",
         "Generated dispatch cannot register '{0}' because '{1}' is generic or not accessible to the assembly; declare '{1}' and all of its containing types partial");
 
-    public static readonly DiagnosticDescriptor StaticConstructorConflict = Create(
-        "JSI0008",
-        "Containing type declares a static constructor",
-        "Generated dispatch cannot register '{0}' because '{1}' declares a static constructor; generic and non-accessible types are registered from a generated static constructor");
-
     public static DiagnosticDescriptor ById(string id) => id switch
     {
         "JSI0001" => NotPublic,
@@ -59,7 +54,6 @@ internal static class DiagnosticDescriptors
         "JSI0005" => UnsupportedSignature,
         "JSI0006" => DuplicateIdentifier,
         "JSI0007" => PartialTypeRequired,
-        "JSI0008" => StaticConstructorConflict,
         _ => throw new ArgumentOutOfRangeException(nameof(id), id, null),
     };
 

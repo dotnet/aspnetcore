@@ -49,6 +49,7 @@ public sealed class JSInvokableGenerator : IIncrementalGenerator
             var prototype = compilation.GetTypeByMetadataName("Microsoft.JSInterop.GeneratedInteropPrototype");
             var supported = prototype is not null
                 && compilation.GetTypeByMetadataName("System.Runtime.CompilerServices.ModuleInitializerAttribute") is not null
+                && compilation.GetTypeByMetadataName("Microsoft.JSInterop.GeneratedInteropPrototype+IInstanceRegistrationProvider") is not null
                 && prototype.GetMembers("Shared").Any(m => m.DeclaredAccessibility == Accessibility.Public)
                 && prototype.GetMembers("RegisterNonInvokableInstance").Any(m => m.DeclaredAccessibility == Accessibility.Public);
             return (compilation.AssemblyName ?? string.Empty, supported);
@@ -73,7 +74,9 @@ public sealed class JSInvokableGenerator : IIncrementalGenerator
 
             foreach (var hosted in valid.Where(m => m.Host is not null).GroupBy(m => m.Host!))
             {
-                spc.AddSource(hosted.Key.HintName, JSInvokableEmitter.EmitHost(hosted.Key, [.. hosted]));
+                var baseHost = hosted.Key.BaseHosts.Items.FirstOrDefault(baseType =>
+                    baseType.HasCompiledBridge || valid.Any(m => m.Host is not null && m.ContainingType == baseType.DefinitionName));
+                spc.AddSource(hosted.Key.HintName, JSInvokableEmitter.EmitHost(hosted.Key, [.. hosted], baseHost?.TypeName));
             }
         });
     }

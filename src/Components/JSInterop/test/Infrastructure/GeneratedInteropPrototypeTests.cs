@@ -164,6 +164,45 @@ public class GeneratedInteropPrototypeTests
         Assert.Equal("""{"late":1}""", JsonSerializer.Serialize(new GeneratedInteropLateValue(1), GeneratedInteropPrototype.Metadata<GeneratedInteropLateValue>(runtime)));
     }
 
+    [Fact]
+    public async Task InstanceProvidersRegisterOncePerRuntimeAndPreserveExplicitOverrides()
+    {
+        var runtime = CreateRuntime();
+        var registrations = 0;
+        using var first = DotNetObjectReference.Create(new ProviderProbe(1, () => Interlocked.Increment(ref registrations)));
+        using var second = DotNetObjectReference.Create(new ProviderProbe(2, () => Interlocked.Increment(ref registrations)));
+        var firstId = runtime.TrackObjectReference(first);
+        var secondId = runtime.TrackObjectReference(second);
+        var results = await Task.WhenAll(Enumerable.Range(0, 16).Select(index => Task.Run(async () =>
+            await runtime.GeneratedInterop.Invoke(runtime, new(null, "Value", index % 2 == 0 ? firstId : secondId, null), "[]", synchronous: true))));
+
+        Assert.Equal(Enumerable.Range(0, 16).Select(index => index % 2 == 0 ? "1" : "2"), results);
+        Assert.Equal(1, registrations);
+        var otherRuntime = CreateRuntime();
+        using var other = DotNetObjectReference.Create(new ProviderProbe(2, () => Interlocked.Increment(ref registrations)));
+        Assert.Equal("2", await otherRuntime.GeneratedInterop.Invoke(otherRuntime, new(null, "Value", otherRuntime.TrackObjectReference(other), null), "[]", synchronous: true));
+        Assert.Equal(2, registrations);
+
+        runtime.GeneratedInterop.RegisterInstance<ProviderProbe>("Value", 0, (_, _, _) => ValueTask.FromResult<string?>("3"));
+        Assert.Equal("3", await runtime.GeneratedInterop.Invoke(runtime, new(null, "Value", firstId, null), "[]", synchronous: true));
+        Assert.Throws<ArgumentException>(() => runtime.GeneratedInterop.Invoke(runtime, new(null, "Missing", firstId, null), "[]", synchronous: true));
+        Assert.Equal(2, registrations);
+    }
+
+    [Fact]
+    public async Task InstanceProviderFailuresPropagateDirectlyAndDoNotBlockExplicitRegistrations()
+    {
+        var runtime = CreateRuntime();
+        var failure = new InvalidOperationException("registration failure");
+        using var reference = DotNetObjectReference.Create(new ProviderProbe(1, () => throw failure));
+        var id = runtime.TrackObjectReference(reference);
+
+        Assert.Same(failure, Assert.Throws<InvalidOperationException>(() => runtime.GeneratedInterop.Invoke(runtime, new(null, "Value", id, null), "[]", synchronous: true)));
+        Assert.Same(failure, Assert.Throws<InvalidOperationException>(() => runtime.GeneratedInterop.Invoke(runtime, new(null, "Value", id, null), "[]", synchronous: true)));
+        runtime.GeneratedInterop.RegisterInstance<ProviderProbe>("Value", 0, (_, _, _) => ValueTask.FromResult<string?>("4"));
+        Assert.Equal("4", await runtime.GeneratedInterop.Invoke(runtime, new(null, "Value", id, null), "[]", synchronous: true));
+    }
+
     private static RecordingRuntime CreateRuntime()
     {
         var runtime = new RecordingRuntime();
@@ -204,6 +243,18 @@ public class GeneratedInteropPrototypeTests
     private class HidingBaseProbe;
 
     private sealed class HidingDerivedProbe : HidingBaseProbe;
+
+    private sealed class ProviderProbe(int value, Action register) : GeneratedInteropPrototype.IInstanceRegistrationProvider
+    {
+        public void RegisterInstanceCallbacks(GeneratedInteropPrototype registrations)
+        {
+            register();
+            registrations.RegisterInstance<ProviderProbe>("Value", 0, (_, target, _) =>
+                ValueTask.FromResult<string?>(((ProviderProbe)target!).Value.ToString(System.Globalization.CultureInfo.InvariantCulture)));
+        }
+
+        private int Value => value;
+    }
 }
 
 internal class GeneratedInteropBase

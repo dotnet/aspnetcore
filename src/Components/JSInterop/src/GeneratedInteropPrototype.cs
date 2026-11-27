@@ -22,6 +22,7 @@ public sealed class GeneratedInteropPrototype
 
     private readonly ConcurrentDictionary<(string Assembly, string Method), Registration> _statics = new();
     private readonly ConcurrentDictionary<(Type Type, string Method), Registration> _instances = new();
+    private readonly ConcurrentDictionary<Type, Lazy<GeneratedInteropPrototype>> _instanceProviders = new();
     private static IJsonTypeInfoResolver[] s_typeInfoResolvers = [];
 
     /// <summary>
@@ -33,6 +34,23 @@ public sealed class GeneratedInteropPrototype
     /// <param name="args">The arguments to deserialize before awaiting.</param>
     /// <returns>The serialized result.</returns>
     public delegate ValueTask<string?> Invoker(JSRuntime runtime, object? target, JsonElement[] args);
+
+    /// <summary>
+    /// Supplies generated registrations for a closed generic or inaccessible instance type.
+    /// The dispatcher calls this bridge lazily, without inspecting attributes or invoking a type initializer.
+    /// </summary>
+    /// <remarks>
+    /// Registrations and registration failures are cached per registry and runtime target type.
+    /// Invokers must use their target argument instead of capturing the instance supplying registrations.
+    /// </remarks>
+    public interface IInstanceRegistrationProvider
+    {
+        /// <summary>
+        /// Adds the type's callbacks and generated base callbacks to an isolated registration set.
+        /// </summary>
+        /// <param name="registrations">The registration set owned by the dispatcher.</param>
+        void RegisterInstanceCallbacks(GeneratedInteropPrototype registrations);
+    }
 
     /// <summary>
     /// Gets the process-wide registrations populated by generated module initializers.
@@ -290,7 +308,7 @@ public sealed class GeneratedInteropPrototype
                 }
 
                 target = reference.Value;
-                if (!TryGetInstance(target.GetType(), info.MethodIdentifier, out entry))
+                if (!TryGetInstance(target, info.MethodIdentifier, out entry))
                 {
                     throw new ArgumentException($"No generated instance registration for '{info.MethodIdentifier}'.");
                 }
@@ -352,12 +370,25 @@ public sealed class GeneratedInteropPrototype
         _ => JsonTokenType.None,
     };
 
-    private bool TryGetInstance(Type targetType, string method, out Registration entry)
+    private bool TryGetInstance(object target, string method, out Registration entry)
     {
+        var targetType = target.GetType();
+        Lazy<GeneratedInteropPrototype>? generated = null;
+        if (target is IInstanceRegistrationProvider provider)
+        {
+            generated = _instanceProviders.GetOrAdd(targetType, static (_, provider) => new Lazy<GeneratedInteropPrototype>(() =>
+            {
+                var registrations = new GeneratedInteropPrototype();
+                provider.RegisterInstanceCallbacks(registrations);
+                return registrations;
+            }, LazyThreadSafetyMode.ExecutionAndPublication), provider);
+        }
+
         for (var type = targetType; type is not null; type = type.BaseType)
         {
             if (_instances.TryGetValue((type, method), out entry) ||
-                Shared._instances.TryGetValue((type, method), out entry))
+                Shared._instances.TryGetValue((type, method), out entry) ||
+                generated is not null && generated.Value._instances.TryGetValue((type, method), out entry))
             {
                 return true;
             }

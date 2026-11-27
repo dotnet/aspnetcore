@@ -161,7 +161,6 @@ public class JSInvokableGeneratorTests
     [InlineData("file class C { [JSInvokable] public void M() { } }", "JSI0003")]
     [InlineData("public class C<T> { [JSInvokable] public void M() { } }", "JSI0007")]
     [InlineData("public class C { private partial class P { [JSInvokable] public void M() { } } }", "JSI0007")]
-    [InlineData("public partial class C<T> { static C() { } [JSInvokable] public void M() { } }", "JSI0008")]
     [InlineData("internal class C { [JSInvokable] public static void M() { } }", "JSI0004")]
     [InlineData("public abstract class C { [JSInvokable] public abstract void M(); }", "JSI0005")]
     [InlineData("public interface I { [JSInvokable] void M(); }", "JSI0005")]
@@ -212,8 +211,10 @@ public class JSInvokableGeneratorTests
         Assert.Contains("RegisterInstance<global::B>(\"Run\"", source);
     }
 
-    [Fact]
-    public async Task PartialGenericAndPrivateTypes_RegisterFromGeneratedStaticConstructor()
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task PartialHosts_DispatchWithoutGeneratedStaticConstructor(bool privateHost)
     {
         var source = """
             using System.Threading.Tasks;
@@ -254,19 +255,27 @@ public class JSInvokableGeneratorTests
         Assert.DoesNotContain(run.Result.GeneratedTrees, tree => tree.FilePath.EndsWith("JSInvokableRegistrations.g.cs", StringComparison.Ordinal));
         var assembly = Emit(run.OutputCompilation);
         var runtime = new RecordingRuntime();
+        var openBox = assembly.GetType("TestApp.Box`1", throwOnError: true)!;
+        var intBox = Activator.CreateInstance(openBox.MakeGenericType(typeof(int)))!;
+        var stringBox = Activator.CreateInstance(openBox.MakeGenericType(typeof(string)))!;
+        var inner = assembly.GetType("TestApp.Outer", throwOnError: true)!.GetMethod("CreateInner")!.Invoke(null, null)!;
+        var host = privateHost ? inner.GetType() : openBox;
+        Assert.Null(host.TypeInitializer);
+        Assert.True(host.Attributes.HasFlag(TypeAttributes.BeforeFieldInit));
+        Assert.Contains(host.GetCustomAttributesData(), attribute => attribute.AttributeType.Name.StartsWith("__JSInvokableHost_", StringComparison.Ordinal));
 
         AppContext.SetSwitch("Microsoft.JSInterop.GeneratedOnly", true);
         try
         {
-            var openBox = assembly.GetType("TestApp.Box`1", throwOnError: true)!;
-            var intBox = Activator.CreateInstance(openBox.MakeGenericType(typeof(int)))!;
-            var stringBox = Activator.CreateInstance(openBox.MakeGenericType(typeof(string)))!;
-            var inner = assembly.GetType("TestApp.Outer", throwOnError: true)!.GetMethod("CreateInner")!.Invoke(null, null)!;
+            if (privateHost)
+            {
+                Assert.Equal("\"Inner\"", DotNetDispatcher.Invoke(runtime, new(null, "Name", Track(runtime, inner), null), "[]"));
+                return;
+            }
 
             Assert.Equal("0", DotNetDispatcher.Invoke(runtime, new(null, "Swap", Track(runtime, intBox), null), "[5]"));
             Assert.Equal("5", DotNetDispatcher.Invoke(runtime, new(null, "Swap", Track(runtime, intBox), null), "[6]"));
             Assert.Null(DotNetDispatcher.Invoke(runtime, new(null, "Swap", Track(runtime, stringBox), null), "[\"a\"]"));
-            Assert.Equal("\"Inner\"", DotNetDispatcher.Invoke(runtime, new(null, "Name", Track(runtime, inner), null), "[]"));
 
             runtime.Completion = new();
             DotNetDispatcher.BeginInvokeDotNet(runtime, new(null, "GetAsync", Track(runtime, stringBox), "1"), "[]");
@@ -281,6 +290,7 @@ public class JSInvokableGeneratorTests
     }
 
     [Theory]
+    [InlineData("public partial class G<T> { static G() { } [JSInvokable] public void M() { } }")]
     [InlineData("public partial class G<T> { [JSInvokable, System.Obsolete(\"x\", error: true)] public void M() { } }")]
     [InlineData("public ref partial struct S { private partial class Inner { [JSInvokable] public void M() { } } }")]
     [InlineData("public partial record struct R { private partial record Inner { [JSInvokable] public void M() { } } }")]
@@ -292,8 +302,10 @@ public class JSInvokableGeneratorTests
         AssertNoCompilationErrors(run.OutputCompilation);
     }
 
-    [Fact]
-    public void OverridesWithoutJSInvokable_MatchReflectionDispatch()
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public void OverridesWithoutJSInvokable_MatchReflectionDispatch(bool genericHosts)
     {
         var source = """
             using Microsoft.JSInterop;
@@ -325,17 +337,28 @@ public class JSInvokableGeneratorTests
                 public override string Inherited() => "more derived";
             }
             """;
+        if (genericHosts)
+        {
+            source = source.Replace("class Base", "partial class Base<T>", StringComparison.Ordinal)
+                .Replace("class Derived : Base", "partial class Derived<U> : Base<U>", StringComparison.Ordinal)
+                .Replace("class MoreDerived : Derived", "partial class MoreDerived<V> : Derived<V>", StringComparison.Ordinal);
+        }
+
         // Module initializers run once per assembly, so each dispatch mode uses its own assembly.
         var run = RunGenerator(source, "OverrideDispatch" + Guid.NewGuid().ToString("N"));
         var reflectionRun = RunGenerator(source, "OverrideReflectionDispatch" + Guid.NewGuid().ToString("N"));
         Assert.Empty(run.GeneratorDiagnostics);
         AssertNoCompilationErrors(run.OutputCompilation);
-        var generated = GetGeneratedSource(run.Result);
-        Assert.Contains("RegisterNonInvokableInstance<global::TestApp.Derived>(\"Hidden\")", generated);
-        Assert.Contains("RegisterNonInvokableInstance<global::TestApp.MoreDerived>(\"Inherited\")", generated);
-        Assert.DoesNotContain("RegisterNonInvokableInstance<global::TestApp.Derived>(\"Redeclared\")", generated);
-        var reflection = Dispatch(Emit(reflectionRun.OutputCompilation), generatedOnly: false);
-        var generatedDispatch = Dispatch(Emit(run.OutputCompilation), generatedOnly: true);
+        if (!genericHosts)
+        {
+            var generated = GetGeneratedSource(run.Result);
+            Assert.Contains("RegisterNonInvokableInstance<global::TestApp.Derived>(\"Hidden\")", generated);
+            Assert.Contains("RegisterNonInvokableInstance<global::TestApp.MoreDerived>(\"Inherited\")", generated);
+            Assert.DoesNotContain("RegisterNonInvokableInstance<global::TestApp.Derived>(\"Redeclared\")", generated);
+        }
+
+        var reflection = Dispatch(Emit(reflectionRun.OutputCompilation), generatedOnly: false, genericHosts);
+        var generatedDispatch = Dispatch(Emit(run.OutputCompilation), generatedOnly: true, genericHosts);
 
         Assert.Equal(reflection, generatedDispatch);
         Assert.Equal(
@@ -352,7 +375,7 @@ public class JSInvokableGeneratorTests
             ],
             generatedDispatch);
 
-        static List<string> Dispatch(Assembly assembly, bool generatedOnly)
+        static List<string> Dispatch(Assembly assembly, bool generatedOnly, bool genericHosts)
         {
             var runtime = new RecordingRuntime();
             AppContext.SetSwitch("Microsoft.JSInterop.GeneratedOnly", generatedOnly);
@@ -366,7 +389,8 @@ public class JSInvokableGeneratorTests
                 var results = new List<string>();
                 foreach (var typeName in new[] { "Base", "Derived", "MoreDerived" })
                 {
-                    var instance = Activator.CreateInstance(assembly.GetType("TestApp." + typeName, throwOnError: true)!)!;
+                    var type = assembly.GetType("TestApp." + typeName + (genericHosts ? "`1" : string.Empty), throwOnError: true)!;
+                    var instance = Activator.CreateInstance(genericHosts ? type.MakeGenericType(typeof(int)) : type)!;
                     foreach (var method in new[] { "Hidden", "Inherited", "Redeclared" })
                     {
                         string result;
@@ -390,6 +414,48 @@ public class JSInvokableGeneratorTests
             {
                 AppContext.SetSwitch("Microsoft.JSInterop.GeneratedOnly", false);
             }
+        }
+    }
+
+    [Fact]
+    public void GenericHostInheritsCallbacksFromGeneratedReferencedAssembly()
+    {
+        var baseRun = RunGenerator("""
+            using Microsoft.JSInterop;
+            public partial class Base<T>
+            {
+                [JSInvokable]
+                public virtual int Inherited() => 1;
+            }
+            """, "GenericBase" + Guid.NewGuid().ToString("N"));
+        Assert.Empty(baseRun.GeneratorDiagnostics);
+        AssertNoCompilationErrors(baseRun.OutputCompilation);
+        Emit(baseRun.OutputCompilation);
+        var derivedRun = RunGenerator("""
+            using Microsoft.JSInterop;
+            public partial class Derived<U> : Base<U>
+            {
+                [JSInvokable]
+                public int Own() => 2;
+            }
+            """, "GenericDerived" + Guid.NewGuid().ToString("N"),
+            GetMetadataReferences().Append(baseRun.OutputCompilation.ToMetadataReference()));
+        Assert.Empty(derivedRun.GeneratorDiagnostics);
+        AssertNoCompilationErrors(derivedRun.OutputCompilation);
+        var assembly = Emit(derivedRun.OutputCompilation);
+        var instance = Activator.CreateInstance(assembly.GetType("Derived`1", throwOnError: true)!.MakeGenericType(typeof(int)))!;
+        var runtime = new RecordingRuntime();
+
+        AppContext.SetSwitch("Microsoft.JSInterop.GeneratedOnly", true);
+        try
+        {
+            var id = Track(runtime, instance);
+            Assert.Equal("1", DotNetDispatcher.Invoke(runtime, new(null, "Inherited", id, null), "[]"));
+            Assert.Equal("2", DotNetDispatcher.Invoke(runtime, new(null, "Own", id, null), "[]"));
+        }
+        finally
+        {
+            AppContext.SetSwitch("Microsoft.JSInterop.GeneratedOnly", false);
         }
     }
 
