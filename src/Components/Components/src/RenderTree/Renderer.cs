@@ -404,6 +404,7 @@ public abstract partial class Renderer : IDisposable, IAsyncDisposable
             return;
         }
 
+        var pendingTasks = _pendingTasks;
         try
         {
             _ongoingQuiescenceTask = ProcessAsynchronousWork();
@@ -413,14 +414,20 @@ public abstract partial class Renderer : IDisposable, IAsyncDisposable
         {
             // The failed render may leave section validations that do not belong to a later
             // error response rendered by this same renderer.
-            _sectionRegistry?.InvalidatePendingValidations();
+            if (ReferenceEquals(_pendingTasks, pendingTasks))
+            {
+                _sectionRegistry?.InvalidatePendingValidations();
+            }
             throw;
         }
         finally
         {
-            Debug.Assert(_pendingTasks is null || _pendingTasks.Count == 0);
-            _pendingTasks = null;
-            _ongoingQuiescenceTask = null;
+            if (ReferenceEquals(_pendingTasks, pendingTasks))
+            {
+                Debug.Assert(_pendingTasks is null || _pendingTasks.Count == 0);
+                _pendingTasks = null;
+                _ongoingQuiescenceTask = null;
+            }
         }
 
         async Task ProcessAsynchronousWork()
@@ -429,17 +436,22 @@ public abstract partial class Renderer : IDisposable, IAsyncDisposable
             {
                 // Child components SetParametersAsync are stored in the queue of pending tasks,
                 // which might trigger further renders.
-                while (_pendingTasks?.Count > 0)
+                while (pendingTasks?.Count > 0)
                 {
                     // Create a Task that represents the remaining ongoing work for the rendering process
-                    var pendingWork = Task.WhenAll(_pendingTasks);
+                    var pendingWork = Task.WhenAll(pendingTasks);
 
                     // Clear all pending work.
-                    _pendingTasks.Clear();
+                    pendingTasks.Clear();
 
                     // new work might be added before we check again as a result of waiting for all
                     // the child components to finish executing SetParametersAsync
                     await pendingWork;
+                    if (!ReferenceEquals(_pendingTasks, pendingTasks))
+                    {
+                        // First-flush validation can abandon this render while its streaming work is pending.
+                        return;
+                    }
                 }
 
                 // Async initialization can replace a temporary provider after the first synchronous pass.
@@ -1106,6 +1118,10 @@ public abstract partial class Renderer : IDisposable, IAsyncDisposable
         catch
         {
             _sectionRegistry?.InvalidatePendingValidations();
+            // A first-flush failure discards the response without waiting for streaming initializers.
+            // A same-scope error response must start its own quiescence rather than join that work.
+            _pendingTasks = null;
+            _ongoingQuiescenceTask = null;
             throw;
         }
     }
@@ -1131,7 +1147,7 @@ public abstract partial class Renderer : IDisposable, IAsyncDisposable
                 HandleExceptionViaErrorBoundary(ex, _componentStateByComponent[sectionOutlet]);
             }
 
-            while (_batchBuilder.ComponentRenderQueue.Count > 0)
+            while (_isBatchInProgress && _batchBuilder.ComponentRenderQueue.Count > 0)
             {
                 var nextToRender = _batchBuilder.ComponentRenderQueue.Dequeue();
                 RenderInExistingBatch(nextToRender);

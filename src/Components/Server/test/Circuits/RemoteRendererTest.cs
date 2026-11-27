@@ -2,9 +2,11 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Globalization;
+using System.Text;
 using System.Text.Json;
 using Microsoft.AspNetCore.Components.Endpoints;
 using Microsoft.AspNetCore.Components.Rendering;
+using Microsoft.AspNetCore.Components.Sections;
 using Microsoft.AspNetCore.Components.Server;
 using Microsoft.AspNetCore.Components.Server.Circuits;
 using Microsoft.AspNetCore.DataProtection;
@@ -119,6 +121,40 @@ public class RemoteRendererTest
 
         // Assert
         Assert.Equal(10, renderer._unacknowledgedRenderBatches.Count);
+    }
+
+    [Fact]
+    public async Task SectionValidation_PreservesDeferredRenderUntilAcknowledgement()
+    {
+        using var serviceProvider = (ServiceProvider)CreateServiceProvider();
+        await using var renderer = GetRemoteRenderer(serviceProvider);
+        var release = new TaskCompletionSource();
+        var completion = renderer.Dispatcher.InvokeAsync(() => renderer.RenderComponentAsync<GatedSectionComponent>(
+            ParameterView.FromDictionary(new Dictionary<string, object>
+            {
+                [nameof(GatedSectionComponent.Release)] = release.Task,
+            })));
+
+        await renderer.Dispatcher.InvokeAsync(() =>
+        {
+            var filler = new TestComponent();
+            renderer.AssignRootComponentId(filler);
+            while (renderer._unacknowledgedRenderBatches.Count < 10)
+            {
+                filler.TriggerRender();
+            }
+            release.SetResult();
+        });
+        await completion;
+
+        await renderer.Dispatcher.InvokeAsync(async () =>
+        {
+            Assert.Equal(10, renderer._unacknowledgedRenderBatches.Count);
+            await renderer.OnRenderCompletedAsync(2, null);
+            Assert.Equal(10, renderer._unacknowledgedRenderBatches.Count);
+            var batch = renderer._unacknowledgedRenderBatches.Last();
+            Assert.Contains("Initialization completed", Encoding.UTF8.GetString(batch.Data.Buffer, 0, batch.Data.Count));
+        });
     }
 
     [Fact]
@@ -723,6 +759,30 @@ public class RemoteRendererTest
 
         private static RemoteJSRuntime CreateJSRuntime(CircuitOptions options)
             => new RemoteJSRuntime(Options.Create(options), Options.Create(new HubOptions<ComponentHub>()), null);
+    }
+
+    private sealed class GatedSectionComponent : ComponentBase
+    {
+        [Parameter] public Task Release { get; set; }
+        private bool _loaded;
+
+        protected override async Task OnInitializedAsync()
+        {
+            await Release;
+            _loaded = true;
+        }
+
+        protected override void BuildRenderTree(RenderTreeBuilder builder)
+        {
+            builder.AddContent(0, _loaded ? "Initialization completed" : "Initializing");
+            builder.OpenComponent<SectionOutlet>(1);
+            builder.AddComponentParameter(2, nameof(SectionOutlet.SectionName), "matching-section");
+            builder.CloseComponent();
+            builder.OpenComponent<SectionContent>(3);
+            builder.AddComponentParameter(4, nameof(SectionContent.SectionName), "matching-section");
+            builder.AddComponentParameter(5, nameof(SectionContent.ChildContent), (RenderFragment)(content => content.AddContent(0, "Section content")));
+            builder.CloseComponent();
+        }
     }
 
     private class TestComponent : IComponent, IHandleAfterRender

@@ -482,10 +482,10 @@ public class RazorComponentResultTest
             Assert.Contains("section-one", exception.Message);
             Assert.Equal(0, responseBody.Length);
 
-            releaseStreaming.TrySetResult();
             httpContext.Response.Clear();
             httpContext.Features.Set<IExceptionHandlerFeature>(new ExceptionHandlerFeature { Error = exception });
-            await new RazorComponentResult(typeof(PlainErrorEndpoint)).ExecuteAsync(httpContext);
+            await new RazorComponentResult(typeof(PlainErrorEndpoint)).ExecuteAsync(httpContext).WaitAsync(TimeSpan.FromSeconds(10));
+            Assert.False(releaseStreaming.Task.IsCompleted);
             Assert.Equal("Error endpoint rendered", GetStringContent(responseBody));
         }
         finally
