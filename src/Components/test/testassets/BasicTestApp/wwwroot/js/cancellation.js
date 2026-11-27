@@ -10,7 +10,7 @@ let releaseControl;
 
 export function initialize(target) {
     window.cancellationTests = {
-        async start(id, behavior, alreadyAborted = false) {
+        async start(id, behavior, alreadyAborted = false, stoppingListener = null) {
             const controller = new AbortController();
             const signal = controller.signal;
             let listeners = 0;
@@ -27,6 +27,10 @@ export function initialize(target) {
             if (alreadyAborted) {
                 controller.abort();
             }
+            if (stoppingListener) {
+                // Registered before the interop sees the signal, so it runs before any listener the interop adds.
+                signal.addEventListener("abort", event => event.stopImmediatePropagation(), { capture: stoppingListener === "capture" });
+            }
             references.set(id, { controller });
             document.getElementById(`${id}-js`).textContent = "pending";
             try {
@@ -37,6 +41,13 @@ export function initialize(target) {
         },
         abort(id) {
             references.get(id).controller.abort();
+        },
+        async composite() {
+            const controller = new AbortController();
+            references.set("composite", { controller });
+            // Not kept: a signal made by AbortSignal.any() has no controller, so only listeners keep it alive.
+            const signal = AbortSignal.any([controller.signal]);
+            document.getElementById("composite-js").textContent = await target.invokeMethodAsync("Receive", signal, "composite", "retain");
         },
         async reuse(id) {
             const canceled = await target.invokeMethodAsync("Inspect", references.get(id).controller.signal);

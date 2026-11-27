@@ -1,3 +1,8 @@
+/**
+ * @jest-environment node
+ */
+// Node, not jsdom: jsdom has no AbortSignal.any, and Node implements it as the DOM standard does.
+import "./NodeDomStubs";
 import { expect, jest } from "@jest/globals";
 import { collect } from "./FakeFinalizationRegistry";
 import * as DotNet from "../../src/JSInterop/Microsoft.JSInterop";
@@ -112,6 +117,42 @@ describe("AbortSignal arguments", () => {
         } finally {
             error.mockRestore();
         }
+    });
+
+    test.each([["normal"], ["capture"]])("An earlier %s abort listener that stops the event does not keep the abort from .NET", async (kind) => {
+        const controller = new AbortController();
+        controller.signal.addEventListener("abort", event => event.stopImmediatePropagation(), { capture: kind === "capture" });
+        const id = JSON.parse(callWith(controller.signal).argsJson)[0].__abortSignal;
+
+        controller.abort();
+        await flush();
+        expect(messages("__AbortSignalAborted").map(call => call.argsJson)).toEqual([`[${id}]`]);
+    });
+
+    test("A signal that AbortSignal.any() rejects fails every call, so it is never sent as a signal that cannot abort", async () => {
+        // A forwarding Proxy passes instanceof AbortSignal, but AbortSignal.any() needs a real signal.
+        const signal = new AbortController().signal;
+        const proxy = new Proxy(signal, {
+            get: (target, key) => {
+                const value = Reflect.get(target, key, target);
+                return typeof value === "function" ? value.bind(target) : value;
+            },
+        });
+
+        await expect(dispatcher.invokeDotNetStaticMethodAsync("App", "Receive", proxy)).rejects.toThrow();
+        await expect(dispatcher.invokeDotNetStaticMethodAsync("App", "Receive", proxy)).rejects.toThrow();
+        expect(messages("Receive")).toHaveLength(0);
+    });
+
+    test("Once the signal is collected, an abort no longer reaches .NET", async () => {
+        const controller = new AbortController();
+        complete(callWith(controller.signal));
+
+        // A real signal cannot abort after it is collected; WebKit keeps the dependent signal and its listener alive.
+        collect(controller.signal);
+        controller.abort();
+        await flush();
+        expect(messages("__AbortSignalAborted")).toHaveLength(0);
     });
 
     test.each([["call first"], ["abort first"]])("Release waits for both the call reply and the abort reply (%s)", async (order) => {

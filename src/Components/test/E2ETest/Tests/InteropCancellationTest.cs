@@ -303,6 +303,30 @@ public class InteropCancellationTest(
         Browser.Equal(0, ProjectionCount);
     }
 
+    [Theory]
+    [InlineData("blocked")]
+    [InlineData("blockedcapture")]
+    public void AbortReachesDotNetWhenAnEarlierListenerStopsTheAbortEvent(string id)
+    {
+        Click($"start-{id}");
+        Equal($"{id}-managed", "running");
+        Click($"abort-{id}");
+        Equal($"{id}-managed", "canceled in .NET");
+        Equal($"{id}-js", "handler handled cancellation");
+    }
+
+    // The DOM keeps a signal without a controller only while it has abort listeners, so the interop must add one.
+    [Fact]
+    public void SignalMadeByAbortSignalAnyAndDroppedByJavaScriptStillCancelsWhenItsSourceAborts()
+    {
+        Click("start-composite");
+        Equal("composite-managed", "retained");
+        CollectGarbage();
+        Browser.Equal(1, ProjectionCount);
+        Click("abort-composite");
+        Equal("composite-managed", "canceled after return");
+    }
+
     [Fact]
     public void SignalCollectedWhileItsCallIsHeldIsReleasedAfterTheCall()
     {

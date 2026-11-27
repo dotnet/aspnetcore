@@ -41,6 +41,12 @@
 <button id="start-overtaken" onclick="cancellationTests.overtaken()">Abort before the delayed call arrives</button>
 <button id="start-collected" onclick="cancellationTests.collectedDuringCall(true)">Abort and drop during the delayed call</button>
 <button id="start-dropped" onclick="cancellationTests.collectedDuringCall(false)">Drop during the delayed call</button>
+<button id="start-blocked" onclick="cancellationTests.start('blocked', 'wait', false, 'normal')">Pass signal whose earlier listener stops the abort event</button>
+<button id="abort-blocked" onclick="cancellationTests.abort('blocked')">Abort signal with a stopping listener</button>
+<button id="start-blockedcapture" onclick="cancellationTests.start('blockedcapture', 'wait', false, 'capture')">Pass signal whose earlier capture listener stops the abort event</button>
+<button id="abort-blockedcapture" onclick="cancellationTests.abort('blockedcapture')">Abort signal with a stopping capture listener</button>
+<button id="start-composite" onclick="cancellationTests.composite()">Pass a dropped AbortSignal.any() signal</button>
+<button id="abort-composite" onclick="cancellationTests.abort('composite')">Abort the source of the AbortSignal.any() signal</button>
 <p id="static-js"></p>
 <p id="snapshot-js"></p>
 <p id="concurrent-js"></p>
@@ -53,7 +59,7 @@
 <button id="cancel-control" @onclick="() => controlSource.Cancel()">Cancel managed wait</button>
 <button id="release-control" onclick="cancellationTests.releaseControl()">Complete JS function</button>
 <p id="cancellation-ready">@(module is null ? "loading" : "ready")</p>
-@foreach (var id in new[] { "first", "second", "ignored", "preaborted", "retained", "failure", "outgoing", "control", "sync", "overtaken", "collected", "dropped", "disposable", "returned", "signalresult", "outgoingsync" })
+@foreach (var id in new[] { "first", "second", "ignored", "preaborted", "retained", "failure", "outgoing", "control", "sync", "overtaken", "collected", "dropped", "disposable", "returned", "signalresult", "outgoingsync", "blocked", "blockedcapture", "composite" })
 {
     <p id="@($"{id}-managed")">@(states.GetValueOrDefault(id, "not started"))</p>
     <p id="@($"{id}-js")"></p>
