@@ -15,7 +15,7 @@
 }
 else if (Scenario is "parameter" or "parameter-eager" or "parameter-generic" or "parameter-nested-generic")
 {
-    <Components.WasmMinimal.ObjectParameterCounter Value="@ParameterValue" @rendermode="@(new InteractiveWebAssemblyRenderMode(Prerender))" />
+    <Components.WasmMinimal.ObjectParameterCounter @key="@("parameter-counter")" Value="@ParameterValue" @rendermode="@(new InteractiveWebAssemblyRenderMode(Prerender))" />
 }
 
 <a id="remove-lazy" href="@($"lazy-webassembly-components?prerender={Prerender}")">Remove</a>

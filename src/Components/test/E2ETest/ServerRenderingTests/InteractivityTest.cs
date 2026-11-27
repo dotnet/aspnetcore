@@ -661,9 +661,10 @@ public class InteractivityTest : ServerTestBase<BasicTestAppServerSiteFixture<Ra
 
         Browser.Equal("WebAssembly", () => Browser.FindElement(By.Id("lazy-render-mode")).Text);
         Browser.Equal("eager", () => Browser.FindElement(By.Id("lazy-payload")).Text);
-        Browser.Equal("0", () => Browser.FindElement(By.Id("lazy-count")).Text);
+        // Failed ingestion never reaches the renderer, so a same-key update must retain the live instance.
+        Browser.Equal(failedUpdate ? "1" : "0", () => Browser.FindElement(By.Id("lazy-count")).Text);
         Browser.Click(By.Id("lazy-increment"));
-        Browser.Equal("1", () => Browser.FindElement(By.Id("lazy-count")).Text);
+        Browser.Equal(failedUpdate ? "2" : "1", () => Browser.FindElement(By.Id("lazy-count")).Text);
         entries.AddRange(Browser.Manage().Logs.GetLog(LogType.Browser));
         Assert.DoesNotContain(entries, entry => entry.Level == LogLevel.Severe &&
             !entry.Message.Contains("LazyTestContentPackage") &&

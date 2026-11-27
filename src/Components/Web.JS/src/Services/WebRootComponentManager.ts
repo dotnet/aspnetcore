@@ -417,8 +417,7 @@ export class WebRootComponentManager implements DescriptorHandler, RootComponent
           return null;
         }
 
-        // Both a failed add's ingestion tombstone and a failed update's live root must
-        // be removed before the latest descriptor can be added under this SSR ID.
+        // Remove the failed add's ingestion tombstone before adding the latest descriptor under this SSR ID.
         setShouldPreserveContentOnInteractiveComponentDisposal(component.descriptor.start as unknown as LogicalElement, true);
         component.hasPendingRemoveOperation = true;
         return { type: 'remove', ssrComponentId: component.ssrComponentId };
@@ -515,7 +514,7 @@ export class WebRootComponentManager implements DescriptorHandler, RootComponent
   public onUpdateRootComponentsFailed(batchId: number): void {
     const batch = this._pendingOperationBatches[batchId];
     for (const operation of batch.operations) {
-      if (operation.type !== 'remove') {
+      if (operation.type === 'add') {
         const component = this._rootComponentsBySsrComponentId.get(operation.ssrComponentId);
         if (component) {
           component.failedUniqueId ??= batch.descriptorUniqueIds!.get(operation.ssrComponentId);

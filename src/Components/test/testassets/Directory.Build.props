@@ -4,6 +4,8 @@
   <PropertyGroup>
     <!-- TypeScript here is built via npm/rollup; block the MSBuild TypeScript toolchain. -->
     <TypeScriptCompileBlocked>true</TypeScriptCompileBlocked>
+    <!-- These assets run under the test host, without an SDK Hot Reload browser-tools endpoint. -->
+    <EnableHotReloadInRuntimeConfigDevFile Condition="'$(EnableHotReloadInRuntimeConfigDevFile)' == ''">false</EnableHotReloadInRuntimeConfigDevFile>
   </PropertyGroup>
 
   <ItemGroup>
