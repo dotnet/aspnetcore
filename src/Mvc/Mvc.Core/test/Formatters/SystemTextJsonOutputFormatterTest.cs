@@ -164,6 +164,43 @@ public partial class SystemTextJsonOutputFormatterTest : JsonOutputFormatterTest
     [Theory]
     [InlineData(true)]
     [InlineData(false)]
+    public async Task WriteResponseBodyAsync_NonUtf8AsyncEnumerableConnectionCloses(bool useDeclaredType)
+    {
+        var formatter = GetOutputFormatter();
+        var mediaType = MediaTypeHeaderValue.Parse("application/json; charset=utf-16");
+        var body = new MemoryStream();
+        var actionContext = GetActionContext(mediaType, body);
+        using var cts = new CancellationTokenSource();
+        actionContext.HttpContext.RequestAborted = cts.Token;
+
+        var asyncEnumerable = AsyncEnumerableClosedConnection();
+        var outputFormatterContext = new OutputFormatterWriteContext(
+            actionContext.HttpContext,
+            new TestHttpResponseStreamWriterFactory().CreateWriter,
+            useDeclaredType ? typeof(IAsyncEnumerable<int>) : null,
+            asyncEnumerable);
+        var observedToken = CancellationToken.None;
+        var iterated = false;
+
+        await formatter.WriteResponseBodyAsync(outputFormatterContext, Encoding.Unicode);
+
+        Assert.Equal(cts.Token, observedToken);
+        Assert.False(iterated);
+
+        async IAsyncEnumerable<int> AsyncEnumerableClosedConnection([EnumeratorCancellation] CancellationToken cancellationToken = default)
+        {
+            await Task.Yield();
+            observedToken = cancellationToken;
+            cts.Cancel();
+            cancellationToken.ThrowIfCancellationRequested();
+            iterated = true;
+            yield return 42;
+        }
+    }
+
+    [Theory]
+    [InlineData(true)]
+    [InlineData(false)]
     public async Task WriteResponseBodyAsync_UsesJsonPolymorphismOptions(bool useJsonContext)
     {
         // Arrange
