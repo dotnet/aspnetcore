@@ -60,12 +60,35 @@ metadata before calling the method, rejects synchronous calls to asynchronous me
 results the way reflection dispatch does. The module initializer returns immediately unless the
 feature switch is enabled, so trimming removes the registrations when the switch is off.
 
-Microsoft.AspNetCore.Components.Web runs the generator, so framework callbacks such as
-`WebRendererInteropMethods.DispatchEventAsync` are registered by the assembly that owns them. The
-generator is not packaged yet; an application opts in with an analyzer reference to the generator
-project. Unsupported methods are skipped with warnings `JSI0001`–`JSI0006` (non-public, generic,
-inaccessible containing type, static method on a non-public type, unsupported signature, duplicate
-identifier).
+Microsoft.AspNetCore.Components.Web, Microsoft.AspNetCore.Components.WebAssembly and
+Microsoft.AspNetCore.Components.Platform run the generator, so framework callbacks such as
+`WebRendererInteropMethods.DispatchEventAsync`, WebAssembly navigation callbacks and Platform's
+`JSCallback<T>` are registered by the assemblies that own them. The generator is not packaged yet; an
+application opts in with an analyzer reference to the generator project.
+
+Instance methods on generic types (for example `Box<T>`) and on private or protected nested types are
+registered from a generated static constructor, because a module initializer cannot name an open
+generic type or an inaccessible one. The type and all its containing types must be declared
+`partial` and must not declare a static constructor. The generated static constructor also returns
+immediately unless the feature switch is enabled, but its presence removes `beforefieldinit` from
+the type in both modes.
+
+When an override does not redeclare `[JSInvokable]`, the generator registers a non-invokable marker
+for the overriding type so that, like reflection, calls on that type fail instead of dispatching to
+the override. Derived types compiled without the generator do not get these markers.
+
+Unsupported methods are skipped with these warnings:
+
+| ID | Meaning |
+| --- | --- |
+| `JSI0001` | Method is not public. |
+| `JSI0002` | Method cannot be invoked from JavaScript by reflection or generated dispatch, such as a generic method or a static method on a generic type. |
+| `JSI0003` | Method is declared on a file-local type. |
+| `JSI0004` | Static method is declared on a type that is not public. |
+| `JSI0005` | Signature or target is unsupported, such as `ref` parameters, abstract or interface methods, or instance methods on value types. |
+| `JSI0006` | Identifier is duplicated. |
+| `JSI0007` | Generic or inaccessible type, or one of its containing types, is not `partial`. |
+| `JSI0008` | Generic or inaccessible type already declares a static constructor. |
 
 Application payload types still need JSON metadata. Before creating any `JSRuntime`, set
 `GeneratedInteropPrototype.ConfigureRuntime` to add the application's source-generated
@@ -75,6 +98,11 @@ Application payload types still need JSON metadata. Before creating any `JSRunti
 GeneratedInteropPrototype.ConfigureRuntime = (runtime, options) =>
     options.TypeInfoResolverChain.Add(AppJsonContext.Default);
 ```
+
+Libraries contribute metadata for their own payloads with
+`GeneratedInteropPrototype.AddTypeInfoResolver`, which generated-only runtimes consult after the
+built-in metadata. Components.Web uses it for `InputFile`'s `BrowserFile[]` payload. Add resolvers
+before a runtime first serializes the affected types.
 
 Handwritten registrations through `RegisterStatic` and `RegisterInstance<T>` on
 `JSRuntime.GeneratedInterop` (per runtime) or `GeneratedInteropPrototype.Shared` remain available;
@@ -88,11 +116,10 @@ the switch is enabled.
   production initialization model. The API proposal is still to be written.
 * Module initializers run when their module loads. NativeAOT runs them at startup; on CoreCLR an
   assembly's registrations are not available until that assembly has been loaded.
-* Generic methods and methods on generic types, such as Components.Platform's `JSCallback<T>`, are
-  not supported. Microsoft.JSInterop.WebAssembly does not run the generator yet.
-* `InputFile`'s `BrowserFile[]` payload has no framework JSON metadata in strict-JSON applications.
-* A base-type registration also dispatches to an override that is not itself `[JSInvokable]`;
-  reflection dispatch does not.
+* Generic methods and static methods on generic types are not invokable by reflection dispatch
+  either, and are not generated. File-local types are not supported.
+* Generic hosts such as `JSCallback<T>` read their arguments with the runtime's JSON metadata, so
+  applications must provide metadata for each `T` they use.
 * Existing instance-method rooting annotations remain, and four IL2072 suppressions in Components
   still need a real fix. This experiment does not establish support for complete Native AOT Blazor
   applications.
