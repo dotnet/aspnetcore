@@ -17,7 +17,7 @@ concurrency:
 jobs:
   validate:
     name: Python and JavaScript fixtures
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-26.04
     timeout-minutes: 10
     steps:
       - name: Checkout repository
@@ -50,7 +50,7 @@ jobs:
 
   pulse:
     name: PR attention pulse fixtures
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-26.04
     timeout-minutes: 20
     steps:
       - name: Checkout repository
@@ -83,7 +83,7 @@ jobs:
 
   review_producer:
     name: PR review producer fixtures
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-26.04
     timeout-minutes: 30
     steps:
       - name: Checkout repository
