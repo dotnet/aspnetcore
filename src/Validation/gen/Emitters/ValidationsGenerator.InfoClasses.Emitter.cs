@@ -48,7 +48,10 @@ public sealed partial class ValidationsGenerator
 
             using var stream = assembly.GetManifestResourceStream(resourceName)!;
             using var reader = new StreamReader(stream, Encoding.UTF8);
-            var body = GeneratedCodeAttribute + "\n" + reader.ReadToEnd();
+
+            sb.Append("    ").AppendLine(GeneratedCodeAttribute);
+
+            var body = reader.ReadToEnd();
 
             foreach (var line in body.Replace("\r\n", "\n").Split('\n'))
             {

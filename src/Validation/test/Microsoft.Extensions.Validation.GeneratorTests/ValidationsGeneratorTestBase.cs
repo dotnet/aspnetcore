@@ -38,7 +38,6 @@ public partial class ValidationsGeneratorTestBase : LoggedTestBase
     private static readonly CSharpParseOptions ParseOptions = new CSharpParseOptions(LanguageVersion.Preview)
         .WithFeatures([new KeyValuePair<string, string>("InterceptorsNamespaces", "Microsoft.Extensions.Validation.Generated")]);
 
-
     internal static async Task VerifyGeneratedInfoTypesHaveGeneratedCode(Compilation compilation)
     {
         var generatedTrees = compilation.SyntaxTrees
