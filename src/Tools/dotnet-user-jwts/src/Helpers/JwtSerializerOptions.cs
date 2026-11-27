@@ -7,16 +7,6 @@ using System.Text.Json.Serialization;
 
 namespace Microsoft.AspNetCore.Authentication.JwtBearer.Tools;
 
-internal static class JwtSerializerOptions
-{
-    public static JsonSerializerOptions Default { get; } = new()
-    {
-        AllowTrailingCommas = true,
-        ReadCommentHandling = JsonCommentHandling.Skip,
-        WriteIndented = true,
-    };
-}
-
 [JsonSourceGenerationOptions(AllowTrailingCommas = true, ReadCommentHandling = JsonCommentHandling.Skip, WriteIndented = true)]
 [JsonSerializable(typeof(IDictionary<string, Jwt>))]
 [JsonSerializable(typeof(Jwt))]

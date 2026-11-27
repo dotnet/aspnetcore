@@ -5,6 +5,7 @@ using System.Security.Cryptography.X509Certificates;
 using Microsoft.AspNetCore.Authentication.Certificate;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.InternalTesting;
 using Microsoft.AspNetCore.TestHost;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
@@ -223,5 +224,56 @@ public class CertificateForwardingTests
         {
             c.Request.Headers["X-Client-Cert"] = "OOPS" + Convert.ToBase64String(Certificates.SelfSignedValidWithNoEku.RawData);
         });
+    }
+
+    [Fact]
+    public async Task VerifyForwardedCertificateIsDisposedWhenRequestCompletes()
+    {
+        X509Certificate2 forwardedCertificate = null;
+        var requestCompleted = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+
+        using var host = new HostBuilder()
+            .ConfigureWebHost(webHostBuilder =>
+            {
+                webHostBuilder
+                .UseTestServer()
+                .ConfigureServices(services =>
+                {
+                    services.AddCertificateForwarding(options => { });
+                })
+                .Configure(app =>
+                {
+                    app.Use(async (context, next) =>
+                    {
+                        // OnCompleted callbacks run in reverse registration order, so this one runs after the forwarded certificate is disposed.
+                        context.Response.OnCompleted(() =>
+                        {
+                            requestCompleted.SetResult();
+                            return Task.CompletedTask;
+                        });
+                        await next(context);
+                    });
+                    app.UseCertificateForwarding();
+                    app.Use(async (context, next) =>
+                    {
+                        forwardedCertificate = context.Connection.ClientCertificate;
+                        Assert.NotNull(forwardedCertificate);
+                        Assert.NotEqual(IntPtr.Zero, forwardedCertificate.Handle);
+                        await next(context);
+                    });
+                });
+            }).Build();
+
+        await host.StartAsync();
+
+        var server = host.GetTestServer();
+
+        await server.SendAsync(c =>
+        {
+            c.Request.Headers["X-Client-Cert"] = Convert.ToBase64String(Certificates.SelfSignedValidWithNoEku.RawData);
+        });
+        await requestCompleted.Task.DefaultTimeout();
+
+        Assert.Equal(IntPtr.Zero, forwardedCertificate.Handle);
     }
 }
