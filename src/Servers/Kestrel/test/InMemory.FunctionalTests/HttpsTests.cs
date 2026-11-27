@@ -463,7 +463,7 @@ public class HttpsTests : LoggedTest
         var sslOptions = bindFeatures.Get<TlsConnectionCallbackOptions>();
         Assert.NotNull(sslOptions);
 
-        var sslServerAuthenticationOptions = await sslOptions.OnConnection(new TlsConnectionCallbackContext(), CancellationToken.None);
+        var sslServerAuthenticationOptions = await sslOptions.OnConnection(new TlsConnectionCallbackContext { Connection = new DefaultConnectionContext() }, CancellationToken.None);
         Assert.Equal(_x509Certificate2, sslServerAuthenticationOptions.ServerCertificate);
     }
 
@@ -507,7 +507,7 @@ public class HttpsTests : LoggedTest
         var tlsOptions = bindFeatures.Get<TlsConnectionCallbackOptions>();
         Assert.NotNull(tlsOptions);
 
-        var sslServerAuthenticationOptions = await tlsOptions.OnConnection(new TlsConnectionCallbackContext(), CancellationToken.None);
+        var sslServerAuthenticationOptions = await tlsOptions.OnConnection(new TlsConnectionCallbackContext { Connection = new DefaultConnectionContext() }, CancellationToken.None);
         Assert.Equal(_x509Certificate2, sslServerAuthenticationOptions.ServerCertificate);
     }
 
@@ -687,7 +687,7 @@ public class HttpsTests : LoggedTest
 
         var tlsOptions = await BindHttp3WithTlsCallbackAsync(context => ValueTask.FromResult(callbackOptions));
 
-        var result = await tlsOptions.OnConnection(new TlsConnectionCallbackContext(), CancellationToken.None);
+        var result = await tlsOptions.OnConnection(new TlsConnectionCallbackContext { Connection = new DefaultConnectionContext() }, CancellationToken.None);
 
         Assert.Collection(result.ApplicationProtocols, p => Assert.Equal(SslApplicationProtocol.Http3, p));
 
@@ -714,7 +714,7 @@ public class HttpsTests : LoggedTest
             return ValueTask.FromResult(callbackOptions);
         });
 
-        var result = await tlsOptions.OnConnection(new TlsConnectionCallbackContext(), CancellationToken.None);
+        var result = await tlsOptions.OnConnection(new TlsConnectionCallbackContext { Connection = new DefaultConnectionContext() }, CancellationToken.None);
 
         Assert.Same(callbackOptions, result);
         Assert.Collection(result.ApplicationProtocols,
@@ -734,7 +734,7 @@ public class HttpsTests : LoggedTest
             return ValueTask.FromResult(callbackOptions);
         });
 
-        var result = await tlsOptions.OnConnection(new TlsConnectionCallbackContext(), CancellationToken.None);
+        var result = await tlsOptions.OnConnection(new TlsConnectionCallbackContext { Connection = new DefaultConnectionContext() }, CancellationToken.None);
 
         Assert.NotSame(callbackOptions, result);
         Assert.NotNull(result.ApplicationProtocols);
@@ -818,7 +818,7 @@ public class HttpsTests : LoggedTest
 
         var tlsOptions = await BindHttp3WithTlsCallbackAsync(context => ValueTask.FromResult(callbackOptions));
 
-        var result = await tlsOptions.OnConnection(new TlsConnectionCallbackContext(), CancellationToken.None);
+        var result = await tlsOptions.OnConnection(new TlsConnectionCallbackContext { Connection = new DefaultConnectionContext() }, CancellationToken.None);
 
         Assert.Same(callbackOptions, result);
         Assert.Null(result.ApplicationProtocols);

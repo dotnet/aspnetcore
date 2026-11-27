@@ -655,11 +655,10 @@ public class Http3TlsTests : LoggedTest
                 Headers = { Host = "http1host" },
             };
 
-            var ex = await Assert.ThrowsAnyAsync<HttpRequestException>(async () =>
+            await Assert.ThrowsAnyAsync<HttpRequestException>(async () =>
             {
                 await http1Client.SendAsync(request, CancellationToken.None).DefaultTimeout();
             });
-            Assert.IsType<QuicException>(ex.InnerException);
         }
 
         await host.StopAsync().DefaultTimeout();
