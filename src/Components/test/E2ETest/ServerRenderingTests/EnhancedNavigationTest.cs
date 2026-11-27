@@ -83,6 +83,49 @@ public class EnhancedNavigationTest : ServerTestBase<BasicTestAppServerSiteFixtu
     }
 
     [Fact]
+    public void AutoRenderModeIgnoresRemovedServerRootWhileItDisposes()
+    {
+        Navigate($"{ServerPathBase}/nav/element-reference-disposal?testAutoRenderMode=true");
+        Browser.Equal("True", () => Browser.Exists(By.Id("element-reference-disposal-initialized-server")).Text);
+        Browser.Equal("True", () => Browser.Exists(By.Id("element-reference-disposal-initialized-webassembly")).Text);
+        var originalDocument = Browser.Exists(By.TagName("html"));
+
+        try
+        {
+            Browser.Click(By.Id("element-reference-disposal-navigation"));
+            Browser.True(() => Browser.ExecuteJavaScript<long>("return window.elementReferenceDisposalTest.acknowledgedServerRemovals") > 0);
+            Browser.Equal("true", () => Browser.ExecuteJavaScript<string>(
+                "return sessionStorage.getItem('element-reference-disposal-pending-server')"));
+            foreach (var id in new[] { "webassembly", "webassembly-child" })
+            {
+                Browser.Equal("true", () => Browser.ExecuteJavaScript<string>(
+                    $"return sessionStorage.getItem('element-reference-disposal-pending-{id}')"));
+            }
+
+            Browser.ExecuteJavaScript(
+                "import('./_content/TestContentPackage/ElementReferenceDisposal.razor.js').then(module => {" +
+                "module.releaseDisposal('webassembly'); module.releaseDisposal('webassembly-child'); });");
+            Browser.True(() => Browser.ExecuteJavaScript<bool>(
+                "const test = window.elementReferenceDisposalTest; return test.referenceIsMissing(test.captures.get('webassembly'));"));
+
+            Browser.Click(By.Id("show-auto-component"));
+            Browser.Equal("True", () => Browser.Exists(By.Id("is-interactive-union")).Text);
+            Assert.Equal(originalDocument, Browser.FindElement(By.TagName("html")));
+            Assert.Equal("WebAssembly", Browser.Exists(By.Id("render-mode-union")).Text);
+            Assert.False(Browser.ExecuteJavaScript<bool>(
+                "const test = window.elementReferenceDisposalTest; return test.referenceIsMissing(test.captures.get('server'));"));
+        }
+        finally
+        {
+            Browser.ExecuteJavaScript(
+                "import('./_content/TestContentPackage/ElementReferenceDisposal.razor.js').then(module => module.releaseAllDisposals());");
+        }
+
+        Browser.True(() => Browser.ExecuteJavaScript<bool>(
+            "const test = window.elementReferenceDisposalTest; return test.referenceIsMissing(test.captures.get('server'));"));
+    }
+
+    [Fact]
     public void EnhancedNavigationRetainsElementReferenceFromInFlightServerRenderBatch()
     {
         Navigate($"{ServerPathBase}/nav/element-reference-disposal?captureLateReference=true");

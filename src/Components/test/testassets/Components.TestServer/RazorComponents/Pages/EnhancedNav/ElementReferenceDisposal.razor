@@ -28,8 +28,21 @@
             Id="webassembly-survivor" />
     }
 
+    @if (TestAutoRenderMode && Removed)
+    {
+        @if (ShowAutoComponent)
+        {
+            <TestContentPackage.UnionParameterCounter @rendermode="@(new InteractiveAutoRenderMode())" />
+        }
+        else
+        {
+            <a id="show-auto-component" href="nav/element-reference-disposal?testAutoRenderMode=true&removed=true&showAutoComponent=true">Show Auto component</a>
+        }
+    }
+
     <a id="element-reference-disposal-navigation"
-       href="@(FailServerDisposal ? $"nav/element-reference-disposal?removed=true&failServerDisposal=true&prerender={Prerender}" : "nav/other")">Navigate away</a>
+       href="@(TestAutoRenderMode ? "nav/element-reference-disposal?testAutoRenderMode=true&removed=true" :
+           FailServerDisposal ? $"nav/element-reference-disposal?removed=true&failServerDisposal=true&prerender={Prerender}" : "nav/other")">Navigate away</a>
 </article>
 
 @code {
@@ -44,4 +57,10 @@
 
     [SupplyParameterFromQuery]
     public bool Removed { get; set; }
+
+    [SupplyParameterFromQuery]
+    public bool TestAutoRenderMode { get; set; }
+
+    [SupplyParameterFromQuery]
+    public bool ShowAutoComponent { get; set; }
 }

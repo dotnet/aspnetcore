@@ -214,7 +214,7 @@ export class WebRootComponentManager implements DescriptorHandler, RootComponent
   }
 
   private circuitMayHaveNoRootComponents() {
-    const isCircuitInUse = this.rendererHasExistingOrPendingComponents(WebRendererId.Server, 'server', 'auto');
+    const isCircuitInUse = this.rendererHasExistingOrPendingComponents(WebRendererId.Server, /* includePendingRemovals */ true, 'server', 'auto');
     if (isCircuitInUse) {
       // Clear the timeout because we know the circuit is in use.
       clearTimeout(this._circuitInactivityTimeoutId);
@@ -229,7 +229,7 @@ export class WebRootComponentManager implements DescriptorHandler, RootComponent
 
     // Start a new timeout to dispose the circuit unless it starts getting used.
     this._circuitInactivityTimeoutId = setTimeout(() => {
-      if (!this.rendererHasExistingOrPendingComponents(WebRendererId.Server, 'server', 'auto')) {
+      if (!this.rendererHasExistingOrPendingComponents(WebRendererId.Server, /* includePendingRemovals */ true, 'server', 'auto')) {
         disposeCircuit();
         this._circuitInactivityTimeoutId = undefined;
       }
@@ -241,13 +241,17 @@ export class WebRootComponentManager implements DescriptorHandler, RootComponent
     return renderer !== undefined && renderer.getRootComponentCount() > 0;
   }
 
-  private rendererHasExistingOrPendingComponents(rendererId: WebRendererId, ...descriptorTypesToConsider: ComponentMarker['type'][]): boolean {
+  private rendererHasExistingOrPendingComponents(rendererId: WebRendererId, includePendingRemovals: boolean, ...descriptorTypesToConsider: ComponentMarker['type'][]): boolean {
     if (this.rendererHasComponents(rendererId)) {
       return true;
     }
 
     // We consider SSR'd components on the page that may get activated using the specified renderer.
-    for (const { descriptor: { type }, assignedRendererId } of this._rootComponentsBySsrComponentId.values()) {
+    for (const { descriptor: { type }, assignedRendererId, hasPendingRemoveOperation } of this._rootComponentsBySsrComponentId.values()) {
+      if (!includePendingRemovals && hasPendingRemoveOperation) {
+        continue;
+      }
+
       if (assignedRendererId === rendererId) {
         // The component has been assigned to use the specified renderer.
         return true;
@@ -371,12 +375,12 @@ export class WebRootComponentManager implements DescriptorHandler, RootComponent
 
   private getAutoRenderMode(): 'webassembly' | 'server' | null {
     // If WebAssembly components exist or may exist soon, use WebAssembly.
-    if (this.rendererHasExistingOrPendingComponents(WebRendererId.WebAssembly, 'webassembly')) {
+    if (this.rendererHasExistingOrPendingComponents(WebRendererId.WebAssembly, /* includePendingRemovals */ false, 'webassembly')) {
       return 'webassembly';
     }
 
-    // If Server components exist or may exist soon, use WebAssembly.
-    if (this.rendererHasExistingOrPendingComponents(WebRendererId.Server, 'server')) {
+    // If Server components exist or may exist soon, use Server.
+    if (this.rendererHasExistingOrPendingComponents(WebRendererId.Server, /* includePendingRemovals */ false, 'server')) {
       return 'server';
     }
 

@@ -2,6 +2,7 @@ const removalBatches = new Set();
 let renderBatchGate;
 window.elementReferenceDisposalTest = {
   acknowledgedRemovals: 0,
+  acknowledgedServerRemovals: 0,
   circuitDisposals: 0,
   captures: new Map(),
   heldRenderBatches: 0,
@@ -17,7 +18,23 @@ window.elementReferenceDisposalTest = {
     const build = builder.build.bind(builder);
     builder.build = () => {
       const connection = build();
+      const serverRemovalBatches = new Set();
+      const send = connection.send.bind(connection);
+      connection.send = (method, ...args) => {
+        if (method === 'UpdateRootComponents') {
+          const batch = JSON.parse(args[0]);
+          if (batch.operations.some(operation => operation.type === 'remove')) {
+            serverRemovalBatches.add(batch.batchId);
+          }
+        }
+        return send(method, ...args);
+      };
       const on = connection.on.bind(connection);
+      on('JS.EndUpdateRootComponents', batchId => {
+        if (serverRemovalBatches.delete(batchId)) {
+          this.acknowledgedServerRemovals++;
+        }
+      });
       connection.on = (method, callback) => on(method, method === 'JS.RenderBatch' ? async (...args) => {
         if (renderBatchGate) {
           this.heldRenderBatches++;
