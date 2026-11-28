@@ -207,6 +207,8 @@ internal partial class RemoteRenderer : WebRenderer
 
     public Task ProcessBufferedRenderBatches()
     {
+        _webRootComponentManager?.ReplayPendingDisposalNotifications();
+
         // All the batches are sent in order based on the fact that SignalR
         // provides ordering for the underlying messages and that the batches
         // are always in order.

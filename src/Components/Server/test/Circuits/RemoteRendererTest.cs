@@ -633,6 +633,77 @@ public class RemoteRendererTest
         Assert.Equal(2, renderer._unacknowledgedRenderBatches.Count); // Initial render, dispose
     }
 
+    [Fact]
+    public async Task WebRootComponentManager_RemoveRootComponent_WaitsForDescendantsAndReportsDisposalFailure()
+    {
+        var control = new AsyncDisposalControl();
+        var serviceProvider = new ServiceCollection()
+            .AddSingleton(new Mock<IJSRuntime>().Object)
+            .AddSingleton(control)
+            .BuildServiceProvider();
+        var client = new DisposalNotificationClient();
+        var renderer = GetRemoteRenderer(serviceProvider, client.Proxy);
+        var error = new TaskCompletionSource<Exception>(TaskCreationOptions.RunContinuationsAsynchronously);
+        renderer.UnhandledException += (_, exception) => error.TrySetResult(exception);
+        await renderer.Dispatcher.InvokeAsync(() => renderer.GetOrCreateWebRootComponentManager().AddRootComponentAsync(
+            0, typeof(AsyncDisposalComponent), new ComponentMarkerKey("0", null), WebRootComponentParameters.Empty));
+
+        await renderer.Dispatcher.InvokeAsync(() =>
+        {
+            control.ShowChild = false;
+            ((AsyncDisposalComponent)renderer.GetComponentState(0).Component).Render();
+        });
+        await control.ChildDisposalStarted.Task.DefaultTimeout();
+        await renderer.Dispatcher.InvokeAsync(() => renderer.GetOrCreateWebRootComponentManager().RemoveRootComponent(0));
+        await control.RootDisposalStarted.Task.DefaultTimeout();
+        Assert.False(client.Notification.Task.IsCompleted);
+
+        var disposalException = new InvalidOperationException("Disposal failed.");
+        await renderer.Dispatcher.InvokeAsync(() => control.RootDisposal.SetException(disposalException));
+        Assert.Same(disposalException, (await error.Task.DefaultTimeout()).GetBaseException());
+        Assert.False(client.Notification.Task.IsCompleted);
+        await renderer.Dispatcher.InvokeAsync(() => control.ChildDisposal.SetResult());
+        Assert.Equal(0, await client.Notification.Task.DefaultTimeout());
+    }
+
+    [Fact]
+    public async Task WebRootComponentManager_RemoveRootComponent_ReplaysUntilDisposalNotificationIsAcknowledged()
+    {
+        var control = new AsyncDisposalControl { ShowChild = false };
+        var serviceProvider = new ServiceCollection()
+            .AddSingleton(new Mock<IJSRuntime>().Object)
+            .AddSingleton(control)
+            .BuildServiceProvider();
+        var client = new DisposalNotificationClient();
+        var renderer = GetRemoteRenderer(serviceProvider, client.Proxy);
+        await renderer.Dispatcher.InvokeAsync(() => renderer.GetOrCreateWebRootComponentManager().AddRootComponentAsync(
+            0, typeof(AsyncDisposalComponent), new ComponentMarkerKey("0", null), WebRootComponentParameters.Empty));
+        await renderer.Dispatcher.InvokeAsync(() =>
+        {
+            renderer.GetOrCreateWebRootComponentManager().RemoveRootComponent(0);
+            client.Proxy.SetDisconnected();
+            control.RootDisposal.SetResult();
+        });
+        await renderer.Dispatcher.InvokeAsync(renderer.ProcessBufferedRenderBatches);
+        Assert.Empty(client.Notifications);
+
+        client.Proxy.Transfer(client.Client.Object, "reconnected");
+        await renderer.Dispatcher.InvokeAsync(renderer.ProcessBufferedRenderBatches);
+        Assert.Equal(0, await client.Notification.Task.DefaultTimeout());
+        Assert.Equal(0, Assert.Single(client.Notifications));
+
+        await renderer.AcknowledgeRootComponentDisposalAsync(1);
+        client.Proxy.SetDisconnected();
+        client.Proxy.Transfer(client.Client.Object, "reconnected");
+        await renderer.Dispatcher.InvokeAsync(renderer.ProcessBufferedRenderBatches);
+        Assert.Equal(new[] { 0, 0 }, client.Notifications);
+
+        await renderer.AcknowledgeRootComponentDisposalAsync(0);
+        await renderer.AcknowledgeRootComponentDisposalAsync(0);
+        await renderer.Dispatcher.InvokeAsync(renderer.ProcessBufferedRenderBatches);
+        Assert.Equal(new[] { 0, 0 }, client.Notifications);
+    }
+
     private IServiceProvider CreateServiceProvider()
     {
         var serviceCollection = new ServiceCollection();
@@ -723,6 +794,69 @@ public class RemoteRendererTest
 
         private static RemoteJSRuntime CreateJSRuntime(CircuitOptions options)
             => new RemoteJSRuntime(Options.Create(options), Options.Create(new HubOptions<ComponentHub>()), null);
+    }
+
+    private sealed class AsyncDisposalControl
+    {
+        public bool ShowChild { get; set; } = true;
+        public TaskCompletionSource RootDisposalStarted { get; } = new();
+        public TaskCompletionSource ChildDisposalStarted { get; } = new();
+        public TaskCompletionSource RootDisposal { get; } = new();
+        public TaskCompletionSource ChildDisposal { get; } = new();
+    }
+
+    private sealed class AsyncDisposalComponent : ComponentBase, IAsyncDisposable
+    {
+        [Inject]
+        public AsyncDisposalControl Control { get; set; }
+
+        [Parameter]
+        public bool IsChild { get; set; }
+
+        public void Render() => StateHasChanged();
+
+        protected override void BuildRenderTree(RenderTreeBuilder builder)
+        {
+            if (!IsChild && Control.ShowChild)
+            {
+                builder.OpenComponent<AsyncDisposalComponent>(0);
+                builder.AddComponentParameter(1, nameof(IsChild), true);
+                builder.CloseComponent();
+            }
+        }
+
+        public ValueTask DisposeAsync()
+        {
+            if (IsChild)
+            {
+                Control.ChildDisposalStarted.SetResult();
+                return new(Control.ChildDisposal.Task);
+            }
+
+            Control.RootDisposalStarted.SetResult();
+            return new(Control.RootDisposal.Task);
+        }
+    }
+
+    private sealed class DisposalNotificationClient
+    {
+        public Mock<ISingleClientProxy> Client { get; } = new();
+        public CircuitClientProxy Proxy { get; }
+        public TaskCompletionSource<int> Notification { get; } = new(TaskCreationOptions.RunContinuationsAsynchronously);
+        public List<int> Notifications { get; } = new();
+
+        public DisposalNotificationClient()
+        {
+            Proxy = new(Client.Object, "initial");
+            Client.Setup(client => client.SendCoreAsync("JS.EndDisposeRootComponent", It.IsAny<object[]>(), It.IsAny<CancellationToken>()))
+                .Callback<string, object[], CancellationToken>((_, args, _) =>
+                {
+                    var ssrComponentId = Assert.IsType<int>(Assert.Single(args));
+                    Notifications.Add(ssrComponentId);
+                    Notification.TrySetResult(ssrComponentId);
+                })
+                .Returns(Task.CompletedTask);
+        }
     }
 
     private class TestComponent : IComponent, IHandleAfterRender

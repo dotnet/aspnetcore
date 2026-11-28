@@ -83,6 +83,291 @@ public class EnhancedNavigationTest : ServerTestBase<BasicTestAppServerSiteFixtu
     }
 
     [Fact]
+    public void RetriesDisposalAcknowledgementAfterLongPollingPostFails()
+    {
+        Navigate($"{ServerPathBase}/nav/other");
+        Browser.ExecuteJavaScript("sessionStorage.setItem('keep-circuit-alive', 'true');");
+
+        try
+        {
+            Navigate($"{ServerPathBase}/nav/element-reference-disposal?testLongPolling=true");
+            Browser.Equal("True", () => Browser.Exists(By.Id("element-reference-disposal-initialized-server")).Text);
+            Browser.Click(By.Id("element-reference-disposal-navigation"));
+            Browser.Equal("Other", () => Browser.Exists(By.TagName("h1")).Text);
+            Browser.True(() => Browser.ExecuteJavaScript<long>("return window.elementReferenceDisposalTest.acknowledgedServerRemovals") > 0);
+            foreach (var id in new[] { "server", "server-child" })
+            {
+                Browser.Equal("true", () => Browser.ExecuteJavaScript<string>(
+                    $"return sessionStorage.getItem('element-reference-disposal-pending-{id}')"));
+            }
+
+            Browser.ExecuteJavaScript(
+                "window.elementReferenceDisposalTest.failNextDisposalAcknowledgement = true;" +
+                "import('./_content/TestContentPackage/ElementReferenceDisposal.razor.js').then(module => module.releaseAllDisposals());");
+            Browser.Equal(1L, () => Browser.ExecuteJavaScript<long>("return window.elementReferenceDisposalTest.failedDisposalAcknowledgements"));
+            Browser.Equal(1L, () => Browser.ExecuteJavaScript<long>("return window.elementReferenceDisposalTest.successfulDisposalAcknowledgements"));
+            Assert.Equal(1L, Browser.ExecuteJavaScript<long>("return window.elementReferenceDisposalTest.serverConnections"));
+        }
+        finally
+        {
+            Browser.ExecuteJavaScript(
+                "sessionStorage.removeItem('keep-circuit-alive');" +
+                "import('./_content/TestContentPackage/ElementReferenceDisposal.razor.js').then(module => module.releaseAllDisposals());");
+        }
+    }
+
+    [Fact]
+    public void AutoRenderModeIgnoresRemovedServerRootWhileItDisposes()
+    {
+        Navigate($"{ServerPathBase}/nav/element-reference-disposal?testAutoRenderMode=true");
+        Browser.Equal("True", () => Browser.Exists(By.Id("element-reference-disposal-initialized-server")).Text);
+        Browser.Equal("True", () => Browser.Exists(By.Id("element-reference-disposal-initialized-webassembly")).Text);
+        var originalDocument = Browser.Exists(By.TagName("html"));
+
+        try
+        {
+            Browser.Click(By.Id("element-reference-disposal-navigation"));
+            Browser.True(() => Browser.ExecuteJavaScript<long>("return window.elementReferenceDisposalTest.acknowledgedServerRemovals") > 0);
+            Browser.Equal("true", () => Browser.ExecuteJavaScript<string>(
+                "return sessionStorage.getItem('element-reference-disposal-pending-server')"));
+            foreach (var id in new[] { "webassembly", "webassembly-child" })
+            {
+                Browser.Equal("true", () => Browser.ExecuteJavaScript<string>(
+                    $"return sessionStorage.getItem('element-reference-disposal-pending-{id}')"));
+            }
+
+            Browser.ExecuteJavaScript(
+                "import('./_content/TestContentPackage/ElementReferenceDisposal.razor.js').then(module => {" +
+                "module.releaseDisposal('webassembly'); module.releaseDisposal('webassembly-child'); });");
+            Browser.True(() => Browser.ExecuteJavaScript<bool>(
+                "const test = window.elementReferenceDisposalTest; return test.referenceIsMissing(test.captures.get('webassembly'));"));
+
+            var serverStateUpdates = Browser.ExecuteJavaScript<long>("return window.elementReferenceDisposalTest.serverPersistedStateUpdates");
+            Browser.Click(By.Id("show-auto-component"));
+            Browser.Equal("WebAssembly", () => Browser.Exists(By.Id("render-mode-auto-disposal-state")).Text);
+            Assert.Equal(originalDocument, Browser.FindElement(By.TagName("html")));
+            Assert.Equal("restored", Browser.Exists(By.Id("auto-disposal-state")).Text);
+            Assert.Equal(serverStateUpdates, Browser.ExecuteJavaScript<long>("return window.elementReferenceDisposalTest.serverPersistedStateUpdates"));
+            Assert.False(Browser.ExecuteJavaScript<bool>(
+                "const test = window.elementReferenceDisposalTest; return test.referenceIsMissing(test.captures.get('server'));"));
+        }
+        finally
+        {
+            Browser.ExecuteJavaScript(
+                "import('./_content/TestContentPackage/ElementReferenceDisposal.razor.js').then(module => module.releaseAllDisposals());");
+        }
+
+        Browser.True(() => Browser.ExecuteJavaScript<bool>(
+            "const test = window.elementReferenceDisposalTest; return test.referenceIsMissing(test.captures.get('server'));"));
+    }
+
+    [Fact]
+    public void EnhancedNavigationRetainsElementReferenceFromInFlightServerRenderBatch()
+    {
+        Navigate($"{ServerPathBase}/nav/element-reference-disposal?captureLateReference=true");
+
+        Browser.Equal("True", () => Browser.Exists(By.Id("element-reference-disposal-initialized-server")).Text);
+        Browser.Equal("True", () => Browser.Exists(By.Id("element-reference-disposal-initialized-server-child")).Text);
+        Browser.Equal("True", () => Browser.Exists(By.Id("element-reference-disposal-initialized-webassembly")).Text);
+        Browser.Equal("True", () => Browser.Exists(By.Id("element-reference-disposal-initialized-webassembly-child")).Text);
+
+        try
+        {
+            Browser.ExecuteJavaScript("window.elementReferenceDisposalTest.holdRenderBatches()");
+            Browser.Click(By.Id("element-reference-disposal-capture-late"));
+            Browser.Equal(1L, () => Browser.ExecuteJavaScript<long>("return window.elementReferenceDisposalTest.heldRenderBatches"));
+
+            var originalDocument = Browser.Exists(By.TagName("html"));
+            Browser.Click(By.Id("element-reference-disposal-navigation"));
+            Browser.Equal("Other", () => Browser.Exists(By.TagName("h1")).Text);
+            Assert.Equal(originalDocument, Browser.FindElement(By.TagName("html")));
+            Browser.True(() => Browser.ExecuteJavaScript<long>("return window.elementReferenceDisposalTest.acknowledgedRemovals") > 0);
+            Browser.True(() => Browser.ExecuteJavaScript<long>("return window.elementReferenceDisposalTest.heldRenderBatches") >= 2);
+            Browser.Equal("true", () => Browser.ExecuteJavaScript<string>(
+                "return sessionStorage.getItem('element-reference-disposal-pending-server')"));
+
+            Browser.ExecuteJavaScript("window.elementReferenceDisposalTest.releaseRenderBatches()");
+            Browser.True(() => Browser.ExecuteJavaScript<bool>(
+                "const test = window.elementReferenceDisposalTest; return test.completedHeldRenderBatches === test.heldRenderBatches;"));
+            Browser.ExecuteJavaScript(
+                "import('./_content/TestContentPackage/ElementReferenceDisposal.razor.js').then(module => module.releaseDisposal('server'));");
+            Browser.True(() => Browser.ExecuteJavaScript<string>("return sessionStorage.getItem('element-reference-disposed-server-late')") is not null);
+            Assert.Equal("true", Browser.ExecuteJavaScript<string>("return sessionStorage.getItem('element-reference-disposed-server-late')"));
+        }
+        finally
+        {
+            Browser.ExecuteJavaScript(
+                "window.elementReferenceDisposalTest.releaseRenderBatches();" +
+                "import('./_content/TestContentPackage/ElementReferenceDisposal.razor.js').then(module => module.releaseAllDisposals());");
+        }
+
+        Browser.True(() => Browser.ExecuteJavaScript<bool>(
+            "return window.elementReferenceDisposalTest.referencesReleased()"));
+    }
+
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public void EnhancedNavigationRetainsElementReferencesUntilAsynchronousDisposalCompletes(bool prerender)
+    {
+        Navigate($"{ServerPathBase}/nav/element-reference-disposal?prerender={prerender}");
+
+        var ids = new[] { "server", "server-child", "webassembly", "webassembly-child" };
+        foreach (var id in ids)
+        {
+            Browser.Equal("True", () => Browser.Exists(By.Id($"element-reference-disposal-initialized-{id}")).Text);
+        }
+        Assert.Equal(4, Browser.ExecuteJavaScript<long>(
+            "return window.elementReferenceDisposalTest.captures.size"));
+
+        Browser.Click(By.Id("element-reference-disposal-click-server"));
+        Browser.Equal("Clicks: 1", () => Browser.Exists(By.Id("element-reference-disposal-click-server")).Text);
+        Browser.Click(By.Id("element-reference-disposal-click-webassembly"));
+        Browser.Equal("Clicks: 1", () => Browser.Exists(By.Id("element-reference-disposal-click-webassembly")).Text);
+        Assert.True(Browser.ExecuteJavaScript<bool>(
+            "return window.elementReferenceDisposalTest.referenceIsMissing('missing-capture-id')"));
+        var originalDocument = Browser.Exists(By.TagName("html"));
+
+        try
+        {
+            Browser.Click(By.Id("element-reference-disposal-navigation"));
+
+            Browser.Equal("Other", () => Browser.Exists(By.TagName("h1")).Text);
+            Assert.Equal(originalDocument, Browser.FindElement(By.TagName("html")));
+            Browser.True(() => Browser.ExecuteJavaScript<long>(
+                "return window.elementReferenceDisposalTest.acknowledgedRemovals") > 0);
+            foreach (var id in ids)
+            {
+                Browser.Equal("true", () => Browser.ExecuteJavaScript<string>(
+                    $"return sessionStorage.getItem('element-reference-disposal-pending-{id}')"));
+                Assert.Null(Browser.ExecuteJavaScript<string>(
+                    $"return sessionStorage.getItem('element-reference-disposed-{id}')"));
+            }
+
+            Browser.ExecuteJavaScript(
+                "import('./_content/TestContentPackage/ElementReferenceDisposal.razor.js').then(module => {" +
+                "module.releaseDisposal('server'); module.releaseDisposal('webassembly'); });");
+            foreach (var id in new[] { "server", "webassembly" })
+            {
+                Browser.Equal("true", () => Browser.ExecuteJavaScript<string>(
+                    $"return sessionStorage.getItem('element-reference-disposed-{id}')"));
+                Assert.Null(Browser.ExecuteJavaScript<string>(
+                    $"return sessionStorage.getItem('element-reference-disposed-{id}-child')"));
+            }
+
+            Browser.ExecuteJavaScript(
+                "import('./_content/TestContentPackage/ElementReferenceDisposal.razor.js').then(module => {" +
+                "module.releaseDisposal('webassembly-child'); });");
+            Browser.Equal("true", () => Browser.ExecuteJavaScript<string>(
+                "return sessionStorage.getItem('element-reference-disposed-webassembly-child')"));
+            Browser.True(() => Browser.ExecuteJavaScript<bool>(
+                "return window.elementReferenceDisposalTest.referenceIsMissing(" +
+                "window.elementReferenceDisposalTest.captures.get('webassembly-child'))"));
+            Assert.False(Browser.ExecuteJavaScript<bool>(
+                "return window.elementReferenceDisposalTest.referenceIsMissing(" +
+                "window.elementReferenceDisposalTest.captures.get('server-child'))"));
+        }
+        finally
+        {
+            Browser.ExecuteJavaScript(
+                "import('./_content/TestContentPackage/ElementReferenceDisposal.razor.js').then(module => {" +
+                "module.releaseAllDisposals(); });");
+        }
+
+        foreach (var id in ids)
+        {
+            Browser.Equal("true", () => Browser.ExecuteJavaScript<string>(
+                $"return sessionStorage.getItem('element-reference-disposed-{id}')"));
+        }
+        Browser.True(() => Browser.ExecuteJavaScript<bool>(
+            "return window.elementReferenceDisposalTest.referencesReleased()"));
+        Assert.DoesNotContain(Browser.GetBrowserLogs(LogLevel.Warning), entry => entry.Level == LogLevel.Severe);
+    }
+
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public void FatalDisposalErrorReleasesServerElementReferencesWithoutAffectingWebAssembly(bool prerender)
+    {
+        Navigate($"{ServerPathBase}/nav/element-reference-disposal?failServerDisposal=true&prerender={prerender}");
+
+        var removedIds = new[] { "server", "server-child", "webassembly", "webassembly-child" };
+        foreach (var id in removedIds)
+        {
+            Browser.Equal("True", () => Browser.Exists(By.Id($"element-reference-disposal-initialized-{id}")).Text);
+        }
+        Browser.Equal("True", () => Browser.Exists(By.Id("element-reference-disposal-initialized-webassembly-survivor")).Text);
+        Browser.Click(By.Id("element-reference-disposal-click-server"));
+        Browser.Equal("Clicks: 1", () => Browser.Exists(By.Id("element-reference-disposal-click-server")).Text);
+        Browser.Click(By.Id("element-reference-disposal-click-webassembly-survivor"));
+        Browser.Equal("Clicks: 1", () => Browser.Exists(By.Id("element-reference-disposal-click-webassembly-survivor")).Text);
+        var originalDocument = Browser.Exists(By.TagName("html"));
+
+        try
+        {
+            Browser.Click(By.Id("element-reference-disposal-navigation"));
+            Browser.DoesNotExist(By.Id("element-reference-disposal-target-server"));
+            Assert.Equal(originalDocument, Browser.FindElement(By.TagName("html")));
+            Browser.True(() => Browser.ExecuteJavaScript<long>(
+                "return window.elementReferenceDisposalTest.acknowledgedRemovals") > 0);
+            foreach (var id in removedIds)
+            {
+                Browser.Equal("true", () => Browser.ExecuteJavaScript<string>(
+                    $"return sessionStorage.getItem('element-reference-disposal-pending-{id}')"));
+                Assert.False(Browser.ExecuteJavaScript<bool>(
+                    $"return window.elementReferenceDisposalTest.referenceIsMissing(window.elementReferenceDisposalTest.captures.get('{id}'))"));
+            }
+
+            Assert.True((bool)((IJavaScriptExecutor)Browser).ExecuteAsyncScript(
+                "const done = arguments[0]; Blazor._internal.forceCloseConnection().then(() => done(true));"));
+            foreach (var id in removedIds)
+            {
+                Assert.False(Browser.ExecuteJavaScript<bool>(
+                    $"return window.elementReferenceDisposalTest.referenceIsMissing(window.elementReferenceDisposalTest.captures.get('{id}'))"));
+            }
+            Assert.Equal(0, Browser.ExecuteJavaScript<long>(
+                "return window.elementReferenceDisposalTest.circuitDisposals"));
+            Assert.True((bool)((IJavaScriptExecutor)Browser).ExecuteAsyncScript(
+                "const done = arguments[0]; Blazor.reconnect().then(done);"));
+
+            Browser.ExecuteJavaScript(
+                "import('./_content/TestContentPackage/ElementReferenceDisposal.razor.js').then(module => module.releaseDisposal('server'));");
+
+            foreach (var id in new[] { "server", "server-child" })
+            {
+                Browser.True(() => Browser.ExecuteJavaScript<bool>(
+                    $"return window.elementReferenceDisposalTest.referenceIsMissing(window.elementReferenceDisposalTest.captures.get('{id}'))"));
+            }
+            Assert.Equal("true", Browser.ExecuteJavaScript<string>(
+                "return sessionStorage.getItem('element-reference-disposal-pending-server-child')"));
+            foreach (var id in new[] { "webassembly", "webassembly-child" })
+            {
+                Assert.False(Browser.ExecuteJavaScript<bool>(
+                    $"return window.elementReferenceDisposalTest.referenceIsMissing(window.elementReferenceDisposalTest.captures.get('{id}'))"));
+            }
+            Browser.True(() => Browser.ExecuteJavaScript<long>(
+                "return window.elementReferenceDisposalTest.circuitDisposals") > 0);
+            Browser.Click(By.Id("element-reference-disposal-click-webassembly-survivor"));
+            Browser.Equal("Clicks: 2", () => Browser.Exists(By.Id("element-reference-disposal-click-webassembly-survivor")).Text);
+        }
+        finally
+        {
+            Browser.ExecuteJavaScript(
+                "import('./_content/TestContentPackage/ElementReferenceDisposal.razor.js').then(module => module.releaseAllDisposals());");
+        }
+
+        foreach (var id in new[] { "webassembly", "webassembly-child" })
+        {
+            Browser.Equal("true", () => Browser.ExecuteJavaScript<string>(
+                $"return sessionStorage.getItem('element-reference-disposed-{id}')"));
+            Browser.True(() => Browser.ExecuteJavaScript<bool>(
+                $"return window.elementReferenceDisposalTest.referenceIsMissing(window.elementReferenceDisposalTest.captures.get('{id}'))"));
+        }
+        Assert.Contains(Browser.GetBrowserLogs(LogLevel.Severe),
+            entry => entry.Message.Contains("There was an unhandled exception on the current circuit"));
+    }
+
+    [Fact]
     public void EnhancedNavRequestsIncludeExpectedHeaders()
     {
         Navigate($"{ServerPathBase}/nav");

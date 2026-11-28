@@ -71,6 +71,7 @@ function boot(options?: Partial<WebStartOptions>) : Promise<void> {
 
   const jsEventRegistry = JSEventRegistry.create(Blazor);
   rootComponentManager = new WebRootComponentManager(() => options.ssr, jsEventRegistry);
+  Blazor._internal.endDisposeRootComponent = ssrComponentId => rootComponentManager.onAfterDisposeRootComponent(ssrComponentId);
 
   const navigationEnhancementCallbacks: NavigationEnhancementCallbacks = {
     enhancedNavigationStarted: () => {

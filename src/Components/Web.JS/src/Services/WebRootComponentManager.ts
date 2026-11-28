@@ -12,7 +12,8 @@ import { RootComponentManager } from './RootComponentManager';
 import { getRendererer } from '../Rendering/Renderer';
 import { isPageLoading } from './NavigationEnhancement';
 import { markAsInteractiveRootComponentElement, setClearContentOnRootComponentRerender, setShouldPreserveContentOnInteractiveComponentDisposal } from '../Rendering/BrowserRenderer';
-import { LogicalElement } from '../Rendering/LogicalElements';
+import { LogicalElement, toLogicalRootCommentElement } from '../Rendering/LogicalElements';
+import { releaseRootComponentElementReferences, retainRootComponentElementReferences } from '../Rendering/ElementReferenceCapture';
 import { JSEventRegistry } from './JSEventRegistry';
 import { SsrStartOptions } from '../Platform/SsrStartOptions';
 
@@ -52,8 +53,6 @@ export class WebRootComponentManager implements DescriptorHandler, RootComponent
   private readonly _rootComponentsBySsrComponentId = new Map<number, RootComponentInfo>();
 
   private readonly _seenDescriptors = new Set<ComponentDescriptor>();
-
-  private readonly _pendingOperationBatches: { [batchId: number]: RootComponentOperationBatch } = {};
 
   private _nextOperationBatchId = 1;
 
@@ -215,7 +214,7 @@ export class WebRootComponentManager implements DescriptorHandler, RootComponent
   }
 
   private circuitMayHaveNoRootComponents() {
-    const isCircuitInUse = this.rendererHasExistingOrPendingComponents(WebRendererId.Server, 'server', 'auto');
+    const isCircuitInUse = this.rendererHasExistingOrPendingComponents(WebRendererId.Server, /* includePendingRemovals */ true, 'server', 'auto');
     if (isCircuitInUse) {
       // Clear the timeout because we know the circuit is in use.
       clearTimeout(this._circuitInactivityTimeoutId);
@@ -230,7 +229,7 @@ export class WebRootComponentManager implements DescriptorHandler, RootComponent
 
     // Start a new timeout to dispose the circuit unless it starts getting used.
     this._circuitInactivityTimeoutId = setTimeout(() => {
-      if (!this.rendererHasExistingOrPendingComponents(WebRendererId.Server, 'server', 'auto')) {
+      if (!this.rendererHasExistingOrPendingComponents(WebRendererId.Server, /* includePendingRemovals */ true, 'server', 'auto')) {
         disposeCircuit();
         this._circuitInactivityTimeoutId = undefined;
       }
@@ -242,13 +241,17 @@ export class WebRootComponentManager implements DescriptorHandler, RootComponent
     return renderer !== undefined && renderer.getRootComponentCount() > 0;
   }
 
-  private rendererHasExistingOrPendingComponents(rendererId: WebRendererId, ...descriptorTypesToConsider: ComponentMarker['type'][]): boolean {
+  private rendererHasExistingOrPendingComponents(rendererId: WebRendererId, includePendingRemovals: boolean, ...descriptorTypesToConsider: ComponentMarker['type'][]): boolean {
     if (this.rendererHasComponents(rendererId)) {
       return true;
     }
 
     // We consider SSR'd components on the page that may get activated using the specified renderer.
-    for (const { descriptor: { type }, assignedRendererId } of this._rootComponentsBySsrComponentId.values()) {
+    for (const { descriptor: { type }, assignedRendererId, hasPendingRemoveOperation } of this._rootComponentsBySsrComponentId.values()) {
+      if (!includePendingRemovals && hasPendingRemoveOperation) {
+        continue;
+      }
+
       if (assignedRendererId === rendererId) {
         // The component has been assigned to use the specified renderer.
         return true;
@@ -280,7 +283,7 @@ export class WebRootComponentManager implements DescriptorHandler, RootComponent
       // This must happen after determining the pending operation, because a component
       // that is being activated for the first time only gets assigned a renderer ID
       // as part of computing its 'add' operation.
-      if (discoverNewState && component.assignedRendererId !== undefined) {
+      if (discoverNewState && component.assignedRendererId !== undefined && isDescriptorInDocument(component.descriptor)) {
         rendererIds.add(component.assignedRendererId);
       }
 
@@ -336,7 +339,6 @@ export class WebRootComponentManager implements DescriptorHandler, RootComponent
         batchId: this._nextOperationBatchId++,
         operations,
       };
-      this._pendingOperationBatches[batch.batchId] = batch;
       const batchJson = JSON.stringify(batch);
 
       if (rendererId === WebRendererId.Server) {
@@ -373,12 +375,12 @@ export class WebRootComponentManager implements DescriptorHandler, RootComponent
 
   private getAutoRenderMode(): 'webassembly' | 'server' | null {
     // If WebAssembly components exist or may exist soon, use WebAssembly.
-    if (this.rendererHasExistingOrPendingComponents(WebRendererId.WebAssembly, 'webassembly')) {
+    if (this.rendererHasExistingOrPendingComponents(WebRendererId.WebAssembly, /* includePendingRemovals */ false, 'webassembly')) {
       return 'webassembly';
     }
 
-    // If Server components exist or may exist soon, use WebAssembly.
-    if (this.rendererHasExistingOrPendingComponents(WebRendererId.Server, 'server')) {
+    // If Server components exist or may exist soon, use Server.
+    if (this.rendererHasExistingOrPendingComponents(WebRendererId.Server, /* includePendingRemovals */ false, 'server')) {
       return 'server';
     }
 
@@ -473,6 +475,7 @@ export class WebRootComponentManager implements DescriptorHandler, RootComponent
 
       // This component was removed from the document and we've assigned a renderer ID,
       // so we'll dispose it in .NET.
+      retainRootComponentElementReferences(component.ssrComponentId, toLogicalRootCommentElement(component.descriptor));
       component.hasPendingRemoveOperation = true;
       return { type: 'remove', ssrComponentId: component.ssrComponentId };
     }
@@ -487,20 +490,28 @@ export class WebRootComponentManager implements DescriptorHandler, RootComponent
     return component.descriptor;
   }
 
-  public onAfterUpdateRootComponents(batchId: number): void {
-    const batch = this._pendingOperationBatches[batchId];
-    delete this._pendingOperationBatches[batchId];
+  public onAfterDisposeRootComponent(ssrComponentId: number): void {
+    releaseRootComponentElementReferences(ssrComponentId);
+    const component = this._rootComponentsBySsrComponentId.get(ssrComponentId);
+    if (component) {
+      // Disposal completion is authoritative even if a removal acknowledgement was lost during disconnect.
+      this.unregisterComponent(component);
+    }
+  }
 
-    for (const operation of batch.operations) {
-      switch (operation.type) {
-        case 'remove': {
-          // We can stop tracking this component now that .NET has acknowledged its removal.
-          const component = this._rootComponentsBySsrComponentId.get(operation.ssrComponentId);
-          if (component) {
-            this.unregisterComponent(component);
-          }
-          break;
-        }
+  public onRendererDisposed(browserRendererId: number): void {
+    this.unregisterRendererComponents(browserRendererId, /* onlyPendingRemovals */ false);
+  }
+
+  public onPendingRootComponentDisposalsAbandoned(browserRendererId: number): void {
+    this.unregisterRendererComponents(browserRendererId, /* onlyPendingRemovals */ true);
+  }
+
+  private unregisterRendererComponents(browserRendererId: number, onlyPendingRemovals: boolean): void {
+    for (const component of this._rootComponentsBySsrComponentId.values()) {
+      if (component.assignedRendererId === browserRendererId && (!onlyPendingRemovals || component.hasPendingRemoveOperation)) {
+        releaseRootComponentElementReferences(component.ssrComponentId);
+        this.unregisterComponent(component);
       }
     }
   }
@@ -508,6 +519,12 @@ export class WebRootComponentManager implements DescriptorHandler, RootComponent
   public onComponentReload(browserRendererId: number): void {
     for (const [_, value] of this._rootComponentsBySsrComponentId.entries()) {
       if (value.assignedRendererId === browserRendererId) {
+        if (value.hasPendingRemoveOperation) {
+          releaseRootComponentElementReferences(value.ssrComponentId);
+          this.unregisterComponent(value);
+          continue;
+        }
+
         value.assignedRendererId = undefined;
         markAsInteractiveRootComponentElement(value.descriptor.start as unknown as LogicalElement, false);
         setClearContentOnRootComponentRerender(value.descriptor.start as unknown as LogicalElement);

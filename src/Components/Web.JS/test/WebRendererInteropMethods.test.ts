@@ -38,6 +38,7 @@ describe('Issue #64738 - reconnect then resume double registration', () => {
     //       detaches interop before returning false.
     const { CircuitManager } = await import('../src/Platform/Circuits/CircuitManager');
     const manager: any = Object.create(CircuitManager.prototype);
+    manager._componentManager = { initialComponents: [] };
     manager._circuitId = 'test-circuit-id';
     manager._interopMethodsForReconnection = savedMethods;
     manager._connection = { state: 'Disconnected' };
@@ -73,6 +74,7 @@ describe('Issue #64738 - reconnect then resume double registration', () => {
     // was never attached on the JS side.
     const { CircuitManager } = await import('../src/Platform/Circuits/CircuitManager');
     const manager: any = Object.create(CircuitManager.prototype);
+    manager._componentManager = { initialComponents: [] };
     manager._circuitId = 'test-circuit-id';
     manager._interopMethodsForReconnection = undefined; // no saved methods
     manager._connection = { state: 'Disconnected' };

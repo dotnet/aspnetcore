@@ -3,9 +3,13 @@
 
 using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
+using Microsoft.AspNetCore.Components.Rendering;
 using static Microsoft.AspNetCore.Internal.LinkerFlags;
 
 #if COMPONENTS_SERVER
+using System.IO;
+using Microsoft.Extensions.Logging;
+
 namespace Microsoft.AspNetCore.Components.Server.Circuits;
 
 using Renderer = RemoteRenderer;
@@ -14,6 +18,7 @@ internal partial class RemoteRenderer
 #elif COMPONENTS_WEBASSEMBLY
 namespace Microsoft.AspNetCore.Components.WebAssembly.Rendering;
 
+using Microsoft.JSInterop;
 using Renderer = WebAssemblyRenderer;
 
 internal partial class WebAssemblyRenderer
@@ -22,15 +27,36 @@ internal partial class WebAssemblyRenderer
 #endif
 {
     private WebRootComponentManager? _webRootComponentManager;
+#if COMPONENTS_WEBASSEMBLY
+    private readonly IJSRuntime _rootComponentJSRuntime;
+#else
+    internal Task AcknowledgeRootComponentDisposalAsync(int ssrComponentId)
+        => Dispatcher.InvokeAsync(() => _webRootComponentManager?.AcknowledgeDisposalNotification(ssrComponentId));
+#endif
 
     public WebRootComponentManager GetOrCreateWebRootComponentManager()
         => _webRootComponentManager ??= new(this);
+
+    internal ValueTask TrackComponentDisposal(ComponentState componentState, ValueTask disposalTask)
+        => _webRootComponentManager?.TrackComponentDisposal(componentState, disposalTask) ?? disposalTask;
+
+    private void ObserveRootComponentDisposal(Task disposalTask)
+        => disposalTask.ContinueWith(
+            static (task, state) => ((Renderer)state!).HandleException(task.Exception!),
+            this,
+            CancellationToken.None,
+            TaskContinuationOptions.OnlyOnFaulted | TaskContinuationOptions.ExecuteSynchronously,
+            TaskScheduler.Default);
 
     // Manages components that get added, updated, or removed in Blazor Web scenarios
     // via Blazor endpoint invocations.
     public sealed class WebRootComponentManager(Renderer renderer)
     {
         private readonly Dictionary<int, WebRootComponent> _webRootComponents = new();
+        private readonly Dictionary<int, HashSet<Task>> _pendingComponentDisposals = new();
+#if COMPONENTS_SERVER
+        private readonly HashSet<int> _pendingDisposalNotifications = new();
+#endif
         private Task _currentUpdateTask = Task.CompletedTask;
 
         public async Task AddRootComponentAsync(
@@ -95,9 +121,107 @@ internal partial class WebAssemblyRenderer
         public void RemoveRootComponent(int ssrComponentId)
         {
             var component = GetRequiredWebRootComponent(ssrComponentId);
+            var (interactiveComponentId, _, _, _) = component;
             component.Remove(renderer);
             _webRootComponents.Remove(ssrComponentId);
+            var disposalTask = _pendingComponentDisposals.TryGetValue(interactiveComponentId, out var pendingDisposals)
+                ? Task.WhenAll(pendingDisposals)
+                : Task.CompletedTask;
+            renderer.ObserveRootComponentDisposal(NotifyRootComponentDisposedAsync(ssrComponentId, disposalTask));
         }
+
+        internal ValueTask TrackComponentDisposal(ComponentState componentState, ValueTask disposalTask)
+        {
+            if (disposalTask.IsCompleted)
+            {
+                return disposalTask;
+            }
+
+            var root = componentState;
+            while (root.ParentComponentState is { } parent)
+            {
+                root = parent;
+            }
+
+            if (!_pendingComponentDisposals.TryGetValue(root.ComponentId, out var pendingDisposals))
+            {
+                pendingDisposals = new();
+                _pendingComponentDisposals.Add(root.ComponentId, pendingDisposals);
+            }
+
+            var task = disposalTask.AsTask();
+            if (pendingDisposals.Add(task))
+            {
+                renderer.ObserveRootComponentDisposal(RemoveCompletedDisposalAsync(root.ComponentId, pendingDisposals, task));
+            }
+
+            return new ValueTask(task);
+        }
+
+        private async Task RemoveCompletedDisposalAsync(int rootComponentId, HashSet<Task> pendingDisposals, Task task)
+        {
+            // The renderer observes and reports disposal failures. This waiter only tracks their lifetime.
+            await task.ConfigureAwait(ConfigureAwaitOptions.SuppressThrowing);
+            await renderer.Dispatcher.InvokeAsync(() =>
+            {
+                pendingDisposals.Remove(task);
+                if (pendingDisposals.Count == 0)
+                {
+                    _pendingComponentDisposals.Remove(rootComponentId);
+                }
+            });
+        }
+
+        private async Task NotifyRootComponentDisposedAsync(int ssrComponentId, Task disposalTask)
+        {
+            // A root's descendants may still be disposing after its render batch and removal acknowledgement.
+            await disposalTask.ConfigureAwait(ConfigureAwaitOptions.ContinueOnCapturedContext | ConfigureAwaitOptions.SuppressThrowing);
+#if COMPONENTS_SERVER
+            _pendingDisposalNotifications.Add(ssrComponentId);
+            if (!renderer._client.Connected)
+            {
+                return;
+            }
+            await SendDisposalNotificationAsync(ssrComponentId);
+#else
+            await renderer._rootComponentJSRuntime.InvokeVoidAsync("Blazor._internal.endDisposeRootComponent", ssrComponentId);
+#endif
+        }
+
+#if COMPONENTS_SERVER
+        private async Task SendDisposalNotificationAsync(int ssrComponentId)
+        {
+            try
+            {
+                await renderer._client.SendCoreAsync("JS.EndDisposeRootComponent", [ssrComponentId]);
+            }
+            catch (Exception exception) when (exception is IOException or ObjectDisposedException or OperationCanceledException)
+            {
+                // Like render batches, failed writes remain eligible for replay on reconnect.
+                renderer._logger.LogDebug(exception, "Sending disposal notification for SSR root component {SsrComponentId} failed.", ssrComponentId);
+            }
+        }
+
+        internal void AcknowledgeDisposalNotification(int ssrComponentId)
+        {
+            renderer.Dispatcher.AssertAccess();
+            _pendingDisposalNotifications.Remove(ssrComponentId);
+        }
+
+        internal void ReplayPendingDisposalNotifications()
+        {
+            renderer.Dispatcher.AssertAccess();
+            if (renderer._client.Connected)
+            {
+                // Retain notifications that may have been lost during disconnect until the client acknowledges them.
+                int[] pendingNotifications = [.. _pendingDisposalNotifications];
+                foreach (var ssrComponentId in pendingNotifications)
+                {
+                    renderer.ObserveRootComponentDisposal(SendDisposalNotificationAsync(ssrComponentId));
+                }
+            }
+        }
+#endif
 
         private WebRootComponent GetRequiredWebRootComponent(int ssrComponentId)
         {

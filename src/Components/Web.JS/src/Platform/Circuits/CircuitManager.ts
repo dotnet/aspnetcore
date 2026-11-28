@@ -198,6 +198,23 @@ export class CircuitManager implements DotNet.DotNetCallDispatcher {
       this._componentManager.onAfterUpdateRootComponents?.(batchId);
     });
 
+    connection.on('JS.EndDisposeRootComponent', async (ssrComponentId: number) => {
+      Blazor._internal.endDisposeRootComponent!(ssrComponentId);
+      let retryDelayMs = 250;
+      while (connection.state === HubConnectionState.Connected && !this._disposed && !this._renderingFailed) {
+        try {
+          await connection.send('OnRootComponentDisposalCompleted', ssrComponentId);
+          return;
+        } catch (error) {
+          this._logger.log(LogLevel.Debug, `Failed to acknowledge disposal of root component '${ssrComponentId}': ${error}`);
+        }
+
+        // A send can fail without closing the connection. Closed connections rely on server replay.
+        await new Promise<void>(resolve => { setTimeout(resolve, retryDelayMs); });
+        retryDelayMs = Math.min(retryDelayMs * 2, 5000);
+      }
+    });
+
     connection.on('JS.RequestPause', async () => {
       try {
         await this.handleServerInitiatedPause();
@@ -225,6 +242,7 @@ export class CircuitManager implements DotNet.DotNetCallDispatcher {
     connection.on('JS.Error', error => {
       this._renderingFailed = true;
       this.unhandledError(error);
+      this._componentManager.onRendererDisposed?.(WebRendererId.Server);
       showErrorNotification();
     });
 
@@ -310,6 +328,8 @@ export class CircuitManager implements DotNet.DotNetCallDispatcher {
       if (isRendererAttached(WebRendererId.Server)) {
         this._interopMethodsForReconnection = detachWebRendererInterop(WebRendererId.Server);
       }
+      // The old circuit cannot complete these disposals, but live roots may still be resumed.
+      this._componentManager.onPendingRootComponentDisposalsAbandoned?.(WebRendererId.Server);
       return false;
     }
 
@@ -475,6 +495,7 @@ export class CircuitManager implements DotNet.DotNetCallDispatcher {
         persistedCircuitState?.applicationState ?? '',
       );
       if (!newCircuitId) {
+        this._componentManager.onPendingRootComponentDisposalsAbandoned?.(WebRendererId.Server);
         this._resumingState.complete(false);
         return resumingPromise;
       }
@@ -647,6 +668,7 @@ export class CircuitManager implements DotNet.DotNetCallDispatcher {
 
     this._disposed = true;
     this._connection?.stop();
+    this._componentManager.onRendererDisposed?.(WebRendererId.Server);
 
     // Dispose the circuit on the server immediately. Closing the SignalR connection alone
     // without sending the disconnect message will result in the circuit being kept
