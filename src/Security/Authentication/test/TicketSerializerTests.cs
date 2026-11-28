@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Security.Claims;
+using System.Text;
 using Microsoft.AspNetCore.InternalTesting;
 
 namespace Microsoft.AspNetCore.Authentication;
@@ -119,6 +120,395 @@ public class TicketSerializerTests
 
             var property2 = readClaim.Properties["property-2"];
             Assert.Equal(string.Empty, property2);
+        }
+    }
+
+    [Fact]
+    public void SerializeAndWrite_ProduceExpectedFormat()
+    {
+        var identity = new ClaimsIdentity("auth") { BootstrapContext = "bootstrap", Actor = new ClaimsIdentity("actor") };
+        identity.AddClaim(new Claim(ClaimsIdentity.DefaultNameClaimType, "name"));
+        var claim = new Claim("type", "value", "value-type", "issuer");
+        claim.Properties.Add("key", "property");
+        identity.AddClaim(claim);
+        var properties = new AuthenticationProperties();
+        properties.Items["item"] = "item-value";
+        var ticket = new AuthenticationTicket(new ClaimsPrincipal(identity), properties, "scheme");
+
+        // Written independently of TicketSerializer to pin the wire format.
+        using var expectedStream = new MemoryStream();
+        using (var w = new BinaryWriter(expectedStream))
+        {
+            w.Write(5); w.Write("scheme"); w.Write(1);
+            w.Write("auth"); w.Write("\0"); w.Write("\0"); w.Write(2);
+            w.Write("\0"); w.Write("name"); w.Write("\0"); w.Write("\0"); w.Write("\0"); w.Write(0);
+            w.Write("type"); w.Write("value"); w.Write("value-type"); w.Write("issuer"); w.Write("\0"); w.Write(1); w.Write("key"); w.Write("property");
+            w.Write(true); w.Write("bootstrap");
+            w.Write(true);
+            w.Write("actor"); w.Write("\0"); w.Write("\0"); w.Write(0); w.Write(false); w.Write(false);
+            w.Write(1); w.Write(1); w.Write("item"); w.Write("item-value");
+        }
+        var expected = expectedStream.ToArray();
+
+        Assert.Equal(expected, TicketSerializer.Default.Serialize(ticket));
+        Assert.Equal(expected, SerializeWithBinaryWriter(new TicketSerializer(), ticket));
+
+        AssertTicketsEqual(ticket, TicketSerializer.Default.Deserialize(expected));
+        AssertTicketsEqual(ticket, ReadWithBinaryReader(new TicketSerializer(), expected));
+    }
+
+    [Theory]
+    [InlineData(0)]
+    [InlineData(10)]
+    [InlineData(500)]
+    public void Serialize_ProducesSameBytesAsBinaryWriter(int extraClaimCount)
+    {
+        var ticket = CreateComplexTicket(extraClaimCount);
+
+        var expected = SerializeWithBinaryWriter(new TicketSerializer(), ticket);
+
+        Assert.Equal(expected, TicketSerializer.Default.Serialize(ticket));
+        Assert.Equal(expected, new DerivedTicketSerializer().Serialize(ticket));
+    }
+
+    [Fact]
+    public void Serialize_EmptyPrincipal_ProducesSameBytesAsBinaryWriter()
+    {
+        var ticket = new AuthenticationTicket(new ClaimsPrincipal(), new AuthenticationProperties(), "Scheme");
+
+        Assert.Equal(SerializeWithBinaryWriter(new TicketSerializer(), ticket), TicketSerializer.Default.Serialize(ticket));
+    }
+
+    [Fact]
+    public void Serialize_InvalidSurrogate_ProducesSameBytesAsBinaryWriter()
+    {
+        var identity = new ClaimsIdentity("auth");
+        identity.AddClaim(new Claim("bad", "\uD800"));
+        var ticket = new AuthenticationTicket(new ClaimsPrincipal(identity), "Scheme");
+
+        Assert.Equal(SerializeWithBinaryWriter(new TicketSerializer(), ticket), TicketSerializer.Default.Serialize(ticket));
+    }
+
+    [Fact]
+    public void PropertiesSerializer_Serialize_ProducesSameBytesAsBinaryWriter()
+    {
+        var properties = CreateComplexTicket(0).Properties;
+
+        Assert.Equal(new DerivedPropertiesSerializer().Serialize(properties), PropertiesSerializer.Default.Serialize(properties));
+        Assert.Equal(new DerivedPropertiesSerializer().Serialize(new AuthenticationProperties()), PropertiesSerializer.Default.Serialize(new AuthenticationProperties()));
+    }
+
+    [Fact]
+    public void Deserialize_MatchesRead()
+    {
+        var ticket = CreateComplexTicket(10);
+        var data = TicketSerializer.Default.Serialize(ticket);
+
+        var deserialized = TicketSerializer.Default.Deserialize(data);
+
+        AssertTicketsEqual(ticket, deserialized);
+        AssertTicketsEqual(ReadWithBinaryReader(new TicketSerializer(), data), deserialized);
+        AssertTicketsEqual(deserialized, new DerivedTicketSerializer().Deserialize(data));
+    }
+
+    [Fact]
+    public void PropertiesSerializer_Deserialize_MatchesRead()
+    {
+        var properties = CreateComplexTicket(0).Properties;
+        var data = PropertiesSerializer.Default.Serialize(properties);
+
+        var deserialized = PropertiesSerializer.Default.Deserialize(data);
+
+        using var reader = new BinaryReader(new MemoryStream(data));
+        Assert.Equal(properties.Items.Select(i => KeyValuePair.Create(i.Key, i.Value ?? string.Empty)), deserialized.Items);
+        Assert.Equal(PropertiesSerializer.Default.Read(reader).Items, deserialized.Items);
+    }
+
+    [Fact]
+    public void Deserialize_ReturnsNullForUnknownVersion()
+    {
+        var data = TicketSerializer.Default.Serialize(CreateComplexTicket(0));
+        data[0] = 4;
+
+        Assert.Null(TicketSerializer.Default.Deserialize(data));
+    }
+
+    [Fact]
+    public void Deserialize_ThrowsSameExceptionAsReadForTruncatedData()
+    {
+        var data = TicketSerializer.Default.Serialize(CreateSmallTicket());
+
+        for (var length = 0; length < data.Length; length++)
+        {
+            var truncated = data.AsSpan(0, length).ToArray();
+            var expected = Record.Exception(() => ReadWithBinaryReader(new TicketSerializer(), truncated));
+            var actual = Record.Exception(() => TicketSerializer.Default.Deserialize(truncated));
+
+            Assert.NotNull(expected);
+            Assert.NotNull(actual);
+            Assert.Equal(expected.GetType(), actual.GetType());
+        }
+    }
+
+    [Theory]
+    [InlineData(new byte[] { 5, 0, 0, 0, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0x01 }, typeof(FormatException))]
+    [InlineData(new byte[] { 5, 0, 0, 0, 0xFF, 0xFF, 0xFF, 0xFF, 0x0F }, typeof(IOException))]
+    public void Deserialize_ThrowsSameExceptionAsReadForInvalidStringLength(byte[] data, Type exceptionType)
+    {
+        Assert.IsType(exceptionType, Record.Exception(() => ReadWithBinaryReader(new TicketSerializer(), data)));
+        Assert.IsType(exceptionType, Record.Exception(() => TicketSerializer.Default.Deserialize(data)));
+    }
+
+    [Fact]
+    public void Deserialize_InvalidUtf8_MatchesRead()
+    {
+        // Version, then a scheme containing invalid UTF-8, then zero identities and empty properties.
+        var data = new byte[] { 5, 0, 0, 0, 3, (byte)'a', 0xC3, 0x28, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0 };
+
+        Assert.Equal(
+            ReadWithBinaryReader(new TicketSerializer(), data).AuthenticationScheme,
+            TicketSerializer.Default.Deserialize(data).AuthenticationScheme);
+    }
+
+    [Fact]
+    public void NullArguments_ThrowWithExistingParameterNames()
+    {
+        Assert.Equal("ticket", Assert.Throws<ArgumentNullException>(() => TicketSerializer.Default.Serialize(null)).ParamName);
+        Assert.Equal("properties", Assert.Throws<ArgumentNullException>(() => PropertiesSerializer.Default.Serialize(null)).ParamName);
+        Assert.Equal("buffer", Assert.Throws<ArgumentNullException>(() => TicketSerializer.Default.Deserialize(null)).ParamName);
+        Assert.Equal("buffer", Assert.Throws<ArgumentNullException>(() => PropertiesSerializer.Default.Deserialize(null)).ParamName);
+    }
+
+    [Fact]
+    public void WriteAndRead_UseBinaryWriterAndReaderEncoding()
+    {
+        var ticket = CreateComplexTicket(0);
+
+        using var stream = new MemoryStream();
+        using (var writer = new BinaryWriter(stream, Encoding.Unicode, leaveOpen: true))
+        {
+            TicketSerializer.Default.Write(writer, ticket);
+        }
+
+        Assert.NotEqual(TicketSerializer.Default.Serialize(ticket), stream.ToArray());
+
+        stream.Position = 0;
+        using var reader = new BinaryReader(stream, Encoding.Unicode);
+        AssertTicketsEqual(ticket, TicketSerializer.Default.Read(reader));
+    }
+
+    [Fact]
+    public void SerializeAndDeserialize_CallOverriddenMethodsOnDerivedSerializer()
+    {
+        var serializer = new OverrideTrackingSerializer();
+        var ticket = CreateComplexTicket(0);
+        var identityCount = 3; // Two identities, one of which has an actor.
+        var claimCount = ticket.Principal.Identities.Sum(i => i.Claims.Count() + (i.Actor?.Claims.Count() ?? 0));
+
+        var data = serializer.Serialize(ticket);
+        var readTicket = serializer.Deserialize(data);
+
+        Assert.Equal(identityCount, serializer.WriteIdentityCount);
+        Assert.Equal(claimCount, serializer.WriteClaimCount);
+        Assert.Equal(identityCount, serializer.ReadIdentityCount);
+        Assert.Equal(claimCount, serializer.ReadClaimCount);
+        Assert.All(readTicket.Principal.Claims, c => Assert.Equal("custom", c.Properties["read-by"]));
+    }
+
+    [Fact]
+    public void PropertiesSerializer_SerializeAndDeserialize_CallOverriddenMethods()
+    {
+        var serializer = new CustomPropertiesSerializer();
+
+        var properties = serializer.Deserialize(serializer.Serialize(new AuthenticationProperties { RedirectUri = "/" }));
+
+        Assert.Equal("custom", properties.Items["written-by"]);
+        Assert.Equal("custom", properties.Items["read-by"]);
+    }
+
+    private static byte[] SerializeWithBinaryWriter(TicketSerializer serializer, AuthenticationTicket ticket)
+    {
+        using var stream = new MemoryStream();
+        using (var writer = new BinaryWriter(stream))
+        {
+            serializer.Write(writer, ticket);
+        }
+        return stream.ToArray();
+    }
+
+    private static AuthenticationTicket ReadWithBinaryReader(TicketSerializer serializer, byte[] data)
+    {
+        using var reader = new BinaryReader(new MemoryStream(data));
+        return serializer.Read(reader);
+    }
+
+    private static AuthenticationTicket CreateComplexTicket(int extraClaimCount)
+    {
+        var longValue = string.Concat(Enumerable.Repeat("long-value-\u00e9\u4e2d\U0001F600-", 40));
+
+        var actor = new ClaimsIdentity("actor-auth");
+        actor.AddClaim(new Claim("actor-claim", "actor-value"));
+
+        var first = new ClaimsIdentity("Identity.Application") { BootstrapContext = "bootstrap", Actor = actor };
+        first.AddClaim(new Claim(ClaimTypes.NameIdentifier, "6f1b6c2e-43c5-4d8f-9a55-3b7f0c1f2a9d"));
+        first.AddClaim(new Claim(ClaimTypes.Name, "someone@example.com"));
+        first.AddClaim(new Claim(ClaimTypes.Role, "Admin"));
+        first.AddClaim(new Claim("unicode", "caf\u00e9 \u4e2d\u6587 \U0001F600"));
+        first.AddClaim(new Claim("long", longValue));
+        first.AddClaim(new Claim("verylong", new string('y', 20_000)));
+        first.AddClaim(new Claim("empty", string.Empty));
+        first.AddClaim(new Claim("typed", "42", ClaimValueTypes.Integer32, "issuer", "original-issuer"));
+        first.AddClaim(new Claim("same-issuer", "v", ClaimValueTypes.String, "issuer"));
+        var withProperties = new Claim("with-properties", "v");
+        withProperties.Properties.Add("p1", "v1");
+        withProperties.Properties.Add("p2", null);
+        first.AddClaim(withProperties);
+        for (var i = 0; i < extraClaimCount; i++)
+        {
+            first.AddClaim(new Claim("claim" + i, "value" + i));
+        }
+
+        var second = new ClaimsIdentity(authenticationType: null, nameType: "n", roleType: "r");
+        second.AddClaim(new Claim("n", "second-name"));
+
+        var properties = new AuthenticationProperties
+        {
+            IssuedUtc = new DateTimeOffset(2026, 10, 31, 0, 0, 0, TimeSpan.Zero),
+            ExpiresUtc = new DateTimeOffset(2026, 11, 14, 0, 0, 0, TimeSpan.Zero),
+            IsPersistent = true,
+            RedirectUri = longValue,
+        };
+        properties.Items["empty"] = string.Empty;
+        properties.Items["null"] = null;
+
+        return new AuthenticationTicket(new ClaimsPrincipal(new[] { first, second }), properties, "Identity.Application");
+    }
+
+    // Covers every format element (default placeholders, bootstrap context, actor, claim properties, multi-byte
+    // UTF-8 and a two-byte string length prefix) while staying small enough to truncate at every length.
+    private static AuthenticationTicket CreateSmallTicket()
+    {
+        var actor = new ClaimsIdentity("actor-auth");
+        actor.AddClaim(new Claim("actor-claim", "actor-value"));
+
+        var identity = new ClaimsIdentity("auth") { BootstrapContext = "bootstrap", Actor = actor };
+        identity.AddClaim(new Claim(ClaimTypes.Name, "caf\u00e9 \U0001F600"));
+        identity.AddClaim(new Claim("typed", "42", ClaimValueTypes.Integer32, "issuer", "original-issuer"));
+        var withProperties = new Claim("long", new string('x', 200));
+        withProperties.Properties.Add("p", "v");
+        identity.AddClaim(withProperties);
+
+        var properties = new AuthenticationProperties { IsPersistent = true };
+        properties.Items["null"] = null;
+
+        return new AuthenticationTicket(new ClaimsPrincipal(identity), properties, "Scheme");
+    }
+
+    private static void AssertTicketsEqual(AuthenticationTicket expected, AuthenticationTicket actual)
+    {
+        Assert.Equal(expected.AuthenticationScheme, actual.AuthenticationScheme);
+        Assert.Equal(
+            expected.Properties.Items.Select(i => KeyValuePair.Create(i.Key, i.Value ?? string.Empty)),
+            actual.Properties.Items);
+
+        var expectedIdentities = expected.Principal.Identities.ToArray();
+        var actualIdentities = actual.Principal.Identities.ToArray();
+        Assert.Equal(expectedIdentities.Length, actualIdentities.Length);
+        for (var i = 0; i < expectedIdentities.Length; i++)
+        {
+            AssertIdentitiesEqual(expectedIdentities[i], actualIdentities[i]);
+        }
+    }
+
+    private static void AssertIdentitiesEqual(ClaimsIdentity expected, ClaimsIdentity actual)
+    {
+        Assert.Equal(expected.AuthenticationType ?? string.Empty, actual.AuthenticationType);
+        Assert.Equal(expected.NameClaimType, actual.NameClaimType);
+        Assert.Equal(expected.RoleClaimType, actual.RoleClaimType);
+        Assert.Equal(expected.BootstrapContext, actual.BootstrapContext);
+
+        var expectedClaims = expected.Claims.ToArray();
+        var actualClaims = actual.Claims.ToArray();
+        Assert.Equal(expectedClaims.Length, actualClaims.Length);
+        for (var i = 0; i < expectedClaims.Length; i++)
+        {
+            Assert.Equal(expectedClaims[i].Type, actualClaims[i].Type);
+            Assert.Equal(expectedClaims[i].Value, actualClaims[i].Value);
+            Assert.Equal(expectedClaims[i].ValueType, actualClaims[i].ValueType);
+            Assert.Equal(expectedClaims[i].Issuer, actualClaims[i].Issuer);
+            Assert.Equal(expectedClaims[i].OriginalIssuer, actualClaims[i].OriginalIssuer);
+            Assert.Same(actual, actualClaims[i].Subject);
+            Assert.Equal(
+                expectedClaims[i].Properties.Select(p => KeyValuePair.Create(p.Key, p.Value ?? string.Empty)),
+                actualClaims[i].Properties);
+        }
+
+        if (expected.Actor is null)
+        {
+            Assert.Null(actual.Actor);
+        }
+        else
+        {
+            AssertIdentitiesEqual(expected.Actor, actual.Actor);
+        }
+    }
+
+    // Derived serializers always use the BinaryWriter/BinaryReader-based virtual methods.
+    private sealed class DerivedTicketSerializer : TicketSerializer
+    {
+    }
+
+    private sealed class DerivedPropertiesSerializer : PropertiesSerializer
+    {
+    }
+
+    private sealed class OverrideTrackingSerializer : TicketSerializer
+    {
+        public int WriteIdentityCount { get; private set; }
+        public int WriteClaimCount { get; private set; }
+        public int ReadIdentityCount { get; private set; }
+        public int ReadClaimCount { get; private set; }
+
+        protected override void WriteIdentity(BinaryWriter writer, ClaimsIdentity identity)
+        {
+            WriteIdentityCount++;
+            base.WriteIdentity(writer, identity);
+        }
+
+        protected override void WriteClaim(BinaryWriter writer, Claim claim)
+        {
+            WriteClaimCount++;
+            base.WriteClaim(writer, claim);
+        }
+
+        protected override ClaimsIdentity ReadIdentity(BinaryReader reader)
+        {
+            ReadIdentityCount++;
+            return base.ReadIdentity(reader);
+        }
+
+        protected override Claim ReadClaim(BinaryReader reader, ClaimsIdentity identity)
+        {
+            ReadClaimCount++;
+            var claim = base.ReadClaim(reader, identity);
+            claim.Properties["read-by"] = "custom";
+            return claim;
+        }
+    }
+
+    private sealed class CustomPropertiesSerializer : PropertiesSerializer
+    {
+        public override void Write(BinaryWriter writer, AuthenticationProperties properties)
+        {
+            properties.Items["written-by"] = "custom";
+            base.Write(writer, properties);
+        }
+
+        public override AuthenticationProperties Read(BinaryReader reader)
+        {
+            var properties = base.Read(reader);
+            properties.Items["read-by"] = "custom";
+            return properties;
         }
     }
 }

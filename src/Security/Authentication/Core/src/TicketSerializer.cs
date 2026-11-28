@@ -12,7 +12,7 @@ namespace Microsoft.AspNetCore.Authentication;
 /// </summary>
 public class TicketSerializer : IDataSerializer<AuthenticationTicket>
 {
-    private const string DefaultStringPlaceholder = "\0";
+    internal const string DefaultStringPlaceholder = "\0";
     private const int FormatVersion = 5;
 
     /// <summary>
@@ -27,6 +27,24 @@ public class TicketSerializer : IDataSerializer<AuthenticationTicket>
     /// <returns>The serialized representation of <paramref name="ticket"/>.</returns>
     public virtual byte[] Serialize(AuthenticationTicket ticket)
     {
+        // When this is exactly TicketSerializer, none of the virtual Write* methods can have been overridden,
+        // so the payload can be written directly into a pooled buffer without a stream and writer.
+        if (GetType() == typeof(TicketSerializer))
+        {
+            ArgumentNullException.ThrowIfNull(ticket);
+
+            var payloadWriter = new BinaryPayloadWriter(initialCapacity: 1024);
+            try
+            {
+                Write(ref payloadWriter, ticket);
+                return payloadWriter.ToArray();
+            }
+            finally
+            {
+                payloadWriter.Dispose();
+            }
+        }
+
         using (var memory = new MemoryStream())
         {
             using (var writer = new BinaryWriter(memory))
@@ -44,6 +62,17 @@ public class TicketSerializer : IDataSerializer<AuthenticationTicket>
     /// <returns>The deserialized <see cref="AuthenticationTicket"/>, or <see langword="null"/> if the format is unsupported.</returns>
     public virtual AuthenticationTicket? Deserialize(byte[] data)
     {
+        // When this is exactly TicketSerializer, none of the virtual Read* methods can have been overridden,
+        // so the payload can be read directly from the buffer without a stream and reader.
+        if (GetType() == typeof(TicketSerializer))
+        {
+            // Matches the parameter name of the MemoryStream constructor used below.
+            ArgumentNullException.ThrowIfNull(data, "buffer");
+
+            var payloadReader = new BinaryPayloadReader(data);
+            return Read(ref payloadReader);
+        }
+
         using (var memory = new MemoryStream(data))
         {
             using (var reader = new BinaryReader(memory))
@@ -63,19 +92,29 @@ public class TicketSerializer : IDataSerializer<AuthenticationTicket>
         ArgumentNullException.ThrowIfNull(writer);
         ArgumentNullException.ThrowIfNull(ticket);
 
-        writer.Write(FormatVersion);
-        writer.Write(ticket.AuthenticationScheme);
+        var payloadWriter = new BinaryPayloadWriter(writer);
+        Write(ref payloadWriter, ticket);
+    }
+
+    // The private ref BinaryPayloadWriter/BinaryPayloadReader overloads below implement the format once for both the
+    // public BinaryWriter/BinaryReader-based methods and the buffer-based fast paths. When the payload writer or reader
+    // wraps a BinaryWriter or BinaryReader, nested identities and claims are dispatched through the virtual methods so
+    // that derived serializers' overrides are honored.
+    private void Write(ref BinaryPayloadWriter writer, AuthenticationTicket ticket)
+    {
+        writer.WriteInt32(FormatVersion);
+        writer.WriteString(ticket.AuthenticationScheme);
 
         // Write the number of identities contained in the principal.
         var principal = ticket.Principal;
-        writer.Write(principal.Identities.Count());
+        writer.WriteInt32(principal.Identities.Count());
 
         foreach (var identity in principal.Identities)
         {
-            WriteIdentity(writer, identity);
+            WriteIdentity(ref writer, identity);
         }
 
-        PropertiesSerializer.Default.Write(writer, ticket.Properties);
+        PropertiesSerializer.Write(ref writer, ticket.Properties);
     }
 
     /// <summary>
@@ -86,41 +125,60 @@ public class TicketSerializer : IDataSerializer<AuthenticationTicket>
     protected virtual void WriteIdentity(BinaryWriter writer, ClaimsIdentity identity)
     {
         ArgumentNullException.ThrowIfNull(writer);
+
+        var payloadWriter = new BinaryPayloadWriter(writer);
+        WriteIdentityCore(ref payloadWriter, identity);
+    }
+
+    private void WriteIdentity(ref BinaryPayloadWriter writer, ClaimsIdentity identity)
+    {
+        if (writer.BinaryWriter is { } binaryWriter)
+        {
+            WriteIdentity(binaryWriter, identity);
+        }
+        else
+        {
+            WriteIdentityCore(ref writer, identity);
+        }
+    }
+
+    private void WriteIdentityCore(ref BinaryPayloadWriter writer, ClaimsIdentity identity)
+    {
         ArgumentNullException.ThrowIfNull(identity);
 
         var authenticationType = identity.AuthenticationType ?? string.Empty;
 
-        writer.Write(authenticationType);
-        WriteWithDefault(writer, identity.NameClaimType, ClaimsIdentity.DefaultNameClaimType);
-        WriteWithDefault(writer, identity.RoleClaimType, ClaimsIdentity.DefaultRoleClaimType);
+        writer.WriteString(authenticationType);
+        WriteWithDefault(ref writer, identity.NameClaimType, ClaimsIdentity.DefaultNameClaimType);
+        WriteWithDefault(ref writer, identity.RoleClaimType, ClaimsIdentity.DefaultRoleClaimType);
 
         // Write the number of claims contained in the identity.
-        writer.Write(identity.Claims.Count());
+        writer.WriteInt32(identity.Claims.Count());
 
         foreach (var claim in identity.Claims)
         {
-            WriteClaim(writer, claim);
+            WriteClaim(ref writer, claim);
         }
 
         var bootstrap = identity.BootstrapContext as string;
         if (!string.IsNullOrEmpty(bootstrap))
         {
-            writer.Write(true);
-            writer.Write(bootstrap);
+            writer.WriteBoolean(true);
+            writer.WriteString(bootstrap);
         }
         else
         {
-            writer.Write(false);
+            writer.WriteBoolean(false);
         }
 
         if (identity.Actor != null)
         {
-            writer.Write(true);
-            WriteIdentity(writer, identity.Actor);
+            writer.WriteBoolean(true);
+            WriteIdentity(ref writer, identity.Actor);
         }
         else
         {
-            writer.Write(false);
+            writer.WriteBoolean(false);
         }
     }
 
@@ -132,21 +190,40 @@ public class TicketSerializer : IDataSerializer<AuthenticationTicket>
     protected virtual void WriteClaim(BinaryWriter writer, Claim claim)
     {
         ArgumentNullException.ThrowIfNull(writer);
+
+        var payloadWriter = new BinaryPayloadWriter(writer);
+        WriteClaimCore(ref payloadWriter, claim);
+    }
+
+    private void WriteClaim(ref BinaryPayloadWriter writer, Claim claim)
+    {
+        if (writer.BinaryWriter is { } binaryWriter)
+        {
+            WriteClaim(binaryWriter, claim);
+        }
+        else
+        {
+            WriteClaimCore(ref writer, claim);
+        }
+    }
+
+    private static void WriteClaimCore(ref BinaryPayloadWriter writer, Claim claim)
+    {
         ArgumentNullException.ThrowIfNull(claim);
 
-        WriteWithDefault(writer, claim.Type, claim.Subject?.NameClaimType ?? ClaimsIdentity.DefaultNameClaimType);
-        writer.Write(claim.Value);
-        WriteWithDefault(writer, claim.ValueType, ClaimValueTypes.String);
-        WriteWithDefault(writer, claim.Issuer, ClaimsIdentity.DefaultIssuer);
-        WriteWithDefault(writer, claim.OriginalIssuer, claim.Issuer);
+        WriteWithDefault(ref writer, claim.Type, claim.Subject?.NameClaimType ?? ClaimsIdentity.DefaultNameClaimType);
+        writer.WriteString(claim.Value);
+        WriteWithDefault(ref writer, claim.ValueType, ClaimValueTypes.String);
+        WriteWithDefault(ref writer, claim.Issuer, ClaimsIdentity.DefaultIssuer);
+        WriteWithDefault(ref writer, claim.OriginalIssuer, claim.Issuer);
 
         // Write the number of properties contained in the claim.
-        writer.Write(claim.Properties.Count);
+        writer.WriteInt32(claim.Properties.Count);
 
         foreach (var property in claim.Properties)
         {
-            writer.Write(property.Key ?? string.Empty);
-            writer.Write(property.Value ?? string.Empty);
+            writer.WriteString(property.Key ?? string.Empty);
+            writer.WriteString(property.Value ?? string.Empty);
         }
     }
 
@@ -159,6 +236,12 @@ public class TicketSerializer : IDataSerializer<AuthenticationTicket>
     {
         ArgumentNullException.ThrowIfNull(reader);
 
+        var payloadReader = new BinaryPayloadReader(reader);
+        return Read(ref payloadReader);
+    }
+
+    private AuthenticationTicket? Read(ref BinaryPayloadReader reader)
+    {
         if (reader.ReadInt32() != FormatVersion)
         {
             return null;
@@ -177,10 +260,10 @@ public class TicketSerializer : IDataSerializer<AuthenticationTicket>
         var identities = new ClaimsIdentity[count];
         for (var index = 0; index != count; ++index)
         {
-            identities[index] = ReadIdentity(reader);
+            identities[index] = ReadIdentity(ref reader);
         }
 
-        var properties = PropertiesSerializer.Default.Read(reader);
+        var properties = PropertiesSerializer.Read(ref reader);
 
         return new AuthenticationTicket(new ClaimsPrincipal(identities), properties, scheme);
     }
@@ -194,9 +277,22 @@ public class TicketSerializer : IDataSerializer<AuthenticationTicket>
     {
         ArgumentNullException.ThrowIfNull(reader);
 
+        var payloadReader = new BinaryPayloadReader(reader);
+        return ReadIdentityCore(ref payloadReader);
+    }
+
+    private ClaimsIdentity ReadIdentity(ref BinaryPayloadReader reader)
+    {
+        return reader.BinaryReader is { } binaryReader
+            ? ReadIdentity(binaryReader)
+            : ReadIdentityCore(ref reader);
+    }
+
+    private ClaimsIdentity ReadIdentityCore(ref BinaryPayloadReader reader)
+    {
         var authenticationType = reader.ReadString();
-        var nameClaimType = ReadWithDefault(reader, ClaimsIdentity.DefaultNameClaimType);
-        var roleClaimType = ReadWithDefault(reader, ClaimsIdentity.DefaultRoleClaimType);
+        var nameClaimType = reader.ReadStringWithDefault(ClaimsIdentity.DefaultNameClaimType);
+        var roleClaimType = reader.ReadStringWithDefault(ClaimsIdentity.DefaultRoleClaimType);
 
         // Read the number of claims contained
         // in the serialized identity.
@@ -206,7 +302,7 @@ public class TicketSerializer : IDataSerializer<AuthenticationTicket>
 
         for (int index = 0; index != count; ++index)
         {
-            var claim = ReadClaim(reader, identity);
+            var claim = ReadClaim(ref reader, identity);
 
             identity.AddClaim(claim);
         }
@@ -222,7 +318,7 @@ public class TicketSerializer : IDataSerializer<AuthenticationTicket>
         // has an actor identity attached.
         if (reader.ReadBoolean())
         {
-            identity.Actor = ReadIdentity(reader);
+            identity.Actor = ReadIdentity(ref reader);
         }
 
         return identity;
@@ -239,11 +335,24 @@ public class TicketSerializer : IDataSerializer<AuthenticationTicket>
         ArgumentNullException.ThrowIfNull(reader);
         ArgumentNullException.ThrowIfNull(identity);
 
-        var type = ReadWithDefault(reader, identity.NameClaimType);
+        var payloadReader = new BinaryPayloadReader(reader);
+        return ReadClaimCore(ref payloadReader, identity);
+    }
+
+    private Claim ReadClaim(ref BinaryPayloadReader reader, ClaimsIdentity identity)
+    {
+        return reader.BinaryReader is { } binaryReader
+            ? ReadClaim(binaryReader, identity)
+            : ReadClaimCore(ref reader, identity);
+    }
+
+    private static Claim ReadClaimCore(ref BinaryPayloadReader reader, ClaimsIdentity identity)
+    {
+        var type = reader.ReadStringWithDefault(identity.NameClaimType);
         var value = reader.ReadString();
-        var valueType = ReadWithDefault(reader, ClaimValueTypes.String);
-        var issuer = ReadWithDefault(reader, ClaimsIdentity.DefaultIssuer);
-        var originalIssuer = ReadWithDefault(reader, issuer);
+        var valueType = reader.ReadStringWithDefault(ClaimValueTypes.String);
+        var issuer = reader.ReadStringWithDefault(ClaimsIdentity.DefaultIssuer);
+        var originalIssuer = reader.ReadStringWithDefault(issuer);
 
         var claim = new Claim(type, value, valueType, issuer, originalIssuer, identity);
 
@@ -261,25 +370,15 @@ public class TicketSerializer : IDataSerializer<AuthenticationTicket>
         return claim;
     }
 
-    private static void WriteWithDefault(BinaryWriter writer, string value, string defaultValue)
+    private static void WriteWithDefault(ref BinaryPayloadWriter writer, string value, string defaultValue)
     {
         if (string.Equals(value, defaultValue, StringComparison.Ordinal))
         {
-            writer.Write(DefaultStringPlaceholder);
+            writer.WriteString(DefaultStringPlaceholder);
         }
         else
         {
-            writer.Write(value);
+            writer.WriteString(value);
         }
-    }
-
-    private static string ReadWithDefault(BinaryReader reader, string defaultValue)
-    {
-        var value = reader.ReadString();
-        if (string.Equals(value, DefaultStringPlaceholder, StringComparison.Ordinal))
-        {
-            return defaultValue;
-        }
-        return value;
     }
 }

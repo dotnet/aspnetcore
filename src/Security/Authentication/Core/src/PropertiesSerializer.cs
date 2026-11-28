@@ -18,6 +18,22 @@ public class PropertiesSerializer : IDataSerializer<AuthenticationProperties>
     /// <inheritdoc />
     public virtual byte[] Serialize(AuthenticationProperties model)
     {
+        // When this is exactly PropertiesSerializer, Write cannot have been overridden,
+        // so the payload can be written directly into a pooled buffer without a stream and writer.
+        if (GetType() == typeof(PropertiesSerializer))
+        {
+            var payloadWriter = new BinaryPayloadWriter(initialCapacity: 256);
+            try
+            {
+                Write(ref payloadWriter, model);
+                return payloadWriter.ToArray();
+            }
+            finally
+            {
+                payloadWriter.Dispose();
+            }
+        }
+
         using (var memory = new MemoryStream())
         {
             using (var writer = new BinaryWriter(memory))
@@ -32,6 +48,17 @@ public class PropertiesSerializer : IDataSerializer<AuthenticationProperties>
     /// <inheritdoc />
     public virtual AuthenticationProperties? Deserialize(byte[] data)
     {
+        // When this is exactly PropertiesSerializer, Read cannot have been overridden,
+        // so the payload can be read directly from the buffer without a stream and reader.
+        if (GetType() == typeof(PropertiesSerializer))
+        {
+            // Matches the parameter name of the MemoryStream constructor used below.
+            ArgumentNullException.ThrowIfNull(data, "buffer");
+
+            var payloadReader = new BinaryPayloadReader(data);
+            return Read(ref payloadReader);
+        }
+
         using (var memory = new MemoryStream(data))
         {
             using (var reader = new BinaryReader(memory))
@@ -45,15 +72,22 @@ public class PropertiesSerializer : IDataSerializer<AuthenticationProperties>
     public virtual void Write(BinaryWriter writer, AuthenticationProperties properties)
     {
         ArgumentNullException.ThrowIfNull(writer);
+
+        var payloadWriter = new BinaryPayloadWriter(writer);
+        Write(ref payloadWriter, properties);
+    }
+
+    internal static void Write(ref BinaryPayloadWriter writer, AuthenticationProperties properties)
+    {
         ArgumentNullException.ThrowIfNull(properties);
 
-        writer.Write(FormatVersion);
-        writer.Write(properties.Items.Count);
+        writer.WriteInt32(FormatVersion);
+        writer.WriteInt32(properties.Items.Count);
 
         foreach (var item in properties.Items)
         {
-            writer.Write(item.Key ?? string.Empty);
-            writer.Write(item.Value ?? string.Empty);
+            writer.WriteString(item.Key ?? string.Empty);
+            writer.WriteString(item.Value ?? string.Empty);
         }
     }
 
@@ -62,6 +96,12 @@ public class PropertiesSerializer : IDataSerializer<AuthenticationProperties>
     {
         ArgumentNullException.ThrowIfNull(reader);
 
+        var payloadReader = new BinaryPayloadReader(reader);
+        return Read(ref payloadReader);
+    }
+
+    internal static AuthenticationProperties? Read(ref BinaryPayloadReader reader)
+    {
         if (reader.ReadInt32() != FormatVersion)
         {
             return null;
