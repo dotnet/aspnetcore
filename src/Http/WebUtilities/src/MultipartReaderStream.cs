@@ -229,7 +229,7 @@ internal sealed class MultipartReaderStream : Stream
             Debug.Assert(read == length); // It should have all been buffered
 
             var remainder = stream._innerStream.ReadLine(lengthLimit: 100).AsSpan(); // Whitespace may exceed the buffer.
-            remainder = remainder.Trim();
+            remainder = remainder.Trim(" \t");
             if (remainder.Equals("--", StringComparison.Ordinal))
             {
                 stream.FinalBoundaryFound = true;
@@ -319,7 +319,7 @@ internal sealed class MultipartReaderStream : Stream
             Debug.Assert(read == length); // It should have all been buffered
 
             var remainder = await stream._innerStream.ReadLineAsync(lengthLimit: 100, cancellationToken: cancellationToken); // Whitespace may exceed the buffer.
-            remainder = remainder.Trim();
+            remainder = remainder.Trim(' ', '\t');
             if (string.Equals("--", remainder, StringComparison.Ordinal))
             {
                 stream.FinalBoundaryFound = true;
