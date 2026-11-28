@@ -1,1 +1,2 @@
 #nullable enable
+Microsoft.AspNetCore.OutputCaching.OutputCachePolicyBuilder.UseResponseCachingSemantics() -> Microsoft.AspNetCore.OutputCaching.OutputCachePolicyBuilder!

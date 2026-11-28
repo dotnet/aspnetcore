@@ -18,7 +18,7 @@ using Microsoft.Net.Http.Headers;
 namespace Microsoft.AspNetCore.NewResponseCaching.Tests;
 
 /// <summary>
-/// Mirrors the Response Caching test application, but hosts it with Output Caching configured with <see cref="ResponseCachingPolicy"/>.
+/// Mirrors the Response Caching test application, but hosts it with Output Caching configured with <see cref="OutputCachePolicyBuilder.UseResponseCachingSemantics"/>.
 /// </summary>
 internal static class ResponseCachingTestUtils
 {
@@ -158,9 +158,9 @@ internal static class ResponseCachingTestUtils
 
                             outputCacheOptions.AddBasePolicy(policy =>
                             {
-                                policy.AddPolicy(ResponseCachingPolicy.Instance);
+                                policy.UseResponseCachingSemantics();
                                 configurePolicy?.Invoke(policy);
-                            }, excludeDefaultPolicy: true);
+                            });
                         });
                     })
                     .Configure(app =>
