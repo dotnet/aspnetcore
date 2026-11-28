@@ -39,4 +39,9 @@ public class IdentityConstants
     /// The scheme used to identify Two Factor authentication cookies for round tripping user identities.
     /// </summary>
     public static readonly string TwoFactorUserIdScheme = IdentityPrefix + ".TwoFactorUserId";
+
+    /// <summary>
+    /// The scheme used to store passkey ceremony state.
+    /// </summary>
+    internal const string PasskeyScheme = IdentityPrefix + ".Passkey";
 }

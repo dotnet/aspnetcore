@@ -20,6 +20,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Time.Testing;
 using Microsoft.Net.Http.Headers;
+using Moq;
 
 namespace Microsoft.AspNetCore.Identity.InMemory;
 
@@ -407,7 +408,7 @@ public class FunctionalTest : LoggedTest
                 options.TimeProvider = timeProvider;
                 options.ValidationInterval = TimeSpan.Zero;
             });
-            services.Configure<CookieAuthenticationOptions>(IdentityConstants.TwoFactorUserIdScheme, options =>
+            services.Configure<CookieAuthenticationOptions>(IdentityConstants.PasskeyScheme, options =>
             {
                 options.TimeProvider = timeProvider;
             });
@@ -416,21 +417,182 @@ public class FunctionalTest : LoggedTest
         var transaction1 = await SendAsync(server, "http://example.com/createMe");
         Assert.Equal(HttpStatusCode.OK, transaction1.Response.StatusCode);
 
-        // Begin a passkey ceremony. This stashes ceremony state in the TwoFactorUserId cookie
+        // Begin a passkey ceremony. This stashes ceremony state in the passkey cookie
         // using an empty principal (no user id / security stamp claim).
         var transaction2 = await SendAsync(server, "http://example.com/makePasskeyRequestOptions");
         Assert.Equal(HttpStatusCode.OK, transaction2.Response.StatusCode);
-        Assert.Contains(IdentityConstants.TwoFactorUserIdScheme + "=", transaction2.SetCookie);
+        Assert.Contains(IdentityConstants.PasskeyScheme + "=", transaction2.SetCookie);
 
-        // Advance past the (zero) validation interval so the security stamp validator runs
-        // on the next request while the ceremony cookie is still within its 5 minute lifetime.
+        // Advance past the (zero) validation interval while the ceremony cookie is still
+        // within its 5 minute lifetime.
         timeProvider.Advance(TimeSpan.FromMinutes(1));
 
-        // Retrieving the passkey ceremony state authenticates the TwoFactorUserId cookie, exactly
+        // Retrieving the passkey ceremony state authenticates the passkey cookie, exactly
         // as RetrievePasskeyAuthenticationInfoAsync does. The empty ceremony principal must not be
-        // rejected by the two-factor security stamp validator, otherwise the ceremony state is lost.
-        var transaction3 = await SendAsync(server, "http://example.com/hasTwoFactorUserId", transaction2.CookieNameValue);
+        // subject to two-factor security stamp validation, otherwise the ceremony state is lost.
+        var transaction3 = await SendAsync(server, "http://example.com/me/" + IdentityConstants.PasskeyScheme, transaction2.CookieNameValue);
         Assert.Equal(HttpStatusCode.OK, transaction3.Response.StatusCode);
+        Assert.Equal("test-assertion-state", transaction3.ResponseElement.Elements("extra")
+            .Single(element => element.Attribute("type").Value == "PasskeyState").Attribute("value").Value);
+    }
+
+    [Theory]
+    [InlineData(false, false, false, false)]
+    [InlineData(false, false, false, true)]
+    [InlineData(false, false, true, false)]
+    [InlineData(false, false, true, true)]
+    [InlineData(false, true, false, false)]
+    [InlineData(false, true, false, true)]
+    [InlineData(false, true, true, false)]
+    [InlineData(false, true, true, true)]
+    [InlineData(true, false, false, false)]
+    [InlineData(true, false, false, true)]
+    [InlineData(true, false, true, false)]
+    [InlineData(true, false, true, true)]
+    [InlineData(true, true, false, false)]
+    [InlineData(true, true, false, true)]
+    [InlineData(true, true, true, false)]
+    [InlineData(true, true, true, true)]
+    public async Task PasskeyCeremonyAndTwoFactorSignInHaveIndependentState(bool passkeyFirst, bool attestation, bool testCore, bool completePasskeyFirst)
+    {
+        var passkeyHandler = new Mock<IPasskeyHandler<PocoUser>>();
+        passkeyHandler.Setup(handler => handler.MakeRequestOptionsAsync(It.IsAny<PocoUser>(), It.IsAny<HttpContext>()))
+            .ReturnsAsync(new PasskeyRequestOptionsResult { RequestOptionsJson = "{}", AssertionState = "assertion-state" });
+        passkeyHandler.Setup(handler => handler.MakeCreationOptionsAsync(It.IsAny<PasskeyUserEntity>(), It.IsAny<HttpContext>()))
+            .ReturnsAsync(new PasskeyCreationOptionsResult { CreationOptionsJson = "{}", AttestationState = "attestation-state" });
+        var passkey = new UserPasskeyInfo(
+            credentialId: [1, 2, 3], publicKey: [4, 5, 6], createdAt: DateTimeOffset.UtcNow,
+            signCount: 0, transports: [], isUserVerified: true, isBackupEligible: true,
+            isBackedUp: true, attestationObject: [7, 8, 9], clientDataJson: [10, 11, 12]);
+        passkeyHandler.Setup(handler => handler.PerformAssertionAsync(
+                It.Is<PasskeyAssertionContext>(context => context.AssertionState == "assertion-state")))
+            .ReturnsAsync(PasskeyAssertionResult.Success(passkey, new PocoUser { UserName = "hao" })).Verifiable();
+        passkeyHandler.Setup(handler => handler.PerformAttestationAsync(
+                It.Is<PasskeyAttestationContext>(context => context.AttestationState == "attestation-state")))
+            .ReturnsAsync(PasskeyAttestationResult.Success(passkey, new PasskeyUserEntity { Id = "hao", Name = "hao", DisplayName = "hao" })).Verifiable();
+
+        var timeProvider = new FakeTimeProvider();
+        using var server = await CreateServer(
+            services =>
+            {
+                services.AddSingleton(passkeyHandler.Object);
+                services.AddSingleton<TimeProvider>(timeProvider);
+                services.Configure<CookieAuthenticationOptions>(IdentityConstants.TwoFactorUserIdScheme, options =>
+                {
+                    options.TimeProvider = timeProvider;
+                    options.ExpireTimeSpan = TimeSpan.FromMinutes(30);
+                });
+            },
+            testpath: async context =>
+            {
+                var users = context.RequestServices.GetRequiredService<UserManager<PocoUser>>();
+                var signIn = context.RequestServices.GetRequiredService<SignInManager<PocoUser>>();
+                var user = await users.FindByNameAsync("hao");
+                switch (context.Request.Query["action"].ToString())
+                {
+                    case "enable":
+                        Assert.True((await users.SetEmailAsync(user, "hao@example.com")).Succeeded);
+                        var emailToken = await users.GenerateEmailConfirmationTokenAsync(user);
+                        Assert.True((await users.ConfirmEmailAsync(user, emailToken)).Succeeded);
+                        Assert.True((await users.SetTwoFactorEnabledAsync(user, true)).Succeeded);
+                        break;
+                    case "password":
+                        var result = await signIn.PasswordSignInAsync("hao", TestPassword, isPersistent: false, lockoutOnFailure: false);
+                        Assert.True(result.RequiresTwoFactor);
+                        break;
+                    case "passkey":
+                        if (attestation)
+                        {
+                            await signIn.MakePasskeyCreationOptionsAsync(new PasskeyUserEntity
+                            {
+                                Id = user.Id,
+                                Name = user.UserName,
+                                DisplayName = user.UserName,
+                            });
+                        }
+                        else
+                        {
+                            await signIn.MakePasskeyRequestOptionsAsync(user);
+                        }
+                        break;
+                    case "pending":
+                        await context.Response.WriteAsync((await signIn.GetTwoFactorAuthenticationUserAsync())?.UserName ?? "");
+                        break;
+                    case "consume":
+                        if (attestation)
+                        {
+                            var attestationResult = await signIn.PerformPasskeyAttestationAsync("{}");
+                            Assert.True(attestationResult.Succeeded);
+                            Assert.Same(passkey, attestationResult.Passkey);
+                        }
+                        else
+                        {
+                            var assertionResult = await signIn.PerformPasskeyAssertionAsync("{}");
+                            Assert.True(assertionResult.Succeeded);
+                            Assert.Same(passkey, assertionResult.Passkey);
+                        }
+                        break;
+                    case "complete":
+                        var code = await users.GenerateTwoFactorTokenAsync(user, TokenOptions.DefaultEmailProvider);
+                        var completed = await signIn.TwoFactorSignInAsync(
+                            TokenOptions.DefaultEmailProvider, code, isPersistent: false, rememberClient: false);
+                        Assert.True(completed.Succeeded);
+                        break;
+                    default:
+                        throw new InvalidOperationException("Unknown test action.");
+                }
+            }, testCore: testCore, individualCookies: testCore);
+        var cookies = new CookieContainer();
+        var created = await SendAsync(server, "http://example.com/createMe");
+        Assert.Equal(HttpStatusCode.OK, created.Response.StatusCode);
+        await SendWithCookiesAsync(server, "http://example.com/testpath?action=enable", cookies);
+
+        await SendWithCookiesAsync(server, $"http://example.com/testpath?action={(passkeyFirst ? "passkey" : "password")}", cookies);
+        await SendWithCookiesAsync(server, $"http://example.com/testpath?action={(passkeyFirst ? "password" : "passkey")}", cookies);
+
+        timeProvider.Advance(TimeSpan.FromMinutes(10));
+
+        var pending = await SendWithCookiesAsync(server, "http://example.com/testpath?action=pending", cookies);
+        Assert.Equal("hao", pending.ResponseText);
+        if (completePasskeyFirst)
+        {
+            await SendWithCookiesAsync(server, "http://example.com/testpath?action=consume", cookies);
+            pending = await SendWithCookiesAsync(server, "http://example.com/testpath?action=pending", cookies);
+            Assert.Equal("hao", pending.ResponseText);
+            await SendWithCookiesAsync(server, "http://example.com/testpath?action=complete", cookies);
+        }
+        else
+        {
+            await SendWithCookiesAsync(server, "http://example.com/testpath?action=complete", cookies);
+            await SendWithCookiesAsync(server, "http://example.com/testpath?action=consume", cookies);
+        }
+        var authenticated = await SendWithCookiesAsync(server, "http://example.com/me", cookies);
+        Assert.Equal("hao", FindClaimValue(authenticated, ClaimTypes.Name));
+
+        if (attestation)
+        {
+            passkeyHandler.Verify(handler => handler.PerformAttestationAsync(It.IsAny<PasskeyAttestationContext>()), Times.Once);
+        }
+        else
+        {
+            passkeyHandler.Verify(handler => handler.PerformAssertionAsync(It.IsAny<PasskeyAssertionContext>()), Times.Once);
+        }
+    }
+
+    private static async Task<Transaction> SendWithCookiesAsync(TestServer server, string uri, CookieContainer cookies)
+    {
+        var address = new Uri(uri);
+        var transaction = await SendAsync(server, uri, cookies.GetCookieHeader(address));
+        Assert.Equal(HttpStatusCode.OK, transaction.Response.StatusCode);
+        if (transaction.Response.Headers.TryGetValues("Set-Cookie", out var headers))
+        {
+            foreach (var header in headers)
+            {
+                cookies.SetCookies(address, header);
+            }
+        }
+
+        return transaction;
     }
 
     private sealed class TestPasskeyHandler : IPasskeyHandler<PocoUser>
@@ -462,7 +624,7 @@ public class FunctionalTest : LoggedTest
         return claim.Attribute("value").Value;
     }
 
-    private async Task<TestServer> CreateServer(Action<IServiceCollection> configureServices = null, Func<HttpContext, Task> testpath = null, Uri baseAddress = null, bool testCore = false)
+    private async Task<TestServer> CreateServer(Action<IServiceCollection> configureServices = null, Func<HttpContext, Task> testpath = null, Uri baseAddress = null, bool testCore = false, bool individualCookies = false)
     {
         var host = new HostBuilder()
             .ConfigureWebHost(builder =>
@@ -601,7 +763,18 @@ public class FunctionalTest : LoggedTest
                             .AddRoles<PocoRole>()
                             .AddSignInManager()
                             .AddDefaultTokenProviders();
-                        services.AddAuthentication(IdentityConstants.ApplicationScheme).AddIdentityCookies();
+                        var authentication = services.AddAuthentication(IdentityConstants.ApplicationScheme);
+                        if (individualCookies)
+                        {
+                            authentication.AddApplicationCookie();
+                            authentication.AddExternalCookie();
+                            authentication.AddTwoFactorRememberMeCookie();
+                            authentication.AddTwoFactorUserIdCookie();
+                        }
+                        else
+                        {
+                            authentication.AddIdentityCookies();
+                        }
                     }
                     else
                     {

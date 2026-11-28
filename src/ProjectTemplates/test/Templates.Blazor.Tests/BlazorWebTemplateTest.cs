@@ -363,7 +363,7 @@ public class BlazorWebTemplateTest(ProjectFactoryFixture projectFactory) : Blazo
         Assert.Equal(shouldSignal ? 2 : 1, upgradeRequests.Count);
         Assert.Contains("_handler=passkey-upgrade", upgradeRequests[0].PostData);
         var registrationHeaders = await upgradeRequests[0].AllHeadersAsync();
-        Assert.Contains("Identity.TwoFactorUserId=", registrationHeaders["cookie"]);
+        Assert.Contains("Identity.Passkey=", registrationHeaders["cookie"]);
         Assert.Contains("Input.CredentialJson=", upgradeRequests[0].PostData);
         if (shouldSignal)
         {
@@ -373,7 +373,7 @@ public class BlazorWebTemplateTest(ProjectFactoryFixture projectFactory) : Blazo
             Assert.DoesNotContain("creation-options=", redisplayedPage);
             Assert.Contains("_handler=passkey-upgrade", upgradeRequests[1].PostData);
             var continuationHeaders = await upgradeRequests[1].AllHeadersAsync();
-            Assert.DoesNotContain("Identity.TwoFactorUserId=", continuationHeaders["cookie"]);
+            Assert.DoesNotContain("Identity.Passkey=", continuationHeaders["cookie"]);
             Assert.DoesNotContain("Input.CredentialJson=", upgradeRequests[1].PostData);
             Assert.DoesNotContain("Input.Error=", upgradeRequests[1].PostData);
         }

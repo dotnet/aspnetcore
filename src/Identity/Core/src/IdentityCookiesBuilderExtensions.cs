@@ -95,6 +95,33 @@ public static class IdentityCookieAuthenticationBuilderExtensions
     /// </summary>
     /// <param name="builder">The current <see cref="AuthenticationBuilder"/> instance.</param>
     /// <returns>The <see cref="OptionsBuilder{TOptions}"/> which can be used to configure the cookie authentication.</returns>
+    /// <remarks>
+    /// This also registers the separate <c>Identity.Passkey</c> cookie used by passkey ceremonies.
+    /// The passkey cookie inherits the two-factor cookie's data protection provider, session store,
+    /// and cookie manager unless explicitly configured, but uses its own ticket data format with the
+    /// passkey scheme's purpose.
+    /// Scheme forwarding settings (<see cref="AuthenticationSchemeOptions.ForwardDefaultSelector"/>,
+    /// <see cref="AuthenticationSchemeOptions.ForwardDefault"/>, and operation-specific <c>Forward*</c>
+    /// properties) are not inherited so passkey state is not forwarded into two-factor target schemes.
+    /// Applications that use scheme forwarding on <see cref="IdentityConstants.TwoFactorUserIdScheme"/>
+    /// (for example, per-tenant cookie handlers) must register separate passkey target schemes and
+    /// configure forwarding on <c>Identity.Passkey</c>.
+    /// Register direct <c>Identity.Passkey</c> cookie configuration after this method or the Identity
+    /// registration that calls it so it takes precedence over the inherited two-factor settings.
+    /// Applications that manually register <see cref="IdentityConstants.TwoFactorUserIdScheme"/> with
+    /// <c>AddCookie</c> and use passkeys should replace that registration with this method and reapply
+    /// their two-factor cookie settings using the returned options builder.
+    /// Because this method registers two schemes, applications that previously relied on the two-factor
+    /// cookie being the only scheme must configure an explicit default scheme for operations that
+    /// do not specify a scheme. Applications with an existing explicit default should keep that default.
+    /// </remarks>
+    /// <example>
+    /// To retain the two-factor cookie as the default in a standalone registration:
+    /// <code>
+    /// services.AddAuthentication(IdentityConstants.TwoFactorUserIdScheme)
+    ///     .AddTwoFactorUserIdCookie();
+    /// </code>
+    /// </example>
     public static OptionsBuilder<CookieAuthenticationOptions> AddTwoFactorUserIdCookie(this AuthenticationBuilder builder)
     {
         builder.AddCookie(IdentityConstants.TwoFactorUserIdScheme, o =>
@@ -106,6 +133,56 @@ public static class IdentityCookieAuthenticationBuilderExtensions
             };
             o.ExpireTimeSpan = TimeSpan.FromMinutes(5);
         });
+        builder.AddPasskeyCookie();
         return new OptionsBuilder<CookieAuthenticationOptions>(builder.Services, IdentityConstants.TwoFactorUserIdScheme);
+    }
+
+    /// <summary>
+    /// Adds the identity cookie used to store passkey ceremony state.
+    /// </summary>
+    /// <param name="builder">The current <see cref="AuthenticationBuilder"/> instance.</param>
+    /// <returns>The <see cref="OptionsBuilder{TOptions}"/> which can be used to configure the cookie authentication.</returns>
+    internal static OptionsBuilder<CookieAuthenticationOptions> AddPasskeyCookie(this AuthenticationBuilder builder)
+    {
+        builder.AddCookie(IdentityConstants.PasskeyScheme, o =>
+        {
+            o.Cookie.Name = IdentityConstants.PasskeyScheme;
+            o.Events = new CookieAuthenticationEvents
+            {
+                OnRedirectToReturnUrl = _ => Task.CompletedTask
+            };
+            o.ExpireTimeSpan = TimeSpan.FromMinutes(5);
+        });
+
+        return builder.Services.AddOptions<CookieAuthenticationOptions>(IdentityConstants.PasskeyScheme)
+                .Configure<IServiceProvider>((options, services) =>
+                {
+                    // Resolve lazily to avoid a dependency cycle through the options factory.
+                    var twoFactor = services.GetRequiredService<IOptionsMonitor<CookieAuthenticationOptions>>()
+                        .Get(IdentityConstants.TwoFactorUserIdScheme);
+                    options.ExpireTimeSpan = twoFactor.ExpireTimeSpan;
+                    options.SlidingExpiration = twoFactor.SlidingExpiration;
+                    options.TimeProvider ??= twoFactor.TimeProvider;
+                    options.DataProtectionProvider ??= twoFactor.DataProtectionProvider;
+                    options.SessionStore ??= twoFactor.SessionStore;
+                    options.CookieManager ??= twoFactor.CookieManager;
+                    // Preserve the default builder so an unset Path uses the request path base.
+                    options.Cookie.Name = twoFactor.Cookie.Name == IdentityConstants.TwoFactorUserIdScheme
+                        ? IdentityConstants.PasskeyScheme
+                        : twoFactor.Cookie.Name + ".Passkey";
+                    options.Cookie.Path = twoFactor.Cookie.Path;
+                    options.Cookie.Domain = twoFactor.Cookie.Domain;
+                    options.Cookie.HttpOnly = twoFactor.Cookie.HttpOnly;
+                    options.Cookie.SameSite = twoFactor.Cookie.SameSite;
+                    options.Cookie.SecurePolicy = twoFactor.Cookie.SecurePolicy;
+                    options.Cookie.IsEssential = twoFactor.Cookie.IsEssential;
+                    options.Cookie.MaxAge = twoFactor.Cookie.MaxAge;
+                    options.Cookie.Expiration = twoFactor.Cookie.Expiration;
+                    options.Cookie.Extensions.Clear();
+                    foreach (var extension in twoFactor.Cookie.Extensions)
+                    {
+                        options.Cookie.Extensions.Add(extension);
+                    }
+                });
     }
 }
