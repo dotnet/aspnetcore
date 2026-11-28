@@ -5,6 +5,8 @@ using Microsoft.AspNetCore.Components.RenderTree;
 using Microsoft.AspNetCore.Components.Test.Helpers;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging.Abstractions;
+using Microsoft.Extensions.Options;
 
 namespace Microsoft.AspNetCore.Components.Endpoints;
 
@@ -112,6 +114,26 @@ public class CacheViewRenderTest
 
         Assert.Equal(0, childContentInvocations);
         AssertContainsMarkup(frames, "<p>from-cache</p>");
+    }
+
+    [Fact]
+    public async Task WaitingForFailedCapture_DoesNotSwallowCaptureException()
+    {
+        using var store = new MemoryCacheViewStore(
+            Options.Create(new RazorComponentsServiceOptions()),
+            NullLogger<MemoryCacheViewStore>.Instance);
+        using var service = new CacheViewService(store, new TestLoggerFactory(new TestLogger()));
+        var creator = new CacheView { CacheKey = "shared" };
+        var creatorState = await service.PrepareAsync(creator, CreateHttpContext());
+        var waiter = new CacheView { CacheKey = "shared" };
+        var waiting = service.PrepareAsync(waiter, CreateHttpContext());
+        Assert.False(waiting.IsCompleted);
+
+        var failure = new InvalidOperationException("capture failed");
+        creatorState.CaptureCompletion.SetException(failure);
+
+        Assert.Same(failure, await Assert.ThrowsAsync<InvalidOperationException>(() => waiting.WaitAsync(TimeSpan.FromSeconds(10))));
+        Assert.Same(failure, await Assert.ThrowsAsync<InvalidOperationException>(() => creatorState.PendingStoreTask.WaitAsync(TimeSpan.FromSeconds(10))));
     }
 
     private static void AssertContainsMarkup(ArrayRange<RenderTreeFrame> frames, string expectedMarkup)

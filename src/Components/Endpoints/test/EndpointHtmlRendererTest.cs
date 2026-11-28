@@ -53,6 +53,266 @@ public class EndpointHtmlRendererTest
     }
 
     [Fact]
+    public async Task CacheView_AsyncParentRerendersBeforeHtmlEmission_PersistsCapturedContent()
+    {
+        var services = CreateDefaultServiceCollection();
+        services.AddLogging();
+        services.AddSingleton<ICacheViewStore, MemoryCacheViewStore>();
+        services.AddScoped<CacheViewService>();
+        services.AddScoped<EndpointHtmlRenderer>(sp => GetEndpointHtmlRenderer(sp));
+        services.AddCascadingValue(sp => sp.GetRequiredService<EndpointHtmlRenderer>().HttpContext);
+        services.AddScoped<NavigationManager, HttpNavigationManager>();
+        services.AddScoped<ComponentStatePersistenceManager>();
+        services.AddScoped(sp => sp.GetRequiredService<ComponentStatePersistenceManager>().State);
+        await using var provider = services.BuildServiceProvider();
+
+        async Task<string> RenderRequestAsync(string marker)
+        {
+            await using var scope = provider.CreateAsyncScope();
+            var requestRenderer = scope.ServiceProvider.GetRequiredService<EndpointHtmlRenderer>();
+            var context = GetHttpContext(new DefaultHttpContext { RequestServices = scope.ServiceProvider });
+            context.Request.Method = HttpMethods.Get;
+            var firstRender = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+            var finishInitialization = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+            var parameters = ParameterView.FromDictionary(new Dictionary<string, object>
+            {
+                [nameof(AsyncCacheViewParent.Marker)] = marker,
+                [nameof(AsyncCacheViewParent.FirstRender)] = firstRender,
+                [nameof(AsyncCacheViewParent.FinishInitialization)] = finishInitialization.Task,
+            });
+
+            var rendering = requestRenderer.Dispatcher.InvokeAsync(async () => await requestRenderer.PrerenderComponentAsync(
+                context, typeof(AsyncCacheViewParent), null, parameters));
+            var started = await Task.WhenAny(firstRender.Task, rendering).WaitAsync(TimeSpan.FromSeconds(10));
+            if (started == rendering)
+            {
+                await rendering;
+            }
+            await firstRender.Task.WaitAsync(TimeSpan.FromSeconds(10));
+            await requestRenderer.Dispatcher.InvokeAsync(() => finishInitialization.SetResult());
+            var result = await rendering.WaitAsync(TimeSpan.FromSeconds(10));
+            var writer = new StringWriter();
+            await requestRenderer.Dispatcher.InvokeAsync(() => result.WriteTo(writer, HtmlEncoder.Default));
+            return writer.ToString();
+        }
+
+        var firstHtml = await RenderRequestAsync("first-request-marker");
+        Assert.Equal("<p>first-request-marker</p>", firstHtml);
+
+        var secondHtml = await RenderRequestAsync("second-request-marker");
+        Assert.Equal(firstHtml, secondHtml);
+    }
+
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task CacheView_AsyncParentChangesKeyBeforeHtmlEmission_ReleasesOriginalCapture(bool varyBy)
+    {
+        var services = CreateDefaultServiceCollection();
+        services.AddLogging();
+        services.AddSingleton<ICacheViewStore, MemoryCacheViewStore>();
+        services.AddScoped<CacheViewService>();
+        services.AddScoped<EndpointHtmlRenderer>(sp => GetEndpointHtmlRenderer(sp));
+        services.AddCascadingValue(sp => sp.GetRequiredService<EndpointHtmlRenderer>().HttpContext);
+        services.AddScoped<NavigationManager, HttpNavigationManager>();
+        services.AddScoped<ComponentStatePersistenceManager>();
+        services.AddScoped(sp => sp.GetRequiredService<ComponentStatePersistenceManager>().State);
+        await using var provider = services.BuildServiceProvider();
+
+        async Task<string> RenderRequestAsync(string initialKey, string finalKey, string marker)
+        {
+            await using var scope = provider.CreateAsyncScope();
+            var requestRenderer = scope.ServiceProvider.GetRequiredService<EndpointHtmlRenderer>();
+            var context = GetHttpContext(new DefaultHttpContext { RequestServices = scope.ServiceProvider });
+            context.Request.Method = HttpMethods.Get;
+            var firstRender = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+            var finishInitialization = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+            Task<SerializedRenderFragment> originalCapture = null;
+            var parameters = ParameterView.FromDictionary(new Dictionary<string, object>
+            {
+                [nameof(AsyncCacheViewParent.Marker)] = marker,
+                [nameof(AsyncCacheViewParent.FirstRender)] = firstRender,
+                [nameof(AsyncCacheViewParent.FinishInitialization)] = finishInitialization.Task,
+                [nameof(AsyncCacheViewParent.InitialKey)] = initialKey,
+                [nameof(AsyncCacheViewParent.FinalKey)] = finalKey,
+                [nameof(AsyncCacheViewParent.UseVaryBy)] = varyBy,
+                [nameof(AsyncCacheViewParent.CaptureReference)] = (Action<CacheView>)(view => originalCapture = view.RenderState?.PendingStoreTask),
+            });
+
+            var rendering = requestRenderer.Dispatcher.InvokeAsync(async () => await requestRenderer.PrerenderComponentAsync(
+                context, typeof(AsyncCacheViewParent), null, parameters));
+            var started = await Task.WhenAny(firstRender.Task, rendering).WaitAsync(TimeSpan.FromSeconds(10));
+            if (started == rendering)
+            {
+                await rendering;
+            }
+            await firstRender.Task.WaitAsync(TimeSpan.FromSeconds(10));
+            await requestRenderer.Dispatcher.InvokeAsync(() => finishInitialization.SetResult());
+            var result = await rendering.WaitAsync(TimeSpan.FromSeconds(10));
+            var writer = new StringWriter();
+            await requestRenderer.Dispatcher.InvokeAsync(() => result.WriteTo(writer, HtmlEncoder.Default));
+            if (initialKey != finalKey)
+            {
+                Assert.NotNull(originalCapture);
+                await Assert.ThrowsAnyAsync<OperationCanceledException>(() => originalCapture.WaitAsync(TimeSpan.FromSeconds(10)));
+            }
+            else if (originalCapture is not null)
+            {
+                await originalCapture.WaitAsync(TimeSpan.FromSeconds(10));
+            }
+            return writer.ToString();
+        }
+
+        Assert.Equal("<p>final-marker</p>", await RenderRequestAsync("initial", "final", "final-marker"));
+        Assert.Equal("<p>original-key-marker</p>", await RenderRequestAsync("initial", "initial", "original-key-marker"));
+        Assert.Equal("<p>final-marker</p>", await RenderRequestAsync("final", "final", "must-not-render"));
+    }
+
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public Task CacheView_AbandonedCapture_RendersWaitingRequestFresh(bool varyBy)
+        => AssertAbandonedCaptureAsync(varyBy, abortWaiter: false);
+
+    [Fact]
+    public Task CacheView_AbandonedCapture_DoesNotIgnoreWaitingRequestAbort()
+        => AssertAbandonedCaptureAsync(varyBy: false, abortWaiter: true);
+
+    private async Task AssertAbandonedCaptureAsync(bool varyBy, bool abortWaiter)
+    {
+        var services = CreateDefaultServiceCollection();
+        services.AddLogging();
+        services.AddSingleton<MemoryCacheViewStore>();
+        services.AddSingleton<JoiningCacheViewStore>();
+        services.AddSingleton<ICacheViewStore>(sp => sp.GetRequiredService<JoiningCacheViewStore>());
+        services.AddScoped<CacheViewService>();
+        services.AddScoped<EndpointHtmlRenderer>(sp => GetEndpointHtmlRenderer(sp));
+        services.AddCascadingValue(sp => sp.GetRequiredService<EndpointHtmlRenderer>().HttpContext);
+        services.AddScoped<NavigationManager, HttpNavigationManager>();
+        services.AddScoped<ComponentStatePersistenceManager>();
+        services.AddScoped(sp => sp.GetRequiredService<ComponentStatePersistenceManager>().State);
+        await using var provider = services.BuildServiceProvider();
+        var store = provider.GetRequiredService<JoiningCacheViewStore>();
+        var finishCreator = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+        using var waiterAbort = new CancellationTokenSource();
+
+        async Task<string> RenderAsync(string initialKey, string finalKey, string marker, Task initialization, CancellationToken cancellationToken = default)
+        {
+            await using var scope = provider.CreateAsyncScope();
+            var requestRenderer = scope.ServiceProvider.GetRequiredService<EndpointHtmlRenderer>();
+            var context = GetHttpContext(new DefaultHttpContext { RequestServices = scope.ServiceProvider });
+            context.Request.Method = HttpMethods.Get;
+            context.RequestAborted = cancellationToken;
+            var parameters = ParameterView.FromDictionary(new Dictionary<string, object>
+            {
+                [nameof(AsyncCacheViewParent.Marker)] = marker,
+                [nameof(AsyncCacheViewParent.FirstRender)] = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously),
+                [nameof(AsyncCacheViewParent.FinishInitialization)] = initialization,
+                [nameof(AsyncCacheViewParent.InitialKey)] = initialKey,
+                [nameof(AsyncCacheViewParent.FinalKey)] = finalKey,
+                [nameof(AsyncCacheViewParent.UseVaryBy)] = varyBy,
+            });
+            return await requestRenderer.Dispatcher.InvokeAsync(async () =>
+            {
+                var result = await requestRenderer.PrerenderComponentAsync(context, typeof(AsyncCacheViewParent), null, parameters);
+                var writer = new StringWriter();
+                result.WriteTo(writer, HtmlEncoder.Default);
+                return writer.ToString();
+            });
+        }
+
+        var creator = RenderAsync("original", "final", "creator-final", finishCreator.Task);
+        await store.CreatorStarted.Task.WaitAsync(TimeSpan.FromSeconds(10));
+        var waiter = RenderAsync("original", "original", "waiter", Task.CompletedTask, waiterAbort.Token);
+        await store.WaiterJoined.Task.WaitAsync(TimeSpan.FromSeconds(10));
+        Assert.False(waiter.IsCompleted);
+        if (abortWaiter)
+        {
+            waiterAbort.Cancel();
+            await store.WaiterFinished.Task.WaitAsync(TimeSpan.FromSeconds(10));
+        }
+        finishCreator.SetResult();
+        Assert.Equal("<p>creator-final</p>", await creator.WaitAsync(TimeSpan.FromSeconds(10)));
+        var waiterHtml = await waiter.WaitAsync(TimeSpan.FromSeconds(10));
+        Assert.Equal(abortWaiter ? "" : "<p>waiter</p>", waiterHtml);
+
+        Assert.Equal("<p>original-fresh</p>", await RenderAsync("original", "original", "original-fresh", Task.CompletedTask).WaitAsync(TimeSpan.FromSeconds(10)));
+        Assert.Equal("<p>original-fresh</p>", await RenderAsync("original", "original", "must-not-render", Task.CompletedTask).WaitAsync(TimeSpan.FromSeconds(10)));
+        Assert.Equal("<p>creator-final</p>", await RenderAsync("final", "final", "must-not-render", Task.CompletedTask).WaitAsync(TimeSpan.FromSeconds(10)));
+    }
+
+    private sealed class JoiningCacheViewStore(MemoryCacheViewStore inner) : ICacheViewStore
+    {
+        public TaskCompletionSource CreatorStarted { get; } = new(TaskCreationOptions.RunContinuationsAsynchronously);
+        public TaskCompletionSource WaiterJoined { get; } = new(TaskCreationOptions.RunContinuationsAsynchronously);
+        public TaskCompletionSource WaiterFinished { get; } = new(TaskCreationOptions.RunContinuationsAsynchronously);
+
+        public async ValueTask<SerializedRenderFragment> GetOrCreateAsync(string key, Func<CancellationToken, ValueTask<SerializedRenderFragment>> factory, CacheStoreOptions options, CancellationToken cancellationToken)
+        {
+            var factoryStarted = false;
+            var pending = inner.GetOrCreateAsync(key, ct =>
+            {
+                factoryStarted = true;
+                CreatorStarted.TrySetResult();
+                return factory(ct);
+            }, options, cancellationToken);
+            // MemoryCacheViewStore invokes the elected factory synchronously before its first await.
+            var joined = !factoryStarted && !pending.IsCompleted;
+            if (joined)
+            {
+                WaiterJoined.TrySetResult();
+            }
+            try
+            {
+                return await pending;
+            }
+            finally
+            {
+                if (joined)
+                {
+                    WaiterFinished.TrySetResult();
+                }
+            }
+        }
+
+        public void Dispose() { }
+    }
+
+    private sealed class AsyncCacheViewParent : ComponentBase
+    {
+        private bool _initialized;
+
+        [Parameter] public string Marker { get; set; }
+        [Parameter] public TaskCompletionSource FirstRender { get; set; }
+        [Parameter] public Task FinishInitialization { get; set; }
+        [Parameter] public string InitialKey { get; set; }
+        [Parameter] public string FinalKey { get; set; }
+        [Parameter] public bool UseVaryBy { get; set; }
+        [Parameter] public Action<CacheView> CaptureReference { get; set; }
+
+        protected override async Task OnInitializedAsync()
+        {
+            await FinishInitialization;
+            _initialized = true;
+        }
+
+        protected override void BuildRenderTree(RenderTreeBuilder builder)
+        {
+            builder.OpenComponent<CacheView>(0);
+            builder.AddComponentParameter(1, nameof(CacheView.ChildContent), (RenderFragment)(content =>
+            {
+                content.OpenElement(0, "p");
+                content.AddContent(1, _initialized ? Marker : "initializing");
+                content.CloseElement();
+            }));
+            builder.AddComponentParameter(2, UseVaryBy ? nameof(CacheView.VaryBy) : nameof(CacheView.CacheKey), _initialized ? FinalKey : InitialKey);
+            builder.AddComponentReferenceCapture(3, instance => CaptureReference?.Invoke((CacheView)instance));
+            builder.CloseComponent();
+            FirstRender.TrySetResult();
+        }
+    }
+
+    [Fact]
     public async Task DoesNotRenderAfterRendererStopped()
     {
         var httpContext = GetHttpContext();
