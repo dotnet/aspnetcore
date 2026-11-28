@@ -1,0 +1,14 @@
+<p id="lazy-render-mode">@(OperatingSystem.IsBrowser() ? "WebAssembly" : "SSR")</p>
+<p id="lazy-count">@count</p>
+<button id="lazy-increment" @onclick="() => count++">Increment</button>
+
+@code {
+    private int count;
+
+    public class Payload
+    {
+        public string Text { get; set; } = string.Empty;
+
+        public override string ToString() => $"Lazy payload: {Text}";
+    }
+}

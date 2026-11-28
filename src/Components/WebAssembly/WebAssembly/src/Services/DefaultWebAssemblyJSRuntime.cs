@@ -3,6 +3,7 @@
 
 using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
+using System.Linq;
 using System.Runtime.InteropServices.JavaScript;
 using System.Runtime.Versioning;
 using System.Text.Json;
@@ -21,6 +22,10 @@ internal sealed partial class DefaultWebAssemblyJSRuntime : WebAssemblyJSRuntime
     public static readonly DefaultWebAssemblyJSRuntime Instance = new();
 
     private readonly RootTypeCache _rootComponentCache = new();
+    private readonly LazyAssemblyLoader _lazyAssemblyLoader;
+    private readonly HashSet<int> _failedRootComponentIds = new();
+
+    internal Task PendingRootComponentUpdate { get; set; } = Task.CompletedTask;
 
     public ElementReferenceContext ElementReferenceContext { get; }
 
@@ -34,6 +39,7 @@ internal sealed partial class DefaultWebAssemblyJSRuntime : WebAssemblyJSRuntime
     [DynamicDependency(JsonSerialized, typeof(KeyValuePair<,>))]
     private DefaultWebAssemblyJSRuntime()
     {
+        _lazyAssemblyLoader = new LazyAssemblyLoader(this);
         ElementReferenceContext = new WebElementReferenceContext(this);
         JsonSerializerOptions.Converters.Add(new ElementReferenceJsonConverter(ElementReferenceContext));
     }
@@ -97,30 +103,108 @@ internal sealed partial class DefaultWebAssemblyJSRuntime : WebAssemblyJSRuntime
     [JSExport]
     public static void UpdateRootComponentsCore([StringSyntax(StringSyntaxAttribute.Json)] string operationsJson, string appState)
     {
+        _ = Instance.UpdateRootComponentsAsync(operationsJson, appState);
+    }
+
+    internal Task UpdateRootComponentsAsync(string operationsJson, string appState)
+    {
+        var previousUpdate = PendingRootComponentUpdate;
+        var completion = new TaskCompletionSource();
+        PendingRootComponentUpdate = completion.Task;
+        _ = ProcessRootComponentUpdateAsync(previousUpdate, completion, operationsJson, appState);
+
+        return completion.Task;
+    }
+
+    private async Task ProcessRootComponentUpdateAsync(Task previousUpdate, TaskCompletionSource completion, string operationsJson, string appState)
+    {
         try
         {
-            var operations = DeserializeOperations(operationsJson);
-            Instance.OnUpdateRootComponents?.Invoke(operations, appState);
+            await previousUpdate;
+            var operations = await DeserializeOperationsAsync(operationsJson, _lazyAssemblyLoader);
+            OnUpdateRootComponents?.Invoke(operations, appState);
         }
         catch (Exception ex)
         {
             Console.Error.WriteLine($"Error deserializing root component operations: {ex}");
+        }
+        finally
+        {
+            completion.SetResult();
         }
     }
 
     [DynamicDependency(JsonSerialized, typeof(RootComponentOperation))]
     [DynamicDependency(JsonSerialized, typeof(RootComponentOperationBatch))]
     [DynamicDependency(JsonSerialized, typeof(ComponentMarkerKey))]
-    [UnconditionalSuppressMessage("Trimming", "IL2026", Justification = "The correct members will be preserved by the above DynamicDependency")]
-    internal static RootComponentOperationBatch DeserializeOperations(string operationsJson)
+    [UnconditionalSuppressMessage("Trimming", "IL2026", Justification = "Root component and parameter types are preserved by the application.")]
+    internal static async Task<RootComponentOperationBatch> DeserializeOperationsAsync(string operationsJson, LazyAssemblyLoader loader)
     {
-        var deserialized = JsonSerializer.Deserialize(
+        var batch = JsonSerializer.Deserialize(
             operationsJson,
             WebAssemblyJsonSerializerContext.Default.RootComponentOperationBatch)!;
-
-        for (var i = 0; i < deserialized.Operations.Length; i++)
+        // Later batches can already be queued for roots whose additions failed.
+        if (Instance._failedRootComponentIds.Count > 0)
         {
-            var operation = deserialized.Operations[i];
+            batch.Operations = batch.Operations.Where(operation =>
+            {
+                if (!Instance._failedRootComponentIds.Contains(operation.SsrComponentId))
+                {
+                    return true;
+                }
+
+                if (operation.Type == RootComponentOperationType.Remove)
+                {
+                    Instance._failedRootComponentIds.Remove(operation.SsrComponentId);
+                }
+
+                return false;
+            }).ToArray();
+        }
+
+        try
+        {
+            return await PreloadAndResolveOperationsAsync(batch, loader);
+        }
+        catch (Exception ex) when (OperatingSystem.IsBrowser())
+        {
+            Console.Error.WriteLine($"Error deserializing root component operations: {ex}");
+            foreach (var operation in batch.Operations)
+            {
+                if (operation.Type == RootComponentOperationType.Add)
+                {
+                    Instance._failedRootComponentIds.Add(operation.SsrComponentId);
+                }
+            }
+
+            // Failure is not an acknowledgment of additions or updates. The renderer
+            // subsequently acknowledges only the removals that are actually dispatched.
+            Instance.InvokeVoid("Blazor._internal.failUpdateRootComponents", batch.BatchId);
+            batch.Operations = batch.Operations.Where(operation => operation.Type == RootComponentOperationType.Remove).ToArray();
+            return batch;
+        }
+    }
+
+    [UnconditionalSuppressMessage("Trimming", "IL2026", Justification = "Root component and parameter types are preserved by the application.")]
+    private static async Task<RootComponentOperationBatch> PreloadAndResolveOperationsAsync(RootComponentOperationBatch batch, LazyAssemblyLoader loader)
+    {
+        var assemblyNames = batch.Operations
+            .Where(operation => operation.Type != RootComponentOperationType.Remove && operation.Marker is not null)
+            .SelectMany(operation => LazyAssemblyLoader.GetRequiredAssemblyNames(operation.Marker!.Value));
+
+        await loader.LoadMissingAssembliesAsync(assemblyNames);
+        Instance._rootComponentCache.ClearCache();
+
+        return ResolveOperationDescriptors(batch);
+    }
+
+    // Resolves component types for all non-Remove operations in a pre-parsed batch.
+    [UnconditionalSuppressMessage("Trimming", "IL2072", Justification = "Root components are in assemblies that don't get trimmed.")]
+    internal static RootComponentOperationBatch ResolveOperationDescriptors(RootComponentOperationBatch batch)
+    {
+        for (var i = 0; i < batch.Operations.Length; i++)
+        {
+            var operation = batch.Operations[i];
             if (operation.Type == RootComponentOperationType.Remove)
             {
                 continue;
@@ -137,7 +221,7 @@ internal sealed partial class DefaultWebAssemblyJSRuntime : WebAssemblyJSRuntime
             operation.Descriptor = new(componentType, parameters);
         }
 
-        return deserialized;
+        return batch;
     }
 
     static WebRootComponentParameters DeserializeComponentParameters(ComponentMarker marker)

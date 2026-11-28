@@ -183,6 +183,161 @@ public class InteractivityTest : ServerTestBase<BasicTestAppServerSiteFixture<Ra
     }
 
     [Theory]
+    [InlineData("root", false, true)]
+    [InlineData("root", false, false)]
+    [InlineData("root", true, true)]
+    [InlineData("root", true, false)]
+    [InlineData("parameter", false, true)]
+    [InlineData("parameter", false, false)]
+    [InlineData("parameter", true, true)]
+    [InlineData("parameter", true, false)]
+    [InlineData("parameter-generic", false, true)]
+    [InlineData("parameter-generic", false, false)]
+    [InlineData("parameter-generic", true, true)]
+    [InlineData("parameter-generic", true, false)]
+    [InlineData("parameter-nested-generic", false, true)]
+    [InlineData("parameter-nested-generic", false, false)]
+    [InlineData("parameter-nested-generic", true, true)]
+    [InlineData("parameter-nested-generic", true, false)]
+    public void WebAssemblyRootComponents_CanLoadLazyAssemblies(string scenario, bool enhancedNavigation, bool prerender)
+    {
+        var javaScript = (IJavaScriptExecutor)Browser;
+
+        if (enhancedNavigation)
+        {
+            Navigate($"{InteractiveCallsiteUrl(prerender, webAssemblyIncrement: 4)}&block-lazy-assembly=true");
+            Browser.Exists(By.Id("call-blazor-start")).Click();
+            Browser.Equal("WebAssembly", () => Browser.FindElement(By.Id("render-mode-wasm")).Text);
+            Browser.Equal("True", () => Browser.FindElement(By.Id("is-interactive-wasm")).Text);
+            Browser.Click(By.Id("increment-wasm"));
+            Browser.Equal("4", () => Browser.FindElement(By.Id("count-wasm")).Text);
+            Assert.Equal(false, javaScript.ExecuteScript("return performance.getEntriesByType('resource').some(entry => entry.name.includes('/LazyTestContentPackage.'))"));
+            javaScript.ExecuteScript("window.lazyNavigationDocument = true");
+            Browser.Click(By.Id($"lazy-{scenario}"));
+        }
+        else
+        {
+            Navigate($"{ServerPathBase}/lazy-webassembly-components?scenario={scenario}&prerender={prerender}&suppress-autostart&block-lazy-assembly=true");
+            Browser.Equal("Lazy WebAssembly components", () => Browser.FindElement(By.TagName("h1")).Text);
+
+            if (prerender)
+            {
+                Browser.Equal("SSR", () => Browser.FindElement(By.Id("lazy-render-mode")).Text);
+                Browser.Equal("0", () => Browser.FindElement(By.Id("lazy-count")).Text);
+            }
+            else
+            {
+                Browser.DoesNotExist(By.Id("lazy-count"));
+            }
+
+            Browser.Exists(By.Id("call-blazor-start")).Click();
+        }
+
+        // WebDriver cannot intercept boot-resource requests. The fixture gates the actual
+        // fetch response so this checks cold startup as well as enhanced activation.
+        Browser.Exists(By.Id("blocked-lazy-assembly"));
+        Browser.True(() => (bool)javaScript.ExecuteScript("return performance.getEntriesByType('resource').some(entry => entry.name.includes('/LazyTestContentPackage.'))"));
+        if (prerender)
+        {
+            Browser.Equal("SSR", () => Browser.FindElement(By.Id("lazy-render-mode")).Text);
+        }
+        else
+        {
+            Browser.DoesNotExist(By.Id("lazy-count"));
+        }
+
+        javaScript.ExecuteScript("window.unblockLazyAssembly()");
+
+        for (var visit = 0; visit < 2; visit++)
+        {
+            Browser.Equal("WebAssembly", () => Browser.FindElement(By.Id("lazy-render-mode")).Text);
+            Browser.Equal("0", () => Browser.FindElement(By.Id("lazy-count")).Text);
+
+            if (scenario is "parameter" or "parameter-generic" or "parameter-nested-generic")
+            {
+                Browser.Equal("Lazy payload: hello", () => Browser.FindElement(By.Id("lazy-payload")).Text);
+            }
+
+            Browser.Click(By.Id("lazy-increment"));
+            Browser.Equal("1", () => Browser.FindElement(By.Id("lazy-count")).Text);
+
+            if (enhancedNavigation || visit > 0)
+            {
+                Assert.Equal(true, javaScript.ExecuteScript("return window.lazyNavigationDocument"));
+            }
+
+            javaScript.ExecuteScript("window.lazyNavigationDocument = true");
+            Browser.Click(By.Id("remove-lazy"));
+            Browser.Equal("Lazy WebAssembly components", () => Browser.FindElement(By.TagName("h1")).Text);
+            Browser.DoesNotExist(By.Id("lazy-count"));
+            Assert.Equal(true, javaScript.ExecuteScript("return window.lazyNavigationDocument"));
+
+            Browser.Click(By.Id("eager-control"));
+            Browser.Equal("WebAssembly", () => Browser.FindElement(By.Id("render-mode-wasm")).Text);
+            Browser.Equal("True", () => Browser.FindElement(By.Id("is-interactive-wasm")).Text);
+            Browser.Equal("0", () => Browser.FindElement(By.Id("count-wasm")).Text);
+            Browser.Click(By.Id("increment-wasm"));
+            Browser.Equal("4", () => Browser.FindElement(By.Id("count-wasm")).Text);
+            Assert.Equal(true, javaScript.ExecuteScript("return window.lazyNavigationDocument"));
+
+            if (visit == 0)
+            {
+                Browser.Click(By.Id($"lazy-{scenario}"));
+            }
+        }
+
+        AssertBrowserLogDoesNotContainErrors();
+    }
+
+    [Theory]
+    [InlineData(true)]
+    [InlineData(false)]
+    public void WebAssemblyRootComponents_CanNavigateWhileLazyAssemblyIsLoading(bool prerender)
+    {
+        Navigate($"{InteractiveCallsiteUrl(prerender, webAssemblyIncrement: 4)}&block-lazy-assembly=true");
+        Browser.Exists(By.Id("call-blazor-start")).Click();
+        Browser.Equal("WebAssembly", () => Browser.FindElement(By.Id("render-mode-wasm")).Text);
+        Browser.Equal("True", () => Browser.FindElement(By.Id("is-interactive-wasm")).Text);
+        Browser.Click(By.Id("increment-wasm"));
+        Browser.Equal("4", () => Browser.FindElement(By.Id("count-wasm")).Text);
+
+        var javaScript = (IJavaScriptExecutor)Browser;
+        javaScript.ExecuteScript("window.lazyNavigationDocument = true");
+        Browser.Click(By.Id("lazy-root"));
+        Browser.Exists(By.Id("blocked-lazy-assembly"));
+        Browser.Equal("root", () => Browser.FindElement(By.Id("lazy-scenario")).Text);
+
+        Browser.Click(By.Id("lazy-parameter"));
+        Browser.Equal("parameter", () => Browser.FindElement(By.Id("lazy-scenario")).Text);
+        Assert.Equal(true, javaScript.ExecuteScript("return window.lazyNavigationDocument"));
+
+        if (prerender)
+        {
+            Browser.Equal("SSR", () => Browser.FindElement(By.Id("lazy-render-mode")).Text);
+        }
+        else
+        {
+            Browser.DoesNotExist(By.Id("lazy-count"));
+        }
+
+        javaScript.ExecuteScript("window.unblockLazyAssembly()");
+        Browser.Equal("WebAssembly", () => Browser.FindElement(By.Id("lazy-render-mode")).Text);
+        Browser.Equal("Lazy payload: hello", () => Browser.FindElement(By.Id("lazy-payload")).Text);
+        Browser.Click(By.Id("lazy-increment"));
+        Browser.Equal("1", () => Browser.FindElement(By.Id("lazy-count")).Text);
+
+        Browser.Click(By.Id("remove-lazy"));
+        Browser.DoesNotExist(By.Id("lazy-count"));
+        Browser.Click(By.Id("eager-control"));
+        Browser.Equal("True", () => Browser.FindElement(By.Id("is-interactive-wasm")).Text);
+        Browser.Click(By.Id("increment-wasm"));
+        Browser.Equal("4", () => Browser.FindElement(By.Id("count-wasm")).Text);
+        Assert.Equal(true, javaScript.ExecuteScript("return window.lazyNavigationDocument"));
+
+        AssertBrowserLogDoesNotContainErrors();
+    }
+
+    [Theory]
     [InlineData(true)]
     [InlineData(false)]
     public void CanUseCallSiteRenderMode_WebAssembly_WithInitiallyNullUnionParameter(bool prerender)
@@ -452,6 +607,98 @@ public class InteractivityTest : ServerTestBase<BasicTestAppServerSiteFixture<Ra
         }
 
         AssertBrowserLogDoesNotContainErrors();
+    }
+
+    [Fact]
+    public void WebAssemblyRootComponents_CanRecoverFromRejectedLazyAssembly()
+    {
+        Navigate($"{InteractiveCallsiteUrl(prerender: true, webAssemblyIncrement: 4)}&block-lazy-assembly=true");
+        Browser.Exists(By.Id("call-blazor-start")).Click();
+        Browser.Equal("True", () => Browser.FindElement(By.Id("is-interactive-wasm")).Text);
+        Browser.Click(By.Id("increment-wasm"));
+        Browser.Equal("4", () => Browser.FindElement(By.Id("count-wasm")).Text);
+
+        var javaScript = (IJavaScriptExecutor)Browser;
+        javaScript.ExecuteScript("window.lazyNavigationDocument = true");
+        Browser.Click(By.Id("lazy-root"));
+        Browser.Exists(By.Id("blocked-lazy-assembly"));
+        Browser.Equal("SSR", () => Browser.FindElement(By.Id("lazy-render-mode")).Text);
+
+        // Queue a removal and another activation before the first failed batch settles.
+        Browser.Click(By.Id("lazy-parameter"));
+        Browser.Equal("parameter", () => Browser.FindElement(By.Id("lazy-scenario")).Text);
+        javaScript.ExecuteScript("window.rejectLazyAssembly()");
+        Browser.Click(By.Id("eager-control"));
+        Browser.Equal("True", () => Browser.FindElement(By.Id("is-interactive-wasm")).Text);
+        Browser.Equal("0", () => Browser.FindElement(By.Id("count-wasm")).Text);
+        Browser.Click(By.Id("increment-wasm"));
+        Browser.Equal("4", () => Browser.FindElement(By.Id("count-wasm")).Text);
+        Assert.Equal(true, javaScript.ExecuteScript("return window.lazyNavigationDocument"));
+
+        // Expected network failures must not hide a renderer operation against a never-added root.
+        var entries = Browser.Manage().Logs.GetLog(LogType.Browser);
+        Assert.Contains(entries, entry => entry.Message.Contains("Error deserializing root component operations"));
+        Assert.DoesNotContain(entries, entry => entry.Level == LogLevel.Severe &&
+            !entry.Message.Contains("LazyTestContentPackage") &&
+            !entry.Message.Contains("Error deserializing root component operations"));
+    }
+
+    [Theory]
+    [InlineData(false, false)]
+    [InlineData(false, true)]
+    [InlineData(true, false)]
+    [InlineData(true, true)]
+    public void WebAssemblyRootComponents_CanRecoverMergedDescriptorFromRejectedLazyAssembly(bool failedUpdate, bool mergeBeforeFailure)
+    {
+        Navigate($"{InteractiveCallsiteUrl(prerender: true, webAssemblyIncrement: 4)}&block-lazy-assembly=true");
+        Browser.Exists(By.Id("call-blazor-start")).Click();
+        Browser.Equal("True", () => Browser.FindElement(By.Id("is-interactive-wasm")).Text);
+        var javaScript = (IJavaScriptExecutor)Browser;
+        if (failedUpdate)
+        {
+            Browser.Click(By.Id("eager-parameter"));
+            Browser.Equal("WebAssembly", () => Browser.FindElement(By.Id("lazy-render-mode")).Text);
+            Browser.Click(By.Id("lazy-increment"));
+            Browser.Equal("1", () => Browser.FindElement(By.Id("lazy-count")).Text);
+            Browser.Click(By.Id("lazy-parameter"));
+        }
+        else
+        {
+            Browser.Click(By.Id("lazy-parameter"));
+        }
+        Browser.Exists(By.Id("blocked-lazy-assembly"));
+
+        if (mergeBeforeFailure)
+        {
+            // Queue an update, then merge the recovery descriptor while ingestion is blocked.
+            Browser.Click(By.Id("refresh-lazy"));
+            Browser.Click(By.Id("eager-parameter"));
+            Browser.Equal("parameter-eager", () => Browser.FindElement(By.Id("lazy-scenario")).Text);
+        }
+
+        javaScript.ExecuteScript("window.rejectLazyAssembly()");
+        var entries = new List<LogEntry>();
+        Browser.True(() =>
+        {
+            entries.AddRange(Browser.Manage().Logs.GetLog(LogType.Browser));
+            return entries.Any(entry => entry.Message.Contains("Error deserializing root component operations"));
+        });
+        if (!mergeBeforeFailure)
+        {
+            // An unchanged failed descriptor stays suppressed until a fresh navigation.
+            Browser.Click(By.Id("eager-parameter"));
+        }
+
+        Browser.Equal("WebAssembly", () => Browser.FindElement(By.Id("lazy-render-mode")).Text);
+        Browser.Equal("eager", () => Browser.FindElement(By.Id("lazy-payload")).Text);
+        // Failed ingestion never reaches the renderer, so a same-key update must retain the live instance.
+        Browser.Equal(failedUpdate ? "1" : "0", () => Browser.FindElement(By.Id("lazy-count")).Text);
+        Browser.Click(By.Id("lazy-increment"));
+        Browser.Equal(failedUpdate ? "2" : "1", () => Browser.FindElement(By.Id("lazy-count")).Text);
+        entries.AddRange(Browser.Manage().Logs.GetLog(LogType.Browser));
+        Assert.DoesNotContain(entries, entry => entry.Level == LogLevel.Severe &&
+            !entry.Message.Contains("LazyTestContentPackage") &&
+            !entry.Message.Contains("Error deserializing root component operations"));
     }
 
     private void EnableClassicInitializers(IWebDriver browser, bool skipNavigation)

@@ -25,6 +25,7 @@ public sealed class WebAssemblyHost : IAsyncDisposable
     private readonly IConfiguration _configuration;
     private readonly RootComponentMappingCollection _rootComponents;
     private readonly string? _persistedState;
+    private readonly WebAssemblyHostBuilder _builder;
 
     // NOTE: the host is disposable because it OWNs references to disposable things.
     //
@@ -49,6 +50,7 @@ public sealed class WebAssemblyHost : IAsyncDisposable
         // To ensure JS-invoked methods don't get linked out, have a reference to their enclosing types
         GC.KeepAlive(typeof(JSInteropMethods));
 
+        _builder = builder;
         _services = services;
         _scope = scope;
         _configuration = builder.Configuration;
@@ -169,26 +171,41 @@ public sealed class WebAssemblyHost : IAsyncDisposable
             var collectionProvider = Services.GetRequiredService<ResourceCollectionProvider>();
             var collection = await collectionProvider.GetResourceCollection();
             var useOutOfProcessRenderer = Environment.GetEnvironmentVariable("__BLAZOR_WEBASSEMBLY_OUT_OF_PROCESS_RENDERER") == "true";
-            _renderer = new WebAssemblyRenderer(Services, collection, loggerFactory, jsComponentInterop, useOutOfProcessRenderer);
-
-            WebAssemblyNavigationManager.Instance.CreateLogger(loggerFactory);
-
+            var initializationTcs = new TaskCompletionSource();
+            var rootComponentsRegisteredTcs = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+            // Later batches must not overtake initial activation while its lazy assemblies download.
+            DefaultWebAssemblyJSRuntime.Instance.PendingRootComponentUpdate = rootComponentsRegisteredTcs.Task;
             RootComponentOperationBatch? initialOperationBatch = null;
-            if (Environment.GetEnvironmentVariable("__BLAZOR_WEBASSEMBLY_WAIT_FOR_ROOT_COMPONENTS") == "true")
+            try
             {
-                // In Blazor web, we wait for the JS side to tell us about the components available
-                // before we render the initial set of components. Any additional update goes through
-                // UpdateRootComponents.
-                // We do it this way to ensure that the persistent component state is only used the first time
-                // the wasm runtime is initialized and is done in the same way for both webassembly and blazor
-                // web.
-                initialOperationBatch = await InternalJSImportMethods.GetInitialComponentUpdate();
+                _renderer = new WebAssemblyRenderer(Services, collection, loggerFactory, jsComponentInterop, useOutOfProcessRenderer);
+
+                WebAssemblyNavigationManager.Instance.CreateLogger(loggerFactory);
+
+                // Resolve any root components whose assemblies were marked as lazy-loaded and not yet
+                // downloaded at startup time. This must happen before the first render.
+                await _builder.ResolveDeferredRootComponentsAsync(Services);
+
+                if (Environment.GetEnvironmentVariable("__BLAZOR_WEBASSEMBLY_WAIT_FOR_ROOT_COMPONENTS") == "true")
+                {
+                    // In Blazor web, we wait for the JS side to tell us about the components available
+                    // before we render the initial set of components. Any additional update goes through
+                    // UpdateRootComponents.
+                    // We do it this way to ensure that the persistent component state is only used the first time
+                    // the wasm runtime is initialized and is done in the same way for both webassembly and blazor
+                    // web.
+                    initialOperationBatch = await GetAndPreloadInitialComponentBatchAsync();
+                }
+            }
+            catch (Exception ex)
+            {
+                rootComponentsRegisteredTcs.SetException(ex);
+                throw;
             }
 
-            var initializationTcs = new TaskCompletionSource();
-            WebAssemblyCallQueue.Schedule((_rootComponents, _renderer, initializationTcs), async state =>
+            WebAssemblyCallQueue.Schedule((_rootComponents, _renderer, initializationTcs, rootComponentsRegisteredTcs), async state =>
             {
-                var (rootComponents, renderer, initializationTcs) = state;
+                var (rootComponents, renderer, initializationTcs, rootComponentsRegisteredTcs) = state;
                 try
                 {
                     var count = rootComponents.Count;
@@ -221,6 +238,8 @@ public sealed class WebAssemblyHost : IAsyncDisposable
                         renderer.NotifyEndUpdateRootComponents(initialOperationBatch.BatchId);
                     }
 
+                    rootComponentsRegisteredTcs.SetResult();
+
                     // Now we wait for all components to finish rendering.
                     await Task.WhenAll(pendingRenders);
 
@@ -228,6 +247,7 @@ public sealed class WebAssemblyHost : IAsyncDisposable
                 }
                 catch (Exception ex)
                 {
+                    rootComponentsRegisteredTcs.TrySetException(ex);
                     initializationTcs.SetException(ex);
                 }
             });
@@ -237,6 +257,14 @@ public sealed class WebAssemblyHost : IAsyncDisposable
 
             await tcs.Task;
         }
+    }
+
+    // Gets the initial Blazor Web component batch, pre-loading any lazy assemblies it references.
+    private async Task<RootComponentOperationBatch> GetAndPreloadInitialComponentBatchAsync()
+    {
+        var json = await InternalJSImportMethods.GetInitialComponentUpdateJsonAsync();
+        var loader = Services.GetRequiredService<LazyAssemblyLoader>();
+        return await DefaultWebAssemblyJSRuntime.DeserializeOperationsAsync(json, loader);
     }
 
     [UnconditionalSuppressMessage("Trimming", "IL2072", Justification = "These are root components which belong to the user and are in assemblies that don't get trimmed.")]

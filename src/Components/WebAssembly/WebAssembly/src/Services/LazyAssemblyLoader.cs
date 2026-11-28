@@ -3,6 +3,7 @@
 
 using System.Diagnostics.CodeAnalysis;
 using System.Reflection;
+using System.Reflection.Metadata;
 using System.Runtime.InteropServices.JavaScript;
 using System.Runtime.Loader;
 using Microsoft.JSInterop;
@@ -43,6 +44,79 @@ public sealed partial class LazyAssemblyLoader
         }
 
         return LoadAssembliesInServerAsync(assembliesToLoad);
+    }
+
+    internal static IEnumerable<string> GetRequiredAssemblyNames(ComponentMarker marker)
+    {
+        yield return marker.Assembly!;
+
+        var definitions = WebAssemblyComponentParameterDeserializer.GetParameterDefinitions(marker.ParameterDefinitions!);
+        foreach (var definition in definitions)
+        {
+            if (definition.Assembly is not null
+                && !(definition.TypeName == typeof(SerializedRenderFragment).FullName
+                    && definition.Assembly == "Microsoft.AspNetCore.Components.Endpoints"))
+            {
+                yield return definition.Assembly;
+
+                // Bound parsing by the serialized name length so valid complex generic names
+                // are not rejected by the parser's default node limit.
+                if (definition.TypeName is { } typeName && typeName.Contains("[[", StringComparison.Ordinal)
+                    && TypeName.TryParse(typeName.AsSpan(), out var parsedTypeName, new TypeNameParseOptions { MaxNodes = typeName.Length }))
+                {
+                    foreach (var assemblyName in GetGenericArgumentAssemblyNames(parsedTypeName))
+                    {
+                        yield return assemblyName;
+                    }
+                }
+            }
+        }
+    }
+
+    /// <summary>
+    /// Loads assemblies that are not already loaded.
+    /// </summary>
+    /// <param name="assemblyNames">The simple names of the assemblies to load (without .dll extension)</param>
+    [RequiresUnreferencedCode("Types and members the loaded assemblies depend on might be removed")]
+    internal async Task LoadMissingAssembliesAsync(IEnumerable<string> assemblyNames)
+    {
+        var loadedNames = AppDomain.CurrentDomain.GetAssemblies()
+            .Select(a => a.GetName().Name)
+            .ToHashSet(StringComparer.OrdinalIgnoreCase);
+
+        var toLoad = assemblyNames
+            .Distinct(StringComparer.OrdinalIgnoreCase)
+            .Where(a => !loadedNames.Contains(a))
+            // Binding before a lazy assembly is downloaded can cache a failed bind on CoreCLR.
+            .Where(a => !OperatingSystem.IsBrowser() || IsLazyAssembly(a))
+            .Select(a => a + ".dll")
+            .ToList();
+
+        if (toLoad.Count > 0)
+        {
+            await LoadAssembliesAsync(toLoad);
+        }
+    }
+
+    private static IEnumerable<string> GetGenericArgumentAssemblyNames(TypeName typeName)
+    {
+        while (typeName.IsArray || typeName.IsPointer || typeName.IsByRef)
+        {
+            typeName = typeName.GetElementType();
+        }
+
+        foreach (var argument in typeName.GetGenericArguments())
+        {
+            if (argument.AssemblyName is { } assemblyName)
+            {
+                yield return assemblyName.Name;
+            }
+
+            foreach (var nestedAssemblyName in GetGenericArgumentAssemblyNames(argument))
+            {
+                yield return nestedAssemblyName;
+            }
+        }
     }
 
     private static Task<IEnumerable<Assembly>> LoadAssembliesInServerAsync(IEnumerable<string> assembliesToLoad)
@@ -102,8 +176,14 @@ public sealed partial class LazyAssemblyLoader
         return loadedAssemblies;
     }
 
+    [SupportedOSPlatform("browser")]
+    internal static bool IsLazyAssembly(string assemblyName) => LazyAssemblyLoaderInterop.IsLazyAssembly(assemblyName);
+
     private partial class LazyAssemblyLoaderInterop
     {
+        [JSImport("Blazor._internal.isLazyAssembly", "blazor-internal")]
+        public static partial bool IsLazyAssembly(string assemblyName);
+
         [JSImport("INTERNAL.loadLazyAssembly")]
         public static partial Task<bool> LoadLazyAssembly(string assemblyToLoad);
     }

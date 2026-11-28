@@ -232,6 +232,17 @@
                 });
             }
 
+            let lazyAssemblyUnblocked = null;
+            if (getQueryParam('block-lazy-assembly') === 'true') {
+                lazyAssemblyUnblocked = new Promise(resolve => {
+                    window.unblockLazyAssembly = resolve;
+                    window.rejectLazyAssembly = () => {
+                        window.failLazyAssembly = true;
+                        resolve();
+                    };
+                });
+            }
+
             let maxParallelResourceDownloadCount = 0;
             let currentParallelResourceDownloadCount = 0;
             let webAssemblySettings = {
@@ -255,6 +266,13 @@
                                     window['__aspnetcore__testing__max__parallel__resource__download__count'] = maxParallelResourceDownloadCount;
                                 }
                                 currentParallelResourceDownloadCount--;
+                                if (lazyAssemblyUnblocked && name.startsWith('LazyTestContentPackage.')) {
+                                    appendHiddenParagraph('blocked-lazy-assembly');
+                                    await lazyAssemblyUnblocked;
+                                    if (window.failLazyAssembly) {
+                                        return new Response('Lazy assembly request rejected by test', { status: 500 });
+                                    }
+                                }
                                 await loadBootResourceUnblocked;
                                 return response;
                             });

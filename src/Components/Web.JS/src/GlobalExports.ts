@@ -66,6 +66,7 @@ export interface IBlazor {
     getInitialComponentsUpdate?: () => Promise<string>;
     updateRootComponents?: (operations: string, webAssemblyState: string) => void;
     endUpdateRootComponents?: (batchId: number) => void;
+    failUpdateRootComponents?: (batchId: number) => void;
     attachRootComponentToElement?: (arg0: any, arg1: any, arg2: any, arg3: any) => void;
     registeredComponents?: {
       getRegisteredComponentsCount: () => number;
@@ -81,6 +82,7 @@ export interface IBlazor {
     getApplicationCulture?: () => string;
     dotNetCriticalError?: any;
     loadLazyAssembly?: any;
+    isLazyAssembly?: (assemblyName: string) => boolean;
     loadSatelliteAssemblies?: any;
     sendJSDataStream?: (data: any, streamId: number, chunkSize: number) => void;
     getJSDataStreamChunk?: (data: any, position: number, chunkSize: number) => Promise<Uint8Array>;

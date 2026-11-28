@@ -168,6 +168,9 @@ async function startCore(components: RootComponentManager<WebAssemblyComponentDe
     Blazor._internal.dotNetExports?.UpdateRootComponentsCore(operations, webAssemblyState);
   };
 
+  Blazor._internal.failUpdateRootComponents = (batchId: number) =>
+    components.onUpdateRootComponentsFailed?.(batchId);
+
   Blazor._internal.endUpdateRootComponents = (batchId: number) =>
     components.onAfterUpdateRootComponents?.(batchId);
 
@@ -186,6 +189,9 @@ async function startCore(components: RootComponentManager<WebAssemblyComponentDe
   } catch (ex) {
     throw new Error(`Failed to start platform. Reason: ${ex}`);
   }
+
+  Blazor._internal.isLazyAssembly = (assemblyName: string) =>
+    Blazor.runtime.getConfig().resources!.lazyAssembly?.some(asset => asset.virtualPath.replace(/^\//, '').replace(/\.(dll|wasm)$/, '') === assemblyName) ?? false;
 
   // Start up the application
   platform.callEntryPoint();
