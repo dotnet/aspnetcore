@@ -9,8 +9,11 @@ internal class ResourcePreloadCollection
 {
     private readonly Dictionary<string, List<PreloadAsset>> _storage = new();
 
+    internal ResourceAssetCollection Assets { get; }
+
     public ResourcePreloadCollection(ResourceAssetCollection assets)
     {
+        Assets = assets;
         foreach (var asset in assets)
         {
             if (asset.Properties == null)

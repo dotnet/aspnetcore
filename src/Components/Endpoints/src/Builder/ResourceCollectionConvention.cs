@@ -1,6 +1,7 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Linq;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Endpoints;
 using Microsoft.AspNetCore.Components.Web;
@@ -48,6 +49,7 @@ internal class ResourceCollectionConvention(ResourceCollectionResolver resolver)
         // The user called MapStaticAssets
         if (_collection != null && _collectionImportMap != null)
         {
+            var metadataStart = eb.Metadata.Count;
             eb.Metadata.Add(_collection);
             eb.Metadata.Add(new ResourcePreloadCollection(_collection));
 
@@ -59,6 +61,14 @@ internal class ResourceCollectionConvention(ResourceCollectionResolver resolver)
             var importMap = _collectionEndpointImportMap == null ? _collectionImportMap :
                 ImportMapDefinition.Combine(_collectionImportMap, _collectionEndpointImportMap);
             eb.Metadata.Add(importMap);
+
+            if (eb.Metadata.OfType<BlazorWebEndpointMetadata>().LastOrDefault() is { } marker)
+            {
+                for (var i = metadataStart; i < eb.Metadata.Count; i++)
+                {
+                    marker.GeneratedResourceMetadata.Add(eb.Metadata[i]);
+                }
+            }
         }
     }
 }
