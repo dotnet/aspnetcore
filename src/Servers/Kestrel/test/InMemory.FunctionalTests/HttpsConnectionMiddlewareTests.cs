@@ -102,6 +102,59 @@ public class HttpsConnectionMiddlewareTests : LoggedTest
         }
     }
 
+    [Theory]
+    [InlineData(true)]
+    [InlineData(false)]
+    public async Task PfxCertificateConfigurationSendsIntermediateCertificates(bool useDefaultCertificate)
+    {
+        const string password = "test-password";
+        var (certificate, chain) = CertHelper.GenerateCertificates("localhost", testName: null, longChain: true);
+        var certificatePath = Path.GetTempFileName();
+        try
+        {
+            var root = chain[^1];
+            var bundle = new X509Certificate2Collection(certificate);
+            bundle.AddRange(chain);
+            File.WriteAllBytes(certificatePath, bundle.Export(X509ContentType.Pkcs12, password));
+
+            var certificateSection = useDefaultCertificate ? "Certificates:Default" : "Endpoints:Https:Certificate";
+            var configuration = new ConfigurationBuilder().AddInMemoryCollection(new Dictionary<string, string>
+            {
+                ["Endpoints:Https:Url"] = "https://127.0.0.1:0",
+                [$"{certificateSection}:Path"] = certificatePath,
+                [$"{certificateSection}:Password"] = password,
+            }).Build();
+
+            await using var server = new TestServer(App, new TestServiceContext(LoggerFactory),
+                options => options.Configure(configuration, reloadOnChange: false), _ => { });
+            using var connection = server.CreateConnection();
+            using var stream = new SslStream(connection.Stream);
+            await stream.AuthenticateAsClientAsync(new SslClientAuthenticationOptions
+            {
+                TargetHost = "localhost",
+                CertificateChainPolicy = new X509ChainPolicy
+                {
+                    TrustMode = X509ChainTrustMode.CustomRootTrust,
+                    CustomTrustStore = { root },
+                    RevocationMode = X509RevocationMode.NoCheck,
+                    DisableCertificateDownloads = true,
+                },
+            });
+
+            Assert.Equal(certificate.Thumbprint, stream.RemoteCertificate.GetCertHashString());
+            await AssertConnectionResult(stream, true);
+        }
+        finally
+        {
+            File.Delete(certificatePath);
+            certificate.Dispose();
+            foreach (var item in chain)
+            {
+                item.Dispose();
+            }
+        }
+    }
+
     [Fact]
     public async Task SslStreamIsAvailable()
     {
