@@ -1266,6 +1266,7 @@
   <Project Path="src/Middleware/Microsoft.AspNetCore.OutputCaching.StackExchangeRedis/src/Microsoft.AspNetCore.OutputCaching.StackExchangeRedis.csproj" />
   <Project Path="src/Middleware/Microsoft.AspNetCore.OutputCaching.StackExchangeRedis/test/Microsoft.AspNetCore.OutputCaching.StackExchangeRedis.Tests.csproj" />
   <Project Path="src/Middleware/OutputCaching/perf/Microbenchmarks/Microsoft.AspNetCore.OutputCaching.Microbenchmarks.csproj" />
+  <Project Path="src/Middleware/OutputCaching/ResponseCaching/test/Microsoft.AspNetCore.NewResponseCaching.Tests.csproj" />
   <Project Path="src/Middleware/OutputCaching/samples/OutputCachingSample/OutputCachingSample.csproj" />
   <Project Path="src/Middleware/OutputCaching/src/Microsoft.AspNetCore.OutputCaching.csproj" />
   <Project Path="src/Middleware/OutputCaching/test/Microsoft.AspNetCore.OutputCaching.Tests.csproj" />
