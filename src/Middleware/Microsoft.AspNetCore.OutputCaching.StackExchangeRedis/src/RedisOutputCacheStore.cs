@@ -39,6 +39,8 @@ internal partial class RedisOutputCacheStore : IOutputCacheStore, IOutputCacheBu
 
     internal bool GarbageCollectionEnabled { get; set; } = true;
 
+    internal Task GarbageCollectionLoop { get; }
+
     // Never reconnect within 60 seconds of the last attempt to connect or reconnect.
     private readonly TimeSpan ReconnectMinInterval = TimeSpan.FromSeconds(60);
     // Only reconnect if errors have occurred for at least the last 30 seconds.
@@ -85,7 +87,7 @@ internal partial class RedisOutputCacheStore : IOutputCacheStore, IOutputCacheBu
         _tagMasterKey = (RedisKey)Encoding.UTF8.GetBytes(_options.InstanceName + "__MSOCT");
         _tagMasterKeyArray = new[] { _tagMasterKey };
 
-        _ = Task.Factory.StartNew(RunGarbageCollectionLoopAsync, default, TaskCreationOptions.LongRunning, TaskScheduler.Current);
+        GarbageCollectionLoop = Task.Factory.StartNew(RunGarbageCollectionLoopAsync, default, TaskCreationOptions.LongRunning, TaskScheduler.Current).Unwrap();
     }
 
     private async Task RunGarbageCollectionLoopAsync()
@@ -97,7 +99,7 @@ internal partial class RedisOutputCacheStore : IOutputCacheStore, IOutputCacheBu
                 // approx every 5 minutes, with some randomization to prevent spikes of pile-on
                 var secondsWithJitter = 300 + Random.Shared.Next(-30, 30);
                 Debug.Assert(secondsWithJitter >= 270 && secondsWithJitter <= 330);
-                await Task.Delay(TimeSpan.FromSeconds(secondsWithJitter)).ConfigureAwait(false);
+                await Task.Delay(TimeSpan.FromSeconds(secondsWithJitter), _disposalCancellation.Token).ConfigureAwait(false);
                 try
                 {
                     if (GarbageCollectionEnabled)
@@ -115,6 +117,10 @@ internal partial class RedisOutputCacheStore : IOutputCacheStore, IOutputCacheBu
                     RedisOutputCacheGCTransientFault(_logger, ex);
                 }
             }
+        }
+        catch (OperationCanceledException) when (_disposed)
+        {
+            // fine, service exiting
         }
         catch (Exception ex)
         {
