@@ -1064,6 +1064,17 @@ public partial class RequestDelegateFactoryTests : LoggedTest
 
     private record ParametersListWithExplictFromService(HttpContext HttpContext, [FromService] MyService MyService);
 
+    private class FromServicesParameterList
+    {
+        [Microsoft.AspNetCore.Mvc.FromServices]
+        public virtual MyService Service { get; set; } = null!;
+    }
+
+    private class InheritedFromServicesParameterList : FromServicesParameterList
+    {
+        public override MyService Service { get; set; } = null!;
+    }
+
     public static object[][] ExplicitFromServiceActions
     {
         get
@@ -1215,6 +1226,29 @@ public partial class RequestDelegateFactoryTests : LoggedTest
         await requestDelegate(httpContext);
 
         Assert.Same(myOriginalService, httpContext.Items["service"]);
+    }
+
+    [Fact]
+    public async Task RequestDelegateFactory_AsParameters_InheritsFromServicesFromOverriddenProperty()
+    {
+        MyService? resolvedService = null;
+        void TestAction([AsParameters] InheritedFromServicesParameterList args)
+        {
+            resolvedService = args.Service;
+        }
+
+        var service = new MyService();
+        var services = new ServiceCollection()
+            .AddSingleton(LoggerFactory)
+            .AddSingleton(service)
+            .BuildServiceProvider();
+        var httpContext = CreateHttpContext();
+        httpContext.RequestServices = services;
+
+        var factoryResult = RequestDelegateFactory.Create(TestAction);
+        await factoryResult.RequestDelegate(httpContext);
+
+        Assert.Same(service, resolvedService);
     }
 
     [Fact]
