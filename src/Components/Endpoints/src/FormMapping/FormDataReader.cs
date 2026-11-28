@@ -140,6 +140,25 @@ internal struct FormDataReader : IDisposable
                 continue;
             }
 
+            var candidateIndex = closeIndex;
+            while (candidateIndex + 2 < remaining.Length &&
+                remaining.Span[candidateIndex + 2] is not ('.' or '['))
+            {
+                var nextCloseIndex = remaining.Span[(candidateIndex + 2)..].IndexOf(']');
+                if (nextCloseIndex == -1)
+                {
+                    break;
+                }
+
+                candidateIndex += nextCloseIndex + 1;
+            }
+
+            if (candidateIndex + 2 == remaining.Length ||
+                remaining.Span[candidateIndex + 2] is '.' or '[')
+            {
+                closeIndex = candidateIndex;
+            }
+
             // Extract "[value]" (closeIndex is relative to position 1, so add 2 for the full segment).
             var segment = remaining[..(closeIndex + 2)];
             result.Add(new FormKey(segment));

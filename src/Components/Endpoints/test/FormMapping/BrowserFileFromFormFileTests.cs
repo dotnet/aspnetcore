@@ -102,4 +102,23 @@ public class BrowserFileFromFormFileTests
         Assert.Equal(expectedFileName1, browserFiles[0].Name);
         Assert.Equal(expectedFileName2, browserFiles[1].Name);
     }
+
+    [Fact]
+    public void TryRead_IBrowserFileList_WithNoMatchingFiles_IsNotFound()
+    {
+        const string prefixName = "fileInputs";
+        var culture = CultureInfo.GetCultureInfo("en-US");
+        var formFileCollection = new Mock<IFormFileCollection>();
+        formFileCollection.Setup(x => x.GetFiles(prefixName)).Returns([]);
+        var buffer = prefixName.ToCharArray().AsMemory();
+        var reader = new FormDataReader(new Dictionary<FormKey, StringValues>(), culture, buffer, formFileCollection.Object);
+        reader.PushPrefix(prefixName);
+        var converter = new FileConverter<IReadOnlyList<IBrowserFile>>();
+
+        var result = converter.TryRead(ref reader, typeof(IReadOnlyList<IBrowserFile>), default!, out var browserFiles, out var found);
+
+        Assert.True(result);
+        Assert.False(found);
+        Assert.Empty(browserFiles);
+    }
 }
