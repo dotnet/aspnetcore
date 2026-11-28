@@ -43,6 +43,9 @@ internal sealed class ParameterBindingMethodCache
 
     // Since this is shared source, the cache won't be shared between RequestDelegateFactory and the ApiDescriptionProvider sadly :(
     private readonly ConcurrentDictionary<Type, Func<ParameterExpression, Expression, Expression>?> _stringMethodCallCache = new();
+    // Collectible types (e.g. plugin assemblies in a collectible AssemblyLoadContext) must not be rooted by a
+    // process-wide cache, so store their entries in a ConditionalWeakTable keyed weakly on the type.
+    private readonly ConditionalWeakTable<Type, StringMethodCallCacheEntry> _collectibleStringMethodCallCache = new();
     private readonly ConcurrentDictionary<Type, (Func<ParameterInfo, Expression>?, int)> _bindAsyncMethodCallCache = new();
     private readonly ConcurrentDictionary<Type, (ConstructorInfo?, ConstructorParameter[])> _constructorCache = new();
 
@@ -197,7 +200,9 @@ internal sealed class ParameterBindingMethodCache
             }
         }
 
-        return _stringMethodCallCache.GetOrAdd(type, Finder);
+        return type.IsCollectible
+            ? _collectibleStringMethodCallCache.GetValue(type, t => new StringMethodCallCacheEntry(Finder(t))).Method
+            : _stringMethodCallCache.GetOrAdd(type, Finder);
     }
 
     [RequiresUnreferencedCode("Performs reflection on type hierarchy. This cannot be statically analyzed.")]
@@ -728,5 +733,15 @@ internal sealed class ParameterBindingMethodCache
 
         public ParameterInfo ParameterInfo { get; }
         public PropertyInfo PropertyInfo { get; }
+    }
+
+    private sealed class StringMethodCallCacheEntry
+    {
+        public StringMethodCallCacheEntry(Func<ParameterExpression, Expression, Expression>? method)
+        {
+            Method = method;
+        }
+
+        public Func<ParameterExpression, Expression, Expression>? Method { get; }
     }
 }
