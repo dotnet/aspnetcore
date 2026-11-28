@@ -2364,6 +2364,8 @@ public partial class HubConnectionTests : FunctionalTestBase
     [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/50180")]
     public async Task LongPollingUsesHttp2ByDefault()
     {
+        ForceLongPollingDeleteHandler forceDeleteHandler = null;
+
         await using (var server = await StartServer<Startup>(configureKestrelServerOptions: o =>
         {
             o.ConfigureEndpointDefaults(o2 =>
@@ -2382,7 +2384,8 @@ public partial class HubConnectionTests : FunctionalTestBase
                 .WithUrl(server.Url + "/default", HttpTransportType.LongPolling, o => o.HttpMessageHandlerFactory = h =>
                 {
                     ((HttpClientHandler)h).ServerCertificateCustomValidationCallback = (_, _, _, _) => true;
-                    return h;
+                    forceDeleteHandler = new ForceLongPollingDeleteHandler(h);
+                    return forceDeleteHandler;
                 })
                 .Build();
             try
@@ -2399,6 +2402,9 @@ public partial class HubConnectionTests : FunctionalTestBase
             }
             finally
             {
+                // Prevent the graceful close message from ending the active poll so disposal
+                // deterministically exercises the long-polling DELETE cleanup path.
+                forceDeleteHandler.CompleteNextPostWithoutSending();
                 await hubConnection.DisposeAsync().DefaultTimeout();
             }
         }
@@ -2985,6 +2991,25 @@ public partial class HubConnectionTests : FunctionalTestBase
             {
                 ActivePoll = base.SendAsync(request, cancellationToken);
                 return ActivePoll;
+            }
+
+            return base.SendAsync(request, cancellationToken);
+        }
+    }
+
+    private sealed class ForceLongPollingDeleteHandler(HttpMessageHandler innerHandler) : DelegatingHandler(innerHandler)
+    {
+        private int _completeNextPostWithoutSending;
+
+        public void CompleteNextPostWithoutSending()
+            => Interlocked.Exchange(ref _completeNextPostWithoutSending, 1);
+
+        protected override Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
+        {
+            if (request.Method == HttpMethod.Post &&
+                Interlocked.CompareExchange(ref _completeNextPostWithoutSending, 0, 1) == 1)
+            {
+                return Task.FromResult(new HttpResponseMessage(HttpStatusCode.OK));
             }
 
             return base.SendAsync(request, cancellationToken);
