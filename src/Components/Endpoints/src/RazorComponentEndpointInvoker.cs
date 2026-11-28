@@ -8,7 +8,6 @@ using System.Text.Encodings.Web;
 using Microsoft.AspNetCore.Antiforgery;
 using Microsoft.AspNetCore.Components.Endpoints.Forms;
 using Microsoft.AspNetCore.Components.Endpoints.Rendering;
-using Microsoft.AspNetCore.Components.Forms;
 using Microsoft.AspNetCore.Components.Infrastructure;
 using Microsoft.AspNetCore.Diagnostics;
 using Microsoft.AspNetCore.Http;
@@ -35,6 +34,14 @@ internal partial class RazorComponentEndpointInvoker : IRazorComponentEndpointIn
 
     public Task Render(HttpContext context)
     {
+        if (HttpMethods.IsPost(context.Request.Method) &&
+            context.Request.Headers.ContainsKey(AntiforgeryTokenEndpoint.RequestHeaderName) &&
+            context.Features.Get<IExceptionHandlerFeature>() is null &&
+            context.Features.Get<IStatusCodeReExecuteFeature>() is null)
+        {
+            return AntiforgeryTokenEndpoint.WriteToken(context);
+        }
+
         return _renderer.Dispatcher.InvokeAsync(() => RenderComponentCore(context));
     }
 
@@ -138,27 +145,14 @@ internal partial class RazorComponentEndpointInvoker : IRazorComponentEndpointIn
             var bufferingFeature = context.Features.GetRequiredFeature<IHttpResponseBodyFeature>();
             bufferingFeature.DisableBuffering();
 
-            // if AntiforgeryMiddleware is not in the pipeline (it should have been invoked by the time we get here),
-            // then there is no need to get and store tokens
-            if (context.Items.ContainsKey(MiddlewareInvokedKeys.Antiforgery))
-            {
-                var antiforgery = context.RequestServices.GetRequiredService<IAntiforgery>();
-                antiforgery.GetAndStoreTokens(context);
-            }
-
             context.Response.Headers.ContentEncoding = "identity";
-        }
-        else if (endpoint.Metadata.GetMetadata<ConfiguredRenderModesMetadata>()?.ConfiguredRenderModes.Length == 0)
-        {
-            // Disable token generation on EndpointAntiforgeryStateProvider if we are not streaming.
-            var provider = (EndpointAntiforgeryStateProvider)context.RequestServices.GetRequiredService<AntiforgeryStateProvider>();
-            provider.DisableTokenGeneration();
         }
 
         // Importantly, we must not yield this thread (which holds exclusive access to the renderer sync context)
         // in between the first call to htmlContent.WriteTo and the point where we start listening for subsequent
         // streaming SSR batches (inside SendStreamingUpdatesAsync). Otherwise some other code might dispatch to the
         // renderer sync context and cause a batch that would get missed.
+        AntiforgeryTokenEndpoint.WriteConfiguration(context, bufferWriter);
         htmlContent.WriteTo(bufferWriter, HtmlEncoder.Default); // Don't use WriteToAsync, as per the comment above
         if (htmlContent != EndpointHtmlRenderer.PrerenderedComponentHtmlContent.Empty)
         {
