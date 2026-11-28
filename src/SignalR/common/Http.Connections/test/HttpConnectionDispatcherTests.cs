@@ -4725,6 +4725,55 @@ public partial class HttpConnectionDispatcherTests : VerifiableLoggedTest
         }
     }
 
+    [Fact]
+    public async Task LongPollingSnapshotsConnectionEndPointFeature()
+    {
+        using (StartVerifiableLog())
+        {
+            var manager = CreateConnectionManager(LoggerFactory, TimeSpan.FromSeconds(5));
+            var dispatcher = CreateDispatcher(manager, LoggerFactory);
+            var options = new HttpConnectionDispatcherOptions();
+            var connection = manager.CreateConnection(options);
+            connection.TransportType = HttpTransportType.LongPolling;
+
+            var services = new ServiceCollection();
+            var builder = new ConnectionBuilder(services.BuildServiceProvider());
+            builder.UseConnectionHandler<HttpContextConnectionHandler>();
+            var app = builder.Build();
+            var context = MakeRequest("/foo", connection, services);
+
+            var expectedLocalEndPoint = new System.Net.IPEndPoint(System.Net.IPAddress.Loopback, 5000);
+            var expectedRemoteEndPoint = new System.Net.IPEndPoint(System.Net.IPAddress.Loopback, 5001);
+            var mockEndpointFeature = new TestConnectionEndPointFeature
+            {
+                LocalEndPoint = expectedLocalEndPoint,
+                RemoteEndPoint = expectedRemoteEndPoint
+            };
+            context.Features.Set<IConnectionEndPointFeature>(mockEndpointFeature);
+
+            await dispatcher.ExecuteAsync(context, options, app).DefaultTimeout();
+
+            // Simulate native IIS request cleanup after the poll completes.
+            mockEndpointFeature.Disposed = true;
+
+            var endpointFeature = connection.Features.Get<IConnectionEndPointFeature>();
+            Assert.NotNull(endpointFeature);
+            // Must not be the live request feature instance (which would dereference native request memory on IIS)
+            Assert.NotSame(mockEndpointFeature, endpointFeature);
+            Assert.Equal(expectedLocalEndPoint, endpointFeature.LocalEndPoint);
+            Assert.Equal(expectedRemoteEndPoint, endpointFeature.RemoteEndPoint);
+
+            // A subsequent poll without IConnectionEndPointFeature clears the previous snapshot.
+            var secondPollContext = MakeRequest("/foo", connection, services);
+            var secondPollTask = dispatcher.ExecuteAsync(secondPollContext, options, app);
+            await connection.Transport.Output.WriteAsync(Encoding.UTF8.GetBytes("hello")).DefaultTimeout();
+            await secondPollTask.DefaultTimeout();
+            Assert.Null(connection.Features.Get<IConnectionEndPointFeature>());
+
+            await connection.DisposeAsync().DefaultTimeout();
+        }
+    }
+
     private class GetNegotiateHttpHandler : DelegatingHandler
     {
         private readonly MemoryStream _stream;
@@ -5228,5 +5277,25 @@ internal sealed class HttpRequestTimeoutFeature : IHttpRequestTimeoutFeature
     public void DisableTimeout()
     {
         Enabled = false;
+    }
+}
+
+internal sealed class TestConnectionEndPointFeature : IConnectionEndPointFeature
+{
+    private System.Net.EndPoint _localEndPoint;
+    private System.Net.EndPoint _remoteEndPoint;
+
+    public bool Disposed { get; set; }
+
+    public System.Net.EndPoint LocalEndPoint
+    {
+        get => Disposed ? throw new ObjectDisposedException(nameof(TestConnectionEndPointFeature)) : _localEndPoint;
+        set => _localEndPoint = value;
+    }
+
+    public System.Net.EndPoint RemoteEndPoint
+    {
+        get => Disposed ? throw new ObjectDisposedException(nameof(TestConnectionEndPointFeature)) : _remoteEndPoint;
+        set => _remoteEndPoint = value;
     }
 }
