@@ -1570,6 +1570,65 @@ public abstract class OutputCacheMiddlewareTests
     }
 
     [Fact]
+    public async Task Locking_VaryByResponse_DoesNotCoalesceRequests()
+    {
+        var responseCounter = 0;
+
+        var blocker1 = new TaskCompletionSource<bool>(TaskCreationOptions.RunContinuationsAsynchronously);
+        var blocker2 = new TaskCompletionSource<bool>(TaskCreationOptions.RunContinuationsAsynchronously);
+
+        var memoryStream1 = new MemoryStream();
+        var memoryStream2 = new MemoryStream();
+
+        var options = new OutputCacheOptions();
+        options.AddBasePolicy(build => build.AddPolicy(ResponseCachingPolicy.Instance).SetLocking(true), excludeDefaultPolicy: true);
+
+        var middleware = TestUtils.CreateTestMiddleware(options: options, next: async c =>
+        {
+            var index = Interlocked.Increment(ref responseCounter);
+            if (index == 1)
+            {
+                blocker1.SetResult(true);
+                await blocker2.Task;
+            }
+            else
+            {
+                blocker2.SetResult(true);
+            }
+
+            c.Response.Headers.CacheControl = "public, max-age=10";
+            c.Response.Headers.Vary = HeaderNames.AcceptLanguage;
+            await c.Response.WriteAsync(c.Request.Headers.AcceptLanguage.ToString());
+        });
+
+        var context1 = TestUtils.CreateTestContext();
+        context1.HttpContext.Request.Method = "GET";
+        context1.HttpContext.Request.Path = "/";
+        context1.HttpContext.Request.Headers.AcceptLanguage = "de";
+        context1.HttpContext.Response.Body = memoryStream1;
+
+        var context2 = TestUtils.CreateTestContext();
+        context2.HttpContext.Request.Method = "GET";
+        context2.HttpContext.Request.Path = "/";
+        context2.HttpContext.Request.Headers.AcceptLanguage = "en";
+        context2.HttpContext.Response.Body = memoryStream2;
+
+        var task1 = Task.Run(() => middleware.Invoke(context1.HttpContext));
+
+        // Wait for the first request to enter the pipeline.
+        await blocker1.Task;
+
+        var task2 = Task.Run(() => middleware.Invoke(context2.HttpContext));
+
+        // A locked second request would wait for the first one, which waits for the second one.
+        await Task.WhenAll(task1, task2).WaitAsync(TimeSpan.FromSeconds(30));
+
+        Assert.Equal(2, responseCounter);
+        Assert.Equal("de", Encoding.UTF8.GetString(memoryStream1.ToArray()));
+        Assert.Equal("en", Encoding.UTF8.GetString(memoryStream2.ToArray()));
+    }
+
+    [Fact]
     public async Task AbortedRequest_DoesNotReExecuteRequest()
     {
         var responseCounter = 0;

@@ -105,17 +105,12 @@ internal static class ResponseCachingTestUtils
     internal static IEnumerable<IHostBuilder> CreateBuildersWithResponseCaching(
         Action<IApplicationBuilder> configureDelegate = null,
         ResponseCachingOptions options = null,
-        Action<HttpContext> contextAction = null)
+        Action<HttpContext> contextAction = null,
+        Action<OutputCachePolicyBuilder> configurePolicy = null)
     {
-        // Output Caching doesn't provide IResponseCachingFeature. Applications setting VaryByQueryKeys only need it to be present,
-        // since ResponseCachingPolicy varies by all query keys.
-        Action<HttpContext> action = context =>
-        {
-            context.Features.Set<IResponseCachingFeature>(new ResponseCachingFeature());
-            contextAction?.Invoke(context);
-        };
+        Action<HttpContext> action = context => contextAction?.Invoke(context);
 
-        return CreateBuildersWithResponseCaching(configureDelegate, options, new RequestDelegate[]
+        return CreateBuildersWithResponseCaching(configureDelegate, options, configurePolicy, new RequestDelegate[]
             {
                     context =>
                     {
@@ -138,6 +133,7 @@ internal static class ResponseCachingTestUtils
     private static IEnumerable<IHostBuilder> CreateBuildersWithResponseCaching(
         Action<IApplicationBuilder> configureDelegate,
         ResponseCachingOptions options,
+        Action<OutputCachePolicyBuilder> configurePolicy,
         IEnumerable<RequestDelegate> requestDelegates)
     {
         configureDelegate ??= app => { };
@@ -160,7 +156,11 @@ internal static class ResponseCachingTestUtils
                                 outputCacheOptions.UseCaseSensitivePaths = options.UseCaseSensitivePaths;
                             }
 
-                            outputCacheOptions.AddBasePolicy(ResponseCachingPolicy.Instance);
+                            outputCacheOptions.AddBasePolicy(policy =>
+                            {
+                                policy.AddPolicy(ResponseCachingPolicy.Instance);
+                                configurePolicy?.Invoke(policy);
+                            }, excludeDefaultPolicy: true);
                         });
                     })
                     .Configure(app =>
