@@ -12,7 +12,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor;
 /// </summary>
 public abstract class RazorPage : RazorPageBase
 {
-    private readonly HashSet<string> _renderedSections = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+    private HashSet<string>? _renderedSections;
     private bool _renderedBody;
     private bool _ignoreBody;
     private HashSet<string>? _ignoredSections;
@@ -152,7 +152,7 @@ public abstract class RazorPage : RazorPageBase
 
     private async Task<HtmlString?> RenderSectionAsyncCore(string sectionName, bool required)
     {
-        if (_renderedSections.Contains(sectionName))
+        if (_renderedSections is not null && _renderedSections.Contains(sectionName))
         {
             var message = Resources.FormatSectionAlreadyRendered(nameof(RenderSectionAsync), Path, sectionName);
             throw new InvalidOperationException(message);
@@ -160,7 +160,7 @@ public abstract class RazorPage : RazorPageBase
 
         if (PreviousSectionWriters.TryGetValue(sectionName, out var renderDelegate))
         {
-            _renderedSections.Add(sectionName);
+            (_renderedSections ??= new HashSet<string>(StringComparer.OrdinalIgnoreCase)).Add(sectionName);
 
             await renderDelegate();
 
@@ -212,7 +212,7 @@ public abstract class RazorPage : RazorPageBase
         if (PreviousSectionWriters != null && PreviousSectionWriters.Count > 0)
         {
             var sectionsNotRendered = PreviousSectionWriters.Keys.Except(
-                _renderedSections,
+                _renderedSections ?? Enumerable.Empty<string>(),
                 StringComparer.OrdinalIgnoreCase);
 
             string[] sectionsNotIgnored;

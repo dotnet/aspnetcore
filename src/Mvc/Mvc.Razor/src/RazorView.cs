@@ -191,6 +191,19 @@ public class RazorView : IView
         }
     }
 
+    private static bool ContainsLayout(List<IRazorPage> renderedLayouts, string path)
+    {
+        foreach (var layout in renderedLayouts)
+        {
+            if (string.Equals(layout.Path, path, StringComparison.Ordinal))
+            {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
     private async Task RenderLayoutAsync(
         ViewContext context,
         ViewBufferTextWriter bodyWriter)
@@ -198,7 +211,7 @@ public class RazorView : IView
         // A layout page can specify another layout page. We'll need to continue
         // looking for layout pages until they're no longer specified.
         var previousPage = RazorPage;
-        var renderedLayouts = new List<IRazorPage>();
+        List<IRazorPage>? renderedLayouts = null;
 
         // This loop will execute Layout pages from the inside to the outside. With each
         // iteration, bodyWriter is replaced with the aggregate of all the "body" content
@@ -218,8 +231,7 @@ public class RazorView : IView
 
             var layoutPage = GetLayoutPage(context, previousPage.Path, previousPage.Layout);
 
-            if (renderedLayouts.Count > 0 &&
-                renderedLayouts.Any(l => string.Equals(l.Path, layoutPage.Path, StringComparison.Ordinal)))
+            if (renderedLayouts is not null && ContainsLayout(renderedLayouts, layoutPage.Path))
             {
                 // If the layout has been previously rendered as part of this view, we're potentially in a layout
                 // rendering cycle.
@@ -234,16 +246,19 @@ public class RazorView : IView
             layoutPage.BodyContent = bodyWriter.Buffer;
             bodyWriter = await RenderPageAsync(layoutPage, context, invokeViewStarts: false);
 
-            renderedLayouts.Add(layoutPage);
+            (renderedLayouts ??= new List<IRazorPage>()).Add(layoutPage);
             previousPage = layoutPage;
         }
 
         // Now we've reached and rendered the outer-most layout page. Nothing left to execute.
 
         // Ensure all defined sections were rendered or RenderBody was invoked for page without defined sections.
-        foreach (var layoutPage in renderedLayouts)
+        if (renderedLayouts is not null)
         {
-            layoutPage.EnsureRenderedBodyOrSections();
+            foreach (var layoutPage in renderedLayouts)
+            {
+                layoutPage.EnsureRenderedBodyOrSections();
+            }
         }
 
         // We've got a bunch of content in the view buffer. How to best deal with it
