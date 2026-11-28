@@ -774,6 +774,40 @@ public class WebSocketMiddlewareTests : LoggedTest
     }
 
     [Fact]
+    public async Task DuplicateWebSocketUpgradeValue_Success()
+    {
+        await using (var server = KestrelWebSocketHelpers.CreateServer(LoggerFactory, out var port, async context =>
+        {
+            Assert.True(context.WebSockets.IsWebSocketRequest);
+            var webSocket = await context.WebSockets.AcceptWebSocketAsync();
+
+            Assert.Equal("websocket, websocket", context.Request.Headers.Upgrade.ToString());
+        }))
+        {
+            using (var client = new HttpClient())
+            {
+                var uri = new UriBuilder(new Uri($"ws://127.0.0.1:{port}/"));
+                uri.Scheme = "http";
+
+                // Craft a valid WebSocket Upgrade request with duplicate "websocket" values
+                using (var request = new HttpRequestMessage(HttpMethod.Get, uri.ToString()))
+                {
+                    request.Headers.Connection.Clear();
+                    request.Headers.Connection.Add("Upgrade");
+                    request.Headers.Upgrade.Add(new System.Net.Http.Headers.ProductHeaderValue("websocket"));
+                    request.Headers.Upgrade.Add(new System.Net.Http.Headers.ProductHeaderValue("websocket"));
+                    request.Headers.Add(HeaderNames.SecWebSocketVersion, "13");
+                    // SecWebSocketKey required to be 16 bytes
+                    request.Headers.Add(HeaderNames.SecWebSocketKey, Convert.ToBase64String(new byte[] { 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16 }, Base64FormattingOptions.None));
+
+                    var response = await client.SendAsync(request);
+                    Assert.Equal(HttpStatusCode.SwitchingProtocols, response.StatusCode);
+                }
+            }
+        }
+    }
+
+    [Fact]
     public async Task AcceptingWebSocketRequestDisablesTimeout()
     {
         await using (var server = KestrelWebSocketHelpers.CreateServer(LoggerFactory, out var port, async context =>
