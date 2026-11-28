@@ -6,7 +6,8 @@
 internal sealed class SizeLimitedStream : Stream
 {
     private readonly Stream _innerStream;
-    private readonly long? _sizeLimit;
+    private long? _sizeLimit;
+    private Func<long?>? _getSizeLimit;
     private readonly Action<long>? _handleSizeLimit;
     private long _totalBytesRead;
 
@@ -17,6 +18,23 @@ internal sealed class SizeLimitedStream : Stream
         _innerStream = innerStream;
         _sizeLimit = sizeLimit;
         _handleSizeLimit = handleSizeLimit;
+    }
+
+    public SizeLimitedStream(Stream innerStream, Func<long?> getSizeLimit, Action<long>? handleSizeLimit = null)
+        : this(innerStream, sizeLimit: null, handleSizeLimit)
+    {
+        ArgumentNullException.ThrowIfNull(getSizeLimit);
+
+        _getSizeLimit = getSizeLimit;
+    }
+
+    private void InitializeSizeLimit()
+    {
+        if (_getSizeLimit is not null)
+        {
+            _sizeLimit = _getSizeLimit();
+            _getSizeLimit = null;
+        }
     }
 
     public override bool CanRead => _innerStream.CanRead;
@@ -46,6 +64,7 @@ internal sealed class SizeLimitedStream : Stream
 
     public override int Read(byte[] buffer, int offset, int count)
     {
+        InitializeSizeLimit();
         var bytesRead = _innerStream.Read(buffer, offset, count);
 
         _totalBytesRead += bytesRead;
@@ -86,6 +105,7 @@ internal sealed class SizeLimitedStream : Stream
 
     public override async ValueTask<int> ReadAsync(Memory<byte> buffer, CancellationToken cancellationToken = default)
     {
+        InitializeSizeLimit();
         var bytesRead = await _innerStream.ReadAsync(buffer, cancellationToken);
 
         _totalBytesRead += bytesRead;

@@ -1,6 +1,8 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using Moq;
+
 namespace Microsoft.AspNetCore.RequestDecompression.Tests;
 
 public class SizeLimitedStreamTests
@@ -89,6 +91,53 @@ public class SizeLimitedStreamTests
 
         // Assert
         AssertStreamReadingException(exception, exceedsLimit);
+    }
+
+    [Theory]
+    [InlineData(false, 2L)]
+    [InlineData(true, 2L)]
+    [InlineData(false, null)]
+    [InlineData(true, null)]
+    public async Task Read_DeferredSizeLimit_InitializedOnceBeforeInnerRead(bool synchronous, long? sizeLimit)
+    {
+        long? currentLimit = 0;
+        var getterCalls = 0;
+        var innerStream = new Mock<Stream>();
+        void OnRead()
+        {
+            Assert.Equal(1, getterCalls);
+            currentLimit = 0;
+        }
+        innerStream.Setup(stream => stream.Read(It.IsAny<byte[]>(), 0, 1))
+            .Callback(OnRead).Returns(1);
+        innerStream.Setup(stream => stream.ReadAsync(It.IsAny<Memory<byte>>(), It.IsAny<CancellationToken>()))
+            .Callback(OnRead).Returns(new ValueTask<int>(1));
+
+        using var sizeLimitedStream = new SizeLimitedStream(innerStream.Object, () =>
+        {
+            getterCalls++;
+            return currentLimit;
+        });
+        Assert.Equal(0, getterCalls);
+        currentLimit = sizeLimit;
+        var buffer = new byte[1];
+
+        async Task<int> Read()
+        {
+            if (synchronous)
+            {
+                return sizeLimitedStream.Read(buffer, 0, 1);
+            }
+
+            return await sizeLimitedStream.ReadAsync(buffer.AsMemory());
+        }
+
+        Assert.Equal(1, await Read());
+        Assert.Equal(1, await Read());
+        var exception = await Record.ExceptionAsync(async () => await Read());
+
+        AssertStreamReadingException(exception, sizeLimit is not null);
+        Assert.Equal(1, getterCalls);
     }
 
     private static void AssertStreamReadingException(Exception exception, bool exceedsLimit)

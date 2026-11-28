@@ -640,6 +640,148 @@ public class RequestDecompressionMiddlewareTests
         }
     }
 
+    [Theory]
+    [InlineData("gzip", false, null, 4096L, 4097)]
+    [InlineData("gzip", true, null, 4096L, 4097)]
+    [InlineData("br", false, 8192L, 4096L, 4097)]
+    [InlineData("br", true, 8192L, 4096L, 4097)]
+    [InlineData("deflate", false, 8192L, 4096L, 4097)]
+    [InlineData("deflate", true, 8192L, 4096L, 4097)]
+    [InlineData("zstd", false, 8192L, 4096L, 4097)]
+    [InlineData("zstd", true, 8192L, 4096L, 4097)]
+    [InlineData("gzip", false, 8192L, 4096L, 4096)]
+    [InlineData("gzip", true, 8192L, 4096L, 4096)]
+    [InlineData("gzip", false, 4096L, 8192L, 4097)]
+    [InlineData("gzip", true, 4096L, 8192L, 4097)]
+    [InlineData("gzip", false, 4096L, null, 4097)]
+    [InlineData("gzip", true, 4096L, null, 4097)]
+    public async Task Feature_RequestSizeLimitChangedAfterDecompression_UsedForRequest(
+        string encoding, bool synchronous, long? initialLimit, long? updatedLimit, int bodyLength)
+    {
+        var uncompressedBytes = new byte[bodyLength];
+        var compressedBytes = await (encoding switch
+        {
+            "br" => GetBrotliCompressedContent(uncompressedBytes),
+            "deflate" => GetZlibCompressedContent(uncompressedBytes),
+            "zstd" => GetZstdCompressedContent(uncompressedBytes),
+            _ => GetGZipCompressedContent(uncompressedBytes)
+        });
+        Assert.True(compressedBytes.Length < 4096);
+
+        using var host = new HostBuilder()
+            .ConfigureWebHost(webHostBuilder => webHostBuilder
+                .UseTestServer()
+                .ConfigureServices(services => services.AddRequestDecompression())
+                .Configure(app =>
+                {
+                    app.Use((context, next) =>
+                    {
+                        context.Features.Set<IHttpMaxRequestBodySizeFeature>(
+                            new FakeHttpMaxRequestBodySizeFeature(initialLimit));
+                        context.Features.Get<IHttpBodyControlFeature>().AllowSynchronousIO = true;
+                        return next(context);
+                    });
+                    app.UseRequestDecompression();
+                    app.Run(async context =>
+                    {
+                        context.Features.Get<IHttpMaxRequestBodySizeFeature>().MaxRequestBodySize = updatedLimit;
+                        using var output = new MemoryStream();
+                        var exception = await Record.ExceptionAsync(async () =>
+                        {
+                            if (synchronous)
+                            {
+                                context.Request.Body.CopyTo(output);
+                            }
+                            else
+                            {
+                                await context.Request.Body.CopyToAsync(output);
+                            }
+                        });
+
+                        if (bodyLength > updatedLimit)
+                        {
+                            var badRequest = Assert.IsType<BadHttpRequestException>(exception);
+                            Assert.Equal(StatusCodes.Status413PayloadTooLarge, badRequest.StatusCode);
+                            Assert.Equal($"The decompressed request body is larger than the request body size limit {updatedLimit}.", badRequest.Message);
+                            context.Response.StatusCode = badRequest.StatusCode;
+                        }
+                        else
+                        {
+                            Assert.Null(exception);
+                            Assert.Equal(uncompressedBytes, output.ToArray());
+                        }
+                    });
+                }))
+            .Build();
+        await host.StartAsync();
+        using var client = host.GetTestClient();
+        using var content = new ByteArrayContent(compressedBytes);
+        content.Headers.ContentEncoding.Add(encoding);
+
+        using var response = await client.PostAsync("/", content);
+
+        Assert.Equal(bodyLength > updatedLimit ? 413 : 200, (int)response.StatusCode);
+    }
+
+    [Theory]
+    [InlineData(false, 4096)]
+    [InlineData(false, 4097)]
+    [InlineData(true, 4096)]
+    [InlineData(true, 4097)]
+    public async Task Endpoint_RoutingAfterDecompression_RequestSizeLimitUsedForRequest(bool routingAfter, int bodyLength)
+    {
+        var uncompressedBytes = new byte[bodyLength];
+        var compressedBytes = await GetGZipCompressedContent(uncompressedBytes);
+        Assert.True(compressedBytes.Length < 4096);
+
+        using var host = new HostBuilder()
+            .ConfigureWebHost(webHostBuilder => webHostBuilder
+                .UseTestServer()
+                .ConfigureServices(services =>
+                {
+                    services.AddRouting();
+                    services.AddRequestDecompression();
+                })
+                .Configure(app =>
+                {
+                    if (!routingAfter)
+                    {
+                        app.UseRouting();
+                    }
+                    app.UseRequestDecompression();
+                    if (routingAfter)
+                    {
+                        app.UseRouting();
+                    }
+                    app.UseEndpoints(endpoints => endpoints.MapPost("/", async context =>
+                    {
+                        using var output = new MemoryStream();
+                        var exception = await Record.ExceptionAsync(() => context.Request.Body.CopyToAsync(output));
+                        if (bodyLength > 4096)
+                        {
+                            var badRequest = Assert.IsType<BadHttpRequestException>(exception);
+                            Assert.Equal(StatusCodes.Status413PayloadTooLarge, badRequest.StatusCode);
+                            Assert.Equal("The decompressed request body is larger than the request body size limit 4096.", badRequest.Message);
+                            context.Response.StatusCode = badRequest.StatusCode;
+                        }
+                        else
+                        {
+                            Assert.Null(exception);
+                            Assert.Equal(uncompressedBytes, output.ToArray());
+                        }
+                    }).WithMetadata(new FakeRequestSizeLimitMetadata { MaxRequestBodySize = 4096 }));
+                }))
+            .Build();
+        await host.StartAsync();
+        using var client = host.GetTestClient();
+        using var content = new ByteArrayContent(compressedBytes);
+        content.Headers.ContentEncoding.Add("gzip");
+
+        using var response = await client.PostAsync("/", content);
+
+        Assert.Equal(bodyLength > 4096 ? 413 : 200, (int)response.StatusCode);
+    }
+
     [Fact]
     public void Ctor_NullRequestDelegate_Throws()
     {
