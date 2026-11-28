@@ -258,7 +258,7 @@ public sealed class HostMatcherPolicy : MatcherPolicy, IEndpointComparerPolicy, 
                             break;
                         }
                         else if (edgeKey.HasHostWildcard && endpointKey.HasHostWildcard &&
-                            edgeKey.Port == endpointKey.Port && edgeKey.MatchHost(endpointKey.Host))
+                            edgeKey.Port == endpointKey.Port && endpointKey.MatchHost(edgeKey.Host))
                         {
                             kvp.Value.Add(endpoint);
                             break;

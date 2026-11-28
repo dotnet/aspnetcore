@@ -9,6 +9,19 @@ namespace Microsoft.AspNetCore.Routing.Matching;
 public class HostMatcherPolicyTest
 {
     [Fact]
+    public void GetEdges_NestedWildcardDoesNotMatchBroaderHost()
+    {
+        var broad = CreateEndpoint("/", new HostAttribute("*.contoso.com"));
+        var narrow = CreateEndpoint("/", new HostAttribute("*.sub.contoso.com"));
+        var edges = CreatePolicy().GetEdges(new[] { broad, narrow });
+
+        var broadEdge = Assert.Single(edges, e => e.State.ToString() == "*.contoso.com:*");
+        Assert.Equal(broad, Assert.Single(broadEdge.Endpoints));
+        var narrowEdge = Assert.Single(edges, e => e.State.ToString() == "*.sub.contoso.com:*");
+        Assert.Equal(new[] { broad, narrow }, narrowEdge.Endpoints);
+    }
+
+    [Fact]
     public void INodeBuilderPolicy_AppliesToEndpoints_EndpointWithoutMetadata_ReturnsFalse()
     {
         // Arrange
@@ -236,12 +249,12 @@ public class HostMatcherPolicyTest
             e =>
             {
                 Assert.Equal("*.contoso.com:*", e.State.ToString());
-                Assert.Equal(new[] { endpoints[1], endpoints[2], endpoints[3], endpoints[4], }, e.Endpoints.ToArray());
+                Assert.Equal(new[] { endpoints[1], endpoints[2], endpoints[3], }, e.Endpoints.ToArray());
             },
             e =>
             {
                 Assert.Equal("*.sub.contoso.com:*", e.State.ToString());
-                Assert.Equal(new[] { endpoints[1], endpoints[2], endpoints[4], }, e.Endpoints.ToArray());
+                Assert.Equal(new[] { endpoints[1], endpoints[2], endpoints[3], endpoints[4], }, e.Endpoints.ToArray());
             },
             e =>
             {
