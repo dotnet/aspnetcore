@@ -75,7 +75,13 @@ internal sealed class JsonTranscodingRouteAdapter
                     remainingSegmentCount++;
                 }
 
-                if (remainingSegmentCount == 1)
+                if (remainingSegmentCount == 1 && GetSegmentType(tempSegments[i]) == SegmentType.Literal)
+                {
+                    var literal = tempSegments[i];
+                    rewriteActions.Add(context => context.Request.RouteValues[fullPath] = literal);
+                    i++;
+                }
+                else if (remainingSegmentCount == 1)
                 {
                     // Single segment parameter. Include in route with its default name.
                     tempSegments[i] = segmentVariable.HasCatchAllPath
