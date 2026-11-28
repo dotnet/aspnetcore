@@ -240,7 +240,7 @@ public class WsFederationHandler : RemoteAuthenticationHandler<WsFederationOptio
                 return securityTokenReceivedContext.Result;
             }
             wsFederationMessage = securityTokenReceivedContext.ProtocolMessage;
-            properties = messageReceivedContext.Properties!;
+            properties = securityTokenReceivedContext.Properties ?? properties;
 
             var tvp = await SetupTokenValidationParametersAsync();
             ClaimsPrincipal? principal = null;
