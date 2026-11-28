@@ -55,7 +55,16 @@ internal sealed class ConfirmEmailChangeModel<TUser> : ConfirmEmailChangeModel w
             return NotFound($"Unable to load user with ID '{userId}'.");
         }
 
-        code = Encoding.UTF8.GetString(WebEncoders.Base64UrlDecode(code));
+        try
+        {
+            code = Encoding.UTF8.GetString(WebEncoders.Base64UrlDecode(code));
+        }
+        catch (FormatException)
+        {
+            StatusMessage = "Error changing email.";
+            return Page();
+        }
+
         var result = await _userManager.ChangeEmailAsync(user, email, code);
         if (!result.Succeeded)
         {
