@@ -234,7 +234,7 @@ internal sealed partial class ComponentHub : Hub
                 new ProtectedPrerenderComponentApplicationStore(_dataProtectionProvider);
         }
 
-        _ = circuitHost.UpdateRootComponents(operations, store, persistedState != null, Context.ConnectionAborted);
+        await circuitHost.AcceptRootComponents(operations, store, persistedState != null, Context.ConnectionAborted);
     }
 
     public async ValueTask<bool> ConnectCircuit(string circuitIdSecret)
