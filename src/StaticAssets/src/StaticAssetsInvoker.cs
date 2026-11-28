@@ -339,7 +339,7 @@ internal class StaticAssetsInvoker
                 ifMatchResult = PreconditionState.PreconditionFailed;
                 foreach (var etag in ifMatch)
                 {
-                    if (etag.Equals(EntityTagHeaderValue.Any) || etag.Compare(_etag, useStrongComparison: false))
+                    if (etag.Equals(EntityTagHeaderValue.Any) || etag.Compare(_etag, useStrongComparison: true))
                     {
                         ifMatchResult = PreconditionState.ShouldProcess;
                         break;

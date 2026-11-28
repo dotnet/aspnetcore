@@ -121,6 +121,20 @@ public class CacheHeaderTests
 
     [Theory]
     [MemberData(nameof(SupportedMethods))]
+    public async Task IfNoneMatchShouldReturn304ForWeakMatching(HttpMethod method)
+    {
+        using var host = await StaticFilesTestServer.Create(app => app.UseFileServer());
+        using var server = host.GetTestServer();
+        HttpResponseMessage resp1 = await server.CreateClient().GetAsync("http://localhost/SubFolder/extra.xml");
+
+        var req2 = new HttpRequestMessage(method, "http://localhost/SubFolder/extra.xml");
+        req2.Headers.Add("If-None-Match", "W/" + resp1.Headers.ETag.ToString());
+        HttpResponseMessage resp2 = await server.CreateClient().SendAsync(req2);
+        Assert.Equal(HttpStatusCode.NotModified, resp2.StatusCode);
+    }
+
+    [Theory]
+    [MemberData(nameof(SupportedMethods))]
     public async Task IfNoneMatchAllShouldReturn304ForMatching(HttpMethod method)
     {
         using var host = await StaticFilesTestServer.Create(app => app.UseFileServer());
