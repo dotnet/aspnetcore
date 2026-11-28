@@ -9,7 +9,6 @@ using System.Runtime.ExceptionServices;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 using System.Text.Json.Serialization.Metadata;
-
 namespace Microsoft.JSInterop.Infrastructure;
 
 /// <summary>
@@ -26,6 +25,7 @@ public sealed class GeneratedJSInterop
 
     private readonly ConcurrentDictionary<(string Assembly, string Method), Registration> _statics = new();
     private readonly ConcurrentDictionary<(Type Type, string Method), Registration> _instances = new();
+    private readonly ConcurrentDictionary<Type, Lazy<GeneratedJSInterop>> _instanceProviders = new();
     private static IJsonTypeInfoResolver[] s_typeInfoResolvers = [];
     private static readonly ConcurrentDictionary<Type, Func<JSRuntime, JsonConverter>> s_referenceConverters = new();
 
@@ -43,6 +43,24 @@ public sealed class GeneratedJSInterop
     /// <returns>The serialized result.</returns>
     [EditorBrowsable(EditorBrowsableState.Never)]
     public delegate ValueTask<string?> Invoker(JSRuntime runtime, object? target, JsonElement[] args);
+
+    /// <summary>
+    /// Supplies generated registrations for a closed generic or inaccessible instance type.
+    /// The dispatcher calls this bridge lazily, without inspecting attributes or invoking a type initializer.
+    /// </summary>
+    /// <remarks>
+    /// Registrations and registration failures are cached per registry and runtime target type.
+    /// Invokers must use their target argument instead of capturing the instance supplying registrations.
+    /// </remarks>
+    [EditorBrowsable(EditorBrowsableState.Never)]
+    public interface IInstanceRegistrationProvider
+    {
+        /// <summary>
+        /// Adds the type's callbacks and generated base callbacks to an isolated registration set.
+        /// </summary>
+        /// <param name="registrations">The registration set owned by the dispatcher.</param>
+        void RegisterInstanceCallbacks(GeneratedJSInterop registrations);
+    }
 
     /// <summary>
     /// Gets the process-wide registrations populated by generated module initializers.
@@ -96,6 +114,24 @@ public sealed class GeneratedJSInterop
         ArgumentOutOfRangeException.ThrowIfNegative(arity);
         ArgumentNullException.ThrowIfNull(invoke);
         if (!_instances.TryAdd((typeof(T), method), new(arity, isAsync, invoke)))
+        {
+            throw new InvalidOperationException($"The type '{typeof(T).Name}' already has a registration for '{method}'.");
+        }
+    }
+
+    /// <summary>
+    /// Records that <typeparamref name="T"/> overrides a JS-invokable base method without declaring
+    /// <paramref name="method"/> itself. Like reflection dispatch, calls to that identifier on an
+    /// instance of <typeparamref name="T"/> then fail instead of reaching the override through the
+    /// base registration.
+    /// </summary>
+    /// <typeparam name="T">The type declaring the override.</typeparam>
+    /// <param name="method">The base JavaScript invocation identifier that the override hides.</param>
+    [EditorBrowsable(EditorBrowsableState.Never)]
+    public void RegisterNonInvokableInstance<T>(string method) where T : class
+    {
+        ArgumentException.ThrowIfNullOrEmpty(method);
+        if (!_instances.TryAdd((typeof(T), method), default))
         {
             throw new InvalidOperationException($"The type '{typeof(T).Name}' already has a registration for '{method}'.");
         }
@@ -285,9 +321,15 @@ public sealed class GeneratedJSInterop
                 }
 
                 target = reference.Value;
-                if (!TryGetInstance(target.GetType(), info.MethodIdentifier, out entry))
+                if (!TryGetInstance(target, info.MethodIdentifier, out entry))
                 {
                     throw new ArgumentException($"No generated instance registration for '{info.MethodIdentifier}'.");
+                }
+
+                if (entry.Invoke is null)
+                {
+                    // Matches reflection dispatch, which only sees the override's own attributes.
+                    throw new ArgumentException($"The type '{target.GetType().Name}' does not contain a public invokable method with [{nameof(JSInvokableAttribute)}(\"{info.MethodIdentifier}\")].");
                 }
             }
             else if (!_statics.TryGetValue((info.AssemblyName!, info.MethodIdentifier), out entry) &&
@@ -318,7 +360,7 @@ public sealed class GeneratedJSInterop
                 }
             }
 
-            return entry.Invoke(runtime, target, args);
+            return entry.Invoke!(runtime, target, args);
         }
         finally
         {
@@ -341,12 +383,25 @@ public sealed class GeneratedJSInterop
         _ => JsonTokenType.None,
     };
 
-    private bool TryGetInstance(Type targetType, string method, out Registration entry)
+    private bool TryGetInstance(object target, string method, out Registration entry)
     {
+        var targetType = target.GetType();
+        Lazy<GeneratedJSInterop>? generated = null;
+        if (target is IInstanceRegistrationProvider provider)
+        {
+            generated = _instanceProviders.GetOrAdd(targetType, static (_, provider) => new Lazy<GeneratedJSInterop>(() =>
+            {
+                var registrations = new GeneratedJSInterop();
+                provider.RegisterInstanceCallbacks(registrations);
+                return registrations;
+            }, LazyThreadSafetyMode.ExecutionAndPublication), provider);
+        }
+
         for (var type = targetType; type is not null; type = type.BaseType)
         {
             if (_instances.TryGetValue((type, method), out entry) ||
-                Shared._instances.TryGetValue((type, method), out entry))
+                Shared._instances.TryGetValue((type, method), out entry) ||
+                generated is not null && generated.Value._instances.TryGetValue((type, method), out entry))
             {
                 return true;
             }
@@ -378,7 +433,8 @@ public sealed class GeneratedJSInterop
         }
     }
 
-    private readonly record struct Registration(int Arity, bool Async, Invoker Invoke);
+    // A null Invoke marks an override that hides a base registration.
+    private readonly record struct Registration(int Arity, bool Async, Invoker? Invoke);
 
     private sealed class SharedResolver : IJsonTypeInfoResolver
     {

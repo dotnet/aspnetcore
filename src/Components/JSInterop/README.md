@@ -40,24 +40,89 @@ To build the JavaScript code, execute the following commands in a command shell:
 
 ## WIP: generated-only Native AOT experiment
 
-`Microsoft.JSInterop.Infrastructure.GeneratedJSInterop` is an experimental registration surface, not an
-approved API. It is marked `[Experimental("ASP0041")]`, and members that only generated or handwritten
-registration code calls are hidden from IntelliSense. Reflection-based dispatch remains the
-default. To select generated dispatch exclusively, add this runtime feature switch to the consuming
-application's project:
+`Microsoft.JSInterop.Infrastructure.GeneratedJSInterop` and the `Microsoft.JSInterop.SourceGenerators`
+generator are an experimental registration surface, not an approved API. `GeneratedJSInterop` is
+marked `[Experimental("ASP0041")]`; generated code suppresses the diagnostic, and members that only
+generated code calls are hidden from IntelliSense. Reflection-based dispatch remains the
+default. Generated-only dispatch is selected at build time with one MSBuild property in the consuming
+application's project, which also needs the generator analyzer and
+`src/Components/JSInterop/gen/Microsoft.JSInterop.SourceGenerators.targets` while the generator is
+not packaged:
 
 ```xml
-<ItemGroup>
-  <RuntimeHostConfigurationOption Include="Microsoft.JSInterop.GeneratedOnly" Value="true" Trim="true" />
-</ItemGroup>
+<PropertyGroup>
+  <JSInteropGeneratedOnly>true</JSInteropGeneratedOnly>
+</PropertyGroup>
 ```
 
-### Typed registrations
+The property runs the generator for that project and sets the `Microsoft.JSInterop.GeneratedOnly`
+runtime feature switch (`RuntimeHostConfigurationOption`, `Trim="true"`). Without it, the targets
+remove the generator from the compilation, so it does not scan the project or report diagnostics,
+and the generator itself emits nothing unless `JSInteropGenerateInvokers` is `true`. A library can
+set `JSInteropGenerateInvokers` to emit registrations without setting the runtime switch. Setting the
+runtime switch without the property leaves the application's own `[JSInvokable]` methods unregistered,
+so they fail explicitly in generated-only mode.
 
-This layer supplies the runtime registration and serialization helpers. Automatic registrations
-and the Components.Web analyzer integration are developed in a separate stacked source-generator
-PR. Without that layer, generated-only mode requires handwritten registrations, including
-renderer-owned callbacks; ordinary Blazor button clicks are not supported by this layer alone.
+### Generated registrations
+
+The generator (`src/Components/JSInterop/gen`) finds every `[JSInvokable]` method in the compilation
+and emits a module initializer that registers a strongly typed invoker for each identifier in
+`GeneratedJSInterop.Shared`. Each invoker reads all arguments with the runtime-bound JSON
+metadata before calling the method, rejects synchronous calls to asynchronous methods, and serializes
+results the way reflection dispatch does. The module initializer returns immediately unless the
+feature switch is enabled, so trimming removes the registrations when the switch is off.
+
+Microsoft.AspNetCore.Components.Web, Microsoft.AspNetCore.Components.WebAssembly and
+Microsoft.AspNetCore.Components.Platform run the generator, so framework callbacks such as
+`WebRendererInteropMethods.DispatchEventAsync`, WebAssembly navigation callbacks and Platform's
+`JSCallback<T>` are registered by the assemblies that own them. Those assemblies are compiled once for
+every application, so they set `JSInteropGenerateInvokers` and always contain registrations; the
+registrations are gated by the runtime feature switch and trimmed when it is off.
+
+Instance methods on generic types (for example `Box<T>`) and on private or protected nested types are
+registered lazily from the target instance through a generated implementation of
+`GeneratedJSInterop.IInstanceRegistrationProvider`. The type and all its containing types
+must be declared `partial`. No static constructor is added, existing static constructors are
+untouched, and the generator no longer changes `beforefieldinit`.
+
+The generator applies an assembly-local, non-generic attribute to each partial host. Its static
+`Register<THost>` method owns the identifiers, argument counts and registration logic. The host
+supplies `THost` and its strongly typed invokers through the interface bridge. This is an
+attribute/interface hybrid: the runtime discovers the bridge using an interface test, not by
+reading or instantiating attributes. The attribute application is descriptive metadata, not the
+activation mechanism.
+
+An attribute cannot use a host's type parameters, even when nested inside the generic host.
+Passing closed invokers from inside the host avoids runtime `MakeGenericType`, reflective method
+invocation and inaccessible-type references in the attribute. Generated non-sealed hosts also
+expose a protected static `__JSInvokable_Register` bridge so generated derived hosts can compose
+base registrations, including across assemblies. These bridges and the public provider interface
+are experimental API surface, not an approved contract.
+
+Each runtime's registry caches an isolated registration set per runtime target type, initialized
+once even under concurrent calls. Registration failures surface on invocation as their original
+exceptions and are cached, rather than becoming type-initialization failures. Explicit registrations
+still take precedence at each type in the inheritance walk. Provider callbacks must use their target
+argument instead of capturing the instance that initialized the type's registrations.
+
+When an override does not redeclare `[JSInvokable]`, the generator registers a non-invokable marker
+for the overriding type so that, like reflection, calls on that type fail instead of dispatching to
+the override. Derived types compiled without the generator do not get these markers.
+
+Unsupported methods are skipped with these warnings:
+
+| ID | Meaning |
+| --- | --- |
+| `JSI0001` | Method is not public. |
+| `JSI0002` | Method cannot be invoked from JavaScript by reflection or generated dispatch, such as a generic method or a static method on a generic type. |
+| `JSI0003` | Method is declared on a file-local type. |
+| `JSI0004` | Static method is declared on a type that is not public. |
+| `JSI0005` | Signature or target is unsupported, such as `ref` parameters, abstract or interface methods, or instance methods on value types. |
+| `JSI0006` | Identifier is duplicated. |
+| `JSI0007` | Generic or inaccessible type, or one of its containing types, is not `partial`. |
+
+`JSI0008` (static-constructor conflict) is retired by the lazy-host prototype; types with existing
+static constructors are now supported.
 
 Application payload types still need JSON metadata, and each type passed as a
 `DotNetObjectReference<T>` needs a closed converter. Applications and libraries register both at
@@ -71,7 +136,7 @@ GeneratedJSInterop.RegisterReferenceConverter<Counter>();
 ```
 
 Registrations may happen after a runtime is created, but before that runtime first serializes the
-affected types.
+affected types. Components.Web uses `AddTypeInfoResolver` for `InputFile`'s `BrowserFile[]` payload.
 
 Handwritten registrations through `RegisterStatic` and `RegisterInstance<T>` on
 `GeneratedJSInterop.Shared` remain available. Instance lookup walks the target's base types.
@@ -82,9 +147,12 @@ the switch is enabled.
 
 * The process-wide mutable startup hook and the registry shape are scaffolding, not a proposed
   production initialization model. The API proposal is still to be written.
-* `InputFile`'s `BrowserFile[]` payload has no framework JSON metadata in strict-JSON applications.
-* A base-type registration also dispatches to an override that is not itself `[JSInvokable]`;
-  reflection dispatch does not.
+* Module initializers run when their module loads. NativeAOT runs them at startup; on CoreCLR an
+  assembly's registrations are not available until that assembly has been loaded.
+* Generic methods and static methods on generic types are not invokable by reflection dispatch
+  either, and are not generated. File-local types are not supported.
+* Generic hosts such as `JSCallback<T>` read their arguments with the runtime's JSON metadata, so
+  applications must provide metadata for each `T` they use.
 * Existing instance-method rooting annotations remain, and four IL2072 suppressions in Components
   still need a real fix. This experiment does not establish support for complete Native AOT Blazor
   applications.

@@ -1,0 +1,33 @@
+<Project>
+  <!--
+    Experimental build-time selection for generated-only JSInterop dispatch.
+
+    JSInteropGeneratedOnly=true (application): runs the generator and sets the
+    Microsoft.JSInterop.GeneratedOnly runtime feature switch.
+    JSInteropGenerateInvokers=true (library): runs the generator only. Framework assemblies use this
+    because they are compiled once for every application; their registrations are gated by the
+    runtime feature switch and trimmed when it is off.
+
+    Otherwise the generator analyzer is removed before compilation, so it neither scans the
+    compilation nor reports diagnostics.
+  -->
+  <PropertyGroup>
+    <JSInteropGenerateInvokers Condition="'$(JSInteropGenerateInvokers)' == '' and '$(JSInteropGeneratedOnly)' == 'true'">true</JSInteropGenerateInvokers>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <CompilerVisibleProperty Include="JSInteropGenerateInvokers" />
+    <RuntimeHostConfigurationOption Include="Microsoft.JSInterop.GeneratedOnly"
+                                    Condition="'$(JSInteropGeneratedOnly)' == 'true'"
+                                    Value="true"
+                                    Trim="true" />
+  </ItemGroup>
+
+  <Target Name="_RemoveUnusedJSInvokableGenerator"
+          BeforeTargets="CoreCompile"
+          Condition="'$(JSInteropGenerateInvokers)' != 'true'">
+    <ItemGroup>
+      <Analyzer Remove="@(Analyzer)" Condition="'%(Filename)' == 'Microsoft.JSInterop.SourceGenerators'" />
+    </ItemGroup>
+  </Target>
+</Project>

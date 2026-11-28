@@ -1,6 +1,9 @@
 #nullable enable
 Microsoft.JSInterop.Infrastructure.GeneratedJSInterop
 Microsoft.JSInterop.Infrastructure.GeneratedJSInterop.Invoker
+Microsoft.JSInterop.Infrastructure.GeneratedJSInterop.IInstanceRegistrationProvider
+Microsoft.JSInterop.Infrastructure.GeneratedJSInterop.IInstanceRegistrationProvider.RegisterInstanceCallbacks(Microsoft.JSInterop.Infrastructure.GeneratedJSInterop! registrations) -> void
+Microsoft.JSInterop.Infrastructure.GeneratedJSInterop.RegisterNonInvokableInstance<T>(string! method) -> void
 Microsoft.JSInterop.Infrastructure.GeneratedJSInterop.RegisterInstance<T>(string! method, int arity, Microsoft.JSInterop.Infrastructure.GeneratedJSInterop.Invoker! invoke, bool isAsync = false) -> void
 Microsoft.JSInterop.Infrastructure.GeneratedJSInterop.RegisterStatic(string! assembly, string! method, int arity, Microsoft.JSInterop.Infrastructure.GeneratedJSInterop.Invoker! invoke, bool isAsync = false) -> void
 static Microsoft.JSInterop.Infrastructure.GeneratedJSInterop.AddTypeInfoResolver(System.Text.Json.Serialization.Metadata.IJsonTypeInfoResolver! resolver) -> void

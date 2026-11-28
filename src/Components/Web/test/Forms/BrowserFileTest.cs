@@ -1,6 +1,8 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Text.Json;
+using System.Text.Json.Serialization.Metadata;
 using Microsoft.JSInterop;
 using Moq;
 
@@ -71,4 +73,27 @@ public class BrowserFileTest
         // Act/Assert. Not throwing is success here.
         await stream.DisposeAsync();
     }
+
+    [Fact]
+    public void GeneratedMetadata_DeserializesInputFilePayloadLikeReflection()
+    {
+        var json = """[{"id":1,"lastModified":"2024-01-02T03:04:05.000Z","name":"a.txt","size":5,"contentType":"text/plain","relativePath":"dir/a.txt","blob":{}}]""";
+
+        var generated = JsonSerializer.Deserialize(json, (JsonTypeInfo<BrowserFile[]>)CreateRuntimeOptions(InputFileJsonContext.Default).GetTypeInfo(typeof(BrowserFile[])))!;
+        var reflection = JsonSerializer.Deserialize<BrowserFile[]>(json, CreateRuntimeOptions(new DefaultJsonTypeInfoResolver()))!;
+
+        var file = Assert.Single(generated);
+        var expected = Assert.Single(reflection);
+        Assert.Equal((1, "a.txt", new DateTimeOffset(2024, 1, 2, 3, 4, 5, TimeSpan.Zero), 5L, "text/plain", "dir/a.txt"), (file.Id, file.Name, file.LastModified, file.Size, file.ContentType, file.RelativePath));
+        Assert.Equal((expected.Id, expected.Name, expected.LastModified, expected.Size, expected.ContentType, expected.RelativePath), (file.Id, file.Name, file.LastModified, file.Size, file.ContentType, file.RelativePath));
+    }
+
+    // Matches the naming options of JSRuntime.
+    private static JsonSerializerOptions CreateRuntimeOptions(IJsonTypeInfoResolver resolver)
+        => new()
+        {
+            PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
+            PropertyNameCaseInsensitive = true,
+            TypeInfoResolver = resolver,
+        };
 }

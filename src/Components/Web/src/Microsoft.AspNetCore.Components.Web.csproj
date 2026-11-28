@@ -28,6 +28,20 @@
   </ItemGroup>
 
   <ItemGroup>
+    <!-- Experimental: registers renderer-owned [JSInvokable] methods for opt-in generated-only dispatch. -->
+    <ProjectReference Include="$(RepoRoot)src\Components\JSInterop\gen\Microsoft.JSInterop.SourceGenerators.csproj"
+                      OutputItemType="Analyzer"
+                      ReferenceOutputAssembly="false" />
+  </ItemGroup>
+
+  <PropertyGroup>
+    <!-- Framework assemblies always emit registrations; the runtime feature switch selects them. -->
+    <JSInteropGenerateInvokers>true</JSInteropGenerateInvokers>
+  </PropertyGroup>
+
+  <Import Project="$(RepoRoot)src\Components\JSInterop\gen\Microsoft.JSInterop.SourceGenerators.targets" />
+
+  <ItemGroup>
     <InternalsVisibleTo Include="Microsoft.AspNetCore.Components.Endpoints.Tests" />
     <InternalsVisibleTo Include="Microsoft.AspNetCore.Components.Server.Tests" />
     <InternalsVisibleTo Include="Microsoft.AspNetCore.Components.Web.Tests" />

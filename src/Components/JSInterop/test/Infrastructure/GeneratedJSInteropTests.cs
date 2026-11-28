@@ -137,6 +137,21 @@ public class GeneratedJSInteropTests
     }
 
     [Fact]
+    public async Task NonInvokableOverrideMarkerMatchesReflectionFailure()
+    {
+        var runtime = CreateRuntime();
+        runtime.GeneratedInterop.RegisterInstance<HidingBaseProbe>("Run", 0, (_, _, _) => ValueTask.FromResult<string?>("base"));
+        runtime.GeneratedInterop.RegisterNonInvokableInstance<HidingDerivedProbe>("Run");
+        using var baseReference = DotNetObjectReference.Create(new HidingBaseProbe());
+        using var derivedReference = DotNetObjectReference.Create(new HidingDerivedProbe());
+
+        Assert.Equal("base", await runtime.GeneratedInterop.Invoke(runtime, new(null, "Run", runtime.TrackObjectReference(baseReference), "1"), "[]", synchronous: true));
+        var hidden = Assert.Throws<ArgumentException>(() => runtime.GeneratedInterop.Invoke(runtime, new(null, "Run", runtime.TrackObjectReference(derivedReference), "2"), "[]", synchronous: true));
+        Assert.Equal("The type 'HidingDerivedProbe' does not contain a public invokable method with [JSInvokableAttribute(\"Run\")].", hidden.Message);
+        Assert.Throws<InvalidOperationException>(() => runtime.GeneratedInterop.RegisterNonInvokableInstance<HidingDerivedProbe>("Run"));
+    }
+
+    [Fact]
     public void SharedTypeInfoResolverHonorsResolversAddedAfterRuntimeCreation()
     {
         var runtime = new RecordingRuntime();
@@ -164,6 +179,45 @@ public class GeneratedJSInteropTests
         var otherConverter = Assert.IsType<DotNetObjectReferenceJsonConverter<LateReferenceProbe>>(
             GeneratedJSInterop.CreateReferenceConverter(typeof(LateReferenceProbe), otherRuntime));
         Assert.Same(otherRuntime, otherConverter.JSRuntime);
+    }
+
+    [Fact]
+    public async Task InstanceProvidersRegisterOncePerRuntimeAndPreserveExplicitOverrides()
+    {
+        var runtime = CreateRuntime();
+        var registrations = 0;
+        using var first = DotNetObjectReference.Create(new ProviderProbe(1, () => Interlocked.Increment(ref registrations)));
+        using var second = DotNetObjectReference.Create(new ProviderProbe(2, () => Interlocked.Increment(ref registrations)));
+        var firstId = runtime.TrackObjectReference(first);
+        var secondId = runtime.TrackObjectReference(second);
+        var results = await Task.WhenAll(Enumerable.Range(0, 16).Select(index => Task.Run(async () =>
+            await runtime.GeneratedInterop.Invoke(runtime, new(null, "Value", index % 2 == 0 ? firstId : secondId, null), "[]", synchronous: true))));
+
+        Assert.Equal(Enumerable.Range(0, 16).Select(index => index % 2 == 0 ? "1" : "2"), results);
+        Assert.Equal(1, registrations);
+        var otherRuntime = CreateRuntime();
+        using var other = DotNetObjectReference.Create(new ProviderProbe(2, () => Interlocked.Increment(ref registrations)));
+        Assert.Equal("2", await otherRuntime.GeneratedInterop.Invoke(otherRuntime, new(null, "Value", otherRuntime.TrackObjectReference(other), null), "[]", synchronous: true));
+        Assert.Equal(2, registrations);
+
+        runtime.GeneratedInterop.RegisterInstance<ProviderProbe>("Value", 0, (_, _, _) => ValueTask.FromResult<string?>("3"));
+        Assert.Equal("3", await runtime.GeneratedInterop.Invoke(runtime, new(null, "Value", firstId, null), "[]", synchronous: true));
+        Assert.Throws<ArgumentException>(() => runtime.GeneratedInterop.Invoke(runtime, new(null, "Missing", firstId, null), "[]", synchronous: true));
+        Assert.Equal(2, registrations);
+    }
+
+    [Fact]
+    public async Task InstanceProviderFailuresPropagateDirectlyAndDoNotBlockExplicitRegistrations()
+    {
+        var runtime = CreateRuntime();
+        var failure = new InvalidOperationException("registration failure");
+        using var reference = DotNetObjectReference.Create(new ProviderProbe(1, () => throw failure));
+        var id = runtime.TrackObjectReference(reference);
+
+        Assert.Same(failure, Assert.Throws<InvalidOperationException>(() => runtime.GeneratedInterop.Invoke(runtime, new(null, "Value", id, null), "[]", synchronous: true)));
+        Assert.Same(failure, Assert.Throws<InvalidOperationException>(() => runtime.GeneratedInterop.Invoke(runtime, new(null, "Value", id, null), "[]", synchronous: true)));
+        runtime.GeneratedInterop.RegisterInstance<ProviderProbe>("Value", 0, (_, _, _) => ValueTask.FromResult<string?>("4"));
+        Assert.Equal("4", await runtime.GeneratedInterop.Invoke(runtime, new(null, "Value", id, null), "[]", synchronous: true));
     }
 
     private static RecordingRuntime CreateRuntime()
@@ -203,7 +257,23 @@ public class GeneratedJSInteropTests
 
     private sealed class SharedDerivedProbe : SharedBaseProbe;
 
+    private class HidingBaseProbe;
+
+    private sealed class HidingDerivedProbe : HidingBaseProbe;
+
     private sealed class LateReferenceProbe;
+
+    private sealed class ProviderProbe(int value, Action register) : GeneratedJSInterop.IInstanceRegistrationProvider
+    {
+        public void RegisterInstanceCallbacks(GeneratedJSInterop registrations)
+        {
+            register();
+            registrations.RegisterInstance<ProviderProbe>("Value", 0, (_, target, _) =>
+                ValueTask.FromResult<string?>(((ProviderProbe)target!).Value.ToString(System.Globalization.CultureInfo.InvariantCulture)));
+        }
+
+        private int Value => value;
+    }
 }
 
 internal class GeneratedInteropBase
