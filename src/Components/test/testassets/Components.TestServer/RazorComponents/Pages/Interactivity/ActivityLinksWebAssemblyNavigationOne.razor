@@ -1,0 +1,11 @@
+@page "/activity-links/webassembly/navigation/one"
+@layout ActivityLinksWebAssemblyLayout
+
+<h1>Activity links navigation one</h1>
+
+<a id="activity-links-navigate" href="@($"activity-links/webassembly/navigation/two?activity-links-test-id={TestId}")">Navigate</a>
+
+@code {
+    [SupplyParameterFromQuery(Name = "activity-links-test-id")]
+    public string? TestId { get; set; }
+}

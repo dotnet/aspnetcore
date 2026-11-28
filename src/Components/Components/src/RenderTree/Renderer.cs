@@ -43,6 +43,7 @@ public abstract partial class Renderer : IDisposable, IAsyncDisposable
     private readonly ComponentFactory _componentFactory;
     private readonly ComponentsMetrics? _componentsMetrics;
     private readonly ComponentsActivitySource? _componentsActivitySource;
+    private ComponentsActivityState? _componentsActivityState;
     private readonly object _activityLinksStore = new Dictionary<string, CategoryLink>(StringComparer.OrdinalIgnoreCase);
     internal object ActivityLinksStore => _activityLinksStore;
 
@@ -274,6 +275,14 @@ public abstract partial class Renderer : IDisposable, IAsyncDisposable
                 _hotReloadRenderHandler = new HotReloadRenderHandler(this, executionContext);
                 HotReloadManager.OnDeltaApplied += _hotReloadRenderHandler.RerenderOnHotReload;
             }
+        }
+
+        if (_componentsActivitySource is not null && _componentsActivityState is null &&
+            _serviceProvider.GetService<ComponentStatePersistenceManager>() is { PlatformRenderMode: { } renderMode } manager)
+        {
+            // Hosts restore initial state before attaching roots, but may construct the renderer earlier.
+            _componentsActivityState = new ComponentsActivityState(
+                manager, renderMode, new ComponentsActivityLinkStore(this), _componentsActivitySource, _logger);
         }
 
         return AttachAndInitComponent(component, -1).ComponentId;
@@ -1290,6 +1299,8 @@ public abstract partial class Renderer : IDisposable, IAsyncDisposable
         {
             HotReloadManager.OnDeltaApplied -= _hotReloadRenderHandler.RerenderOnHotReload;
         }
+
+        _componentsActivityState?.Dispose();
 
         // It's important that we handle all exceptions here before reporting any of them.
         // This way we can dispose all components before an error handler kicks in.

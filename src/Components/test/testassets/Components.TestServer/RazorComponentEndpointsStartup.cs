@@ -220,6 +220,11 @@ public class RazorComponentEndpointsStartup<TRootComponent>
 
         app.Use((ctx, nxt) =>
         {
+            if (ctx.Request.Query.TryGetValue("activity-links-test-id", out var testId))
+            {
+                ComponentsActivityTestCollector.Start(testId.ToString());
+            }
+
             if (ctx.Request.Query.ContainsKey("add-csp"))
             {
                 ctx.Response.Headers.Add("Content-Security-Policy", "script-src 'self' 'unsafe-inline'");
@@ -299,6 +304,20 @@ public class RazorComponentEndpointsStartup<TRootComponent>
 
             MapEnhancedNavigationEndpoints(endpoints);
             endpoints.MapAutoPauseTestEndpoints();
+            endpoints.MapPost("activity-links/telemetry/{testId}", async (string testId, HttpRequest request) =>
+            {
+                var spans = await request.ReadFromJsonAsync<ActivityLinksTestSpan[]>()
+                    ?? throw new InvalidOperationException("The activity export must contain spans.");
+                ComponentsActivityTestCollector.Add(testId, spans);
+                return Results.Ok();
+            });
+            endpoints.MapGet("activity-links/telemetry/{testId}", (string testId) =>
+                ComponentsActivityTestCollector.Get(testId));
+            endpoints.MapDelete("activity-links/telemetry/{testId}", (string testId) =>
+            {
+                ComponentsActivityTestCollector.Complete(testId);
+                return Results.NoContent();
+            });
         });
     }
 

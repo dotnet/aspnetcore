@@ -20,6 +20,8 @@ public class ComponentStatePersistenceManager
     private readonly PersistentServicesRegistry? _servicesRegistry;
     private readonly Dictionary<string, byte[]> _currentState = new(StringComparer.Ordinal);
 
+    internal IComponentRenderMode? PlatformRenderMode => _servicesRegistry?.RenderMode;
+
     /// <summary>
     /// Initializes a new instance of <see cref="ComponentStatePersistenceManager"/>.
     /// </summary>
