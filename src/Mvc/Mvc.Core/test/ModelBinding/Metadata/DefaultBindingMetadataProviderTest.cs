@@ -486,6 +486,83 @@ public class DefaultModelMetadataBindingDetailsProviderTest
     }
 
     [Fact]
+    public void CreateBindingDetails_FindsBindNever_OnContainingRecord_ForConstructorParameter()
+    {
+        // Arrange
+        var parameter = typeof(BindNeverOnRecord).GetConstructors()[0].GetParameters()[0];
+        var context = new BindingMetadataProviderContext(
+            ModelMetadataIdentity.ForParameter(parameter),
+            new ModelAttributes(Array.Empty<object>(), null, Array.Empty<object>()));
+
+        var provider = CreateBindingMetadataProvider();
+
+        // Act
+        provider.CreateBindingMetadata(context);
+
+        // Assert
+        Assert.False(context.BindingMetadata.IsBindingAllowed);
+        Assert.False(context.BindingMetadata.IsBindingRequired);
+    }
+
+    [Fact]
+    public void CreateBindingDetails_FindsBindRequired_OnContainingRecord_ForConstructorParameter()
+    {
+        // Arrange
+        var parameter = typeof(BindRequiredOnRecord).GetConstructors()[0].GetParameters()[0];
+        var context = new BindingMetadataProviderContext(
+            ModelMetadataIdentity.ForParameter(parameter),
+            new ModelAttributes(Array.Empty<object>(), null, Array.Empty<object>()));
+
+        var provider = CreateBindingMetadataProvider();
+
+        // Act
+        provider.CreateBindingMetadata(context);
+
+        // Assert
+        Assert.True(context.BindingMetadata.IsBindingAllowed);
+        Assert.True(context.BindingMetadata.IsBindingRequired);
+    }
+
+    [Fact]
+    public void CreateBindingDetails_ConstructorParameterAttribute_OverridesBindNeverOnRecord()
+    {
+        // Arrange
+        var parameter = typeof(BindNeverOnRecord).GetConstructors()[0].GetParameters()[0];
+        var parameterAttributes = new object[] { new BindRequiredAttribute() };
+        var context = new BindingMetadataProviderContext(
+            ModelMetadataIdentity.ForParameter(parameter),
+            new ModelAttributes(Array.Empty<object>(), null, parameterAttributes));
+
+        var provider = CreateBindingMetadataProvider();
+
+        // Act
+        provider.CreateBindingMetadata(context);
+
+        // Assert
+        Assert.True(context.BindingMetadata.IsBindingAllowed);
+        Assert.True(context.BindingMetadata.IsBindingRequired);
+    }
+
+    [Fact]
+    public void CreateBindingDetails_BindNeverOnDeclaringClass_DoesNotAffectActionParameter()
+    {
+        // Arrange
+        var parameter = typeof(BindNeverOnController).GetMethod(nameof(BindNeverOnController.Action)).GetParameters()[0];
+        var context = new BindingMetadataProviderContext(
+            ModelMetadataIdentity.ForParameter(parameter),
+            new ModelAttributes(Array.Empty<object>(), null, Array.Empty<object>()));
+
+        var provider = CreateBindingMetadataProvider();
+
+        // Act
+        provider.CreateBindingMetadata(context);
+
+        // Assert
+        Assert.True(context.BindingMetadata.IsBindingAllowed);
+        Assert.False(context.BindingMetadata.IsBindingRequired);
+    }
+
+    [Fact]
     public void CreateBindingDetails_OverrideBehaviorOnClass_OverrideWithOptional()
     {
         // Arrange
@@ -887,6 +964,18 @@ public class DefaultModelMetadataBindingDetailsProviderTest
     [BindRequired]
     private class BindRequiredOverridesInheritedBindNever : BindNeverOnClass
     {
+    }
+
+    [BindNever]
+    private record BindNeverOnRecord(string Name);
+
+    [BindRequired]
+    private record BindRequiredOnRecord(string Name);
+
+    [BindNever]
+    private class BindNeverOnController
+    {
+        public void Action(object param1) { }
     }
 
     private class BindingSourceModelBinderAttribute : ModelBinderAttribute
