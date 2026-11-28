@@ -87,25 +87,57 @@ public class RewriteMiddleware
 
     static void RunRules(RewriteContext rewriteContext, RewriteOptions options, HttpContext httpContext, ILogger logger)
     {
-        foreach (var rule in options.Rules)
+        // Rules is always a List<IRule>; enumerate it without boxing the enumerator.
+        if (options.Rules is List<IRule> rules)
         {
-            rule.ApplyRule(rewriteContext);
-            switch (rewriteContext.Result)
+            foreach (var rule in rules)
             {
-                case RuleResult.ContinueRules:
+                if (!ApplyRule(rule, rewriteContext, httpContext, logger))
+                {
+                    return;
+                }
+            }
+        }
+        else
+        {
+            foreach (var rule in options.Rules)
+            {
+                if (!ApplyRule(rule, rewriteContext, httpContext, logger))
+                {
+                    return;
+                }
+            }
+        }
+    }
+
+    // Returns false when no further rules should be applied.
+    static bool ApplyRule(IRule rule, RewriteContext rewriteContext, HttpContext httpContext, ILogger logger)
+    {
+        rule.ApplyRule(rewriteContext);
+        switch (rewriteContext.Result)
+        {
+            case RuleResult.ContinueRules:
+                if (logger.IsEnabled(LogLevel.Debug))
+                {
                     logger.RewriteMiddlewareRequestContinueResults(httpContext.Request.GetEncodedUrl());
-                    break;
-                case RuleResult.EndResponse:
+                }
+                return true;
+            case RuleResult.EndResponse:
+                if (logger.IsEnabled(LogLevel.Debug))
+                {
                     logger.RewriteMiddlewareRequestResponseComplete(
                         httpContext.Response.Headers.Location.ToString(),
                         httpContext.Response.StatusCode);
-                    return;
-                case RuleResult.SkipRemainingRules:
+                }
+                return false;
+            case RuleResult.SkipRemainingRules:
+                if (logger.IsEnabled(LogLevel.Debug))
+                {
                     logger.RewriteMiddlewareRequestStopRules(httpContext.Request.GetEncodedUrl());
-                    return;
-                default:
-                    throw new ArgumentOutOfRangeException($"Invalid rule termination {rewriteContext.Result}");
-            }
+                }
+                return false;
+            default:
+                throw new ArgumentOutOfRangeException($"Invalid rule termination {rewriteContext.Result}");
         }
     }
 }
