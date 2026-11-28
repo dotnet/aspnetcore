@@ -527,6 +527,13 @@ internal sealed class OpenApiSchemaService(
         var schema = UnwrapOpenApiSchema(inputSchema);
         await transformer.TransformAsync(schema, context, cancellationToken);
 
+        // For Nullable<T>: walk the subschemas with T's type info,
+        // so transformers also run for the members of a nullable struct.
+        if (Nullable.GetUnderlyingType(jsonTypeInfo.Type) is { } underlyingType)
+        {
+            jsonTypeInfo = _jsonSerializerOptions.GetTypeInfo(underlyingType);
+        }
+
         // Only apply transformers on polymorphic schemas where we can resolve the derived
         // types associated with the base type.
         if (schema.AnyOf is { Count: > 0 } && jsonTypeInfo.PolymorphismOptions is not null)
@@ -574,7 +581,7 @@ internal sealed class OpenApiSchemaService(
     {
         // We always create a oneOf nullable wrapper ourselves manually.
         var underlyingType = Nullable.GetUnderlyingType(type) ?? type;
-        
+
         var schema = JsonSchemaExporter.GetJsonSchemaAsNode(_jsonSerializerOptions, underlyingType, _configuration);
         return ResolveReferences(schema, schema);
     }
