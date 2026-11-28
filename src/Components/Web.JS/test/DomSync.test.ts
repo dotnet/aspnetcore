@@ -1,6 +1,7 @@
-import { expect, test, describe } from '@jest/globals';
+import { expect, test, describe, jest } from '@jest/globals';
 import { CommentBoundedRange, synchronizeDomContent } from '../src/Rendering/DomMerging/DomSync';
 import { toLogicalElement } from '../src/Rendering/LogicalElements';
+import { UserSpecifiedDisplay } from '../src/Platform/Circuits/UserSpecifiedDisplay';
 
 describe('DomSync', () => {
   test('should synchronize existing content in a logical HTMLTemplateElement', () => {
@@ -636,6 +637,37 @@ describe('DomSync', () => {
     // Assert: The expand class should be retained
     expect(newNode).toBe(oldNode);
     expect(newNode.classList.contains('expand')).toBe(true);
+  });
+
+  test('should preserve an active reconnect dialog without data permanent', () => {
+    const destination = makeExistingContent(`<dialog id="components-reconnect-modal"><span>client content</span></dialog>`);
+    const newContent = makeNewContent(`<dialog id="components-reconnect-modal"><span>server content</span></dialog>`);
+    const oldDialog = toNodeArray(destination)[0] as HTMLDialogElement;
+    new UserSpecifiedDisplay(oldDialog, document);
+    jest.spyOn(oldDialog, 'matches').mockReturnValue(true);
+    oldDialog.close = () => {};
+
+    synchronizeDomContent(destination, newContent, { preserveModalState: false });
+
+    const newDialog = toNodeArray(destination)[0] as HTMLDialogElement;
+    expect(newDialog).toBe(oldDialog);
+    expect(newDialog.textContent).toBe('client content');
+  });
+
+  test('should not match a dynamically permanent reconnect dialog with a different id', () => {
+    const destination = makeExistingContent(`<dialog id="components-reconnect-modal"><span>client content</span></dialog>`);
+    const newContent = makeNewContent(`<dialog id="other-dialog">server content</dialog><dialog id="components-reconnect-modal">new reconnect content</dialog>`);
+    const oldDialog = toNodeArray(destination)[0] as HTMLDialogElement;
+    new UserSpecifiedDisplay(oldDialog, document);
+
+    synchronizeDomContent(destination, newContent);
+
+    const dialogs = toNodeArray(destination).filter(node => node instanceof HTMLDialogElement) as HTMLDialogElement[];
+    expect(dialogs).toHaveLength(2);
+    expect(dialogs[0].id).toBe('other-dialog');
+    expect(dialogs[0].textContent).toBe('server content');
+    expect(dialogs[1]).toBe(oldDialog);
+    expect(dialogs[1].textContent).toBe('client content');
   });
 });
 

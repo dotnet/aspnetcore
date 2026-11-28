@@ -102,7 +102,12 @@ function insertStreamingContentIntoDocument(componentIdAsString: string, docFrag
   const markers = findStreamingMarkers(componentIdAsString);
   if (markers) {
     const { startMarker, endMarker } = markers;
-    synchronizeDomContent({ startExclusive: startMarker, endExclusive: endMarker }, docFrag, !getSsrOptions()?.disableDomPreservation);
+    const preserveExisting = !getSsrOptions()?.disableDomPreservation;
+    synchronizeDomContent(
+      { startExclusive: startMarker, endExclusive: endMarker },
+      docFrag,
+      { preserveExisting, preserveModalState: preserveExisting }
+    );
 
     navigationEnhancementCallbacks.documentUpdated();
   }

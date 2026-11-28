@@ -16,6 +16,11 @@ export interface DescriptorHandler {
   setWebAssemblyOptions(options: WebAssemblyServerOptions | undefined): void;
 }
 
+export interface DomSyncOptions {
+  preserveModalState?: boolean;
+  preserveExisting?: boolean;
+}
+
 export function attachComponentDescriptorHandler(handler: DescriptorHandler) {
   descriptorHandler = handler;
 }
@@ -32,7 +37,7 @@ export function registerAllComponentDescriptors(root: Node) {
 
 export { preprocessAndSynchronizeDomContent as synchronizeDomContent };
 
-function preprocessAndSynchronizeDomContent(destination: CommentBoundedRange | Node, newContent: Node, preserveExisting = true) {
+function preprocessAndSynchronizeDomContent(destination: CommentBoundedRange | Node, newContent: Node, options: DomSyncOptions = {}) {
   // Strip any WebAssembly metadata comments from the new content before building
   // the logical tree, so they don't end up as orphaned nodes in the logical children array
   discoverWebAssemblyOptions(newContent);
@@ -47,10 +52,10 @@ function preprocessAndSynchronizeDomContent(destination: CommentBoundedRange | N
   upgradeComponentCommentsToLogicalRootComments(newContent);
 
   // Then, synchronize the preprocessed DOM content
-  synchronizeDomContentCore(destination, newContent, preserveExisting);
+  synchronizeDomContentCore(destination, newContent, options);
 }
 
-function synchronizeDomContentCore(destination: CommentBoundedRange | Node, newContent: Node, preserveExisting = true) {
+function synchronizeDomContentCore(destination: CommentBoundedRange | Node, newContent: Node, options: DomSyncOptions) {
   // Determine the destination's parent node, i.e., the node containing the children
   // we intend to synchronize. This might sometimes be a logical parent.
   let destinationParent: Node;
@@ -88,8 +93,8 @@ function synchronizeDomContentCore(destination: CommentBoundedRange | Node, newC
   }
 
   // Run the diff
-  const editScript = preserveExisting
-    ? computeEditScript(originalNodesForDiff, newNodesForDiff, domNodeComparer)
+  const editScript = options.preserveExisting !== false
+    ? computeEditScript(originalNodesForDiff, newNodesForDiff, (a, b) => domNodeComparer(a, b, options))
     : {
       skipCount: 0,
       edits: [...Array<Operation>(originalNodesForDiff.length).fill(Operation.Delete), ...Array<Operation>(newNodesForDiff.length).fill(Operation.Insert)],
@@ -107,7 +112,7 @@ function synchronizeDomContentCore(destination: CommentBoundedRange | Node, newC
 
   // Handle any common leading items
   for (let i = 0; i < editScript.skipCount; i++) {
-    treatAsMatch(destinationWalker.current, sourceWalker.current);
+    treatAsMatch(destinationWalker.current, sourceWalker.current, options);
     destinationWalker.advance();
     sourceWalker.advance();
   }
@@ -121,7 +126,7 @@ function synchronizeDomContentCore(destination: CommentBoundedRange | Node, newC
       const operation = edits[editIndex];
       switch (operation) {
         case Operation.Keep: {
-          treatAsMatch(destinationWalker.current, sourceWalker.current);
+          treatAsMatch(destinationWalker.current, sourceWalker.current, options);
           destinationWalker.advance();
           sourceWalker.advance();
           break;
@@ -135,7 +140,7 @@ function synchronizeDomContentCore(destination: CommentBoundedRange | Node, newC
         case Operation.Delete: {
           const nodeToRemove = destinationWalker.current;
           destinationWalker.advance();
-          treatAsDeletion(nodeToRemove, destinationParent);
+          treatAsDeletion(nodeToRemove, destinationParent, options);
           break;
         }
         case Operation.Insert: {
@@ -153,7 +158,7 @@ function synchronizeDomContentCore(destination: CommentBoundedRange | Node, newC
     // These can only exist if there were some edits, otherwise everything would be in the set of common leading items
     const endAtNodeExclOrNull = destination instanceof Node ? null : destination.endExclusive;
     while (destinationWalker.current !== endAtNodeExclOrNull) {
-      treatAsMatch(destinationWalker.current, sourceWalker.current);
+      treatAsMatch(destinationWalker.current, sourceWalker.current, options);
       destinationWalker.advance();
       sourceWalker.advance();
     }
@@ -165,7 +170,7 @@ function synchronizeDomContentCore(destination: CommentBoundedRange | Node, newC
   }
 }
 
-function treatAsMatch(destination: Node, source: Node) {
+function treatAsMatch(destination: Node, source: Node, options: DomSyncOptions) {
   switch (destination.nodeType) {
     case Node.TEXT_NODE:
       break;
@@ -188,7 +193,7 @@ function treatAsMatch(destination: Node, source: Node) {
           // Don't sync DOM content for already-interactive components because their content is managed
           // by the renderer.
         } else {
-          synchronizeDomContentCore(destination, source);
+          synchronizeDomContentCore(destination, source, options);
         }
       }
       break;
@@ -198,9 +203,9 @@ function treatAsMatch(destination: Node, source: Node) {
         // The destination element's content and attributes should be retained.
       } else {
         const editableElementValue = getEditableElementValue(source as Element);
-        synchronizeAttributes(destination as Element, source as Element);
+        synchronizeAttributes(destination as Element, source as Element, options.preserveModalState ?? false);
         applyAnyDeferredValue(destination as Element);
-        synchronizeDomContentCore(destination as Element, source as Element);
+        synchronizeDomContentCore(destination as Element, source as Element, options);
 
         // This is a much simpler alternative to the deferred-value-assignment logic we use in interactive rendering.
         // Because this sync algorithm goes depth-first, we know all the attributes and descendants are fully in sync
@@ -231,7 +236,12 @@ function treatAsSubstitution(destination: Node, source: Node) {
   }
 }
 
-function treatAsDeletion(nodeToDelete: Node, parentNode: Node) {
+function treatAsDeletion(nodeToDelete: Node, parentNode: Node, options: DomSyncOptions) {
+  if (!options.preserveModalState && nodeToDelete instanceof HTMLDialogElement && nodeToDelete.matches(':modal')) {
+    // Complete the source page's native modal lifecycle before removing the dialog.
+    nodeToDelete.close();
+  }
+
   if (isLogicalElement(parentNode)) {
     // It's not safe to call 'removeLogicalChild' here because it recursively removes
     // logical descendants from their parents, and that can potentially interfere with
@@ -266,13 +276,18 @@ function treatAsInsertion(nodeToInsert: Node, nextNode: Node | null, parentNode:
   }
 }
 
-function domNodeComparer(a: Node, b: Node): UpdateCost {
+function domNodeComparer(a: Node, b: Node, options: DomSyncOptions): UpdateCost {
   if (a.nodeType !== b.nodeType) {
     return UpdateCost.Infinite;
   }
 
   if (isLogicalElement(a) !== isLogicalElement(b)) {
     // We cannot merge logical elements with non-logical elements.
+    return UpdateCost.Infinite;
+  }
+
+  if (!options.preserveModalState && a instanceof HTMLDialogElement && a.matches(':modal') && !isDataPermanentElement(a)) {
+    // A cross-page update must not install destination handlers on a modal whose close event is still pending.
     return UpdateCost.Infinite;
   }
 

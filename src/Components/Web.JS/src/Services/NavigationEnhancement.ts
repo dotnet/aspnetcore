@@ -314,6 +314,8 @@ export async function performEnhancedPageLoad(internalDestinationHref: string, i
         }
       }
 
+      const preserveModalState = isForSamePath(response.url, currentContentUrl);
+
       // Set the currentContentUrl to the location of the last completed navigation.
       if (changeUrl) {
         currentContentUrl = response.url;
@@ -330,11 +332,11 @@ export async function performEnhancedPageLoad(internalDestinationHref: string, i
             return;
           }
 
-          synchronizeAttributes(document.documentElement, parsedHtml.documentElement);
-          synchronizeDomContent(document.documentElement, parsedHtml.documentElement, /* preserveExisting */ false);
+          synchronizeAttributes(document.documentElement, parsedHtml.documentElement, /* preserveModalState */ false);
+          synchronizeDomContent(document.documentElement, parsedHtml.documentElement, { preserveExisting: false });
           replaceDocumentLevelComments(parsedHtml);
         } else {
-          synchronizeDomContent(document, parsedHtml);
+          synchronizeDomContent(document, parsedHtml, { preserveModalState });
         }
         navigationEnhancementCallbacks.documentUpdated();
       } else if (responseContentType?.startsWith('text/') && initialContent) {
