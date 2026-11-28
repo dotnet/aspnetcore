@@ -343,6 +343,48 @@ public class DefaultAntiforgeryTest
         Assert.Equal("no-cache", context.HttpContext.Response.Headers.Pragma);
     }
 
+    [Fact]
+    public void GetAndStoreTokens_AllowBackForwardCache_UsesNoCachePrivate()
+    {
+        // Arrange
+        var antiforgeryFeature = new AntiforgeryFeature();
+        var context = CreateMockContext(
+            new AntiforgeryOptions { AllowBackForwardCache = true },
+            useOldCookie: true,
+            isOldCookieValid: true,
+            antiforgeryFeature: antiforgeryFeature);
+        var antiforgery = GetAntiforgery(context);
+
+        // Act
+        antiforgery.GetAndStoreTokens(context.HttpContext);
+
+        // Assert
+        // "no-store" is omitted so the browser can keep the response in the back/forward cache, and
+        // "private" keeps it out of shared caches. See https://github.com/dotnet/aspnetcore/issues/54464.
+        Assert.Equal("no-cache, private", context.HttpContext.Response.Headers.CacheControl);
+        Assert.Equal("no-cache", context.HttpContext.Response.Headers.Pragma);
+    }
+
+    [Fact]
+    public void GetAndStoreTokens_AllowBackForwardCache_RemovesNoStoreFromExistingHeader()
+    {
+        // Arrange
+        var antiforgeryFeature = new AntiforgeryFeature();
+        var context = CreateMockContext(
+            new AntiforgeryOptions { AllowBackForwardCache = true },
+            useOldCookie: true,
+            isOldCookieValid: true,
+            antiforgeryFeature: antiforgeryFeature);
+        var antiforgery = GetAntiforgery(context);
+        context.HttpContext.Response.Headers.CacheControl = "no-cache, no-store";
+
+        // Act
+        antiforgery.GetAndStoreTokens(context.HttpContext);
+
+        // Assert
+        Assert.Equal("no-cache, private", context.HttpContext.Response.Headers.CacheControl);
+    }
+
     private string GetAndStoreTokens_CacheHeadersArrangeAct(TestSink testSink, string headerName, string headerValue)
     {
         // Arrange
