@@ -48,8 +48,17 @@ export function registerCustomEventType(eventName: string, options: EventTypeOpt
   eventTypeRegistry.set(eventName, options);
 }
 
-export function getEventTypeOptions(eventName: string): EventTypeOptions | undefined {
-  return eventTypeRegistry.get(eventName);
+export function getEventArgs(eventName: string, event: Event): { eventArgs: unknown, fieldTrackingValue: string | boolean | undefined } {
+  const options = eventTypeRegistry.get(eventName);
+  if (options?.createEventArgs === parseChangeEvent) {
+    const eventArgs = parseChangeEvent(event);
+    const value = eventArgs.value;
+    return { eventArgs, fieldTrackingValue: typeof value === 'string' || typeof value === 'boolean' ? value : undefined };
+  }
+
+  // Custom creators can return arbitrary payloads. Never inspect them for field tracking.
+  // For back-compat, a missing creator supplies empty args, while a creator can supply anything (including null).
+  return { eventArgs: options?.createEventArgs ? options.createEventArgs(event) : {}, fieldTrackingValue: undefined };
 }
 
 export function getEventNameAliases(eventName: string): string[] | undefined {
