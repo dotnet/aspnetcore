@@ -9,6 +9,13 @@
     <Components.WasmMinimal.Routes @rendermode="@PageRenderMode" />
     <script src="@Assets["_framework/blazor.web.js"]" autostart="false"></script>
     <script>
+        window.webAssemblyStartup = {
+            waiting: false,
+            wait: () => new Promise(resolve => {
+                window.webAssemblyStartup.release = resolve;
+                window.webAssemblyStartup.waiting = true;
+            })
+        };
         Blazor.start({
             webAssembly: {
                 applicationCulture: new URLSearchParams(location.search).get('application-culture') ?? undefined,

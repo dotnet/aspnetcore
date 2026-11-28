@@ -185,6 +185,16 @@ public sealed class WebAssemblyHost : IAsyncDisposable
                 initialOperationBatch = await InternalJSImportMethods.GetInitialComponentUpdate();
             }
 
+            // Location changes before renderer attachment are not delivered to .NET.
+            // Reconcile after the initial update wait so in-flight redirects have settled.
+            var jsMethods = Services.GetRequiredService<IInternalJSImportMethods>();
+            var uri = jsMethods.NavigationManager_GetLocationHref();
+            var navigationManager = WebAssemblyNavigationManager.Instance;
+            if (navigationManager.Uri != uri)
+            {
+                navigationManager.SetLocation(uri, state: null, isInterceptedLink: false);
+            }
+
             var initializationTcs = new TaskCompletionSource();
             WebAssemblyCallQueue.Schedule((_rootComponents, _renderer, initializationTcs), async state =>
             {
