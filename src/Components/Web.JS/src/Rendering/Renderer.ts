@@ -8,6 +8,7 @@ import { BrowserRenderer } from './BrowserRenderer';
 import { toLogicalElement, LogicalElement } from './LogicalElements';
 import { getAndRemovePendingRootComponentContainer } from './JSRootComponents';
 import { PendingNavigationFocus, restoreNavigationFocus } from './FocusOnNavigate';
+import { beginHeadStylesheetTransition, endHeadStylesheetTransition } from './HeadStylesheetTransition';
 
 interface BrowserRendererRegistry {
   [browserRendererId: number]: BrowserRenderer;
@@ -65,6 +66,10 @@ export function renderBatch(browserRendererId: number, batch: RenderBatch): void
     throw new Error(`There is no browser renderer with ID ${browserRendererId}.`);
   }
 
+  applyRenderBatch(browserRenderer, batch);
+}
+
+function applyRenderBatch(browserRenderer: BrowserRenderer, batch: RenderBatch): void {
   const arrayRangeReader = batch.arrayRangeReader;
   const updatedComponentsRange = batch.updatedComponents();
   const updatedComponentsValues = arrayRangeReader.values(updatedComponentsRange);
@@ -74,30 +79,35 @@ export function renderBatch(browserRendererId: number, batch: RenderBatch): void
   const diffReader = batch.diffReader;
 
   let pendingFocus: PendingNavigationFocus | null = null;
-  for (let i = 0; i < updatedComponentsLength; i++) {
-    const diff = batch.updatedComponentsEntry(updatedComponentsValues, i);
-    const componentId = diffReader.componentId(diff);
-    const edits = diffReader.edits(diff);
-    const capturedFocus = browserRenderer.updateComponent(batch, componentId, edits, referenceFramesValues);
-    if (capturedFocus) {
-      pendingFocus = capturedFocus;
+  beginHeadStylesheetTransition();
+  try {
+    for (let i = 0; i < updatedComponentsLength; i++) {
+      const diff = batch.updatedComponentsEntry(updatedComponentsValues, i);
+      const componentId = diffReader.componentId(diff);
+      const edits = diffReader.edits(diff);
+      const capturedFocus = browserRenderer.updateComponent(batch, componentId, edits, referenceFramesValues);
+      if (capturedFocus) {
+        pendingFocus = capturedFocus;
+      }
     }
-  }
 
-  const disposedComponentIdsRange = batch.disposedComponentIds();
-  const disposedComponentIdsValues = arrayRangeReader.values(disposedComponentIdsRange);
-  const disposedComponentIdsLength = arrayRangeReader.count(disposedComponentIdsRange);
-  for (let i = 0; i < disposedComponentIdsLength; i++) {
-    const componentId = batch.disposedComponentIdsEntry(disposedComponentIdsValues, i);
-    browserRenderer.disposeComponent(componentId);
-  }
+    const disposedComponentIdsRange = batch.disposedComponentIds();
+    const disposedComponentIdsValues = arrayRangeReader.values(disposedComponentIdsRange);
+    const disposedComponentIdsLength = arrayRangeReader.count(disposedComponentIdsRange);
+    for (let i = 0; i < disposedComponentIdsLength; i++) {
+      const componentId = batch.disposedComponentIdsEntry(disposedComponentIdsValues, i);
+      browserRenderer.disposeComponent(componentId);
+    }
 
-  const disposedEventHandlerIdsRange = batch.disposedEventHandlerIds();
-  const disposedEventHandlerIdsValues = arrayRangeReader.values(disposedEventHandlerIdsRange);
-  const disposedEventHandlerIdsLength = arrayRangeReader.count(disposedEventHandlerIdsRange);
-  for (let i = 0; i < disposedEventHandlerIdsLength; i++) {
-    const eventHandlerId = batch.disposedEventHandlerIdsEntry(disposedEventHandlerIdsValues, i);
-    browserRenderer.disposeEventHandler(eventHandlerId);
+    const disposedEventHandlerIdsRange = batch.disposedEventHandlerIds();
+    const disposedEventHandlerIdsValues = arrayRangeReader.values(disposedEventHandlerIdsRange);
+    const disposedEventHandlerIdsLength = arrayRangeReader.count(disposedEventHandlerIdsRange);
+    for (let i = 0; i < disposedEventHandlerIdsLength; i++) {
+      const eventHandlerId = batch.disposedEventHandlerIdsEntry(disposedEventHandlerIdsValues, i);
+      browserRenderer.disposeEventHandler(eventHandlerId);
+    }
+  } finally {
+    endHeadStylesheetTransition();
   }
 
   if (pendingFocus) {

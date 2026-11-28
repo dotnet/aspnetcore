@@ -1,0 +1,10 @@
+<HeadContent>
+    <link id="disabled-swap-stylesheet" rel="stylesheet" href="@(replacementDisabled ? "head-swap-disabled.css" : "head-swap-initial.css")" disabled="@replacementDisabled" @key="replacementDisabled" />
+</HeadContent>
+
+<button id="swap-head-disabled" @onclick="() => replacementDisabled = true">Replace with disabled stylesheet</button>
+<div id="swap-target" style="background-color: red">Stylesheet target</div>
+
+@code {
+    private bool replacementDisabled;
+}

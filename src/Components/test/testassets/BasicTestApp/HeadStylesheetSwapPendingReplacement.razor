@@ -1,0 +1,69 @@
+<HeadContent>
+    @if (!removed)
+    {
+        <link @key="replacement" id="pending-swap-stylesheet" rel="@(alternateRel ? "alternate stylesheet" : "stylesheet")" title="@(alternateRel ? "Optional" : null)" href="@(missingHref ? null : StylesheetHref)" media="@StylesheetMedia" disabled="@replacementDisabled" />
+    }
+</HeadContent>
+
+<button id="change-initial-media-query" @onclick="() => initialResponsiveMedia = true">Make initial stylesheet responsive</button>
+<button id="replace-stylesheet" @onclick="() => replacement = true">Replace stylesheet</button>
+<button id="replace-without-href" @onclick="ReplaceWithoutHref">Replace without href</button>
+<button id="replace-with-print-stylesheet" @onclick="ReplaceWithPrintStylesheet">Replace with print stylesheet</button>
+<button id="replace-with-responsive-stylesheet" @onclick="ReplaceWithResponsiveStylesheet">Replace with responsive stylesheet</button>
+<button id="disable-replacement" @onclick="() => replacementDisabled = true">Disable replacement stylesheet</button>
+<button id="change-replacement-rel" @onclick="() => alternateRel = true">Change replacement rel</button>
+<button id="replace-with-alternate-stylesheet" @onclick="ReplaceWithAlternateStylesheet">Replace with alternate stylesheet</button>
+<button id="clear-replacement-href" @onclick="() => missingHref = true">Clear replacement href</button>
+<button id="change-replacement-media" @onclick="() => printMedia = true">Change replacement media to print</button>
+<button id="change-replacement-media-query" @onclick="() => updatedResponsiveMedia = true">Change replacement media query</button>
+<button id="remove-replacement" @onclick="() => removed = true">Remove replacement stylesheet</button>
+<div id="swap-target" style="background-color: red">Stylesheet target</div>
+
+@code {
+    private readonly string requestId = Guid.NewGuid().ToString("N");
+    private bool replacement;
+    private bool replacementDisabled;
+    private bool alternateRel;
+    private bool printMedia;
+    private bool responsiveMedia;
+    private bool initialResponsiveMedia;
+    private bool updatedResponsiveMedia;
+    private bool missingHref;
+    private bool removed;
+
+    private string StylesheetHref => replacement
+        ? $"head-swap-replacement/{requestId}.css"
+        : "head-swap-initial.css";
+
+    private string StylesheetMedia => !replacement && initialResponsiveMedia
+        ? "(min-width: 900px)"
+        : updatedResponsiveMedia
+        ? "(min-width: 600px)"
+        : responsiveMedia
+        ? "(min-width: 900px)"
+        : printMedia ? "print" : "screen";
+
+    private void ReplaceWithoutHref()
+    {
+        replacement = true;
+        missingHref = true;
+    }
+
+    private void ReplaceWithPrintStylesheet()
+    {
+        replacement = true;
+        printMedia = true;
+    }
+
+    private void ReplaceWithResponsiveStylesheet()
+    {
+        replacement = true;
+        responsiveMedia = true;
+    }
+
+    private void ReplaceWithAlternateStylesheet()
+    {
+        replacement = true;
+        alternateRel = true;
+    }
+}
