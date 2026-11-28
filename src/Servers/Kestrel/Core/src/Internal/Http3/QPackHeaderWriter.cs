@@ -1,6 +1,7 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Buffers.Text;
 using System.Diagnostics;
 using System.Net.Http.QPack;
 using System.Text;
@@ -58,6 +59,25 @@ internal static class QPackHeaderWriter
 
         do
         {
+            int headerLength;
+            if (headersEnumerator.TryGetCurrentContentLength(out var contentLength) &&
+                ReferenceEquals(headersEnumerator.EncodingSelector, KestrelServerOptions.DefaultHeaderEncodingSelector))
+            {
+                // Fast path: write Content-Length digits directly without formatting a string.
+                if (!EncodeContentLength(contentLength, buffer.Slice(length), out headerLength, out var valueLength))
+                {
+                    if (length == 0 && throwIfNoneEncoded)
+                    {
+                        throw new QPackEncodingException("TODO sync with corefx" /* CoreStrings.HPackErrorNotEnoughBuffer */);
+                    }
+                    return false;
+                }
+
+                totalHeaderSize += HeaderField.GetLength(Microsoft.Net.Http.Headers.HeaderNames.ContentLength.Length, valueLength);
+                length += headerLength;
+                continue;
+            }
+
             // Match the current header to the QPACK static table. Possible outcomes:
             // 1. Known header and value. Write index.
             // 2. Known header with custom value. Write name index and full value.
@@ -66,7 +86,6 @@ internal static class QPackHeaderWriter
             var name = headersEnumerator.Current.Key;
             var value = headersEnumerator.Current.Value;
 
-            int headerLength;
             if (matchedValue)
             {
                 if (!QPackEncoder.EncodeStaticIndexedHeaderField(staticTableId, buffer.Slice(length), out headerLength))
@@ -99,6 +118,44 @@ internal static class QPackHeaderWriter
         } while (headersEnumerator.MoveNext());
 
         return true;
+    }
+
+    private static bool EncodeContentLength(long contentLength, Span<byte> buffer, out int headerLength, out int valueLength)
+    {
+        // Produces the same bytes as the general path: "content-length: 0" is in the static table, any other
+        // value is a literal header field with a static name reference followed by the ASCII digits.
+        if (contentLength == 0)
+        {
+            valueLength = 1;
+            return QPackEncoder.EncodeStaticIndexedHeaderField(H3StaticTable.ContentLength0, buffer, out headerLength);
+        }
+
+        Span<byte> digits = stackalloc byte[20];
+        var formatted = Utf8Formatter.TryFormat(contentLength, digits, out valueLength);
+        Debug.Assert(formatted);
+
+        // https://datatracker.ietf.org/doc/html/rfc9204#section-4.5.4
+        if (buffer.Length >= 2)
+        {
+            buffer[0] = 0b01010000;
+            if (System.Net.Http.HPack.IntegerEncoder.Encode(H3StaticTable.ContentLength0, 4, buffer, out var nameLength))
+            {
+                var valueBuffer = buffer.Slice(nameLength);
+                if (valueBuffer.Length != 0)
+                {
+                    valueBuffer[0] = 0;
+                    if (System.Net.Http.HPack.IntegerEncoder.Encode(valueLength, 7, valueBuffer, out var valueLengthLength) &&
+                        digits.Slice(0, valueLength).TryCopyTo(valueBuffer.Slice(valueLengthLength)))
+                    {
+                        headerLength = nameLength + valueLengthLength + valueLength;
+                        return true;
+                    }
+                }
+            }
+        }
+
+        headerLength = 0;
+        return false;
     }
 
     private static bool EncodeHeader(Span<byte> buffer, int staticTableId, string name, string value, Encoding? valueEncoding, out int headerLength)

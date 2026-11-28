@@ -1,6 +1,8 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Buffers.Text;
+using System.Diagnostics;
 using System.Net.Http;
 using System.Net.Http.HPack;
 
@@ -120,23 +122,36 @@ internal static class HPackHeaderWriter
         var currentLength = 0;
         do
         {
-            var staticTableId = headersEnumerator.HPackStaticTableId;
-            var name = headersEnumerator.Current.Key;
-            var value = headersEnumerator.Current.Value;
-            var valueEncoding =
-                ReferenceEquals(headersEnumerator.EncodingSelector, KestrelServerOptions.DefaultHeaderEncodingSelector)
-                ? null : headersEnumerator.EncodingSelector(name);
+            int headerLength;
+            bool encoded;
+            if (headersEnumerator.TryGetCurrentContentLength(out var contentLength) &&
+                ReferenceEquals(headersEnumerator.EncodingSelector, KestrelServerOptions.DefaultHeaderEncodingSelector))
+            {
+                // Fast path: write Content-Length digits directly without formatting a string.
+                encoded = EncodeContentLength(contentLength, buffer.Slice(currentLength), out headerLength);
+            }
+            else
+            {
+                var staticTableId = headersEnumerator.HPackStaticTableId;
+                var name = headersEnumerator.Current.Key;
+                var value = headersEnumerator.Current.Value;
+                var valueEncoding =
+                    ReferenceEquals(headersEnumerator.EncodingSelector, KestrelServerOptions.DefaultHeaderEncodingSelector)
+                    ? null : headersEnumerator.EncodingSelector(name);
 
-            var hint = ResolveHeaderEncodingHint(staticTableId, name);
+                var hint = ResolveHeaderEncodingHint(staticTableId, name);
 
-            if (!hpackEncoder.EncodeHeader(
-                buffer.Slice(currentLength),
-                staticTableId,
-                hint,
-                name,
-                value,
-                valueEncoding,
-                out var headerLength))
+                encoded = hpackEncoder.EncodeHeader(
+                    buffer.Slice(currentLength),
+                    staticTableId,
+                    hint,
+                    name,
+                    value,
+                    valueEncoding,
+                    out headerLength);
+            }
+
+            if (!encoded)
             {
                 // If the header wasn't written, and no headers have been written, then the header is too large.
                 // Request for a larger buffer to write large header.
@@ -154,6 +169,26 @@ internal static class HPackHeaderWriter
         while (headersEnumerator.MoveNext());
         length = currentLength;
         return HeaderWriteResult.Done;
+    }
+
+    private static bool EncodeContentLength(long contentLength, Span<byte> buffer, out int length)
+    {
+        // Content-Length is never added to the dynamic table (see IsNotDynamicallyIndexed), so this produces the same
+        // bytes as DynamicHPackEncoder.EncodeHeader with HeaderEncodingHint.IgnoreIndex: a literal header field without
+        // indexing, using the static table name index, followed by the ASCII digits.
+        Span<byte> digits = stackalloc byte[20];
+        var formatted = Utf8Formatter.TryFormat(contentLength, digits, out var digitsLength);
+        Debug.Assert(formatted);
+
+        if (HPackEncoder.EncodeLiteralHeaderFieldWithoutIndexing(H2StaticTable.ContentLength, buffer, out var nameLength) &&
+            HPackEncoder.EncodeStringLiteral(digits.Slice(0, digitsLength), buffer.Slice(nameLength), out var valueLength))
+        {
+            length = nameLength + valueLength;
+            return true;
+        }
+
+        length = 0;
+        return false;
     }
 
     private static HeaderEncodingHint ResolveHeaderEncodingHint(int staticTableId, string name)
