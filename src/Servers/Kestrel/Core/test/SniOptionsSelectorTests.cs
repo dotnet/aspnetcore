@@ -654,7 +654,7 @@ public class SniOptionsSelectorTests
 
         var fallbackOptions = new HttpsConnectionAdapterOptions
         {
-            ServerCertificate = new X509Certificate2(Array.Empty<byte>()),
+            ServerCertificate = TestResources.GetTestCertificate(),
             ServerCertificateSelector = (context, serverName) => selectorCertificate
         };
 
@@ -714,7 +714,7 @@ public class SniOptionsSelectorTests
             };
         var fallbackOptions = new HttpsConnectionAdapterOptions
         {
-            ServerCertificate = new X509Certificate2(TestResources.GetCertPath("aspnetdevcert.pfx"), "testPassword")
+            ServerCertificate = X509CertificateLoader.LoadPkcs12FromFile(TestResources.GetCertPath("aspnetdevcert.pfx"), "testPassword")
         };
 
         var sniOptionsSelector = new SniOptionsSelector(
@@ -741,7 +741,7 @@ public class SniOptionsSelectorTests
 
         var fallbackOptions = new HttpsConnectionAdapterOptions
         {
-            ServerCertificate = new X509Certificate2(Array.Empty<byte>()),
+            ServerCertificate = TestResources.GetTestCertificate(),
             ServerCertificateSelector = (context, serverName) => selectorCertificate
         };
 
@@ -1032,7 +1032,7 @@ public class SniOptionsSelectorTests
             // Defaults to null
             RemoteCertificateValidationCallback = (sender, certificate, chain, sslPolicyErrors) => true,
             // Defaults to null
-            ServerCertificate = new X509Certificate2(Array.Empty<byte>()),
+            ServerCertificate = TestResources.GetTestCertificate(),
             // Defaults to null
             ServerCertificateContext = SslStreamCertificateContext.Create(_x509Certificate2, additionalCertificates: null, offline: true),
             // Defaults to null
