@@ -102,14 +102,18 @@ public class HtmlDirectoryFormatter : IDirectoryFormatter
             @"
     <header><h1>{0} <a href=""/"">/</a>", HtmlEncode(Resources.HtmlDir_IndexOf));
 
-        string cumulativePath = "/";
+        var cumulativePath = new StringBuilder("/");
+        using var cumulativeWriter = new StringWriter(cumulativePath, CultureInfo.InvariantCulture);
         foreach (var segment in requestPath.Value!.Split('/', StringSplitOptions.RemoveEmptyEntries))
         {
-            cumulativePath = cumulativePath + segment + "/";
-            builder.AppendFormat(
-                CultureInfo.InvariantCulture,
-                @"<a href=""{0}"">{1}/</a>",
-                HtmlEncode(cumulativePath), HtmlEncode(segment));
+            _htmlEncoder.Encode(cumulativeWriter, segment);
+            cumulativePath.Append('/');
+
+            builder.Append(@"<a href=""")
+                .Append(cumulativePath)
+                .Append(@""">")
+                .Append(HtmlEncode(segment))
+                .Append("/</a>");
         }
 
         builder.AppendFormat(
