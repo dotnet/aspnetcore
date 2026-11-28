@@ -161,7 +161,7 @@ internal class PocoAdapter : IAdapter
         var currentValue = jsonProperty.Get(target);
         if (!JsonUtilities.DeepEquals(currentValue, convertedValue, serializerOptions))
         {
-            errorMessage = Resources.FormatValueNotEqualToTestValue(currentValue, value, segment);
+            errorMessage = Resources.FormatValueNotEqualToTestValue(JsonUtilities.FormatValue(currentValue, serializerOptions), value, segment);
             return false;
         }
 

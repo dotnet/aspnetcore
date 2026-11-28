@@ -259,10 +259,54 @@ public class PocoAdapterTest
         Assert.Equal(expectedErrorMessage, errorMessage);
     }
 
+    [Fact]
+    public void TryTest_ByteArrayMismatch_ErrorMessageContainsBase64Value()
+    {
+        // Arrange
+        var adapter = new PocoAdapter();
+        var serializerOptions = JsonSerializerOptions.Default;
+        var target = new ByteArrayModel 
+        { 
+            Timestamp = new byte[] { 0, 0, 0, 0, 0, 0, 0x29, 0xC1 } 
+        };
+        var expectedErrorMessage = "The current value 'AAAAAAAAKcE=' at path 'Timestamp' is not equal to the test value 'AAAAAAAAKcA='.";
+
+        // Act
+        var testStatus = adapter.TryTest(target, "Timestamp", serializerOptions, "AAAAAAAAKcA=", out var errorMessage);
+
+        // Assert
+        Assert.False(testStatus);
+        Assert.Equal(expectedErrorMessage, errorMessage);
+    }
+
+    [Fact]
+    public void TryTest_DoesNotThrowException_IfByteArrayTestSuccessful()
+    {
+        // Arrange
+        var adapter = new PocoAdapter();
+        var serializerOptions = JsonSerializerOptions.Default;
+        var model = new ByteArrayModel
+        {
+            Timestamp = new byte[] { 0, 0, 0, 0, 0, 0, 0x29, 0xC1 }
+        };
+
+        // Act
+        var testStatus = adapter.TryTest(model, "Timestamp", serializerOptions, "AAAAAAAAKcE=", out var errorMessage);
+
+        // Assert
+        Assert.True(testStatus);
+        Assert.True(string.IsNullOrEmpty(errorMessage), "Expected no error message");
+    }
+
     private class Customer
     {
         public string Name { get; set; }
 
         public int Age { get; set; }
+    }
+
+    private class ByteArrayModel
+    {
+        public byte[] Timestamp { get; set; }
     }
 }

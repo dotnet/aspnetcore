@@ -48,4 +48,18 @@ internal static class JsonUtilities
 
         return result;
     }
+
+    public static string FormatValue(object value, JsonSerializerOptions serializerOptions)
+    {
+        if (value == null)
+        {
+            return null;
+        }
+
+        using var docA = TryGetJsonElement(value, serializerOptions, out var element);
+
+        return element.ValueKind == JsonValueKind.String
+            ? element.GetString()
+            : element.GetRawText();
+    }
 }
