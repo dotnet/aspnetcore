@@ -937,6 +937,20 @@ public class StaticAssetsIntegrationTests
 
     [Theory]
     [MemberData(nameof(SupportedMethods))]
+    public async Task IfMatchShouldReturn412ForWeakEtag(HttpMethod method)
+    {
+        var client = await CreateClient();
+        var etag = $"\"{GetEtag("Hello, World!")}\"";
+
+        var req = new HttpRequestMessage(method, "http://localhost/sample.txt");
+        req.Headers.TryAddWithoutValidation("If-Match", $"W/{etag}");
+        var resp = await client.SendAsync(req);
+
+        Assert.Equal(HttpStatusCode.PreconditionFailed, resp.StatusCode);
+    }
+
+    [Theory]
+    [MemberData(nameof(SupportedMethods))]
     public async Task IfMatchShouldBeServedWhenListed(HttpMethod method)
     {
         var client = await CreateClient();

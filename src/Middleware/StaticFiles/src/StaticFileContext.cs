@@ -166,7 +166,7 @@ internal struct StaticFileContext
             _ifNoneMatchState = PreconditionState.ShouldProcess;
             foreach (var etag in ifNoneMatch)
             {
-                if (etag.Equals(EntityTagHeaderValue.Any) || etag.Compare(_etag, useStrongComparison: true))
+                if (etag.Equals(EntityTagHeaderValue.Any) || etag.Compare(_etag, useStrongComparison: false))
                 {
                     _ifNoneMatchState = PreconditionState.NotModified;
                     break;
