@@ -9,6 +9,20 @@ namespace Microsoft.AspNetCore.Analyzers.RouteHandlers;
 public partial class DetectAmbiguousMappedRoutesTest
 {
     [Fact]
+    public async Task MethodSpecificAndMethodAgnosticRoutes_AreNotAmbiguous()
+    {
+        var source = """
+using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Http;
+var app = WebApplication.Create();
+app.MapGet("/items/{id}", (string id) => id);
+app.Map("/items/{id}", context => context.Response.WriteAsync("fallback"));
+""";
+
+        await VerifyCS.VerifyAnalyzerAsync(source);
+    }
+
+    [Fact]
     public async Task DuplicateRoutes_SameHttpMethod_HasDiagnostics()
     {
         // Arrange
