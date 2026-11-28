@@ -7,6 +7,7 @@ using System.Runtime.ExceptionServices;
 using System.Text.Encodings.Web;
 using Microsoft.AspNetCore.Components.Rendering;
 using Microsoft.AspNetCore.Components.RenderTree;
+using Microsoft.AspNetCore.Components.Web;
 using Microsoft.AspNetCore.Components.Web.HtmlRendering;
 using Microsoft.AspNetCore.Html;
 using Microsoft.AspNetCore.Http;
@@ -55,6 +56,16 @@ internal partial class EndpointHtmlRenderer
 
         return ssrRenderBoundary.RenderMode;
     }
+
+    internal static bool AreSectionRenderModesCompatible(IComponentRenderMode? left, IComponentRenderMode? right)
+        => (left, right) switch
+        {
+            (InteractiveServerRenderMode, InteractiveServerRenderMode or InteractiveAutoRenderMode) => true,
+            (InteractiveWebAssemblyRenderMode, InteractiveWebAssemblyRenderMode or InteractiveAutoRenderMode) => true,
+            // Auto's destination is not known until activation, so only reject pairs known to be incompatible.
+            (InteractiveAutoRenderMode, InteractiveServerRenderMode or InteractiveWebAssemblyRenderMode or InteractiveAutoRenderMode) => true,
+            _ => left?.GetType() == right?.GetType(),
+        };
 
     private SSRRenderModeBoundary? GetClosestRenderModeBoundary(int componentId)
     {
@@ -162,12 +173,13 @@ internal partial class EndpointHtmlRenderer
 
     private async Task WaitForResultReady(bool waitForQuiescence, PrerenderedComponentHtmlContent result)
     {
+        NonStreamingPendingTasksCompletion = null;
         if (waitForQuiescence)
         {
             // Full quiescence, i.e., all tasks completed regardless of streaming SSR
             await result.QuiescenceTask;
         }
-        else if (_nonStreamingPendingTasks.Count > 0)
+        else
         {
             await WaitForNonStreamingPendingTasks();
         }
@@ -201,31 +213,36 @@ internal partial class EndpointHtmlRenderer
         {
             ExceptionDispatchInfo? navigationExceptionInfo = null;
 
-            while (_nonStreamingPendingTasks.Count > 0)
+            do
             {
-                // Create a Task that represents the remaining ongoing work for the rendering process
-                var pendingWork = Task.WhenAll(_nonStreamingPendingTasks);
-
-                // Clear all pending work.
-                _nonStreamingPendingTasks.Clear();
-
-                try
+                while (_nonStreamingPendingTasks.Count > 0)
                 {
-                    // new work might be added before we check again as a result of waiting for all
-                    // the child components to finish executing SetParametersAsync
-                    await pendingWork;
+                    // Create a Task that represents the remaining ongoing work for the rendering process
+                    var pendingWork = Task.WhenAll(_nonStreamingPendingTasks);
+
+                    // Clear all pending work.
+                    _nonStreamingPendingTasks.Clear();
+
+                    try
+                    {
+                        // new work might be added before we check again as a result of waiting for all
+                        // the child components to finish executing SetParametersAsync
+                        await pendingWork;
+                    }
+                    catch (NavigationException navigationException)
+                    {
+                        // Keep draining so work queued before the redirect is still observed, but let the caller
+                        // discard the rendered output. A navigation thrown while a component was initializing its
+                        // children abandons that diff after the new render tree was already swapped in, leaving
+                        // uninitialized sibling frames that must never be written.
+                        navigationExceptionInfo ??= ExceptionDispatchInfo.Capture(navigationException);
+                    }
                 }
-                catch (NavigationException navigationException)
-                {
-                    // Keep draining so work queued before the redirect is still observed, but let the caller
-                    // discard the rendered output. A navigation thrown while a component was initializing its
-                    // children abandons that diff after the new render tree was already swapped in, leaving
-                    // uninitialized sibling frames that must never be written.
-                    navigationExceptionInfo ??= ExceptionDispatchInfo.Capture(navigationException);
-                }
+
+                navigationExceptionInfo?.Throw();
+                ValidatePendingSections(state => !((EndpointComponentState)state).StreamRendering);
             }
-
-            navigationExceptionInfo?.Throw();
+            while (_nonStreamingPendingTasks.Count > 0);
         }
     }
 

@@ -123,7 +123,11 @@ public abstract partial class Renderer : IDisposable, IAsyncDisposable
     internal ComponentsMetrics? ComponentMetrics => _componentsMetrics;
     internal ComponentsActivitySource? ComponentActivitySource => _componentsActivitySource;
 
-    internal SectionRegistry SectionRegistry => _sectionRegistry ??= new SectionRegistry(_loggerFactory);
+    internal SectionRegistry SectionRegistry => _sectionRegistry ??= new SectionRegistry(
+        _loggerFactory,
+        _serviceProvider is IKeyedServiceProvider
+            ? _serviceProvider.GetKeyedService<Func<IComponentRenderMode?, IComponentRenderMode?, bool>>(typeof(SectionOutlet))
+            : null);
 
     internal ICascadingValueSupplier[] ServiceProviderCascadingValueSuppliers { get; }
 
@@ -338,7 +342,16 @@ public abstract partial class Renderer : IDisposable, IAsyncDisposable
             _rootComponentsLatestParameters[componentId] = initialParameters.Clone();
         }
 
-        componentState.SetDirectParameters(initialParameters);
+        try
+        {
+            componentState.SetDirectParameters(initialParameters);
+        }
+        catch
+        {
+            // An initial render can redirect before entering the quiescence loop.
+            _sectionRegistry?.InvalidatePendingValidations();
+            throw;
+        }
 
         await WaitForQuiescence();
         Debug.Assert(_pendingTasks == null);
@@ -391,34 +404,61 @@ public abstract partial class Renderer : IDisposable, IAsyncDisposable
             return;
         }
 
+        var pendingTasks = _pendingTasks;
         try
         {
             _ongoingQuiescenceTask = ProcessAsynchronousWork();
             await _ongoingQuiescenceTask;
         }
+        catch
+        {
+            // The failed render may leave section validations that do not belong to a later
+            // error response rendered by this same renderer.
+            if (ReferenceEquals(_pendingTasks, pendingTasks))
+            {
+                _sectionRegistry?.InvalidatePendingValidations();
+            }
+            throw;
+        }
         finally
         {
-            Debug.Assert(_pendingTasks is null || _pendingTasks.Count == 0);
-            _pendingTasks = null;
-            _ongoingQuiescenceTask = null;
+            if (ReferenceEquals(_pendingTasks, pendingTasks))
+            {
+                Debug.Assert(_pendingTasks is null || _pendingTasks.Count == 0);
+                _pendingTasks = null;
+                _ongoingQuiescenceTask = null;
+            }
         }
 
         async Task ProcessAsynchronousWork()
         {
-            // Child components SetParametersAsync are stored in the queue of pending tasks,
-            // which might trigger further renders.
-            while (_pendingTasks?.Count > 0)
+            do
             {
-                // Create a Task that represents the remaining ongoing work for the rendering process
-                var pendingWork = Task.WhenAll(_pendingTasks);
+                // Child components SetParametersAsync are stored in the queue of pending tasks,
+                // which might trigger further renders.
+                while (pendingTasks?.Count > 0)
+                {
+                    // Create a Task that represents the remaining ongoing work for the rendering process
+                    var pendingWork = Task.WhenAll(pendingTasks);
 
-                // Clear all pending work.
-                _pendingTasks.Clear();
+                    // Clear all pending work.
+                    pendingTasks.Clear();
 
-                // new work might be added before we check again as a result of waiting for all
-                // the child components to finish executing SetParametersAsync
-                await pendingWork;
+                    // new work might be added before we check again as a result of waiting for all
+                    // the child components to finish executing SetParametersAsync
+                    await pendingWork;
+                    if (!ReferenceEquals(_pendingTasks, pendingTasks))
+                    {
+                        // First-flush validation can abandon this render while its streaming work is pending.
+                        return;
+                    }
+                }
+
+                // Async initialization can replace a temporary provider after the first synchronous pass.
+                // Validation can also start asynchronous error-boundary fallback rendering.
+                ValidatePendingSections();
             }
+            while (_pendingTasks?.Count > 0);
         }
     }
 
@@ -875,6 +915,12 @@ public abstract partial class Renderer : IDisposable, IAsyncDisposable
                 RenderInExistingBatch(nextToRender);
             }
 
+            // During quiescence, async initialization may still replace a temporary provider.
+            if (_pendingTasks is null && _ongoingQuiescenceTask is null)
+            {
+                ValidatePendingSections();
+            }
+
             var batch = _batchBuilder.ToBatch();
             updateDisplayTask = UpdateDisplayAsync(batch);
 
@@ -892,6 +938,13 @@ public abstract partial class Renderer : IDisposable, IAsyncDisposable
             if (ComponentsMetrics.IsSupported && ComponentMetrics != null && ComponentMetrics.IsBatchEnabled)
             {
                 ComponentMetrics.FailBatchSync(e, batchStartTimestamp);
+            }
+
+            // A failed batch must not leave validations for a renderer reused by error handling.
+            // During quiescence, the final pass still needs the validations scheduled by this render.
+            if (_pendingTasks is null)
+            {
+                _sectionRegistry?.InvalidatePendingValidations();
             }
 
             // Ensure we catch errors while running the render functions of the components.
@@ -1031,6 +1084,94 @@ public abstract partial class Renderer : IDisposable, IAsyncDisposable
         // Queue up the task and we can inspect it later.
         batch = batch ?? new List<Task>();
         batch.Add(GetErrorHandledTask(task, state));
+    }
+
+    /// <summary>
+    /// Validates pending section content for components whose output is ready to be sent.
+    /// </summary>
+    /// <param name="shouldValidate">Selects components whose output is ready, including section outlets and their error boundaries.</param>
+    protected void ValidatePendingSections(Func<ComponentState, bool> shouldValidate)
+    {
+        Dispatcher.AssertAccess();
+        ComponentState? validationSource = null;
+        try
+        {
+            ValidatePendingSectionsCore(outlet =>
+            {
+                var state = _componentStateByComponent[outlet];
+                validationSource = state;
+                if (shouldValidate(state))
+                {
+                    return true;
+                }
+
+                // Recovery replaces the boundary's output, which may have an earlier last write than the outlet.
+                for (var candidate = state.LogicalParentComponentState; candidate is not null; candidate = candidate.LogicalParentComponentState)
+                {
+                    if (candidate.Component is IErrorBoundary)
+                    {
+                        return shouldValidate(candidate);
+                    }
+                }
+
+                return false;
+            });
+        }
+        catch
+        {
+            _sectionRegistry?.InvalidatePendingValidations();
+            // A first-flush failure discards the response without waiting for streaming initializers.
+            // A same-scope error response must start its own quiescence rather than join that work.
+            _pendingTasks = null;
+            _ongoingQuiescenceTask = null;
+            if (validationSource is not null)
+            {
+                while (validationSource.ParentComponentState is { } parent)
+                {
+                    validationSource = parent;
+                }
+
+                // Late initialization must not render more sections into a replacement error response.
+                RemoveRootComponent(validationSource.ComponentId);
+            }
+            throw;
+        }
+    }
+
+    private void ValidatePendingSections() => ValidatePendingSectionsCore(null);
+
+    private void ValidatePendingSectionsCore(Func<SectionOutlet, bool>? shouldValidate)
+    {
+        while (true)
+        {
+            var sectionOutlet = _sectionRegistry?.TakePendingValidation(shouldValidate);
+            if (sectionOutlet is null)
+            {
+                break;
+            }
+
+            var pendingTaskCount = _pendingTasks?.Count ?? 0;
+            try
+            {
+                sectionOutlet.ValidateContent();
+            }
+            catch (Exception ex)
+            {
+                HandleExceptionViaErrorBoundary(ex, _componentStateByComponent[sectionOutlet]);
+            }
+
+            while (_isBatchInProgress && _batchBuilder.ComponentRenderQueue.Count > 0)
+            {
+                var nextToRender = _batchBuilder.ComponentRenderQueue.Dequeue();
+                RenderInExistingBatch(nextToRender);
+            }
+
+            // Recovery can introduce temporary section providers while its fallback initializes.
+            if ((_pendingTasks?.Count ?? 0) > pendingTaskCount)
+            {
+                break;
+            }
+        }
     }
 
     private void RenderInExistingBatch(RenderQueueEntry renderQueueEntry)

@@ -5,7 +5,9 @@ using Microsoft.Extensions.Logging;
 
 namespace Microsoft.AspNetCore.Components.Sections;
 
-internal sealed partial class SectionRegistry(ILoggerFactory loggerFactory)
+internal sealed partial class SectionRegistry(
+    ILoggerFactory loggerFactory,
+    Func<IComponentRenderMode?, IComponentRenderMode?, bool>? areRenderModesCompatible)
 {
     private readonly Dictionary<object, SectionOutlet> _subscribersByIdentifier = new();
     private readonly Dictionary<object, List<SectionContent>> _providersByIdentifier = new();
@@ -13,14 +15,16 @@ internal sealed partial class SectionRegistry(ILoggerFactory loggerFactory)
     private readonly ILogger _logger = loggerFactory.CreateLogger<SectionRegistry>();
 
     private HashSet<object>? _mismatchLoggedIdentifiers;
+    private HashSet<SectionOutlet>? _pendingValidations;
 
     public void AddProvider(object identifier, SectionContent provider, bool isDefaultProvider)
     {
         if (!_providersByIdentifier.TryGetValue(identifier, out var providers))
         {
             providers = new();
-            _providersByIdentifier.Add(identifier, providers);
         }
+
+        _providersByIdentifier.TryAdd(identifier, providers);
 
         if (isDefaultProvider)
         {
@@ -54,11 +58,6 @@ internal sealed partial class SectionRegistry(ILoggerFactory loggerFactory)
             // the current content to that of second most recently added provider.
             var contentProvider = GetCurrentProviderContentOrDefault(providers);
             NotifyContentChangedForSubscriber(identifier, contentProvider);
-
-            if (_subscribersByIdentifier.TryGetValue(identifier, out var subscriber))
-            {
-                DetectRenderModeMismatch(identifier, subscriber, contentProvider);
-            }
         }
     }
 
@@ -74,16 +73,16 @@ internal sealed partial class SectionRegistry(ILoggerFactory loggerFactory)
         subscriber.ContentUpdated(provider);
 
         _subscribersByIdentifier.Add(identifier, subscriber);
-
-        DetectRenderModeMismatch(identifier, subscriber, provider);
     }
 
     public void Unsubscribe(object identifier)
     {
-        if (!_subscribersByIdentifier.Remove(identifier))
+        if (!_subscribersByIdentifier.Remove(identifier, out var subscriber))
         {
             throw new InvalidOperationException($"The subscriber with the given section ID '{identifier}' is already unsubscribed.");
         }
+
+        _pendingValidations?.Remove(subscriber);
 
         // The section pair is no longer complete, so re-arm the mismatch diagnostic in case the outlet
         // and content are later reconnected in mismatched render modes.
@@ -102,12 +101,65 @@ internal sealed partial class SectionRegistry(ILoggerFactory loggerFactory)
         if (providers.Count != 0 && providers[^1] == provider)
         {
             NotifyContentChangedForSubscriber(identifier, provider);
+        }
+    }
 
-            if (_subscribersByIdentifier.TryGetValue(identifier, out var subscriber))
+    internal void ScheduleValidation(SectionOutlet subscriber)
+        => (_pendingValidations ??= new()).Add(subscriber);
+
+    internal SectionOutlet? TakePendingValidation(Func<SectionOutlet, bool>? shouldValidate = null)
+    {
+        if (_pendingValidations is null)
+        {
+            return null;
+        }
+
+        foreach (var subscriber in _pendingValidations)
+        {
+            if (shouldValidate is null || shouldValidate(subscriber))
             {
-                DetectRenderModeMismatch(identifier, subscriber, provider);
+                _pendingValidations.Remove(subscriber);
+                return subscriber;
             }
         }
+
+        return null;
+    }
+
+    internal void InvalidatePendingValidations()
+        => _pendingValidations?.Clear();
+
+    internal void ValidateContent(object identifier, SectionOutlet subscriber, SectionContent? provider)
+    {
+        ValidateRenderModeCompatibility(identifier, subscriber, provider);
+        DetectRenderModeMismatch(identifier, subscriber, provider);
+    }
+
+    private void ValidateRenderModeCompatibility(object identifier, SectionOutlet? subscriber, SectionContent? provider)
+    {
+        // Framework-owned head/title sections use BuiltInSectionIdentifier and retain the existing warning behavior.
+        // This validation is intentionally limited to application components sharing this renderer's registry.
+        if (subscriber is null || provider is null || identifier is BuiltInSectionIdentifier)
+        {
+            return;
+        }
+
+        var outletRenderMode = subscriber.SectionRenderMode;
+        var contentRenderMode = provider.SectionRenderMode;
+
+        // Static outlets can display prerendered content without requiring interactive updates.
+        if (outletRenderMode is null || !RenderModesDiffer(outletRenderMode, contentRenderMode))
+        {
+            return;
+        }
+
+        var sectionId = DescribeIdentifier(identifier);
+        throw new InvalidOperationException(
+            $"The content provided to the section '{sectionId}' uses the render mode '{DescribeRenderMode(contentRenderMode)}', " +
+            $"but the matching '{nameof(SectionOutlet)}' uses the render mode '{DescribeRenderMode(outletRenderMode)}'. " +
+            $"A '{nameof(SectionContent)}' and its matching '{nameof(SectionOutlet)}' must use the same render mode, because " +
+            $"the section content is rendered at the location of the '{nameof(SectionOutlet)}'. To fix this, ensure the " +
+            $"'{nameof(SectionContent)}' and the '{nameof(SectionOutlet)}' for the section '{sectionId}' use the same render mode.");
     }
 
     private void DetectRenderModeMismatch(object identifier, SectionOutlet subscriber, SectionContent? provider)
@@ -121,7 +173,7 @@ internal sealed partial class SectionRegistry(ILoggerFactory loggerFactory)
         var outletRenderMode = subscriber.SectionRenderMode;
         var contentRenderMode = provider.SectionRenderMode;
 
-        if (!RenderModesDiffer(outletRenderMode, contentRenderMode))
+        if (outletRenderMode?.GetType() == contentRenderMode?.GetType())
         {
             _mismatchLoggedIdentifiers?.Remove(identifier);
             return;
@@ -133,8 +185,10 @@ internal sealed partial class SectionRegistry(ILoggerFactory loggerFactory)
         }
     }
 
-    private static bool RenderModesDiffer(IComponentRenderMode? left, IComponentRenderMode? right)
-        => left?.GetType() != right?.GetType();
+    private bool RenderModesDiffer(IComponentRenderMode? left, IComponentRenderMode? right)
+        => areRenderModesCompatible is not null
+            ? !areRenderModesCompatible(left, right)
+            : left?.GetType() != right?.GetType();
 
     private static string DescribeRenderMode(IComponentRenderMode? renderMode)
         => renderMode is null ? "static server-side rendering" : renderMode.GetType().Name;

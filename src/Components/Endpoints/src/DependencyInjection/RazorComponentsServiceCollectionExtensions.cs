@@ -12,6 +12,7 @@ using Microsoft.AspNetCore.Components.Forms;
 using Microsoft.AspNetCore.Components.Forms.Mapping;
 using Microsoft.AspNetCore.Components.Infrastructure;
 using Microsoft.AspNetCore.Components.Routing;
+using Microsoft.AspNetCore.Components.Sections;
 using Microsoft.AspNetCore.Components.Server;
 using Microsoft.AspNetCore.Components.Web;
 using Microsoft.AspNetCore.DataProtection;
@@ -57,6 +58,9 @@ public static class RazorComponentsServiceCollectionExtensions
         services.TryAddSingleton<ServerComponentSerializer>(services => new ServerComponentSerializer(services.GetRequiredService<IDataProtectionProvider>()));
         services.TryAddSingleton<WebAssemblyComponentSerializer>();
         services.TryAddScoped<EndpointHtmlRenderer>();
+        // Components cannot reference Web's render-mode types. Supply section compatibility separately from mode identity.
+        services.TryAddKeyedSingleton<Func<IComponentRenderMode?, IComponentRenderMode?, bool>>(
+            typeof(SectionOutlet), EndpointHtmlRenderer.AreSectionRenderModesCompatible);
         services.TryAddScoped<IComponentPrerenderer>(services => services.GetRequiredService<EndpointHtmlRenderer>());
         services.TryAddScoped<NavigationManager, HttpNavigationManager>();
         services.TryAddScoped<IJSRuntime, UnsupportedJavaScriptRuntime>();

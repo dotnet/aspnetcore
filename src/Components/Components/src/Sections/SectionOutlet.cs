@@ -67,6 +67,7 @@ public sealed class SectionOutlet : IComponent, IDisposable
             if (_subscribedIdentifier is not null)
             {
                 _registry.Unsubscribe(_subscribedIdentifier);
+                _subscribedIdentifier = null;
             }
 
             _registry.Subscribe(identifier, this);
@@ -99,6 +100,14 @@ public sealed class SectionOutlet : IComponent, IDisposable
 
     private void BuildRenderTree(RenderTreeBuilder builder)
     {
+        if (SectionId is BuiltInSectionIdentifier)
+        {
+            ValidateContent();
+        }
+        else
+        {
+            _registry.ScheduleValidation(this);
+        }
         var fragment = _currentContentProvider?.ChildContent ?? _emptyRenderFragment;
 
         builder.OpenComponent<SectionOutletContentRenderer>(0);
@@ -107,12 +116,16 @@ public sealed class SectionOutlet : IComponent, IDisposable
         builder.CloseComponent();
     }
 
+    internal void ValidateContent()
+        => _registry.ValidateContent(SectionName ?? SectionId!, this, _currentContentProvider);
+
     /// <inheritdoc/>
     public void Dispose()
     {
         if (_subscribedIdentifier is not null)
         {
             _registry.Unsubscribe(_subscribedIdentifier);
+            _subscribedIdentifier = null;
         }
     }
 

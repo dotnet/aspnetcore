@@ -133,11 +133,25 @@ internal partial class EndpointHtmlRenderer
             var componentIdsInDepthOrder = bufSizeRequired < 1024
                 ? MemoryMarshal.Cast<byte, ComponentIdAndDepth>(stackalloc byte[bufSizeRequired])
                 : new ComponentIdAndDepth[count];
+            var liveCount = 0;
             for (var i = 0; i < count; i++)
             {
                 var componentId = renderBatch.UpdatedComponents.Array[i].ComponentId;
-                componentIdsInDepthOrder[i] = new(componentId, GetComponentDepth(componentId));
+                // Error-boundary recovery can dispose a component after its diff was appended.
+                int depth;
+                try
+                {
+                    depth = GetComponentDepth(componentId);
+                }
+                catch (ArgumentException)
+                {
+                    continue;
+                }
+
+                componentIdsInDepthOrder[liveCount++] = new(componentId, depth);
             }
+
+            componentIdsInDepthOrder = componentIdsInDepthOrder[..liveCount];
             MemoryExtensions.Sort(componentIdsInDepthOrder, static (left, right) => left.Depth - right.Depth);
 
             // Reset the component rendering tracker. This is safe to share as an instance field because batch-rendering

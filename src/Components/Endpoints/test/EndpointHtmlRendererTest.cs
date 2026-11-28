@@ -15,6 +15,7 @@ using Microsoft.AspNetCore.Components.Reflection;
 using Microsoft.AspNetCore.Components.Rendering;
 using Microsoft.AspNetCore.Components.RenderTree;
 using Microsoft.AspNetCore.Components.Routing;
+using Microsoft.AspNetCore.Components.Sections;
 using Microsoft.AspNetCore.Components.Test.Helpers;
 using Microsoft.AspNetCore.Components.Web;
 using Microsoft.AspNetCore.DataProtection;
@@ -1443,23 +1444,253 @@ public class EndpointHtmlRendererTest
     }
 
     [Fact]
-    public async Task SectionOutletAndContentInDifferentRenderModes_LogsWarningDuringPrerendering()
+    public async Task StaticSectionOutletAndInteractiveContent_RendersWithWarningDuringPrerendering()
     {
-        // Arrange
         var sink = new TestSink();
-        var renderer = GetEndpointHtmlRenderer(loggerFactory: new TestLoggerFactory(sink, enabled: true));
-        var httpContext = GetHttpContext();
-
-        // Act
+        using var loggerFactory = new LoggerFactory([new TestLoggerProvider(sink)]);
+        await using var renderer = GetEndpointHtmlRenderer(loggerFactory: loggerFactory);
         var result = await renderer.PrerenderComponentAsync(
-            httpContext,
+            GetHttpContext(),
             typeof(SectionOutletAndContentWithDifferentRenderModes),
             null,
             ParameterView.Empty);
-        await renderer.Dispatcher.InvokeAsync(() => HtmlContentToString(result));
+        var writer = new StringWriter();
+        await renderer.Dispatcher.InvokeAsync(() => result.WriteTo(writer, HtmlEncoder.Default));
 
-        // Assert
-        Assert.Contains(sink.Writes, w => w.EventId.Name == "SectionRenderModeMismatch" && w.LogLevel == LogLevel.Warning);
+        Assert.Contains("<p>Content provided from an InteractiveServer render mode</p>", writer.ToString());
+        var warning = Assert.Single(sink.Writes, write => write.EventId.Name == "SectionRenderModeMismatch");
+        Assert.Equal(LogLevel.Warning, warning.LogLevel);
+        Assert.Contains("static server-side rendering", warning.Message);
+        Assert.Contains(nameof(InteractiveServerRenderMode), warning.Message);
+    }
+
+    [Fact]
+    public async Task RootStaticSectionOutlet_WithExistingInteractiveContent_LogsOneWarning()
+    {
+        var sink = new TestSink();
+        using var loggerFactory = new LoggerFactory([new TestLoggerProvider(sink)]);
+        await using var renderer = GetEndpointHtmlRenderer(loggerFactory: loggerFactory);
+        var httpContext = GetHttpContext();
+        await renderer.PrerenderComponentAsync(httpContext, typeof(SectionContentHost), RenderMode.InteractiveServer, ParameterView.Empty);
+        var parameters = ParameterView.FromDictionary(new Dictionary<string, object>
+        {
+            [nameof(SectionOutlet.SectionName)] = "test-section",
+        });
+
+        var result = await renderer.PrerenderComponentAsync(httpContext, typeof(SectionOutlet), null, parameters);
+        var writer = new StringWriter();
+        await renderer.Dispatcher.InvokeAsync(() => result.WriteTo(writer, HtmlEncoder.Default));
+
+        Assert.Contains("Interactive section content", writer.ToString());
+        var warning = Assert.Single(sink.Writes, write => write.EventId.Name == "SectionRenderModeMismatch");
+        Assert.Contains("test-section", warning.Message);
+    }
+
+    [Fact]
+    public async Task RemovingSectionProviderAndOutlet_WithStaticFallback_CompletesPrerendering()
+    {
+        var removeIsland = new TaskCompletionSource();
+        var parameters = ParameterView.FromDictionary(new Dictionary<string, object>
+        {
+            [nameof(RemovableSectionHost.RemoveIsland)] = removeIsland.Task,
+        });
+        await renderer.PrerenderComponentAsync(GetHttpContext(), typeof(EmptyComponent), null, ParameterView.Empty);
+        var result = await renderer.Dispatcher.InvokeAsync(() => renderer.BeginRenderingComponent(typeof(RemovableSectionHost), parameters));
+
+        var initialHtml = await renderer.Dispatcher.InvokeAsync(result.ToHtmlString);
+        Assert.Contains("Interactive section content", initialHtml);
+        Assert.DoesNotContain("Static fallback", initialHtml);
+
+        removeIsland.SetResult();
+        await result.QuiescenceTask;
+
+        var finalHtml = await renderer.Dispatcher.InvokeAsync(result.ToHtmlString);
+        Assert.Equal("Island removed", finalHtml);
+    }
+
+    [Fact]
+    public async Task RenamingStaticSectionProviderWhileRemovingIsland_CompletesPrerendering()
+    {
+        var removeIsland = new TaskCompletionSource();
+        var parameters = ParameterView.FromDictionary(new Dictionary<string, object>
+        {
+            [nameof(RemovableSectionHost.RemoveIsland)] = removeIsland.Task,
+            [nameof(RemovableSectionHost.RenameStaticSection)] = true,
+        });
+        await renderer.PrerenderComponentAsync(GetHttpContext(), typeof(EmptyComponent), null, ParameterView.Empty);
+        var result = await renderer.Dispatcher.InvokeAsync(() => renderer.BeginRenderingComponent(typeof(RemovableSectionHost), parameters));
+
+        var initialHtml = await renderer.Dispatcher.InvokeAsync(result.ToHtmlString);
+        Assert.Contains("Interactive section content", initialHtml);
+        Assert.DoesNotContain("Static fallback", initialHtml);
+
+        removeIsland.SetResult();
+        await result.QuiescenceTask;
+
+        var finalHtml = await renderer.Dispatcher.InvokeAsync(result.ToHtmlString);
+        Assert.Equal("Island removed", finalHtml);
+    }
+
+    [Fact]
+    public async Task SectionOutletBeforeAsyncCompatibleContent_UsesSettledProviderDuringNonStreamingPrerendering()
+    {
+        var loadCompatibleProvider = new TaskCompletionSource();
+        var parameters = ParameterView.FromDictionary(new Dictionary<string, object>
+        {
+            [nameof(DelayedCompatibleSectionHost.LoadCompatibleProvider)] = loadCompatibleProvider.Task,
+        });
+        await renderer.PrerenderComponentAsync(GetHttpContext(), typeof(EmptyComponent), null, ParameterView.Empty);
+        var result = await renderer.Dispatcher.InvokeAsync(() => renderer.BeginRenderingComponent(typeof(DelayedCompatibleSectionHost), parameters));
+
+        var initialHtml = await renderer.Dispatcher.InvokeAsync(result.ToHtmlString);
+        Assert.Contains("Static fallback", initialHtml);
+
+        loadCompatibleProvider.SetResult();
+        await result.QuiescenceTask;
+
+        var finalHtml = await renderer.Dispatcher.InvokeAsync(result.ToHtmlString);
+        Assert.Contains("Interactive section content", finalHtml);
+        Assert.DoesNotContain("Static fallback", finalHtml);
+    }
+
+    [Fact]
+    public async Task SectionOutletBeforeContent_WithStaticFallback_CanPrerender()
+    {
+        var removeIsland = new TaskCompletionSource();
+        var parameters = ParameterView.FromDictionary(new Dictionary<string, object>
+        {
+            [nameof(RemovableSectionHost.RemoveIsland)] = removeIsland.Task,
+            [nameof(RemovableSectionHost.OutletFirst)] = true,
+        });
+        await renderer.PrerenderComponentAsync(GetHttpContext(), typeof(EmptyComponent), null, ParameterView.Empty);
+        var result = await renderer.Dispatcher.InvokeAsync(() => renderer.BeginRenderingComponent(typeof(RemovableSectionHost), parameters));
+
+        var html = await renderer.Dispatcher.InvokeAsync(result.ToHtmlString);
+        Assert.Contains("Interactive section content", html);
+        Assert.DoesNotContain("Static fallback", html);
+
+        removeIsland.SetResult();
+        await result.QuiescenceTask;
+    }
+
+    public static TheoryData<IComponentRenderMode, IComponentRenderMode> AutoAndFixedSectionRenderModes => new()
+    {
+        { RenderMode.InteractiveAuto, RenderMode.InteractiveServer },
+        { RenderMode.InteractiveServer, RenderMode.InteractiveAuto },
+        { RenderMode.InteractiveAuto, RenderMode.InteractiveWebAssembly },
+        { RenderMode.InteractiveWebAssembly, RenderMode.InteractiveAuto },
+        { new DerivedAutoMode(), new DerivedServerMode() },
+        { new DerivedServerMode(), new DerivedAutoMode() },
+        { new DerivedAutoMode(), new DerivedWebAssemblyMode() },
+        { new DerivedWebAssemblyMode(), new DerivedAutoMode() },
+    };
+
+    [Theory]
+    [MemberData(nameof(AutoAndFixedSectionRenderModes))]
+    public async Task SectionRenderModes_AutoAndFixedHostingModes_CanPrerender(
+        IComponentRenderMode outletMode, IComponentRenderMode contentMode)
+    {
+        await renderer.PrerenderComponentAsync(GetHttpContext(), typeof(EmptyComponent), null, ParameterView.Empty);
+        var component = new TestComponent(builder =>
+        {
+            builder.OpenComponent<SectionOutletHost>(0);
+            builder.AddComponentRenderMode(outletMode);
+            builder.CloseComponent();
+            builder.OpenComponent<SectionContentHost>(1);
+            builder.AddComponentRenderMode(contentMode);
+            builder.CloseComponent();
+        });
+        var result = await renderer.Dispatcher.InvokeAsync(() => renderer.BeginRenderingComponent(component, ParameterView.Empty));
+        await result.QuiescenceTask;
+
+        var html = await renderer.Dispatcher.InvokeAsync(result.ToHtmlString);
+        Assert.Contains("Interactive section content", html);
+    }
+
+    public static TheoryData<IComponentRenderMode, IComponentRenderMode> CompatibleSectionRenderModes
+    {
+        get
+        {
+            var data = new TheoryData<IComponentRenderMode, IComponentRenderMode>();
+            (IComponentRenderMode Base, IComponentRenderMode Derived, IComponentRenderMode OtherDerived)[] modes =
+            [
+                (RenderMode.InteractiveServer, new DerivedServerMode(), new OtherDerivedServerMode()),
+                (RenderMode.InteractiveWebAssembly, new DerivedWebAssemblyMode(), new OtherDerivedWebAssemblyMode()),
+                (RenderMode.InteractiveAuto, new DerivedAutoMode(), new OtherDerivedAutoMode()),
+            ];
+            foreach (var (baseMode, derivedMode, otherDerivedMode) in modes)
+            {
+                data.Add(baseMode, derivedMode);
+                data.Add(derivedMode, baseMode);
+                data.Add(derivedMode, otherDerivedMode);
+            }
+
+            return data;
+        }
+    }
+
+    [Theory]
+    [MemberData(nameof(CompatibleSectionRenderModes))]
+    public async Task SectionRenderModeSubclasses_InSameHostingMode_CanPrerender(
+        IComponentRenderMode outletMode, IComponentRenderMode contentMode)
+    {
+        await renderer.PrerenderComponentAsync(GetHttpContext(), typeof(EmptyComponent), null, ParameterView.Empty);
+        var component = new TestComponent(builder =>
+        {
+            builder.OpenComponent<SectionOutletHost>(0);
+            builder.AddComponentRenderMode(outletMode);
+            builder.CloseComponent();
+            builder.OpenComponent<SectionContentHost>(1);
+            builder.AddComponentRenderMode(contentMode);
+            builder.CloseComponent();
+        });
+        var result = await renderer.Dispatcher.InvokeAsync(() => renderer.BeginRenderingComponent(component, ParameterView.Empty));
+        await result.QuiescenceTask;
+
+        var html = await renderer.Dispatcher.InvokeAsync(result.ToHtmlString);
+        Assert.Contains("Interactive section content", html);
+    }
+
+    [Fact]
+    public async Task SectionRenderModeSubclasses_InDifferentHostingModes_ThrowsDuringPrerendering()
+    {
+        await renderer.PrerenderComponentAsync(GetHttpContext(), typeof(EmptyComponent), null, ParameterView.Empty);
+        var component = new TestComponent(builder =>
+        {
+            builder.OpenComponent<SectionOutletHost>(0);
+            builder.AddComponentRenderMode(new DerivedServerMode());
+            builder.CloseComponent();
+            builder.OpenComponent<SectionContentHost>(1);
+            builder.AddComponentRenderMode(new DerivedWebAssemblyMode());
+            builder.CloseComponent();
+        });
+
+        var exception = await Assert.ThrowsAsync<InvalidOperationException>(() => renderer.Dispatcher.InvokeAsync(
+            () => renderer.BeginRenderingComponent(component, ParameterView.Empty)));
+
+        Assert.Contains(nameof(DerivedServerMode), exception.Message);
+        Assert.Contains(nameof(DerivedWebAssemblyMode), exception.Message);
+    }
+
+    [Fact]
+    public async Task HeadOutletAndInteractivePageTitle_LogsWarningDuringPrerendering()
+    {
+        var sink = new TestSink();
+        using var loggerFactory = new LoggerFactory([new TestLoggerProvider(sink)]);
+        await using var renderer = GetEndpointHtmlRenderer(loggerFactory: loggerFactory);
+        var result = await renderer.PrerenderComponentAsync(
+            GetHttpContext(),
+            typeof(HeadOutletAndInteractivePageTitle),
+            null,
+            ParameterView.Empty);
+        var writer = new StringWriter();
+        await renderer.Dispatcher.InvokeAsync(() => result.WriteTo(writer, HtmlEncoder.Default));
+
+        Assert.Contains("<title>Test title</title>", writer.ToString());
+        var warning = Assert.Single(sink.Writes, write => write.EventId.Name == "SectionRenderModeMismatch");
+        Assert.Equal(LogLevel.Warning, warning.LogLevel);
+        Assert.Contains(nameof(InteractiveServerRenderMode), warning.Message);
+        Assert.Contains(nameof(InteractiveAutoRenderMode), warning.Message);
     }
 
     [Fact]
@@ -1897,6 +2128,215 @@ public class EndpointHtmlRendererTest
         }
     }
 
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task SectionContent_WithNonSingletonRenderMode_RestoresPersistentState(bool useDerivedMode)
+    {
+        var services = CreateDefaultServiceCollection();
+        services.AddLogging();
+        services.AddSupplyValueFromPersistentComponentStateProvider();
+        services.AddSingleton<List<PersistentSectionValue>>();
+        await using var prerenderServices = services.BuildServiceProvider();
+        await using var prerenderer = GetEndpointHtmlRenderer(prerenderServices);
+        IComponentRenderMode mode = useDerivedMode ? new DerivedServerMode() : new InteractiveServerRenderMode();
+        await prerenderer.PrerenderComponentAsync(
+            GetHttpContext(new DefaultHttpContext { RequestServices = prerenderServices }),
+            typeof(PersistentSectionHost), mode, ParameterView.Empty);
+        var original = Assert.Single(prerenderServices.GetRequiredService<List<PersistentSectionValue>>()).Value;
+        var persisted = new Dictionary<string, byte[]>();
+        var store = new Mock<IPersistentComponentStateStore>();
+        store.Setup(s => s.SupportsRenderMode(It.IsAny<IComponentRenderMode>())).Returns(true);
+        store.Setup(s => s.PersistStateAsync(It.IsAny<IReadOnlyDictionary<string, byte[]>>()))
+            .Callback<IReadOnlyDictionary<string, byte[]>>(state =>
+            {
+                foreach (var entry in state)
+                {
+                    persisted.Add(entry.Key, entry.Value);
+                }
+            })
+            .Returns(Task.CompletedTask);
+        await prerenderer.Dispatcher.InvokeAsync(() => prerenderServices.GetRequiredService<ComponentStatePersistenceManager>()
+            .PersistStateAsync(store.Object, prerenderer));
+        Assert.NotEmpty(persisted);
+
+        var interactiveServices = CreateDefaultServiceCollection();
+        interactiveServices.AddLogging();
+        interactiveServices.AddSupplyValueFromPersistentComponentStateProvider();
+        interactiveServices.AddSingleton<List<PersistentSectionValue>>();
+        await using var restoredServices = interactiveServices.BuildServiceProvider();
+        store.Setup(s => s.GetPersistedStateAsync()).ReturnsAsync(persisted);
+        await restoredServices.GetRequiredService<ComponentStatePersistenceManager>().RestoreStateAsync(store.Object);
+        await using var interactiveRenderer = new TestRenderer(restoredServices);
+        var id = interactiveRenderer.AssignRootComponentId(new PersistentSectionHost());
+        await interactiveRenderer.RenderRootComponentAsync(id, ParameterView.Empty);
+
+        var restored = Assert.Single(restoredServices.GetRequiredService<List<PersistentSectionValue>>()).Value;
+        Assert.Equal(original, restored);
+    }
+
+    private sealed class PersistentSectionHost : ComponentBase
+    {
+        protected override void BuildRenderTree(RenderTreeBuilder builder)
+        {
+            builder.OpenComponent<SectionOutlet>(0);
+            builder.AddComponentParameter(1, nameof(SectionOutlet.SectionName), "persistent-section");
+            builder.CloseComponent();
+            builder.OpenComponent<SectionContent>(2);
+            builder.AddComponentParameter(3, nameof(SectionContent.SectionName), "persistent-section");
+            builder.AddComponentParameter(4, nameof(SectionContent.ChildContent), (RenderFragment)(content =>
+            {
+                content.OpenComponent<PersistentSectionValue>(0);
+                content.CloseComponent();
+            }));
+            builder.CloseComponent();
+        }
+    }
+
+    private sealed class PersistentSectionValue : ComponentBase
+    {
+        [Inject] public List<PersistentSectionValue> Instances { get; set; }
+        [PersistentState] public string Value { get; set; }
+
+        protected override void OnInitialized()
+        {
+            Value ??= Guid.NewGuid().ToString();
+            Instances.Add(this);
+        }
+    }
+
+    private sealed class DerivedServerMode : InteractiveServerRenderMode;
+    private sealed class OtherDerivedServerMode : InteractiveServerRenderMode;
+    private sealed class DerivedWebAssemblyMode : InteractiveWebAssemblyRenderMode;
+    private sealed class OtherDerivedWebAssemblyMode : InteractiveWebAssemblyRenderMode;
+    private sealed class DerivedAutoMode : InteractiveAutoRenderMode;
+    private sealed class OtherDerivedAutoMode : InteractiveAutoRenderMode;
+
+    private sealed class DelayedCompatibleSectionHost : ComponentBase
+    {
+        [Parameter] public Task LoadCompatibleProvider { get; set; }
+
+        protected override void BuildRenderTree(RenderTreeBuilder builder)
+        {
+            builder.OpenComponent<SectionContent>(0);
+            builder.AddComponentParameter(1, nameof(SectionContent.SectionName), "test-section");
+            builder.AddComponentParameter(2, nameof(SectionContent.ChildContent), (RenderFragment)(content => content.AddContent(0, "Static fallback")));
+            builder.CloseComponent();
+            builder.OpenComponent<DelayedCompatibleSectionIsland>(3);
+            builder.AddComponentParameter(4, nameof(DelayedCompatibleSectionIsland.LoadCompatibleProvider), LoadCompatibleProvider);
+            builder.AddComponentRenderMode(RenderMode.InteractiveServer);
+            builder.CloseComponent();
+        }
+    }
+
+    private sealed class DelayedCompatibleSectionIsland : ComponentBase
+    {
+        private bool _providerReady;
+
+        [Parameter] public Task LoadCompatibleProvider { get; set; }
+
+        protected override async Task OnInitializedAsync()
+        {
+            await LoadCompatibleProvider;
+            _providerReady = true;
+        }
+
+        protected override void BuildRenderTree(RenderTreeBuilder builder)
+        {
+            builder.OpenComponent<SectionOutletHost>(0);
+            builder.CloseComponent();
+            if (_providerReady)
+            {
+                builder.OpenComponent<SectionContentHost>(1);
+                builder.CloseComponent();
+            }
+        }
+    }
+
+    private sealed class RemovableSectionHost : ComponentBase
+    {
+        private bool _showIsland = true;
+
+        [Parameter] public Task RemoveIsland { get; set; }
+        [Parameter] public bool RenameStaticSection { get; set; }
+        [Parameter] public bool OutletFirst { get; set; }
+
+        protected override async Task OnInitializedAsync()
+        {
+            await RemoveIsland;
+            _showIsland = false;
+        }
+
+        protected override void BuildRenderTree(RenderTreeBuilder builder)
+        {
+            builder.OpenComponent<SectionContent>(0);
+            builder.AddComponentParameter(1, nameof(SectionContent.SectionName), RenameStaticSection && _showIsland ? "old" : "test-section");
+            builder.AddComponentParameter(2, nameof(SectionContent.ChildContent), (RenderFragment)(b => b.AddContent(0, "Static fallback")));
+            builder.CloseComponent();
+            if (_showIsland)
+            {
+                builder.OpenComponent<SectionIsland>(3);
+                builder.AddComponentParameter(4, nameof(SectionIsland.OutletFirst), OutletFirst);
+                builder.AddComponentRenderMode(RenderMode.InteractiveServer);
+                builder.CloseComponent();
+            }
+            else
+            {
+                builder.AddContent(4, "Island removed");
+            }
+        }
+    }
+
+    private sealed class SectionIsland : ComponentBase
+    {
+        [Parameter] public bool OutletFirst { get; set; }
+
+        protected override void BuildRenderTree(RenderTreeBuilder builder)
+        {
+            if (OutletFirst)
+            {
+                builder.OpenComponent<SectionOutletHost>(0);
+                builder.CloseComponent();
+                builder.OpenComponent<CascadingValue<string>>(1);
+                builder.AddComponentParameter(2, nameof(CascadingValue<string>.Value), "wrapper");
+                builder.AddComponentParameter(3, nameof(CascadingValue<string>.ChildContent), (RenderFragment)(childBuilder =>
+                {
+                    childBuilder.OpenComponent<SectionContentHost>(0);
+                    childBuilder.CloseComponent();
+                }));
+                builder.CloseComponent();
+            }
+            else
+            {
+                builder.OpenComponent<SectionContentHost>(2);
+                builder.CloseComponent();
+                builder.OpenComponent<SectionOutletHost>(3);
+                builder.CloseComponent();
+            }
+        }
+    }
+
+    private sealed class SectionContentHost : ComponentBase
+    {
+        protected override void BuildRenderTree(RenderTreeBuilder builder)
+        {
+            builder.OpenComponent<SectionContent>(0);
+            builder.AddComponentParameter(1, nameof(SectionContent.SectionName), "test-section");
+            builder.AddComponentParameter(2, nameof(SectionContent.ChildContent), (RenderFragment)(b => b.AddContent(0, "Interactive section content")));
+            builder.CloseComponent();
+        }
+    }
+
+    private sealed class SectionOutletHost : ComponentBase
+    {
+        protected override void BuildRenderTree(RenderTreeBuilder builder)
+        {
+            builder.OpenComponent<SectionOutlet>(0);
+            builder.AddComponentParameter(1, nameof(SectionOutlet.SectionName), "test-section");
+            builder.CloseComponent();
+        }
+    }
+
     class TestComponent : AutoRenderComponent
     {
         private readonly RenderFragment _renderFragment;
@@ -2020,6 +2460,8 @@ public class EndpointHtmlRendererTest
         services.AddSingleton<ComponentStatePersistenceManager>();
         services.AddSingleton(sp => sp.GetRequiredService<ComponentStatePersistenceManager>().State);
         services.AddSingleton<ServerComponentSerializer>();
+        services.AddKeyedSingleton<Func<IComponentRenderMode, IComponentRenderMode, bool>>(
+            typeof(SectionOutlet), EndpointHtmlRenderer.AreSectionRenderModesCompatible);
         services.AddSingleton<HttpContextFormDataProvider>();
         services.AddAntiforgery();
         services.AddSingleton<ComponentStatePersistenceManager>();
