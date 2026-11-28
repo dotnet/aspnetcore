@@ -41,16 +41,16 @@ public abstract class OpenApiDocumentServiceTestBase
         return document;
     }
 
-    public static async Task VerifyOpenApiDocument(ActionDescriptor action, Action<OpenApiDocument> verifyOpenApiDocument, CancellationToken cancellationToken = default)
+    public static async Task VerifyOpenApiDocument(ActionDescriptor action, Action<OpenApiDocument> verifyOpenApiDocument, CancellationToken cancellationToken = default, Action<MvcOptions> configureMvcOptions = null)
     {
         var builder = CreateBuilder();
-        var documentService = CreateDocumentService(builder, action);
+        var documentService = CreateDocumentService(builder, action, configureMvcOptions);
         var scopedService = ((TestServiceProvider)builder.ServiceProvider).CreateScope();
         var document = await documentService.GetOpenApiDocumentAsync(scopedService.ServiceProvider, null, cancellationToken);
         verifyOpenApiDocument(document);
     }
 
-    internal static OpenApiDocumentService CreateDocumentService(IEndpointRouteBuilder builder, ActionDescriptor actionDescriptor)
+    internal static OpenApiDocumentService CreateDocumentService(IEndpointRouteBuilder builder, ActionDescriptor actionDescriptor, Action<MvcOptions> configureMvcOptions = null)
     {
         var context = new ApiDescriptionProviderContext([actionDescriptor]);
         var hostEnvironment = new HostEnvironment
@@ -62,13 +62,14 @@ public abstract class OpenApiDocumentServiceTestBase
         {
             OutputFormatters = { new TestJsonOutputFormatter() }
         };
+        configureMvcOptions?.Invoke(options);
         var optionsAccessor = Options.Create(options);
 
         var constraintResolver = new Mock<IInlineConstraintResolver>();
         constraintResolver.Setup(c => c.ResolveConstraint("int"))
             .Returns(new IntRouteConstraint());
 
-        var modelMetadataProvider = TestModelMetadataProvider.CreateDefaultProvider();
+        var modelMetadataProvider = TestModelMetadataProvider.CreateDefaultProvider(options.ModelMetadataDetailsProviders);
 
         var routeOptions = new RouteOptions();
         routeOptions.ConstraintMap["regex"] = typeof(RegexInlineRouteConstraint);

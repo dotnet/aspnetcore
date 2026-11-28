@@ -23,6 +23,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.ApiExplorer;
 using Microsoft.AspNetCore.Mvc.Infrastructure;
 using Microsoft.AspNetCore.Mvc.ModelBinding;
+using Microsoft.AspNetCore.Mvc.ModelBinding.Metadata;
 using Microsoft.AspNetCore.Routing;
 using Microsoft.AspNetCore.WebUtilities;
 using Microsoft.Extensions.DependencyInjection;
@@ -650,6 +651,58 @@ internal sealed class OpenApiDocumentService(
         return parameter.Source == BindingSource.Path || parameter.IsRequired || hasRequiredAttribute;
     }
 
+    private static bool IsRequiredFormProperty(ApiParameterDescription description, out string name)
+    {
+        name = description.Name;
+        var metadata = description.ModelMetadata;
+        var parameter = description.ParameterDescriptor;
+        // ApiExplorer flattens nested properties, but their binding and validation requirements
+        // can depend on whether the containing model is created. Only promote direct properties.
+        // Compare binding names as well as types to handle recursive models and explicit prefixes.
+        var propertyName = ModelNames.CreatePropertyModelName(parameter.BindingInfo?.BinderModelName,
+            string.IsNullOrEmpty(metadata.BinderModelName) ? metadata.PropertyName : metadata.BinderModelName);
+        if (metadata.ContainerType != parameter.ParameterType || description.Name != propertyName)
+        {
+            return false;
+        }
+
+        var containerMetadata = metadata.ContainerMetadata;
+        // ApiExplorer describes record properties, but MVC binds and validates their matching
+        // constructor parameters. In particular, inferred [Required] respects parameter defaults.
+        metadata = containerMetadata?.BoundConstructor?.BoundConstructorParameters?.FirstOrDefault(
+            candidate => candidate.ParameterName == metadata.PropertyName && candidate.ModelType == metadata.ModelType) ?? metadata;
+
+        name = ModelNames.CreatePropertyModelName(parameter.BindingInfo?.BinderModelName,
+            string.IsNullOrEmpty(metadata.BinderModelName) ? metadata.Name : metadata.BinderModelName);
+
+        // Only promote requirements for fields MVC can bind. Validation of an unbindable
+        // property's initialized value does not imply that a client must supply that field.
+        var canBind = metadata.IsBindingAllowed &&
+            containerMetadata?.PropertyFilterProvider?.PropertyFilter(metadata) != false &&
+            parameter.BindingInfo?.PropertyFilterProvider?.PropertyFilter(metadata) != false &&
+            // Constructor parameters are not subject to the property's read-only restriction.
+            // MVC can update read-only mutable references, but not values, strings, or arrays.
+            (metadata.MetadataKind != ModelMetadataKind.Property ||
+                !metadata.IsReadOnly || (!metadata.ModelType.IsValueType &&
+                    metadata.ModelType != typeof(string) && !metadata.ModelType.IsArray));
+        if (!canBind)
+        {
+            return false;
+        }
+
+        // [Required] validates the resulting value, not whether it was supplied. A non-nullable
+        // value type already has a valid default; [BindRequired] still requires binding it.
+        var bindingRequired = metadata.IsBindingRequired;
+
+        // Project [Required] as a schema convention: metadata cannot tell whether an initializer
+        // supplies a valid value when the field is omitted.
+        // Validation filters can depend on the bound model and its parent. Without those values,
+        // a validation requirement is conditional, even if RequiredAttribute is in the metadata.
+        return bindingRequired || (containerMetadata?.ValidateChildren != false &&
+            metadata.PropertyValidationFilter is null &&
+            metadata.IsReferenceOrNullableType && metadata.ValidatorMetadata.OfType<RequiredAttribute>().Any());
+    }
+
     // Apply [Description] attributes on the parameter to the top-level OpenApiParameter object and not the schema.
     private static string? GetParameterDescriptionFromAttribute(ApiParameterDescription parameter)
     {
@@ -855,7 +908,12 @@ internal sealed class OpenApiDocumentService(
                             ApplyDescriptionToSchema(propSchema, parameterDescription);
                         }
 
-                        propertySchema.Properties[description.Name] = propSchema;
+                        if (IsRequiredFormProperty(description, out var propertyName))
+                        {
+                            propertySchema.Required ??= new HashSet<string>();
+                            propertySchema.Required.Add(propertyName);
+                        }
+                        propertySchema.Properties[propertyName] = propSchema;
                     }
                     schema.AllOf ??= [];
                     schema.AllOf.Add(propertySchema);
@@ -873,7 +931,12 @@ internal sealed class OpenApiDocumentService(
                         }
 
                         schema.Properties ??= new Dictionary<string, IOpenApiSchema>();
-                        schema.Properties[description.Name] = propSchema;
+                        if (IsRequiredFormProperty(description, out var propertyName))
+                        {
+                            schema.Required ??= new HashSet<string>();
+                            schema.Required.Add(propertyName);
+                        }
+                        schema.Properties[propertyName] = propSchema;
                     }
                 }
             }
