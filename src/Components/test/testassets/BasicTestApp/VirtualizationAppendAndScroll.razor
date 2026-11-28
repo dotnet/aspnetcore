@@ -1,0 +1,65 @@
+@using Microsoft.AspNetCore.Components.Web.Virtualization
+
+<select id="anchor-mode-select" @bind="anchorMode">
+    <option value="0">None</option>
+    <option value="1">Start</option>
+    <option value="2">End</option>
+</select>
+<label><input id="use-provider" type="checkbox" @bind="useProvider" /> Async ItemsProvider</label>
+<button id="append-one-item" @onclick="() => Append(1)" disabled="@InteractionUnavailable">Add at end</button>
+<button id="append-ten-items" @onclick="() => Append(10)" disabled="@InteractionUnavailable">Add ten at end</button>
+<button id="scroll-to-end" @onclick="ScrollToEndAsync" disabled="@InteractionUnavailable">Go to end</button>
+<p id="total-item-count">@items.Count</p>
+<div id="scroll-container" data-anchor-mode="@anchorMode" data-provider="@(useProvider ? "async" : "items")" tabindex="0"
+     style="height: 420px; overflow-y: auto; border: 1px solid black;">
+    <Virtualize @key="useProvider" @ref="virtualizer" Items="@(useProvider ? null : items)" ItemsProvider="@(useProvider ? GetItemsAsync : null)" Context="item" ItemSize="120" OverscanCount="5" AnchorMode="@((VirtualizeAnchorMode)anchorMode)">
+        <article @key="item" class="item" data-index="@item"
+                 style="box-sizing: border-box; height: @(item % 5 == 0 ? 240 : 120)px; padding: 16px; border-bottom: 1px solid gray;">
+            Item @item
+            @if (item % 5 == 0)
+            {
+                <p>Additional details for this item.</p>
+            }
+        </article>
+    </Virtualize>
+</div>
+<p id="scroll-status">@status</p>
+
+@code {
+    private List<int> items = [.. Enumerable.Range(1, 10_000)];
+    private Virtualize<int> virtualizer = default!;
+    private int anchorMode = 1;
+    private bool jumping;
+    private bool useProvider;
+    private string status = "Ready";
+    private bool InteractionUnavailable => !RendererInfo.IsInteractive || jumping;
+
+    private async Task Append(int count)
+    {
+        items = [.. items, .. Enumerable.Range(items.Count + 1, count)];
+        if (useProvider)
+        {
+            await virtualizer.RefreshDataAsync();
+        }
+    }
+
+    private async ValueTask<ItemsProviderResult<int>> GetItemsAsync(ItemsProviderRequest request)
+    {
+        await Task.Yield();
+        return new(items.Skip(request.StartIndex).Take(request.Count).ToArray(), items.Count);
+    }
+
+    private async Task ScrollToEndAsync()
+    {
+        jumping = true;
+        try
+        {
+            await virtualizer.ScrollToItemAsync(items.Count - 1);
+            status = $"Completed: {items.Count}";
+        }
+        finally
+        {
+            jumping = false;
+        }
+    }
+}

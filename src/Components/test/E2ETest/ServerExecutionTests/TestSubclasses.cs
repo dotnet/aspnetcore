@@ -121,6 +121,13 @@ public class ServerVirtualizationTest : VirtualizationTest
 
     public override void QuickGrid_AnchorMode_Top_AppendKeepsViewportStable(string anchorMode, bool useItemsProvider)
         => base.QuickGrid_AnchorMode_Top_AppendKeepsViewportStable(anchorMode, useItemsProvider);
+
+    public override void ScrollToItem_EndAnchor_AfterAppendingVariableHeightItems_CanScrollUp()
+        => base.ScrollToItem_EndAnchor_AfterAppendingVariableHeightItems_CanScrollUp();
+
+    [Fact]
+    public void ScrollToItem_AfterAppendingVariableHeightItems_CanScrollUp_AsyncProvider()
+        => AssertCanScrollUpAfterAppendingVariableHeightItems("2", useProvider: true, appendInSingleBatch: true);
 }
 
 public class ServerDynamicComponentRenderingTest : DynamicComponentRenderingTest

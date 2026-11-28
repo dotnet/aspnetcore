@@ -6693,6 +6693,85 @@ public class VirtualizationTest : ServerTestBase<ToggleExecutionModeServerFixtur
             $"Variable-height: top rendered item should be 200 but was {GetTopRenderedIndex(js)}, scrollTop={GetScrollTop(js, container)}");
     }
 
+    [Fact]
+    public virtual void ScrollToItem_EndAnchor_AfterAppendingVariableHeightItems_CanScrollUp()
+        => AssertCanScrollUpAfterAppendingVariableHeightItems("2", useProvider: false, appendInSingleBatch: false);
+
+    protected void AssertCanScrollUpAfterAppendingVariableHeightItems(string anchorMode, bool useProvider, bool appendInSingleBatch)
+    {
+        Browser.SetWindowSize(1200, 900);
+        Browser.MountTestComponent<VirtualizationAppendAndScroll>();
+        var container = Browser.Exists(By.Id("scroll-container"));
+        var js = (IJavaScriptExecutor)Browser;
+
+        WaitForRenderToSettle(container, js);
+        if (useProvider)
+        {
+            Browser.Exists(By.Id("use-provider")).Click();
+            Browser.Equal("async", () => container.GetDomAttribute("data-provider"));
+            WaitForRenderToSettle(container, js);
+        }
+        new SelectElement(Browser.Exists(By.Id("anchor-mode-select"))).SelectByValue(anchorMode);
+        Browser.Equal(anchorMode, () => container.GetDomAttribute("data-anchor-mode"));
+        if (anchorMode == "2")
+        {
+            Browser.True(() => GetTopRenderedIndex(js) > 9990);
+        }
+        WaitForRenderToSettle(container, js);
+
+        ScrollContainerWithWheelTo(js, container, (int)(GetMaximumScrollTop(js, container) / 2));
+        Browser.True(() => GetTopRenderedIndex(js) is > 4000 and < 6000);
+        WaitForRenderToSettle(container, js);
+
+        var expectedItemCount = appendInSingleBatch ? 10_010 : 10_009;
+        if (appendInSingleBatch)
+        {
+            Browser.Exists(By.Id("append-ten-items")).Click();
+            Browser.Equal(expectedItemCount.ToString(CultureInfo.InvariantCulture),
+                () => Browser.Exists(By.Id("total-item-count")).Text);
+            WaitForRenderToSettle(container, js);
+        }
+        else
+        {
+            for (var i = 1; i <= 9; i++)
+            {
+                Browser.Exists(By.Id("append-one-item")).Click();
+                Browser.Equal((10_000 + i).ToString(CultureInfo.InvariantCulture),
+                    () => Browser.Exists(By.Id("total-item-count")).Text);
+                WaitForRenderToSettle(container, js);
+            }
+        }
+
+        Browser.True(() => GetTopRenderedIndex(js) is > 4000 and < 6000,
+            "Appending while away from the end must leave the viewport in the middle before jumping.");
+
+        Browser.Exists(By.Id("scroll-to-end")).Click();
+        WaitForScrollStatus($"Completed: {expectedItemCount}");
+        Browser.True(() => GetTopRenderedIndex(js) > 9990);
+        Browser.Equal((long)expectedItemCount, () => GetBottomRenderedIndex(js));
+        Browser.True(() => ViewportEdgeCoveredByRealItem(js, "bottom"));
+        WaitForRenderToSettle(container, js, trackScrollHeight: true);
+
+        var firstTailIndex = int.Parse(
+            container.FindElements(By.CssSelector(".item"))[0].GetDomAttribute("data-index"),
+            CultureInfo.InvariantCulture);
+
+        const int upwardWheelDistance = 6000;
+        var targetScrollTop = (int)GetScrollTop(js, container) - upwardWheelDistance;
+        ScrollContainerWithWheelTo(js, container, targetScrollTop);
+
+        Browser.True(() =>
+        {
+            var firstVisibleIndex = GetTopRenderedIndex(js);
+            // Only End mode compensates for recalibration to preserve the estimated item position.
+            return firstVisibleIndex >= 0
+                && firstVisibleIndex < firstTailIndex
+                && (anchorMode != "2" || firstVisibleIndex >= firstTailIndex - 60)
+                && ViewportEdgeCoveredByRealItem(js, "top")
+                && ViewportEdgeCoveredByRealItem(js, "bottom");
+        }, "Wheeling above the rendered tail must show earlier items and cover the viewport instead of exposing the leading spacer.");
+    }
+
     [Theory]
     [InlineData(false)]
     [InlineData(true)]
