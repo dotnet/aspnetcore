@@ -2888,6 +2888,8 @@ public partial class HubConnectionTests : FunctionalTestBase
                 closedTcs.SetResult();
                 return Task.CompletedTask;
             };
+            var invocationStartedTcs = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+            connection.On("InvocationStarted", invocationStartedTcs.SetResult);
 
             try
             {
@@ -2900,9 +2902,10 @@ public partial class HubConnectionTests : FunctionalTestBase
 
                 var originalWebsocket = websocket;
                 websocket = new ClientWebSocket();
-                originalWebsocket.Dispose();
 
-                var resultTask = connection.InvokeAsync<string>(nameof(TestHub.Echo), originalMessage).DefaultTimeout();
+                var resultTask = connection.InvokeAsync(nameof(TestHub.WaitForCancellation)).DefaultTimeout();
+                await invocationStartedTcs.Task.DefaultTimeout();
+                originalWebsocket.Dispose();
                 tcs.SetResult();
 
                 // In-progress send canceled when connection closes
