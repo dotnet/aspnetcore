@@ -192,4 +192,13 @@ internal static class DiagnosticDescriptors
         DiagnosticSeverity.Warning,
         isEnabledByDefault: true,
         description: CreateLocalizableResourceString(nameof(Resources.RazorComponentResultParameterDoesNotExist_Description)));
+
+    public static readonly DiagnosticDescriptor ExceptionDrivenNavigationIsEnabled = new(
+        "BL0021",
+        CreateLocalizableResourceString(nameof(Resources.ExceptionDrivenNavigationIsEnabled_Title)),
+        CreateLocalizableResourceString(nameof(Resources.ExceptionDrivenNavigationIsEnabled_Format)),
+        Usage,
+        DiagnosticSeverity.Warning,
+        isEnabledByDefault: true,
+        description: CreateLocalizableResourceString(nameof(Resources.ExceptionDrivenNavigationIsEnabled_Description)));
 }

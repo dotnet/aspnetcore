@@ -228,6 +228,15 @@
   <data name="VirtualizeSpacerElementIsInvalid_Title" xml:space="preserve">
     <value>Virtualize uses an invalid spacer element</value>
   </data>
+  <data name="ExceptionDrivenNavigationIsEnabled_Description" xml:space="preserve">
+    <value>This project uses exception-driven navigation during static server-side rendering. Set BlazorDisableThrowNavigationException to true and make control flow after NavigationManager.NavigateTo explicit to ensure consistent behavior across rendering modes.</value>
+  </data>
+  <data name="ExceptionDrivenNavigationIsEnabled_Format" xml:space="preserve">
+    <value>This project uses exception-driven navigation during prerendering. This behavior is obsolete and differs from interactive rendering, where NavigationManager.NavigateTo returns normally. Set BlazorDisableThrowNavigationException to true and make the intended control flow after navigation explicit.</value>
+  </data>
+  <data name="ExceptionDrivenNavigationIsEnabled_Title" xml:space="preserve">
+    <value>Exception-driven navigation is enabled for this project</value>
+  </data>
   <data name="UnnecessaryStateHasChangedCall_Description" xml:space="preserve">
     <value>StateHasChanged is unnecessary in synchronous component lifecycle methods or event handlers. In async lifecycle methods or event handlers, it is unnecessary before the first await and after the final await because ComponentBase already schedules renders at those points.</value>
   </data>
