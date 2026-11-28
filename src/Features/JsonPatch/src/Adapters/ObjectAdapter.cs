@@ -184,7 +184,7 @@ public class ObjectAdapter : IObjectAdapterWithTest
         if (TryGetValue(operation.from, objectToApplyTo, operation, out var propertyValue))
         {
             // Create deep copy
-            var copyResult = ConversionResultProvider.CopyTo(propertyValue, propertyValue?.GetType());
+            var copyResult = ConversionResultProvider.CopyTo(propertyValue, propertyValue?.GetType(), ContractResolver);
             if (copyResult.CanBeConverted)
             {
                 Add(operation.path,

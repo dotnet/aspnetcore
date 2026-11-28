@@ -334,4 +334,23 @@ public class DictionaryAdapterTest
         Assert.False(testStatus);
         Assert.Equal(expectedErrorMessage, errorMessage);
     }
+
+    [Fact]
+    public void Test_UsesContractResolver_ToCompareValues()
+    {
+        // Arrange
+        var key = "Name";
+        var dictionary = new Dictionary<string, Code>();
+        dictionary[key] = new Code("ABCD1234");
+        var dictionaryAdapter = new DictionaryAdapter<string, Code>();
+        var resolver = new CodeContractResolver();
+        var expectedErrorMessage = "The current value 'ABCD1234' at path 'Name' is not equal to the test value 'ZZZZZZZZ'.";
+
+        // Act
+        var testStatus = dictionaryAdapter.TryTest(dictionary, key, resolver, "ZZZZZZZZ", out var errorMessage);
+
+        //Assert
+        Assert.False(testStatus);
+        Assert.Equal(expectedErrorMessage, errorMessage);
+    }
 }

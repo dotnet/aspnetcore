@@ -260,6 +260,26 @@ public class PocoAdapterTest
         Assert.Equal(expectedErrorMessage, errorMessage);
     }
 
+    [Fact]
+    public void TryTest_UsesContractResolver_ToCompareValues()
+    {
+        // Arrange
+        var adapter = new PocoAdapter();
+        var contractResolver = new CodeContractResolver();
+        var model = new ContractConverterObject
+        {
+            Code = new Code("ABCD1234")
+        };
+        var expectedErrorMessage = "The current value 'ABCD1234' at path 'Code' is not equal to the test value 'ZZZZZZZZ'.";
+
+        // Act
+        var testStatus = adapter.TryTest(model, "Code", contractResolver, "ZZZZZZZZ", out var errorMessage);
+
+        // Assert
+        Assert.False(testStatus);
+        Assert.Equal(expectedErrorMessage, errorMessage);
+    }
+
     private class Customer
     {
         public string Name { get; set; }
