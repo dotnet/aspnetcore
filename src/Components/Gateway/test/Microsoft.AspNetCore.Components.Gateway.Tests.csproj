@@ -56,6 +56,11 @@
       <_Parameter1>DefaultNetCoreTargetFramework</_Parameter1>
       <_Parameter2>$(DefaultNetCoreTargetFramework)</_Parameter2>
     </AssemblyAttribute>
+    <AssemblyAttribute Include="System.Reflection.AssemblyMetadataAttribute">
+      <_Parameter1>GatewayCliFrameworkVersion</_Parameter1>
+      <_Parameter2 Condition="'$(IsServicingBuild)' == 'true'">$(AspNetCoreMajorMinorVersion).0</_Parameter2>
+      <_Parameter2 Condition="'$(IsServicingBuild)' != 'true'">$(SharedFxVersion)</_Parameter2>
+    </AssemblyAttribute>
   </ItemGroup>
 
 </Project>

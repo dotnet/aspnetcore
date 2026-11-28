@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Reflection;
+using System.Runtime.InteropServices;
 
 namespace Microsoft.AspNetCore.Components.Gateway;
 
@@ -13,7 +14,7 @@ namespace Microsoft.AspNetCore.Components.Gateway;
 internal static class GatewayCliTestData
 {
     /// <summary>
-    /// The id of the dotnet tool package that repackages the gateway binaries.
+    /// The id of the dotnet tool package for the gateway executable.
     /// </summary>
     public const string PackageId = "Microsoft.AspNetCore.Components.Gateway.Cli";
 
@@ -21,6 +22,21 @@ internal static class GatewayCliTestData
     /// The command the tool exposes once installed (matches the assembly name of the gateway).
     /// </summary>
     public const string ToolCommandName = "blazor-gateway";
+
+    public static readonly string[] NativeRuntimeIdentifiers =
+    [
+        "linux-x64",
+        "linux-arm",
+        "linux-arm64",
+        "linux-musl-x64",
+        "linux-musl-arm",
+        "linux-musl-arm64",
+        "win-x64",
+        "win-x86",
+        "win-arm64",
+        "osx-x64",
+        "osx-arm64",
+    ];
 
     private static readonly Dictionary<string, string> Metadata = typeof(GatewayCliTestData).Assembly
         .GetCustomAttributes<AssemblyMetadataAttribute>()
@@ -39,6 +55,21 @@ internal static class GatewayCliTestData
     public static string ArtifactsTmpDir => GetValue("ArtifactsTmpDir");
 
     public static string DefaultTargetFramework => GetValue("DefaultNetCoreTargetFramework");
+
+    public static string FrameworkVersion => GetValue("GatewayCliFrameworkVersion");
+
+    public static string HostRuntimeIdentifier => RuntimeInformation.RuntimeIdentifier;
+
+    public static string AnyPackageId => $"{PackageId}.any";
+
+    public static string HostRuntimePackageId => $"{PackageId}.{HostRuntimeIdentifier}";
+
+    public static bool IsNativeHost =>
+        !RuntimeInformation.FrameworkDescription.Contains("Mono", StringComparison.OrdinalIgnoreCase) &&
+        NativeRuntimeIdentifiers.Contains(HostRuntimeIdentifier, StringComparer.Ordinal);
+
+    public static bool IsNativePackageAvailable =>
+        IsNativeHost && TryGetPackagePath(HostRuntimePackageId) is not null;
 
     /// <summary>
     /// Path to the locally-built SDK host (.dotnet/dotnet[.exe]) used to install and run the tool.
