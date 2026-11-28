@@ -92,7 +92,7 @@ public sealed class EventCallbackFactory
     {
         ArgumentNullException.ThrowIfNull(receiver);
 
-        return new EventCallback<TValue>(callback.Receiver, callback.Delegate);
+        return new EventCallback<TValue>(callback.Receiver, callback.Delegate, isBinding: callback.IsBinding);
     }
 
     /// <summary>
@@ -176,7 +176,7 @@ public sealed class EventCallbackFactory
     [EditorBrowsable(EditorBrowsableState.Never)]
     public EventCallback<TValue> CreateInferred<TValue>(object receiver, Action<TValue> callback, TValue value)
     {
-        return Create(receiver, callback);
+        return Create(receiver, callback).AsBinding();
     }
 
     /// <summary>
@@ -190,7 +190,7 @@ public sealed class EventCallbackFactory
     [EditorBrowsable(EditorBrowsableState.Never)]
     public EventCallback<TValue> CreateInferred<TValue>(object receiver, Func<TValue, Task> callback, TValue value)
     {
-        return Create(receiver, callback);
+        return Create(receiver, callback).AsBinding();
     }
 
     private static EventCallback CreateCore(object receiver, MulticastDelegate callback)

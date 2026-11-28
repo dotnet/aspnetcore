@@ -12,7 +12,7 @@ public readonly struct ParameterValue
     internal ParameterValue(string name, object value, bool cascading)
     {
         Name = name;
-        Value = value;
+        RawValue = value;
         Cascading = cascading;
     }
 
@@ -24,7 +24,10 @@ public readonly struct ParameterValue
     /// <summary>
     /// Gets the value being supplied for the parameter.
     /// </summary>
-    public object Value { get; }
+    public object Value => RawValue is IEventCallback { IsBinding: true } callback ? callback.WithoutBinding() : RawValue;
+
+    // Framework validation needs provenance even after component code reads and forwards a callback.
+    internal object RawValue { get; }
 
     /// <summary>
     /// Gets a value to indicate whether the parameter is cascading, meaning that it
