@@ -92,6 +92,109 @@ public class BlazorWebTemplateTest(ProjectFactoryFixture projectFactory) : Blazo
     }
 
     [Theory]
+    [InlineData(BrowserKind.Chromium, false)]
+    [InlineData(BrowserKind.Chromium, true)]
+    public async Task BlazorWebTemplate_GeneratedReconnectScriptIgnoresStaleResumeFailureAfterHideAndReopen(
+        BrowserKind browserKind, bool rejectResume)
+    {
+        if (!BrowserManager.IsAvailable(browserKind))
+        {
+            EnsureBrowserAvailable(browserKind);
+            return;
+        }
+
+        var project = await CreateBuildPublishAsync(args: ["-int", "Server"], onlyCreate: true);
+        var script = await File.ReadAllTextAsync(Path.Combine(project.TemplateOutputDir, "Components", "Layout", "ReconnectModal.razor.js"));
+
+        await using var browser = await BrowserManager.GetBrowserInstance(browserKind, BrowserContextInfo);
+        var page = await browser.NewPageAsync();
+        await page.SetContentAsync("""
+            <dialog id="components-reconnect-modal" class="components-reconnect-paused">
+                <button id="components-reconnect-button">Retry</button>
+                <button id="components-resume-button">Resume</button>
+            </dialog>
+            """);
+
+        var result = await page.EvaluateAsync<JsonElement>("""
+            async ({ script, rejectResume }) => {
+                let resolveResume;
+                let rejectPendingResume;
+                const pendingResume = new Promise((resolve, reject) => {
+                    resolveResume = resolve;
+                    rejectPendingResume = reject;
+                });
+                let resumeCalls = 0;
+                let reloadCalls = 0;
+
+                // Execute the generated script unchanged, substituting only its external operations.
+                new Function('Blazor', 'location', script)(
+                    { resumeCircuit: () => { resumeCalls++; return pendingResume; } },
+                    { reload: () => reloadCalls++ });
+
+                const modal = document.getElementById('components-reconnect-modal');
+                const changeState = state => modal.dispatchEvent(new CustomEvent(
+                    'components-reconnect-state-changed', { detail: { state } }));
+                changeState('show');
+                document.getElementById('components-resume-button').click();
+                changeState('hide');
+                changeState('show');
+
+                if (rejectResume) {
+                    rejectPendingResume(new Error('Resume failed.'));
+                } else {
+                    resolveResume(false);
+                }
+
+                // The click handler registered its await before this one, so its UI effects run first.
+                try {
+                    await pendingResume;
+                } catch {
+                }
+
+                const stale = {
+                    resumeCalls,
+                    reloadCalls,
+                    open: modal.open,
+                    paused: modal.classList.contains('components-reconnect-paused'),
+                    failed: modal.classList.contains('components-reconnect-resume-failed'),
+                };
+
+                // A fresh click observes the same outcome, but belongs to the reopened display.
+                document.getElementById('components-resume-button').click();
+                try {
+                    await pendingResume;
+                } catch {
+                }
+
+                return {
+                    stale,
+                    current: {
+                        resumeCalls,
+                        reloadCalls,
+                        open: modal.open,
+                        paused: modal.classList.contains('components-reconnect-paused'),
+                        failed: modal.classList.contains('components-reconnect-resume-failed'),
+                    },
+                };
+            }
+            """, new { script, rejectResume });
+
+        var stale = result.GetProperty("stale");
+        Assert.Equal(1, stale.GetProperty("resumeCalls").GetInt32());
+        Assert.Equal(0, stale.GetProperty("reloadCalls").GetInt32());
+        Assert.True(stale.GetProperty("open").GetBoolean());
+        Assert.True(stale.GetProperty("paused").GetBoolean());
+        Assert.False(stale.GetProperty("failed").GetBoolean());
+
+        var current = result.GetProperty("current");
+        Assert.Equal(2, current.GetProperty("resumeCalls").GetInt32());
+        Assert.Equal(rejectResume ? 0 : 1, current.GetProperty("reloadCalls").GetInt32());
+        Assert.True(current.GetProperty("open").GetBoolean());
+        Assert.Equal(!rejectResume, current.GetProperty("paused").GetBoolean());
+        Assert.Equal(rejectResume, current.GetProperty("failed").GetBoolean());
+    }
+
+    [Theory]
     [InlineData(BrowserKind.Chromium)]
     [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/70568")]
     public async Task BlazorWebTemplate_RecoveryEmailsUseStoredAddressAndDoNotSendWithoutIt(BrowserKind browserKind)

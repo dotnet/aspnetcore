@@ -17,6 +17,15 @@ export class DefaultReconnectionHandler implements ReconnectionHandler {
 
   private _currentReconnectionProcess: ReconnectionProcess | null = null;
 
+  private readonly _onCircuitDisposed = () => {
+    try {
+      this.clearReconnectionProcess();
+    } catch (error) {
+      this._currentReconnectionProcess = null;
+      this._logger.log(LogLevel.Error, `Failed to clean up the paused circuit UI: ${error}`);
+    }
+  };
+
   private _reconnectionDisplay?: ReconnectDisplay;
 
   constructor(logger: Logger, overrideDisplay?: ReconnectDisplay, reconnectCallback?: () => Promise<boolean>, resumeCallback?: () => Promise<boolean>) {
@@ -45,9 +54,18 @@ export class DefaultReconnectionHandler implements ReconnectionHandler {
         remotePause,
       );
     }
+    if (isClientPause) {
+      // Retirement must clear the pause display without reporting a successful reconnection.
+      Blazor._internal.circuitEvents?.addEventListener('disposed', this._onCircuitDisposed);
+    }
   }
 
   onConnectionUp(): void {
+    this.clearReconnectionProcess();
+  }
+
+  private clearReconnectionProcess(): void {
+    Blazor._internal.circuitEvents?.removeEventListener('disposed', this._onCircuitDisposed);
     if (this._currentReconnectionProcess) {
       this._currentReconnectionProcess.dispose();
       this._currentReconnectionProcess = null;

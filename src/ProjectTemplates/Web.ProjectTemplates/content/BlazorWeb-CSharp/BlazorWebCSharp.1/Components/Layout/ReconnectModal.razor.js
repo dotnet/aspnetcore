@@ -1,3 +1,5 @@
+let displayVersion = 0;
+
 // Set up event handlers
 const reconnectModal = document.getElementById("components-reconnect-modal");
 reconnectModal.addEventListener("components-reconnect-state-changed", handleReconnectStateChanged);
@@ -12,6 +14,7 @@ function handleReconnectStateChanged(event) {
     if (event.detail.state === "show") {
         reconnectModal.showModal();
     } else if (event.detail.state === "hide") {
+        displayVersion++;
         reconnectModal.close();
     } else if (event.detail.state === "failed") {
         document.addEventListener("visibilitychange", retryWhenDocumentBecomesVisible);
@@ -46,12 +49,16 @@ async function retry() {
 }
 
 async function resume() {
+    const version = displayVersion;
     try {
         const successful = await Blazor.resumeCircuit();
-        if (!successful) {
+        if (!successful && version === displayVersion) {
             location.reload();
         }
     } catch {
+        if (version !== displayVersion) {
+            return;
+        }
         reconnectModal.classList.replace("components-reconnect-paused", "components-reconnect-resume-failed");
     }
 }

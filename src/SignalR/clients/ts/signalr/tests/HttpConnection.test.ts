@@ -516,6 +516,7 @@ describe("HttpConnection", () => {
 
     it("can stop a starting connection", async () => {
         await VerifyLogger.run(async (logger) => {
+            const log = jest.spyOn(logger, "log");
             const stoppingPromise = new PromiseSource();
             const startingPromise = new PromiseSource();
             const options: IHttpConnectionOptions = {
@@ -539,14 +540,10 @@ describe("HttpConnection", () => {
 
             await stopPromise;
 
-            try {
-                await startPromise
-            } catch (e) {
-                expect(e).toBeInstanceOf(AbortError);
-                expect((e as AbortError).message).toBe("The connection was stopped during negotiation.");
-            }
-        },
-        "Failed to start the connection: Error: The connection was stopped during negotiation.");
+            await expect(startPromise).rejects.toBeInstanceOf(AbortError);
+            await expect(startPromise).rejects.toThrow("The connection was stopped during negotiation.");
+            expect(log).toHaveBeenCalledWith(LogLevel.Debug, "Failed to start the connection: Error: The connection was stopped during negotiation.");
+        });
     });
 
     it("cannot send with an un-started connection", async () => {
@@ -574,6 +571,7 @@ describe("HttpConnection", () => {
 
     it("cannot be started if negotiate returns non 200 response", async () => {
         await VerifyLogger.run(async (logger) => {
+            const log = jest.spyOn(logger, "log");
             const options: IHttpConnectionOptions = {
                 ...commonOptions,
                 httpClient: new TestHttpClient()
@@ -586,6 +584,7 @@ describe("HttpConnection", () => {
             await expect(connection.start(TransferFormat.Text))
                 .rejects
                 .toThrow("Unexpected status code returned from negotiate '999'");
+            expect(log).toHaveBeenCalledWith(LogLevel.Error, "Failed to start the connection: Error: Unexpected status code returned from negotiate '999'");
         },
         "Failed to start the connection: Error: Unexpected status code returned from negotiate '999'");
     });

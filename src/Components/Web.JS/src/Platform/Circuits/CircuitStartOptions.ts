@@ -47,6 +47,9 @@ export interface CircuitHandler {
 
 export interface ReconnectionHandler {
   onConnectionDown(options: ReconnectionOptions, error?: Error, isClientPause?: boolean, remotePause?: boolean): void;
+  /**
+   * Called after the connection is successfully restored.
+   */
   onConnectionUp(): void;
 }
 
