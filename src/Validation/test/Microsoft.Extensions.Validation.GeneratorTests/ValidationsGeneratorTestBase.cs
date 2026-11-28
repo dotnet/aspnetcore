@@ -64,7 +64,7 @@ public partial class ValidationsGeneratorTestBase : LoggedTestBase
             .DisableRequireUniquePrefix();
     }
 
-    private static IEnumerable<MetadataReference> GetMetadataReferences()
+    internal static IEnumerable<MetadataReference> GetMetadataReferences()
         => AppDomain.CurrentDomain.GetAssemblies()
             .Where(assembly => !assembly.IsDynamic && !string.IsNullOrWhiteSpace(assembly.Location))
             .Select(assembly => MetadataReference.CreateFromFile(assembly.Location))
