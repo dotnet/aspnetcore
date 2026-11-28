@@ -16,11 +16,8 @@ The folder contains command-line tools for ASP.NET Core. The following tools are
 
 The following tools are produced by us but not bundled in the .NET Core CLI. They must be acquired independently.
 
-- [Microsoft.dotnet-openapi](Microsoft.dotnet-openapi/README.md)
-
 This folder also contains the infrastructure for our partners' service reference features:
 
-- [Extensions.ApiDescription.Client](Extensions.ApiDescription.Client/README.md) MSBuild glue for OpenAPI code generation.
 - [Extensions.ApiDescription.Server](Extensions.ApiDescription.Server/README.md) MSBuild glue for OpenAPI document generation.
 - [dotnet-getdocument](dotnet-getdocument/README.md) the outside man of OpenAPI document generation tool.
 - [GetDocument.Insider](GetDocumentInsider/README.md) the inside man of OpenAPI document generation tool.
@@ -37,7 +34,6 @@ The command line tools can be invoked as a subcommand of `dotnet`.
 
 ```sh
 dotnet dev-certs
-dotnet openapi
 dotnet sql-cache
 dotnet user-secrets
 ```
