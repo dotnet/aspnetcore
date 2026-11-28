@@ -1,0 +1,14 @@
+@inherits LayoutComponentBase
+
+<nav>
+    <a id="navigate-alternate-layout" href="route-view-layout-transition/alternate/second">Alternate Layout Page</a>
+</nav>
+
+<div>
+    @Body
+</div>
+
+@code {
+    [CascadingParameter]
+    protected RouteViewLayoutTransitionApp State { get; set; } = default!;
+}

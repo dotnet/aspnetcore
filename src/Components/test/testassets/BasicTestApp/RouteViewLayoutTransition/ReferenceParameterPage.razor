@@ -1,0 +1,37 @@
+@page "/route-view-layout-transition/reference/{CustomerName}"
+@inject NavigationManager Navigation
+
+<p id="reference-customer">@Model.Name</p>
+<p id="reference-page-instance">@_instanceId</p>
+<button id="navigate-reference-customer" @onclick="SwitchCustomer">Switch customer</button>
+<ol id="reference-parameter-log">
+    @foreach (var name in _receivedCustomers)
+    {
+        <li>@name</li>
+    }
+</ol>
+
+@code {
+    private readonly Guid _instanceId = Guid.NewGuid();
+    private readonly List<string> _receivedCustomers = [];
+
+    [Parameter]
+    public CustomerModel Model { get; set; }
+
+    protected override void OnParametersSet()
+    {
+        _receivedCustomers.Add(Model.Name);
+    }
+
+    private void SwitchCustomer()
+    {
+        var nextCustomer = Model.Name == "first" ? "second" : "first";
+        _receivedCustomers.Clear();
+        Navigation.NavigateTo($"route-view-layout-transition/reference/{nextCustomer}");
+    }
+
+    public sealed class CustomerModel(string name)
+    {
+        public string Name { get; } = name;
+    }
+}
