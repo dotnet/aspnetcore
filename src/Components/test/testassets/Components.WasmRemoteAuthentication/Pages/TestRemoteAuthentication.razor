@@ -1,13 +1,22 @@
 ﻿@page "/test-remote-authentication"
 
 @using Microsoft.AspNetCore.Components.Authorization
+@using Microsoft.AspNetCore.Components.Web
+@using Microsoft.AspNetCore.Components.WebAssembly.Authentication
+
+@inject NavigationManager Navigation
 
 <AuthorizeView>
     <Authorized>
         <h1>Hello, @context.User.Identity?.Name!</h1>
+        <button id="log-out" @onclick="LogOut">Log out</button>
     </Authorized>
     <NotAuthorized>
         @* Do this rather than rely on the [Authorize] attribute to avoid endpoint routing. *@
         <RedirectToLogin />
     </NotAuthorized>
 </AuthorizeView>
+
+@code {
+    private void LogOut() => Navigation.NavigateToLogout("authentication/logout");
+}
