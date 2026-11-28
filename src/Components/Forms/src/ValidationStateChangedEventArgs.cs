@@ -14,9 +14,25 @@ public sealed class ValidationStateChangedEventArgs : EventArgs
     public static new readonly ValidationStateChangedEventArgs Empty = new ValidationStateChangedEventArgs();
 
     /// <summary>
+    /// Gets a value indicating whether the current validation state is valid.
+    /// </summary>
+    public bool IsValid { get; }
+
+    /// <summary>
     /// Creates a new instance of <see cref="ValidationStateChangedEventArgs" />
     /// </summary>
     public ValidationStateChangedEventArgs()
     {
+    }
+
+    /// <summary>
+    /// Creates a new instance of <see cref="ValidationStateChangedEventArgs"/> with the specified validation state.
+    /// </summary>
+    /// <param name="isValid">
+    /// A value indicating whether the <see cref="EditContext"/> is valid at the time the event is raised.
+    /// </param>
+    public ValidationStateChangedEventArgs(bool isValid)
+    {
+        IsValid = isValid;
     }
 }
