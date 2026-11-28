@@ -104,7 +104,11 @@ interface DotnetHostBuilder {
      */
     withDownloadResourceProgress(callback?: (resourcesLoaded: number, totalResources: number) => void): DotnetHostBuilder;
     /**
-     * Sets a callback that is invoked after the runtime configuration is loaded.
+     * Adds a callback that is invoked after the runtime configuration is loaded.
+     * Callbacks run in registration order, awaiting each callback before invoking the next.
+     * If a callback throws or rejects, subsequent callbacks are not invoked and startup fails.
+     * Callbacks registered during invocation are not included in the current invocation.
+     * Passing undefined has no effect.
      */
     withConfigLoaded(callback?: (config: LoaderConfig) => void | Promise<void>): DotnetHostBuilder;
     /**
