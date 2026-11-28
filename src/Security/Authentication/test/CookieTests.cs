@@ -757,6 +757,132 @@ public class CookieTests : SharedAuthenticationTests<CookieAuthenticationOptions
         Assert.Null(FindClaimValue(transaction2, ClaimTypes.Name));
     }
 
+    [Theory]
+    [InlineData(true)]
+    [InlineData(false)]
+    public async Task CookieNotRenewedWhenRejectedByValidator(bool useSessionStore)
+    {
+        var sessionStore = new TestTicketStore();
+        using var host = await CreateHost(o =>
+        {
+            o.ExpireTimeSpan = TimeSpan.FromMinutes(10);
+            o.SlidingExpiration = true;
+            o.SessionStore = useSessionStore ? sessionStore : null;
+            o.Events = new CookieAuthenticationEvents
+            {
+                OnValidatePrincipal = async ctx =>
+                {
+                    ctx.RejectPrincipal();
+                    if (ctx.Request.Query.ContainsKey("signout"))
+                    {
+                        await ctx.HttpContext.SignOutAsync("Cookies");
+                    }
+                }
+            };
+        },
+        SignInAsAlice);
+
+        using var server = host.GetTestServer();
+        var transaction1 = await SendAsync(server, "http://example.com/testpath");
+        var storedTicket = sessionStore.Store.Values.SingleOrDefault();
+
+        var transaction2 = await SendAsync(server, "http://example.com/me/Cookies", transaction1.CookieNameValue);
+        Assert.Null(transaction2.SetCookie);
+        Assert.Null(FindClaimValue(transaction2, ClaimTypes.Name));
+
+        _timeProvider.Advance(TimeSpan.FromMinutes(6));
+
+        // A renewal is now expected, but the principal is rejected
+        var transaction3 = await SendAsync(server, "http://example.com/me/Cookies", transaction1.CookieNameValue);
+        Assert.Null(transaction3.SetCookie);
+        Assert.Null(FindClaimValue(transaction3, ClaimTypes.Name));
+        // The stored session isn't renewed either
+        Assert.Same(storedTicket, sessionStore.Store.Values.SingleOrDefault());
+
+        // Signing out still deletes the cookie and the stored session
+        var transaction4 = await SendAsync(server, "http://example.com/me/Cookies?signout=1", transaction1.CookieNameValue);
+        Assert.Contains(".AspNetCore.Cookies=; expires=", transaction4.SetCookie);
+        Assert.Null(FindClaimValue(transaction4, ClaimTypes.Name));
+        Assert.Empty(sessionStore.Store);
+    }
+
+    [Theory]
+    [InlineData(true)]
+    [InlineData(false)]
+    public async Task CookieNotRenewedWhenValidatorThrows(bool useSessionStore)
+    {
+        var sessionStore = new TestTicketStore();
+        using var host = new HostBuilder()
+            .ConfigureWebHost(builder =>
+                builder.UseTestServer()
+                    .Configure(app =>
+                    {
+                        // Write the error response in place, since re-executing the pipeline would run authentication again
+                        app.UseExceptionHandler(new ExceptionHandlerOptions
+                        {
+                            ExceptionHandler = context => context.Response.WriteAsync("Error")
+                        });
+                        app.UseAuthentication();
+                        app.Run(async context =>
+                        {
+                            if (context.Request.Path == new PathString("/signin"))
+                            {
+                                await SignInAsAlice(context);
+                            }
+                            else
+                            {
+                                await DescribeAsync(context.Response, AuthenticateResult.Success(new AuthenticationTicket(context.User, new AuthenticationProperties(), CookieAuthenticationDefaults.AuthenticationScheme)));
+                            }
+                        });
+                    })
+                    .ConfigureServices(s => s.AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme).AddCookie(o =>
+                    {
+                        o.TimeProvider = _timeProvider;
+                        o.ExpireTimeSpan = TimeSpan.FromMinutes(10);
+                        o.SlidingExpiration = true;
+                        o.SessionStore = useSessionStore ? sessionStore : null;
+                        o.Events = new CookieAuthenticationEvents
+                        {
+                            OnValidatePrincipal = ctx =>
+                            {
+                                if (ctx.Request.Query.ContainsKey("throw"))
+                                {
+                                    throw new InvalidOperationException("Simulated store failure");
+                                }
+                                return Task.CompletedTask;
+                            }
+                        };
+                    })))
+            .Build();
+        await host.StartAsync();
+        using var server = host.GetTestServer();
+
+        var transaction1 = await SendAsync(server, "http://example.com/signin");
+        var storedTicket = sessionStore.Store.Values.SingleOrDefault();
+
+        var transaction2 = await SendAsync(server, "http://example.com/me?throw=1", transaction1.CookieNameValue);
+        Assert.Equal(HttpStatusCode.InternalServerError, transaction2.Response.StatusCode);
+        Assert.Null(transaction2.SetCookie);
+
+        _timeProvider.Advance(TimeSpan.FromMinutes(6));
+
+        // A renewal is now expected, but validation throws, so the error response must not renew the ticket
+        var transaction3 = await SendAsync(server, "http://example.com/me?throw=1", transaction1.CookieNameValue);
+        Assert.Equal(HttpStatusCode.InternalServerError, transaction3.Response.StatusCode);
+        Assert.Null(transaction3.SetCookie);
+        // The stored session isn't renewed either
+        Assert.Same(storedTicket, sessionStore.Store.Values.SingleOrDefault());
+
+        // Once validation completes, the renewal happens as usual
+        var transaction4 = await SendAsync(server, "http://example.com/me", transaction1.CookieNameValue);
+        Assert.NotNull(transaction4.SetCookie);
+        Assert.Equal("Alice", FindClaimValue(transaction4, ClaimTypes.Name));
+        if (useSessionStore)
+        {
+            Assert.NotSame(storedTicket, sessionStore.Store.Values.SingleOrDefault());
+        }
+    }
+
     [Fact]
     public async Task CookieNotRenewedAfterSignOut()
     {
