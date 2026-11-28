@@ -80,4 +80,47 @@ internal static class ComponentsApi
         // The generic type is defined in Microsoft.AspNetCore.Components.Endpoints and has arity 1.
         public const string MetadataName = "Microsoft.AspNetCore.Http.HttpResults.RazorComponentResult`1";
     }
+
+    public static class Dispatcher
+    {
+        public const string FullTypeName = "Microsoft.AspNetCore.Components.Dispatcher";
+        public const string MetadataName = FullTypeName;
+    }
+
+    public static class RendererInfo
+    {
+        public const string FullTypeName = "Microsoft.AspNetCore.Components.RendererInfo";
+        public const string MetadataName = FullTypeName;
+        public const string IsInteractive = "IsInteractive";
+    }
+
+    public static class RenderModeAttribute
+    {
+        public const string FullTypeName = "Microsoft.AspNetCore.Components.RenderModeAttribute";
+        public const string MetadataName = FullTypeName;
+    }
+
+    public static class JSInteropRuntime
+    {
+        public const string FullTypeName = "Microsoft.JSInterop.IJSRuntime";
+        public const string MetadataName = FullTypeName;
+    }
+
+    public static class JSObjectReference
+    {
+        public const string FullTypeName = "Microsoft.JSInterop.IJSObjectReference";
+        public const string MetadataName = FullTypeName;
+    }
+
+    public static class WebAssembly
+    {
+        public const string FullTypeName = "Microsoft.AspNetCore.Components.WebAssembly";
+        public const string MetadataName = FullTypeName;
+    }
+
+    public static class WebAssemblyServer
+    {
+        public const string FullTypeName = "Microsoft.AspNetCore.Components.WebAssembly.Server";
+        public const string MetadataName = FullTypeName;
+    }
 }

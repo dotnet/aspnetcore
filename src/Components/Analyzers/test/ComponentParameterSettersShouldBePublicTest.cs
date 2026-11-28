@@ -50,7 +50,7 @@ public class ComponentParameterSettersShouldBePublicTest : DiagnosticVerifier
         using {typeof(ParameterAttribute).Namespace};
         class TypeName
         {{
-            private string MyProperty {{ get; private set; }}
+            public string MyProperty {{ get; private set; }}
         }}
     }}" + ComponentsTestDeclarations.Source;
 

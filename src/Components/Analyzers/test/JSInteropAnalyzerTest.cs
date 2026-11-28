@@ -804,7 +804,7 @@ public class JSInteropAnalyzerTest : DiagnosticVerifier
     {
         using System.Threading.Tasks;
 
-        class FakeRuntime
+        public class FakeRuntime
         {
         }
 

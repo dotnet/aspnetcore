@@ -19,6 +19,10 @@ public abstract partial class DiagnosticVerifier
 {
     private static readonly MetadataReference CorlibReference = MetadataReference.CreateFromFile(typeof(object).Assembly.Location);
     private static readonly MetadataReference SystemCoreReference = MetadataReference.CreateFromFile(typeof(Enumerable).Assembly.Location);
+    private static readonly MetadataReference SystemConsoleReference = MetadataReference.CreateFromFile(typeof(Console).Assembly.Location);
+    // System.Console refers to core types through the System.Runtime facade.
+    private static readonly MetadataReference SystemRuntimeReference = MetadataReference.CreateFromFile(
+        Path.Combine(Path.GetDirectoryName(typeof(object).Assembly.Location)!, "System.Runtime.dll"));
     private static readonly MetadataReference CSharpSymbolsReference = MetadataReference.CreateFromFile(typeof(CSharpCompilation).Assembly.Location);
     private static readonly MetadataReference CodeAnalysisReference = MetadataReference.CreateFromFile(typeof(Compilation).Assembly.Location);
 
@@ -38,7 +42,29 @@ public abstract partial class DiagnosticVerifier
     /// <returns>An IEnumerable of Diagnostics that surfaced in the source code, sorted by Location</returns>
     private static Diagnostic[] GetSortedDiagnostics(string[] sources, string language, DiagnosticAnalyzer analyzer)
     {
-        return GetSortedDiagnosticsFromDocuments(analyzer, GetDocuments(sources, language));
+        var documents = GetDocuments(sources, language);
+        EnsureNoCompilerErrors(documents);
+        return GetSortedDiagnosticsFromDocuments(analyzer, documents);
+    }
+
+    /// <summary>
+    /// Fail the test when its sources do not compile. Analyzers see invalid code as different operations than
+    /// production code, so a test on code that does not compile can pass while the analyzer fails on real code.
+    /// </summary>
+    private static void EnsureNoCompilerErrors(Document[] documents)
+    {
+        foreach (var project in documents.Select(document => document.Project).Distinct())
+        {
+            var errors = project.GetCompilationAsync().Result.GetDiagnostics()
+                .Where(diagnostic => diagnostic.Severity == DiagnosticSeverity.Error)
+                .ToArray();
+            if (errors.Length > 0)
+            {
+                throw new InvalidOperationException(
+                    "Test sources must compile, but have errors:" + Environment.NewLine
+                    + string.Join(Environment.NewLine, errors.Select(error => error.ToString())));
+            }
+        }
     }
 
     /// <summary>
@@ -153,8 +179,14 @@ public abstract partial class DiagnosticVerifier
             .AddProject(projectId, TestProjectName, TestProjectName, language)
             .AddMetadataReference(projectId, CorlibReference)
             .AddMetadataReference(projectId, SystemCoreReference)
+            .AddMetadataReference(projectId, SystemConsoleReference)
+            .AddMetadataReference(projectId, SystemRuntimeReference)
             .AddMetadataReference(projectId, CSharpSymbolsReference)
             .AddMetadataReference(projectId, CodeAnalysisReference);
+
+        // Test sources are libraries, not programs with an entry point.
+        var compilationOptions = solution.GetProject(projectId).CompilationOptions.WithOutputKind(OutputKind.DynamicallyLinkedLibrary);
+        solution = solution.WithProjectCompilationOptions(projectId, compilationOptions);
 
         int count = 0;
         foreach (var source in sources)

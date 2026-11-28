@@ -13,7 +13,7 @@ public class ComponentParameterShouldBeAutoPropertiesTest : DiagnosticVerifier
     public void IsAutoProperty_NoDiagnostic()
     {
         var source = @"
-using Microsoft.AspNetCore.Components
+using Microsoft.AspNetCore.Components;
 
 public class C
 {
@@ -31,7 +31,7 @@ public string MyProp2 { set; get; }
     public void HaveSameSemanticAsAutoProperty_NoDiagnostic()
     {
         var source = @"
-using Microsoft.AspNetCore.Components
+using Microsoft.AspNetCore.Components;
 
 public class C
 {
@@ -74,7 +74,7 @@ public string MyProp3
     public void HaveLogicInSetter_Diagnostic()
     {
         var source = @"
-using Microsoft.AspNetCore.Components
+using Microsoft.AspNetCore.Components;
 
 public class C
 {
@@ -113,7 +113,7 @@ private void DoSomething() { }
     public void HaveLogicInGetter_Diagnostic()
     {
         var source = @"
-using Microsoft.AspNetCore.Components
+using Microsoft.AspNetCore.Components;
 
 public class C
 {

@@ -67,7 +67,7 @@
 |  __`MVC1005`__ | Cannot use UseMvc with Endpoint Routing |
 |  __`MVC1006`__ | Methods containing TagHelpers must be async and return Task |
 
-### BL  (`BL0001-BL0020`)
+### BL  (`BL0001-BL0021`)
 
 | Diagnostic ID     | Description |
 | :---------------- | :---------- |
@@ -91,6 +91,7 @@
 |  __`BL0018`__ | Component declares `DisposeAsync()` but does not implement `IAsyncDisposable` |
 |  __`BL0019`__ | Virtualize uses an invalid spacer element |
 |  __`BL0020`__ | RazorComponentResult parameter does not match a component parameter |
+|  __`BL0021`__ | JS interop used without checking RendererInfo.IsInteractive |
 
 ### Request Delegate Generator  (`RDG001-RDG014`)
 
