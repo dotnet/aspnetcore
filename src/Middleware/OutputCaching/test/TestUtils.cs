@@ -337,6 +337,7 @@ internal class SimpleTestOutputCache : ITestOutputCacheStore
     private readonly Dictionary<string, byte[]?> _storage = new();
     public int GetCount { get; private set; }
     public int SetCount { get; private set; }
+    public TimeSpan? LastValidFor { get; private set; }
     private readonly object synLock = new();
 
     public ValueTask EvictByTagAsync(string tag, CancellationToken cancellationToken)
@@ -367,6 +368,7 @@ internal class SimpleTestOutputCache : ITestOutputCacheStore
         lock (synLock)
         {
             SetCount++;
+            LastValidFor = validFor;
             _storage[key] = entry;
 
             return ValueTask.CompletedTask;
@@ -415,4 +417,5 @@ public interface ITestOutputCacheStore : IOutputCacheStore
 {
     int GetCount { get; }
     int SetCount { get; }
+    TimeSpan? LastValidFor { get; }
 }
