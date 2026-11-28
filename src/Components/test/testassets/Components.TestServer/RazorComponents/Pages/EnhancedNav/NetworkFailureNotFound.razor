@@ -1,0 +1,30 @@
+@page "/nav/network-failure-not-found/{Id}"
+@attribute [StreamRendering]
+@using Microsoft.AspNetCore.Components.Forms
+@using TestServer
+@inject EnhancedNavigationFailureState Failures
+@inject NavigationManager NavigationManager
+
+<p id="request-method">@HttpContext.Request.Method</p>
+<form method="post" @onsubmit="HandleSubmit" @formname="NativePostNotFound">
+    <AntiforgeryToken />
+    <button id="native-post-not-found" type="submit">Submit native POST</button>
+</form>
+
+@code {
+    [Parameter] public string Id { get; set; } = default!;
+
+    [CascadingParameter]
+    private HttpContext HttpContext { get; set; } = default!;
+
+    protected override void OnInitialized()
+    {
+        Failures.Get(Id).RecordRequest(enhanced: false, isPost: HttpMethods.IsPost(HttpContext.Request.Method));
+    }
+
+    private async Task HandleSubmit()
+    {
+        await Failures.Get(Id).WaitAsync(HttpContext.RequestAborted);
+        NavigationManager.NotFound();
+    }
+}
