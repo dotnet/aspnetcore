@@ -1442,6 +1442,51 @@ public class EndpointHtmlRendererTest
         }
     }
 
+    [Theory]
+    [InlineData("server", true)]
+    [InlineData("server", false)]
+    [InlineData("webassembly", true)]
+    [InlineData("webassembly", false)]
+    [InlineData("auto", true)]
+    [InlineData("auto", false)]
+    public async Task RenderMode_ThrowsHelpfulErrorForComponentReferenceAcrossBoundary(string mode, bool prerender)
+    {
+        IComponentRenderMode renderMode = mode switch
+        {
+            "server" => new InteractiveServerRenderMode(prerender),
+            "webassembly" => new InteractiveWebAssemblyRenderMode(prerender),
+            "auto" => new InteractiveAutoRenderMode(prerender),
+            _ => throw new InvalidOperationException($"Unexpected render mode: {mode}"),
+        };
+        SimpleComponent staticChild = null;
+        SimpleComponent interactiveChild = null;
+        object boundaryInstance = null;
+        var component = new TestComponent(builder =>
+        {
+            builder.OpenComponent<SimpleComponent>(0);
+            builder.AddComponentReferenceCapture(1, value => staticChild = (SimpleComponent)value);
+            builder.CloseComponent();
+            builder.OpenComponent<SimpleComponent>(2);
+            builder.AddComponentReferenceCapture(3, value => boundaryInstance = value);
+            builder.AddComponentReferenceCapture(4, value => interactiveChild = (SimpleComponent)value);
+            builder.AddComponentRenderMode(renderMode);
+            builder.CloseComponent();
+        });
+        var httpContext = GetHttpContext();
+        await renderer.PrerenderComponentAsync(httpContext, typeof(EmptyComponent), null, ParameterView.Empty);
+
+        var exception = await Assert.ThrowsAsync<InvalidOperationException>(() => renderer.Dispatcher.InvokeAsync(
+            () => renderer.BeginRenderingComponent(component, ParameterView.Empty).QuiescenceTask));
+
+        Assert.Equal($"Cannot capture a reference to component '{typeof(SimpleComponent)}' because the renderer supplied an instance of type '{typeof(SSRRenderModeBoundary)}', which is not assignable to the component type. " +
+            "This can occur when attempting to capture a component reference across an interactive render mode boundary. " +
+            "If so, place the parent and child components in the same interactive subtree.", exception.Message);
+        Assert.IsType<InvalidCastException>(exception.InnerException);
+        Assert.IsType<SimpleComponent>(staticChild);
+        Assert.IsType<SSRRenderModeBoundary>(boundaryInstance);
+        Assert.Null(interactiveChild);
+    }
+
     [Fact]
     public async Task SectionOutletAndContentInDifferentRenderModes_LogsWarningDuringPrerendering()
     {
