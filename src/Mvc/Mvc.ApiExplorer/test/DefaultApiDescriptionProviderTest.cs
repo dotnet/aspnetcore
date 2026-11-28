@@ -515,6 +515,44 @@ public class DefaultApiDescriptionProviderTest
     }
 
     [Fact]
+    public void GetApiDescription_ProducesLowerCaseRoutePattern()
+    {
+        // Arrange
+        var action = CreateActionDescriptor();
+        action.AttributeRouteInfo = new AttributeRouteInfo
+        {
+            Template = "api/Products/UpdateProduct/{productId:int}"
+        };
+        var routeOptions = new RouteOptions { LowercaseUrls = true };
+
+        // Act
+        var descriptions = GetApiDescriptions(action, routeOptions: routeOptions);
+
+        // Assert
+        var description = Assert.Single(descriptions);
+        Assert.Equal("api/products/updateproduct/{productId:int}", description.RoutePattern.RawText);
+    }
+
+    [Fact]
+    public void GetApiDescription_PreservesEscapedBracesInLowerCaseRoutePattern()
+    {
+        // Arrange
+        var action = CreateActionDescriptor();
+        action.AttributeRouteInfo = new AttributeRouteInfo
+        {
+            Template = "api/{code:regex(^[A-Z]{{2}}[A-Z]+$)}"
+        };
+        var routeOptions = new RouteOptions { LowercaseUrls = true };
+
+        // Act
+        var descriptions = GetApiDescriptions(action, routeOptions: routeOptions);
+
+        // Assert
+        var description = Assert.Single(descriptions);
+        Assert.Equal("api/{code:regex(^[A-Z]{{2}}[A-Z]+$)}", description.RoutePattern.RawText);
+    }
+
+    [Fact]
     public void GetApiDescription_PopulatesResponseType_WithProduct()
     {
         // Arrange
