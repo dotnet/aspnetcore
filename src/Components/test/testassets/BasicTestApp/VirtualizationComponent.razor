@@ -18,6 +18,33 @@
     <button id="finish-loading-button" @onclick="() => FinishLoadingAsync(200)">Finish loading with total item count = 200</button><br />
     <button id="refresh-data-async" @onclick="() => asyncComponent.RefreshDataAsync()">Call RefreshDataAsync</button><br />
     Cancellation count: <span id="cancellation-count">@asyncCancellationCount</span><br />
+    <button id="show-fractional-table" @onclick="() => showFractionalTable = true">Show fractional-height table</button>
+    @if (showFractionalTable)
+    {
+        <button id="pause-fractional-loads" @onclick="PauseFractionalLoads">Pause fractional loads</button>
+        <button id="release-fractional-loads" @onclick="ReleaseFractionalLoads">Release fractional loads</button>
+        <span id="fractional-load-status">@(fractionalLoads is null ? "Running" : "Paused")</span>
+        <div id="fractional-rows-container" style="height: 350px; overflow-y: auto;">
+            <table style="border-spacing: 0; border-collapse: separate; width: 100%;">
+                <tbody>
+                    <Virtualize @ref="asyncComponent" ItemsProvider="GetItemsAsync" ItemSize="50" SpacerElement="tr" OverscanCount="3">
+                        <ItemContent>
+                            <tr @key="context" class="item" data-index="@context">
+                                <td style="padding: 0;"><div style="height: 53.015625px;">Row @context</div></td>
+                            </tr>
+                        </ItemContent>
+                        <Placeholder>
+                            <tr class="placeholder">
+                                <td style="padding: 0;"><div style="height: 53.015625px;">Loading @context.Index...</div></td>
+                            </tr>
+                        </Placeholder>
+                    </Virtualize>
+                </tbody>
+            </table>
+        </div>
+    }
+    else
+    {
     <div id="async-container" style="background-color: #eee; height: 500px; overflow-y: auto">
         <Virtualize @ref="asyncComponent" ItemsProvider="GetItemsAsync" ItemSize="itemSize" OverscanCount="3">
             <ItemContent>
@@ -31,6 +58,7 @@
             </EmptyContent>
         </Virtualize>
     </div>
+    }
 </p>
 
 <p>
@@ -71,12 +99,24 @@
 
     int asyncTotalItemCount = 200;
     int asyncCancellationCount = 0;
+    bool showFractionalTable;
     TaskCompletionSource asyncTcs = new TaskCompletionSource();
+    TaskCompletionSource fractionalLoads;
 
     Virtualize<int> asyncComponent;
 
     async ValueTask<ItemsProviderResult<int>> GetItemsAsync(ItemsProviderRequest request)
     {
+        if (showFractionalTable)
+        {
+            if (fractionalLoads is not null)
+            {
+                await fractionalLoads.Task.WaitAsync(request.CancellationToken);
+            }
+
+            return new ItemsProviderResult<int>(Enumerable.Range(request.StartIndex, request.Count), 20_000);
+        }
+
         var loadingTask = asyncTcs.Task;
 
         var registration = request.CancellationToken.Register(() => CancelLoadingAsync(request.CancellationToken));
@@ -86,6 +126,15 @@
         registration.Dispose();
 
         return new ItemsProviderResult<int>(Enumerable.Range(request.StartIndex, request.Count), asyncTotalItemCount);
+    }
+
+    void PauseFractionalLoads() => fractionalLoads = new(TaskCreationOptions.RunContinuationsAsynchronously);
+
+    void ReleaseFractionalLoads()
+    {
+        var loads = fractionalLoads;
+        fractionalLoads = null;
+        loads?.TrySetResult();
     }
 
     void FinishLoadingAsync(int totalItemCount)

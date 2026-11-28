@@ -549,6 +549,46 @@ public class VirtualizationTest : ServerTestBase<ToggleExecutionModeServerFixtur
         Assert.Equal(0, nestedTrCountAfterScroll);
     }
 
+    [Fact]
+    public void FractionalRowHeights_WheelScrollWhileLoading_DoesNotLeaveViewportBlank()
+    {
+        Browser.MountTestComponent<VirtualizationComponent>();
+        Browser.Exists(By.Id("show-fractional-table")).Click();
+        var container = Browser.Exists(By.Id("fractional-rows-container"));
+        var js = (IJavaScriptExecutor)Browser;
+        Browser.Exists(By.CssSelector("#fractional-rows-container .item[data-index='0']"));
+        WaitForRenderToSettle(container, js);
+        Browser.True(() => (bool)js.ExecuteScript("""
+            const row = arguments[0].querySelector('.item');
+            return row && row.getBoundingClientRect().height !== row.offsetHeight;
+            """, container));
+
+        Browser.Exists(By.Id("pause-fractional-loads")).Click();
+        Browser.Equal("Paused", () => Browser.Exists(By.Id("fractional-load-status")).Text);
+        for (long scrollTop = 120; scrollTop <= 720; scrollTop += 120)
+        {
+            ScrollContainerWithWheelTo(js, container, (int)scrollTop);
+            Browser.Equal(scrollTop, () => GetScrollTop(js, container));
+        }
+
+        Browser.True(() => GetElementCount(container, ".placeholder") > 0
+            && GetElementCount(container, "[data-blazor-virtualize-loading]") > 0);
+
+        for (long scrollTop = 840; scrollTop <= 3000; scrollTop += 120)
+        {
+            ScrollContainerWithWheelTo(js, container, (int)scrollTop);
+            Browser.Equal(scrollTop, () => GetScrollTop(js, container));
+        }
+
+        Browser.True(() => GetElementCount(container, ".placeholder") > 0
+            && GetElementCount(container, ".item") == 0
+            && GetElementCount(container, "[data-blazor-virtualize-loading]") > 0);
+        Browser.Exists(By.Id("release-fractional-loads")).Click();
+        Browser.Equal("Running", () => Browser.Exists(By.Id("fractional-load-status")).Text);
+        Browser.Equal(0, () => GetElementCount(container, "[data-blazor-virtualize-loading]"));
+        WaitForRenderToSettle(container, js);
+    }
+
     [Theory]
     [InlineData(false)]
     [InlineData(true)]
