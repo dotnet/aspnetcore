@@ -603,10 +603,11 @@ public class Http3TlsTests : LoggedTest
     public async Task SniConfiguration_TwoHosts_OnlyAllowedHttp3HostNegotiatesHttp3()
     {
         var certPath = TestResources.GetCertPath("aspnetdevcert.pfx");
+        var port = GetFreeUdpPort();
 
         var config = new ConfigurationBuilder().AddInMemoryCollection(new[]
         {
-            new KeyValuePair<string, string>("Endpoints:end1:Url", "https://127.0.0.1:0"),
+            new KeyValuePair<string, string>("Endpoints:end1:Url", $"https://127.0.0.1:{port}"),
             new KeyValuePair<string, string>("Endpoints:end1:Protocols", "Http1AndHttp2AndHttp3"),
             new KeyValuePair<string, string>("Endpoints:end1:Certificate:Path", certPath),
             new KeyValuePair<string, string>("Endpoints:end1:Certificate:Password", "testPassword"),
@@ -628,8 +629,6 @@ public class Http3TlsTests : LoggedTest
 
         using var host = builder.Build();
         await host.StartAsync().DefaultTimeout();
-
-        var port = host.GetPort();
 
         using (var h3Client = CreateClient("h3host"))
         {
@@ -662,6 +661,13 @@ public class Http3TlsTests : LoggedTest
         }
 
         await host.StopAsync().DefaultTimeout();
+
+        static int GetFreeUdpPort()
+        {
+            using var socket = new System.Net.Sockets.Socket(System.Net.Sockets.AddressFamily.InterNetwork, System.Net.Sockets.SocketType.Dgram, System.Net.Sockets.ProtocolType.Udp);
+            socket.Bind(new IPEndPoint(IPAddress.Loopback, 0));
+            return ((IPEndPoint)socket.LocalEndPoint).Port;
+        }
 
         static HttpMessageInvoker CreateClient(string targetHost)
         {
