@@ -126,6 +126,7 @@ internal abstract partial class Http3Stream : HttpProtocol, IHttp3Stream, IHttpS
         _eagerRequestHeadersParsedLimit = ServerOptions.Limits.MaxRequestHeaderCount * 2;
         _isMethodConnect = false;
         _completionState = default;
+        _requestBodyStarted = false;
         _abortCompletedTcs = null;
         IsReceivingTrailerHeaders = false;
         StreamTimeoutTimestamp = 0;

@@ -326,7 +326,7 @@ public class Http3ConnectionTests : Http3TestBase
         var lifetime = Http3Api.MultiplexedConnectionContext.Features.Get<IConnectionLifetimeNotificationFeature>();
         lifetime.ConnectionClosedRequested.Register(() => completionSource.TrySetResult());
         Assert.False(lifetime.ConnectionClosedRequested.IsCancellationRequested);
-        
+
         await controlStream.SendGoAwayAsync(streamId: 0, false);
 
         await completionSource.Task.DefaultTimeout();
@@ -434,6 +434,32 @@ public class Http3ConnectionTests : Http3TestBase
         var streamContext2 = await MakeRequestAsync(1, headers, sendData: true, waitForServerDispose: true);
 
         Assert.Same(streamContext1, streamContext2);
+    }
+
+    [Fact]
+    public async Task StreamPool_RequestWithBodyThenBodylessRequest_BodylessRequestHasNoBody()
+    {
+        var headers = new[]
+        {
+            new KeyValuePair<string, string>(InternalHeaderNames.Method, "Custom"),
+            new KeyValuePair<string, string>(InternalHeaderNames.Path, "/"),
+            new KeyValuePair<string, string>(InternalHeaderNames.Scheme, "http"),
+            new KeyValuePair<string, string>(InternalHeaderNames.Authority, "localhost:80"),
+        };
+
+        var canHaveBodyValues = new List<bool>();
+
+        await Http3Api.InitializeConnectionAsync(context =>
+        {
+            canHaveBodyValues.Add(context.Features.GetRequiredFeature<IHttpRequestBodyDetectionFeature>().CanHaveBody);
+            return _echoApplication(context);
+        });
+
+        var streamContext1 = await MakeRequestAsync(0, headers, sendData: true, waitForServerDispose: true);
+        var streamContext2 = await MakeRequestAsync(1, headers, sendData: false, waitForServerDispose: true);
+
+        Assert.Same(streamContext1, streamContext2);
+        Assert.Equal(new[] { true, false }, canHaveBodyValues);
     }
 
     [Fact]
