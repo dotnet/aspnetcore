@@ -33,6 +33,7 @@
         <button id="load-list" @onclick="() => listLoaded = true">Load list</button>
         <button id="unload-list" @onclick="() => listLoaded = false">Unload list</button>
         <input id="scroll-target-index" type="number" @bind="scrollTargetIndex" style="width: 80px;" />
+        <input id="scroll-target-text" type="text" @bind="scrollTargetText" style="width: 120px;" />
         <button id="scroll-to-item" @onclick="ScrollToTarget">Scroll To Item</button>
     </div>
     <p id="status" style="margin: 0; font-size: 12px;">@statusMessage</p>
@@ -80,6 +81,7 @@
     private bool listLoaded;
     private Virtualize<DynamicItem> virtualizeRef;
     private int scrollTargetIndex = 100;
+    private string scrollTargetText = "abcdef";
     private string scrollStatus = "Idle";
     private static readonly IEqualityComparer<DynamicItem> _itemComparer =
         EqualityComparer<DynamicItem>.Create((a, b) => a.Index == b.Index, item => item.Index);

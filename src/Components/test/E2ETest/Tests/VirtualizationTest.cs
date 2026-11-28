@@ -5335,6 +5335,48 @@ public class VirtualizationTest : ServerTestBase<ToggleExecutionModeServerFixtur
         }, TimeSpan.FromSeconds(10),
             $"Window AnchorMode {anchorMode}: Home key should jump to the top");
     }
+
+    [Theory]
+    [InlineData("0", "End")]
+    [InlineData("1", "End")]
+    public void AnchorMode_WindowScroll_JumpKeyInInputDoesNotJump(string anchorMode, string key)
+    {
+        MountWindowScrollAnchorModeComponent(anchorMode);
+
+        var js = (IJavaScriptExecutor)Browser;
+
+        WindowScrollMidListAndWaitForRender(js);
+
+        var input = Browser.Exists(By.Id("scroll-target-text"));
+        input.Click();
+        var expectedPosition = key == "End" ? 6L : 0L;
+        js.ExecuteScript("arguments[0].setSelectionRange(arguments[1], arguments[1]);", input, 6L - expectedPosition);
+        var scrollYBefore = (long)js.ExecuteScript("return Math.round(window.scrollY)");
+        input.SendKeys(key == "End" ? Keys.End : Keys.Home);
+        Assert.Equal(expectedPosition, (long)js.ExecuteScript("return arguments[0].selectionStart;", input));
+        Assert.Equal(expectedPosition, (long)js.ExecuteScript("return arguments[0].selectionEnd;", input));
+
+        // Give an incorrectly started convergence time to move the viewport.
+        try
+        {
+            new WebDriverWait(Browser, TimeSpan.FromSeconds(2)).Until(_ =>
+            {
+                var scrollY = (long)js.ExecuteScript("return Math.round(window.scrollY)");
+                return Math.Abs(scrollY - scrollYBefore) > 2;
+            });
+
+            Assert.Fail($"Window AnchorMode {anchorMode}: {key} in a text input should not move the list");
+        }
+        catch (WebDriverTimeoutException)
+        {
+            // Expected: the list stays where it was.
+        }
+
+        var scrollYAfter = (long)js.ExecuteScript("return Math.round(window.scrollY)");
+        Assert.True(Math.Abs(scrollYAfter - scrollYBefore) <= 2,
+            $"Window AnchorMode {anchorMode}: {key} in a text input should not move the list (moved {scrollYAfter - scrollYBefore}px)");
+    }
+
     private static (string index, double relTop, long scrollTop) GetItemPositionInContainer(
         IJavaScriptExecutor js, IWebElement container, string itemSelector, string dataIndex = null)
     {
