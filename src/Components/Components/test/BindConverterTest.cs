@@ -167,7 +167,21 @@ public class BindConverterTest
         // Assert
         Assert.Equal(expected, actual);
     }
+    [Fact]
+    public void FormatValue_Array_Null()
+    {
+        string[] value = null;
+        var actual = BindConverter.FormatValue(value);
+        Assert.Null(actual);
+    }
 
+    [Fact]
+    public void FormatValue_Array_Null_Generic()
+    {
+        string[] value = null;
+        var actual = BindConverter.FormatValue<string[]>(value);
+        Assert.Null(actual);
+    }
     [Fact]
     public void FormatValue_DateTime_Format()
     {
@@ -547,5 +561,56 @@ public class BindConverterTest
 
             return base.ConvertTo(context, culture, value, destinationType);
         }
+    }
+
+    [Fact]
+    public void FormatValue_NullableDateTimeNull_Generic()
+    {
+        var actual = BindConverter.FormatValue<DateTime?>(null);
+
+        Assert.Equal(string.Empty, actual);
+    }
+
+    [Fact]
+    public void FormatValue_NullableDateTimeOffsetNull_Generic()
+    {
+        var actual = BindConverter.FormatValue<DateTimeOffset?>(null);
+
+        Assert.Equal(string.Empty, actual);
+    }
+
+    [Fact]
+    public void FormatValue_NullableDateOnlyNull_Generic()
+    {
+        var actual = BindConverter.FormatValue<DateOnly?>(null);
+
+        Assert.Equal(string.Empty, actual);
+    }
+
+    [Fact]
+    public void FormatValue_NullableTimeOnlyNull_Generic()
+    {
+        var actual = BindConverter.FormatValue<TimeOnly?>(null);
+
+        Assert.Equal(string.Empty, actual);
+    }
+
+    [Fact]
+    public void FormatValue_TypeConverter_Null()
+    {
+        var actual = BindConverter.FormatValue<Person>(null);
+
+        Assert.Equal("null", actual);
+    }
+
+    [Fact]
+    public void FormatValue_Array_Empty()
+    {
+        string[] value = new string[0];
+        string expected = "[]";
+
+        var actual = BindConverter.FormatValue(value);
+
+        Assert.Equal(expected, actual);
     }
 }
