@@ -159,6 +159,29 @@ public class CircuitHostTest
     }
 
     [Fact]
+    public async Task DisposeAsync_FaultsPendingJSInteropCalls()
+    {
+        // Arrange
+        var serviceScope = new Mock<IServiceScope>();
+        var remoteRenderer = GetRemoteRenderer();
+        var circuitHost = TestCircuitHost.Create(
+            serviceScope: new AsyncServiceScope(serviceScope.Object),
+            remoteRenderer: remoteRenderer);
+
+        circuitHost.JSRuntime.Initialize(circuitHost.Client);
+        var component = new PendingJSInteropComponent(circuitHost.JSRuntime);
+        Assert.False(component.PendingCall.IsCompleted);
+        circuitHost.Renderer.AssignRootComponentId(component);
+
+        // Act
+        await circuitHost.DisposeAsync();
+
+        // Assert
+        var exception = await Assert.ThrowsAsync<JSDisconnectedException>(async () => await component.PendingCall);
+        Assert.Contains("circuit has disconnected", exception.Message);
+    }
+
+    [Fact]
     public async Task InitializeAsync_InvokesHandlers()
     {
         // Arrange
@@ -1744,6 +1767,22 @@ public class CircuitHostTest
                 throw;
             }
         }
+    }
+
+    private class PendingJSInteropComponent : IComponent
+    {
+        public PendingJSInteropComponent(IJSRuntime jsRuntime)
+        {
+            PendingCall = jsRuntime.InvokeAsync<string>("neverCompletes", CancellationToken.None).AsTask();
+        }
+
+        public Task PendingCall { get; }
+
+        public void Attach(RenderHandle renderHandle)
+        {
+        }
+
+        public Task SetParametersAsync(ParameterView parameters) => Task.CompletedTask;
     }
 
     private class TestServerComponentDeserializer : IServerComponentDeserializer

@@ -1,7 +1,9 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Collections.Concurrent;
 using System.Diagnostics;
+using System.Reflection;
 using System.Text;
 using System.Text.Json;
 using Microsoft.JSInterop.Implementation;
@@ -452,6 +454,50 @@ public class JSRuntimeTest
         }
     }
 
+    [Fact]
+    public async Task FailPendingTasks_FaultsAllPendingCalls()
+    {
+        // Arrange
+        var runtime = new TestJSRuntime();
+        var first = runtime.InvokeAsync<string>("first call", Array.Empty<object>());
+        var second = runtime.InvokeAsync<string>("second call", Array.Empty<object>());
+        Assert.False(first.IsCompleted);
+        Assert.False(second.IsCompleted);
+
+        // Act
+        var exception = new JSDisconnectedException("Disconnected");
+        runtime.FailPendingTasks(exception);
+
+        // Assert
+        var firstException = await Assert.ThrowsAsync<JSDisconnectedException>(async () => await first);
+        var secondException = await Assert.ThrowsAsync<JSDisconnectedException>(async () => await second);
+        Assert.Same(exception, firstException);
+        Assert.Same(exception, secondException);
+    }
+
+    [Fact]
+    public async Task FailPendingTasks_DisposesCancellationRegistration()
+    {
+        // Arrange
+        var runtime = new TestJSRuntime();
+        using var cts = new CancellationTokenSource();
+        var call = runtime.InvokeAsync<string>("first call", cts.Token, Array.Empty<object>());
+
+        var field = typeof(JSRuntime).GetField("_cancellationRegistrations", BindingFlags.Instance | BindingFlags.NonPublic);
+        var registrations = (ConcurrentDictionary<long, CancellationTokenRegistration>)field!.GetValue(runtime)!;
+        Assert.Single(registrations);
+
+        // Act
+        var exception = new JSDisconnectedException("Disconnected");
+        runtime.FailPendingTasks(exception);
+
+        // Assert
+        var callException = await Assert.ThrowsAsync<JSDisconnectedException>(async () => await call);
+        Assert.Same(exception, callException);
+        Assert.Empty(registrations);
+        cts.Cancel();
+    }
+
     private class TestPoco
     {
         public int Id { get; set; }
@@ -461,6 +507,8 @@ public class JSRuntimeTest
 
     class TestJSRuntime : JSRuntime
     {
+        public new void FailPendingTasks(Exception exception) => base.FailPendingTasks(exception);
+
         public List<JSInvocationInfo> BeginInvokeCalls = [];
         public List<EndInvokeDotNetArgs> EndInvokeDotNetCalls = [];
 

@@ -1,1 +1,2 @@
 #nullable enable
+Microsoft.JSInterop.JSRuntime.FailPendingTasks(System.Exception! exception) -> void
