@@ -209,6 +209,74 @@ public class MiddlewareTests
         Assert.Equal("/example.com", response.Headers.Location.OriginalString);
     }
 
+    [Theory]
+    [InlineData("legacy/(.*)", "/$1", "legacy/:////example.com", "/:////example.com")]
+    [InlineData("legacy/(.*)", "/$1", "legacy/https:////example.com", "/https:////example.com")]
+    [InlineData("legacy/(.*)", "/$1?v=2", "legacy/:////example.com", "/:////example.com?v=2")]
+    [InlineData("legacy/(.*)", "/archive/$1", "legacy/:///admin", "/archive/:///admin")]
+    [InlineData("legacy/(.*)", "/archive/$1", "legacy/https:////example.com", "/archive/https:////example.com")]
+    [InlineData("legacy/(.*)", "/archive/$1", "legacy/https://aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa_b/path", "/archive/https://aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa_b/path")]
+    [InlineData("legacy/(.*)", "/search?url=$1", "legacy/https://example.com", "/search?url=https://example.com")]
+    [InlineData("legacy/(.*)", "$1", "legacy/https:////example.com", "/https:////example.com")]
+    [InlineData("(.*)", "https://example.com?a=$1", "1", "https://example.com/?a=1")]
+    public async Task CheckRedirect_ValidatesLeadingSchemeAndAuthority(string pattern, string replacement, string requestUrl, string expectedLocation)
+    {
+        var options = new RewriteOptions().AddRedirect(pattern, replacement, statusCode: StatusCodes.Status302Found);
+        using var host = new HostBuilder()
+            .ConfigureWebHost(webHostBuilder =>
+            {
+                webHostBuilder
+                .UseTestServer()
+                .Configure(app =>
+                {
+                    app.UseRewriter(options);
+                });
+            }).Build();
+
+        await host.StartAsync();
+
+        var server = host.GetTestServer();
+
+        var response = await server.CreateClient().GetAsync(requestUrl);
+
+        Assert.Equal(expectedLocation, response.Headers.Location.OriginalString);
+    }
+
+    [Theory]
+    [InlineData("legacy/(.*)", "/$1", "legacy//example.com", "http://localhost|/example.com")]
+    [InlineData("legacy/(.*)", "/$1", "legacy/%5Cexample.com", "http://localhost|/example.com")]
+    [InlineData("legacy/(.*)", "/archive/$1", "legacy/https://example.com/admin", "http://localhost|/archive/https://example.com/admin")]
+    [InlineData("legacy/(.*)", "?id=$1", "legacy/42", "http://localhost|/?id=42")]
+    public async Task CheckRewrite_ValidatesLeadingSchemeAndNormalizesRelativePath(string pattern, string replacement, string requestUrl, string expectedState)
+    {
+        var options = new RewriteOptions().AddRewrite(pattern, replacement, skipRemainingRules: true);
+        using var host = new HostBuilder()
+            .ConfigureWebHost(webHostBuilder =>
+            {
+                webHostBuilder
+                .UseTestServer()
+                .Configure(app =>
+                {
+                    app.UseRewriter(options);
+                    app.Run(context => context.Response.WriteAsync(
+                        context.Request.Scheme +
+                        "://" +
+                        context.Request.Host +
+                        "|" +
+                        context.Request.Path.Value +
+                        context.Request.QueryString));
+                });
+            }).Build();
+
+        await host.StartAsync();
+
+        var server = host.GetTestServer();
+
+        var response = await server.CreateClient().GetStringAsync(requestUrl);
+
+        Assert.Equal(expectedState, response);
+    }
+
     [Fact]
     public async Task RewriteRulesCanComeFromConfigureOptions()
     {

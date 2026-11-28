@@ -52,7 +52,7 @@ internal sealed class RewriteRule : IRule
                 result = "/";
             }
 
-            if (result.Contains(Uri.SchemeDelimiter, StringComparison.Ordinal))
+            if (UrlNormalizer.HasAbsoluteSchemeAndAuthority(result, out _))
             {
                 string scheme;
                 HostString host;
@@ -70,29 +70,14 @@ internal sealed class RewriteRule : IRule
                 var split = result.IndexOf('?');
                 if (split >= 0)
                 {
-                    var newPath = result.Substring(0, split);
-                    if (newPath[0] == '/')
-                    {
-                        request.Path = PathString.FromUriComponent(newPath);
-                    }
-                    else
-                    {
-                        request.Path = PathString.FromUriComponent('/' + newPath);
-                    }
+                    request.Path = UrlNormalizer.NormalizeRelativePath(result.Substring(0, split));
                     request.QueryString = request.QueryString.Add(
                         QueryString.FromUriComponent(
                             result.Substring(split)));
                 }
                 else
                 {
-                    if (result[0] == '/')
-                    {
-                        request.Path = PathString.FromUriComponent(result);
-                    }
-                    else
-                    {
-                        request.Path = PathString.FromUriComponent('/' + result);
-                    }
+                    request.Path = UrlNormalizer.NormalizeRelativePath(result);
                 }
             }
 
