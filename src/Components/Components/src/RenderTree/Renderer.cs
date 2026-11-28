@@ -55,6 +55,7 @@ public abstract partial class Renderer : IDisposable, IAsyncDisposable
     private List<Task>? _pendingTasks;
     private Task? _disposeTask;
     private bool _rendererIsDisposed;
+    private bool _disposingAsynchronously;
 
     private bool _hotReloadInitialized;
     private HotReloadRenderHandler? _hotReloadRenderHandler;
@@ -486,6 +487,11 @@ public abstract partial class Renderer : IDisposable, IAsyncDisposable
     public virtual Task DispatchEventAsync(ulong eventHandlerId, EventFieldInfo? fieldInfo, EventArgs eventArgs, bool waitForQuiescence)
     {
         Dispatcher.AssertAccess();
+
+        if (_rendererIsDisposed)
+        {
+            return Task.CompletedTask;
+        }
 
         if (waitForQuiescence)
         {
@@ -1281,6 +1287,7 @@ public abstract partial class Renderer : IDisposable, IAsyncDisposable
             return;
         }
 
+        var disposingAsynchronously = _disposingAsynchronously;
         lock (_lockObject)
         {
             _rendererIsDisposed = true;
@@ -1301,7 +1308,7 @@ public abstract partial class Renderer : IDisposable, IAsyncDisposable
 
             try
             {
-                var task = componentState.DisposeAsync();
+                var task = componentState.DisposeAsyncWithSubscriptionCleanup();
                 if (task.IsCompletedSuccessfully)
                 {
                     // If it's a IValueTaskSource backed ValueTask,
@@ -1323,18 +1330,33 @@ public abstract partial class Renderer : IDisposable, IAsyncDisposable
 
         _componentStateById.Clear(); // So we know they were all disposed
         _componentStateByComponent.Clear();
+        _eventBindings.Clear();
+        _eventHandlerIdReplacements.Clear();
         _batchBuilder.Dispose();
 
-        NotifyExceptions(exceptions);
-
-        if (asyncDisposables?.Count >= 1)
+        if (disposingAsynchronously && asyncDisposables?.Count >= 1)
         {
-            _disposeTask = HandleAsyncExceptions(asyncDisposables);
+            _disposeTask = HandleAsyncExceptions(asyncDisposables, exceptions);
+        }
+        else
+        {
+            try
+            {
+                NotifyExceptions(exceptions);
+            }
+            finally
+            {
+                if (asyncDisposables?.Count >= 1)
+                {
+                    // A throwing synchronous handler must not prevent observing asynchronous cleanup.
+                    _disposeTask = HandleAsyncExceptions(asyncDisposables, exceptions: null);
+                }
+            }
         }
 
-        async Task HandleAsyncExceptions(List<Task> tasks)
+        async Task HandleAsyncExceptions(List<Task> tasks, List<Exception> exceptions)
         {
-            List<Exception> asyncExceptions = null;
+            List<Exception> asyncExceptions = exceptions;
             foreach (var task in tasks)
             {
                 try
@@ -1411,7 +1433,19 @@ public abstract partial class Renderer : IDisposable, IAsyncDisposable
         }
         else
         {
-            await Dispatcher.InvokeAsync(Dispose);
+            await Dispatcher.InvokeAsync(() =>
+            {
+                var wasDisposingAsynchronously = _disposingAsynchronously;
+                _disposingAsynchronously = true;
+                try
+                {
+                    Dispose();
+                }
+                finally
+                {
+                    _disposingAsynchronously = wasDisposingAsynchronously;
+                }
+            });
 
             if (_disposeTask != null)
             {

@@ -29,11 +29,23 @@ internal sealed class IpcReceiver
         _onAttachMessage = onAttachMessage;
     }
 
-    public async Task OnMessageReceivedAsync(PageContext pageContext, string message)
+    public async Task OnMessageReceivedAsync(PageContext pageContext, string message, bool isDisposing = false)
     {
         // Ignore other messages as they may be unrelated to Blazor WebView
         if (IpcCommon.TryDeserializeIncoming(message, out var messageType, out var args))
         {
+            // Pending interop can be awaited by disposal; accept its completion data without starting new work.
+            if (isDisposing && messageType is not (IpcCommon.IncomingMessageType.EndInvokeJS or IpcCommon.IncomingMessageType.ReceiveByteArrayFromJS))
+            {
+                if (messageType == IpcCommon.IncomingMessageType.BeginInvokeDotNet && args[0].GetString() is { } callId)
+                {
+                    // A pending JS invocation may depend on this callback's promise settling.
+                    pageContext.JSRuntime.RejectInvocationDuringDisposal(callId);
+                }
+
+                return;
+            }
+
             if (messageType == IpcCommon.IncomingMessageType.AttachPage)
             {
                 await _onAttachMessage(args[0].GetString(), args[1].GetString());

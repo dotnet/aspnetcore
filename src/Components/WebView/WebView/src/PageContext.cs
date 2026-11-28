@@ -59,7 +59,24 @@ internal sealed class PageContext : IAsyncDisposable
         // This ensures JSObjectReference.DisposeAsync() doesn't throw when the page navigates away.
         JSRuntime.MarkAsDisconnected();
 
-        await Renderer.DisposeAsync();
+        try
+        {
+            await Renderer.DisposeAsync();
+        }
+        catch (Exception rendererException)
+        {
+            try
+            {
+                await _serviceScope.DisposeAsync();
+            }
+            catch (Exception scopeException)
+            {
+                throw new AggregateException(rendererException, scopeException);
+            }
+
+            throw;
+        }
+
         await _serviceScope.DisposeAsync();
     }
 }

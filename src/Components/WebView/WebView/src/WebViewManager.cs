@@ -153,12 +153,17 @@ public abstract class WebViewManager : IAsyncDisposable
 
         _ = _dispatcher.InvokeAsync(async () =>
         {
+            if (_disposed && _currentPageContext is null)
+            {
+                return;
+            }
+
             // TODO: Verify this produces the correct exception-surfacing behaviors.
             // For example, JS interop exceptions should flow back into JS, whereas
             // renderer exceptions should be fatal.
             try
             {
-                await _ipcReceiver.OnMessageReceivedAsync(_currentPageContext, message);
+                await _ipcReceiver.OnMessageReceivedAsync(_currentPageContext, message, isDisposing: _disposed);
             }
             catch (Exception ex)
             {
@@ -188,14 +193,12 @@ public abstract class WebViewManager : IAsyncDisposable
 
         return await capturedCurrentPageContext.Renderer.Dispatcher.InvokeAsync(() =>
         {
-            if (capturedCurrentPageContext != _currentPageContext)
+            if (_disposed || capturedCurrentPageContext != _currentPageContext)
             {
-                // If the captured context doesn't match the current context, that means that there was something like
-                // a navigation event that caused the original page to be detached and a new one attached. Thus, we
-                // cancel out of the operation and return failure.
+                // Shutdown or navigation may have made the captured page unavailable before this callback ran.
                 return false;
             }
-            workItem(_currentPageContext.ServiceProvider);
+            workItem(capturedCurrentPageContext.ServiceProvider);
             return true;
         });
     }
@@ -215,12 +218,23 @@ public abstract class WebViewManager : IAsyncDisposable
 
     internal async Task AttachToPageAsync(string baseUrl, string startUrl)
     {
+        if (_disposed)
+        {
+            return;
+        }
+
         // If there was some previous attached page, dispose all its resources. We're not eagerly disposing
         // page contexts when the user navigates away, because we don't get notified about that. We could
         // change this if any important reason emerges.
         if (_currentPageContext != null)
         {
             await _currentPageContext.DisposeAsync();
+        }
+
+        // Disposal may have started while the previous page's scope was being disposed.
+        if (_disposed)
+        {
+            return;
         }
 
         var serviceScope = _provider.CreateAsyncScope();
@@ -257,15 +271,29 @@ public abstract class WebViewManager : IAsyncDisposable
     /// </summary>
     protected virtual async ValueTask DisposeAsyncCore()
     {
-        if (!_disposed)
+        await _dispatcher.InvokeAsync(async () =>
         {
-            _disposed = true;
-
-            if (_currentPageContext != null)
+            if (!_disposed)
             {
-                await _currentPageContext.DisposeAsync();
+                _disposed = true;
+
+                if (_currentPageContext != null)
+                {
+                    try
+                    {
+                        await _currentPageContext.DisposeAsync();
+                    }
+                    finally
+                    {
+                        // Custom dispatchers may resume async work outside their dispatcher context.
+                        await _dispatcher.InvokeAsync(() =>
+                        {
+                            _currentPageContext = null;
+                        });
+                    }
+                }
             }
-        }
+        });
     }
 
     /// <inheritdoc/>
