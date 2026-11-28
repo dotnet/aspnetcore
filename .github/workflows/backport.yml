@@ -35,6 +35,11 @@ jobs:
 
         {Justification}
 
+        ## Customer Reported?
+
+        - [ ] Yes
+        - [ ] No
+
         ## Regression?
 
         - [ ] Yes
