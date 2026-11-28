@@ -14,6 +14,9 @@ public class Program
             options.SerializerOptions.TypeInfoResolverChain.Insert(0, AppJsonSerializerContext.Default);
         });
 
+        // Serialize validation failures as RFC 7807 problem details when AddValidation is used.
+        builder.Services.AddProblemDetails();
+
 #if (EnableOpenAPI)
         // Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
         builder.Services.AddOpenApi();
