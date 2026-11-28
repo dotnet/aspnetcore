@@ -160,19 +160,52 @@ internal sealed class HttpsConfigurationService : IHttpsConfigurationService
             features.Set(new TlsConnectionCallbackOptions
             {
                 ApplicationProtocols = new List<SslApplicationProtocol> { SslApplicationProtocol.Http3 },
-                OnConnection = (context, cancellationToken) =>
+                OnConnection = async (context, cancellationToken) =>
                 {
-                    return listenOptions.HttpsCallbackOptions.OnConnection(new TlsHandshakeCallbackContext
+                    var sslOptions = await listenOptions.HttpsCallbackOptions.OnConnection(new TlsHandshakeCallbackContext
                     {
                         ClientHelloInfo = context.ClientHelloInfo,
                         CancellationToken = cancellationToken,
                         State = context.State,
                         Connection = new ConnectionContextAdapter(context.Connection),
-                    });
+                    }).ConfigureAwait(false);
+
+                    var allowedProtocols = context.Connection.Features.Get<HttpProtocolsFeature>()?.HttpProtocols
+                        ?? listenOptions.Protocols;
+
+                    return EnsureHttp3Alpn(sslOptions, allowedProtocols);
                 },
                 OnConnectionState = listenOptions.HttpsCallbackOptions.OnConnectionState,
             });
         }
+    }
+
+    /// <summary>
+    /// Options returned by a TLS callback may carry a TCP ALPN list (for example, the SNI options contain h2/http1.1).
+    /// QUIC only negotiates h3, so such a list would make every HTTP/3 handshake fail with no_application_protocol.
+    /// </summary>
+    private static SslServerAuthenticationOptions EnsureHttp3Alpn(SslServerAuthenticationOptions sslOptions, HttpProtocols allowedProtocols)
+    {
+        if ((allowedProtocols & HttpProtocols.Http3) == 0)
+        {
+            if (sslOptions.ApplicationProtocols is { } protocols && !protocols.Contains(SslApplicationProtocol.Http3))
+            {
+                return sslOptions;
+            }
+
+            var denied = SniOptionsSelector.CloneSslOptions(sslOptions);
+            denied.ApplicationProtocols = [SslApplicationProtocol.Http11];
+            return denied;
+        }
+
+        if (sslOptions.ApplicationProtocols is null || sslOptions.ApplicationProtocols.Contains(SslApplicationProtocol.Http3))
+        {
+            return sslOptions;
+        }
+
+        var clone = SniOptionsSelector.CloneSslOptions(sslOptions);
+        clone.ApplicationProtocols = [SslApplicationProtocol.Http3];
+        return clone;
     }
 
     /// <summary>

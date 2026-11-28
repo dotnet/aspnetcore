@@ -1,6 +1,7 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Net;
 using System.Net.Security;
 using System.Security.Authentication;
 using System.Security.Cryptography.X509Certificates;
@@ -11,6 +12,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.Internal;
 using Microsoft.AspNetCore.Server.Kestrel.Core;
+using Microsoft.AspNetCore.Server.Kestrel.Core.Internal;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure;
 using Microsoft.AspNetCore.Server.Kestrel.Https;
 using Microsoft.AspNetCore.Server.Kestrel.Https.Internal;
@@ -20,6 +22,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Internal;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging.Abstractions;
 using Moq;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests;
@@ -460,7 +463,7 @@ public class HttpsTests : LoggedTest
         var sslOptions = bindFeatures.Get<TlsConnectionCallbackOptions>();
         Assert.NotNull(sslOptions);
 
-        var sslServerAuthenticationOptions = await sslOptions.OnConnection(new TlsConnectionCallbackContext(), CancellationToken.None);
+        var sslServerAuthenticationOptions = await sslOptions.OnConnection(new TlsConnectionCallbackContext { Connection = new DefaultConnectionContext() }, CancellationToken.None);
         Assert.Equal(_x509Certificate2, sslServerAuthenticationOptions.ServerCertificate);
     }
 
@@ -504,7 +507,7 @@ public class HttpsTests : LoggedTest
         var tlsOptions = bindFeatures.Get<TlsConnectionCallbackOptions>();
         Assert.NotNull(tlsOptions);
 
-        var sslServerAuthenticationOptions = await tlsOptions.OnConnection(new TlsConnectionCallbackContext(), CancellationToken.None);
+        var sslServerAuthenticationOptions = await tlsOptions.OnConnection(new TlsConnectionCallbackContext { Connection = new DefaultConnectionContext() }, CancellationToken.None);
         Assert.Equal(_x509Certificate2, sslServerAuthenticationOptions.ServerCertificate);
     }
 
@@ -671,6 +674,192 @@ public class HttpsTests : LoggedTest
 
         Assert.NotNull(tlsOptions.OnConnection);
         Assert.Equal(testState, tlsOptions.OnConnectionState);
+    }
+
+    [Fact]
+    public async Task Http3_TlsHandshakeCallbackOptions_TcpApplicationProtocols_ReplacedWithHttp3()
+    {
+        var callbackOptions = new SslServerAuthenticationOptions
+        {
+            ServerCertificate = _x509Certificate2,
+            ApplicationProtocols = new List<SslApplicationProtocol> { SslApplicationProtocol.Http2, SslApplicationProtocol.Http11 },
+        };
+
+        var tlsOptions = await BindHttp3WithTlsCallbackAsync(context => ValueTask.FromResult(callbackOptions));
+
+        var result = await tlsOptions.OnConnection(new TlsConnectionCallbackContext { Connection = new DefaultConnectionContext() }, CancellationToken.None);
+
+        Assert.Collection(result.ApplicationProtocols, p => Assert.Equal(SslApplicationProtocol.Http3, p));
+
+        Assert.NotSame(callbackOptions, result);
+        Assert.Collection(callbackOptions.ApplicationProtocols,
+            p => Assert.Equal(SslApplicationProtocol.Http2, p),
+            p => Assert.Equal(SslApplicationProtocol.Http11, p));
+    }
+
+    [Fact]
+    public async Task Http3_TlsHandshakeCallbackOptions_Http3NotAllowedByFeature_Unchanged()
+    {
+        var callbackOptions = new SslServerAuthenticationOptions
+        {
+            ServerCertificate = _x509Certificate2,
+            ApplicationProtocols = new List<SslApplicationProtocol> { SslApplicationProtocol.Http11 },
+        };
+
+        var tlsOptions = await BindHttp3WithTlsCallbackAsync(context =>
+        {
+            context.Connection.Features.Set<HttpProtocolsFeature>(
+                new HttpProtocolsFeature(HttpProtocols.Http1));
+
+            return ValueTask.FromResult(callbackOptions);
+        });
+
+        var result = await tlsOptions.OnConnection(new TlsConnectionCallbackContext { Connection = new DefaultConnectionContext() }, CancellationToken.None);
+
+        Assert.Same(callbackOptions, result);
+        Assert.Collection(result.ApplicationProtocols,
+            p => Assert.Equal(SslApplicationProtocol.Http11, p));
+    }
+
+    [Fact]
+    public async Task Http3_TlsHandshakeCallbackOptions_Http3NotAllowedByFeature_NoApplicationProtocols_Http3Denied()
+    {
+        var callbackOptions = new SslServerAuthenticationOptions { ServerCertificate = _x509Certificate2 };
+
+        var tlsOptions = await BindHttp3WithTlsCallbackAsync(context =>
+        {
+            context.Connection.Features.Set<HttpProtocolsFeature>(
+                new HttpProtocolsFeature(HttpProtocols.Http1));
+
+            return ValueTask.FromResult(callbackOptions);
+        });
+
+        var result = await tlsOptions.OnConnection(new TlsConnectionCallbackContext { Connection = new DefaultConnectionContext() }, CancellationToken.None);
+
+        Assert.NotSame(callbackOptions, result);
+        Assert.NotNull(result.ApplicationProtocols);
+        Assert.DoesNotContain(SslApplicationProtocol.Http3, result.ApplicationProtocols);
+        Assert.Null(callbackOptions.ApplicationProtocols);
+    }
+
+    [Fact]
+    public async Task PopulateMultiplexedTransportFeatures_SniProtocols_OnlyEnablesHttp3WhenAllowed()
+    {
+        var features = new FeatureCollection();
+        var listenOptions = new ListenOptions(new IPEndPoint(IPAddress.Loopback, 0))
+        {
+            Protocols = HttpProtocols.Http1AndHttp2AndHttp3,
+            HttpsCallbackOptions = new TlsHandshakeCallbackOptions
+            {
+                OnConnection = context =>
+                {
+                    var host = context.ClientHelloInfo.ServerName;
+
+                    if (string.Equals(host, "h3.example.com", StringComparison.OrdinalIgnoreCase))
+                    {
+                        context.Connection.Features.Set<HttpProtocolsFeature>(
+                            new HttpProtocolsFeature(HttpProtocols.Http1AndHttp2AndHttp3));
+
+                        return ValueTask.FromResult(new SslServerAuthenticationOptions
+                        {
+                            ApplicationProtocols = [SslApplicationProtocol.Http2]
+                        });
+                    }
+
+                    if (string.Equals(host, "legacy.example.org", StringComparison.OrdinalIgnoreCase))
+                    {
+                        context.Connection.Features.Set<HttpProtocolsFeature>(
+                            new HttpProtocolsFeature(HttpProtocols.Http1));
+
+                        return ValueTask.FromResult(new SslServerAuthenticationOptions
+                        {
+                            ApplicationProtocols = [SslApplicationProtocol.Http11]
+                        });
+                    }
+
+                    throw new InvalidOperationException($"Unexpected SNI host: {host}");
+                }
+            }
+        };
+
+        HttpsConfigurationService.PopulateMultiplexedTransportFeaturesWorker(
+            features,
+            listenOptions,
+            NullLogger<HttpsConnectionMiddleware>.Instance);
+
+        var tlsCallback = features.Get<TlsConnectionCallbackOptions>();
+        Assert.NotNull(tlsCallback);
+
+        var h3Options = await tlsCallback.OnConnection(new TlsConnectionCallbackContext
+        {
+            ClientHelloInfo = new SslClientHelloInfo("h3.example.com", SslProtocols.None),
+            Connection = new DefaultConnectionContext(),
+        }, CancellationToken.None);
+
+        Assert.NotNull(h3Options.ApplicationProtocols);
+        Assert.Collection(h3Options.ApplicationProtocols,
+            protocol => Assert.Equal(SslApplicationProtocol.Http3, protocol));
+
+        var legacyConnection = new DefaultConnectionContext();
+        var legacyOptions = await tlsCallback.OnConnection(new TlsConnectionCallbackContext
+        {
+            ClientHelloInfo = new SslClientHelloInfo("legacy.example.org", SslProtocols.None),
+            Connection = legacyConnection,
+        }, CancellationToken.None);
+
+        Assert.NotNull(legacyOptions.ApplicationProtocols);
+        Assert.Equal([SslApplicationProtocol.Http11], legacyOptions.ApplicationProtocols);
+    }
+
+    [Fact]
+    public async Task Http3_TlsHandshakeCallbackOptions_NoApplicationProtocols_Unchanged()
+    {
+        var callbackOptions = new SslServerAuthenticationOptions { ServerCertificate = _x509Certificate2 };
+
+        var tlsOptions = await BindHttp3WithTlsCallbackAsync(context => ValueTask.FromResult(callbackOptions));
+
+        var result = await tlsOptions.OnConnection(new TlsConnectionCallbackContext { Connection = new DefaultConnectionContext() }, CancellationToken.None);
+
+        Assert.Same(callbackOptions, result);
+        Assert.Null(result.ApplicationProtocols);
+    }
+
+    private async Task<TlsConnectionCallbackOptions> BindHttp3WithTlsCallbackAsync(
+        Func<TlsHandshakeCallbackContext, ValueTask<SslServerAuthenticationOptions>> onConnection)
+    {
+        var serverOptions = CreateServerOptions();
+        serverOptions.TestOverrideDefaultCertificate = _x509Certificate2;
+
+        IFeatureCollection bindFeatures = null;
+        var multiplexedConnectionListenerFactory = new MockMultiplexedConnectionListenerFactory();
+        multiplexedConnectionListenerFactory.OnBindAsync = (ep, features) =>
+        {
+            bindFeatures = features;
+        };
+
+        var testContext = new TestServiceContext(LoggerFactory);
+        testContext.ServerOptions = serverOptions;
+        await using (var server = new TestServer(context => Task.CompletedTask,
+            testContext,
+            serverOptions =>
+            {
+                serverOptions.ListenLocalhost(5001, listenOptions =>
+                {
+                    listenOptions.Protocols = HttpProtocols.Http3;
+                    listenOptions.UseHttps(new TlsHandshakeCallbackOptions { OnConnection = onConnection });
+                });
+            },
+            services =>
+            {
+                services.AddSingleton<IMultiplexedConnectionListenerFactory>(multiplexedConnectionListenerFactory);
+            }))
+        {
+        }
+
+        Assert.NotNull(bindFeatures);
+        var tlsOptions = bindFeatures.Get<TlsConnectionCallbackOptions>();
+        Assert.NotNull(tlsOptions);
+        return tlsOptions;
     }
 
     [Fact]

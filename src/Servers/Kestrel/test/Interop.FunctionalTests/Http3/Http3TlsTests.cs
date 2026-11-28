@@ -335,6 +335,47 @@ public class Http3TlsTests : LoggedTest
         await host.StopAsync().DefaultTimeout();
     }
 
+    [ConditionalFact]
+    [MsQuicSupported]
+    public async Task TlsHandshakeCallbackOptions_TcpApplicationProtocols_StillNegotiatesHttp3()
+    {
+        var builder = CreateHostBuilder(async context =>
+        {
+            await context.Response.WriteAsync("Hello World");
+        }, configureKestrel: kestrelOptions =>
+        {
+            kestrelOptions.ListenAnyIP(0, listenOptions =>
+            {
+                listenOptions.Protocols = HttpProtocols.Http3;
+                var sslOptions = new SslServerAuthenticationOptions
+                {
+                    ServerCertificate = TestResources.GetTestCertificate(),
+                    ApplicationProtocols = new List<SslApplicationProtocol> { SslApplicationProtocol.Http2, SslApplicationProtocol.Http11 }
+                };
+                listenOptions.UseHttps(new TlsHandshakeCallbackOptions
+                {
+                    OnConnection = context => ValueTask.FromResult(sslOptions)
+                });
+            });
+        });
+
+        using var host = builder.Build();
+        using var client = HttpHelpers.CreateClient();
+
+        await host.StartAsync().DefaultTimeout();
+
+        var request = new HttpRequestMessage(HttpMethod.Get, $"https://127.0.0.1:{host.GetPort()}/");
+        request.Version = HttpVersion.Version30;
+        request.VersionPolicy = HttpVersionPolicy.RequestVersionExact;
+
+        var response = await client.SendAsync(request, CancellationToken.None).DefaultTimeout();
+        response.EnsureSuccessStatusCode();
+        Assert.Equal(HttpVersion.Version30, response.Version);
+        Assert.Equal("Hello World", await response.Content.ReadAsStringAsync());
+
+        await host.StopAsync().DefaultTimeout();
+    }
+
     [ConditionalTheory]
     [MsQuicSupported]
     [InlineData(true, true, true)]
@@ -506,6 +547,140 @@ public class Http3TlsTests : LoggedTest
         Assert.True(ranCertificateValidation);
 
         await host.StopAsync().DefaultTimeout();
+    }
+
+    [ConditionalFact]
+    [MsQuicSupported]
+    public async Task SniConfiguration_NegotiatesHttp3()
+    {
+        var certPath = TestResources.GetCertPath("aspnetdevcert.pfx");
+
+        var config = new ConfigurationBuilder().AddInMemoryCollection(new[]
+        {
+            new KeyValuePair<string, string>("Endpoints:end1:Url", "https://127.0.0.1:0"),
+            new KeyValuePair<string, string>("Endpoints:end1:Protocols", "Http3"),
+            new KeyValuePair<string, string>("Endpoints:end1:Certificate:Path", certPath),
+            new KeyValuePair<string, string>("Endpoints:end1:Certificate:Password", "testPassword"),
+            new KeyValuePair<string, string>("Endpoints:end1:Sni:testhost:Protocols", "Http3"),
+            new KeyValuePair<string, string>("Endpoints:end1:Sni:testhost:Certificate:Path", certPath),
+            new KeyValuePair<string, string>("Endpoints:end1:Sni:testhost:Certificate:Password", "testPassword"),
+        }).Build();
+
+        var builder = CreateHostBuilder(async context =>
+        {
+            await context.Response.WriteAsync("Hello World");
+        }, configureKestrel: kestrelOptions =>
+        {
+            kestrelOptions.Configure(config);
+        });
+
+        using var host = builder.Build();
+        await host.StartAsync().DefaultTimeout();
+
+        var request = new HttpRequestMessage(HttpMethod.Get, $"https://127.0.0.1:{host.GetPort()}/");
+        request.Version = HttpVersion.Version30;
+        request.VersionPolicy = HttpVersionPolicy.RequestVersionExact;
+        request.Headers.Host = "testhost";
+
+        var httpHandler = new SocketsHttpHandler();
+        httpHandler.SslOptions = new SslClientAuthenticationOptions
+        {
+            RemoteCertificateValidationCallback = (_, _, _, _) => true,
+            TargetHost = "testhost",
+        };
+        using var client = new HttpMessageInvoker(httpHandler);
+
+        var response = await client.SendAsync(request, CancellationToken.None).DefaultTimeout();
+        response.EnsureSuccessStatusCode();
+        Assert.Equal(HttpVersion.Version30, response.Version);
+        Assert.Equal("Hello World", await response.Content.ReadAsStringAsync());
+
+        await host.StopAsync().DefaultTimeout();
+    }
+
+    [ConditionalFact]
+    [MsQuicSupported]
+    public async Task SniConfiguration_TwoHosts_OnlyAllowedHttp3HostNegotiatesHttp3()
+    {
+        var certPath = TestResources.GetCertPath("aspnetdevcert.pfx");
+        var port = GetFreeUdpPort();
+
+        var config = new ConfigurationBuilder().AddInMemoryCollection(new[]
+        {
+            new KeyValuePair<string, string>("Endpoints:end1:Url", $"https://127.0.0.1:{port}"),
+            new KeyValuePair<string, string>("Endpoints:end1:Protocols", "Http1AndHttp2AndHttp3"),
+            new KeyValuePair<string, string>("Endpoints:end1:Certificate:Path", certPath),
+            new KeyValuePair<string, string>("Endpoints:end1:Certificate:Password", "testPassword"),
+            new KeyValuePair<string, string>("Endpoints:end1:Sni:h3host:Protocols", "Http3"),
+            new KeyValuePair<string, string>("Endpoints:end1:Sni:h3host:Certificate:Path", certPath),
+            new KeyValuePair<string, string>("Endpoints:end1:Sni:h3host:Certificate:Password", "testPassword"),
+            new KeyValuePair<string, string>("Endpoints:end1:Sni:http1host:Protocols", "Http1"),
+            new KeyValuePair<string, string>("Endpoints:end1:Sni:http1host:Certificate:Path", certPath),
+            new KeyValuePair<string, string>("Endpoints:end1:Sni:http1host:Certificate:Password", "testPassword"),
+        }).Build();
+
+        var builder = CreateHostBuilder(async context =>
+        {
+            await context.Response.WriteAsync($"Hello from {context.Request.Host.Host}");
+        }, configureKestrel: kestrelOptions =>
+        {
+            kestrelOptions.Configure(config);
+        });
+
+        using var host = builder.Build();
+        await host.StartAsync().DefaultTimeout();
+
+        using (var h3Client = CreateClient("h3host"))
+        {
+            var request = new HttpRequestMessage(HttpMethod.Get, $"https://127.0.0.1:{port}/")
+            {
+                Version = HttpVersion.Version30,
+                VersionPolicy = HttpVersionPolicy.RequestVersionExact,
+                Headers = { Host = "h3host" },
+            };
+
+            var response = await h3Client.SendAsync(request, CancellationToken.None).DefaultTimeout();
+            response.EnsureSuccessStatusCode();
+            Assert.Equal(HttpVersion.Version30, response.Version);
+            Assert.Equal("Hello from h3host", await response.Content.ReadAsStringAsync());
+        }
+
+        using (var http1Client = CreateClient("http1host"))
+        {
+            var request = new HttpRequestMessage(HttpMethod.Get, $"https://127.0.0.1:{port}/")
+            {
+                Version = HttpVersion.Version30,
+                VersionPolicy = HttpVersionPolicy.RequestVersionExact,
+                Headers = { Host = "http1host" },
+            };
+
+            await Assert.ThrowsAnyAsync<HttpRequestException>(async () =>
+            {
+                await http1Client.SendAsync(request, CancellationToken.None).DefaultTimeout();
+            });
+        }
+
+        await host.StopAsync().DefaultTimeout();
+
+        static int GetFreeUdpPort()
+        {
+            using var socket = new System.Net.Sockets.Socket(System.Net.Sockets.AddressFamily.InterNetwork, System.Net.Sockets.SocketType.Dgram, System.Net.Sockets.ProtocolType.Udp);
+            socket.Bind(new IPEndPoint(IPAddress.Loopback, 0));
+            return ((IPEndPoint)socket.LocalEndPoint).Port;
+        }
+
+        static HttpMessageInvoker CreateClient(string targetHost)
+        {
+            var handler = new SocketsHttpHandler
+            {
+                SslOptions = new SslClientAuthenticationOptions
+                {
+                    RemoteCertificateValidationCallback = (_, _, _, _) => true,
+                    TargetHost = targetHost,
+                },
+            };
+            return new HttpMessageInvoker(handler);
+        }
     }
 
     ///<remarks>
