@@ -8,11 +8,13 @@ using System.Reflection;
 using System.Runtime.ExceptionServices;
 using Microsoft.AspNetCore.Components.CompilerServices;
 using Microsoft.AspNetCore.Components.HotReload;
+using Microsoft.AspNetCore.Components.Infrastructure;
 using Microsoft.AspNetCore.Components.Rendering;
 using Microsoft.AspNetCore.Components.RenderTree;
 using Microsoft.AspNetCore.Components.Test.Helpers;
 using Microsoft.AspNetCore.InternalTesting;
 using Microsoft.DotNet.RemoteExecutor;
+using Microsoft.Extensions.Diagnostics.Metrics.Testing;
 using Microsoft.Extensions.Logging.Abstractions;
 
 namespace Microsoft.AspNetCore.Components.Test;
@@ -1429,6 +1431,116 @@ public class RendererTest
         Assert.NotNull(arg);
         Assert.Equal(TaskStatus.RanToCompletion, task.Status);
         await task; // Does not throw
+    }
+
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task DispatchEventAsync_NullDelegate_WithTracing(bool listenToActivities)
+    {
+        var activities = new List<Activity>();
+        using var listener = new ActivityListener
+        {
+            ShouldListenTo = source => listenToActivities && source.Name == ComponentsActivitySource.Name,
+            Sample = (ref ActivityCreationOptions<ActivityContext> options) => ActivitySamplingResult.AllData,
+            ActivityStopped = activity =>
+            {
+                if (Equals(activity.GetTagItem("aspnetcore.components.type"), typeof(NullDelegateEventComponent).FullName))
+                {
+                    activities.Add(activity);
+                }
+            }
+        };
+        ActivitySource.AddActivityListener(listener);
+        var activitySource = new ComponentsActivitySource();
+        activitySource.Init(new ComponentsActivityLinkStore(null));
+        var services = new TestServiceProvider();
+        services.AddService(activitySource);
+        using var renderer = new TestRenderer(services);
+        var component = new NullDelegateEventComponent();
+        var componentId = renderer.AssignRootComponentId(component);
+        await renderer.RenderRootComponentAsync(componentId);
+        var eventHandlerId = renderer.Batches[0].ReferenceFrames
+            .Single(frame => frame.FrameType == RenderTreeFrameType.Attribute)
+            .AttributeEventHandlerId;
+        Assert.NotEqual(0UL, eventHandlerId);
+
+        await renderer.DispatchEventAsync(eventHandlerId, new EventArgs());
+
+        Assert.Equal(2, component.RenderCount);
+        Assert.Empty(renderer.HandledExceptions);
+        if (listenToActivities)
+        {
+            var activity = Assert.Single(activities);
+            Assert.Equal(ComponentsActivitySource.OnEventName, activity.OperationName);
+            Assert.Equal("onclick", activity.GetTagItem("aspnetcore.components.attribute.name"));
+            Assert.Null(activity.GetTagItem("code.function.name"));
+            Assert.Null(activity.GetTagItem("error.type"));
+            Assert.NotEqual(ActivityStatusCode.Error, activity.Status);
+        }
+        else
+        {
+            Assert.Empty(activities);
+        }
+    }
+
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task DispatchEventAsync_NullDelegate_WithMetrics(bool receiverThrows)
+    {
+        using var meterFactory = new TestMeterFactory();
+        using var metrics = new ComponentsMetrics(meterFactory);
+        using var collector = new MetricCollector<double>(meterFactory,
+            ComponentsMetrics.MeterName, "aspnetcore.components.handle_event.duration");
+        Assert.True(metrics.IsEventEnabled);
+        var services = new TestServiceProvider();
+        services.AddService(metrics);
+        using var renderer = new TestRenderer(services) { ShouldHandleExceptions = true };
+        var exception = new InvalidOperationException("Receiver failed.");
+        var eventCount = 0;
+        var component = new OuterEventComponent
+        {
+            OnEvent = () =>
+            {
+                eventCount++;
+                if (receiverThrows)
+                {
+                    throw exception;
+                }
+            }
+        };
+        component.RenderFragment = builder =>
+        {
+            builder.OpenElement(0, "button");
+            builder.AddAttribute(1, "onclick", EventCallback.Factory.Create<EventArgs>(component, (Action<EventArgs>)null));
+            builder.CloseElement();
+        };
+        renderer.AssignRootComponentId(component);
+        await component.TriggerRenderAsync();
+        var eventHandlerId = renderer.Batches[0].ReferenceFrames
+            .Single(frame => frame.FrameType == RenderTreeFrameType.Attribute)
+            .AttributeEventHandlerId;
+        Assert.NotEqual(0UL, eventHandlerId);
+
+        await renderer.DispatchEventAsync(eventHandlerId, new EventArgs());
+
+        Assert.Equal(1, eventCount);
+        var measurement = Assert.Single(collector.GetMeasurementSnapshot());
+        Assert.True(measurement.Value >= 0);
+        Assert.Equal(typeof(OuterEventComponent).FullName, Assert.Contains("aspnetcore.components.type", measurement.Tags));
+        Assert.Equal("onclick", Assert.Contains("aspnetcore.components.attribute.name", measurement.Tags));
+        Assert.DoesNotContain("code.function.name", measurement.Tags);
+        if (receiverThrows)
+        {
+            Assert.Same(exception, Assert.Single(renderer.HandledExceptions));
+            Assert.Equal(typeof(InvalidOperationException).FullName, Assert.Contains("error.type", measurement.Tags));
+        }
+        else
+        {
+            Assert.Empty(renderer.HandledExceptions);
+            Assert.DoesNotContain("error.type", measurement.Tags);
+        }
     }
 
     [Fact]
@@ -5844,6 +5956,19 @@ public class RendererTest
                 builder.AddContent(1, n);
                 builder.CloseElement();
             }
+        }
+    }
+
+    private class NullDelegateEventComponent : ComponentBase
+    {
+        public int RenderCount { get; private set; }
+
+        protected override void BuildRenderTree(RenderTreeBuilder builder)
+        {
+            RenderCount++;
+            builder.OpenElement(0, "button");
+            builder.AddAttribute(1, "onclick", EventCallback.Factory.Create<EventArgs>(this, (Action<EventArgs>)null));
+            builder.CloseElement();
         }
     }
 
