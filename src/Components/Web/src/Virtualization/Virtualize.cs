@@ -48,6 +48,8 @@ public sealed class Virtualize<TItem> : ComponentBase, IVirtualizeJsCallbacks, I
 
     private IEnumerable<TItem>? _loadedItems;
 
+    private int _loadedItemCount;
+
     private TItem? _previousFirstLoadedItem;
 
     private int _previousFirstLoadedItemIndex = -1;
@@ -625,6 +627,13 @@ public sealed class Virtualize<TItem> : ComponentBase, IVirtualizeJsCallbacks, I
             builder.CloseRegion();
         }
 
+        // Avoid enumerating lazy provider results just to count items outside the rendered window.
+        _loadedItemCount = _loadedItemsStartIndex == _itemsBefore
+            ? _loadedItems is not null && _loadedItems.TryGetNonEnumeratedCount(out var loadedItemCount)
+                ? loadedItemCount
+                : _lastRenderedItemCount
+            : 0;
+
         _lastRenderedPlaceholderCount = Math.Max(0, lastItemIndex - _itemsBefore - _lastRenderedItemCount);
 
         builder.OpenRegion(6);
@@ -977,10 +986,12 @@ public sealed class Virtualize<TItem> : ComponentBase, IVirtualizeJsCallbacks, I
             // re-triggers with refined measurements. This one-shot flag skips the single
             // redundant provider call that follows. At end-of-list, don't skip: refined
             // capacity may reveal that more items are needed to fill the viewport.
+            // A resized viewport may also require more items than the loaded slice contains.
             var skipRefresh = _skipNextDistributionRefresh
                 && _loadedItems != null
                 && _loadedItemsStartIndex == _itemsBefore
-                && _itemsBefore + visibleItemCapacity < _itemCount;
+                && _itemsBefore + visibleItemCapacity < _itemCount
+                && _loadedItemCount >= visibleItemCapacity;
             _skipNextDistributionRefresh = false;
 
             if (skipRefresh)
@@ -1142,6 +1153,7 @@ public sealed class Virtualize<TItem> : ComponentBase, IVirtualizeJsCallbacks, I
 
             _itemCount = result.TotalItemCount;
             _loadedItems = result.Items;
+            _loadedItemCount = 0;
             _loadedItemsStartIndex = _itemsBefore;
 
             // For DefaultItemsProvider, capture the first loaded item so we can detect
