@@ -112,6 +112,29 @@ namespace Microsoft.AspNetCore.Mvc.Analyzers.TopLevelParameterNameAnalyzerTestFi
     }
 
     [Fact]
+    public Task NoDiagnosticsAreReturnedForFromServicesParameters()
+    {
+        // Regression test for https://github.com/dotnet/aspnetcore/issues/63888.
+        // A parameter injected from services is not model bound, so a name collision
+        // with a property of the service type must not report MVC1004.
+        var source = @"
+namespace Microsoft.AspNetCore.Mvc.Analyzers.TopLevelParameterNameAnalyzerTestFiles
+{
+    public class NoDiagnosticsAreReturnedForFromServicesParameters : Controller
+    {
+        [HttpGet]
+        public IActionResult Get([FromServices] NoDiagnosticsAreReturnedForFromServicesParametersService settings) => null;
+    }
+
+    public class NoDiagnosticsAreReturnedForFromServicesParametersService
+    {
+        public string Settings { get; }
+    }
+}";
+        return VerifyAnalyzerAsync(source, DiagnosticResult.EmptyDiagnosticResults);
+    }
+
+    [Fact]
     public Task NoDiagnosticsAreReturnedIfParameterIsRenamedUsingBindingAttribute()
     {
         var source = @"
