@@ -4,7 +4,12 @@
 // Specifies which data from one argument is sent to .NET. When null, the whole value is sent. An object sends only the named
 // properties, each with its own shape, so that a browser object such as an event can be copied.
 // { $known: [...] } sends the name of the global that is the value, such as "localStorage".
-export type ArgumentShape = null | KnownObjectShape | { [property: string]: ArgumentShape };
+// { $json: true } sends validated JSON as text, or a projection error for the listener's .NET logging path.
+export type ArgumentShape = null | KnownObjectShape | JsonShape | { [property: string]: ArgumentShape };
+
+interface JsonShape {
+  $json: true;
+}
 
 interface KnownObjectShape {
   $known: string[];
@@ -28,6 +33,15 @@ export function toDotNet(value: unknown, shape: ArgumentShape): unknown {
     return toTransferable(value);
   }
 
+  if (isJsonShape(shape)) {
+    try {
+      return { json: JSON.stringify(copyJson(value, new Set())) };
+    } catch (error) {
+      // Send projection failures through the normal listener error logging path in .NET.
+      return { error: error instanceof Error ? error.message : String(error) };
+    }
+  }
+
   if (value === null || value === undefined) {
     return null;
   }
@@ -43,6 +57,40 @@ export function toDotNet(value: unknown, shape: ArgumentShape): unknown {
   const copy: Record<string, unknown> = {};
   for (const [name, propertyShape] of Object.entries(shape)) {
     copy[name] = toDotNet((value as Record<string, unknown>)[name], propertyShape);
+  }
+
+  function copyJson(value: unknown, ancestors: Set<object>): unknown {
+    if (value === null || typeof value === 'string' || typeof value === 'boolean') {
+      return value;
+    }
+
+    if (typeof value === 'number' && Number.isFinite(value)) {
+      return value;
+    }
+
+    if (typeof value !== 'object' || value === null ||
+      (!Array.isArray(value) && Object.getPrototypeOf(value) !== Object.prototype && Object.getPrototypeOf(value) !== null)) {
+      throw new TypeError('Received message contains a value that is not JSON.');
+    }
+
+    if (ancestors.has(value)) {
+      throw new TypeError('Received message contains a cycle.');
+    }
+
+    ancestors.add(value);
+    try {
+      if (Array.isArray(value)) {
+        if (Object.keys(value).length !== value.length) {
+          throw new TypeError('Received message contains an array that is not JSON.');
+        }
+
+        return Array.from(value, item => copyJson(item, ancestors));
+      }
+
+      return Object.fromEntries(Object.entries(value).map(([name, item]) => [name, copyJson(item, ancestors)]));
+    } finally {
+      ancestors.delete(value);
+    }
   }
 
   return copy;
@@ -66,6 +114,10 @@ export function toTransferable(value: unknown): unknown {
   }
 
   return { __unsupported: typeNameOf(value) };
+}
+
+function isJsonShape(shape: Exclude<ArgumentShape, null>): shape is JsonShape {
+  return '$json' in shape && shape.$json === true;
 }
 
 function isKnownObjectShape(shape: Exclude<ArgumentShape, null>): shape is KnownObjectShape {

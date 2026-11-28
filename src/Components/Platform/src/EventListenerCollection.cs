@@ -9,17 +9,19 @@ using Microsoft.JSInterop;
 namespace Microsoft.AspNetCore.Components.Platform;
 
 /// <summary>
-/// Tracks the listeners added to one event target, so that scope disposal can remove them all.
+/// Tracks the listeners added to one event target, so that target or scope disposal can remove them all.
 /// </summary>
 internal sealed partial class EventListenerCollection : IInternalAsyncDisposal
 {
     private readonly JSCallbackFactory _callbackFactory;
+    private readonly FeatureContext _context;
     private readonly ILogger _logger;
     private readonly List<IAsyncDisposable> _listeners = [];
     private bool _disposed;
 
-    public EventListenerCollection(JSCallbackFactory callbackFactory, ILogger logger)
+    public EventListenerCollection(FeatureContext context, JSCallbackFactory callbackFactory, ILogger logger)
     {
+        _context = context;
         _callbackFactory = callbackFactory;
         _logger = logger;
     }
@@ -83,6 +85,7 @@ internal sealed partial class EventListenerCollection : IInternalAsyncDisposal
         }
 
         _disposed = true;
+        _context.RemoveEventListenerCollection(this);
 
         foreach (var listener in _listeners.ToArray())
         {

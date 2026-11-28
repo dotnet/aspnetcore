@@ -26,6 +26,8 @@ public class PublicApiTest
     [InlineData(typeof(Window))]
     [InlineData(typeof(Storage))]
     [InlineData(typeof(CookieStore))]
+    [InlineData(typeof(MessageChannelConstructor))]
+    [InlineData(typeof(BroadcastChannelConstructor))]
     [InlineData(typeof(Navigator))]
     [InlineData(typeof(Screen))]
     [InlineData(typeof(ScreenOrientation))]
@@ -50,6 +52,11 @@ public class PublicApiTest
         [
             typeof(Storage),
             typeof(CookieStore),
+            typeof(MessageChannelConstructor),
+            typeof(BroadcastChannelConstructor),
+            typeof(MessageChannel),
+            typeof(MessagePort),
+            typeof(BroadcastChannel),
             typeof(Url),
             typeof(UrlSearchParams),
             typeof(Navigator),
