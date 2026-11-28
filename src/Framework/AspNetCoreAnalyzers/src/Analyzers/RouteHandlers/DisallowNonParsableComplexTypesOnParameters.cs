@@ -6,7 +6,6 @@ using Microsoft.AspNetCore.Analyzers.Infrastructure;
 using Microsoft.AspNetCore.Analyzers.RouteEmbeddedLanguage.Infrastructure;
 using Microsoft.AspNetCore.App.Analyzers.Infrastructure;
 using Microsoft.CodeAnalysis;
-using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.CodeAnalysis.Diagnostics;
 
 namespace Microsoft.AspNetCore.Analyzers.RouteHandlers;
@@ -19,7 +18,8 @@ public partial class RouteHandlerAnalyzer : DiagnosticAnalyzer
         in OperationAnalysisContext context,
         WellKnownTypes wellKnownTypes,
         RouteUsageModel routeUsage,
-        IMethodSymbol methodSymbol)
+        IMethodSymbol methodSymbol,
+        SyntaxNode delegateCreationSyntax)
     {
         foreach (var handlerDelegateParameter in methodSymbol.Parameters)
         {
@@ -44,8 +44,10 @@ public partial class RouteHandlerAnalyzer : DiagnosticAnalyzer
                 continue;
             }
 
-            var syntax = (ParameterSyntax)handlerDelegateParameter.DeclaringSyntaxReferences[0].GetSyntax(context.CancellationToken);
-            var location = syntax.GetLocation();
+            var parameterSyntaxReference = handlerDelegateParameter.DeclaringSyntaxReferences.FirstOrDefault();
+            var location = parameterSyntaxReference is not null && context.Compilation.ContainsSyntaxTree(parameterSyntaxReference.SyntaxTree)
+                ? parameterSyntaxReference.GetSyntax(context.CancellationToken).GetLocation()
+                : delegateCreationSyntax.GetLocation();
 
             if (ReportFromAttributeDiagnostic(
                 context,

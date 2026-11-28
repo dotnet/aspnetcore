@@ -1,6 +1,10 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Globalization;
+using Microsoft.AspNetCore.Analyzer.Testing;
+using Microsoft.CodeAnalysis;
+using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.Testing;
 using VerifyCS = Microsoft.AspNetCore.Analyzers.Verifiers.CSharpAnalyzerVerifier<Microsoft.AspNetCore.Analyzers.RouteHandlers.RouteHandlerAnalyzer>;
 
@@ -761,5 +765,100 @@ public class CommercialCustomer : ICustomer
         // Act
         await VerifyCS.VerifyAnalyzerAsync(source);
     }
-}
 
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task Handler_MethodGroup_FromReferencedAssembly_WithParsableParameter_Works(bool useCompilationReference)
+    {
+        // Arrange
+        var referencedAssemblySource = """
+            using Microsoft.AspNetCore.Http;
+
+            namespace Lib;
+
+            public static class Handlers
+            {
+                public static IResult GetById(string id) => Results.Ok(id);
+            }
+            """;
+        var source = """
+            using Lib;
+            using Microsoft.AspNetCore.Builder;
+
+            var app = WebApplication.Create();
+            app.MapGet("/items/{id}", Handlers.GetById);
+            """;
+
+        // Act
+        var diagnostics = await GetDiagnosticsWithReferencedAssemblyAsync(referencedAssemblySource, source, useCompilationReference);
+
+        // Assert
+        Assert.Empty(diagnostics);
+    }
+
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task Handler_MethodGroup_FromReferencedAssembly_WithNonParsableRouteParameter_ReportsOnMethodGroup(bool useCompilationReference)
+    {
+        // Arrange
+        var referencedAssemblySource = """
+            using Microsoft.AspNetCore.Http;
+
+            namespace Lib;
+
+            public class Customer
+            {
+            }
+
+            public static class Handlers
+            {
+                public static IResult GetCustomer(Customer customer) => Results.Ok();
+            }
+            """;
+        var source = TestSource.Read("""
+            using Lib;
+            using Microsoft.AspNetCore.Builder;
+
+            var app = WebApplication.Create();
+            app.MapGet("/customers/{customer}", /*MM*/Handlers.GetCustomer);
+            """);
+
+        // Act
+        var diagnostics = await GetDiagnosticsWithReferencedAssemblyAsync(referencedAssemblySource, source.Source, useCompilationReference);
+
+        // Assert
+        var diagnostic = Assert.Single(diagnostics);
+        Assert.Same(DiagnosticDescriptors.RouteParameterComplexTypeIsNotParsable, diagnostic.Descriptor);
+        AnalyzerAssert.DiagnosticLocation(source.DefaultMarkerLocation, diagnostic.Location);
+        Assert.Equal("Parameter 'customer' of type Customer should define a bool TryParse(string, IFormatProvider, out Customer) method, or implement IParsable<Customer>", diagnostic.GetMessage(CultureInfo.InvariantCulture));
+    }
+
+    private async Task<Diagnostic[]> GetDiagnosticsWithReferencedAssemblyAsync(string referencedAssemblySource, string source, bool useCompilationReference)
+    {
+        var project = TestDiagnosticAnalyzerRunner.CreateProjectWithReferencesInBinDir(typeof(DisallowNonParsableComplexTypesOnParametersTest).Assembly, source);
+
+        var referencedCompilation = CSharpCompilation.Create(
+            "ReferencedAssembly",
+            [CSharpSyntaxTree.ParseText(referencedAssemblySource)],
+            project.MetadataReferences,
+            new CSharpCompilationOptions(OutputKind.DynamicallyLinkedLibrary));
+
+        MetadataReference reference;
+        if (useCompilationReference)
+        {
+            Assert.DoesNotContain(referencedCompilation.GetDiagnostics(), d => d.Severity == DiagnosticSeverity.Error);
+            reference = referencedCompilation.ToMetadataReference();
+        }
+        else
+        {
+            using var stream = new MemoryStream();
+            var emitResult = referencedCompilation.Emit(stream);
+            Assert.True(emitResult.Success, string.Join(Environment.NewLine, emitResult.Diagnostics));
+            reference = MetadataReference.CreateFromImage(stream.ToArray());
+        }
+
+        return await Runner.GetDiagnosticsAsync(project.AddMetadataReference(reference));
+    }
+}
