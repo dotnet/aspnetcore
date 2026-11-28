@@ -117,6 +117,7 @@ internal class Endpoint
     {
         if (!string.Equals(a.Response?.WrappedResponseTypeDisplayName, b.Response?.WrappedResponseTypeDisplayName, StringComparison.Ordinal) ||
             !a.HttpMethod.Equals(b.HttpMethod, StringComparison.Ordinal) ||
+            a.Operation.Arguments.Length != b.Operation.Arguments.Length ||
             a.Parameters.Length != b.Parameters.Length)
         {
             return false;
@@ -138,6 +139,7 @@ internal class Endpoint
         var hashCode = new HashCode();
         hashCode.Add(endpoint.Response?.WrappedResponseTypeDisplayName);
         hashCode.Add(endpoint.HttpMethod);
+        hashCode.Add(endpoint.Operation.Arguments.Length);
 
         foreach (var parameter in endpoint.Parameters)
         {
