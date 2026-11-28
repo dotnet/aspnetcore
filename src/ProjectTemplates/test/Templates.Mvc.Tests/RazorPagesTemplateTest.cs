@@ -5,6 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Threading.Tasks;
+using AngleSharp.Html.Parser;
 using Microsoft.AspNetCore.InternalTesting;
 using Templates.Test.Helpers;
 using Xunit;
@@ -12,7 +13,7 @@ using Xunit.Abstractions;
 
 namespace Templates.Mvc.Test;
 
-public class RazorPagesTemplateTest : LoggedTest
+public class RazorPagesTemplateTest : LoggedTest, IClassFixture<ProjectFactoryFixture>
 {
     public RazorPagesTemplateTest(ProjectFactoryFixture projectFactory)
     {
@@ -32,6 +33,40 @@ public class RazorPagesTemplateTest : LoggedTest
             }
             return _output;
         }
+    }
+
+    [Theory]
+    [InlineData("My Web App")]
+    [InlineData("My  Web App")]
+    [InlineData("MyWebApp")]
+    [InlineData("My.Web.App")]
+    public async Task RazorPagesTemplate_ReferencesScopedCssBundle(string projectName)
+    {
+        var project = await ProjectFactory.CreateProject(Output, projectName);
+
+        await project.RunDotNetNewAsync("razor", noHttps: true);
+
+        var layoutContents = ReadFile(project.TemplateOutputDir, "Pages/Shared/_Layout.cshtml");
+        Assert.Contains($"href=\"~/{projectName}.styles.css\"", layoutContents);
+        Assert.DoesNotContain("href=\"~/Company.WebApplication1.styles.css\"", layoutContents);
+
+        await project.RunDotNetBuildAsync();
+
+        var bundlePath = Path.Combine("obj", "Debug", project.TargetFramework, "scopedcss", "bundle", $"{projectName}.styles.css");
+        project.AssertFileExists(bundlePath, shouldExist: true);
+        Assert.Contains("a.navbar-brand", project.ReadFile(bundlePath));
+
+        using var aspNetProcess = project.StartBuiltProjectAsync(noHttps: true);
+        using var pageResponse = await aspNetProcess.SendRequest("/");
+        pageResponse.EnsureSuccessStatusCode();
+
+        var document = await new HtmlParser().ParseDocumentAsync(await pageResponse.Content.ReadAsStringAsync());
+        var styleSheet = document.QuerySelector("link[href*='.styles.css']");
+        Assert.NotNull(styleSheet);
+
+        using var styleResponse = await aspNetProcess.SendRequest(styleSheet.GetAttribute("href"));
+        styleResponse.EnsureSuccessStatusCode();
+        Assert.Contains("a.navbar-brand", await styleResponse.Content.ReadAsStringAsync());
     }
 
     [ConditionalTheory]
