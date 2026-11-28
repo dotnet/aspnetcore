@@ -1,6 +1,9 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+// eslint-disable-next-line spaced-comment
+/// <reference lib="es2021.weakref" />
+
 /* eslint-disable @typescript-eslint/ban-types, @typescript-eslint/no-unused-vars, no-case-declarations, no-prototype-builtins */
 
 // This is a single-file self-contained module to avoid the need for a Webpack build
@@ -14,6 +17,11 @@ const dotNetElementRefKey = '__internalId';
 const byteArrayRefKey = '__byte[]';
 const dotNetStreamRefKey = '__dotNetStream';
 const jsStreamReferenceLengthKey = '__jsStreamReferenceLength';
+const abortSignalKey = '__abortSignal';
+const cancellationTokenKey = '__dotNetCancellationToken';
+const cancellationTokenCanceledIdentifier = '__CancellationTokenCanceled';
+const cancellationTokenReleasedIdentifier = '__CancellationTokenReleased';
+const abortSignalResultReadIdentifier = '__AbortSignalResultRead';
 
 // If undefined, no dispatcher has been attached yet.
 // If null, this means more than one dispatcher was attached, so no default can be determined.
@@ -91,6 +99,60 @@ windowObject._cachedHandlers.set('import', { [JSCallType.FunctionCall]: (url: an
 }});
 
 let nextJsObjectId = 1; // Start at 1 because zero is reserved for "window"
+
+// Never references the signal: it is the FinalizationRegistry's held value, which would keep the signal alive.
+interface ObservedAbortSignal {
+  // Weak, so that a signal that outlives its Server circuit does not keep the circuit's dispatcher.
+  dispatcher: WeakRef<CallDispatcher>;
+  id: number;
+  // Calls and results that carry the id and that .NET has not answered yet.
+  pendingCalls: number;
+  abortAcknowledgment?: Promise<void>;
+  collected: boolean;
+  released: boolean;
+  // Weak, so that the held value does not reach the signal through the notifier.
+  notifier?: WeakRef<AbortNotifier>;
+}
+
+const abortSignalFinalizer = new FinalizationRegistry<ObservedAbortSignal>(observed => {
+  observed.collected = true;
+  // WebKit keeps a dependent signal with a listener alive after its source is collected.
+  observed.notifier?.deref()?.detach();
+  observed.dispatcher.deref()?.releaseAbortSignalWhenUnused(observed);
+});
+
+// One listener on the caller's signal and on a private dependent signal. Only the private signal's event notifies .NET:
+// a listener on the caller's signal can stop its event, but the DOM aborts dependents apart from that dispatch.
+// Listening on the caller's signal keeps it alive while it can abort, as the DOM keeps a signal without a controller
+// (AbortSignal.timeout(), AbortSignal.any()) only while it has listeners, and it keeps the private signal as long.
+class AbortNotifier implements EventListenerObject {
+  private readonly _signal: WeakRef<AbortSignal>;
+
+  constructor(signal: AbortSignal, private readonly _privateSignal: AbortSignal, private readonly _observed: ObservedAbortSignal) {
+    this._signal = new WeakRef(signal);
+  }
+
+  handleEvent(event: Event): void {
+    if (event.target !== this._privateSignal) {
+      return;
+    }
+
+    this.detach();
+    const observed = this._observed;
+    // Deferred so that an abort raised while arguments are serialized does not start a nested call.
+    observed.abortAcknowledgment = Promise.resolve()
+      .then(() => observed.dispatcher.deref()?.invokeDotNetStaticMethodAsync<void>('Microsoft.JSInterop', '__AbortSignalAborted', observed.id))
+      .catch(error => console.error(error));
+  }
+
+  detach(): void {
+    this._privateSignal.removeEventListener('abort', this);
+    this._signal.deref()?.removeEventListener('abort', this);
+  }
+}
+
+// The AbortSignals of the call or result being serialized; undefined while serializing anything else.
+let currentAbortSignals: Set<ObservedAbortSignal> | undefined;
 
 /**
    * Creates a .NET call dispatcher to use for handling invocations between JavaScript and a .NET runtime.
@@ -261,6 +323,7 @@ function getDefaultCallDispatcher(): CallDispatcher {
 interface PendingAsyncCall<T> {
   resolve: (value?: T | PromiseLike<T>) => void;
   reject: (reason?: any) => void;
+  abortSignals?: Set<ObservedAbortSignal>;
 }
 
 /**
@@ -399,21 +462,139 @@ class CallDispatcher implements ICallDispatcher {
 
   private _nextAsyncCallId = 1; // Start at 1 because zero signals "no response needed"
 
+  private readonly _abortSignals = new WeakMap<AbortSignal, ObservedAbortSignal>();
+
+  private _nextAbortSignalId = 1;
+
+  // Held strongly until .NET releases the id, also after a cancel: a browser operation such as fetch does not keep its signal alive.
+  private readonly _cancellationTokenControllers = new Map<number, AbortController>();
+
+  // The AbortSignals in each result sent to .NET, until .NET reports that it has read the result.
+  private readonly _resultAbortSignals = new Map<number, Set<ObservedAbortSignal>>();
+
   // eslint-disable-next-line no-empty-function
   constructor(private readonly _dotNetCallDispatcher: DotNetCallDispatcher) {
+  }
+
+  reviveCancellationToken(id: number | null, isCancellationRequested: boolean): AbortSignal {
+    // .NET gives one id per token, so every occurrence of a token gets the same signal.
+    let controller = id === null ? undefined : this._cancellationTokenControllers.get(id);
+    if (!controller) {
+      controller = new AbortController();
+      if (isCancellationRequested) {
+        controller.abort();
+      }
+
+      if (id !== null) {
+        this._cancellationTokenControllers.set(id, controller);
+      }
+    }
+
+    return controller.signal;
+  }
+
+  private tryProcessCancellationTokenMessage(identifier: string, argsJson: string | null): boolean {
+    const canceled = identifier === cancellationTokenCanceledIdentifier;
+    if (!canceled && identifier !== cancellationTokenReleasedIdentifier) {
+      return false;
+    }
+
+    for (const id of JSON.parse(argsJson!) as number[]) {
+      if (!canceled) {
+        this._cancellationTokenControllers.delete(id);
+        continue;
+      }
+
+      // A cancel can arrive before the call that carries the id, so the id gets an aborted controller at once.
+      const controller = this._cancellationTokenControllers.get(id);
+      if (controller) {
+        // Deferred: on WebAssembly this runs inside CancellationTokenSource.Cancel(), and listeners may call .NET.
+        queueMicrotask(() => controller.abort());
+      } else {
+        const aborted = new AbortController();
+        aborted.abort();
+        this._cancellationTokenControllers.set(id, aborted);
+      }
+    }
+
+    return true;
   }
 
   getDotNetCallDispatcher(): DotNetCallDispatcher {
     return this._dotNetCallDispatcher;
   }
 
+  private tryProcessResultReadMessage(identifier: string, argsJson: string | null): boolean {
+    if (identifier !== abortSignalResultReadIdentifier) {
+      return false;
+    }
+
+    for (const asyncHandle of JSON.parse(argsJson!) as number[]) {
+      const abortSignals = this._resultAbortSignals.get(asyncHandle);
+      if (abortSignals) {
+        this._resultAbortSignals.delete(asyncHandle);
+        this.endHold(abortSignals);
+      }
+    }
+
+    return true;
+  }
+
+  serializeAbortSignal(signal: AbortSignal): object {
+    // .NET must answer every message that carries an id before "released" may go, so the message must be counted.
+    if (!currentAbortSignals) {
+      throw new Error('An AbortSignal can only be sent to .NET in the arguments of a call or in the result of a JavaScript function.');
+    }
+
+    let observed = this._abortSignals.get(signal);
+    if (!observed) {
+      observed = { dispatcher: new WeakRef(this), id: this._nextAbortSignalId++, pendingCalls: 0, collected: false, released: false };
+      // Stored only once observed: a later call must not send an id whose abort nobody watches.
+      this.observeAbortSignal(signal, observed);
+      this._abortSignals.set(signal, observed);
+    }
+
+    currentAbortSignals.add(observed);
+    return { [abortSignalKey]: observed.id, aborted: signal.aborted };
+  }
+
+  // "Released" must reach .NET after every message that carries the id, so it waits for the calls and the abort.
+  releaseAbortSignalWhenUnused(observed: ObservedAbortSignal): void {
+    if (!observed.collected || observed.pendingCalls > 0 || observed.released) {
+      return;
+    }
+
+    observed.released = true;
+    (observed.abortAcknowledgment ?? Promise.resolve()).then(() => {
+      try {
+        // Call id zero asks for no result, so the message is one-way.
+        this._dotNetCallDispatcher.beginInvokeDotNetFromJS(0, 'Microsoft.JSInterop', '__AbortSignalReleased', null, JSON.stringify([observed.id]));
+      } catch (error) {
+        console.error(error);
+      }
+    });
+  }
+
+  private observeAbortSignal(signal: AbortSignal, observed: ObservedAbortSignal): void {
+    if (!signal.aborted) {
+      const privateSignal = AbortSignal.any([signal]);
+      const notifier = new AbortNotifier(signal, privateSignal, observed);
+      privateSignal.addEventListener('abort', notifier);
+      signal.addEventListener('abort', notifier);
+      observed.notifier = new WeakRef(notifier);
+    }
+
+    abortSignalFinalizer.register(signal, observed);
+  }
+
   invokeJSFromDotNet(identifier: string, argsJson: string, resultType: JSCallResultType, targetInstanceId: number, callType: JSCallType): string | null {
     const returnValue = this.processJSCall(targetInstanceId, identifier, callType, argsJson);
     const result = createJSCallResult(returnValue, resultType);
 
+    // .NET reads the ids before this synchronous call returns, so nothing needs to be counted.
     return result === null || result === undefined
       ? null
-      : stringifyArgs(this, result);
+      : stringifyArgs(this, result, new Set());
   }
 
   async beginInvokeJSFromDotNet(asyncHandle: number, identifier: string, argsJson: string | null, resultType: JSCallResultType, targetInstanceId: number, callType: JSCallType): Promise<any> {
@@ -423,16 +604,30 @@ class CallDispatcher implements ICallDispatcher {
       // We only await the result if the caller wants to be notified about it
       if (asyncHandle) {
         const result = await valueOrPromise;
+        const abortSignals = new Set<ObservedAbortSignal>();
         const serializedResult = stringifyArgs(this, [
           asyncHandle,
           true,
           createJSCallResult(result, resultType),
-        ]);
+        ], abortSignals);
+        // Counted before sending, because WebAssembly can report the read before endInvokeJSFromDotNet returns.
+        if (abortSignals.size) {
+          this._resultAbortSignals.set(asyncHandle, abortSignals);
+          abortSignals.forEach(observed => observed.pendingCalls++);
+        }
+
         // On success, dispatch result back to .NET
         this._dotNetCallDispatcher.endInvokeJSFromDotNet(asyncHandle, true, serializedResult);
       }
     } catch (error: any) {
       if (asyncHandle) {
+        // A result that failed to be sent is never read by .NET, so its signals are not held any longer.
+        const abortSignals = this._resultAbortSignals.get(asyncHandle);
+        if (abortSignals) {
+          this._resultAbortSignals.delete(asyncHandle);
+          this.endHold(abortSignals);
+        }
+
         const serializedError = JSON.stringify([
           asyncHandle,
           false,
@@ -445,16 +640,24 @@ class CallDispatcher implements ICallDispatcher {
   }
 
   processJSCall(targetInstanceId: number, identifier: string, callType: JSCallType, argsJson: string | null) {
+    if (targetInstanceId === windowJSObjectId
+      && (this.tryProcessCancellationTokenMessage(identifier, argsJson) || this.tryProcessResultReadMessage(identifier, argsJson))) {
+      return undefined;
+    }
+
     const args = parseJsonWithRevivers(this, argsJson) ?? [];
     const func = findJSFunction(identifier, targetInstanceId, callType);
     return func(...args);
   }
 
   endInvokeDotNetFromJS(asyncCallId: string, success: boolean, resultJsonOrExceptionMessage: string): void {
+    const callId = parseInt(asyncCallId, 10);
+    // The reply proves .NET has read the call's ids, even if reviving the result below throws.
+    this.endAbortSignalHolds(callId);
     const resultOrError = success
       ? parseJsonWithRevivers(this, resultJsonOrExceptionMessage)
       : new Error(resultJsonOrExceptionMessage);
-    this.completePendingCall(parseInt(asyncCallId, 10), success, resultOrError);
+    this.completePendingCall(callId, success, resultOrError);
   }
 
   invokeDotNetStaticMethod<T>(assemblyName: string, methodIdentifier: string, ...args: any[]): T | null {
@@ -467,7 +670,8 @@ class CallDispatcher implements ICallDispatcher {
 
   invokeDotNetMethod<T>(assemblyName: string | null, methodIdentifier: string, dotNetObjectId: number | null, args: any[] | null): T | null {
     if (this._dotNetCallDispatcher.invokeDotNetFromJS) {
-      const argsJson = stringifyArgs(this, args);
+      // .NET reads the ids before this synchronous call returns, so nothing needs to be counted.
+      const argsJson = stringifyArgs(this, args, new Set());
       const resultJson = this._dotNetCallDispatcher.invokeDotNetFromJS(assemblyName, methodIdentifier, dotNetObjectId, argsJson);
       return resultJson ? parseJsonWithRevivers(this, resultJson) : null;
     }
@@ -486,7 +690,11 @@ class CallDispatcher implements ICallDispatcher {
     });
 
     try {
-      const argsJson = stringifyArgs(this, args);
+      const abortSignals = new Set<ObservedAbortSignal>();
+      const argsJson = stringifyArgs(this, args, abortSignals);
+      // Counted before sending, because WebAssembly can complete the call before beginInvokeDotNetFromJS returns.
+      this._pendingAsyncCalls[asyncCallId].abortSignals = abortSignals;
+      abortSignals.forEach(observed => observed.pendingCalls++);
       this._dotNetCallDispatcher.beginInvokeDotNetFromJS(asyncCallId, assemblyName, methodIdentifier, dotNetObjectId, argsJson);
     } catch (ex) {
       // Synchronous failure
@@ -543,11 +751,28 @@ class CallDispatcher implements ICallDispatcher {
     return result;
   }
 
+  private endAbortSignalHolds(asyncCallId: number) {
+    const asyncCall = this._pendingAsyncCalls[asyncCallId];
+    const abortSignals = asyncCall?.abortSignals;
+    if (abortSignals) {
+      asyncCall.abortSignals = undefined;
+      this.endHold(abortSignals);
+    }
+  }
+
+  private endHold(abortSignals: Set<ObservedAbortSignal>) {
+    abortSignals.forEach(observed => {
+      observed.pendingCalls--;
+      this.releaseAbortSignalWhenUnused(observed);
+    });
+  }
+
   private completePendingCall(asyncCallId: number, success: boolean, resultOrError: any) {
     if (!this._pendingAsyncCalls.hasOwnProperty(asyncCallId)) {
       throw new Error(`There is no pending async call with ID ${asyncCallId}.`);
     }
 
+    this.endAbortSignalHolds(asyncCallId);
     const asyncCall = this._pendingAsyncCalls[asyncCallId];
     delete this._pendingAsyncCalls[asyncCallId];
     if (success) {
@@ -721,7 +946,9 @@ export class DotNetObject {
 
 attachReviver(function reviveReference(key: any, value: any) {
   if (value && typeof value === 'object') {
-    if (value.hasOwnProperty(dotNetObjectRefKey)) {
+    if (value.hasOwnProperty(cancellationTokenKey)) {
+      return currentCallDispatcher!.reviveCancellationToken(value[cancellationTokenKey], value.isCancellationRequested);
+    } else if (value.hasOwnProperty(dotNetObjectRefKey)) {
       return new DotNetObject(value[dotNetObjectRefKey], currentCallDispatcher!);
     } else if (value.hasOwnProperty(jsObjectIdKey)) {
       const id = value[jsObjectIdKey];
@@ -802,12 +1029,18 @@ function createJSCallResult(returnValue: any, resultType: JSCallResultType) {
 }
 
 let nextByteArrayIndex = 0;
-function stringifyArgs(callDispatcher: CallDispatcher, args: any[] | null) {
+function stringifyArgs(callDispatcher: CallDispatcher, args: any[] | null, abortSignals?: Set<ObservedAbortSignal>) {
   nextByteArrayIndex = 0;
+  const previousAbortSignals = currentAbortSignals;
   currentCallDispatcher = callDispatcher;
-  const result = JSON.stringify(args, argReplacer);
-  currentCallDispatcher = undefined;
-  return result;
+  currentAbortSignals = abortSignals;
+  try {
+    return JSON.stringify(args, argReplacer);
+  } finally {
+    // Cleared, not restored, even on failure: byte array ids cannot nest, so an outer serialization must then fail visibly.
+    currentCallDispatcher = undefined;
+    currentAbortSignals = previousAbortSignals;
+  }
 }
 
 function getCaptureIdFromElement(element: Element): string | null {
@@ -823,6 +1056,9 @@ function getCaptureIdFromElement(element: Element): string | null {
 function argReplacer(key: string, value: any) {
   if (value instanceof Element) {
     return { [dotNetElementRefKey]: getCaptureIdFromElement(value) };
+  }
+  if (value instanceof AbortSignal) {
+    return currentCallDispatcher!.serializeAbortSignal(value);
   }
   if (value instanceof DotNetObject) {
     return value.serializeAsArg();
