@@ -62,7 +62,10 @@ public struct RenderTreeFrame
     // RenderTreeFrameType.Element
     // --------------------------------------------------------------------------------
 
+    // Construction-only metadata uses existing value-type slots without increasing the frame size.
+    [FieldOffset(6)] internal InputAttributeFlags ElementInputAttributeFlagsField;
     [FieldOffset(8)] internal int ElementSubtreeLengthField;
+    [FieldOffset(12)] internal int ElementLastOmittedBooleanValueIndexField;
     [FieldOffset(16)] internal string ElementNameField;
     [FieldOffset(24)] internal object ElementKeyField;
 
@@ -101,6 +104,7 @@ public struct RenderTreeFrame
     // RenderTreeFrameType.Attribute
     // --------------------------------------------------------------------------------
 
+    [FieldOffset(6)] internal bool AttributeValueIsBooleanField;
     [FieldOffset(8)] internal ulong AttributeEventHandlerIdField;
     [FieldOffset(16)] internal string AttributeNameField;
     [FieldOffset(24)] internal object AttributeValueField;
