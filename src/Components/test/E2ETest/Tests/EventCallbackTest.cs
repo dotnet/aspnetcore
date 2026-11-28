@@ -42,4 +42,28 @@ public class EventCallbackTest : ServerTestBase<ToggleExecutionModeServerFixture
         target.Click();
         Browser.Equal("Render Count: 2", () => count.Text);
     }
+
+    [Fact]
+    public void EventCallback_NullOptionalDelegate_IsNotRegisteredUntilEnabled()
+    {
+        var count = Browser.Exists(By.Id("null_optional_event_callback_render_count"));
+        var target = Browser.Exists(By.Id("null_optional_event_callback_button"));
+        Browser.Equal("Render Count: 1", () => count.Text);
+        Browser.Equal(0L, () => GetEventHandlerCount(target));
+
+        target.Click();
+        Browser.Equal("Render Count: 1", () => count.Text);
+
+        Browser.Exists(By.Id("toggle_null_optional_event_callback")).Click();
+        Browser.Equal("Render Count: 2", () => count.Text);
+        Browser.Equal(1L, () => GetEventHandlerCount(target));
+
+        Browser.Exists(By.Id("null_optional_event_callback_button")).Click();
+        Browser.Equal("Render Count: 3", () => count.Text);
+    }
+
+    private long GetEventHandlerCount(IWebElement element)
+        => (long)((IJavaScriptExecutor)Browser).ExecuteScript(
+            "return Object.keys(arguments[0]).filter(key => key.startsWith('_blazorEvents_')).length;",
+            element);
 }
