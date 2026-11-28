@@ -287,7 +287,7 @@ public class WebHostBuilder : IWebHostBuilder
 
         services.TryAddSingleton(sp => new DiagnosticListener("Microsoft.AspNetCore"));
         services.TryAddSingleton<DiagnosticSource>(sp => sp.GetRequiredService<DiagnosticListener>());
-        services.TryAddSingleton(sp => new ActivitySource("Microsoft.AspNetCore"));
+        services.TryAddSingleton(sp => HostingTelemetryHelpers.CreateActivitySource());
         services.TryAddSingleton(DistributedContextPropagator.Current);
 
         services.AddTransient<IApplicationBuilderFactory, ApplicationBuilderFactory>();

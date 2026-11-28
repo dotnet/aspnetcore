@@ -18,6 +18,9 @@ internal sealed class KestrelMetrics
     // Note: Dot separated instead of dash.
     public const string MeterName = "Microsoft.AspNetCore.Server.Kestrel";
 
+    // OpenTelemetry Semantic Conventions version that this meter conforms to.
+    private const string SchemaUrl = "https://opentelemetry.io/schemas/1.45.0";
+
     public const string ErrorTypeAttributeName = "error.type";
 
     // Tag indicating whether a bare LF terminated request was accepted or rejected.
@@ -43,7 +46,7 @@ internal sealed class KestrelMetrics
 
     public KestrelMetrics(IMeterFactory meterFactory)
     {
-        _meter = meterFactory.Create(MeterName);
+        _meter = meterFactory.Create(new MeterOptions(MeterName) { TelemetrySchemaUrl = SchemaUrl });
 
         _activeConnectionsCounter = _meter.CreateUpDownCounter<long>(
             "kestrel.active_connections",

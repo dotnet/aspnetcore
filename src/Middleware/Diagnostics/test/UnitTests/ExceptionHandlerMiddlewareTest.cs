@@ -388,6 +388,7 @@ public class ExceptionHandlerMiddlewareTest : LoggedTest
 
         // Assert
         Assert.Equal(DiagnosticsMetrics.MeterName, meter.Name);
+        Assert.Equal("https://opentelemetry.io/schemas/1.45.0", meter.TelemetrySchemaUrl);
         Assert.Null(meter.Version);
 
         Assert.Empty(diagnosticsRequestExceptionCollector.GetMeasurementSnapshot());

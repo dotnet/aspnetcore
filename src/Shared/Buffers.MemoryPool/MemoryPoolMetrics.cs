@@ -12,6 +12,9 @@ internal sealed class MemoryPoolMetrics
 {
     public const string MeterName = "Microsoft.AspNetCore.MemoryPool";
 
+    // OpenTelemetry Semantic Conventions version that this meter conforms to.
+    private const string SchemaUrl = "https://opentelemetry.io/schemas/1.45.0";
+
     public const string PooledMemoryName = "aspnetcore.memory_pool.pooled";
     public const string AllocatedMemoryName = "aspnetcore.memory_pool.allocated";
     public const string EvictedMemoryName = "aspnetcore.memory_pool.evicted";
@@ -25,7 +28,7 @@ internal sealed class MemoryPoolMetrics
 
     public MemoryPoolMetrics(IMeterFactory meterFactory)
     {
-        _meter = meterFactory.Create(MeterName);
+        _meter = meterFactory.Create(new MeterOptions(MeterName) { TelemetrySchemaUrl = SchemaUrl });
 
         _pooledMemoryCounter = _meter.CreateUpDownCounter<long>(
             PooledMemoryName,

@@ -10,6 +10,9 @@ internal sealed class RoutingMetrics
 {
     public const string MeterName = "Microsoft.AspNetCore.Routing";
 
+    // OpenTelemetry Semantic Conventions version that this meter conforms to.
+    private const string SchemaUrl = "https://opentelemetry.io/schemas/1.45.0";
+
      // Reuse boxed object for common values
     private static readonly object BoxedTrue = true;
     private static readonly object BoxedFalse = false;
@@ -19,7 +22,7 @@ internal sealed class RoutingMetrics
 
     public RoutingMetrics(IMeterFactory meterFactory)
     {
-        _meter = meterFactory.Create(MeterName);
+        _meter = meterFactory.Create(new MeterOptions(MeterName) { TelemetrySchemaUrl = SchemaUrl });
 
         _matchAttemptsCounter = _meter.CreateCounter<long>(
             "aspnetcore.routing.match_attempts",
