@@ -38,6 +38,7 @@ internal sealed partial class StaticAssetDevelopmentRuntimeHandler
     {
         var original = builder.RequestDelegate!;
         var asset = builder.Metadata.OfType<StaticAssetDescriptor>().Single();
+        var selectedAsset = asset;
         if (asset.HasContentEncoding())
         {
             var originalETag = GetDescriptorOriginalResourceProperty(asset);
@@ -71,9 +72,45 @@ internal sealed partial class StaticAssetDevelopmentRuntimeHandler
                 // At this point, we know that the file has changed from what was generated at build time.
                 // This is for example, when someone changes something in the WWWRoot folder.
 
+                var requestHeaders = context.Request.GetTypedHeaders();
+                var ifNoneMatch = requestHeaders.IfNoneMatch;
+                var ifModifiedSince = requestHeaders.IfModifiedSince;
+                var lastModified = TruncateToSeconds(fileInfo.LastModified);
+                var notModified = ifNoneMatch?.Any(etag => etag.Equals(EntityTagHeaderValue.Any)) == true;
+                if (!context.Request.Headers.ContainsKey(HeaderNames.IfNoneMatch) &&
+                    ifModifiedSince.HasValue &&
+                    ifModifiedSince <= DateTimeOffset.UtcNow &&
+                    lastModified > asset.GetLastModified() &&
+                    ifModifiedSince >= lastModified)
+                {
+                    notModified = true;
+                }
+
+                context.Request.Headers.Remove(HeaderNames.IfModifiedSince);
+                context.Request.Headers.Remove(HeaderNames.IfNoneMatch);
+                if (notModified)
+                {
+                    context.Request.Headers.IfNoneMatch = GetDescriptorETagResponseHeader(selectedAsset);
+                }
+
                 // In case we were dealing with a compressed asset, we are going to wrap the response body feature to re-compress the asset on the fly.
                 // and write that to the response instead.
                 context.Features.Set<IHttpResponseBodyFeature>(new RuntimeStaticAssetResponseBodyFeature(originalFeature, context, asset));
+
+                await original(context);
+                if (context.Response.StatusCode == StatusCodes.Status304NotModified)
+                {
+                    context.Response.Headers.ETag = GetETag(fileInfo, selectedAsset.AssetPath != asset.AssetPath);
+                    context.Response.Headers.LastModified = HeaderUtilities.FormatDate(lastModified);
+                }
+                else if (HttpMethods.IsHead(context.Request.Method) && context.Response.StatusCode == StatusCodes.Status200OK)
+                {
+                    context.Response.Headers.ETag = GetETag(fileInfo, selectedAsset.AssetPath != asset.AssetPath);
+                    context.Response.Headers.LastModified = HeaderUtilities.FormatDate(lastModified);
+                    context.Response.Headers.ContentLength = selectedAsset.AssetPath != asset.AssetPath ? Compress(fileInfo).Length : fileInfo.Length;
+                }
+                context.Features.Set(originalFeature);
+                return;
             }
 
             await original(context);
@@ -108,7 +145,6 @@ internal sealed partial class StaticAssetDevelopmentRuntimeHandler
 
         return null;
     }
-
     private void CreateDescriptorMap(List<StaticAssetDescriptor> descriptors)
     {
         for (var i = 0; i < descriptors.Count; i++)
@@ -136,6 +172,31 @@ internal sealed partial class StaticAssetDevelopmentRuntimeHandler
     {
         using var stream = fileInfo.CreateReadStream();
         return $"\"{Convert.ToBase64String(SHA256.HashData(stream))}\"";
+    }
+
+    private static string GetETag(IFileInfo fileInfo, bool compressed)
+    {
+        if (!compressed)
+        {
+            return GetETag(fileInfo);
+        }
+
+        using var stream = Compress(fileInfo);
+        return $"\"{Convert.ToBase64String(SHA256.HashData(stream))}\"";
+    }
+
+    private static MemoryStream Compress(IFileInfo fileInfo)
+    {
+        var stream = new MemoryStream();
+        using (var fileStream = fileInfo.CreateReadStream())
+        {
+            using var gzipStream = new GZipStream(stream, CompressionLevel.NoCompression, leaveOpen: true);
+            fileStream.CopyTo(gzipStream);
+            gzipStream.Flush();
+        }
+        stream.Flush();
+        stream.Seek(0, SeekOrigin.Begin);
+        return stream;
     }
 
     internal static DateTimeOffset TruncateToSeconds(DateTimeOffset dateTimeOffset)
@@ -188,17 +249,10 @@ internal sealed partial class StaticAssetDevelopmentRuntimeHandler
             {
                 // This was a compressed asset, asset contains the path to the original file, we'll re-compress the asset on the fly and replace the body
                 // and the content length.
-                using var stream = new MemoryStream();
-                using (var fileStream = fileInfo.CreateReadStream())
-                {
-                    using var gzipStream = new GZipStream(stream, CompressionLevel.NoCompression, leaveOpen: true);
-                    fileStream.CopyTo(gzipStream);
-                    gzipStream.Flush();
-                }
-                stream.Flush();
-                stream.Seek(0, SeekOrigin.Begin);
+                using var stream = Compress(fileInfo);
 
                 _context.Response.Headers.ContentLength = stream.Length;
+                _context.Response.Headers.LastModified = HeaderUtilities.FormatDate(fileInfo.LastModified);
 
                 var eTag = Convert.ToBase64String(SHA256.HashData(stream));
                 _context.Response.Headers.ETag = new StringValues($"\"{eTag}\"");
@@ -232,7 +286,7 @@ internal sealed partial class StaticAssetDevelopmentRuntimeHandler
 
                     // Adjust count if it extends beyond the modified file size.
                     var actualCount = count.HasValue ? Math.Min(count.Value, fileInfo.Length - offset) : fileInfo.Length - offset;
-                    
+
                     // Send the requested range from the modified file.
                     return _original.SendFileAsync(fileInfo.PhysicalPath!, offset, actualCount, cancellationToken);
                 }
