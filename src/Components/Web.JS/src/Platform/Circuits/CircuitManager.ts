@@ -19,6 +19,7 @@ import { Blazor } from '../../GlobalExports';
 import { showErrorNotification } from '../../BootErrors';
 import { attachWebRendererInterop, detachWebRendererInterop, isRendererAttached } from '../../Rendering/WebRendererInteropMethods';
 import { sendJSDataStream } from './CircuitStreamingInterop';
+import { setFileListStreamingEnabled } from '../../InputFile';
 
 export class CircuitManager implements DotNet.DotNetCallDispatcher {
 
@@ -146,6 +147,7 @@ export class CircuitManager implements DotNet.DotNetCallDispatcher {
 
     const connection = connectionBuilder.build();
 
+    connection.on('JS.ConfigureInputFile', setFileListStreamingEnabled);
     connection.on('JS.AttachComponent', (componentId, selector) => attachRootComponentToLogicalElement(WebRendererId.Server, this.resolveElement(selector), componentId, false));
     connection.on('JS.BeginInvokeJS', (asyncHandle: number, ...rest: unknown[]) => {
       if (asyncHandle !== 0) {
