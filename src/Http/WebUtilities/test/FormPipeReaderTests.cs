@@ -907,6 +907,66 @@ public class FormPipeReaderTests
         Assert.Equal("", dict["t"]);
     }
 
+    [Fact]
+    public async Task ReadFormAsync_Latin1_DecodesPercentEncodedBytesWithRequestEncoding()
+    {
+        var bodyPipe = await MakePipeReader(Encoding.Latin1.GetBytes("caf%E9=cr%E8me+br%FBl%E9e&raw=été&utf8=%C3%A9"));
+
+        var formCollection = await ReadFormAsync(new FormPipeReader(bodyPipe, Encoding.Latin1));
+
+        Assert.Equal("crème brûlée", formCollection["café"].ToString());
+        Assert.Equal("été", formCollection["raw"].ToString());
+        Assert.Equal("Ã©", formCollection["utf8"].ToString());
+    }
+
+    [Fact]
+    public async Task ReadFormAsync_Gbk_DecodesPercentEncodedBytesWithRequestEncoding()
+    {
+        var gbk = CodePagesEncodingProvider.Instance.GetEncoding(936)!;
+        var bodyPipe = await MakePipeReader(gbk.GetBytes("su=%b2%e9%d6%d8%b7%d1%d3%c3&名=查重&bad=%zz%b"));
+
+        var formCollection = await ReadFormAsync(new FormPipeReader(bodyPipe, gbk));
+
+        Assert.Equal("查重费用", formCollection["su"].ToString());
+        Assert.Equal("查重", formCollection["名"].ToString());
+        Assert.Equal("%zz%b", formCollection["bad"].ToString());
+    }
+
+    [Fact]
+    public async Task ReadFormAsync_Gbk_DataDeliveredOneByteAtATime()
+    {
+        var gbk = CodePagesEncodingProvider.Instance.GetEncoding(936)!;
+        var formContent = gbk.GetBytes("su=%b2%e9%d6%d8%b7%d1%d3%c3&t=%b2%e9+%d6%d8");
+        var bodyPipe = new Pipe();
+
+        var writeTask = Task.Run(async () =>
+        {
+            foreach (var b in formContent)
+            {
+                await bodyPipe.Writer.WriteAsync(new[] { b });
+            }
+            await bodyPipe.Writer.CompleteAsync();
+        });
+
+        var formCollection = await ReadFormAsync(new FormPipeReader(bodyPipe.Reader, gbk));
+        await writeTask;
+
+        Assert.Equal("查重费用", formCollection["su"].ToString());
+        Assert.Equal("查 重", formCollection["t"].ToString());
+    }
+
+    [Fact]
+    public async Task ReadFormAsync_EncodingThatCannotEncodePercentOrPlus_UsesSlowPath()
+    {
+        var encoding = new Latin1WithoutPercentAndPlusEncoding();
+        var bodyPipe = await MakePipeReader(Encoding.Latin1.GetBytes("caf%C3%A9=cr%C3%A8me+br%C3%BBl%C3%A9e&raw=été"));
+
+        var formCollection = await ReadFormAsync(new FormPipeReader(bodyPipe, encoding));
+
+        Assert.Equal("crème brûlée", formCollection["café"].ToString());
+        Assert.Equal("été", formCollection["raw"].ToString());
+    }
+
     public static TheoryData<ReadOnlySequence<byte>> IncompleteFormKeys =>
         new TheoryData<ReadOnlySequence<byte>>
         {
@@ -947,6 +1007,14 @@ public class FormPipeReaderTests
         return bodyPipe.Reader;
     }
 
+    private static async Task<PipeReader> MakePipeReader(byte[] formContent)
+    {
+        var bodyPipe = new Pipe();
+        await bodyPipe.Writer.WriteAsync(formContent);
+        bodyPipe.Writer.Complete();
+        return bodyPipe.Reader;
+    }
+
     private static byte[] CreateBytes_NoDelimiter(int n)
     {
         //Create the bytes of "key=vvvvvvvv....", of length n
@@ -957,5 +1025,39 @@ public class FormPipeReaderTests
         keyValue[2] = 'y';
         keyValue[3] = '=';
         return Encoding.UTF8.GetBytes(keyValue);
+    }
+
+    // Latin1, except that '%' and '+' can't be encoded.
+    private sealed class Latin1WithoutPercentAndPlusEncoding : Encoding
+    {
+        public override int GetByteCount(char[] chars, int index, int count)
+        {
+            ThrowIfUnsupported(chars, index, count);
+            return Latin1.GetByteCount(chars, index, count);
+        }
+
+        public override int GetBytes(char[] chars, int charIndex, int charCount, byte[] bytes, int byteIndex)
+        {
+            ThrowIfUnsupported(chars, charIndex, charCount);
+            return Latin1.GetBytes(chars, charIndex, charCount, bytes, byteIndex);
+        }
+
+        public override int GetCharCount(byte[] bytes, int index, int count) => Latin1.GetCharCount(bytes, index, count);
+
+        public override int GetChars(byte[] bytes, int byteIndex, int byteCount, char[] chars, int charIndex)
+            => Latin1.GetChars(bytes, byteIndex, byteCount, chars, charIndex);
+
+        public override int GetMaxByteCount(int charCount) => Latin1.GetMaxByteCount(charCount);
+
+        public override int GetMaxCharCount(int byteCount) => Latin1.GetMaxCharCount(byteCount);
+
+        private static void ThrowIfUnsupported(char[] chars, int index, int count)
+        {
+            var unsupported = chars.AsSpan(index, count).IndexOfAny('%', '+');
+            if (unsupported >= 0)
+            {
+                throw new EncoderFallbackException($"Unable to encode '{chars[index + unsupported]}'.");
+            }
+        }
     }
 }
