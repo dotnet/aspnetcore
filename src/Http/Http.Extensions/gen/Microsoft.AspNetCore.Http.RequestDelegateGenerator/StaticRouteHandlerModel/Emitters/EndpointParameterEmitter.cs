@@ -36,7 +36,8 @@ internal static class EndpointParameterEmitter
         }
         else if (endpointParameter.IsOptional)
         {
-            codeWriter.WriteLine($"var {endpointParameter.EmitTempArgument()} = {endpointParameter.EmitAssigningCodeResult()}.Count > 0 ? (string?){endpointParameter.EmitAssigningCodeResult()} : null;");
+            var defaultValue = endpointParameter.Type.SpecialType == SpecialType.System_String ? endpointParameter.DefaultValue : "null";
+            codeWriter.WriteLine($"var {endpointParameter.EmitTempArgument()} = {endpointParameter.EmitAssigningCodeResult()}.Count > 0 ? (string?){endpointParameter.EmitAssigningCodeResult()} : {defaultValue};");
         }
         else if (endpointParameter.IsStringValues)
         {
@@ -213,7 +214,10 @@ internal static class EndpointParameterEmitter
             codeWriter.EndBlock();
         }
 
-        codeWriter.WriteLine($"var {endpointParameter.EmitTempArgument()} = (string?){endpointParameter.EmitAssigningCodeResult()};");
+        var defaultValue = endpointParameter.IsOptional && endpointParameter.Type.SpecialType == SpecialType.System_String
+            ? $" ?? {endpointParameter.DefaultValue}"
+            : string.Empty;
+        codeWriter.WriteLine($"var {endpointParameter.EmitTempArgument()} = (string?){endpointParameter.EmitAssigningCodeResult()}{defaultValue};");
         endpointParameter.EmitParsingBlock(codeWriter);
     }
 
