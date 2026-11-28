@@ -774,7 +774,15 @@ internal partial class RequestContext :
         for (var i = actions.Count - 1; i >= 0; i--)
         {
             var actionPair = actions[i];
-            await actionPair.Item1(actionPair.Item2);
+            try
+            {
+                await actionPair.Item1(actionPair.Item2);
+            }
+            catch (Exception ex)
+            {
+                // Log and continue so one failing callback does not skip the others or fail the request.
+                Log.OnCompletedError(Logger, ex);
+            }
         }
     }
 
