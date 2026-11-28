@@ -7,6 +7,7 @@ on:
     paths:
       - '.github/skills/**'
       - '.github/agents/review-*.agent.md'
+      - '.github/workflows/pull-request-review.md'
       - 'docs/CrossCuttingGuidance.md'
       - 'docs/BlazorComponentsGuidance.md'
       - 'eng/skill-evals/**'
@@ -17,6 +18,7 @@ on:
     paths:
       - '.github/skills/**'
       - '.github/agents/review-*.agent.md'
+      - '.github/workflows/pull-request-review.md'
       - 'docs/CrossCuttingGuidance.md'
       - 'docs/BlazorComponentsGuidance.md'
       - 'eng/skill-evals/**'

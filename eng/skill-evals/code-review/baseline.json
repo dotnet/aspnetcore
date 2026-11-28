@@ -1,0 +1,60 @@
+{
+  "configuration": "Run A, CLI 1.0.80, November 2026; code-only, no native skill or routed guidance",
+  "mustFindTrials": 3,
+  "catches": {
+    "case-01": 3,
+    "case-03": 3,
+    "case-06": 0,
+    "case-07": 3,
+    "case-08": 1,
+    "case-09": 3,
+    "case-12": 0,
+    "case-13": 2,
+    "case-14": 0,
+    "case-16": 0,
+    "case-18": 1,
+    "case-19": 0,
+    "case-20": 3,
+    "case-21": 3,
+    "case-22": 0,
+    "case-24": 2,
+    "case-26": 2,
+    "case-29": 0,
+    "case-30": 0,
+    "case-33": 0,
+    "case-34": 3,
+    "case-35": 1,
+    "case-36": 0
+  },
+  "controls": {
+    "case-02": {
+      "status": "findings",
+      "findings": [
+        "Fixed vary-by lists are reparsed, sorted, and allocated on every CacheView lookup, including cache hits, instead of reusing the parsed list."
+      ]
+    },
+    "case-04": { "status": "no-findings", "findings": [] },
+    "case-05": {
+      "status": "blocked",
+      "findings": [],
+      "note": "No completed baseline review. Report the candidate separately from the paired control comparison."
+    },
+    "case-10": { "status": "no-findings", "findings": [] },
+    "case-11": { "status": "no-findings", "findings": [] },
+    "case-15": { "status": "no-findings", "findings": [] },
+    "case-17": {
+      "status": "findings",
+      "findings": [
+        "Reporting BL0013 only at the first invocation lets a pragma suppression on that call hide the diagnostic for unsuppressed calls in the same type."
+      ]
+    },
+    "case-23": { "status": "no-findings", "findings": [] },
+    "case-28": { "status": "no-findings", "findings": [] },
+    "case-31": { "status": "no-findings", "findings": [] },
+    "case-32": { "status": "no-findings", "findings": [] }
+  },
+  "excluded": {
+    "case-25": "The proposed symmetric spacer guard was reverted; the merged behavior is deliberately asymmetric.",
+    "case-27": "The remaining missing assertion covered one link in one state, below the materiality bar."
+  }
+}
