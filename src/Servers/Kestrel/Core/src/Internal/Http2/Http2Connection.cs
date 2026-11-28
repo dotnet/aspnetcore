@@ -149,6 +149,7 @@ internal sealed partial class Http2Connection : IHttp2StreamLifetimeHandler, IHt
 
     // Internal for testing
     internal readonly Http2KeepAlive? _keepAlive;
+    internal long _pingFrameProcessedCount;
     internal readonly Dictionary<int, Http2Stream> _streams = new Dictionary<int, Http2Stream>();
     internal PooledStreamStack<Http2Stream> StreamPool;
     internal IHttp2StreamLifetimeHandler _streamLifetimeHandler;
@@ -336,9 +337,11 @@ internal sealed partial class Http2Connection : IHttp2StreamLifetimeHandler, IHt
                 try
                 {
                     bool frameReceived = false;
+                    bool pingFrameReceived = false;
                     while (Http2FrameReader.TryReadFrame(ref buffer, _incomingFrame, _serverSettings.MaxFrameSize, out var framePayload))
                     {
                         frameReceived = true;
+                        pingFrameReceived |= _incomingFrame.Type == Http2FrameType.PING;
                         Log.Http2FrameReceived(ConnectionId, _incomingFrame);
 
                         try
@@ -381,6 +384,11 @@ internal sealed partial class Http2Connection : IHttp2StreamLifetimeHandler, IHt
                             // NO_ERROR isn't a good choice because it indicates the connection is gracefully shutting down.
                             throw new Http2ConnectionErrorException(CoreStrings.Http2ErrorKeepAliveTimeout, Http2ErrorCode.INTERNAL_ERROR, ConnectionEndReason.KeepAliveTimeout);
                         }
+                    }
+
+                    if (pingFrameReceived)
+                    {
+                        Interlocked.Increment(ref _pingFrameProcessedCount);
                     }
                 }
                 finally
