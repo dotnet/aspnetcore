@@ -193,6 +193,155 @@ public class DefaultHubLifetimeManagerTests : HubLifetimeManagerTestsBase<Hub>
     }
 
     [Fact]
+    public async Task SendUserAsyncWritesToEveryConnectionOfTheUserOnly()
+    {
+        using var userA1 = new TestClient();
+        using var userA2 = new TestClient();
+        using var userB = new TestClient();
+        using var anonymous = new TestClient();
+        var manager = CreateNewHubLifetimeManager();
+        await manager.OnConnectedAsync(HubConnectionContextUtils.Create(userA1.Connection, userIdentifier: "a")).DefaultTimeout();
+        await manager.OnConnectedAsync(HubConnectionContextUtils.Create(userA2.Connection, userIdentifier: "a")).DefaultTimeout();
+        await manager.OnConnectedAsync(HubConnectionContextUtils.Create(userB.Connection, userIdentifier: "b")).DefaultTimeout();
+        await manager.OnConnectedAsync(HubConnectionContextUtils.Create(anonymous.Connection)).DefaultTimeout();
+
+        await manager.SendUserAsync("a", "Hello", ["World"]).DefaultTimeout();
+        await manager.SendUserAsync("A", "Hello", ["World"]).DefaultTimeout();   // user IDs are ordinal
+        await manager.SendUserAsync("missing", "Hello", ["World"]).DefaultTimeout();
+
+        AssertSingleHello(userA1);
+        AssertSingleHello(userA2);
+        Assert.Null(userB.TryRead());
+        Assert.Null(anonymous.TryRead());
+    }
+
+    [Fact]
+    public async Task SendUserAsyncDoesNotWriteToDisconnectedConnections()
+    {
+        using var client1 = new TestClient();
+        using var client2 = new TestClient();
+        using var client3 = new TestClient();
+        var manager = CreateNewHubLifetimeManager();
+        var connection1 = HubConnectionContextUtils.Create(client1.Connection, userIdentifier: "a");
+        var connection2 = HubConnectionContextUtils.Create(client2.Connection, userIdentifier: "a");
+        await manager.OnConnectedAsync(connection1).DefaultTimeout();
+        await manager.OnConnectedAsync(connection2).DefaultTimeout();
+
+        await manager.OnDisconnectedAsync(connection1).DefaultTimeout();
+        await manager.SendUserAsync("a", "Hello", ["World"]).DefaultTimeout();
+        Assert.Null(client1.TryRead());
+        AssertSingleHello(client2);
+
+        await manager.OnDisconnectedAsync(connection2).DefaultTimeout();
+        await manager.SendUserAsync("a", "Hello", ["World"]).DefaultTimeout();
+        Assert.Null(client2.TryRead());
+
+        // The user can connect again after all of its connections are gone.
+        await manager.OnConnectedAsync(HubConnectionContextUtils.Create(client3.Connection, userIdentifier: "a")).DefaultTimeout();
+        await manager.SendUserAsync("a", "Hello", ["World"]).DefaultTimeout();
+        AssertSingleHello(client3);
+    }
+
+    [Fact]
+    public async Task SendUserAsyncWithNullUserWritesToConnectionsWithoutUser()
+    {
+        using var user = new TestClient();
+        using var anonymous = new TestClient();
+        var manager = CreateNewHubLifetimeManager();
+        await manager.OnConnectedAsync(HubConnectionContextUtils.Create(user.Connection, userIdentifier: "a")).DefaultTimeout();
+        await manager.OnConnectedAsync(HubConnectionContextUtils.Create(anonymous.Connection)).DefaultTimeout();
+
+        await manager.SendUserAsync(null!, "Hello", ["World"]).DefaultTimeout();
+
+        Assert.Null(user.TryRead());
+        AssertSingleHello(anonymous);
+    }
+
+    [Fact]
+    public async Task SendUserAsyncSkipsConnectionWhoseUserIdentifierWasReassigned()
+    {
+        using var client1 = new TestClient();
+        using var client2 = new TestClient();
+        var manager = CreateNewHubLifetimeManager();
+        var connection1 = HubConnectionContextUtils.Create(client1.Connection, userIdentifier: "a");
+        await manager.OnConnectedAsync(connection1).DefaultTimeout();
+        connection1.UserIdentifier = "b";
+
+        await manager.SendUserAsync("a", "Hello", ["World"]).DefaultTimeout();
+        Assert.Null(client1.TryRead());
+
+        // Disconnecting removes the connection from the user it was indexed under.
+        await manager.OnDisconnectedAsync(connection1).DefaultTimeout();
+        await manager.OnConnectedAsync(HubConnectionContextUtils.Create(client2.Connection, userIdentifier: "a")).DefaultTimeout();
+        await manager.SendUserAsync("a", "Hello", ["World"]).DefaultTimeout();
+        Assert.Null(client1.TryRead());
+        AssertSingleHello(client2);
+    }
+
+    [Theory]
+    [InlineData(16, false)]
+    [InlineData(16, true)]
+    [InlineData(17, false)]
+    [InlineData(17, true)]
+    public async Task SendUsersAsyncWritesOnceToEachConnectionOfTheUsers(int targetCount, bool useList)
+    {
+        using var userA1 = new TestClient();
+        using var userA2 = new TestClient();
+        using var userB = new TestClient();
+        using var userC = new TestClient();
+        using var anonymous = new TestClient();
+        var manager = CreateNewHubLifetimeManager();
+        await manager.OnConnectedAsync(HubConnectionContextUtils.Create(userA1.Connection, userIdentifier: "a")).DefaultTimeout();
+        await manager.OnConnectedAsync(HubConnectionContextUtils.Create(userA2.Connection, userIdentifier: "a")).DefaultTimeout();
+        await manager.OnConnectedAsync(HubConnectionContextUtils.Create(userB.Connection, userIdentifier: "b")).DefaultTimeout();
+        await manager.OnConnectedAsync(HubConnectionContextUtils.Create(userC.Connection, userIdentifier: "c")).DefaultTimeout();
+        await manager.OnConnectedAsync(HubConnectionContextUtils.Create(anonymous.Connection)).DefaultTimeout();
+
+        var userIds = new string[targetCount];
+        for (var i = 0; i < userIds.Length; i++)
+        {
+            userIds[i] = (i % 3) switch
+            {
+                0 => "missing",
+                1 => "a",
+                _ => "b",
+            };
+        }
+
+        IReadOnlyList<string> targets = useList ? new List<string>(userIds) : userIds;
+        await manager.SendUsersAsync(targets, "Hello", ["World"]).DefaultTimeout();
+
+        AssertSingleHello(userA1);
+        AssertSingleHello(userA2);
+        AssertSingleHello(userB);
+        Assert.Null(userC.TryRead());
+        Assert.Null(anonymous.TryRead());
+    }
+
+    [Fact]
+    public async Task SendUsersAsyncWithNullUserWritesToConnectionsWithoutUser()
+    {
+        using var user = new TestClient();
+        using var anonymous = new TestClient();
+        var manager = CreateNewHubLifetimeManager();
+        await manager.OnConnectedAsync(HubConnectionContextUtils.Create(user.Connection, userIdentifier: "a")).DefaultTimeout();
+        await manager.OnConnectedAsync(HubConnectionContextUtils.Create(anonymous.Connection)).DefaultTimeout();
+
+        await manager.SendUsersAsync(["a", null!], "Hello", ["World"]).DefaultTimeout();
+
+        AssertSingleHello(user);
+        AssertSingleHello(anonymous);
+    }
+
+    private static void AssertSingleHello(TestClient client)
+    {
+        var message = Assert.IsType<InvocationMessage>(client.TryRead());
+        Assert.Equal("Hello", message.Target);
+        Assert.Equal("World", Assert.Single(message.Arguments));
+        Assert.Null(client.TryRead());
+    }
+
+    [Fact]
     public async Task SendGroupAsyncWillCancelWithToken()
     {
         using (var client1 = new TestClient(pauseWriterThreshold: 2))
