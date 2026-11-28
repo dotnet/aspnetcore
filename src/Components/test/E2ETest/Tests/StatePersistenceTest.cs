@@ -1,12 +1,14 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Net.Http;
 using Components.TestServer.RazorComponents;
 using Microsoft.AspNetCore.Components.E2ETest.Infrastructure;
 using Microsoft.AspNetCore.Components.E2ETest.Infrastructure.ServerFixtures;
 using Microsoft.AspNetCore.Components.E2ETests.ServerRenderingTests;
 using Microsoft.AspNetCore.Components.Web;
 using Microsoft.AspNetCore.E2ETesting;
+using Microsoft.Extensions.DependencyInjection;
 using OpenQA.Selenium;
 using TestServer;
 using Xunit.Abstractions;
@@ -367,6 +369,103 @@ public class StatePersistenceTest : ServerTestBase<BasicTestAppServerSiteFixture
 
         Browser.Click(By.CssSelector("button.btn-primary"));
         Browser.Equal("Current count: 1", () => Browser.Exists(By.CssSelector("p[role='status']")).Text);
+    }
+
+    // Regression coverage for issue 70390: initial circuit startup overlaps enhanced navigation.
+    [Fact]
+    public Task StateIsRestoredWhenNavigatingBackDuringInitialInteractiveRender()
+        => StateIsRestoredWhenNavigatingBack(interactiveBeforeNavigation: false);
+
+    [Fact]
+    public Task StateIsRestoredWhenNavigatingBackAfterInitialInteractiveRender()
+        => StateIsRestoredWhenNavigatingBack(interactiveBeforeNavigation: true);
+
+    private async Task StateIsRestoredWhenNavigatingBack(bool interactiveBeforeNavigation)
+    {
+        var testId = Guid.NewGuid();
+        Navigate($"subdir/persistent-state/startup-navigation?test-id={testId}&gate-startup-negotiate=true&suppress-autostart");
+        var js = (IJavaScriptExecutor)Browser;
+        using var client = new HttpClient();
+        var releaseUri = new Uri(new Uri((string)js.ExecuteScript("return document.baseURI")), $"autopause-test/release/{testId}");
+        try
+        {
+            js.ExecuteScript("sessionStorage.setItem('keep-circuit-alive', 'true')");
+            Browser.Equal("static", () => Browser.FindElement(By.Id("startup-state-status")).Text);
+            var initialState = Browser.FindElement(By.Id("startup-state-value")).Text;
+            Assert.True(Guid.TryParse(initialState, out _));
+            Browser.Click(By.Id("call-blazor-start"));
+            Browser.True(() => (bool)js.ExecuteScript("return window.startupNegotiationBlocked === true"));
+
+            if (interactiveBeforeNavigation)
+            {
+                js.ExecuteScript("window.releaseStartupNegotiation()");
+                Browser.Equal("interactive", () => Browser.FindElement(By.Id("startup-state-status")).Text);
+                Browser.Equal(initialState, () => Browser.FindElement(By.Id("startup-state-value")).Text);
+            }
+
+            Browser.Click(By.Id("startup-slow-link"));
+            Browser.Exists(By.Id("startup-slow-status"));
+            Assert.True((bool)js.ExecuteScript("return window.startupNegotiationBlocked === true"));
+            if (!interactiveBeforeNavigation)
+            {
+                Browser.Equal("static", () => Browser.FindElement(By.Id("startup-slow-status")).Text);
+                js.ExecuteScript("window.releaseStartupNegotiation()");
+            }
+
+            Browser.Equal("loading", () => Browser.FindElement(By.Id("startup-slow-status")).Text);
+            Browser.Navigate().Back();
+            Browser.Exists(By.Id("startup-state-value"));
+            Assert.True((bool)js.ExecuteScript("return window.startupNegotiationBlocked === true"));
+            var restoredState = Browser.FindElement(By.Id("startup-state-value")).Text;
+            Assert.True(Guid.TryParse(restoredState, out _));
+            Browser.True(() => _serverFixture.Host.Services.GetRequiredService<AutoPauseTestStreamGate>().IsCompleted($"{testId}:disposed"));
+
+            using var release = await client.PostAsync(releaseUri, null);
+            release.EnsureSuccessStatusCode();
+            Browser.Equal("interactive", () => Browser.FindElement(By.Id("startup-state-status")).Text);
+            Browser.Equal(restoredState, () => Browser.FindElement(By.Id("startup-state-value")).Text);
+            Browser.Equal("0", () => Browser.FindElement(By.Id("startup-state-click")).Text);
+            Browser.Click(By.Id("startup-state-click"));
+            Browser.Equal("1", () => Browser.FindElement(By.Id("startup-state-click")).Text);
+        }
+        finally
+        {
+            js.ExecuteScript("window.releaseStartupNegotiation?.(); sessionStorage.removeItem('keep-circuit-alive')");
+            using var release = await client.PostAsync(releaseUri, null);
+            release.EnsureSuccessStatusCode();
+        }
+    }
+
+    [Fact]
+    public async Task EnhancedNavigationDisposesComponentAwaitingInitialRender()
+    {
+        var testId = Guid.NewGuid();
+        Navigate($"subdir/persistent-state/startup-navigation-slow?test-id={testId}&cancel-on-dispose=true&suppress-autostart");
+        var js = (IJavaScriptExecutor)Browser;
+        using var client = new HttpClient();
+        var releaseUri = new Uri(new Uri((string)js.ExecuteScript("return document.baseURI")), $"autopause-test/release/{testId}");
+        try
+        {
+            js.ExecuteScript("sessionStorage.setItem('keep-circuit-alive', 'true')");
+            Browser.Click(By.Id("call-blazor-start"));
+            Browser.Equal("loading", () => Browser.FindElement(By.Id("startup-slow-status")).Text);
+
+            Browser.Click(By.Id("startup-state-link"));
+            Browser.Exists(By.Id("startup-state-value"));
+            var prerenderedState = Browser.FindElement(By.Id("startup-state-value")).Text;
+            Assert.True(Guid.TryParse(prerenderedState, out _));
+            Browser.Equal("interactive", () => Browser.FindElement(By.Id("startup-state-status")).Text);
+            Browser.Equal(prerenderedState, () => Browser.FindElement(By.Id("startup-state-value")).Text);
+            Browser.True(() => _serverFixture.Host.Services.GetRequiredService<AutoPauseTestStreamGate>().IsCompleted(testId.ToString()));
+            Browser.Click(By.Id("startup-state-click"));
+            Browser.Equal("1", () => Browser.FindElement(By.Id("startup-state-click")).Text);
+        }
+        finally
+        {
+            js.ExecuteScript("sessionStorage.removeItem('keep-circuit-alive')");
+            using var release = await client.PostAsync(releaseUri, null);
+            release.EnsureSuccessStatusCode();
+        }
     }
 
     private void BlockWebAssemblyResourceLoad()

@@ -276,6 +276,21 @@
                 enableClassicInitializers: enableClassicInitializers,
                 webAssembly: webAssemblySettings,
                 circuit: {
+                    configureSignalR: builder => {
+                        if (getQueryParam('gate-startup-negotiate') === 'true') {
+                            const negotiationGate = new Promise(resolve => window.releaseStartupNegotiation = resolve);
+                            const originalFetch = window.fetch;
+                            window.fetch = async (input, options) => {
+                                const url = input instanceof Request ? input.url : input;
+                                if (new URL(url, document.baseURI).pathname.endsWith('/_blazor/negotiate')) {
+                                    window.fetch = originalFetch;
+                                    window.startupNegotiationBlocked = true;
+                                    await negotiationGate;
+                                }
+                                return originalFetch.call(window, input, options);
+                            };
+                        }
+                    },
                     reconnectionOptions: {
                         // It's easier to test the reconnection logic if we wait a bit
                         // before attempting to reconnect

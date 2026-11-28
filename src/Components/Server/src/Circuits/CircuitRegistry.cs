@@ -309,10 +309,16 @@ internal partial class CircuitRegistry
 
     private async Task PauseAndDisposeCircuitHost(CircuitHost circuitHost, bool saveStateToClient)
     {
-        await _circuitPersistenceManager.PauseCircuitAsync(circuitHost, saveStateToClient);
-        circuitHost.UnhandledException -= CircuitHost_UnhandledException;
-        circuitHost.Client.SetDisconnected();
-        await circuitHost.DisposeAsync();
+        try
+        {
+            await _circuitPersistenceManager.PauseCircuitAsync(circuitHost, saveStateToClient);
+        }
+        finally
+        {
+            circuitHost.UnhandledException -= CircuitHost_UnhandledException;
+            circuitHost.Client.SetDisconnected();
+            await circuitHost.DisposeAsync();
+        }
     }
 
     internal async Task PauseCircuitAsync(

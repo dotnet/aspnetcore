@@ -1,0 +1,9 @@
+@page "/persistent-state/startup-navigation"
+
+<InitialCircuitPersistentStateComponent @rendermode="@(new InteractiveServerRenderMode(prerender: true))" />
+<a id="startup-slow-link" href="@($"persistent-state/startup-navigation-slow?test-id={TestId}")">Slow island</a>
+
+@code {
+    [SupplyParameterFromQuery(Name = "test-id")]
+    public Guid TestId { get; set; }
+}
