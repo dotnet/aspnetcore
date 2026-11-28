@@ -269,4 +269,19 @@ public class ResponseCookiesTest
 
         Assert.Throws<ArgumentException>(() => cookies.Append(key, "1"));
     }
+
+    [Theory]
+    [InlineData("bad,")]
+    [InlineData("bad@")]
+    [InlineData("bad;")]
+    [InlineData("bad name")]
+    public void InvalidCookieNamesShouldThrow(string badName)
+    {
+        var headers = (IHeaderDictionary)new HeaderDictionary();
+        var features = MakeFeatures(headers);
+        var cookies = new ResponseCookies(features);
+        var badCookie = new[] { new KeyValuePair<string, string>(badName, "value") };
+
+        Assert.Throws<ArgumentException>(() => cookies.Append(badCookie, new CookieOptions()));
+    }
 }

@@ -93,6 +93,7 @@ internal sealed partial class ResponseCookies : IResponseCookies
 
         foreach (var keyValuePair in keyValuePairs)
         {
+            CookieHeaderValue.CheckNameFormat(keyValuePair.Key, nameof(keyValuePair.Key));
             cookies[position] = string.Concat(keyValuePair.Key, "=", Uri.EscapeDataString(keyValuePair.Value), cookieSuffix);
             position++;
         }

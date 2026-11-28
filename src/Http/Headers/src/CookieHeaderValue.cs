@@ -162,7 +162,14 @@ public class CookieHeaderValue
         return MultipleValueParser.TryParseStrictValues(inputs, out parsedValues);
     }
 
-    internal static void CheckNameFormat(StringSegment name, string parameterName)
+    /// <summary>
+    /// Checks whether a cookie name conforms to the valid format for a <c>Cookie</c> header value.
+    /// </summary>
+    /// <param name="name">The cookie name to validate.</param>
+    /// <param name="parameterName">The name of the parameter being validated.</param>
+    /// <exception cref="ArgumentNullException"><paramref name="name"/> is <see langword="null"/>.</exception>
+    /// <exception cref="ArgumentException"><paramref name="name"/> is not a valid cookie name.</exception>
+    public static void CheckNameFormat(StringSegment name, string parameterName)
     {
         if (name == null)
         {
