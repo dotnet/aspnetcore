@@ -2,6 +2,8 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Diagnostics.CodeAnalysis;
+using System.Runtime.ExceptionServices;
+using Microsoft.AspNetCore.Internal;
 using Microsoft.JSInterop;
 
 namespace Microsoft.AspNetCore.Components.Platform;
@@ -52,6 +54,68 @@ internal sealed class JSCallbackFactory : IInternalAsyncDisposal
         {
             callbackReference.Dispose();
             throw;
+        }
+    }
+
+    /// <summary>
+    /// Runs a browser operation that calls <paramref name="callback"/> at most once and waits for the <see cref="Task"/> it returns,
+    /// such as <c>navigator.locks.request()</c>. The JavaScript function is released when the operation settles.
+    /// </summary>
+    /// <param name="callback">The .NET callback that the operation calls.</param>
+    /// <param name="shapesJson">
+    /// A JSON array with one <c>ArgumentShape</c> (see <c>js/Platform.ts</c>) for the argument of <paramref name="callback"/>.
+    /// </param>
+    /// <param name="operation">The operation, which receives the JavaScript function that calls <paramref name="callback"/>.</param>
+    /// <returns>A <see cref="Task"/> that completes when the operation settles.</returns>
+    /// <remarks>
+    /// An exception from <paramref name="callback"/> rejects the promise that the browser waits for, and is thrown from this method
+    /// in place of the <see cref="JSException"/> that the rejected operation produces.
+    /// </remarks>
+    public async Task InvokeWithCallbackAsync<[DynamicallyAccessedMembers(LinkerFlags.JsonSerialized)] T1>(
+        Func<T1, Task> callback,
+        string shapesJson,
+        Func<IJSObjectReference, Task> operation)
+    {
+        ExceptionDispatchInfo? callbackException = null;
+        var jsCallback = new JSCallback<T1>
+        {
+            Handler = async arg =>
+            {
+                try
+                {
+                    await callback(arg);
+                }
+                catch (Exception ex)
+                {
+                    // Rethrown so that the browser sees the failure, such as to release a lock.
+                    callbackException = ExceptionDispatchInfo.Capture(ex);
+                    throw;
+                }
+            },
+        };
+
+        var (function, callbackReference) = await CreateAsync(jsCallback, shapesJson);
+
+        try
+        {
+            await operation(function);
+        }
+        catch (JSException)
+        {
+            // Not an exception filter: WebAssembly skipped this clause with "when", and the JSException reached the caller.
+            callbackException?.Throw();
+            throw;
+        }
+        finally
+        {
+            try
+            {
+                await function.DisposeAsync();
+            }
+            finally
+            {
+                callbackReference.Dispose();
+            }
         }
     }
 

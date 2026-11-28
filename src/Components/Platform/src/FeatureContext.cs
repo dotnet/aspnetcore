@@ -12,7 +12,7 @@ namespace Microsoft.AspNetCore.Components.Platform;
 internal sealed class FeatureContext : IInternalAsyncDisposal
 {
     private readonly ILoggerFactory _loggerFactory;
-    // Typed as the interface, so that disposal does not keep the type in an app that never adds a listener.
+    // Typed as the interface, so that disposal does not keep the type in an app that never uses a callback.
     private IInternalAsyncDisposal? _callbackFactory;
 
     public FeatureContext(IJSRuntime jsRuntime, ILoggerFactory loggerFactory)
@@ -27,10 +27,16 @@ internal sealed class FeatureContext : IInternalAsyncDisposal
     public IJSRuntime JSRuntime { get; }
 
     /// <summary>
+    /// Gets the factory that a projection uses to pass a .NET callback to a browser operation.
+    /// </summary>
+    public JSCallbackFactory CallbackFactory
+        => (JSCallbackFactory)(_callbackFactory ??= new JSCallbackFactory(JSRuntime));
+
+    /// <summary>
     /// Creates the collection that a projection uses to add event listeners to its JavaScript object.
     /// </summary>
     public EventListenerCollection CreateEventListenerCollection()
-        => new((JSCallbackFactory)(_callbackFactory ??= new JSCallbackFactory(JSRuntime)), _loggerFactory.CreateLogger<EventListenerCollection>());
+        => new(CallbackFactory, _loggerFactory.CreateLogger<EventListenerCollection>());
 
     // Window calls this last, after every listener that needs the module is removed.
     ValueTask IInternalAsyncDisposal.InternalDisposeAsync()

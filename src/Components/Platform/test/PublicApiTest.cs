@@ -29,6 +29,7 @@ public class PublicApiTest
     [InlineData(typeof(Navigator))]
     [InlineData(typeof(Screen))]
     [InlineData(typeof(ScreenOrientation))]
+    [InlineData(typeof(LockManager))]
     public void SharedInstances_CannotBeDisposedByApplicationCode(Type type)
     {
         Assert.False(typeof(IAsyncDisposable).IsAssignableFrom(type));
@@ -55,6 +56,7 @@ public class PublicApiTest
             typeof(Navigator),
             typeof(Screen),
             typeof(ScreenOrientation),
+            typeof(LockManager),
             typeof(Window),
         ];
 
