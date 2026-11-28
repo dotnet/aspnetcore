@@ -215,7 +215,10 @@ public partial class RouteHandlerAnalyzer : DiagnosticAnalyzer
         {
             if (httpMethods1.IsEmpty || httpMethods2.IsEmpty)
             {
-                return true;
+                // Routing ranks an endpoint that declares HTTP methods ahead of one that
+                // doesn't (HttpMethodMetadataEndpointComparer), so the two aren't ambiguous.
+                // Two method-agnostic routes are still ambiguous with each other.
+                return httpMethods1.IsEmpty && httpMethods2.IsEmpty;
             }
 
             foreach (var item1 in httpMethods1)
