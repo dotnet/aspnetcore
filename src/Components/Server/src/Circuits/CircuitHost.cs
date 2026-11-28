@@ -27,6 +27,8 @@ internal partial class CircuitHost : IAsyncDisposable
     private readonly ILogger _logger;
     private readonly CircuitMetrics _circuitMetrics;
     private readonly CircuitActivitySource _circuitActivitySource;
+    private readonly object _inboundWorkLock = new();
+    private Task _inboundWorkQueue = Task.CompletedTask;
     private Func<Func<Task>, Task> _dispatchInboundActivity;
     private CircuitHandler[] _circuitHandlers;
     private bool _initialized;
@@ -493,17 +495,15 @@ internal partial class CircuitHost : IAsyncDisposable
 
     // ReceiveJSDataChunk is used in a fire-and-forget context, so it's responsible for its own
     // error handling.
-    internal async Task<bool> ReceiveJSDataChunk(long streamId, long chunkId, byte[] chunk, string error)
+    internal async Task ReceiveJSDataChunk(long streamId, long chunkId, byte[] chunk, string error, bool acknowledge = false)
     {
         AssertInitialized();
         AssertNotDisposed();
 
+        bool streamIsAlive;
         try
         {
-            return await HandleInboundActivityAsync(() => Renderer.Dispatcher.InvokeAsync(() =>
-            {
-                return RemoteJSDataStream.ReceiveData(JSRuntime, streamId, chunkId, chunk, error);
-            }));
+            streamIsAlive = await HandleInboundActivityAsync(() => RemoteJSDataStream.ReceiveData(JSRuntime, streamId, chunkId, chunk, error));
         }
         catch (Exception ex)
         {
@@ -512,7 +512,12 @@ internal partial class CircuitHost : IAsyncDisposable
             Log.ReceiveJSDataChunkException(_logger, streamId, ex);
             await TryNotifyClientErrorAsync(Client, GetClientErrorMessage(ex, "Invalid chunk supplied to stream."));
             UnhandledException?.Invoke(this, new UnhandledExceptionEventArgs(ex, isTerminating: false));
-            return false;
+            streamIsAlive = false;
+        }
+
+        if (acknowledge)
+        {
+            await Client.SendAsync("JS.EndReceiveJSDataChunk", streamId, chunkId, streamIsAlive);
         }
     }
 
@@ -660,6 +665,42 @@ internal partial class CircuitHost : IAsyncDisposable
         // Note that while the rendering is async, we cannot await it here. The Task returned by ProcessBufferedRenderBatches relies on
         // OnRenderCompletedAsync to be invoked to complete, and SignalR does not allow concurrent hub method invocations.
         _ = Renderer.Dispatcher.InvokeAsync(Renderer.ProcessBufferedRenderBatches);
+    }
+
+    // Internal for testing.
+    internal void EnqueueInboundCall(Func<Task> work)
+    {
+        lock (_inboundWorkLock)
+        {
+            if (_disposed)
+            {
+                return;
+            }
+
+            _inboundWorkQueue = DispatchInboundCallAsync(_inboundWorkQueue, work);
+        }
+
+        async Task DispatchInboundCallAsync(Task antecedent, Func<Task> work)
+        {
+            await antecedent.ConfigureAwait(ConfigureAwaitOptions.SuppressThrowing | ConfigureAwaitOptions.ForceYielding);
+            if (_disposed)
+            {
+                return;
+            }
+
+            _ = ObserveDisposedAsync(this, work());
+        }
+
+        static async Task ObserveDisposedAsync(CircuitHost host, Task task)
+        {
+            try
+            {
+                await task.ConfigureAwait(false);
+            }
+            catch (ObjectDisposedException) when (host._disposed)
+            {
+            }
+        }
     }
 
     // Internal for testing.

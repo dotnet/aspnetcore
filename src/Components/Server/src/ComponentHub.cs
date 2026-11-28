@@ -489,7 +489,7 @@ internal sealed partial class ComponentHub : Hub
             return;
         }
 
-        _ = circuitHost.BeginInvokeDotNetFromJS(callId, assemblyName, methodIdentifier, dotNetObjectId, argsJson);
+        circuitHost.EnqueueInboundCall(() => circuitHost.BeginInvokeDotNetFromJS(callId, assemblyName, methodIdentifier, dotNetObjectId, argsJson));
     }
 
     public async ValueTask EndInvokeJSFromDotNet(long asyncHandle, bool succeeded, string arguments)
@@ -500,7 +500,7 @@ internal sealed partial class ComponentHub : Hub
             return;
         }
 
-        _ = circuitHost.EndInvokeJSFromDotNet(asyncHandle, succeeded, arguments);
+        circuitHost.EnqueueInboundCall(() => circuitHost.EndInvokeJSFromDotNet(asyncHandle, succeeded, arguments));
     }
 
     public async ValueTask ReceiveByteArray(int id, byte[] data)
@@ -511,23 +511,18 @@ internal sealed partial class ComponentHub : Hub
             return;
         }
 
-        _ = circuitHost.ReceiveByteArray(id, data);
+        circuitHost.EnqueueInboundCall(() => circuitHost.ReceiveByteArray(id, data));
     }
 
-    public async ValueTask<bool> ReceiveJSDataChunk(long streamId, long chunkId, byte[] chunk, string error)
+    public async ValueTask ReceiveJSDataChunk(long streamId, long chunkId, byte[] chunk, string error, bool acknowledge = false)
     {
         var circuitHost = await GetActiveCircuitAsync();
         if (circuitHost == null)
         {
-            return false;
+            return;
         }
 
-        // Note: this await will block the circuit. This is intentional.
-        // The call into the circuitHost.ReceiveJSDataChunk will block regardless as we call into Renderer.Dispatcher.InvokeAsync
-        // which ensures we're running on the main circuit thread so that the server/client remain in the same
-        // synchronization context. Additionally, we're utilizing the return value as a heartbeat for the transfer
-        // process, and without it would likely need to setup a separate endpoint to handle that functionality.
-        return await circuitHost.ReceiveJSDataChunk(streamId, chunkId, chunk, error);
+        circuitHost.EnqueueInboundCall(() => circuitHost.ReceiveJSDataChunk(streamId, chunkId, chunk, error, acknowledge));
     }
 
     public async IAsyncEnumerable<ArraySegment<byte>> SendDotNetStreamToJS(long streamId)
@@ -574,7 +569,7 @@ internal sealed partial class ComponentHub : Hub
         }
 
         Log.ReceivedConfirmationForBatch(_logger, renderId);
-        _ = circuitHost.OnRenderCompletedAsync(renderId, errorMessageOrNull);
+        circuitHost.EnqueueInboundCall(() => circuitHost.OnRenderCompletedAsync(renderId, errorMessageOrNull));
     }
 
     public async ValueTask OnLocationChanged(string uri, string? state, bool intercepted)
@@ -585,7 +580,7 @@ internal sealed partial class ComponentHub : Hub
             return;
         }
 
-        _ = circuitHost.OnLocationChangedAsync(uri, state, intercepted);
+        circuitHost.EnqueueInboundCall(() => circuitHost.OnLocationChangedAsync(uri, state, intercepted));
     }
 
     public async ValueTask OnLocationChanging(int callId, string uri, string? state, bool intercepted)
@@ -596,7 +591,7 @@ internal sealed partial class ComponentHub : Hub
             return;
         }
 
-        _ = circuitHost.OnLocationChangingAsync(callId, uri, state, intercepted);
+        circuitHost.EnqueueInboundCall(() => circuitHost.OnLocationChangingAsync(callId, uri, state, intercepted));
     }
 
     // We store the CircuitHost through a *handle* here because Context.Items is tied to the lifetime

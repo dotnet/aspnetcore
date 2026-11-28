@@ -1,8 +1,58 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-import { HubConnection } from '@microsoft/signalr';
+import { HubConnection, HubConnectionState } from '@microsoft/signalr';
 import { getNextChunk } from '../../StreamingInterop';
+
+type PendingChunkAck = {
+  resolve: (streamIsAlive: boolean) => void;
+  reject: (error: Error) => void;
+};
+
+const pendingAcksByConnection = new WeakMap<HubConnection, Map<string, PendingChunkAck>>();
+
+function getPendingAcks(connection: HubConnection): Map<string, PendingChunkAck> {
+  let pending = pendingAcksByConnection.get(connection);
+  if (!pending) {
+    pending = new Map<string, PendingChunkAck>();
+    pendingAcksByConnection.set(connection, pending);
+    connection.on('JS.EndReceiveJSDataChunk', (streamId: number, chunkId: number, streamIsAlive: boolean) => {
+      const key = `${streamId}:${chunkId}`;
+      const entry = pending?.get(key);
+      if (entry) {
+        pending?.delete(key);
+        entry.resolve(streamIsAlive);
+      }
+    });
+    connection.onclose(error => rejectPendingJSDataStreamAcks(connection, error ?? new Error('Connection closed.')));
+  }
+  return pending;
+}
+
+export function rejectPendingJSDataStreamAcks(connection: HubConnection, error: Error): void {
+  const pending = pendingAcksByConnection.get(connection);
+  if (!pending) {
+    return;
+  }
+
+  for (const entry of pending.values()) {
+    entry.reject(error);
+  }
+  pending.clear();
+}
+
+function waitForChunkAck(connection: HubConnection, streamId: number, chunkId: number): Promise<boolean> {
+  const pending = getPendingAcks(connection);
+  const key = `${streamId}:${chunkId}`;
+  return new Promise<boolean>((resolve, reject) => {
+    if (connection.state !== HubConnectionState.Connected) {
+      reject(new Error('Cannot await data chunk acknowledgement when the connection is not connected.'));
+      return;
+    }
+
+    pending.set(key, { resolve, reject });
+  });
+}
 
 export function sendJSDataStream(connection: HubConnection, data: ArrayBufferView | Blob, streamId: number, chunkSize: number, onComplete?: () => void): void {
   // Run the rest in the background, without delaying the completion of the call to sendJSDataStream
@@ -24,14 +74,18 @@ export function sendJSDataStream(connection: HubConnection, data: ArrayBufferVie
         numChunksUntilNextAck--;
         if (numChunksUntilNextAck > 1) {
           // Most of the time just send and buffer within the network layer
-          await connection.send('ReceiveJSDataChunk', streamId, chunkId, nextChunkData, null);
+          await connection.send('ReceiveJSDataChunk', streamId, chunkId, nextChunkData, null, false);
         } else {
-          // But regularly, wait for an ACK, so other events can be interleaved
-          // The use of "invoke" (not "send") here is what prevents the JS side from queuing up chunks
-          // faster than the .NET side can receive them. It means that if there are other user interactions
-          // while the transfer is in progress, they would get inserted in the middle, so it would be
-          // possible to navigate away or cancel without first waiting for all the remaining chunks.
-          const streamIsAlive = await connection.invoke<boolean>('ReceiveJSDataChunk', streamId, chunkId, nextChunkData, null);
+          // Regularly wait for server pipe-write completion via JS.EndReceiveJSDataChunk so backpressure
+          // and cancellation remain intact without holding a SignalR hub invocation open.
+          const ackPromise = waitForChunkAck(connection, streamId, chunkId);
+          try {
+            await connection.send('ReceiveJSDataChunk', streamId, chunkId, nextChunkData, null, true);
+          } catch (sendError) {
+            getPendingAcks(connection).delete(`${streamId}:${chunkId}`);
+            throw sendError;
+          }
+          const streamIsAlive = await ackPromise;
 
           // Checks to see if we should continue streaming or if the stream has been cancelled/disposed.
           if (!streamIsAlive) {
@@ -50,7 +104,7 @@ export function sendJSDataStream(connection: HubConnection, data: ArrayBufferVie
         chunkId++;
       }
     } catch (error) {
-      await connection.send('ReceiveJSDataChunk', streamId, -1, null, (error as Error).toString());
+      await connection.send('ReceiveJSDataChunk', streamId, -1, null, (error as Error).toString(), false);
     } finally {
       onComplete?.();
     }

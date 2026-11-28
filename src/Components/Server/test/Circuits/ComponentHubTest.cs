@@ -504,6 +504,228 @@ public class ComponentHubTest
         await hub.OnAuthenticationRefreshedAsync();
     }
 
+    [Fact]
+    public async Task InboundMonitoredHubMethodsReturnBeforeSynchronousWorkCompletes()
+    {
+        using var gate = new ManualResetEventSlim();
+        var started = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+        var executionOrder = new List<string>();
+        var allCompleted = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+        var handler = new BlockingInboundCircuitHandler(gate, started, executionOrder, expectedCount: 3, allCompleted);
+        var circuitHost = TestCircuitHost.Create(handlers: [handler]);
+        await circuitHost.InitializeAsync(
+            new ProtectedPrerenderComponentApplicationStore(Mock.Of<IDataProtectionProvider>()),
+            default,
+            CancellationToken.None);
+        handler.Arm();
+
+        var handleRegistry = new TestCircuitHandleRegistry();
+        handleRegistry.SetCircuit(new Dictionary<object, object>(), new object(), circuitHost);
+        var (_, hub) = InitializeComponentHub(handleRegistry: handleRegistry);
+
+        await hub.BeginInvokeDotNetFromJS("1", "TestAssembly", "SyncWork", 0, "[]");
+        await started.Task.WaitAsync(TimeSpan.FromSeconds(5));
+
+        // Second and third hub calls must also return immediately while the first synchronous handler is still blocked.
+        await hub.OnLocationChanged("https://localhost:5000/next", null, true);
+        await hub.OnLocationChanging(2, "https://localhost:5000/next", null, true);
+
+        Assert.Single(executionOrder);
+
+        gate.Set();
+        await allCompleted.Task.WaitAsync(TimeSpan.FromSeconds(5));
+        Assert.Equal(new[] { "1", "2", "3" }, executionOrder);
+    }
+
+    [Fact]
+    public async Task OnRenderCompletedDoesNotOvertakeEarlierQueuedBeginInvokeDotNetFromJS()
+    {
+        using var gate = new ManualResetEventSlim();
+        var started = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+        var executionOrder = new List<string>();
+        var allCompleted = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+        var handler = new BlockingInboundCircuitHandler(gate, started, executionOrder, expectedCount: 3, allCompleted);
+        var circuitHost = TestCircuitHost.Create(handlers: [handler]);
+        await circuitHost.InitializeAsync(
+            new ProtectedPrerenderComponentApplicationStore(Mock.Of<IDataProtectionProvider>()),
+            default,
+            CancellationToken.None);
+        handler.Arm();
+
+        var handleRegistry = new TestCircuitHandleRegistry();
+        handleRegistry.SetCircuit(new Dictionary<object, object>(), new object(), circuitHost);
+        var (_, hub) = InitializeComponentHub(handleRegistry: handleRegistry);
+
+        await hub.BeginInvokeDotNetFromJS("1", "TestAssembly", "SyncWork", 0, "[]");
+        await started.Task.WaitAsync(TimeSpan.FromSeconds(5));
+
+        // Enqueue another interaction followed immediately by a render completion ack while call #1 holds the queue.
+        await hub.BeginInvokeDotNetFromJS("2", "TestAssembly", "ClickHandler", 0, "[]");
+        await hub.OnRenderCompleted(1, null);
+
+        gate.Set();
+        await allCompleted.Task.WaitAsync(TimeSpan.FromSeconds(5));
+        Assert.Equal(new[] { "1", "2", "3" }, executionOrder);
+    }
+
+    [Fact]
+    public async Task BackpressuredUploadChunkDoesNotBlockConcurrentHubAcknowledgements()
+    {
+        var mockClientProxy = new Mock<ISingleClientProxy>();
+        var ackSent = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+        long? expectedStreamId = null;
+        CircuitHost circuitHost = null;
+        mockClientProxy
+            .Setup(c => c.SendCoreAsync("JS.BeginInvokeJS", It.IsAny<object[]>(), It.IsAny<CancellationToken>()))
+            .Callback<string, object[], CancellationToken>((_, args, _) =>
+            {
+                var asyncHandle = (long)args[0];
+                _ = circuitHost.EndInvokeJSFromDotNet(asyncHandle, true, $"[{asyncHandle}, true, null]");
+            })
+            .Returns(Task.CompletedTask);
+        mockClientProxy
+            .Setup(c => c.SendCoreAsync("JS.EndReceiveJSDataChunk", It.IsAny<object[]>(), It.IsAny<CancellationToken>()))
+            .Callback<string, object[], CancellationToken>((_, args, _) =>
+            {
+                if (expectedStreamId is long sid && args.Length == 3 && (long)args[0] == sid && (long)args[1] == 1L && (bool)args[2])
+                {
+                    ackSent.TrySetResult();
+                }
+            })
+            .Returns(Task.CompletedTask);
+
+        var concurrentCallEntered = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+        var activityCount = 0;
+        var handler = new NotifyOnSecondInboundActivityHandler(() =>
+        {
+            if (Interlocked.Increment(ref activityCount) >= 3)
+            {
+                // Activity 1 = chunk 0, Activity 2 = chunk 1, Activity 3 = BeginInvokeDotNetFromJS.
+                concurrentCallEntered.TrySetResult();
+            }
+        });
+        circuitHost = TestCircuitHost.Create(handlers: [handler], clientProxy: new CircuitClientProxy(mockClientProxy.Object, "123"));
+        circuitHost.JSRuntime.Initialize(circuitHost.Client);
+        await circuitHost.InitializeAsync(
+            new ProtectedPrerenderComponentApplicationStore(Mock.Of<IDataProtectionProvider>()),
+            default,
+            CancellationToken.None);
+        handler.Arm();
+
+        var jsStreamRef = new TestJSStreamReference(128 * 1024);
+        var stream = await RemoteJSDataStream.CreateRemoteJSDataStreamAsync(
+            circuitHost.JSRuntime,
+            jsStreamRef,
+            totalLength: 128 * 1024,
+            signalRMaximumIncomingBytes: 64 * 1024,
+            jsInteropDefaultCallTimeout: TimeSpan.FromSeconds(30));
+        var streamId = circuitHost.JSRuntime.RemoteJSDataStreamInstances.Single().Key;
+        expectedStreamId = streamId;
+
+        var handleRegistry = new TestCircuitHandleRegistry();
+        handleRegistry.SetCircuit(new Dictionary<object, object>(), new object(), circuitHost);
+        var (_, hub) = InitializeComponentHub(handleRegistry: handleRegistry);
+
+        // Fill the default 64 KB Pipe pauseWriterThreshold so chunk 1 awaits backpressure.
+        var chunk = new byte[48 * 1024];
+        await hub.ReceiveJSDataChunk(streamId, 0, chunk, null, acknowledge: false);
+        await hub.ReceiveJSDataChunk(streamId, 1, chunk, null, acknowledge: true);
+
+        // Stream flow-control ack must wait until the slow reader drains the pipe.
+        Assert.False(ackSent.Task.IsCompleted);
+
+        // Concurrent interaction must still return immediately and execute on the circuit while the upload is backpressured.
+        await hub.BeginInvokeDotNetFromJS("99", "TestAssembly", "ClickWhileUploading", 0, "[]");
+        await concurrentCallEntered.Task.WaitAsync(TimeSpan.FromSeconds(5));
+        Assert.False(ackSent.Task.IsCompleted);
+
+        // Draining the pipe unblocks the upload and sends JS.EndReceiveJSDataChunk.
+        var buffer = new byte[64 * 1024];
+        var totalRead = 0;
+        while (totalRead < 96 * 1024)
+        {
+            var read = await stream.ReadAsync(buffer);
+            Assert.True(read > 0);
+            totalRead += read;
+        }
+
+        await ackSent.Task.WaitAsync(TimeSpan.FromSeconds(5));
+        mockClientProxy.Verify(
+            c => c.SendCoreAsync(
+                "JS.EndReceiveJSDataChunk",
+                It.Is<object[]>(args => args.Length == 3 && (long)args[0] == streamId && (long)args[1] == 1L && (bool)args[2]),
+                It.IsAny<CancellationToken>()),
+            Times.Once());
+    }
+
+    private sealed class TestJSStreamReference(long length) : Microsoft.JSInterop.IJSStreamReference
+    {
+        public long Length => length;
+
+        public ValueTask<Stream> OpenReadStreamAsync(long maxAllowedSize = 512000, CancellationToken cancellationToken = default)
+            => ValueTask.FromResult<Stream>(Stream.Null);
+
+        public ValueTask DisposeAsync() => ValueTask.CompletedTask;
+    }
+
+    private sealed class NotifyOnSecondInboundActivityHandler(Action onInboundActivity) : CircuitHandler
+    {
+        private bool _armed;
+
+        public void Arm() => _armed = true;
+
+        public override Func<CircuitInboundActivityContext, Task> CreateInboundActivityHandler(Func<CircuitInboundActivityContext, Task> next)
+            => context =>
+            {
+                if (_armed)
+                {
+                    onInboundActivity();
+                }
+
+                return next(context);
+            };
+    }
+
+    private sealed class BlockingInboundCircuitHandler(
+        ManualResetEventSlim gate,
+        TaskCompletionSource started,
+        List<string> executionOrder,
+        int expectedCount,
+        TaskCompletionSource allCompleted) : CircuitHandler
+    {
+        private bool _armed;
+        private int _sequence;
+
+        public void Arm() => _armed = true;
+
+        public override Func<CircuitInboundActivityContext, Task> CreateInboundActivityHandler(Func<CircuitInboundActivityContext, Task> next)
+            => context =>
+            {
+                if (!_armed)
+                {
+                    return next(context);
+                }
+
+                var current = Interlocked.Increment(ref _sequence);
+                lock (executionOrder)
+                {
+                    executionOrder.Add(current.ToString(System.Globalization.CultureInfo.InvariantCulture));
+                    if (executionOrder.Count == expectedCount)
+                    {
+                        allCompleted.TrySetResult();
+                    }
+                }
+
+                if (current == 1)
+                {
+                    started.TrySetResult();
+                    gate.Wait();
+                }
+
+                return next(context);
+            };
+    }
+
     private static (Mock<ISingleClientProxy>, ComponentHub) InitializeComponentHub(
         IServerComponentDeserializer deserializer = null,
         ICircuitHandleRegistry handleRegistry = null,

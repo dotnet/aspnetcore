@@ -16,6 +16,8 @@ internal sealed class RemoteJSDataStream : Stream
     private readonly CancellationToken _streamCancellationToken;
     private readonly Stream _pipeReaderStream;
     private readonly Pipe _pipe;
+    private readonly object _receiveLock = new();
+    private Task _receiveQueue = Task.CompletedTask;
     private long _bytesRead;
     private long _expectedChunkId;
     private DateTimeOffset _lastDataReceivedTime;
@@ -82,7 +84,7 @@ internal sealed class RemoteJSDataStream : Stream
         _lastDataReceivedTime = DateTimeOffset.UtcNow;
         _ = ThrowOnTimeout();
 
-        _runtime.RemoteJSDataStreamInstances.Add(_streamId, this);
+        _runtime.RemoteJSDataStreamInstances.TryAdd(_streamId, this);
 
         _pipe = new Pipe();
         _pipeReaderStream = _pipe.Reader.AsStream();
@@ -94,8 +96,20 @@ internal sealed class RemoteJSDataStream : Stream
     /// </summary>
     public PipeReader PipeReader { get; }
 
-    private async Task<bool> ReceiveData(long chunkId, byte[] chunk, string error)
+    private Task<bool> ReceiveData(long chunkId, byte[] chunk, string error)
     {
+        lock (_receiveLock)
+        {
+            var task = ReceiveDataCoreAsync(_receiveQueue, chunkId, chunk, error);
+            _receiveQueue = task;
+            return task;
+        }
+    }
+
+    private async Task<bool> ReceiveDataCoreAsync(Task antecedent, long chunkId, byte[] chunk, string error)
+    {
+        await antecedent.ConfigureAwait(ConfigureAwaitOptions.SuppressThrowing);
+
         try
         {
             if (!string.IsNullOrEmpty(error))
@@ -233,7 +247,7 @@ internal sealed class RemoteJSDataStream : Stream
     {
         if (disposing)
         {
-            _runtime.RemoteJSDataStreamInstances.Remove(_streamId);
+            _runtime.RemoteJSDataStreamInstances.TryRemove(_streamId, out _);
         }
 
         _disposed = true;

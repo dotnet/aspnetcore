@@ -5,7 +5,7 @@ import { Blazor } from './GlobalExports';
 import { ConsoleLogger } from './Platform/Logging/Loggers';
 import { LogLevel } from './Platform/Logging/Logger';
 import { CircuitManager } from './Platform/Circuits/CircuitManager';
-import { resolveOptions, CircuitStartOptions } from './Platform/Circuits/CircuitStartOptions';
+import { resolveOptions, validateCircuitOptions, CircuitStartOptions } from './Platform/Circuits/CircuitStartOptions';
 import { DefaultReconnectionHandler } from './Platform/Circuits/DefaultReconnectionHandler';
 import { discoverServerPersistedState, ServerComponentDescriptor } from './Services/ComponentDescriptorDiscovery';
 import { JSEventRegistry } from './Services/JSEventRegistry';
@@ -35,14 +35,15 @@ export function startServer(components: RootComponentManager<ServerComponentDesc
     throw new Error('Blazor Server has already started.');
   }
 
-  serverStartPromise = new Promise(startServerCore.bind(null, components, jsEventRegistry));
+  serverStartPromise = startServerCore(components, jsEventRegistry);
 
   return serverStartPromise;
 }
 
-async function startServerCore(components: RootComponentManager<ServerComponentDescriptor>, jsEventRegistry: JSEventRegistry, resolve: () => void, _: any) {
+async function startServerCore(components: RootComponentManager<ServerComponentDescriptor>, jsEventRegistry: JSEventRegistry) {
   options = resolveOptions(await circuitOptionsPromise);
   const jsInitializer = await fetchAndInvokeInitializers(options);
+  validateCircuitOptions(options);
 
   appState = discoverServerPersistedState(document) || '';
   logger = new ConsoleLogger(options.logLevel);
@@ -107,7 +108,6 @@ async function startServerCore(components: RootComponentManager<ServerComponentD
   const circuitStarted = await circuit.start();
   if (!circuitStarted) {
     logger.log(LogLevel.Error, 'Failed to start the circuit.');
-    resolve();
     return;
   }
 
@@ -122,7 +122,6 @@ async function startServerCore(components: RootComponentManager<ServerComponentD
   logger.log(LogLevel.Information, 'Blazor server-side application started.');
 
   jsInitializer.invokeAfterStartedCallbacks(Blazor);
-  resolve();
 }
 
 export async function startCircuit(): Promise<boolean> {

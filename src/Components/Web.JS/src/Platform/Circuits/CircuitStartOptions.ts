@@ -16,15 +16,27 @@ export type ServerInitializers = {
 export interface CircuitStartOptions {
   configureSignalR: (builder: HubConnectionBuilder) => void;
   logLevel: LogLevel;
+  /**
+   * Maximum time to wait for a monitored hub invocation to be acknowledged by the server, in milliseconds.
+   * Defaults to 2000; zero disables monitoring.
+   */
+  messageAckTimeoutMilliseconds: number;
   reconnectionOptions: ReconnectionOptions;
   reconnectionHandler?: ReconnectionHandler;
   initializers : ServerInitializers;
   circuitHandlers: CircuitHandler[];
 }
 
+export function validateCircuitOptions(options: Partial<CircuitStartOptions>): void {
+  const timeout = options.messageAckTimeoutMilliseconds;
+  if (typeof timeout !== 'number' || !Number.isInteger(timeout) || timeout < 0 || timeout > 2147483647) {
+    throw new Error('messageAckTimeoutMilliseconds must be an integer between 0 and 2147483647.');
+  }
+}
+
 export function resolveOptions(userOptions?: Partial<CircuitStartOptions>): CircuitStartOptions {
   const result = { ...defaultOptions, ...userOptions };
-
+  validateCircuitOptions(result);
   // The spread operator can't be used for a deep merge, so do the same for subproperties
   if (userOptions && userOptions.reconnectionOptions) {
     result.reconnectionOptions = { ...defaultOptions.reconnectionOptions, ...userOptions.reconnectionOptions };
@@ -73,6 +85,7 @@ const defaultOptions: CircuitStartOptions = {
   // eslint-disable-next-line @typescript-eslint/no-empty-function
   configureSignalR: (_) => { },
   logLevel: LogLevel.Warning,
+  messageAckTimeoutMilliseconds: 2000,
   initializers: undefined!,
   circuitHandlers: [],
   reconnectionOptions: {

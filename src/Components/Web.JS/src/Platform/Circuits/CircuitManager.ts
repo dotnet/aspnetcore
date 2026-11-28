@@ -15,10 +15,11 @@ import * as DotNet from '../../JSInterop/Microsoft.JSInterop';
 import { MessagePackHubProtocol } from '@microsoft/signalr-protocol-msgpack';
 import { ConsoleLogger } from '../Logging/Loggers';
 import { RenderQueue } from './RenderQueue';
+import { MessageAckMonitor } from './MessageAckMonitor';
 import { Blazor } from '../../GlobalExports';
 import { showErrorNotification } from '../../BootErrors';
 import { attachWebRendererInterop, detachWebRendererInterop, isRendererAttached } from '../../Rendering/WebRendererInteropMethods';
-import { sendJSDataStream } from './CircuitStreamingInterop';
+import { rejectPendingJSDataStreamAcks, sendJSDataStream } from './CircuitStreamingInterop';
 
 export class CircuitManager implements DotNet.DotNetCallDispatcher {
 
@@ -37,6 +38,8 @@ export class CircuitManager implements DotNet.DotNetCallDispatcher {
   private readonly _dispatcher: DotNet.ICallDispatcher;
 
   private _connection?: HubConnection;
+
+  private _messageAckMonitor?: MessageAckMonitor;
 
   private _interopMethodsForReconnection?: DotNet.DotNetObject;
 
@@ -145,7 +148,40 @@ export class CircuitManager implements DotNet.DotNetCallDispatcher {
     this._options.configureSignalR(connectionBuilder);
 
     const connection = connectionBuilder.build();
+    let connectionClosed = false;
+    const handleConnectionClose = (error?: Error) => {
+      if (connectionClosed) {
+        return;
+      }
+      connectionClosed = true;
 
+      messageAckMonitor.dispose();
+      rejectPendingJSDataStreamAcks(connection, error ?? new Error('Connection closed.'));
+      if (isRendererAttached(WebRendererId.Server)) {
+        this._interopMethodsForReconnection = detachWebRendererInterop(WebRendererId.Server);
+      }
+
+      this.handleConnectionDown();
+      this.abortPauseDeferrals('connection closed');
+
+      const pausingWasInProgress = this._pausingState.isInprogress();
+      if (!pausingWasInProgress) {
+        // Mark the state as 'paused' since the connection got closed without us starting the pause process.
+        this._pausingState.transitionTo(true);
+      }
+
+      if (!this._disposed && !this._renderingFailed && !pausingWasInProgress) {
+        this._options.reconnectionHandler!.onConnectionDown(this._options.reconnectionOptions, error);
+      }
+    };
+    this._messageAckMonitor?.dispose();
+    const messageAckMonitor = new MessageAckMonitor(
+      connection,
+      this._options.messageAckTimeoutMilliseconds,
+      this._logger,
+      error => handleConnectionClose(error),
+    );
+    this._messageAckMonitor = messageAckMonitor;
     connection.on('JS.AttachComponent', (componentId, selector) => attachRootComponentToLogicalElement(WebRendererId.Server, this.resolveElement(selector), componentId, false));
     connection.on('JS.BeginInvokeJS', (asyncHandle: number, ...rest: unknown[]) => {
       if (asyncHandle !== 0) {
@@ -206,22 +242,7 @@ export class CircuitManager implements DotNet.DotNetCallDispatcher {
       }
     });
     connection.on('JS.EndLocationChanging', Blazor._internal.navigationManager.endLocationChanging);
-    connection.onclose(error => {
-      this._interopMethodsForReconnection = detachWebRendererInterop(WebRendererId.Server);
-
-      this.handleConnectionDown();
-      this.abortPauseDeferrals('connection closed');
-
-      const pausingWasInProgress = this._pausingState.isInprogress();
-      if (!pausingWasInProgress) {
-        // Mark the state as 'paused' since the connection got closed without us starting the pause process.
-        this._pausingState.transitionTo(true);
-      }
-
-      if (!this._disposed && !this._renderingFailed && !pausingWasInProgress) {
-        this._options.reconnectionHandler!.onConnectionDown(this._options.reconnectionOptions, error);
-      }
-    });
+    connection.onclose(handleConnectionClose);
     connection.on('JS.Error', error => {
       this._renderingFailed = true;
       this.unhandledError(error);
@@ -278,7 +299,7 @@ export class CircuitManager implements DotNet.DotNetCallDispatcher {
       const disconnectingPromise = this._disconnectingState.currentProgress();
 
       this._logger.log(LogLevel.Trace, 'Disconnecting the circuit...');
-
+      this._messageAckMonitor?.dispose();
       await this._connection!.stop();
 
       this._disconnectingState.complete();
@@ -506,7 +527,7 @@ export class CircuitManager implements DotNet.DotNetCallDispatcher {
     if (callId !== 0) {
       this.changeActivity(1);
     }
-    this._connection!.send('BeginInvokeDotNetFromJS', callId ? callId.toString() : null, assemblyName, methodIdentifier, dotNetObjectId || 0, argsJson);
+    this.sendMonitoredMessage('BeginInvokeDotNetFromJS', callId ? callId.toString() : null, assemblyName, methodIdentifier, dotNetObjectId || 0, argsJson);
   }
 
   // Implements DotNet.DotNetCallDispatcher
@@ -531,11 +552,26 @@ export class CircuitManager implements DotNet.DotNetCallDispatcher {
   }
 
   public sendLocationChanged(uri: string, state: string | undefined, intercepted: boolean): Promise<void> {
-    return this._connection!.send('OnLocationChanged', uri, state, intercepted);
+    this.sendMonitoredMessage('OnLocationChanged', uri, state, intercepted);
+    return Promise.resolve();
   }
 
   public sendLocationChanging(callId: number, uri: string, state: string | undefined, intercepted: boolean): Promise<void> {
-    return this._connection!.send('OnLocationChanging', callId, uri, state, intercepted);
+    this.sendMonitoredMessage('OnLocationChanging', callId, uri, state, intercepted);
+    return Promise.resolve();
+  }
+
+  private sendMonitoredMessage(method: string, ...args: unknown[]): void {
+    const connection = this._connection;
+    if (connection?.state !== HubConnectionState.Connected) {
+      return;
+    }
+
+    this._messageAckMonitor!.send(method, ...args).catch(error => {
+      if (this._connection === connection && connection.state === HubConnectionState.Connected) {
+        this._logger.log(LogLevel.Error, error);
+      }
+    });
   }
 
   public sendJsDataStream(data: ArrayBufferView | Blob, streamId: number, chunkSize: number) {
@@ -646,6 +682,7 @@ export class CircuitManager implements DotNet.DotNetCallDispatcher {
     await this._startPromise;
 
     this._disposed = true;
+    this._messageAckMonitor?.dispose();
     this._connection?.stop();
 
     // Dispose the circuit on the server immediately. Closing the SignalR connection alone
