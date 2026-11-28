@@ -4,7 +4,16 @@ let startupError = null;
 async function initialize(dotnetJsUrl, assemblyName) {
     try {
         const { dotnet } = await import(dotnetJsUrl);
-        const { getAssemblyExports } = await dotnet.create();
+        // The worker reuses the client app's boot configuration. Drop the library
+        // JavaScript initializers that target the page environment: page-only
+        // initializers can throw in a worker where `document` is undefined.
+        const { getAssemblyExports } = await dotnet
+            .withModuleConfig({
+                onConfigLoaded(config) {
+                    config.resources.modulesAfterRuntimeReady = [];
+                }
+            })
+            .create();
         workerExports = { ...await getAssemblyExports(assemblyName) };
 
         self.postMessage({ type: "ready" });
