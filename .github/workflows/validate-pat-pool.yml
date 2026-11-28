@@ -17,18 +17,23 @@ jobs:
     env:
       VALIDATE_PAT: |
         if [ -z "$COPILOT_GITHUB_TOKEN" ]; then echo "status=empty" >> "$GITHUB_OUTPUT"; exit 0; fi
-        set +e; timeout 30 copilot --prompt "Say OK" --available-tools="" --silent --effort=low; rc=$?; set -e
-        if [ $rc -eq 0 ]; then echo "status=valid" >> "$GITHUB_OUTPUT"
-        elif [ $rc -eq 124 ]; then echo "status=unknown" >> "$GITHUB_OUTPUT"
-        else echo "status=invalid" >> "$GITHUB_OUTPUT"; fi
+        if timeout 90 copilot --no-auto-update --model auto --prompt "Say OK" --available-tools="" --silent; then
+          echo "status=valid" >> "$GITHUB_OUTPUT"
+        else
+          rc=$?
+          if [ $rc -eq 124 ]; then echo "status=unknown" >> "$GITHUB_OUTPUT"
+          else echo "status=invalid" >> "$GITHUB_OUTPUT"; fi
+        fi
     steps:
       - name: Setup gh-aw scripts
-        uses: github/gh-aw-actions/setup@ba90f2186d7ad780ec640f364005fa24e797b360 # v0.68.3
+        uses: github/gh-aw-actions/setup@d9128eb3ea40c18b77c76184eda03c0ff2608d79 # v0.93.2
         with:
           destination: ${{ runner.temp }}/gh-aw/actions
 
       - name: Install Copilot CLI
-        run: bash "${RUNNER_TEMP}/gh-aw/actions/install_copilot_cli.sh" 1.0.21
+        id: install
+        # Use the setup action's reviewed default instead of an independently pinned version.
+        run: bash "${RUNNER_TEMP}/gh-aw/actions/install_copilot_cli.sh"
 
       # -----------------------------------------------------------
       # Make a Copilot CLI request with each PAT.
@@ -143,6 +148,7 @@ jobs:
       - name: Build summary
         if: always()
         env:
+          INSTALL_OUTCOME: ${{ steps.install.outcome }}
           S0: ${{ steps.pat0.outputs.status }}
           S1: ${{ steps.pat1.outputs.status }}
           S2: ${{ steps.pat2.outputs.status }}
@@ -155,6 +161,13 @@ jobs:
           S9: ${{ steps.pat9.outputs.status }}
         shell: bash
         run: |
+          if [ "$INSTALL_OUTCOME" != "success" ]; then
+            echo "> [!CAUTION]" >> "$GITHUB_STEP_SUMMARY"
+            echo "> **PAT validation did not run** because Copilot CLI setup failed. See the setup/install logs." >> "$GITHUB_STEP_SUMMARY"
+            echo "::error::Copilot CLI setup failed; no PATs were tested"
+            exit 1
+          fi
+
           # Build summary
           statuses=("$S0" "$S1" "$S2" "$S3" "$S4" "$S5" "$S6" "$S7" "$S8" "$S9")
 

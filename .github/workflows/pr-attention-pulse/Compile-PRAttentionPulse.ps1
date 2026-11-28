@@ -13,7 +13,7 @@ $previousValue = [Environment]::GetEnvironmentVariable($policyVariable, "Process
 try
 {
     [Environment]::SetEnvironmentVariable($policyVariable, "gpt-5.6-sol", "Process")
-    $arguments = @("aw", "compile", "pr-attention-pulse", "--strict")
+    $arguments = @("aw", "compile", "pr-attention-pulse", "--strict", "--schedule-seed", "dotnet/aspnetcore")
     if ($Validate)
     {
         $arguments += "--validate"
