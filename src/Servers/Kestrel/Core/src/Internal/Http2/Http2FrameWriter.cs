@@ -312,6 +312,7 @@ internal sealed class Http2FrameWriter
                     if (producer.IsTimingWrite)
                     {
                         _timeoutControl.StopTimingWrite();
+                        producer.IsTimingWrite = false;
                     }
 
                     reader.AdvanceTo(buffer.End);
