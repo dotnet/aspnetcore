@@ -1,6 +1,7 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using Microsoft.AspNetCore.Components.Forms;
 using Microsoft.AspNetCore.Components.QuickGrid.Infrastructure;
 using Microsoft.AspNetCore.Components.Rendering;
 using Microsoft.AspNetCore.Components.Web.Virtualization;
@@ -46,6 +47,32 @@ public abstract partial class ColumnBase<TGridItem>
     /// "show options" UI and invoke the grid's <see cref="QuickGrid{TGridItem}.ShowColumnOptionsAsync(ColumnBase{TGridItem})" />).
     /// </summary>
     [Parameter] public RenderFragment? ColumnOptions { get; set; }
+
+    /// <summary>
+    /// Indicates whether the column's filter is currently active, causing a visual indicator to be displayed
+    /// on the column options button. Use <see cref="ColumnOptionsButtonAttributes"/> to supply an accessible
+    /// label describing the options and their active state.
+    /// A class supplied through <see cref="ColumnOptionsButtonAttributes"/> overrides the built-in indicator class.
+    /// </summary>
+    [Parameter] public bool ColumnOptionsActive { get; set; }
+
+    /// <summary>
+    /// An optional CSS class name to apply to the column options button. This allows custom styling of the
+    /// filter indicator.
+    /// </summary>
+    [Parameter] public string? ColumnOptionsButtonClass { get; set; }
+
+    /// <summary>
+    /// Gets or sets additional attributes to be applied to the default column options button.
+    /// Use these attributes to customize the button's accessible label and CSS classes.
+    /// The button retains its default CSS class and exposes whether the options content is expanded.
+    /// Classes supplied here are combined with <see cref="ColumnOptionsButtonClass"/> and the default button class.
+    /// Supplying a <c>class</c> attribute replaces the built-in active indicator class, even when
+    /// <see cref="ColumnOptionsActive"/> is <see langword="true"/>. Supply an empty class to omit the indicator.
+    /// Other attributes, including a custom accessible label, do not affect the indicator class.
+    /// This parameter has no effect when <see cref="HeaderTemplate"/> is used.
+    /// </summary>
+    [Parameter] public IReadOnlyDictionary<string, object>? ColumnOptionsButtonAttributes { get; set; }
 
     /// <summary>
     /// Indicates whether the data should be sortable by this column.
@@ -120,6 +147,25 @@ public abstract partial class ColumnBase<TGridItem>
         {
             string displayName = string.IsNullOrWhiteSpace(Title) ? "(unnamed)" : Title;
             throw new InvalidOperationException($"Column '{displayName}' expects item type '{typeof(TGridItem).FullName}', which does not match the parent QuickGrid's item type.");
+        }
+    }
+
+    internal string? ColumnOptionsButtonCssClass
+    {
+        get
+        {
+            var result = "col-options-button";
+            if (!string.IsNullOrWhiteSpace(ColumnOptionsButtonClass))
+            {
+                result += " " + ColumnOptionsButtonClass.Trim();
+            }
+
+            if (ColumnOptionsActive && (ColumnOptionsButtonAttributes is null || !ColumnOptionsButtonAttributes.ContainsKey("class")))
+            {
+                result += " col-options-active";
+            }
+
+            return AttributeUtilities.CombineClassNames(ColumnOptionsButtonAttributes, result);
         }
     }
 }
