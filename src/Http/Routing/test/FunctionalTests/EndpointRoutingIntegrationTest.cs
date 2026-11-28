@@ -90,6 +90,90 @@ public class EndpointRoutingIntegrationTest
         Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
     }
 
+    [Theory]
+    [InlineData("/store/inventory/atlas-deluxe/details", "Featured:")]
+    [InlineData("/store/inventory/atlas-deluxe/stock", "Stock:edition=deluxe,sku=atlas,tenant=store")]
+    [InlineData("/outlet/inventory/river-standard/details", "Details:edition=standard,sku=river,tenant=outlet")]
+    [InlineData("/store/inventory/clearance/details", "Item:item=clearance,tenant=store")]
+    public async Task Routing_LiteralAndComplexSuffixesPreserveFallbackAndCaptures(string path, string expectedBody)
+    {
+        await AssertRouteResponseAsync(
+            path,
+            expectedBody,
+            ("/{tenant}/inventory/{item}/details", "Item"),
+            ("/{tenant}/inventory/{sku}-{edition}/details", "Details"),
+            ("/{tenant}/inventory/{sku}-{edition}/stock", "Stock"),
+            ("/store/inventory/atlas-deluxe/details", "Featured"));
+    }
+
+    [Theory]
+    [InlineData("/orders/42/lines", "NumberedLines:id=42")]
+    [InlineData("/orders/current/lines", "NamedLines:slug=current")]
+    [InlineData("/orders/77/lines", "NumberedLines:id=77")]
+    public async Task Routing_ConstrainedParameterPreservesLiteralAndGenericMatches(string path, string expectedBody)
+    {
+        await AssertRouteResponseAsync(
+            path,
+            expectedBody,
+            ("/orders/{slug}/lines", "NamedLines"),
+            ("/orders/{id:int}/lines", "NumberedLines"),
+            ("/orders/42/receipt", "NumberedReceipt"),
+            ("/orders/current/receipt", "CurrentReceipt"));
+    }
+
+    [Theory]
+    [InlineData("/library/local/archive", "Asset:asset=<null>,shelf=local")]
+    [InlineData("/library/remote/archive/readme.txt", "Asset:asset=readme.txt,shelf=remote")]
+    [InlineData("/library/local/archive/assets/icons/logo.svg", "Asset:asset=assets/icons/logo.svg,shelf=local")]
+    [InlineData("/library/local/archive/index", "Index:")]
+    [InlineData("/library/local/archive/pages/release.json/summary", "Page:page=release.json/summary,shelf=local")]
+    [InlineData("/library/remote/archive/pages/2026/release.json", "Asset:asset=pages/2026/release.json,shelf=remote")]
+    public async Task Routing_CatchAllsPreserveLiteralPrecedenceAndConstraintFallback(string path, string expectedBody)
+    {
+        await AssertRouteResponseAsync(
+            path,
+            expectedBody,
+            ("/library/{shelf}/archive/{**asset}", "Asset"),
+            ("/library/{shelf}/archive/pages/{**page:nonfile}", "Page"),
+            ("/library/local/archive/index", "Index"));
+    }
+
+    private static async Task AssertRouteResponseAsync(string path, string expectedBody, params (string Pattern, string Name)[] routes)
+    {
+        using var host = new HostBuilder()
+            .ConfigureWebHost(webHostBuilder => webHostBuilder
+                .UseTestServer()
+                .Configure(app =>
+                {
+                    app.UseRouting();
+                    app.UseEndpoints(endpoints =>
+                    {
+                        foreach (var (pattern, name) in routes)
+                        {
+                            endpoints.Map(pattern, WriteRouteResponseAsync).WithDisplayName(name);
+                        }
+                    });
+                }))
+            .ConfigureServices(services => services.AddRouting())
+            .Build();
+
+        await host.StartAsync();
+        using var client = host.GetTestClient();
+        using var response = await client.GetAsync(path);
+
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        Assert.Equal(expectedBody, await response.Content.ReadAsStringAsync());
+    }
+
+    private static Task WriteRouteResponseAsync(HttpContext context)
+    {
+        var values = string.Join(",", context.Request.RouteValues
+            .OrderBy(value => value.Key, StringComparer.Ordinal)
+            .Select(value => $"{value.Key}={value.Value ?? "<null>"}"));
+
+        return context.Response.WriteAsync($"{context.GetEndpoint().DisplayName}:{values}");
+    }
+
     [Fact]
     public async Task AuthorizationMiddleware_WithAuthorizedEndpoint()
     {

@@ -56,7 +56,7 @@ public class DfaGraphWriter
         var tree = builder.BuildDfaTree(includeLabel: true);
 
         writer.WriteLine("digraph DFA {");
-        tree.Visit(WriteNode);
+        DfaMatcherBuilder.VisitGraph(tree, WriteNode);
         writer.WriteLine("}");
 
         void WriteNode(DfaNode node)
