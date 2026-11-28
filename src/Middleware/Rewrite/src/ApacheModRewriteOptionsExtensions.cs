@@ -17,6 +17,12 @@ public static class ApacheModRewriteOptionsExtensions
     /// <param name="options">The <see cref="RewriteOptions"/></param>
     /// <param name="fileProvider">The <see cref="IFileProvider"/> </param>
     /// <param name="filePath">The path to the file containing mod_rewrite rules.</param>
+    /// <remarks>
+    /// The <c>RewriteEngine</c> directive (including <c>RewriteEngine off</c>) is ignored, and all
+    /// <c>RewriteRule</c> entries in the file are imported and evaluated. Remove disabled rules from
+    /// the file, or guard the call to <see cref="AddApacheModRewrite(RewriteOptions, IFileProvider, string)"/>
+    /// in application code.
+    /// </remarks>
     public static RewriteOptions AddApacheModRewrite(this RewriteOptions options, IFileProvider fileProvider, string filePath)
     {
         ArgumentNullException.ThrowIfNull(options);
@@ -34,6 +40,12 @@ public static class ApacheModRewriteOptionsExtensions
     /// </summary>
     /// <param name="options">The <see cref="RewriteOptions"/></param>
     /// <param name="reader">A stream of mod_rewrite rules.</param>
+    /// <remarks>
+    /// The <c>RewriteEngine</c> directive (including <c>RewriteEngine off</c>) is ignored, and all
+    /// <c>RewriteRule</c> entries in the file are imported and evaluated. Remove disabled rules from
+    /// the input, or guard the call to <see cref="AddApacheModRewrite(RewriteOptions, TextReader)"/>
+    /// in application code.
+    /// </remarks>
     public static RewriteOptions AddApacheModRewrite(this RewriteOptions options, TextReader reader)
     {
         ArgumentNullException.ThrowIfNull(options);
