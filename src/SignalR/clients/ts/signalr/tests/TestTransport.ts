@@ -16,6 +16,34 @@ export class TestTransport implements ITransport {
         return Promise.resolve();
     }
 
-    public onreceive: ((data: string | ArrayBuffer) => void) | null = null;
-    public onclose: ((error?: Error | undefined) => void) | null = null;
+    private _onReceive: ((data: string | ArrayBuffer) => void) | null = null;
+    private _onClose: ((error?: Error | undefined) => void) | null = null;
+
+    public get onReceive(): ((data: string | ArrayBuffer) => void) | null {
+        return this._onReceive;
+    }
+    public set onReceive(value: ((data: string | ArrayBuffer) => void) | null) {
+        this._onReceive = value;
+    }
+
+    public get onClose(): ((error?: Error | undefined) => void) | null {
+        return this._onClose;
+    }
+    public set onClose(value: ((error?: Error | undefined) => void) | null) {
+        this._onClose = value;
+    }
+
+    public get onreceive(): ((data: string | ArrayBuffer) => void) | null {
+        return this._onReceive;
+    }
+    public set onreceive(value: ((data: string | ArrayBuffer) => void) | null) {
+        this._onReceive = value;
+    }
+
+    public get onclose(): ((error?: Error | undefined) => void) | null {
+        return this._onClose;
+    }
+    public set onclose(value: ((error?: Error | undefined) => void) | null) {
+        this._onClose = value;
+    }
 }

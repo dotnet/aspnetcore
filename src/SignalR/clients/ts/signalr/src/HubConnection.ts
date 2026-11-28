@@ -589,30 +589,60 @@ export class HubConnection {
      *
      * @param {Function} callback The handler that will be invoked when the connection is closed. Optionally receives a single argument containing the error that caused the connection to close (if any).
      */
-    public onclose(callback: (error?: Error) => void): void {
+    public onClose(callback: (error?: Error) => void): void {
         if (callback) {
             this._closedCallbacks.push(callback);
         }
+    }
+
+    /**
+     * Registers a handler that will be invoked when the connection is closed.
+     *
+     * @param {Function} callback The handler that will be invoked when the connection is closed. Optionally receives a single argument containing the error that caused the connection to close (if any).
+     * @deprecated Use {@link HubConnection.onClose} instead.
+     */
+    public onclose(callback: (error?: Error) => void): void {
+        this.onClose(callback);
     }
 
     /** Registers a handler that will be invoked when the connection starts reconnecting.
      *
      * @param {Function} callback The handler that will be invoked when the connection starts reconnecting. Optionally receives a single argument containing the error that caused the connection to start reconnecting (if any).
      */
-    public onreconnecting(callback: (error?: Error) => void): void {
+    public onReconnecting(callback: (error?: Error) => void): void {
         if (callback) {
             this._reconnectingCallbacks.push(callback);
         }
+    }
+
+    /**
+     * Registers a handler that will be invoked when the connection starts reconnecting.
+     *
+     * @param {Function} callback The handler that will be invoked when the connection starts reconnecting. Optionally receives a single argument containing the error that caused the connection to start reconnecting (if any).
+     * @deprecated Use {@link HubConnection.onReconnecting} instead.
+     */
+    public onreconnecting(callback: (error?: Error) => void): void {
+        this.onReconnecting(callback);
     }
 
     /** Registers a handler that will be invoked when the connection successfully reconnects.
      *
      * @param {Function} callback The handler that will be invoked when the connection successfully reconnects.
      */
-    public onreconnected(callback: (connectionId?: string) => void): void {
+    public onReconnected(callback: (connectionId?: string) => void): void {
         if (callback) {
             this._reconnectedCallbacks.push(callback);
         }
+    }
+
+    /**
+     * Registers a handler that will be invoked when the connection successfully reconnects.
+     *
+     * @param {Function} callback The handler that will be invoked when the connection successfully reconnects.
+     * @deprecated Use {@link HubConnection.onReconnected} instead.
+     */
+    public onreconnected(callback: (connectionId?: string) => void): void {
+        this.onReconnected(callback);
     }
 
     /** Registers a handler that will be invoked after authentication refresh completes successfully.

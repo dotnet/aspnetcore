@@ -27,6 +27,12 @@ export interface ITransport {
     connect(url: string, transferFormat: TransferFormat): Promise<void>;
     send(data: any): Promise<void>;
     stop(): Promise<void>;
+    /** Callback invoked when data is received. Prefer this camelCase name over {@link ITransport.onreceive}. */
+    onReceive?: ((data: string | ArrayBuffer) => void) | null;
+    /** Callback invoked when the transport is closed. Prefer this camelCase name over {@link ITransport.onclose}. */
+    onClose?: ((error?: Error) => void) | null;
+    /** @deprecated Use {@link ITransport.onReceive} instead. */
     onreceive: ((data: string | ArrayBuffer) => void) | null;
+    /** @deprecated Use {@link ITransport.onClose} instead. */
     onclose: ((error?: Error) => void) | null;
 }

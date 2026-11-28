@@ -19,8 +19,38 @@ export class WebSocketTransport implements ITransport {
     private _webSocket?: WebSocket;
     private _headers: MessageHeaders;
 
-    public onreceive: ((data: string | ArrayBuffer) => void) | null;
-    public onclose: ((error?: Error) => void) | null;
+    private _onReceive: ((data: string | ArrayBuffer) => void) | null = null;
+    private _onClose: ((error?: Error) => void) | null = null;
+
+    public get onReceive(): ((data: string | ArrayBuffer) => void) | null {
+        return this._onReceive;
+    }
+    public set onReceive(value: ((data: string | ArrayBuffer) => void) | null) {
+        this._onReceive = value;
+    }
+
+    public get onClose(): ((error?: Error) => void) | null {
+        return this._onClose;
+    }
+    public set onClose(value: ((error?: Error) => void) | null) {
+        this._onClose = value;
+    }
+
+    /** @deprecated Use {@link WebSocketTransport.onReceive} instead. */
+    public get onreceive(): ((data: string | ArrayBuffer) => void) | null {
+        return this._onReceive;
+    }
+    public set onreceive(value: ((data: string | ArrayBuffer) => void) | null) {
+        this._onReceive = value;
+    }
+
+    /** @deprecated Use {@link WebSocketTransport.onClose} instead. */
+    public get onclose(): ((error?: Error) => void) | null {
+        return this._onClose;
+    }
+    public set onclose(value: ((error?: Error) => void) | null) {
+        this._onClose = value;
+    }
 
     constructor(httpClient: HttpClient, accessTokenFactory: (() => string | Promise<string>) | undefined, logger: ILogger,
                 logMessageContent: boolean, webSocketConstructor: WebSocketConstructor, headers: MessageHeaders) {

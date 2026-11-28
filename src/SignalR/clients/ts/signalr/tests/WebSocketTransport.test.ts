@@ -16,6 +16,26 @@ import { registerUnhandledRejectionHandler } from "./Utils";
 registerUnhandledRejectionHandler();
 
 describe("WebSocketTransport", () => {
+    it("onReceive/onClose stay in sync with onreceive/onclose", async () => {
+        await VerifyLogger.run(async (logger) => {
+            const webSocket = new WebSocketTransport(new TestHttpClient(), undefined, logger, true, TestWebSocket, {});
+
+            const onReceive = () => {};
+            const onClose = () => {};
+            webSocket.onReceive = onReceive;
+            webSocket.onClose = onClose;
+            expect(webSocket.onreceive).toBe(onReceive);
+            expect(webSocket.onclose).toBe(onClose);
+
+            const legacyOnReceive = () => {};
+            const legacyOnClose = () => {};
+            webSocket.onreceive = legacyOnReceive;
+            webSocket.onclose = legacyOnClose;
+            expect(webSocket.onReceive).toBe(legacyOnReceive);
+            expect(webSocket.onClose).toBe(legacyOnClose);
+        });
+    });
+
     it("sets websocket binarytype to arraybuffer on Binary transferformat", async () => {
         await VerifyLogger.run(async (logger) => {
             await createAndStartWebSocket(logger, "http://example.com", undefined, TransferFormat.Binary);
