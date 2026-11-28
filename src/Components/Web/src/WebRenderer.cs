@@ -4,6 +4,7 @@
 using System.Diagnostics.CodeAnalysis;
 using System.Text.Json;
 using System.Text.Json.Serialization;
+using System.Text.Json.Serialization.Metadata;
 using Microsoft.AspNetCore.Components.Web;
 using Microsoft.AspNetCore.Components.Web.Infrastructure;
 using Microsoft.AspNetCore.Components.Web.Internal;
@@ -129,7 +130,7 @@ public abstract class WebRenderer : Renderer
             newJsonOptions.TypeInfoResolverChain.Clear();
             newJsonOptions.TypeInfoResolverChain.Add(WebRendererSerializerContext.Default);
             newJsonOptions.TypeInfoResolverChain.Add(JsonConverterFactoryTypeInfoResolver<DotNetObjectReference<WebRendererInteropMethods>>.Instance);
-            var argsJson = JsonSerializer.Serialize(args, newJsonOptions);
+            var argsJson = JsonSerializer.Serialize(args, (JsonTypeInfo<object[]>)newJsonOptions.GetTypeInfo(typeof(object[])));
             inProcessRuntime.InvokeJS(JSMethodIdentifier, argsJson, JSCallResultType.JSVoidResult, 0);
         }
         else

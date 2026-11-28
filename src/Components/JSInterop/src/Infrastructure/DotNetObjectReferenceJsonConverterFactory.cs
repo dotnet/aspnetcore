@@ -26,6 +26,11 @@ internal sealed class DotNetObjectReferenceJsonConverterFactory : JsonConverterF
     {
         // System.Text.Json handles caching the converters per type on our behalf. No caching is required here.
         var instanceType = typeToConvert.GetGenericArguments()[0];
+        if (GeneratedJSInterop.GeneratedOnly && GeneratedJSInterop.CreateReferenceConverter(instanceType, JSRuntime) is { } registered)
+        {
+            return registered;
+        }
+
         var converterType = typeof(DotNetObjectReferenceJsonConverter<>).MakeGenericType(instanceType);
 
         return (JsonConverter)Activator.CreateInstance(converterType, JSRuntime)!;

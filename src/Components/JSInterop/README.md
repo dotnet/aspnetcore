@@ -38,6 +38,60 @@ To build the JavaScript code, execute the following commands in a command shell:
 
  * `npm run build --workspace @microsoft/dotnet-js-interop`
 
+## WIP: generated-only Native AOT experiment
+
+`Microsoft.JSInterop.Infrastructure.GeneratedJSInterop` is an experimental registration surface, not an
+approved API. It is marked `[Experimental("ASP0041")]`, and members that only generated or handwritten
+registration code calls are hidden from IntelliSense. Reflection-based dispatch remains the
+default. To select generated dispatch exclusively, add this runtime feature switch to the consuming
+application's project:
+
+```xml
+<ItemGroup>
+  <RuntimeHostConfigurationOption Include="Microsoft.JSInterop.GeneratedOnly" Value="true" Trim="true" />
+</ItemGroup>
+```
+
+### Typed registrations
+
+This layer supplies the runtime registration and serialization helpers. Automatic registrations
+and the Components.Web analyzer integration are developed in a separate stacked source-generator
+PR. Without that layer, generated-only mode requires handwritten registrations, including
+renderer-owned callbacks; ordinary Blazor button clicks are not supported by this layer alone.
+
+Application payload types still need JSON metadata, and each type passed as a
+`DotNetObjectReference<T>` needs a closed converter. Applications and libraries register both at
+startup; generated-only runtimes consult them after the built-in metadata:
+
+```csharp
+#pragma warning disable ASP0041
+GeneratedJSInterop.AddTypeInfoResolver(AppJsonContext.Default);
+GeneratedJSInterop.RegisterReferenceConverter<Counter>();
+#pragma warning restore ASP0041
+```
+
+Registrations may happen after a runtime is created, but before that runtime first serializes the
+affected types.
+
+Handwritten registrations through `RegisterStatic` and `RegisterInstance<T>` on
+`GeneratedJSInterop.Shared` remain available. Instance lookup walks the target's base types.
+Unregistered methods and missing JSON metadata fail explicitly; there is no reflection fallback when
+the switch is enabled.
+
+### Known gaps
+
+* The process-wide mutable startup hook and the registry shape are scaffolding, not a proposed
+  production initialization model. The API proposal is still to be written.
+* `InputFile`'s `BrowserFile[]` payload has no framework JSON metadata in strict-JSON applications.
+* A base-type registration also dispatches to an override that is not itself `[JSInvokable]`;
+  reflection dispatch does not.
+* Existing instance-method rooting annotations remain, and four IL2072 suppressions in Components
+  still need a real fix. This experiment does not establish support for complete Native AOT Blazor
+  applications.
+
+The WebView IPC envelope uses a separate source-generated context for its fixed transport types;
+application payloads have already passed through the runtime's converters before this layer.
+
 ## More Information
 
 For more information, see the [ASP.NET Core README](../../../README.md).

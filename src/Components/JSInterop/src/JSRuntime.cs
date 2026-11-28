@@ -26,6 +26,10 @@ public abstract partial class JSRuntime : IJSRuntime, IDisposable
 
     internal readonly ArrayBuilder<byte[]> ByteArraysToBeRevived = new();
 
+    // Per-runtime registrations used when the Microsoft.JSInterop.GeneratedOnly application switch
+    // is enabled. They take precedence over GeneratedJSInterop.Shared. Reflection dispatch remains the default.
+    internal GeneratedJSInterop GeneratedInterop { get; } = new();
+
     /// <summary>
     /// Initializes a new instance of <see cref="JSRuntime"/>.
     /// </summary>
@@ -46,6 +50,11 @@ public abstract partial class JSRuntime : IJSRuntime, IDisposable
                 }
         };
         JsonSerializerOptions.TypeInfoResolverChain.Add(JSInteropJsonTypeInfoResolver.Instance);
+        if (GeneratedJSInterop.GeneratedOnly)
+        {
+            JsonSerializerOptions.TypeInfoResolverChain.Add(GeneratedInteropJsonContext.Default);
+            JsonSerializerOptions.TypeInfoResolverChain.Add(GeneratedJSInterop.SharedTypeInfoResolver);
+        }
 
         if (JsonSerializer.IsReflectionEnabledByDefault)
         {
@@ -161,7 +170,11 @@ public abstract partial class JSRuntime : IJSRuntime, IDisposable
                 return new ValueTask<TValue>(pendingCall.Task);
             }
 
-            var argsJson = args is not null && args.Length != 0 ? JsonSerializer.Serialize(args, JsonSerializerOptions) : "[]";
+            var argsJson = args is not null && args.Length != 0
+                ? GeneratedJSInterop.GeneratedOnly
+                    ? JsonSerializer.Serialize(args, GeneratedJSInterop.Metadata<object?[]>(this))
+                    : JsonSerializer.Serialize(args, JsonSerializerOptions)
+                : "[]";
             var resultType = JSCallResultTypeHelper.FromGeneric<TValue>();
             var invocationInfo = new JSInvocationInfo
             {

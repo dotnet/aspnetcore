@@ -1,1 +1,15 @@
 #nullable enable
+Microsoft.JSInterop.Infrastructure.GeneratedJSInterop
+Microsoft.JSInterop.Infrastructure.GeneratedJSInterop.Invoker
+Microsoft.JSInterop.Infrastructure.GeneratedJSInterop.RegisterInstance<T>(string! method, int arity, Microsoft.JSInterop.Infrastructure.GeneratedJSInterop.Invoker! invoke, bool isAsync = false) -> void
+Microsoft.JSInterop.Infrastructure.GeneratedJSInterop.RegisterStatic(string! assembly, string! method, int arity, Microsoft.JSInterop.Infrastructure.GeneratedJSInterop.Invoker! invoke, bool isAsync = false) -> void
+static Microsoft.JSInterop.Infrastructure.GeneratedJSInterop.AddTypeInfoResolver(System.Text.Json.Serialization.Metadata.IJsonTypeInfoResolver! resolver) -> void
+static Microsoft.JSInterop.Infrastructure.GeneratedJSInterop.RegisterReferenceConverter<T>() -> void
+static Microsoft.JSInterop.Infrastructure.GeneratedJSInterop.CompleteAsync(System.Threading.Tasks.Task! task) -> System.Threading.Tasks.ValueTask<string?>
+static Microsoft.JSInterop.Infrastructure.GeneratedJSInterop.CompleteAsync(System.Threading.Tasks.ValueTask task) -> System.Threading.Tasks.ValueTask<string?>
+static Microsoft.JSInterop.Infrastructure.GeneratedJSInterop.GeneratedOnly.get -> bool
+static Microsoft.JSInterop.Infrastructure.GeneratedJSInterop.ReadArgument<T>(Microsoft.JSInterop.JSRuntime! runtime, System.Text.Json.JsonElement value, string! methodIdentifier, int index) -> T?
+static Microsoft.JSInterop.Infrastructure.GeneratedJSInterop.SerializeResult<T>(Microsoft.JSInterop.JSRuntime! runtime, T value) -> System.Threading.Tasks.ValueTask<string?>
+static Microsoft.JSInterop.Infrastructure.GeneratedJSInterop.SerializeResultAsync<T>(Microsoft.JSInterop.JSRuntime! runtime, System.Threading.Tasks.Task<T>! task) -> System.Threading.Tasks.ValueTask<string?>
+static Microsoft.JSInterop.Infrastructure.GeneratedJSInterop.SerializeResultAsync<T>(Microsoft.JSInterop.JSRuntime! runtime, System.Threading.Tasks.ValueTask<T> task) -> System.Threading.Tasks.ValueTask<string?>
+static Microsoft.JSInterop.Infrastructure.GeneratedJSInterop.Shared.get -> Microsoft.JSInterop.Infrastructure.GeneratedJSInterop!
