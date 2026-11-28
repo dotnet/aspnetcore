@@ -117,6 +117,13 @@ public readonly struct RenderHandle
         return Dispatcher.InvokeAsync(() => renderer!.HandleComponentException(exception, componentId));
     }
 
+    internal Task InvokeWithErrorHandlingAsync(Func<Task> callback)
+    {
+        var renderer = _renderer;
+        var componentId = _componentId;
+        return Dispatcher.InvokeAsync(() => renderer!.InvokeWithErrorHandlingAsync(componentId, callback));
+    }
+
     [DoesNotReturn]
     private static void ThrowNotInitialized()
     {

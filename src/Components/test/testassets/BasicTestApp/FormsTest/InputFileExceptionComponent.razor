@@ -1,0 +1,93 @@
+@using Microsoft.AspNetCore.Components.Forms
+
+<label><input id="use-error-boundary" type="checkbox" @bind="useErrorBoundary" /> Use error boundary</label>
+<label><input id="throw-asynchronously" type="checkbox" @bind="throwAsynchronously" /> Throw asynchronously</label>
+<label><input id="throw-on-change" type="checkbox" @bind="throwOnChange" /> Throw on change</label>
+<label><input id="remove-input" type="checkbox" @bind="removeInput" /> Remove input before completing callback</label>
+
+@if (useErrorBoundary)
+{
+    <ErrorBoundary>
+        <ChildContent>
+            <ErrorBoundary @ref="errorBoundary">
+                <ChildContent>
+                    @if (showInput)
+                    {
+                        <InputFile id="exception-input-file" OnChange="LoadFiles" multiple />
+                    }
+                </ChildContent>
+                <ErrorContent Context="exception">
+                    <p id="input-file-error">@exception.Message</p>
+                </ErrorContent>
+            </ErrorBoundary>
+        </ChildContent>
+        <ErrorContent Context="exception">
+            <p id="outer-input-file-error">@exception.Message</p>
+        </ErrorContent>
+    </ErrorBoundary>
+    <button id="recover-input-file" @onclick="() => errorBoundary.Recover()">Recover</button>
+}
+else if (showInput)
+{
+    <InputFile id="exception-input-file" OnChange="LoadFiles" multiple />
+}
+
+<button id="input-file-increment" @onclick="() => count++">Increment</button>
+<p id="input-file-count">@count</p>
+<p id="selected-file-name">@selectedFileName</p>
+<p id="callback-pending">@callbackPending</p>
+<button id="complete-callback" @onclick="() => callbackGate.SetResult()">Complete callback</button>
+
+@code
+{
+    private bool useErrorBoundary = true;
+    private bool throwAsynchronously;
+    private bool throwOnChange = true;
+    private bool removeInput;
+    private bool showInput = true;
+    private bool callbackPending;
+    private TaskCompletionSource callbackGate = new();
+    private ErrorBoundary errorBoundary;
+    private int count;
+    private string selectedFileName;
+
+    private Task LoadFiles(InputFileChangeEventArgs args)
+    {
+        if (removeInput)
+        {
+            return LoadFilesAfterRemovalAsync(args);
+        }
+
+        if (throwAsynchronously)
+        {
+            return LoadFilesAsync(args);
+        }
+
+        ProcessFiles(args);
+        return Task.CompletedTask;
+    }
+
+    private async Task LoadFilesAsync(InputFileChangeEventArgs args)
+    {
+        await Task.Yield();
+        ProcessFiles(args);
+    }
+
+    private async Task LoadFilesAfterRemovalAsync(InputFileChangeEventArgs args)
+    {
+        showInput = false;
+        callbackPending = true;
+        await callbackGate.Task;
+        ProcessFiles(args);
+    }
+
+    private void ProcessFiles(InputFileChangeEventArgs args)
+    {
+        if (throwOnChange)
+        {
+            throw new InvalidOperationException("InputFile change failed");
+        }
+
+        selectedFileName = args.File.Name;
+    }
+}
