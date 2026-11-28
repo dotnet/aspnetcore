@@ -477,18 +477,16 @@ internal class EndpointParameter
         var numOfConstructors = constructors.Count();
         // When leveraging parameterless constructors, we want to ensure we only emit for writable
         // properties. We do not have this constraint if we are leveraging a parameterized constructor.
-        var properties = type.GetMembers().OfType<IPropertySymbol>().Where(property => property.DeclaredAccessibility == Accessibility.Public);
-        var writableProperties = properties.Where(property => !property.IsReadOnly);
+        // Like RequestDelegateFactory, a property is writable when it has a public setter. A required
+        // property is also assigned, because the object initializer must set it. An object initializer
+        // cannot set a static property.
+        var properties = GetPublicProperties(type);
+        var writableProperties = properties.Where(property => property is { IsStatic: false, SetMethod: { } setter }
+            && (setter.DeclaredAccessibility == Accessibility.Public || property.IsRequired));
 
         if (numOfConstructors == 1)
         {
             var targetConstructor = constructors.Single();
-            var lookupTable = new Dictionary<ParameterLookupKey, IPropertySymbol>();
-            foreach (var property in properties)
-            {
-                lookupTable.Add(new ParameterLookupKey(property.Name, property.Type), property);
-            }
-
             var parameters = targetConstructor.GetParameters();
             var propertiesWithParameterInfo = new List<ConstructorParameter>();
 
@@ -497,6 +495,12 @@ internal class EndpointParameter
                 isDefaultConstructor = true;
                 matchedProperties = writableProperties.Select(property => new ConstructorParameter(property, null));
                 return true;
+            }
+
+            var lookupTable = new Dictionary<ParameterLookupKey, IPropertySymbol>();
+            foreach (var property in properties)
+            {
+                lookupTable.Add(new ParameterLookupKey(property.Name, property.Type), property);
             }
 
             foreach (var parameter in parameters)
@@ -533,6 +537,42 @@ internal class EndpointParameter
 
         endpoint.Diagnostics.Add(Diagnostic.Create(DiagnosticDescriptors.InvalidAsParametersNoConstructorFound, location, parameterTypeString));
         return false;
+    }
+
+    // Mirrors Type.GetProperties() as RequestDelegateFactory and ParameterBindingMethodCache.FindConstructor use it:
+    // public properties declared on the type or inherited from a base type, where the most derived declaration of a
+    // name wins. As in reflection, static properties of base types are not returned. Indexers are not returned either,
+    // because neither a constructor parameter nor an object initializer can bind them.
+    private static ImmutableArray<IPropertySymbol> GetPublicProperties(INamedTypeSymbol type)
+    {
+        var properties = ImmutableArray.CreateBuilder<IPropertySymbol>();
+        var seenPropertyNames = new HashSet<string>(StringComparer.Ordinal);
+        foreach (var currentType in type.GetThisAndBaseTypes())
+        {
+            var isBaseType = !SymbolEqualityComparer.Default.Equals(currentType, type);
+            foreach (var property in currentType.GetMembers().OfType<IPropertySymbol>())
+            {
+                // As in Type.GetProperties(), a private property hides an inherited one only when the type itself
+                // declares it as an instance property.
+                if (property.DeclaredAccessibility == Accessibility.Private && (isBaseType || property.IsStatic))
+                {
+                    continue;
+                }
+
+                // The most derived declaration of a name wins, even when it cannot be bound itself.
+                if (!seenPropertyNames.Add(property.Name))
+                {
+                    continue;
+                }
+
+                if (property is { DeclaredAccessibility: Accessibility.Public, IsIndexer: false } && !(isBaseType && property.IsStatic))
+                {
+                    properties.Add(property);
+                }
+            }
+        }
+
+        return properties.ToImmutable();
     }
 
     // Lifted from:

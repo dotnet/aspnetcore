@@ -851,6 +851,117 @@ public class ParameterListWithReadOnlyProperties
     public int PrivateSetValue { get; private set;  }
 }
 
+public class ParameterListBaseClass
+{
+    public int BaseValue { get; set; }
+}
+
+public class ParameterListWithBaseClass : ParameterListBaseClass
+{
+    public int Value { get; set; }
+}
+
+public class ParameterListWithGrandparentClass : ParameterListWithBaseClass
+{
+    public int DerivedValue { get; set; }
+}
+
+public class ParameterListHiddenPropertiesBase
+{
+    public int HiddenValue { get; set; }
+
+    public virtual int OverriddenValue { get; set; }
+}
+
+public class ParameterListWithHiddenProperties : ParameterListHiddenPropertiesBase
+{
+    [FromQuery(Name = "derivedHiddenValue")]
+    public new int HiddenValue { get; set; }
+
+    public override int OverriddenValue { get; set; }
+}
+
+public class ParameterListReadOnlyPropertiesBase
+{
+    public ParameterListReadOnlyPropertiesBase()
+    {
+        ReadOnlyValue = 1;
+        PrivateSetValue = 2;
+        ProtectedSetValue = 3;
+        ProtectedInternalSetValue = 4;
+        PrivateProtectedSetValue = 5;
+        OverriddenGetterValue = 6;
+    }
+
+    public int ReadOnlyValue { get; }
+
+    public int PrivateSetValue { get; private set; }
+
+    public int ProtectedSetValue { get; protected set; }
+
+    public int ProtectedInternalSetValue { get; protected internal set; }
+
+    public int PrivateProtectedSetValue { get; private protected set; }
+
+    public virtual int OverriddenGetterValue { get; set; }
+}
+
+public class ParameterListWithInheritedReadOnlyProperties : ParameterListReadOnlyPropertiesBase
+{
+    public int Value { get; set; }
+
+    public override int OverriddenGetterValue => base.OverriddenGetterValue;
+}
+
+public class ParameterListRequiredPropertyBase
+{
+    public required int RequiredValue { get; set; }
+}
+
+public class ParameterListWithInheritedRequiredProperty : ParameterListRequiredPropertyBase
+{
+    public int Value { get; set; }
+}
+
+public class ParameterListCaseVariantBase
+{
+    public int ID { get; set; }
+}
+
+public class ParameterListWithCaseVariantProperty : ParameterListCaseVariantBase
+{
+    public int Id { get; set; }
+}
+
+public class ParameterListBindingAttributesBase
+{
+    [FromQuery(Name = "customQuery")]
+    public int QueryValue { get; set; }
+
+    [FromHeader(Name = "X-Custom-Header")]
+    public int HeaderValue { get; set; }
+}
+
+public class ParameterListWithInheritedBindingAttributes : ParameterListBindingAttributesBase
+{
+    public int Value { get; set; }
+}
+
+public class ParameterListWithStaticPropertyConstructor
+{
+    public ParameterListWithStaticPropertyConstructor(int count)
+    {
+        Value = count;
+    }
+
+    public static int Count { get; set; }
+
+    public int Value { get; }
+}
+
+public record ParameterListRecordBase(int BaseValue);
+public record ParameterListRecordWithBaseRecord(int BaseValue, int Value) : ParameterListRecordBase(BaseValue);
+
 public record struct SampleParameterList(int Foo);
 public record struct AdditionalSampleParameterList(int Bar);
 
