@@ -6,6 +6,7 @@ using Microsoft.AspNetCore.Routing.Constraints;
 using Microsoft.AspNetCore.Routing.Patterns;
 using Microsoft.AspNetCore.Routing.TestObjects;
 using Microsoft.Extensions.ObjectPool;
+using Microsoft.Extensions.Options;
 
 namespace Microsoft.AspNetCore.Routing.Template.Tests;
 
@@ -1303,6 +1304,44 @@ public class TemplateBinderTests
             defaults,
             requiredKeys: defaults.Keys,
             parameterPolicies: new (string, IParameterPolicy)[] { ("param", new LengthRouteConstraint(500)), ("param", new SlugifyParameterTransformer()), });
+
+        // Act
+        var result = binder.GetValues(ambientValues, explicitValues);
+        var boundTemplate = binder.BindValues(result.AcceptedValues);
+
+        // Assert
+        Assert.Equal(expected, boundTemplate);
+    }
+
+    [Fact]
+    public void BindValues_ParameterTransformer_OptionalParameter()
+    {
+        // Arrange
+        var expected = "/ConventionalTransformerRoute/conventional-transformer/Param/MY-VALUE";
+
+        var template = "ConventionalTransformerRoute/conventional-transformer/Param/{param?}";
+        var defaults = new RouteValueDictionary(new { controller = "ConventionalTransformer", action = "Param" });
+        var ambientValues = new RouteValueDictionary(new { controller = "ConventionalTransformer", action = "Param" });
+        var explicitValues = new RouteValueDictionary(new { controller = "ConventionalTransformer", action = "Param", param = "my-value" });
+
+        // The parameter policy is created the same way routing creates it at runtime, so that the
+        // optional parameter is wrapped exactly as DefaultParameterPolicyFactory would wrap it.
+        var parameterPolicyFactory = new DefaultParameterPolicyFactory(Options.Create(new RouteOptions()), new TestServiceProvider());
+        var parameterPolicy = parameterPolicyFactory.Create(
+            RoutePatternFactory.ParameterPart("param", @default: null, RoutePatternParameterKind.Optional),
+            new UpperCaseTransformingRouteConstraint());
+
+        var binder = new TemplateBinder(
+            UrlEncoder.Default,
+            new DefaultObjectPoolProvider().Create(new UriBuilderContextPooledObjectPolicy()),
+            RoutePatternFactory.Parse(
+                template,
+                defaults,
+                parameterPolicies: null,
+                requiredValues: new { area = (string)null, action = "Param", controller = "ConventionalTransformer", page = (string)null }),
+            defaults,
+            requiredKeys: defaults.Keys,
+            parameterPolicies: new (string, IParameterPolicy)[] { ("param", parameterPolicy), });
 
         // Act
         var result = binder.GetValues(ambientValues, explicitValues);
