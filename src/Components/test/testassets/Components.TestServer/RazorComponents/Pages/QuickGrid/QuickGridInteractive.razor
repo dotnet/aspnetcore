@@ -1,4 +1,4 @@
-@page "/quickgrid-interactive"
+﻿@page "/quickgrid-interactive"
 @rendermode RenderMode.InteractiveServer
 @using Microsoft.AspNetCore.Components.QuickGrid
 
@@ -46,6 +46,14 @@
 </div>
 <h4 id="people-pages">More people pages</h4>
 <button id="toggle-paginator-labelledby" @onclick="() => useHeadingForPaginatorName = !useHeadingForPaginatorName">Toggle heading-based paginator name</button>
+
+<div id="grid3">
+    <QuickGrid Items="@people" ColumnResize="true" >
+        <PropertyColumn Property="@(p => p.PersonId)" Sortable="true" />
+        <PropertyColumn Property="@(p => p.FirstName)" Sortable="true" />
+        <PropertyColumn Property="@(p => p.LastName)" Sortable="true" />
+    </QuickGrid>
+</div>
 
 <div id="clicked-row-info">
     @if (clickedPerson is not null)
