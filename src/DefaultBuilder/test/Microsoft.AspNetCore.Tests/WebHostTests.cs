@@ -8,10 +8,11 @@ using System.Diagnostics.Tracing;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.HostFiltering;
 using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.HttpOverrides;
+using Microsoft.AspNetCore.InternalTesting;
 using Microsoft.AspNetCore.Routing;
 using Microsoft.AspNetCore.Routing.Constraints;
 using Microsoft.AspNetCore.TestHost;
-using Microsoft.AspNetCore.InternalTesting;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
@@ -83,6 +84,81 @@ public class WebHostTests
         client.DefaultRequestHeaders.Add("x-forwarded-proto", "https");
         var result = await client.GetAsync("http://localhost/");
         result.EnsureSuccessStatusCode();
+    }
+
+    [Fact]
+    public async Task WebHostConfiguration_EnablesForwardedHeaders_CustomHeaders_FromConfig()
+    {
+        using var host = WebHost.CreateDefaultBuilder()
+            .ConfigureAppConfiguration(configBuilder =>
+            {
+                configBuilder.AddInMemoryCollection(new[]
+                {
+                    new KeyValuePair<string, string>("FORWARDEDHEADERS_ENABLED", "true" ),
+                    new KeyValuePair<string, string>("FORWARDEDHEADERS_HEADERS", "All" ),
+                });
+            })
+            .UseTestServer()
+            .Configure(app =>
+            {
+                Assert.True(app.Properties.ContainsKey("ForwardedHeadersAdded"), "Forwarded Headers");
+                app.Run(context =>
+                {
+                    Assert.Equal("https", context.Request.Scheme);
+                    Assert.Equal("/test", context.Request.PathBase.Value);
+                    return Task.CompletedTask;
+                });
+            }).Build();
+
+        await host.StartAsync();
+        var client = host.GetTestClient();
+        client.DefaultRequestHeaders.Add("x-forwarded-proto", "https");
+        client.DefaultRequestHeaders.Add("x-forwarded-prefix", "/test");
+        var result = await client.GetAsync("http://localhost/");
+        result.EnsureSuccessStatusCode();
+    }
+
+    [Fact]
+    public async Task WebHostConfiguration_EnablesForwardedHeaders_CustomConfig()
+    {
+        using var host = WebHost.CreateDefaultBuilder()
+            .ConfigureAppConfiguration(configBuilder =>
+            {
+                configBuilder.AddInMemoryCollection(new[]
+                {
+                    new KeyValuePair<string, string>("FORWARDEDHEADERS_ENABLED", "true" ),
+                    new KeyValuePair<string, string>("FORWARDEDHEADERS_HEADERS", "XForwardedHost,XForwardedProto,XForwardedFor123" ),
+                    new KeyValuePair<string, string>("ForwardedHeaders_KnownIPNetworks", "10.0.0.0/8,172.16.0.0/12,192.168.0.0/16"),
+                    new KeyValuePair<string, string>("ForwardedHeaders_KnownProxies", "127.0.0.1")
+                });
+            })
+            .UseTestServer()
+            .Configure(app =>
+            {
+                Assert.True(app.Properties.ContainsKey("ForwardedHeadersAdded"), "Forwarded Headers");
+                app.Run(context =>
+                {
+                    Assert.Equal("https", context.Request.Scheme);
+                    return Task.CompletedTask;
+                });
+            })
+            .Build();
+        await host.StartAsync();
+        var client = host.GetTestClient();
+        client.DefaultRequestHeaders.Add("x-forwarded-proto", "https");
+        var result = await client.GetAsync("http://localhost/");
+        result.EnsureSuccessStatusCode();
+
+        var forwardedHeadersOptions = host.Services.GetRequiredService<IOptions<ForwardedHeadersOptions>>().Value;
+        Assert.NotNull(forwardedHeadersOptions);
+        Assert.Equal(
+            ForwardedHeaders.XForwardedHost | ForwardedHeaders.XForwardedProto,
+            forwardedHeadersOptions.ForwardedHeaders
+            );
+        Assert.NotEmpty(forwardedHeadersOptions.KnownIPNetworks);
+        Assert.Contains(forwardedHeadersOptions.KnownIPNetworks, network => network.Contains(System.Net.IPAddress.Parse("192.168.0.123")));
+        Assert.NotEmpty(forwardedHeadersOptions.KnownProxies);
+        Assert.Contains(forwardedHeadersOptions.KnownProxies, System.Net.IPAddress.IsLoopback);
     }
 
     [Fact]
