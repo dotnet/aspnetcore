@@ -1,6 +1,7 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System;
 using System.Collections.Generic;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
@@ -131,5 +132,22 @@ internal static class EndpointEmitter
         }
     }
 
-    public static string EmitArgumentList(this Endpoint endpoint) => string.Join(", ", endpoint.Parameters.Select(p => p.EmitArgument()));
+    // Binding follows the target method, which can accept null even when the delegate parameter is nonnullable or disallows null.
+    public static string EmitArgumentList(this Endpoint endpoint, bool forHandler = false) => string.Join(", ", endpoint.Parameters.Select((p, i) =>
+    {
+        var argument = p.EmitArgument();
+        if (!forHandler || !p.Type.IsReferenceType || argument.EndsWith("!", StringComparison.Ordinal))
+        {
+            return argument;
+        }
+
+        var delegateParameter = endpoint.HandlerDelegateType!.DelegateInvokeMethod!.Parameters[i];
+        var targetMayBeNull = p.IsOptional || p.Type.NullableAnnotation == NullableAnnotation.Annotated;
+        var delegateDisallowsNull = delegateParameter.NullableAnnotation == NullableAnnotation.NotAnnotated ||
+            Endpoint.HasDisallowNullParameter(delegateParameter);
+
+        return targetMayBeNull && delegateDisallowsNull
+            ? $"{argument}!"
+            : argument;
+    }));
 }

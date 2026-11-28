@@ -57,7 +57,7 @@ public sealed partial class RequestDelegateGenerator : IIncrementalGenerator
         codeWriter.WriteLine(@"Debug.Assert(options.EndpointBuilder != null, ""EndpointBuilder not found."");");
         codeWriter.WriteLine(@"Debug.Assert(options.EndpointBuilder.ApplicationServices != null, ""ApplicationServices not found."");");
         codeWriter.WriteLine(@"Debug.Assert(options.EndpointBuilder.FilterFactories != null, ""FilterFactories not found."");");
-        codeWriter.WriteLine($"var handler = Cast(del, {endpoint.EmitHandlerDelegateType()} => throw null!);");
+        codeWriter.WriteLine($"var handler = {endpoint.EmitHandlerDelegateCast("del")};");
         codeWriter.WriteLine("EndpointFilterDelegate? filteredInvocation = null;");
         codeWriter.WriteLine("var serviceProvider = options.ServiceProvider ?? options.EndpointBuilder.ApplicationServices;");
         endpoint.EmitLoggingPreamble(codeWriter);
@@ -95,7 +95,7 @@ public sealed partial class RequestDelegateGenerator : IIncrementalGenerator
         codeWriter.WriteLine("var metadata = inferredMetadataResult?.EndpointMetadata ?? ReadOnlyCollection<object>.Empty;");
         codeWriter.WriteLine("return new RequestDelegateResult(targetDelegate, metadata);");
         codeWriter.EndBlockWithSemicolon();
-        codeWriter.WriteLine($"var castHandler = Cast(handler, {endpoint.EmitHandlerDelegateType()} => throw null!);");
+        codeWriter.WriteLine($"var castHandler = {endpoint.EmitHandlerDelegateCast("handler")};");
         codeWriter.WriteLine("return MapCore(");
         codeWriter.Indent++;
         codeWriter.WriteLine("endpoints,");

@@ -2,8 +2,10 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Diagnostics.CodeAnalysis;
+using System.Linq;
 using Microsoft.AspNetCore.App.Analyzers.Infrastructure;
 using Microsoft.CodeAnalysis;
+using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.CodeAnalysis.Operations;
 
@@ -50,6 +52,9 @@ internal static class InvocationOperationExtensions
         return false;
     }
 
+    public static INamedTypeSymbol? GetRouteHandlerDelegateType(this IInvocationOperation invocation, SemanticModel semanticModel) =>
+        invocation.TryGetRouteHandlerArgument(out var argument) ? ResolveDelegateTypeFromOperation(argument, semanticModel) : null;
+
     public static bool TryGetRouteHandlerArgument(this IInvocationOperation invocation, [NotNullWhen(true)] out IArgumentOperation? argumentOperation)
     {
         argumentOperation = null;
@@ -90,15 +95,34 @@ internal static class InvocationOperationExtensions
     private static IMethodSymbol? ResolveMethodFromOperation(IOperation operation, SemanticModel semanticModel, bool needsAccurateSignature) => operation switch
     {
         IArgumentOperation argument => ResolveMethodFromOperation(argument.Value, semanticModel, needsAccurateSignature),
-        IConversionOperation conv => ResolveMethodFromOperation(conv.Operand, semanticModel, needsAccurateSignature),
+        IConversionOperation conv when !conv.Conversion.IsUserDefined => ResolveMethodFromOperation(conv.Operand, semanticModel, needsAccurateSignature),
         IDelegateCreationOperation del => ResolveMethodFromOperation(del.Target, semanticModel, needsAccurateSignature),
-        IFieldReferenceOperation { Field.IsReadOnly: true } f when ResolveDeclarationOperation(f.Field, semanticModel) is IOperation op =>
+        IFieldReferenceOperation { Field.IsReadOnly: true } f when
+            ResolveDeclarationOperation(f.Field, semanticModel) is IOperation op &&
+            HasOnlyInitializerWrite(f.Field, semanticModel) =>
             ResolveMethodFromOperation(op, semanticModel, needsAccurateSignature),
         IAnonymousFunctionOperation anon => anon.Symbol,
         ILocalFunctionOperation local => local.Symbol,
         IMethodReferenceOperation method => method.Method,
         IParenthesizedOperation parenthesized => ResolveMethodFromOperation(parenthesized.Operand, semanticModel, needsAccurateSignature),
         _ => ResolveMethodFromType(operation.Type, needsAccurateSignature),
+    };
+
+    private static INamedTypeSymbol? ResolveDelegateTypeFromOperation(IOperation operation, SemanticModel semanticModel) => operation switch
+    {
+        IArgumentOperation argument => ResolveDelegateTypeFromOperation(argument.Value, semanticModel),
+        IConversionOperation conversion when !conversion.Conversion.IsUserDefined => ResolveDelegateTypeFromOperation(conversion.Operand, semanticModel),
+        IDelegateCreationOperation { Type: INamedTypeSymbol delegateType } => delegateType,
+        IFieldReferenceOperation { Field.IsReadOnly: true } field when
+            ResolveDeclarationOperation(field.Field, semanticModel) is IOperation initializer &&
+            HasOnlyInitializerWrite(field.Field, semanticModel) =>
+            ResolveDelegateTypeFromOperation(initializer, semanticModel) ??
+            (field.Type is INamedTypeSymbol { TypeKind: TypeKind.Delegate } fieldType ? fieldType : null),
+        IFieldReferenceOperation { Field.IsReadOnly: true } field =>
+            field.Type is INamedTypeSymbol { TypeKind: TypeKind.Delegate } fieldType ? fieldType : null,
+        IParenthesizedOperation parenthesized => ResolveDelegateTypeFromOperation(parenthesized.Operand, semanticModel),
+        { Parent: IDelegateCreationOperation { Type: INamedTypeSymbol delegateType } } => delegateType,
+        _ => operation.Type is INamedTypeSymbol { TypeKind: TypeKind.Delegate } type ? type : null,
     };
 
     private static IMethodSymbol? ResolveMethodFromType(ITypeSymbol? type, bool needsAccurateSignature)
@@ -116,6 +140,67 @@ internal static class InvocationOperationExtensions
 
         return (type as INamedTypeSymbol)?.DelegateInvokeMethod;
     }
+
+    private static bool HasOnlyInitializerWrite(IFieldSymbol field, SemanticModel semanticModel)
+    {
+        // Mutable struct instance fields can be overwritten by assigning to `this` outside of constructors.
+        if (!field.IsStatic && field.ContainingType.IsValueType && !field.ContainingType.IsReadOnly)
+        {
+            return false;
+        }
+
+        // Readonly fields can also be assigned or passed by reference in their declaring type's constructors
+        // and, for instance fields, in init accessors.
+        var writers = field.ContainingType.GetMembers().OfType<IMethodSymbol>().Where(method =>
+            method.IsStatic == field.IsStatic &&
+            (method.MethodKind is MethodKind.Constructor or MethodKind.StaticConstructor || method.IsInitOnly));
+        foreach (var writer in writers)
+        {
+            if (!writer.IsImplicitlyDeclared && writer.DeclaringSyntaxReferences.Length == 0)
+            {
+                return false;
+            }
+
+            foreach (var syntaxReference in writer.DeclaringSyntaxReferences)
+            {
+                var syntax = syntaxReference.GetSyntax();
+                var writerSemanticModel = semanticModel.Compilation.GetSemanticModel(syntax.SyntaxTree);
+                foreach (var node in syntax.DescendantNodes())
+                {
+                    var target = node switch
+                    {
+                        AssignmentExpressionSyntax assignment => assignment.Left,
+                        RefExpressionSyntax reference => reference.Expression,
+                        ArgumentSyntax argument when argument.RefKindKeyword.IsKind(SyntaxKind.RefKeyword) || argument.RefKindKeyword.IsKind(SyntaxKind.OutKeyword) => argument.Expression,
+                        _ => null,
+                    };
+                    if (target is not null && IsWritableFieldTarget(target, field, writerSemanticModel))
+                    {
+                        return false;
+                    }
+                }
+            }
+        }
+
+        return true;
+    }
+
+    private static bool IsWritableFieldTarget(ExpressionSyntax target, IFieldSymbol field, SemanticModel semanticModel) => target switch
+    {
+        ParenthesizedExpressionSyntax parenthesized => IsWritableFieldTarget(parenthesized.Expression, field, semanticModel),
+        PostfixUnaryExpressionSyntax postfix when postfix.IsKind(SyntaxKind.SuppressNullableWarningExpression) =>
+            IsWritableFieldTarget(postfix.Operand, field, semanticModel),
+        TupleExpressionSyntax tuple => tuple.Arguments.Any(argument => IsWritableFieldTarget(argument.Expression, field, semanticModel)),
+        ThisExpressionSyntax thisExpression => !field.IsStatic &&
+            field.ContainingType.IsValueType &&
+            SymbolEqualityComparer.Default.Equals(semanticModel.GetTypeInfo(thisExpression).Type?.OriginalDefinition, field.ContainingType.OriginalDefinition),
+        IdentifierNameSyntax identifier => identifier.Identifier.ValueText == field.Name &&
+            SymbolEqualityComparer.Default.Equals(semanticModel.GetSymbolInfo(identifier).Symbol?.OriginalDefinition, field.OriginalDefinition),
+        MemberAccessExpressionSyntax { Name: IdentifierNameSyntax identifier } memberAccess =>
+            identifier.Identifier.ValueText == field.Name &&
+            SymbolEqualityComparer.Default.Equals(semanticModel.GetSymbolInfo(memberAccess).Symbol?.OriginalDefinition, field.OriginalDefinition),
+        _ => false,
+    };
 
     private static IOperation? ResolveDeclarationOperation(ISymbol symbol, SemanticModel? semanticModel)
     {
