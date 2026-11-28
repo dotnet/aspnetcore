@@ -723,6 +723,7 @@ public class UserStore<TUser, TRole, TContext, [DynamicallyAccessedMembers(Dynam
                 IsBackedUp = passkey.IsBackedUp,
                 AttestationObject = passkey.AttestationObject,
                 ClientDataJson = passkey.ClientDataJson,
+                Aaguid = passkey.Aaguid,
             }
         };
     }
