@@ -99,6 +99,7 @@ internal static partial class HttpUtilities
             else
             {
                 Debug.Assert(written == destination.Length);
+                HttpHeaders.ValidateHeaderNameCharacters(destination);
             }
         });
 

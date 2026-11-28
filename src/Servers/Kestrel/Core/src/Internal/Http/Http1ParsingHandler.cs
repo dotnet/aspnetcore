@@ -1,6 +1,8 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Diagnostics;
+
 namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http;
 
 internal readonly struct Http1ParsingHandler : IHttpRequestLineHandler, IHttpHeadersHandler, IBareLineFeedTracker
@@ -22,6 +24,12 @@ internal readonly struct Http1ParsingHandler : IHttpRequestLineHandler, IHttpHea
 
     public void OnHeader(ReadOnlySpan<byte> name, ReadOnlySpan<byte> value)
     {
+        // HTTP/1.1 parsing already checks for newlines.
+        Debug.Assert(name.Contains((byte)'\r') == false &&
+           name.Contains((byte)'\n') == false &&
+           value.Contains((byte)'\r') == false &&
+           value.Contains((byte)'\n') == false);
+
         if (Trailers)
         {
             Connection.OnTrailer(name, value);

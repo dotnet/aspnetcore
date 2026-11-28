@@ -25,6 +25,11 @@ public class ResponseHeaderTests : TestApplicationErrorLoggerLoggedTest
             Assert.Throws<InvalidOperationException>(() => context.Response.Headers.Accept = "Custom 你好 Accept"); // Not special cased
             Assert.Throws<InvalidOperationException>(() => context.Response.Headers.Append("CustomName", "Custom 你好 Value"));
             Assert.Throws<InvalidOperationException>(() => context.Response.Headers.Append("CustomName", "Custom \r Value"));
+            Assert.Throws<InvalidOperationException>(() => context.Response.Headers.Append("CustomName", "Custom \n Value"));
+            Assert.Throws<InvalidOperationException>(() => context.Response.Headers.Append("CustomName", "Custom \0 Value"));
+            Assert.Throws<InvalidOperationException>(() => context.Response.Headers.Append("Custom\0Name", "Custom Value"));
+            Assert.Throws<InvalidOperationException>(() => context.Response.Headers.Append("CustomNa\rme", "Custom Value"));
+            Assert.Throws<InvalidOperationException>(() => context.Response.Headers.Append("CustomNam\ne", "Custom Value"));
             context.Response.ContentLength = 11;
             return context.Response.WriteAsync("Hello World");
         }, new TestServiceContext(LoggerFactory));

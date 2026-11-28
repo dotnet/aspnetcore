@@ -5,6 +5,7 @@ using System.Buffers;
 using System.Globalization;
 using System.IO.Pipelines;
 using System.Net.Http;
+using System.Net.Http.HPack;
 using System.Runtime.ExceptionServices;
 using System.Text;
 using Microsoft.AspNetCore.Connections;
@@ -1027,6 +1028,11 @@ public class Http3StreamTests : Http3TestBase
             Assert.Throws<InvalidOperationException>(() => context.Response.ContentType = "Custom 你好 Type");
             Assert.Throws<InvalidOperationException>(() => context.Response.Headers.Append("CustomName", "Custom 你好 Value"));
             Assert.Throws<InvalidOperationException>(() => context.Response.Headers.Append("CustomName", "Custom \r Value"));
+            Assert.Throws<InvalidOperationException>(() => context.Response.Headers.Append("CustomName", "Custom \n Value"));
+            Assert.Throws<InvalidOperationException>(() => context.Response.Headers.Append("CustomName", "Custom \0 Value"));
+            Assert.Throws<InvalidOperationException>(() => context.Response.Headers.Append("Custom\0Name", "Custom Value"));
+            Assert.Throws<InvalidOperationException>(() => context.Response.Headers.Append("CustomNa\rme", "Custom Value"));
+            Assert.Throws<InvalidOperationException>(() => context.Response.Headers.Append("CustomNam\ne", "Custom Value"));
             await context.Response.WriteAsync("Hello World");
         }, headers, endStream: true);
 
@@ -1177,6 +1183,11 @@ public class Http3StreamTests : Http3TestBase
             Assert.Throws<InvalidOperationException>(() => context.Response.AppendTrailer("Custom你好Name", "Custom Value"));
             Assert.Throws<InvalidOperationException>(() => context.Response.AppendTrailer("CustomName", "Custom 你好 Value"));
             Assert.Throws<InvalidOperationException>(() => context.Response.AppendTrailer("CustomName", "Custom \r Value"));
+            Assert.Throws<InvalidOperationException>(() => context.Response.AppendTrailer("CustomName", "Custom \n Value"));
+            Assert.Throws<InvalidOperationException>(() => context.Response.AppendTrailer("CustomName", "Custom \0 Value"));
+            Assert.Throws<InvalidOperationException>(() => context.Response.AppendTrailer("Custom\0Name", "Custom Value"));
+            Assert.Throws<InvalidOperationException>(() => context.Response.AppendTrailer("CustomNa\rme", "Custom Value"));
+            Assert.Throws<InvalidOperationException>(() => context.Response.AppendTrailer("CustomNam\ne", "Custom Value"));
             // ETag is one of the few special cased trailers. Accept is not.
             Assert.Throws<InvalidOperationException>(() => context.Features.Get<IHttpResponseTrailersFeature>().Trailers.ETag = "Custom 你好 Tag");
             Assert.Throws<InvalidOperationException>(() => context.Features.Get<IHttpResponseTrailersFeature>().Trailers.Accept = "Custom 你好 Tag");
@@ -2158,6 +2169,37 @@ public class Http3StreamTests : Http3TestBase
         await requestStream.ExpectReceiveEndOfStream();
     }
 
+    [Fact]
+    public async Task RequestTrailers_ColonInValue_IsAccepted()
+    {
+        string testValue = null;
+
+        var headers = new[]
+        {
+            new KeyValuePair<string, string>(InternalHeaderNames.Method, "GET"),
+            new KeyValuePair<string, string>(InternalHeaderNames.Path, "/"),
+            new KeyValuePair<string, string>(InternalHeaderNames.Scheme, "http"),
+        };
+        var trailers = new[]
+        {
+                new KeyValuePair<string, string>("TestName", "Test:Value"),
+        };
+        var requestStream = await Http3Api.InitializeConnectionAndStreamsAsync(async c =>
+        {
+            await c.Request.Body.DrainAsync(default);
+
+            testValue = c.Request.GetTrailer("TestName");
+        }, headers, endStream: false);
+        await requestStream.SendDataAsync(Encoding.UTF8.GetBytes("Hello world"));
+        await requestStream.SendHeadersAsync(trailers, endStream: true);
+
+        await requestStream.ExpectHeadersAsync();
+
+        Assert.Equal("Test:Value", testValue);
+
+        await requestStream.ExpectReceiveEndOfStream();
+    }
+
     [Theory]
     [InlineData("\r")]
     [InlineData("\n")]
@@ -2623,32 +2665,126 @@ public class Http3StreamTests : Http3TestBase
         return HEADERS_Received_InvalidHeaderFields_StreamError(headers, CoreStrings.BadRequest_TooManyHeaders);
     }
 
-    [Fact]
-    public Task HEADERS_Received_InvalidCharactersInHeaderValue_ConnectionError()
+    [Theory]
+    [InlineData("val\0ue")]
+    [InlineData("va\rlue")]
+    [InlineData("valu\ne")]
+    [InlineData("valu\u0080e")]
+    public async Task HEADERS_Received_InvalidCharactersInHeaderValue_ConnectionError(string headerValue)
     {
-        var headers = new[]
-        {
-            new KeyValuePair<string, string>(InternalHeaderNames.Method, "GET"),
-            new KeyValuePair<string, string>(InternalHeaderNames.Path, "/"),
-            new KeyValuePair<string, string>(InternalHeaderNames.Scheme, "http"),
-            new KeyValuePair<string, string>("Custom", "val\0ue"),
-        };
+        // Manually construct the QPACK header block with Latin1 to avoid the client-side Qpack encoder from rejecting the bytes
+        // Also, we allow ASCII and UTF8 by default, so use Latin1 to test invalid bytes
+        var headerNameBytes = Encoding.ASCII.GetBytes("custom");
+        var headerValueBytes = Encoding.Latin1.GetBytes(headerValue.ToLower(CultureInfo.InvariantCulture));
 
-        return HEADERS_Received_InvalidHeaderFields_StreamError(headers, CoreStrings.BadRequest_MalformedRequestInvalidHeaders);
+        byte[] headerBlock = [
+            0x00, // Required Insert Count = 0
+            0x00, // Delta Base = 0
+            0xD1, // Indexed: :method GET (QPACK static index 17)
+            0xD6, // Indexed: :scheme http (QPACK static index 22)
+            0x51, // Literal with static name ref, index 1 (:path)
+            0x01, // Value length, no Huffman
+            (byte)'/',
+        ];
+
+        var totalWritten = 0;
+        var buffer = new byte[100];
+
+        // Encode name
+        buffer[0] = 0x30;
+        Assert.True(IntegerEncoder.Encode(headerNameBytes.Length, 3, buffer, out var written));
+        totalWritten += written;
+        headerNameBytes.CopyTo(buffer.AsSpan(written));
+        totalWritten += headerNameBytes.Length;
+
+        // Encode value
+        var valueSpan = buffer.AsSpan(totalWritten);
+        valueSpan[0] = 0x00;
+        Assert.True(IntegerEncoder.Encode(headerValueBytes.Length, 7, valueSpan, out written));
+        totalWritten += written;
+        headerValueBytes.CopyTo(buffer.AsSpan(totalWritten));
+        totalWritten += headerValueBytes.Length;
+
+        // Combined initial header block with pseudo headers + custom header
+        byte[] finalHeaderBlock = [
+            .. headerBlock,
+            .. buffer.AsSpan(0, totalWritten)
+        ];
+
+        await Http3Api.InitializeConnectionAsync(_noopApplication);
+
+        Http3Api.OutboundControlStream = await Http3Api.CreateControlStream();
+
+        var requestStream = await Http3Api.CreateRequestStream(
+            headers: (IEnumerable<KeyValuePair<string, string>>)null, endStream: false);
+
+        await requestStream.SendFrameAsync(Http3FrameType.Headers, finalHeaderBlock, endStream: true);
+
+        await requestStream.WaitForStreamErrorAsync(
+            Http3ErrorCode.MessageError,
+            AssertExpectedErrorMessages,
+            CoreStrings.BadRequest_MalformedRequestInvalidHeaders);
     }
 
-    [Fact]
-    public Task HEADERS_Received_InvalidCharactersInHeaderName_ConnectionError()
+    [Theory]
+    [InlineData("Cus\0tom", "Invalid characters in header name.")]
+    [InlineData("Cust\rom", "Malformed request: invalid headers.")]
+    [InlineData("Cu\nstom", "Malformed request: invalid headers.")]
+    [InlineData("Cu\r\nstom", "Malformed request: invalid headers.")]
+    [InlineData("Cu\u0080stom", "Invalid characters in header name.")]
+    public async Task HEADERS_Received_InvalidCharactersInHeaderName_ConnectionError(string headerName, string errorString)
     {
-        var headers = new[]
-        {
-            new KeyValuePair<string, string>(InternalHeaderNames.Method, "GET"),
-            new KeyValuePair<string, string>(InternalHeaderNames.Path, "/"),
-            new KeyValuePair<string, string>(InternalHeaderNames.Scheme, "http"),
-            new KeyValuePair<string, string>("Cus\0tom", "value"),
-        };
+        // Manually construct the QPACK header block with UTF8 to avoid the client-side Qpack encoder from rejecting the bytes
+        var headerNameBytes = Encoding.UTF8.GetBytes(headerName.ToLower(CultureInfo.InvariantCulture));
+        var headerValueBytes = Encoding.ASCII.GetBytes("value");
 
-        return HEADERS_Received_InvalidHeaderFields_StreamError(headers, CoreStrings.BadRequest_InvalidCharactersInHeaderName);
+        byte[] headerBlock = [
+            0x00, // Required Insert Count = 0
+            0x00, // Delta Base = 0
+            0xD1, // Indexed: :method GET (QPACK static index 17)
+            0xD6, // Indexed: :scheme http (QPACK static index 22)
+            0x51, // Literal with static name ref, index 1 (:path)
+            0x01, // Value length, no Huffman
+            (byte)'/',
+        ];
+
+        var totalWritten = 0;
+        var buffer = new byte[100];
+
+        // Encode name
+        buffer[0] = 0x30;
+        Assert.True(IntegerEncoder.Encode(headerNameBytes.Length, 3, buffer, out var written));
+        totalWritten += written;
+        headerNameBytes.CopyTo(buffer.AsSpan(written));
+        totalWritten += headerNameBytes.Length;
+
+        // Encode value
+        var valueSpan = buffer.AsSpan(totalWritten);
+        valueSpan[0] = 0x00;
+        Assert.True(IntegerEncoder.Encode(headerValueBytes.Length, 7, valueSpan, out written));
+        totalWritten += written;
+        headerValueBytes.CopyTo(buffer.AsSpan(totalWritten));
+        totalWritten += headerValueBytes.Length;
+
+        // Combined initial header block with pseudo headers + custom header
+        byte[] finalHeaderBlock = [
+            .. headerBlock,
+            .. buffer.AsSpan(0, totalWritten)
+        ];
+
+        await Http3Api.InitializeConnectionAsync(_noopApplication);
+
+        Http3Api.OutboundControlStream = await Http3Api.CreateControlStream();
+
+        var requestStream = await Http3Api.CreateRequestStream(
+            headers: (IEnumerable<KeyValuePair<string, string>>)null, endStream: false);
+
+        await requestStream.SendFrameAsync(Http3FrameType.Headers, finalHeaderBlock, endStream: true);
+
+        await requestStream.WaitForStreamErrorAsync(
+            Http3ErrorCode.MessageError,
+            AssertExpectedErrorMessages,
+            errorString);
     }
 
     [Theory]
@@ -3496,6 +3632,115 @@ public class Http3StreamTests : Http3TestBase
         Assert.Equal("200", responseHeaders[InternalHeaderNames.Status]);
 
         await requestStream.ExpectReceiveEndOfStream();
+    }
+
+    [Theory]
+    [InlineData("Cus\0tom", "Invalid characters in header name.")]
+    [InlineData("Cust\rom", "Malformed request: invalid headers.")]
+    [InlineData("Cu\nstom", "Malformed request: invalid headers.")]
+    [InlineData("Cu\r\nstom", "Malformed request: invalid headers.")]
+    [InlineData("Cus:tom", "Malformed request: invalid headers.")]
+    [InlineData("Cu\u0080stom", "Invalid characters in header name.")]
+    public async Task Trailers_Received_InvalidCharactersInHeaderName_ConnectionError(string headerName, string errorString)
+    {
+        // Manually construct the QPACK trailer block with UTF8 to avoid the client-side Qpack encoder from rejecting the bytes
+        var headerNameBytes = Encoding.UTF8.GetBytes(headerName.ToLower(CultureInfo.InvariantCulture));
+        var headerValueBytes = Encoding.ASCII.GetBytes("value");
+
+        var totalWritten = 0;
+        var buffer = new byte[100];
+
+        // Encode name
+        buffer[0] = 0x30;
+        Assert.True(IntegerEncoder.Encode(headerNameBytes.Length, 3, buffer, out var written));
+        totalWritten += written;
+        headerNameBytes.CopyTo(buffer.AsSpan(written));
+        totalWritten += headerNameBytes.Length;
+
+        // Encode value
+        var valueSpan = buffer.AsSpan(totalWritten);
+        valueSpan[0] = 0x00;
+        Assert.True(IntegerEncoder.Encode(headerValueBytes.Length, 7, valueSpan, out written));
+        totalWritten += written;
+        headerValueBytes.CopyTo(buffer.AsSpan(totalWritten));
+        totalWritten += headerValueBytes.Length;
+
+        // Trailer block: QPACK prefix only, no pseudo-headers
+        byte[] trailerBlock = [
+            0x00, // Required Insert Count = 0
+            0x00, // Delta Base = 0
+            .. buffer.AsSpan(0, totalWritten)
+        ];
+
+        var headers = new[]
+        {
+            new KeyValuePair<string, string>(InternalHeaderNames.Method, "GET"),
+            new KeyValuePair<string, string>(InternalHeaderNames.Path, "/"),
+            new KeyValuePair<string, string>(InternalHeaderNames.Scheme, "http"),
+        };
+
+        var requestStream = await Http3Api.InitializeConnectionAndStreamsAsync(_echoApplication, headers, endStream: false);
+
+        await requestStream.SendFrameAsync(Http3FrameType.Headers, trailerBlock, endStream: true);
+
+        await requestStream.WaitForStreamErrorAsync(
+            Http3ErrorCode.MessageError,
+            AssertExpectedErrorMessages,
+            errorString);
+    }
+
+    [Theory]
+    [InlineData("val\0ue")]
+    [InlineData("va\rlue")]
+    [InlineData("valu\ne")]
+    [InlineData("val\u0080ue")]
+    public async Task Trailers_Received_InvalidCharactersInHeaderValue_ConnectionError(string headerValue)
+    {
+        // Manually construct the QPACK trailer block with Latin1 to avoid the client-side Qpack encoder from rejecting the bytes
+        // Also, we allow ASCII and UTF8 by default, so use Latin1 to test invalid bytes
+        var headerNameBytes = Encoding.ASCII.GetBytes("custom");
+        var headerValueBytes = Encoding.Latin1.GetBytes(headerValue.ToLower(CultureInfo.InvariantCulture));
+
+        var totalWritten = 0;
+        var buffer = new byte[100];
+
+        // Encode name
+        buffer[0] = 0x30;
+        Assert.True(IntegerEncoder.Encode(headerNameBytes.Length, 3, buffer, out var written));
+        totalWritten += written;
+        headerNameBytes.CopyTo(buffer.AsSpan(written));
+        totalWritten += headerNameBytes.Length;
+
+        // Encode value
+        var valueSpan = buffer.AsSpan(totalWritten);
+        valueSpan[0] = 0x00;
+        Assert.True(IntegerEncoder.Encode(headerValueBytes.Length, 7, valueSpan, out written));
+        totalWritten += written;
+        headerValueBytes.CopyTo(buffer.AsSpan(totalWritten));
+        totalWritten += headerValueBytes.Length;
+
+        // Trailer block: QPACK prefix only, no pseudo-headers
+        byte[] trailerBlock = [
+            0x00, // Required Insert Count = 0
+            0x00, // Delta Base = 0
+            .. buffer.AsSpan(0, totalWritten)
+        ];
+
+        var headers = new[]
+        {
+            new KeyValuePair<string, string>(InternalHeaderNames.Method, "GET"),
+            new KeyValuePair<string, string>(InternalHeaderNames.Path, "/"),
+            new KeyValuePair<string, string>(InternalHeaderNames.Scheme, "http"),
+        };
+
+        var requestStream = await Http3Api.InitializeConnectionAndStreamsAsync(_echoApplication, headers, endStream: false);
+
+        await requestStream.SendFrameAsync(Http3FrameType.Headers, trailerBlock, endStream: false);
+
+        await requestStream.WaitForStreamErrorAsync(
+            Http3ErrorCode.MessageError,
+            AssertExpectedErrorMessages,
+            CoreStrings.BadRequest_MalformedRequestInvalidHeaders);
     }
 
     private async Task WriteOneByteAtATime(PipeReader reader, PipeWriter writer)

@@ -23,21 +23,70 @@ public class Http2StreamTests : Http2TestBase
     [InlineData("\r")]
     [InlineData("\n")]
     [InlineData("\r\n")]
-    public async Task HEADERS_Received_NewLineCharactersInValue_ConnectionError(string headerValue)
+    [InlineData("\0")]
+    [InlineData("\u0080")]
+    public async Task HEADERS_Received_InvalidCharactersInValue_ConnectionError(string headerValue)
     {
-        var headers = new[]
-        {
-            new KeyValuePair<string, string>(InternalHeaderNames.Method, "GET"),
-            new KeyValuePair<string, string>(InternalHeaderNames.Path, "/"),
-            new KeyValuePair<string, string>(InternalHeaderNames.Scheme, "http"),
-            new KeyValuePair<string, string>(InternalHeaderNames.Authority, "localhost:80"),
-            new KeyValuePair<string, string>("TestHeader", headerValue),
-        };
+        // Manually construct the HPACK header block with Latin1 to avoid the client-side Hpack encoder from rejecting the bytes
+        // Also, we allow ASCII and UTF8 by default, so use Latin1 to test invalid bytes
+        var headerBytes = Encoding.Latin1.GetBytes($"a{headerValue}b");
+        byte[] headerBlock = [
+            0x82, // Indexed: :method GET (HPACK static index 2)
+            0x86, // Indexed: :scheme http (HPACK static index 6)
+            0x44, // Literal incremental indexing, name index 4 (:path)
+            0x01, // Value length, no Huffman
+            (byte)'/'
+        ];
+
+        headerBlock = [
+            .. headerBlock,
+            0x00,                     // Literal, new name, without indexing
+            0x01,                     // Name length = 1
+            0x61,                     // "a" in ASCII
+            (byte)headerBytes.Length, // Value length
+            .. headerBytes            // Header value
+        ];
+
         await InitializeConnectionAsync(_noopApplication);
 
-        await StartStreamAsync(1, headers, endStream: true);
+        await StartStreamAsync(1, headerBlock, endStream: true);
 
         await WaitForConnectionErrorAsync<Exception>(ignoreNonGoAwayFrames: false, 1, Http2ErrorCode.PROTOCOL_ERROR, "Malformed request: invalid headers.");
+        AssertConnectionEndReason(ConnectionEndReason.InvalidRequestHeaders);
+    }
+
+    [Theory]
+    [InlineData("Cus\0tom", "Invalid characters in header name.")]
+    [InlineData("Cust\rom", "Malformed request: invalid headers.")]
+    [InlineData("Cu\nstom", "Malformed request: invalid headers.")]
+    [InlineData("Cu\r\nstom", "Malformed request: invalid headers.")]
+    [InlineData("Cu\u0080stom", "Invalid characters in header name.")]
+    public async Task HEADERS_Received_InvalidCharacterInName_ConnectionError(string headerName, string errorString)
+    {
+        // Manually construct the HPACK header block with UTF8 to avoid the client-side Hpack encoder from rejecting the bytes
+        var headerNameBytes = Encoding.UTF8.GetBytes(headerName.ToLower(CultureInfo.InvariantCulture));
+        byte[] headerBlock = [
+            0x82, // Indexed: :method GET (HPACK static index 2)
+            0x86, // Indexed: :scheme http (HPACK static index 6)
+            0x44, // Literal incremental indexing, name index 4 (:path)
+            0x01, // Value length, no Huffman
+            (byte)'/'
+        ];
+
+        headerBlock = [
+            .. headerBlock,
+            0x00,                         // Literal, new name, without indexing
+            (byte)headerNameBytes.Length, // Name length
+            .. headerNameBytes,           // Header name
+            0x01,                         // Value length
+            (byte)'a'                     // Header value
+        ];
+
+        await InitializeConnectionAsync(_noopApplication);
+
+        await StartStreamAsync(1, headerBlock, endStream: true);
+
+        await WaitForConnectionErrorAsync<Exception>(ignoreNonGoAwayFrames: false, 1, Http2ErrorCode.PROTOCOL_ERROR, errorString);
         AssertConnectionEndReason(ConnectionEndReason.InvalidRequestHeaders);
     }
 
@@ -2330,6 +2379,11 @@ public class Http2StreamTests : Http2TestBase
             Assert.Throws<InvalidOperationException>(() => context.Response.ContentType = "Custom 你好 Type");
             Assert.Throws<InvalidOperationException>(() => context.Response.Headers.Append("CustomName", "Custom 你好 Value"));
             Assert.Throws<InvalidOperationException>(() => context.Response.Headers.Append("CustomName", "Custom \r Value"));
+            Assert.Throws<InvalidOperationException>(() => context.Response.Headers.Append("CustomName", "Custom \n Value"));
+            Assert.Throws<InvalidOperationException>(() => context.Response.Headers.Append("CustomName", "Custom \0 Value"));
+            Assert.Throws<InvalidOperationException>(() => context.Response.Headers.Append("Custom\0Name", "Custom Value"));
+            Assert.Throws<InvalidOperationException>(() => context.Response.Headers.Append("CustomN\rame", "Custom Value"));
+            Assert.Throws<InvalidOperationException>(() => context.Response.Headers.Append("CustomNa\nme", "Custom Value"));
             await context.Response.WriteAsync("Hello World");
         });
 
@@ -2654,6 +2708,12 @@ public class Http2StreamTests : Http2TestBase
             Assert.Throws<InvalidOperationException>(() => context.Response.AppendTrailer("Custom你好Name", "Custom Value"));
             Assert.Throws<InvalidOperationException>(() => context.Response.AppendTrailer("CustomName", "Custom 你好 Value"));
             Assert.Throws<InvalidOperationException>(() => context.Response.AppendTrailer("CustomName", "Custom \r Value"));
+            Assert.Throws<InvalidOperationException>(() => context.Response.AppendTrailer("CustomName", "Custom \n Value"));
+            Assert.Throws<InvalidOperationException>(() => context.Response.AppendTrailer("CustomName", "Custom \0 Value"));
+            Assert.Throws<InvalidOperationException>(() => context.Response.AppendTrailer("Custom\0Name", "Custom Value"));
+            Assert.Throws<InvalidOperationException>(() => context.Response.AppendTrailer("Custo\rmName", "Custom Value"));
+            Assert.Throws<InvalidOperationException>(() => context.Response.AppendTrailer("Cust\nomName", "Custom Value"));
+
             // ETag is one of the few special cased trailers. Accept is not.
             Assert.Throws<InvalidOperationException>(() => context.Features.Get<IHttpResponseTrailersFeature>().Trailers.ETag = "Custom 你好 Tag");
             Assert.Throws<InvalidOperationException>(() => context.Features.Get<IHttpResponseTrailersFeature>().Trailers.Accept = "Custom 你好 Tag");
