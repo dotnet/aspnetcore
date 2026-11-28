@@ -1,0 +1,23 @@
+@page "/nav/streaming-redirect-destination"
+@attribute [StreamRendering]
+@using Components.TestServer.Services
+@inject AsyncOperationService AsyncOperations
+
+<h1 id="streaming-redirect-destination">Streaming redirect destination</h1>
+
+@code {
+    [CascadingParameter]
+    public HttpContext HttpContext { get; set; } = default!;
+
+    [SupplyParameterFromQuery]
+    public string Operation { get; set; } = default!;
+
+    protected override async Task OnInitializedAsync()
+    {
+        if (HttpContext.Request.Headers.Accept.ToString().Contains("blazor-enhanced-nav"))
+        {
+            await AsyncOperations.Start(Operation);
+            throw new InvalidOperationException("Streaming redirect error");
+        }
+    }
+}

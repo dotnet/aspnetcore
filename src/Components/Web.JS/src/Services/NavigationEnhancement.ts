@@ -2,8 +2,8 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 import { synchronizeDomContent } from '../Rendering/DomMerging/DomSync';
+import { attachProgrammaticEnhancedNavigationHandler, handleClickForNavigationInterception, hasInteractiveRouter, isForSamePath, notifyEnhancedNavigationListeners, performScrollToElementOnTheSamePage, isSamePageWithHash, isWithinBaseUriSpace } from './NavigationUtils';
 import { synchronizeAttributes } from '../Rendering/DomMerging/AttributeSync';
-import { attachProgrammaticEnhancedNavigationHandler, handleClickForNavigationInterception, hasInteractiveRouter, isForSamePath, notifyEnhancedNavigationListeners, performScrollToElementOnTheSamePage, isSamePageWithHash } from './NavigationUtils';
 import { scheduleScrollReset, ScrollResetSchedule } from '../Rendering/Renderer';
 
 /*
@@ -224,8 +224,9 @@ export async function performEnhancedPageLoad(internalDestinationHref: string, i
 
   // Now request the new page via fetch, and a special header that tells the server we want it to inject
   // framing boundaries to distinguish the initial document and each subsequent streaming SSR update.
-  currentEnhancedNavigationAbortController = new AbortController();
-  const abortSignal = currentEnhancedNavigationAbortController.signal;
+  const abortController = new AbortController();
+  currentEnhancedNavigationAbortController = abortController;
+  const abortSignal = abortController.signal;
   const responsePromise = fetch(internalDestinationHref, Object.assign(<RequestInit>{
     signal: abortSignal,
     mode: 'no-cors', // If there's a redirection to an external origin, even if it enables CORS, we don't want to receive its content and patch it into our DOM on this origin
@@ -288,7 +289,19 @@ export async function performEnhancedPageLoad(internalDestinationHref: string, i
             history.pushState(null, '', response.url);
           }
         }
-        internalDestinationHref = response.url;
+        if (!isWithinBaseUriSpace(response.url)) {
+          // Existing interactive runtimes cannot accept a location outside their original base URI.
+          abortController.abort();
+          retryEnhancedNavAsFullPageLoad(response.url);
+          return;
+        }
+        if (internalDestinationHref !== response.url) {
+          internalDestinationHref = response.url;
+          // The redirect changed the URL, so re-notify listeners with the final URL to keep the interactive
+          // runtime's NavigationManager.Uri correct. This fires a second LocationChanged only when the URL
+          // actually changes, preserving whether the original navigation was intercepted.
+          notifyEnhancedNavigationListeners(internalDestinationHref, interceptedLink);
+        }
       }
 
       // For enhanced nav redirecting to an external URL, we'll get a special Blazor-specific redirection command
@@ -415,6 +428,7 @@ async function getResponsePartsWithFraming(responsePromise: Promise<Response>, a
     await response.body
       .pipeThrough(new TextDecoderStream())
       .pipeThrough(splitStream(`<!--${frameBoundary}-->`))
+      // Fetch may already be buffered, so cancellation must also stop consumption of its frames.
       .pipeTo(new WritableStream({
         write(chunk) {
           // Inside here, we know the chunks correspond precisely to frames within our message framing mechanism.
@@ -427,7 +441,7 @@ async function getResponsePartsWithFraming(responsePromise: Promise<Response>, a
             onStreamingElement(chunk);
           }
         },
-      }));
+      }), { signal: abortSignal });
   } catch (ex) {
     if ((ex as Error).name === 'AbortError' && abortSignal.aborted) {
       // Not an error. This happens if a different navigation started before this one completed.
