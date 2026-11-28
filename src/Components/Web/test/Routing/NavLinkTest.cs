@@ -45,6 +45,66 @@ public class NavLinkTest
         Assert.Equal("active", classValue);
     }
 
+    [Fact]
+    public async Task NavLink_Active_UsesActiveClassAndIgnoresInactiveClass()
+    {
+        var classValue = await RenderNavLinkAndGetClassAsync(
+            currentUri: "https://example.com/page",
+            href: "https://example.com/page",
+            additionalClass: null,
+            inactiveClass: "text-gray");
+
+        Assert.Equal("active", classValue);
+    }
+
+    [Fact]
+    public async Task NavLink_Inactive_AppliesInactiveClassWhenSet()
+    {
+        var classValue = await RenderNavLinkAndGetClassAsync(
+            currentUri: "https://example.com/other",
+            href: "https://example.com/page",
+            additionalClass: null,
+            inactiveClass: "text-gray");
+
+        Assert.Equal("text-gray", classValue);
+    }
+
+    [Fact]
+    public async Task NavLink_Inactive_OmitsInactiveClassWhenNotSet()
+    {
+        var classValue = await RenderNavLinkAndGetClassAsync(
+            currentUri: "https://example.com/other",
+            href: "https://example.com/page",
+            additionalClass: "bg-dark-gray",
+            inactiveClass: null);
+
+        Assert.Equal("bg-dark-gray", classValue);
+    }
+
+    [Fact]
+    public async Task NavLink_Inactive_CombinesUserClassWithInactiveClass()
+    {
+        var classValue = await RenderNavLinkAndGetClassAsync(
+            currentUri: "https://example.com/other",
+            href: "https://example.com/page",
+            additionalClass: "bg-dark-gray",
+            inactiveClass: "text-gray");
+
+        Assert.Equal("bg-dark-gray text-gray", classValue);
+    }
+
+    [Fact]
+    public async Task NavLink_Active_CombinesUserClassWithActiveClass_WhenInactiveClassAlsoSet()
+    {
+        var classValue = await RenderNavLinkAndGetClassAsync(
+            currentUri: "https://example.com/page",
+            href: "https://example.com/page",
+            additionalClass: "bg-dark-gray",
+            inactiveClass: "text-gray");
+
+        Assert.Equal("bg-dark-gray active", classValue);
+    }
+
     private async Task<object?> RenderNavLinkAndGetAttributeAsync(
         string baseUri, string currentUri, string href, bool relativeToCurrentUri, string attributeName)
     {
@@ -65,6 +125,37 @@ public class NavLinkTest
 
         var batch = renderer.Batches.Single();
         return batch.ReferenceFrames.FirstOrDefault(f => f.AttributeName == attributeName).AttributeValue;
+    }
+
+    private async Task<object?> RenderNavLinkAndGetClassAsync(
+        string currentUri, string href, string? additionalClass, string? inactiveClass)
+    {
+        var navigationManager = new TestNavigationManager();
+        navigationManager.Initialize("https://example.com/", currentUri);
+
+        var renderer = new TestRenderer();
+        var component = new NavLink { NavigationManager = navigationManager };
+        var componentId = renderer.AssignRootComponentId(component);
+
+        var additionalAttributes = new Dictionary<string, object> { ["href"] = href };
+        if (additionalClass is not null)
+        {
+            additionalAttributes["class"] = additionalClass;
+        }
+
+        var parametersDict = new Dictionary<string, object?>
+        {
+            [nameof(NavLink.AdditionalAttributes)] = additionalAttributes,
+        };
+        if (inactiveClass is not null)
+        {
+            parametersDict[nameof(NavLink.InactiveClass)] = inactiveClass;
+        }
+
+        await renderer.RenderRootComponentAsync(componentId, ParameterView.FromDictionary(parametersDict));
+
+        var batch = renderer.Batches.Single();
+        return batch.ReferenceFrames.FirstOrDefault(f => f.AttributeName == "class").AttributeValue;
     }
 
     private class TestNavigationManager : NavigationManager
