@@ -555,6 +555,13 @@ internal sealed class OpenApiSchemaService(
         {
             foreach (var propertyInfo in jsonTypeInfo.Properties)
             {
+                // Ignored properties are present in the type's metadata but have no accessors and no schema node.
+                // A node with the same name (e.g. a polymorphic type discriminator) does not describe them.
+                if (propertyInfo is { Get: null, Set: null })
+                {
+                    continue;
+                }
+
                 if (schema.Properties.TryGetValue(propertyInfo.Name, out var propertySchema))
                 {
                     await InnerApplySchemaTransformersAsync(propertySchema, _jsonSerializerOptions.GetTypeInfo(propertyInfo.PropertyType), propertyInfo, context, transformer, cancellationToken);
