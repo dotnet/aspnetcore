@@ -101,12 +101,6 @@ internal class JsonObjectAdapter : IAdapter
             return false;
         }
 
-        if (currentValue == null || string.IsNullOrEmpty(currentValue.ToString()))
-        {
-            errorMessage = Resources.FormatValueForTargetSegmentCannotBeNullOrEmpty(segment);
-            return false;
-        }
-
         if (!JsonUtilities.DeepEquals(currentValue, value, serializerOptions))
         {
             errorMessage = Resources.FormatValueNotEqualToTestValue(currentValue, value, segment);

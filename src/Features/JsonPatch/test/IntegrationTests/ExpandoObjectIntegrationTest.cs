@@ -155,6 +155,62 @@ public class ExpandoObjectIntegrationTest
     }
 
     [Fact]
+    public void TestNullProperty_IsSuccessful()
+    {
+        // Arrange
+        dynamic targetObject = new ExpandoObject();
+        targetObject.Test = null;
+
+        var patchDocument = new JsonPatchDocument();
+        patchDocument.Test("Test", null);
+
+        // Act & Assert
+        patchDocument.ApplyTo(targetObject);
+    }
+
+    [Fact]
+    public void TestValueAgainstNullProperty_ThrowsJsonPatchException()
+    {
+        // Arrange
+        dynamic targetObject = new ExpandoObject();
+        targetObject.Test = null;
+
+        var patchDocument = new JsonPatchDocument();
+        patchDocument.Test("Test", "TestValue");
+
+        // Act
+        var exception = Assert.Throws<JsonPatchException>(() =>
+        {
+            patchDocument.ApplyTo(targetObject);
+        });
+
+        // Assert
+        Assert.Equal("The current value '' at path 'Test' is not equal to the test value 'TestValue'.",
+            exception.Message);
+    }
+
+    [Fact]
+    public void TestNullAgainstStringProperty_ThrowsJsonPatchException()
+    {
+        // Arrange
+        dynamic targetObject = new ExpandoObject();
+        targetObject.Test = "Value";
+
+        var patchDocument = new JsonPatchDocument();
+        patchDocument.Test("Test", null);
+
+        // Act
+        var exception = Assert.Throws<JsonPatchException>(() =>
+        {
+            patchDocument.ApplyTo(targetObject);
+        });
+
+        // Assert
+        Assert.Equal("The current value 'Value' at path 'Test' is not equal to the test value ''.",
+            exception.Message);
+    }
+
+    [Fact]
     public void TestStringProperty_ThrowsJsonPatchException_IfTestFails()
     {
         // Arrange
