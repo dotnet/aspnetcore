@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Diagnostics;
+using System.Globalization;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Features;
@@ -124,7 +125,8 @@ internal struct StaticFileContext
             _lastModified = new DateTimeOffset(last.Year, last.Month, last.Day, last.Hour, last.Minute, last.Second, last.Offset).ToUniversalTime();
 
             long etagHash = _lastModified.ToFileTime() ^ _length;
-            _etag = new EntityTagHeaderValue('\"' + Convert.ToString(etagHash, 16) + '\"');
+            // Lowercase hex of the two's complement value, the same as Convert.ToString(etagHash, 16).
+            _etag = new EntityTagHeaderValue(string.Create(CultureInfo.InvariantCulture, $"\"{etagHash:x}\""));
         }
         return _fileInfo.Exists;
     }
@@ -256,10 +258,10 @@ internal struct StaticFileContext
                 _response.ContentType = _contentType;
             }
 
-            var responseHeaders = ResponseHeaders;
-            responseHeaders.LastModified = _lastModified;
-            responseHeaders.ETag = _etag;
-            responseHeaders.Headers.AcceptRanges = "bytes";
+            var responseHeaders = _response.Headers;
+            responseHeaders.LastModified = HeaderUtilities.FormatDate(_lastModified);
+            responseHeaders.ETag = _etag!.ToString();
+            responseHeaders.AcceptRanges = "bytes";
         }
         if (statusCode == StatusCodes.Status200OK)
         {
@@ -281,15 +283,20 @@ internal struct StaticFileContext
     public PreconditionState GetPreconditionState()
         => GetMaxPreconditionState(_ifMatchState, _ifNoneMatchState, _ifModifiedSinceState, _ifUnmodifiedSinceState);
 
-    private static PreconditionState GetMaxPreconditionState(params PreconditionState[] states)
+    private static PreconditionState GetMaxPreconditionState(PreconditionState ifMatchState, PreconditionState ifNoneMatchState, PreconditionState ifModifiedSinceState, PreconditionState ifUnmodifiedSinceState)
     {
-        PreconditionState max = PreconditionState.Unspecified;
-        for (int i = 0; i < states.Length; i++)
+        var max = ifMatchState;
+        if (ifNoneMatchState > max)
         {
-            if (states[i] > max)
-            {
-                max = states[i];
-            }
+            max = ifNoneMatchState;
+        }
+        if (ifModifiedSinceState > max)
+        {
+            max = ifModifiedSinceState;
+        }
+        if (ifUnmodifiedSinceState > max)
+        {
+            max = ifUnmodifiedSinceState;
         }
         return max;
     }
