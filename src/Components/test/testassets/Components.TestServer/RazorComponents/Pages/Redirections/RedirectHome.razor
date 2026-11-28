@@ -1,6 +1,16 @@
 ﻿@page "/redirect"
 @using Microsoft.AspNetCore.Components.Forms
 
+@if (Interactive)
+{
+    <TestContentPackage.ComponentWithLocationChanged Id="server" @rendermode="@(new InteractiveServerRenderMode(prerender: false))" />
+}
+
+@code {
+    [SupplyParameterFromQuery]
+    public bool Interactive { get; set; }
+}
+
 <h1>Redirections</h1>
 
 <p>
@@ -87,6 +97,12 @@
             <AntiforgeryToken />
             <button>Enhanced POST to non-Blazor endpoint with external redirection</button>
             <span>Note: this case is not supported and is shown here only for manual testing. No E2E test attempts this case.</span>
+        </form>
+    </li>
+    <li>
+        <form id="form-nonblazor-enhanced-outside-base" @formname="outside-base-form" method="post" action="redirect/nonblazor/post?outside-base=true" data-enhance>
+            <AntiforgeryToken />
+            <button>Enhanced POST redirect outside the application base URI</button>
         </form>
     </li>
 </ul>

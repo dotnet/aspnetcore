@@ -17,6 +17,7 @@ using Microsoft.AspNetCore.Components.Server.Circuits;
 using Microsoft.AspNetCore.Components.Web;
 using Microsoft.AspNetCore.Localization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.SignalR;
 using Microsoft.Extensions.Localization;
 using TestContentPackage;
 using TestContentPackage.Services;
@@ -108,6 +109,7 @@ public class RazorComponentEndpointsStartup<TRootComponent>
         }
 
         razorComponentsBuilder.AddInteractiveWebAssemblyComponents();
+        services.Configure<HubOptions>(options => options.AddFilter(new HoldStartCircuitFilter()));
 
         if (Configuration.GetValue<bool>("UseHybridCache"))
         {
@@ -134,6 +136,22 @@ public class RazorComponentEndpointsStartup<TRootComponent>
         services.AddScoped<CircuitHandler>(sp => sp.GetRequiredService<PauseTrackingHandler>());
 
         services.AddSingleton<AutoPauseTestStreamGate>();
+    }
+
+    private sealed class HoldStartCircuitFilter : IHubFilter
+    {
+        public async ValueTask<object> InvokeMethodAsync(HubInvocationContext context, Func<HubInvocationContext, ValueTask<object>> next)
+        {
+            var result = await next(context);
+            if (context.HubMethodName == "StartCircuit" &&
+                context.Context.GetHttpContext().Request.Cookies["hold-start-circuit"] == "true")
+            {
+                await Task.Delay(Timeout.Infinite, context.Context.ConnectionAborted)
+                    .ConfigureAwait(ConfigureAwaitOptions.SuppressThrowing);
+            }
+
+            return result;
+        }
     }
 
     // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
@@ -176,6 +194,15 @@ public class RazorComponentEndpointsStartup<TRootComponent>
 
             ConfigureSubdirPipeline(app, env);
         });
+
+        app.Map("/outside-base-post", app => app.Run(async context =>
+        {
+            context.Response.ContentType = "text/html";
+            context.Response.StatusCode = context.Request.Method == HttpMethods.Post
+                ? StatusCodes.Status200OK
+                : StatusCodes.Status405MethodNotAllowed;
+            await context.Response.WriteAsync($"<html><body><h1>{context.Request.Method}</h1></body></html>");
+        }));
     }
 
     private void ConfigureSubdirPipeline(IApplicationBuilder app, IWebHostEnvironment env)
@@ -414,6 +441,12 @@ public class RazorComponentEndpointsStartup<TRootComponent>
             HttpResponse response,
             ExternalNavigationTarget externalNavigationTarget)
         {
+            if (request.Query["outside-base"] == "true")
+            {
+                response.Redirect("/outside-base-post", permanent: false, preserveMethod: true);
+                return Task.CompletedTask;
+            }
+
             response.Redirect(request.Query["external"] == "true"
                 ? externalNavigationTarget.Uri.AbsoluteUri
                 : $"{request.PathBase}/nav/scroll-to-hash#some-content");

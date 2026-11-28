@@ -4,7 +4,7 @@
 import '../JSInterop/Microsoft.JSInterop';
 import { scheduleScrollReset, ScrollResetSchedule } from '../Rendering/Renderer';
 import { EventDelegator } from '../Rendering/Events/EventDelegator';
-import { attachEnhancedNavigationListener, getInteractiveRouterRendererId, handleClickForNavigationInterception, hasInteractiveRouter, hasProgrammaticEnhancedNavigationHandler, isForSamePath, isSamePageWithHash, isWithinBaseUriSpace, performProgrammaticEnhancedNavigation, performScrollToElementOnTheSamePage, scrollToElement, setHasInteractiveRouter, toAbsoluteUri } from './NavigationUtils';
+import { attachEnhancedNavigationListener, getInteractiveRouterRendererId, handleClickForNavigationInterception, hasInteractiveRouter, hasProgrammaticEnhancedNavigationHandler, isForSamePath, isSamePageWithHash, isWithinBaseUriSpace, performProgrammaticEnhancedNavigation, performScrollToElementOnTheSamePage, recordLocationChange, scrollToElement, setHasInteractiveRouter, toAbsoluteUri } from './NavigationUtils';
 import { WebRendererId } from '../Rendering/WebRendererId';
 import { isRendererAttached } from '../Rendering/WebRendererInteropMethods';
 import { IBlazor } from '../GlobalExports';
@@ -12,6 +12,8 @@ import { IBlazor } from '../GlobalExports';
 let hasRegisteredNavigationEventListeners = false;
 let currentHistoryIndex = 0;
 let currentLocationChangingCallId = 0;
+let locationChangedNotificationSequence = 0;
+const latestLocationChangedNotificationSequenceByRenderer = new Map<WebRendererId, number>();
 
 type NavigationCallbacks = {
   rendererId: WebRendererId;
@@ -38,6 +40,8 @@ export const internalFunctions = {
   scrollToElement,
 };
 
+export { resetLastLocationChange, wasLastLocationChangeIntercepted } from './NavigationUtils';
+
 function listenForNavigationEvents(
   rendererId: WebRendererId,
   locationChangedCallback: (uri: string, state: string | undefined, intercepted: boolean) => Promise<void>,
@@ -58,8 +62,8 @@ function listenForNavigationEvents(
   window.addEventListener('popstate', onPopState);
   currentHistoryIndex = history.state?._index ?? 0;
 
-  attachEnhancedNavigationListener((internalDestinationHref, interceptedLink) => {
-    notifyLocationChanged(interceptedLink, internalDestinationHref);
+  attachEnhancedNavigationListener((internalDestinationHref, interceptedLink, rendererId, shouldRecordLocationChange) => {
+    notifyLocationChanged(interceptedLink, internalDestinationHref, rendererId, shouldRecordLocationChange);
   });
 }
 
@@ -156,6 +160,7 @@ async function performInternalNavigation(absoluteInternalHref: string, intercept
 
   if (isSamePageWithHash(location.href, absoluteInternalHref)) {
     saveToBrowserHistory(absoluteInternalHref, replace, state);
+    recordLocationChange(absoluteInternalHref, interceptedLink);
     performScrollToElementOnTheSamePage(absoluteInternalHref);
     return;
   }
@@ -259,12 +264,30 @@ async function onBrowserInitiatedPopState(state: PopStateEvent) {
   await notifyLocationChanged(/* interceptedLink */ true);
 }
 
-async function notifyLocationChanged(interceptedLink: boolean, internalDestinationHref?: string) {
+async function notifyLocationChanged(interceptedLink: boolean, internalDestinationHref?: string, targetRendererId?: WebRendererId, shouldRecordLocationChange = true) {
   const uri = internalDestinationHref ?? location.href;
+  const state = history.state?.userState;
+  const notificationSequence = ++locationChangedNotificationSequence;
 
-  await Promise.all(Array.from(navigationCallbacks, async ([rendererId, callbacks]) => {
-    if (isRendererAttached(rendererId)) {
-      await callbacks.locationChanged(uri, history.state?.userState, interceptedLink);
+  if (shouldRecordLocationChange) {
+    recordLocationChange(uri, interceptedLink);
+  }
+
+  const callbacksToNotify = Array.from(navigationCallbacks).filter(([rendererId]) =>
+    (targetRendererId === undefined || targetRendererId === rendererId) && isRendererAttached(rendererId));
+
+  // Mark every recipient before callbacks run, since a renderer can synchronously start another navigation.
+  for (const [rendererId] of callbacksToNotify) {
+    latestLocationChangedNotificationSequenceByRenderer.set(rendererId, notificationSequence);
+  }
+
+  // WebAssembly can synchronously supersede this navigation before Server sends it over SignalR.
+  callbacksToNotify.sort(([left], [right]) =>
+    Number(right === WebRendererId.WebAssembly) - Number(left === WebRendererId.WebAssembly));
+
+  await Promise.all(callbacksToNotify.map(async ([rendererId, callbacks]) => {
+    if (latestLocationChangedNotificationSequenceByRenderer.get(rendererId) === notificationSequence && isRendererAttached(rendererId)) {
+      await callbacks.locationChanged(uri, state, interceptedLink);
     }
   }));
 }

@@ -660,6 +660,148 @@ public class EnhancedNavigationTest : ServerTestBase<BasicTestAppServerSiteFixtu
         Browser.Equal("2", () => Browser.Exists(By.Id("query-wasm")).Text);
     }
 
+    [Fact]
+    public void NavigationManagerUriGetsUpdatedOnEnhancedNavigationBeforeServerRendererAttaches()
+    {
+        Navigate($"{ServerPathBase}/nav");
+        Browser.Equal("Hello", () => Browser.Exists(By.TagName("h1")).Text);
+
+        ((IJavaScriptExecutor)Browser).ExecuteScript("sessionStorage.setItem('block-server-renderer-attach', 'true')");
+        Navigate($"{ServerPathBase}/nav/location-changed/server");
+        Browser.Equal("Page with location changed components", () => Browser.Exists(By.TagName("h1")).Text);
+
+        // 'StartCircuit' has been processed, but the server renderer has not attached yet
+        Browser.Exists(By.Id("server-renderer-attach-blocked"));
+
+        ((IJavaScriptExecutor)Browser).ExecuteScript("Blazor.navigateTo('nav/location-changed/server?query=1')");
+        Browser.Contains("/nav/location-changed/server?query=1", () => Browser.Url);
+
+        ((IJavaScriptExecutor)Browser).ExecuteScript("window.unblockServerRendererAttach()");
+
+        Browser.Contains("/nav/location-changed/server?query=1", () => Browser.Exists(By.Id("nav-uri-server")).Text);
+        Browser.Equal("1", () => Browser.Exists(By.Id("query-server")).Text);
+    }
+
+    [Theory]
+    [InlineData("server")]
+    [InlineData("wasm")]
+    public void SupersededLocationChangeDoesNotReachTheServerRenderer(string firstRenderer)
+    {
+        Navigate($"{ServerPathBase}/nav/location-changed/{firstRenderer}");
+        Browser.Exists(By.Id($"nav-uri-{firstRenderer}"));
+        var js = (IJavaScriptExecutor)Browser;
+        js.ExecuteScript("Blazor.navigateTo('nav/location-changed/server-and-wasm')");
+        Browser.Contains("/server-and-wasm", () => Browser.Exists(By.Id("nav-uri-server")).Text);
+        Browser.Contains("/server-and-wasm", () => Browser.Exists(By.Id("nav-uri-wasm")).Text);
+        var serverLocationChanges = int.Parse(Browser.Exists(By.Id("location-changed-count-server")).Text, CultureInfo.InvariantCulture);
+
+        js.ExecuteScript("Blazor.navigateTo('nav/location-changed/server-and-wasm?superseded=1')");
+
+        Browser.Contains("query=2", () => Browser.Url);
+        Browser.Contains("query=2", () => Browser.Exists(By.Id("nav-uri-server")).Text);
+        Browser.Equal("2", () => Browser.Exists(By.Id("query-server")).Text);
+        Browser.Contains("query=2", () => Browser.Exists(By.Id("nav-uri-wasm")).Text);
+        Browser.Equal("2", () => Browser.Exists(By.Id("query-wasm")).Text);
+        Browser.Equal((serverLocationChanges + 1).ToString(CultureInfo.InvariantCulture), () => Browser.FindElement(By.Id("location-changed-count-server")).Text);
+    }
+
+    [Fact]
+    public void HistoryStateGetsUpdatedOnSameUriNavigationBeforeServerRendererAttaches()
+    {
+        Navigate($"{ServerPathBase}/nav");
+        ((IJavaScriptExecutor)Browser).ExecuteScript("sessionStorage.setItem('block-server-renderer-attach', 'true')");
+        Navigate($"{ServerPathBase}/nav/location-changed/server-and-wasm-state");
+        Browser.Exists(By.Id("server-renderer-attach-blocked"));
+
+        var uri = Browser.Url;
+        Browser.Exists(By.Id("set-history-state")).Click();
+        Browser.Equal("state-from-wasm", () => (string)((IJavaScriptExecutor)Browser).ExecuteScript("return history.state?.userState"));
+        Assert.Equal(uri, Browser.Url);
+
+        ((IJavaScriptExecutor)Browser).ExecuteScript("window.unblockServerRendererAttach()");
+        Browser.Equal("state-from-wasm", () => Browser.Exists(By.Id("history-state-server")).Text);
+        Assert.Equal(uri, Browser.Url);
+        Browser.Exists(By.Id("update-query-string-server")).Click();
+        Browser.Equal("1", () => Browser.Exists(By.Id("query-server")).Text);
+    }
+
+    [Fact]
+    public void HistoryStateGetsUpdatedOnSameUriNavigationDuringServerNegotiation()
+    {
+        Navigate($"{ServerPathBase}/nav");
+        var js = (IJavaScriptExecutor)Browser;
+        js.ExecuteScript("sessionStorage.setItem('block-server-negotiation', 'true')");
+        Navigate($"{ServerPathBase}/nav/location-changed/server-and-wasm-state");
+        Browser.Exists(By.Id("server-negotiation-blocked"));
+
+        var uri = Browser.Url;
+        Browser.Exists(By.Id("set-history-state")).Click();
+        Browser.Equal("state-from-wasm", () => (string)js.ExecuteScript("return history.state?.userState"));
+        Assert.Equal(uri, Browser.Url);
+
+        js.ExecuteScript("window.unblockServerNegotiation()");
+        Browser.Equal("state-from-wasm", () => Browser.Exists(By.Id("history-state-server")).Text);
+    }
+
+    [Fact]
+    public void FailedLocationReplayClosesConnectionBeforeStartCircuitReturns()
+    {
+        Navigate($"{ServerPathBase}/nav");
+        var js = (IJavaScriptExecutor)Browser;
+        js.ExecuteScript("sessionStorage.setItem('block-server-negotiation', 'true')");
+        Navigate($"{ServerPathBase}/nav/location-changed/server-and-wasm-state");
+        Browser.Exists(By.Id("server-negotiation-blocked"));
+        Browser.Exists(By.Id("set-history-state")).Click();
+        Browser.Equal("state-from-wasm", () => Browser.ExecuteJavaScript<string>("return history.state?.userState"));
+
+        js.ExecuteScript("""
+            const hubPath = new URL('_blazor', document.baseURI).pathname;
+            document.cookie = `hold-start-circuit=true; path=${hubPath}`;
+            document.body.insertAdjacentHTML('beforeend', '<div id="blazor-error-ui" style="display: none">Circuit failed</div>');
+
+            const send = WebSocket.prototype.send;
+            WebSocket.prototype.send = function (data) {
+                if (new URL(this.url).pathname === hubPath && data instanceof ArrayBuffer &&
+                    new TextDecoder().decode(data).includes('OnLocationChanged')) {
+                    WebSocket.prototype.send = send;
+                    this.addEventListener('close', () => window.replaySocketClosed = true, { once: true });
+                    throw new Error('Test transport send failure');
+                }
+                return send.call(this, data);
+            };
+            window.unblockServerNegotiation();
+            """);
+
+        try
+        {
+            Browser.True(() => Browser.ExecuteJavaScript<bool>("return window.replaySocketClosed === true"));
+            Browser.True(() => Browser.Exists(By.Id("blazor-error-ui")).Displayed);
+        }
+        finally
+        {
+            js.ExecuteScript("document.cookie = `hold-start-circuit=; max-age=0; path=${new URL('_blazor', document.baseURI).pathname}`");
+        }
+    }
+
+    [Fact]
+    public void PreexistingHistoryStateWithoutNavigationDoesNotTriggerReplay()
+    {
+        Navigate($"{ServerPathBase}/nav/location-changed/server-and-wasm-state");
+        Browser.Exists(By.Id("set-history-state")).Click();
+        Browser.Equal("state-from-wasm", () => Browser.Exists(By.Id("history-state-server")).Text);
+
+        ((IJavaScriptExecutor)Browser).ExecuteScript("sessionStorage.setItem('block-server-renderer-attach', 'true')");
+        Browser.Navigate().Refresh();
+        Browser.Exists(By.Id("server-renderer-attach-blocked"));
+        Browser.Equal("state-from-wasm", () => (string)((IJavaScriptExecutor)Browser).ExecuteScript("return history.state?.userState"));
+
+        ((IJavaScriptExecutor)Browser).ExecuteScript("window.unblockServerRendererAttach()");
+        Browser.Exists(By.Id("refresh-history-state-server")).Click();
+        Browser.Equal("Refresh history state: 1", () => Browser.Exists(By.Id("refresh-history-state-server")).Text);
+        Browser.Equal("(null)", () => Browser.Exists(By.Id("history-state-server")).Text);
+        Browser.Equal("state-from-wasm", () => (string)((IJavaScriptExecutor)Browser).ExecuteScript("return history.state?.userState"));
+    }
+
     [Theory]
     [InlineData("server")]
     [InlineData("wasm")]

@@ -3,8 +3,10 @@
 
 import { synchronizeDomContent } from '../Rendering/DomMerging/DomSync';
 import { synchronizeAttributes } from '../Rendering/DomMerging/AttributeSync';
-import { attachProgrammaticEnhancedNavigationHandler, handleClickForNavigationInterception, hasInteractiveRouter, isForSamePath, notifyEnhancedNavigationListeners, performScrollToElementOnTheSamePage, isSamePageWithHash } from './NavigationUtils';
+import { attachProgrammaticEnhancedNavigationHandler, handleClickForNavigationInterception, hasInteractiveRouter, isForSamePath, isWithinBaseUriSpace, notifyEnhancedNavigationListeners, performScrollToElementOnTheSamePage, isSamePageWithHash, recordLocationChange } from './NavigationUtils';
 import { scheduleScrollReset, ScrollResetSchedule } from '../Rendering/Renderer';
+import { WebRendererId } from '../Rendering/WebRendererId';
+import { isRendererAttached } from '../Rendering/WebRendererInteropMethods';
 
 /*
 In effect, we have two separate client-side navigation mechanisms:
@@ -110,6 +112,7 @@ function onDocumentClick(event: MouseEvent) {
     history.pushState(null, /* ignored title */ '', absoluteInternalHref);
 
     if (shouldScrollToHash) {
+      recordLocationChange(absoluteInternalHref, /* intercepted */ true);
       performScrollToElementOnTheSamePage(absoluteInternalHref);
     } else {
       const isSelfNavigation = isForSamePath(absoluteInternalHref, originalLocation);
@@ -128,6 +131,7 @@ function onPopState(state: PopStateEvent) {
 
   if (state.state == null && isSamePageWithHash(currentContentUrl, location.href)) {
     currentContentUrl = location.href;
+    recordLocationChange(location.href, /* intercepted */ false);
     return;
   }
 
@@ -212,20 +216,24 @@ function onDocumentSubmit(event: SubmitEvent) {
 
 export async function performEnhancedPageLoad(internalDestinationHref: string, interceptedLink: boolean, fetchOptions?: RequestInit, treatAsRedirectionFromMethod?: 'get' | 'post', changeUrl = true) {
   performingEnhancedPageLoad = true;
+  const serverRendererAttachedAtStart = isRendererAttached(WebRendererId.Server);
 
   // First, stop any preceding enhanced page load
   currentEnhancedNavigationAbortController?.abort();
+  currentEnhancedNavigationAbortController = new AbortController();
+  const abortSignal = currentEnhancedNavigationAbortController.signal;
 
   // Notify any interactive runtimes that an enhanced navigation is starting
   notifyEnhancedNavigationListeners(internalDestinationHref, interceptedLink);
+  if (abortSignal.aborted) {
+    return;
+  }
 
   // Notify handlers that enhanced navigation is starting
   navigationEnhancementCallbacks.enhancedNavigationStarted();
 
   // Now request the new page via fetch, and a special header that tells the server we want it to inject
   // framing boundaries to distinguish the initial document and each subsequent streaming SSR update.
-  currentEnhancedNavigationAbortController = new AbortController();
-  const abortSignal = currentEnhancedNavigationAbortController.signal;
   const responsePromise = fetch(internalDestinationHref, Object.assign(<RequestInit>{
     signal: abortSignal,
     mode: 'no-cors', // If there's a redirection to an external origin, even if it enables CORS, we don't want to receive its content and patch it into our DOM on this origin
@@ -256,6 +264,20 @@ export async function performEnhancedPageLoad(internalDestinationHref: string, i
         }
       }
 
+      if (changeUrl && (response.redirected || treatAsRedirectionFromMethod) && !isWithinBaseUriSpace(response.url) && !isGetRequest) {
+        abortSignal.throwIfAborted();
+        const previousLocation = location.href;
+
+        // The POST hasn't changed browser history, so restoring renderers must not make it eligible for startup replay.
+        if (previousLocation !== internalDestinationHref) {
+          notifyEnhancedNavigationListeners(previousLocation, /* interceptedLink */ false, undefined, /* shouldRecordLocationChange */ false);
+        }
+        abortSignal.throwIfAborted();
+        performingEnhancedPageLoad = false;
+        navigationEnhancementCallbacks.enhancedNavigationCompleted();
+        throw new Error('Enhanced navigation does not support non-GET requests that redirect outside the application base URI.');
+      }
+
       if (isSuccessResponse && response.headers.get('blazor-enhanced-nav') !== 'allow') {
         // This appears to be a non-Blazor-Endpoint success response. We don't want to use enhanced nav
         // because the content we receive is not designed to be patched into an existing frame,
@@ -278,6 +300,16 @@ export async function performEnhancedPageLoad(internalDestinationHref: string, i
       // then let the rest of enhanced nav logic run to patch the new content into the DOM.
       if (changeUrl && (response.redirected || treatAsRedirectionFromMethod)) {
         const treatAsGet = treatAsRedirectionFromMethod ? (treatAsRedirectionFromMethod === 'get') : isGetRequest;
+        const previousLocation = location.href;
+        if (!isWithinBaseUriSpace(response.url)) {
+          if (treatAsGet) {
+            location.replace(response.url);
+          } else {
+            location.assign(response.url);
+          }
+          return;
+        }
+
         if (treatAsGet) {
           // For gets, the intermediate (redirecting) URL is already in the address bar, so we have to use 'replace'
           // so that 'back' would go to the page before the redirection
@@ -288,6 +320,12 @@ export async function performEnhancedPageLoad(internalDestinationHref: string, i
             history.pushState(null, '', response.url);
           }
         }
+        if (response.url !== internalDestinationHref) {
+          notifyEnhancedNavigationListeners(response.url, interceptedLink);
+        } else if (!serverRendererAttachedAtStart && isRendererAttached(WebRendererId.Server) && response.url !== previousLocation) {
+          notifyEnhancedNavigationListeners(response.url, interceptedLink, WebRendererId.Server);
+        }
+        abortSignal.throwIfAborted();
         internalDestinationHref = response.url;
       }
 
