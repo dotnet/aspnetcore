@@ -33,6 +33,7 @@ public class Startup
         services.AddSignalR(options => options.EnableDetailedErrors = true)
                 .AddMessagePackProtocol();
 
+        services.AddSingleton<AuthenticationRefreshObserver>();
         services.AddSingleton<IUserIdProvider, HeaderUserIdProvider>();
         services.AddAuthorization(options =>
         {
