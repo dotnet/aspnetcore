@@ -69,8 +69,28 @@ public readonly struct ParameterView
         {
             if (string.Equals(entry.Name, parameterName))
             {
-                result = (TValue)entry.Value;
-                return true;
+                try
+                {
+                    result = (TValue)entry.Value;
+                    return true;
+                }
+                catch (InvalidCastException ex)
+                {
+                    // The incoming value might be of any type, for example if the caller splatted
+                    // attributes onto the component, so help developers identify the problem by
+                    // naming the parameter and the involved types.
+                    throw new InvalidCastException(
+                        $"Unable to convert the value supplied for parameter '{parameterName}' from type '{entry.Value?.GetType().FullName}' to type '{typeof(TValue).FullName}'.", ex);
+                }
+                catch (NullReferenceException ex)
+                {
+                    // Unboxing null into a non-nullable value type. Keep the exception type the
+                    // runtime throws so existing callers that catch it keep working.
+#pragma warning disable CA2201 // Do not raise reserved exception types
+                    throw new NullReferenceException(
+                        $"A null value was supplied for parameter '{parameterName}', which cannot be converted to non-nullable type '{typeof(TValue).FullName}'.", ex);
+#pragma warning restore CA2201
+                }
             }
         }
 
