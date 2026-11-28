@@ -1,0 +1,415 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/dotnet/aspnetcore/repro-schema.json",
+  "title": "ASP.NET Core Bug Reproduction",
+  "description": "Per-issue AI bug reproduction v1.0. Captures systematic reproduction attempts with step-by-step results, environment details, and actionable output. Output limits: 2KB per step (4KB for failure steps), 50 lines for stack traces. Absolute paths containing usernames must be redacted.",
+  "type": "object",
+  "required": [
+    "meta",
+    "conclusion",
+    "notes",
+    "reproductionSteps",
+    "environment"
+  ],
+  "additionalProperties": false,
+  "$defs": {
+    "stepResult": {
+      "type": "string",
+      "enum": ["success", "failure", "wrong-output", "skip"],
+      "description": "TECHNICAL outcome only — NOT whether it matched expectations. success=command exited 0. failure=command exited non-zero or exception thrown. wrong-output=process ran without error but output is incorrect. skip=step was skipped."
+    },
+    "stepLayer": {
+      "type": "string",
+      "enum": ["setup", "csharp", "hosting", "middleware", "http", "deployment"],
+      "description": "Which layer of the ASP.NET Core stack this step exercises. setup=project creation/package install. csharp=C# code compilation. hosting=ASP.NET Core startup/DI. middleware=pipeline execution. http=HTTP request/response. deployment=publish/Docker."
+    },
+    "conclusionValue": {
+      "type": "string",
+      "enum": [
+        "reproduced",
+        "not-reproduced",
+        "needs-platform",
+        "needs-hardware",
+        "partial",
+        "inconclusive"
+      ],
+      "description": "FACTUAL observation of whether reported behavior occurred. reproduced=reported behavior was observed (even if working-as-designed). not-reproduced=behavior NOT observed. needs-platform=requires unavailable OS/platform. needs-hardware=requires specific hardware. partial=some aspects reproduced. inconclusive=insufficient info."
+    },
+    "suggestedAction": {
+      "type": "string",
+      "enum": [
+        "needs-investigation",
+        "close-as-fixed",
+        "close-as-by-design",
+        "close-with-docs",
+        "close-as-duplicate",
+        "convert-to-discussion",
+        "request-info",
+        "keep-open"
+      ]
+    },
+    "confidence": {
+      "type": "number",
+      "minimum": 0,
+      "maximum": 1,
+      "description": "0.0-1.0 confidence score."
+    },
+    "actionType": {
+      "type": "string",
+      "enum": [
+        "update-labels",
+        "add-comment",
+        "close-issue",
+        "convert-to-discussion",
+        "link-related",
+        "link-duplicate",
+        "update-project",
+        "set-milestone"
+      ]
+    },
+    "actionRisk": {
+      "type": "string",
+      "enum": ["low", "medium", "high"]
+    }
+  },
+  "properties": {
+    "meta": {
+      "type": "object",
+      "required": ["schemaVersion", "number", "repo", "analyzedAt"],
+      "additionalProperties": false,
+      "properties": {
+        "schemaVersion": { "type": "string", "const": "1.0" },
+        "number": { "type": "integer", "minimum": 1 },
+        "repo": {
+          "type": "string",
+          "pattern": "^[a-zA-Z0-9_.-]+/[a-zA-Z0-9_.-]+$"
+        },
+        "analyzedAt": { "type": "string", "format": "date-time" }
+      }
+    },
+    "inputs": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "triageFile": {
+          "type": "string",
+          "description": "Relative path to triage JSON if consumed, e.g. 'artifacts/ai/triage/1234.json'."
+        }
+      }
+    },
+    "conclusion": {
+      "$ref": "#/$defs/conclusionValue"
+    },
+    "notes": {
+      "type": "string",
+      "minLength": 10,
+      "description": "Free-text summary of reproduction results for humans."
+    },
+    "assessment": {
+      "type": "string",
+      "enum": [
+        "unknown",
+        "likely-bug",
+        "working-as-designed",
+        "breaking-change",
+        "docs-gap",
+        "user-error"
+      ],
+      "description": "EDITORIAL classification. Use to record opinions without corrupting the factual 'conclusion'."
+    },
+    "scope": {
+      "type": "string",
+      "pattern": "^(universal|unknown|platform-specific/(windows|linux|macos|wasm|ios|android))$",
+      "description": "Cross-platform scope. 'universal'=reproduced on ≥2 platforms, 'platform-specific/{platform}'=one platform only, 'unknown'=only tested one platform."
+    },
+    "reproductionTime": {
+      "type": "string",
+      "description": "Approximate time spent reproducing, e.g. '~15 minutes'."
+    },
+    "versionResults": {
+      "type": "array",
+      "minItems": 2,
+      "items": {
+        "type": "object",
+        "required": ["version", "source", "result"],
+        "additionalProperties": false,
+        "properties": {
+          "version": {
+            "type": "string",
+            "description": "ASP.NET Core / .NET version tested, e.g. '8.0.10', '9.0.0', 'main (source)'."
+          },
+          "source": {
+            "type": "string",
+            "enum": ["nuget", "source"],
+            "description": "nuget=released NuGet package, source=built from source."
+          },
+          "result": {
+            "type": "string",
+            "enum": ["reproduced", "not-reproduced", "error", "not-tested"]
+          },
+          "notes": { "type": "string" },
+          "platform": {
+            "type": "string",
+            "description": "Platform where tested, e.g. 'host-windows-x64', 'host-macos-arm64', 'docker-linux-x64'."
+          }
+        }
+      }
+    },
+    "reproProject": {
+      "type": "object",
+      "required": ["type", "tfm", "packages"],
+      "additionalProperties": false,
+      "properties": {
+        "type": {
+          "type": "string",
+          "enum": [
+            "webapi",
+            "mvc",
+            "razorpages",
+            "blazor-wasm",
+            "blazor-server",
+            "blazor-ssr",
+            "grpc",
+            "console",
+            "docker",
+            "test",
+            "existing",
+            "simulation"
+          ],
+          "description": "Project type used for reproduction."
+        },
+        "tfm": { "type": "string", "description": "Target framework moniker, e.g. 'net8.0', 'net9.0'." },
+        "packages": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": ["name", "version"],
+            "additionalProperties": false,
+            "properties": {
+              "name": { "type": "string" },
+              "version": { "type": "string" }
+            }
+          }
+        }
+      }
+    },
+    "reproductionSteps": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "required": ["stepNumber", "description", "layer", "result"],
+        "additionalProperties": false,
+        "properties": {
+          "stepNumber": { "type": "integer", "minimum": 1 },
+          "description": { "type": "string", "minLength": 5 },
+          "layer": { "$ref": "#/$defs/stepLayer" },
+          "command": { "type": "string" },
+          "exitCode": { "type": "integer", "minimum": 0 },
+          "output": { "type": "string", "maxLength": 4096 },
+          "filesCreated": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "required": ["filename", "description"],
+              "additionalProperties": false,
+              "properties": {
+                "filename": { "type": "string" },
+                "description": { "type": "string" },
+                "content": { "type": "string" }
+              }
+            }
+          },
+          "result": { "$ref": "#/$defs/stepResult" }
+        }
+      }
+    },
+    "artifacts": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["filename", "description", "source", "available"],
+        "additionalProperties": false,
+        "properties": {
+          "filename": { "type": "string" },
+          "description": { "type": "string" },
+          "source": {
+            "type": "string",
+            "enum": ["issue-attachment", "test-data", "generated", "external"]
+          },
+          "url": { "type": "string", "format": "uri" },
+          "available": { "type": "boolean" }
+        }
+      }
+    },
+    "errorMessages": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "primaryError": { "type": "string" },
+        "stackTrace": { "type": "string", "maxLength": 5000 },
+        "additionalErrors": {
+          "type": "array",
+          "items": { "type": "string" }
+        }
+      }
+    },
+    "environment": {
+      "type": "object",
+      "required": ["os", "arch", "dotnetVersion", "aspnetcoreVersion", "dockerUsed"],
+      "additionalProperties": false,
+      "properties": {
+        "os": { "type": "string", "description": "Operating system, e.g. 'macOS 15.3', 'Ubuntu 24.04', 'Windows 11'." },
+        "arch": { "type": "string", "description": "CPU architecture, e.g. 'arm64', 'x64'." },
+        "dotnetVersion": { "type": "string", "description": ".NET runtime version, e.g. '9.0.2'." },
+        "dotnetSdkVersion": { "type": "string", "description": "Exact .NET SDK version from 'dotnet --info'." },
+        "aspnetcoreVersion": { "type": "string", "description": "ASP.NET Core version tested, e.g. '9.0.2'." },
+        "dockerUsed": { "type": "boolean" }
+      }
+    },
+    "blockers": {
+      "type": "array",
+      "items": { "type": "string" },
+      "minItems": 1,
+      "description": "Required when conclusion is partial, needs-platform, needs-hardware, or inconclusive."
+    },
+    "feedback": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "corrections": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": ["source", "topic", "upstream", "corrected"],
+            "additionalProperties": false,
+            "properties": {
+              "source": { "type": "string", "const": "triage" },
+              "topic": { "type": "string" },
+              "upstream": { "type": "string" },
+              "corrected": { "type": "string" }
+            }
+          }
+        }
+      }
+    },
+    "output": {
+      "type": "object",
+      "required": ["actionability", "actions", "proposedResponse"],
+      "additionalProperties": false,
+      "description": "Required when conclusion is reproduced or not-reproduced.",
+      "properties": {
+        "actionability": {
+          "type": "object",
+          "required": ["suggestedAction", "confidence", "reason"],
+          "additionalProperties": false,
+          "properties": {
+            "suggestedAction": { "$ref": "#/$defs/suggestedAction" },
+            "confidence": { "$ref": "#/$defs/confidence" },
+            "reason": { "type": "string" }
+          }
+        },
+        "workarounds": {
+          "type": "array",
+          "items": { "type": "string" }
+        },
+        "proposedResponse": {
+          "type": "object",
+          "required": ["status", "body"],
+          "additionalProperties": false,
+          "properties": {
+            "status": {
+              "type": "string",
+              "enum": ["ready", "needs-human-edit", "do-not-post"]
+            },
+            "summary": { "type": "string" },
+            "body": { "type": "string" }
+          }
+        },
+        "actions": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": ["type", "description"],
+            "additionalProperties": false,
+            "properties": {
+              "type": { "$ref": "#/$defs/actionType" },
+              "description": { "type": "string" },
+              "risk": { "$ref": "#/$defs/actionRisk" },
+              "confidence": { "$ref": "#/$defs/confidence" },
+              "labels": { "type": "array", "items": { "type": "string" } },
+              "comment": { "type": "string" },
+              "linkedIssue": { "type": "integer", "minimum": 1 }
+            }
+          }
+        },
+        "missingInfo": {
+          "type": "array",
+          "items": { "type": "string" }
+        }
+      }
+    }
+  },
+  "allOf": [
+    {
+      "if": { "properties": { "conclusion": { "const": "reproduced" } } },
+      "then": {
+        "properties": {
+          "reproductionSteps": {
+            "contains": {
+              "properties": { "result": { "enum": ["failure", "wrong-output"] } },
+              "required": ["result"]
+            }
+          }
+        }
+      }
+    },
+    {
+      "if": { "properties": { "conclusion": { "const": "not-reproduced" } } },
+      "then": {
+        "properties": {
+          "reproductionSteps": {
+            "allOf": [
+              {
+                "contains": {
+                  "properties": { "result": { "const": "success" } },
+                  "required": ["result"]
+                }
+              },
+              {
+                "not": {
+                  "contains": {
+                    "properties": { "result": { "enum": ["failure", "wrong-output"] } },
+                    "required": ["result"]
+                  }
+                }
+              }
+            ]
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": { "conclusion": { "enum": ["needs-platform", "needs-hardware", "partial", "inconclusive"] } }
+      },
+      "then": {
+        "required": ["meta", "conclusion", "notes", "reproductionSteps", "environment", "blockers"]
+      }
+    },
+    {
+      "if": {
+        "properties": { "conclusion": { "enum": ["reproduced", "not-reproduced"] } }
+      },
+      "then": {
+        "required": ["meta", "conclusion", "notes", "reproductionSteps", "environment", "output", "versionResults"]
+      }
+    },
+    {
+      "if": { "properties": { "conclusion": { "const": "reproduced" } } },
+      "then": {
+        "required": ["meta", "conclusion", "notes", "reproductionSteps", "environment", "output", "reproProject"]
+      }
+    }
+  ]
+}
