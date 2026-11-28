@@ -557,11 +557,14 @@ public class BlazorWebTemplateTest(ProjectFactoryFixture projectFactory) : Blazo
 
     private static async Task<IResponse> SubmitRecoveryFormAsync(IPage page, string path, string handler, string email)
     {
+        var form = page.Locator($"form:has(input[name='_handler'][value='{handler}'])");
+        await form.Locator("input[name='Input.Email']").FillAsync(email);
         var responseTask = page.WaitForResponseAsync(response =>
             response.Request.Method == "POST" && new Uri(response.Url).AbsolutePath == path);
         await Task.WhenAll(
             responseTask,
-            SubmitFormAsync(page, handler, new Dictionary<string, string> { ["Input.Email"] = email }));
+            form.Locator("button[type='submit']").ClickAsync());
+        await page.WaitForLoadStateAsync(LoadState.Load);
         return await responseTask;
     }
 
