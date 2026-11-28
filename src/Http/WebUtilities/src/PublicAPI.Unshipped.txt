@@ -1,1 +1,2 @@
 #nullable enable
+override Microsoft.AspNetCore.WebUtilities.FileBufferingWriteStream.Write(System.ReadOnlySpan<byte> buffer) -> void
