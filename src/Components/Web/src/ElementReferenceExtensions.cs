@@ -1,6 +1,7 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Diagnostics.CodeAnalysis;
 using Microsoft.JSInterop;
 
 namespace Microsoft.AspNetCore.Components;
@@ -29,6 +30,7 @@ public static class ElementReferenceExtensions
     /// </para>
     /// </param>
     /// <returns>The <see cref="ValueTask"/> representing the asynchronous focus operation.</returns>
+    [UnconditionalSuppressMessage("Trimming", "IL2026", Justification = "The arguments are an ElementReference and a Boolean, which use fixed framework serialization converters.")]
     public static ValueTask FocusAsync(this ElementReference elementReference, bool preventScroll)
     {
         var jsRuntime = elementReference.GetJSRuntime();

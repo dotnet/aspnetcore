@@ -34,6 +34,7 @@ public class JSObjectReference : IJSObjectReference
     }
 
     /// <inheritdoc />
+    [RequiresUnreferencedCode("JSON serialization and deserialization might require types that cannot be statically analyzed.")]
     public ValueTask<TValue> InvokeAsync<[DynamicallyAccessedMembers(JsonSerialized)] TValue>(string identifier, object?[]? args)
     {
         ThrowIfDisposed();
@@ -42,6 +43,7 @@ public class JSObjectReference : IJSObjectReference
     }
 
     /// <inheritdoc />
+    [RequiresUnreferencedCode("JSON serialization and deserialization might require types that cannot be statically analyzed.")]
     public ValueTask<TValue> InvokeAsync<[DynamicallyAccessedMembers(JsonSerialized)] TValue>(string identifier, CancellationToken cancellationToken, object?[]? args)
     {
         ThrowIfDisposed();
@@ -50,6 +52,7 @@ public class JSObjectReference : IJSObjectReference
     }
 
     /// <inheritdoc />
+    [RequiresUnreferencedCode("JSON serialization and deserialization might require types that cannot be statically analyzed.")]
     public ValueTask<IJSObjectReference> InvokeConstructorAsync(string identifier, object?[]? args)
     {
         ThrowIfDisposed();
@@ -58,6 +61,7 @@ public class JSObjectReference : IJSObjectReference
     }
 
     /// <inheritdoc />
+    [RequiresUnreferencedCode("JSON serialization and deserialization might require types that cannot be statically analyzed.")]
     public ValueTask<IJSObjectReference> InvokeConstructorAsync(string identifier, CancellationToken cancellationToken, object?[]? args)
     {
         ThrowIfDisposed();
@@ -66,6 +70,7 @@ public class JSObjectReference : IJSObjectReference
     }
 
     /// <inheritdoc />
+    [RequiresUnreferencedCode("JSON serialization and deserialization might require types that cannot be statically analyzed.")]
     public ValueTask<TValue> GetValueAsync<[DynamicallyAccessedMembers(JsonSerialized)] TValue>(string identifier)
     {
         ThrowIfDisposed();
@@ -74,6 +79,7 @@ public class JSObjectReference : IJSObjectReference
     }
 
     /// <inheritdoc />
+    [RequiresUnreferencedCode("JSON serialization and deserialization might require types that cannot be statically analyzed.")]
     public ValueTask<TValue> GetValueAsync<[DynamicallyAccessedMembers(JsonSerialized)] TValue>(string identifier, CancellationToken cancellationToken)
     {
         ThrowIfDisposed();
@@ -82,6 +88,7 @@ public class JSObjectReference : IJSObjectReference
     }
 
     /// <inheritdoc />
+    [RequiresUnreferencedCode("JSON serialization and deserialization might require types that cannot be statically analyzed.")]
     public async ValueTask SetValueAsync<[DynamicallyAccessedMembers(JsonSerialized)] TValue>(string identifier, TValue value)
     {
         ThrowIfDisposed();
@@ -90,6 +97,7 @@ public class JSObjectReference : IJSObjectReference
     }
 
     /// <inheritdoc />
+    [RequiresUnreferencedCode("JSON serialization and deserialization might require types that cannot be statically analyzed.")]
     public async ValueTask SetValueAsync<[DynamicallyAccessedMembers(JsonSerialized)] TValue>(string identifier, TValue value, CancellationToken cancellationToken)
     {
         ThrowIfDisposed();
@@ -98,6 +106,7 @@ public class JSObjectReference : IJSObjectReference
     }
 
     /// <inheritdoc />
+    [UnconditionalSuppressMessage("Trimming", "IL2026", Justification = "Disposal only serializes the numeric object ID and does not deserialize a return value.")]
     public async ValueTask DisposeAsync()
     {
         if (!Disposed)
