@@ -84,6 +84,12 @@ public class Program
             // Some of our tests set this application up incorrectly so that querying NavigationManager.Uri throws.
         }
 
+        // Initializer tests observe the culture established by runtime startup.
+        if (uri?.Fragment.Contains("initializer", StringComparison.Ordinal) is true)
+        {
+            return;
+        }
+
         if (uri != null && HttpUtility.ParseQueryString(uri.Query)["culture"] is string cultureName)
         {
             culture = new CultureInfo(cultureName);
