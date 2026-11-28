@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
+using System.Collections.Generic;
 using System.Dynamic;
 using Microsoft.AspNetCore.JsonPatch.SystemTextJson.Exceptions;
 using Xunit;
@@ -167,8 +168,36 @@ public class SimpleObjectIntegrationTest
         Assert.Equal("For operation 'move', the target location specified by path '/Object/goodbye' was not found.", ex.Message);
     }
 
+    [Fact]
+    public void MoveFromReadOnlyProperty_WithErrorCallback_DoesNotAddValueAtPath()
+    {
+        // Arrange
+        var targetObject = new ReadOnlyPropertyObject();
+
+        var patchDocument = new JsonPatchDocument();
+        patchDocument.Move("ReadOnlyProperty", "WritableProperty");
+
+        var errors = new List<JsonPatchError>();
+
+        // Act
+        patchDocument.ApplyTo(targetObject, errors.Add);
+
+        // Assert
+        var error = Assert.Single(errors);
+        Assert.Equal("The property at path 'ReadOnlyProperty' could not be updated.", error.ErrorMessage);
+        Assert.Equal("A", targetObject.ReadOnlyProperty);
+        Assert.Null(targetObject.WritableProperty);
+    }
+
     private class Regression_AspNetCore3634_Object
     {
         public dynamic Object { get; set; }
+    }
+
+    private class ReadOnlyPropertyObject
+    {
+        public string ReadOnlyProperty { get; } = "A";
+
+        public string WritableProperty { get; set; }
     }
 }

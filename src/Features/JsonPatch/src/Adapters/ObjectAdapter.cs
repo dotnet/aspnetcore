@@ -104,8 +104,11 @@ public class ObjectAdapter : IObjectAdapterWithTest
         // Get value at 'from' location and add that value to the 'path' location
         if (TryGetValue(operation.from, objectToApplyTo, operation, out var propertyValue))
         {
-            // remove that value
-            Remove(operation.from, objectToApplyTo, operation);
+            // remove that value; if that fails, the move fails and nothing is added
+            if (!Remove(operation.from, objectToApplyTo, operation))
+            {
+                return;
+            }
 
             // add that value to the path location
             Add(operation.path,
@@ -130,7 +133,7 @@ public class ObjectAdapter : IObjectAdapterWithTest
     /// This can be used by other methods, like replace, to ensure that we can pass in the correctly
     /// typed value to whatever method follows.
     /// </summary>
-    private void Remove(string path, object objectToApplyTo, Operation operationToReport)
+    private bool Remove(string path, object objectToApplyTo, Operation operationToReport)
     {
         var parsedPath = new ParsedPath(path);
         var visitor = new ObjectVisitor(parsedPath, ContractResolver, AdapterFactory);
@@ -140,15 +143,17 @@ public class ObjectAdapter : IObjectAdapterWithTest
         {
             var error = CreatePathNotFoundError(objectToApplyTo, path, operationToReport, errorMessage);
             ErrorReporter(error);
-            return;
+            return false;
         }
 
         if (!adapter.TryRemove(target, parsedPath.LastSegment, ContractResolver, out errorMessage))
         {
             var error = CreateOperationFailedError(objectToApplyTo, path, operationToReport, errorMessage);
             ErrorReporter(error);
-            return;
+            return false;
         }
+
+        return true;
     }
 
     public void Replace(Operation operation, object objectToApplyTo)
