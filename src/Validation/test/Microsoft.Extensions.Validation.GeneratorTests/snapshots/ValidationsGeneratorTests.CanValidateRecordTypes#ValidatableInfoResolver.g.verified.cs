@@ -426,12 +426,14 @@ namespace Microsoft.Extensions.Validation.Generated
         }
     }
 
+    [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.Extensions.Validation.ValidationsGenerator, Version=42.42.42.42, Culture=neutral, PublicKeyToken=adb9793829ddae60", "42.42.42.42")]
     file abstract class DisplayNameInfo
     {
         public abstract string? GetDisplayName(global::Microsoft.Extensions.Validation.ValidateContext context, global::System.Type type);
     }
 
 
+    [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.Extensions.Validation.ValidationsGenerator, Version=42.42.42.42, Culture=neutral, PublicKeyToken=adb9793829ddae60", "42.42.42.42")]
     file static class LocalizationHelpers
     {
         public static global::Microsoft.Extensions.Localization.IStringLocalizer CreateStringLocalizer(
@@ -490,6 +492,7 @@ namespace Microsoft.Extensions.Validation.Generated
     }
 
 
+    [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.Extensions.Validation.ValidationsGenerator, Version=42.42.42.42, Culture=neutral, PublicKeyToken=adb9793829ddae60", "42.42.42.42")]
     file abstract class ValidatableInfo
     {
         protected ValidatableInfo()
@@ -809,6 +812,7 @@ namespace Microsoft.Extensions.Validation.Generated
     }
 
 
+    [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.Extensions.Validation.ValidationsGenerator, Version=42.42.42.42, Culture=neutral, PublicKeyToken=adb9793829ddae60", "42.42.42.42")]
     file abstract class ValidatableTypeInfo : ValidatableInfo, global::Microsoft.Extensions.Validation.IValidatableTypeInfo
     {
         private readonly int _membersCount;
@@ -1198,6 +1202,7 @@ namespace Microsoft.Extensions.Validation.Generated
     }
 
 
+    [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.Extensions.Validation.ValidationsGenerator, Version=42.42.42.42, Culture=neutral, PublicKeyToken=adb9793829ddae60", "42.42.42.42")]
     file abstract class ValidatablePropertyInfo : ValidatableInfo, global::Microsoft.Extensions.Validation.IValidatablePropertyInfo
     {
         private global::System.ComponentModel.DataAnnotations.RequiredAttribute? _requiredAttribute;
@@ -1502,6 +1507,7 @@ namespace Microsoft.Extensions.Validation.Generated
     }
 
 
+    [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.Extensions.Validation.ValidationsGenerator, Version=42.42.42.42, Culture=neutral, PublicKeyToken=adb9793829ddae60", "42.42.42.42")]
     file abstract class ValidatableParameterInfo : ValidatableInfo, global::Microsoft.Extensions.Validation.IValidatableParameterInfo
     {
         private global::System.ComponentModel.DataAnnotations.RequiredAttribute? _requiredAttribute;
@@ -1706,6 +1712,7 @@ namespace Microsoft.Extensions.Validation.Generated
     }
 
 
+    [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.Extensions.Validation.ValidationsGenerator, Version=42.42.42.42, Culture=neutral, PublicKeyToken=adb9793829ddae60", "42.42.42.42")]
     file sealed class RuntimeValidatableParameterInfoResolver : global::Microsoft.Extensions.Validation.IValidatableInfoResolver
     {
         // TODO: the implementation currently relies on static discovery of types.
