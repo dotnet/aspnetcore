@@ -1782,6 +1782,32 @@ public class SignInManagerTest
     }
 
     [Fact]
+    public async Task MultipleSignInManagersWithSameMeterFactory_RecordMetrics()
+    {
+        // Setup
+        var testMeterFactory = new TestMeterFactory();
+        var countingMeterFactory = new CountingMeterFactory(testMeterFactory);
+        using var signOutUserPrincipal = new MetricCollector<long>(testMeterFactory, "Microsoft.AspNetCore.Identity", SignInManagerMetrics.SignOutsCounterName);
+
+        var manager = MockHelpers.TestUserManager<PocoUser>(meterFactory: countingMeterFactory);
+        var context = new DefaultHttpContext();
+        var auth = MockAuth(context);
+        auth.Setup(a => a.SignOutAsync(context, It.IsAny<string>(), It.IsAny<AuthenticationProperties>())).Returns(Task.FromResult(0));
+        var createCountBeforeSignInManagers = countingMeterFactory.CreateCount;
+        var helper1 = SetupSignInManager(manager, context, null, manager.Options);
+        var helper2 = SetupSignInManager(manager, context, null, manager.Options);
+
+        // Metrics (meter and instruments) are created once per factory and shared by both managers.
+        Assert.Equal(1, countingMeterFactory.CreateCount - createCountBeforeSignInManagers);
+
+        await helper1.SignOutAsync();
+        await helper2.SignOutAsync();
+
+        Assert.Equal(2, signOutUserPrincipal.GetMeasurementSnapshot().Count);
+        Assert.Single(testMeterFactory.Meters);
+    }
+
+    [Fact]
     public async Task SignOutCallsContextResponseSignOut_Failure()
     {
         // Setup
