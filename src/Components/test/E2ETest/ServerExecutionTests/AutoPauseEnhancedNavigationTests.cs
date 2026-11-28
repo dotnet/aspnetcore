@@ -267,18 +267,21 @@ public class AutoPauseEnhancedNavigationTests : AutoPauseTestBase<App>
         Assert.Empty(Browser.GetBrowserLogs(LogLevel.Severe));
     }
 
-    [Fact]
-    public void CircuitReplacement_RemainsInteractiveAfterOldResumeTransportCloses()
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public void CircuitReplacement_RemainsInteractiveAfterOldResumeTransportCloses(bool completeHandshake)
     {
         Navigate("/subdir/persistent-state/server-pause?suppress-autostart");
         var htmlElement = Browser.Exists(By.TagName("html"));
         var js = (IJavaScriptExecutor)Browser;
         js.ExecuteScript("""
+            const completeHandshake = arguments[0];
             const gate = Promise.withResolvers();
-            window.transportProbe = { negotiations: 0, entered: false, disposed: false, opened: 0, release: gate.resolve };
+            window.transportProbe = { negotiations: 0, connections: 0, entered: false, disposed: false, opened: 0, closed: false, stopped: false, release: gate.resolve };
             const originalFetch = window.fetch;
             window.fetch = async (...args) => {
-                if (String(args[0]).includes('/_blazor/negotiate') && ++transportProbe.negotiations === 2) {
+                if (!completeHandshake && String(args[0]).includes('/_blazor/negotiate') && ++transportProbe.negotiations === 2) {
                     transportProbe.entered = true;
                     await gate.promise;
                 }
@@ -287,9 +290,38 @@ public class AutoPauseEnhancedNavigationTests : AutoPauseTestBase<App>
             Blazor._internal.circuitEvents.addEventListener('disposed', () => transportProbe.disposed = true, { once: true });
             Blazor.start({
                 ssr: { circuitInactivityTimeoutMs: 5000 },
-                circuit: { circuitHandlers: [{ onCircuitOpened: () => transportProbe.opened++ }] }
+                circuit: {
+                    circuitHandlers: [{ onCircuitOpened: () => transportProbe.opened++ }],
+                    configureSignalR: builder => {
+                        const build = builder.build.bind(builder);
+                        builder.build = () => {
+                            const connection = build();
+                            if (++transportProbe.connections === 2) {
+                                if (completeHandshake) {
+                                    const start = connection.start.bind(connection);
+                                    connection.start = async () => {
+                                        // Hold Blazor's observation of startup only after the real hub handshake.
+                                        await start();
+                                        transportProbe.entered = true;
+                                        await gate.promise;
+                                    };
+                                }
+                                const stop = connection.stop.bind(connection);
+                                connection.stop = async () => {
+                                    if (completeHandshake) {
+                                        await gate.promise;
+                                    }
+                                    await stop();
+                                    transportProbe.stopped = true;
+                                };
+                                connection.onclose(() => transportProbe.closed = true);
+                            }
+                            return connection;
+                        };
+                    }
+                }
             });
-            """);
+            """, completeHandshake);
         Browser.NotEqual("", () => Browser.Exists(By.Id("circuit-id")).Text);
         Browser.Exists(By.Id("increment-persistent-counter-count")).Click();
         Browser.Equal("1", () => Browser.Exists(By.Id("persistent-counter-count")).Text);
@@ -318,23 +350,81 @@ public class AutoPauseEnhancedNavigationTests : AutoPauseTestBase<App>
             js.ExecuteScript("transportProbe.release();");
         }
 
-        const string expectedCancellation = "Error: Failed to start the connection: Error: The connection was stopped during negotiation.";
-        var browserErrors = new List<LogEntry>();
-        Browser.True(() =>
-        {
-            browserErrors.AddRange(Browser.GetBrowserLogs(LogLevel.Severe));
-            return browserErrors.Any(entry => entry.Message.Contains(expectedCancellation, StringComparison.Ordinal));
-        });
-        Browser.True(() => (bool)js.ExecuteScript("""
-            return performance.getEntriesByType('resource').some(entry => entry.name.includes('/_blazor/disconnect'));
-            """));
+        Browser.True(() => (bool)js.ExecuteScript("return transportProbe.stopped;"));
+        Assert.Equal(completeHandshake, (bool)js.ExecuteScript("return transportProbe.closed;"));
         Browser.NotEqual("", () => Browser.Exists(By.Id("circuit-id")).Text);
         Browser.Exists(By.Id("increment-persistent-counter-count")).Click();
         Browser.Equal("2", () => Browser.Exists(By.Id("persistent-counter-count")).Text);
         Browser.False(() => htmlElement.IsStale());
-        browserErrors.AddRange(Browser.GetBrowserLogs(LogLevel.Severe));
-        var cancellation = Assert.Single(browserErrors);
-        Assert.Contains(expectedCancellation, cancellation.Message, StringComparison.Ordinal);
+        Assert.Empty(Browser.GetBrowserLogs(LogLevel.Severe));
+    }
+
+    [Fact]
+    public void CircuitReplacement_DoesNotWaitForLongPollingDelete()
+    {
+        Navigate("/subdir/persistent-state/server-pause?suppress-autostart");
+        var htmlElement = Browser.Exists(By.TagName("html"));
+        var js = (IJavaScriptExecutor)Browser;
+        js.ExecuteScript("""
+            const gate = Promise.withResolvers();
+            window.transportProbe = { connections: 0, entered: false, closed: false, stopped: false, release: gate.resolve };
+            const originalFetch = window.fetch;
+            window.fetch = async (...args) => {
+                if (!transportProbe.entered && args[1]?.method === 'DELETE' && String(args[0]).includes('/_blazor')) {
+                    transportProbe.entered = true;
+                    await gate.promise;
+                }
+                return originalFetch(...args);
+            };
+            Blazor.start({
+                ssr: { circuitInactivityTimeoutMs: 5000 },
+                circuit: {
+                    configureSignalR: builder => {
+                        // HttpTransportType.LongPolling is 4.
+                        builder.withUrl('_blazor', { transport: 4 });
+                        const build = builder.build.bind(builder);
+                        builder.build = () => {
+                            const connection = build();
+                            if (++transportProbe.connections === 1) {
+                                const stop = connection.stop.bind(connection);
+                                connection.stop = async () => {
+                                    await stop();
+                                    transportProbe.stopped = true;
+                                };
+                                connection.onclose(() => transportProbe.closed = true);
+                            }
+                            return connection;
+                        };
+                    }
+                }
+            });
+            """);
+        Browser.NotEqual("", () => Browser.Exists(By.Id("circuit-id")).Text);
+        Browser.Exists(By.Id("increment-persistent-counter-count")).Click();
+        Browser.Equal("1", () => Browser.Exists(By.Id("persistent-counter-count")).Text);
+        Browser.GetBrowserLogs(LogLevel.Severe);
+
+        Browser.Exists(By.Id("navigate-to-static-auto-pause")).Click();
+        Browser.Equal("static", () => Browser.Exists(By.Id("execution-mode")).Text);
+        Browser.True(() => (bool)js.ExecuteScript("return transportProbe.entered;"));
+        try
+        {
+            Browser.Exists(By.Id("navigate-to-auto-pause")).Click();
+            Browser.NotEqual("", () => Browser.Exists(By.Id("circuit-id")).Text);
+            Browser.Exists(By.Id("increment-persistent-counter-count")).Click();
+            Browser.Equal("1", () => Browser.Exists(By.Id("persistent-counter-count")).Text);
+            Assert.False((bool)js.ExecuteScript("return transportProbe.closed || transportProbe.stopped;"));
+        }
+        finally
+        {
+            js.ExecuteScript("transportProbe.release();");
+        }
+
+        Browser.True(() => (bool)js.ExecuteScript("return transportProbe.stopped && transportProbe.closed;"));
+        Browser.Exists(By.Id("increment-persistent-counter-count")).Click();
+        Browser.Equal("2", () => Browser.Exists(By.Id("persistent-counter-count")).Text);
+        Browser.False(() => htmlElement.IsStale());
+        Assert.Empty(Browser.GetBrowserLogs(LogLevel.Severe));
     }
 
     private void WithHiddenTab(Action<IJavaScriptExecutor> action)

@@ -157,7 +157,7 @@ async function startCircuitCore(): Promise<boolean> {
   }
 
   if (circuit && circuit.isDisposedOrDisposing()) {
-    // The old connection's close callback detaches the shared Server renderer interop.
+    // Release the old circuit's renderer ownership before starting its replacement.
     await circuit.dispose();
 
     // If the current circuit is no longer available, create a new one.

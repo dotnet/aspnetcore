@@ -251,6 +251,7 @@ export class HttpConnection implements IConnection {
         this._httpClient._accessTokenFactory = this._accessTokenFactory;
         this._httpClient.setRefreshAccessTokenFactory(this._options.accessTokenFactory);
 
+        let stoppedDuringNegotiation = false;
         try {
             if (this._options.skipNegotiation) {
                 if (this._options.transport === HttpTransportType.WebSockets) {
@@ -270,6 +271,7 @@ export class HttpConnection implements IConnection {
                     negotiateResponse = await this._getNegotiationResponse(url);
                     // the user tries to stop the connection when it is being started
                     if (this._connectionState === ConnectionState.Disconnecting || this._connectionState === ConnectionState.Disconnected) {
+                        stoppedDuringNegotiation = true;
                         throw new AbortError("The connection was stopped during negotiation.");
                     }
 
@@ -318,7 +320,7 @@ export class HttpConnection implements IConnection {
             // This is the only case startInternal can exit in neither the connected nor disconnected state because stopConnection()
             // will transition to the disconnected state. start() will wait for the transition using the stopPromise.
         } catch (e) {
-            this._logger.log(LogLevel.Error, "Failed to start the connection: " + e);
+            this._logger.log(stoppedDuringNegotiation ? LogLevel.Debug : LogLevel.Error, "Failed to start the connection: " + e);
             this._connectionState = ConnectionState.Disconnected;
             this.transport = undefined;
 
