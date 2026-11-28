@@ -167,9 +167,16 @@ internal partial class EndpointHtmlRenderer
             // Full quiescence, i.e., all tasks completed regardless of streaming SSR
             await result.QuiescenceTask;
         }
-        else if (_nonStreamingPendingTasks.Count > 0)
+        else
         {
-            await WaitForNonStreamingPendingTasks();
+            // The base renderer also tracks these tasks for full quiescence. Observe that task without
+            // awaiting it so streaming rendering can return early without leaking unobserved exceptions.
+            _ = GetErrorHandledTask(result.QuiescenceTask);
+
+            if (_nonStreamingPendingTasks.Count > 0)
+            {
+                await WaitForNonStreamingPendingTasks();
+            }
         }
     }
 
